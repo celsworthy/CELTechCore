@@ -1,0 +1,24 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package celtech.printerControl.comms.commands.tx;
+
+/**
+ *
+ * @author ianhudson
+ */
+public class FormatReelEEPROM extends RoboxTxPacket
+{
+
+    public FormatReelEEPROM()
+    {
+        super(TxPacketTypeEnum.FORMAT_REEL_EEPROM, false, false);
+    }
+
+    @Override
+    public boolean populatePacket(byte[] byteData)
+    {
+        return false;
+    }
+}

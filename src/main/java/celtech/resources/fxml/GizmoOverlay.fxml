@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+<?scenebuilder-preview-i18n-resource ../i18n/LanguageData.properties?>
+<?scenebuilder-stylesheet ../css/AutoMaker.css?>
+
+<AnchorPane fx:id="gizmoGroup" layoutX="-100.0" layoutY="-100.0" opacity="0.62" styleClass="threeDGizmoBackground" visible="true" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="celtech.coreUI.controllers.GizmoOverlayController">
+  <children>
+    <Circle fx:id="outerCircle" fill="#404040" layoutX="100.0" layoutY="100.0" radius="100.0" stroke="BLACK" strokeType="INSIDE" />
+    <Circle fx:id="innerCircle" fill="WHITE" layoutX="100.0" layoutY="100.0" radius="80.0" stroke="BLACK" strokeType="INSIDE" />
+    <Arc id="xyHandle" fx:id="xzHandle" fill="#3f398d" layoutX="105.0" layoutY="105.0" length="90.0" radiusX="50.0" radiusY="50.0" scaleX="0.82" scaleY="0.82" startAngle="270.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" type="ROUND" />
+    <Path fx:id="xHandle" cache="true" fill="#0c9500" layoutX="100.0" layoutY="100.0" strokeType="OUTSIDE" strokeWidth="0.0">
+      <elements>
+        <MoveTo x="-10.0" y="-10.0" />
+        <LineTo x="60.0" y="-10.0" />
+        <LineTo x="60.0" y="-20.0" />
+        <LineTo x="80.0" y="0.0" />
+        <LineTo x="60.0" y="20.0" />
+        <LineTo x="60.0" y="10.0" />
+        <LineTo x="10.0" y="10.0" />
+        <ClosePath />
+      </elements>
+    </Path>
+    <Path fx:id="zHandle" fill="RED" layoutX="100.0" layoutY="100.0" strokeType="OUTSIDE" strokeWidth="0.0">
+      <elements>
+        <MoveTo x="-10.0" y="-10.0" />
+        <LineTo x="-10.0" y="60.0" />
+        <LineTo x="-20.0" y="60.0" />
+        <LineTo x="0.0" y="80.0" />
+        <LineTo x="20.0" y="60.0" />
+        <LineTo x="10.0" y="60.0" />
+        <LineTo x="10.0" y="10.0" />
+        <ClosePath />
+      </elements>
+    </Path>
+    <Text fx:id="rotationAngleText" layoutX="86.0" layoutY="99.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="labelText" text="Text" />
+    <Arc fx:id="rotationArc" fill="#545d8c" layoutX="100.0" layoutY="100.0" length="28.0" radiusX="98.0" radiusY="98.0" scaleX="0.9999990000000253" scaleY="0.9999978699455275" startAngle="104.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" type="ROUND" />
+  </children>
+</AnchorPane>

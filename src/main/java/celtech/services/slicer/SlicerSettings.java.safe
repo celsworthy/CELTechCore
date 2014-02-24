@@ -1,0 +1,292 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package celtech.services.slicer;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
+
+/**
+ *
+ * @author Ian Hudson @ Liberty Systems Limited
+ */
+public abstract class SlicerSettings
+{
+
+    //Mutable on advanced screen
+    //Part of standard profiles (eg draft)
+    //Orphans
+    protected String print_center = "111,80";
+    protected int retract_restart_extra_toolchange = 0;
+
+    //END Orphans
+    //Immutable
+    protected int[] bed_size =
+    {
+        210, 150
+    };
+    protected String duplicate_grid = "1,1";
+    protected float z_offset = 0.0f;
+    protected String gcode_flavor = "robox";
+    protected int use_relative_e_distances = 1;
+    protected int output_nozzle_control = 1;
+    protected int vibration_limit = 0;
+    protected String start_gcode = "M83;extruder reletive mode\\nM106 S125;Fan on 50%\\nG91;Use X, Y relative Mode\\nG1 Z5 F200 ;Move up 5mm\\nG90 ;absolute positioning\\nG28 X0 Y0 ;move X\\nG92 X0 Y0 ;reset X, Y position to Zero\\nG1 X110 Y75 F10000;Move to bed centre\\nG28 Z0;move Z to min endstops\\nG92 Z-0.00;reset Z position to OFFSET\\nG1 Z5 F200 ;Move up 5mm\\n ;G28 X0 Y0 ;move X/Y to min endstops\\n ;G1 E15 F200 ;extrude some material\\n ;G1 E-5 F400 ;retract extrude material\\n ;G1 Z2 F800 ;move Z to 2mm\\n ;G1 Y10\\n ;G28 Y0\\n ;G1 Y10\\n ;G28 Y0;";
+    protected String end_gcode = "M106;Fan on\\nM140 S0;heated bed off\\nM104 S0;heated nozzle off\\nM170 S5;Cool down chamber\\nG1 X10 Y0;move to back corner\\nG1 E-5 F300;retract the filament, to release pressure\\nM170 S0;Cool down chamber Off\\nG1 X0 Y240 F9000.0;move model forward (open door)\\nM107;Fan off\\nM84;disable axes\\nM83;extruder reletive mode\\n";
+    protected String layer_gcode = "";
+    protected String toolchange_gcode = "";
+    protected int perimeter_nozzle = 1;
+    protected int infill_nozzle = 1;
+    protected int support_material_nozzle = 1;
+    protected int retract_lift = 0;
+    protected int retract_restart_extra = 0;
+    protected int retract_before_travel = 1;
+    protected int retract_layer_change = 1;
+    protected int wipe = 0;
+    protected float[] nozzle_diameter =
+    {
+        0.3f, 0.8f
+    };
+    protected int perimeter_acceleration = 0;
+    protected int infill_acceleration = 0;
+    protected int bridge_acceleration = 0;
+    protected int default_acceleration = 0;
+
+    //End immutable
+    //Overridden by firmware
+    protected String[] nozzle_offset =
+    {
+        "-7.1x0x0", "-7.15x0x0"
+    };
+
+    protected float filament_diameter = 1.75f;
+    protected float extrusion_multiplier = 0.9f;
+
+    //Material derived
+    protected int ambient_build_temperature = 45;
+    protected int first_layer_bed_temperature = 120;
+    protected int bed_temperature = 115;
+    protected int first_layer_temperature = 250;
+    protected int temperature = 245;
+    //END of firmware overridden
+
+    //Advanced controls
+    protected boolean auto_unretract = true;
+    protected int unretract_length = 0;
+    protected int retract_length = 0;
+    protected int retract_speed = 50;
+    protected float[] nozzle_finish_unretract_by =
+    {
+        0, 0
+    };
+    protected float[] nozzle_start_retract_by =
+    {
+        0, 0
+    };
+    protected float[] nozzle_finish_retract_by =
+    {
+        0, 0
+    };
+    protected float[] nozzle_finish_open_by =
+    {
+        0, 0
+    };
+    protected float[] nozzle_start_close_by =
+    {
+        1, 1
+    };
+    protected float[] nozzle_finish_close_by =
+    {
+        1, 1
+    };
+
+    protected float[] nozzle_open_angle =
+    {
+        4.2f, -4.3f
+    };
+    protected float[] nozzle_partial_open_angle =
+    {
+        3.8f, -4f
+    };
+    protected float[] nozzle_close_angle =
+    {
+        3.5f, -3.8f
+    };
+
+    protected float[] nozzle_home_angle =
+    {
+        0, 0
+    };
+
+    protected int fan_always_on = 1;
+    protected boolean cooling = false;
+    protected int max_fan_speed = 100;
+    protected int min_fan_speed = 100;
+    protected int bridge_fan_speed = 100;
+    protected int disable_fan_first_layers = 0;
+    protected int fan_below_layer_time = 60;
+    protected int slowdown_below_layer_time = 15;
+    protected int min_print_speed = 15;
+    protected int fill_density = 0;
+    protected String fill_pattern = "rectilinear";
+    protected int infill_every_layers = 1;
+    protected boolean infill_only_where_needed = false;
+    protected int solid_infill_every_layers = 0;
+    protected int fill_angle = 45;
+    protected int solid_infill_below_area = 70;
+    protected int only_retract_when_crossing_perimeters = 1;
+    protected int infill_first = 0;
+    protected int perimeter_speed = 25;
+    protected int small_perimeter_speed = 20;
+    protected int external_perimeter_speed = 20;
+    protected int infill_speed = 30;
+    protected int solid_infill_speed = 30;
+    protected int top_solid_infill_speed = 30;
+    protected int support_material_speed = 30;
+    protected int bridge_speed = 20;
+    protected int gap_fill_speed = 20;
+    protected int travel_speed = 350;
+    protected int first_layer_speed = 18;
+
+    protected int support_material_threshold = 48;
+    protected int support_material_enforce_layers = 0;
+    protected int raft_layers = 0;
+    protected String support_material_pattern = "rectilinear";
+    protected float support_material_spacing = 2.5f;
+    protected int support_material_angle = 0;
+    protected int support_material_interface_layers = 0;
+    protected int support_material_interface_spacing = 0;
+
+    protected float layer_height = 0.2f;
+
+    //END Advanced controls
+    //Common options
+    protected int support_material = 0;
+
+    //END Common options
+    //Other stuff
+    protected boolean avoid_crossing_perimeters = false;
+    protected int bottom_solid_layers = 4;
+    protected int bridge_flow_ratio = 1;
+    protected int brim_width = 0;
+    protected int complete_objects = 0;
+    protected int duplicate = 1;
+    protected int duplicate_distance = 6;
+    protected int external_perimeters_first = 0;
+    protected int extra_perimeters = 1;
+    protected int extruder_clearance_height = 20;
+    protected int extruder_clearance_radius = 20;
+    protected String extrusion_axis = "E";
+    protected String first_layer_extrusion_width = "120%"; // needs to be :0
+    protected float first_layer_height = 0.2f;
+    protected int g0 = 0;
+    protected int gcode_arcs = 0;
+    protected int gcode_comments = 1;
+    protected int infill_extruder = 1;
+    protected float infill_extrusion_width = 0.5f;
+    protected int min_skirt_length = 5;
+    protected String notes = "";
+    protected String output_filename_format = "[input_filename_base].gcode";
+    protected int perimeter_extruder = 1;
+    protected float perimeter_extrusion_width = 0.3f;
+    protected int perimeters = 3;
+    protected boolean post_process = false;
+    protected int randomize_start = 0;
+    protected int resolution = 0;
+    protected int retract_length_toolchange = 0;
+    protected int rotate = 0;
+    protected int scale = 1;
+    protected int skirt_distance = 6;
+    protected int skirt_height = 1;
+    protected int skirts = 2;
+    protected String solid_fill_pattern = "rectilinear";
+    protected float solid_infill_extrusion_width = 0.5f;
+    protected int spiral_vase = 0;
+    protected int threads = 8;
+    protected int top_infill_extrusion_width = 0;
+    protected int top_solid_layers = 3;
+
+    public void renderToFile(String filename)
+    {
+        File outputFile = new File(filename);
+        FileWriter fileWriter = null;
+
+        try
+        {
+            fileWriter = new FileWriter(outputFile);
+
+            Field[] fields = this.getClass().getDeclaredFields();
+
+            for (Field field : fields)
+            {
+                try
+                {
+                    Class<?> fieldClass = field.getType();
+                    if (fieldClass.isArray())
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(field.getName());
+                        sb.append(" = ");
+                        Object fieldValue = field.get(this);
+
+                        int length = Array.getLength(fieldValue);
+                        for (int i = 0; i < length; i++)
+                        {
+                            Object arrayElement = Array.get(fieldValue, i);
+                            sb.append(arrayElement);
+                            if (i < (length - 1))
+                            {
+                                sb.append(",");
+                            }
+                        }
+                        sb.append("\n");
+                        fileWriter.write(sb.toString());
+                    } else if (fieldClass.equals(boolean.class))
+                    {
+                        String name = field.getName();
+                        boolean value = field.getBoolean(this);
+
+                        fileWriter.write(name);
+                        fileWriter.write(" = ");
+
+                        if (value == true)
+                        {
+                            fileWriter.write("1\n");
+                        } else
+                        {
+                            fileWriter.write("\n");
+                        }
+                    } else
+                    {
+//                field.setAccessible(true);
+
+                        String name = field.getName();
+                        Object value = field.get(this);
+
+                        fileWriter.write(name);
+                        fileWriter.write(" = ");
+                        fileWriter.write(value.toString());
+                        fileWriter.write("\n");
+                    }
+                } catch (IllegalAccessException ex)
+                {
+                    Stenographer steno = StenographerFactory.getStenographer(SlicerSettings.class.getName());
+                    steno.error("Error whilst outputting setting " + field.getName());
+                }
+            }
+
+            fileWriter.close();
+        } catch (IOException ex)
+        {
+            Stenographer steno = StenographerFactory.getStenographer(SlicerSettings.class.getName());
+            steno.error("Error whilst creating settings file " + ex);
+        }
+    }
+}

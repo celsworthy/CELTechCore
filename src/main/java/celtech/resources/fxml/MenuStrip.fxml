@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.shape.*?>
+
+<BorderPane styleClass="background" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.MenuStripController">
+    <right>
+        <Button fx:id="forwardButton" mnemonicParsing="false" onAction="#forwardPressed" pickOnBounds="false" styleClass="borderlessGraphicButton" text="Button" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0" BorderPane.alignment="CENTER">
+            <graphic>
+                <SVGPath content="M400.718,297.982c0-11.446,9.389-20.841,20.806-20.841s20.851,9.448,20.851,20.841c0,11.395-9.39,20.809-20.851,20.809C410.062,318.791,400.718,309.427,400.718,297.982L400.718,297.982z M397.556,298.004c0,13.097,10.86,23.968,23.99,23.968c13.129,0,24.01-10.907,24.01-23.968c0-13.059-10.912-24.032-24.01-24.032C408.448,273.972,397.556,284.908,397.556,298.004L397.556,298.004z M407.681,297.903v0.079l10.17,10.616h7.344l-7.719-7.913h16.816v-5.481h-16.816l7.719-7.916h-7.344L407.681,297.903z" fill="WHITE" rotate="180.0" styleClass="graphic" />
+            </graphic>
+        </Button>
+    </right>
+    <left>
+        <Button fx:id="backwardButton" layoutX="14.0" layoutY="15.0" mnemonicParsing="false" onAction="#backwardPressed" styleClass="borderlessGraphicButton" text="Button" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" BorderPane.alignment="CENTER">
+            <graphic>
+                <SVGPath content="M400.718,297.982c0-11.446,9.389-20.841,20.806-20.841s20.851,9.448,20.851,20.841c0,11.395-9.39,20.809-20.851,20.809C410.062,318.791,400.718,309.427,400.718,297.982L400.718,297.982z M397.556,298.004c0,13.097,10.86,23.968,23.99,23.968c13.129,0,24.01-10.907,24.01-23.968c0-13.059-10.912-24.032-24.01-24.032C408.448,273.972,397.556,284.908,397.556,298.004L397.556,298.004z M407.681,297.903v0.079l10.17,10.616h7.344l-7.719-7.913h16.816v-5.481h-16.816l7.719-7.916h-7.344L407.681,297.903z" fill="WHITE" styleClass="graphic" />
+            </graphic>
+        </Button>
+    </left>
+    <center>
+        <HBox fx:id="layoutButtonHBox" alignment="CENTER">
+            <children>
+                <Button fx:id="addModelButton" mnemonicParsing="false" onAction="#addModel" styleClass="borderlessGraphicButton" stylesheets="@../css/JMetroDarkTheme.css" text="Button" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="247.0" AnchorPane.topAnchor="5.0" BorderPane.alignment="CENTER">
+                    <graphic>
+                        <Group>
+                            <children>
+                                <Polygon points="425.774,285.523,434.46,282.307,434.46,305.613,417.492,314.79,417.492,304.299,425.764,300.566">
+                                    <opacity>1</opacity>
+                                    <fill>
+                                        <Color>
+                                            <red>0.8156862745098039</red>
+                                            <green>0.807843137254902</green>
+                                            <blue>0.803921568627451</blue>
+                                            <opacity>1</opacity>
+                                        </Color>
+                                    </fill>
+                                </Polygon>
+                                <Polygon points="425.774,285.523,416.715,282.659,425.797,279.794,434.46,282.307">
+                                    <opacity>1</opacity>
+                                    <fill>
+                                        <Color>
+                                            <red>0.8823529411764706</red>
+                                            <green>0.8823529411764706</green>
+                                            <blue>0.8784313725490196</blue>
+                                            <opacity>1</opacity>
+                                        </Color>
+                                    </fill>
+                                </Polygon>
+                                <Polygon points="416.715,282.659,416.715,296.976,425.764,300.566,425.774,285.522">
+                                    <opacity>1</opacity>
+                                    <fill>
+                                        <Color>
+                                            <red>0.38823529411764707</red>
+                                            <green>0.38823529411764707</green>
+                                            <blue>0.38823529411764707</blue>
+                                            <opacity>1</opacity>
+                                        </Color>
+                                    </fill>
+                                </Polygon>
+                                <Polygon points="425.764,300.566,417.49,304.299,408.265,300.12,416.715,296.975">
+                                    <opacity>1</opacity>
+                                    <fill>
+                                        <Color>
+                                            <red>0.8823529411764706</red>
+                                            <green>0.8823529411764706</green>
+                                            <blue>0.8784313725490196</blue>
+                                            <opacity>1</opacity>
+                                        </Color>
+                                    </fill>
+                                </Polygon>
+                                <Polygon points="417.492,314.79,408.431,309.95,408.265,300.12,417.492,304.297">
+                                    <opacity>1</opacity>
+                                    <fill>
+                                        <Color>
+                                            <red>0.38823529411764707</red>
+                                            <green>0.38823529411764707</green>
+                                            <blue>0.38823529411764707</blue>
+                                            <opacity>1</opacity>
+                                        </Color>
+                                    </fill>
+                                </Polygon>
+                                <SVGPath content="M421.362,275.853c-11.821,0-21.438,9.619-21.438,21.44s9.616,21.438,21.438,21.438   c11.822,0,21.438-9.617,21.438-21.438S433.184,275.853,421.362,275.853L421.362,275.853z M421.362,321.292   c-13.234,0-24-10.766-24-24c0-13.234,10.766-24,24-24c13.235,0,24.003,10.765,24.003,24S434.597,321.292,421.362,321.292z">
+                                    <opacity>1</opacity>
+                                    <fill>
+                                        <Color>
+                                            <red>1</red>
+                                            <green>1</green>
+                                            <blue>1</blue>
+                                            <opacity>1</opacity>
+                                        </Color>
+                                    </fill>
+                                </SVGPath>
+                                <Group>
+                                    <children>
+                                        <SVGPath content="M426.132,309.613c0-4.958,4.017-8.977,8.975-8.977c4.959,0,8.976,4.019,8.976,8.977    c0,4.957-4.017,8.975-8.976,8.975C430.149,318.587,426.132,314.57,426.132,309.613z">
+                                            <opacity>1</opacity>
+                                            <fill>
+                                                <Color>
+                                                    <red>0.20392156862745098</red>
+                                                    <green>0.6313725490196078</green>
+                                                    <blue>0.21568627450980393</blue>
+                                                    <opacity>1</opacity>
+                                                </Color>
+                                            </fill>
+                                        </SVGPath>
+                                        <Rectangle height="10.629" width="1.794" x="434.21" y="304.297">
+                                            <opacity>1</opacity>
+                                            <fill>
+                                                <Color>
+                                                    <red>1</red>
+                                                    <green>1</green>
+                                                    <blue>1</blue>
+                                                    <opacity>1</opacity>
+                                                </Color>
+                                            </fill>
+                                        </Rectangle>
+                                        <Rectangle height="1.793" width="10.629" x="429.791" y="308.716">
+                                            <opacity>1</opacity>
+                                            <fill>
+                                                <Color>
+                                                    <red>1</red>
+                                                    <green>1</green>
+                                                    <blue>1</blue>
+                                                    <opacity>1</opacity>
+                                                </Color>
+                                            </fill>
+                                        </Rectangle>
+                                    </children>
+                                </Group>
+                            </children>
+                        </Group>
+                    </graphic>
+                </Button>
+                <Button fx:id="deleteModelButton" mnemonicParsing="false" onAction="#deleteModel" styleClass="borderlessGraphicButton" stylesheets="@../css/JMetroDarkTheme.css" text="Button" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="247.0" AnchorPane.topAnchor="5.0" BorderPane.alignment="CENTER">
+                    <graphic>
+                        <Group>
+                            <children>
+                                <Polygon points="425.376,285.966,434.062,282.749,434.062,306.055,417.091,315.232,417.091,304.743,425.365,301.009">
+                                    <opacity>1</opacity>
+                                    <fill>
+                                        <Color>
+                                            <red>0.8156862745098039</red>
+                                            <green>0.807843137254902</green>
+                                            <blue>0.803921568627451</blue>
+                                            <opacity>1</opacity>
+                                        </Color>
+                                    </fill>
+                                </Polygon>
+                                <Polygon points="425.376,285.966,416.316,283.102,425.4,280.238,434.062,282.749">
+                                    <opacity>1</opacity>
+                                    <fill>
+                                        <Color>
+                                            <red>0.8823529411764706</red>
+                                            <green>0.8823529411764706</green>
+                                            <blue>0.8784313725490196</blue>
+                                            <opacity>1</opacity>
+                                        </Color>
+                                    </fill>
+                                </Polygon>
+                                <Polygon points="416.317,283.102,416.317,297.419,425.365,301.009,425.376,285.965">
+                                    <opacity>1</opacity>
+                                    <fill>
+                                        <Color>
+                                            <red>0.38823529411764707</red>
+                                            <green>0.38823529411764707</green>
+                                            <blue>0.38823529411764707</blue>
+                                            <opacity>1</opacity>
+                                        </Color>
+                                    </fill>
+                                </Polygon>
+                                <Polygon points="425.365,301.009,417.091,304.743,407.867,300.563,416.317,297.418">
+                                    <opacity>1</opacity>
+                                    <fill>
+                                        <Color>
+                                            <red>0.8823529411764706</red>
+                                            <green>0.8823529411764706</green>
+                                            <blue>0.8784313725490196</blue>
+                                            <opacity>1</opacity>
+                                        </Color>
+                                    </fill>
+                                </Polygon>
+                                <Polygon points="417.091,315.232,408.033,310.393,407.867,300.563,417.091,304.743">
+                                    <opacity>1</opacity>
+                                    <fill>
+                                        <Color>
+                                            <red>0.38823529411764707</red>
+                                            <green>0.38823529411764707</green>
+                                            <blue>0.38823529411764707</blue>
+                                            <opacity>1</opacity>
+                                        </Color>
+                                    </fill>
+                                </Polygon>
+                                <SVGPath content="M420.964,276.297c-11.823,0-21.439,9.617-21.439,21.438c0,11.821,9.616,21.439,21.439,21.439   c11.821,0,21.438-9.618,21.438-21.439C442.402,285.913,432.785,276.297,420.964,276.297L420.964,276.297z M420.964,321.736   c-13.233,0-24.002-10.767-24.002-24c0-13.233,10.769-24,24.002-24c13.235,0,24.001,10.765,24.001,24   C444.965,310.969,434.199,321.736,420.964,321.736z">
+                                    <opacity>1</opacity>
+                                    <fill>
+                                        <Color>
+                                            <red>1</red>
+                                            <green>1</green>
+                                            <blue>1</blue>
+                                            <opacity>1</opacity>
+                                        </Color>
+                                    </fill>
+                                </SVGPath>
+                                <Group>
+                                    <children>
+                                        <SVGPath content="M425.734,310.056c0-4.957,4.02-8.977,8.974-8.977c4.957,0,8.977,4.02,8.977,8.977s-4.02,8.976-8.977,8.976    C429.753,319.032,425.734,315.013,425.734,310.056z">
+                                            <opacity>1</opacity>
+                                            <fill>
+                                                <Color>
+                                                    <red>0.8588235294117647</red>
+                                                    <green>0.050980392156862744</green>
+                                                    <blue>0.08627450980392157</blue>
+                                                    <opacity>1</opacity>
+                                                </Color>
+                                            </fill>
+                                        </SVGPath>
+                                        <Rectangle height="1.791" width="10.626" x="429.395" y="309.161">
+                                            <opacity>1</opacity>
+                                            <fill>
+                                                <Color>
+                                                    <red>1</red>
+                                                    <green>1</green>
+                                                    <blue>1</blue>
+                                                    <opacity>1</opacity>
+                                                </Color>
+                                            </fill>
+                                        </Rectangle>
+                                    </children>
+                                </Group>
+                            </children>
+                        </Group>
+                    </graphic>
+                </Button>
+            </children>
+        </HBox>
+    </center>
+</BorderPane>

@@ -1,0 +1,230 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package celtech.utils.Math;
+
+import javafx.geometry.Point2D;
+import javafx.geometry.Point3D;
+import javafx.scene.Node;
+
+/**
+ *
+ * @author Ian Hudson @ Liberty Systems Limited
+ */
+public class MathUtils
+{
+
+    public static Point3D xAxis = new Point3D(1, 0, 0);
+    public static Point3D yAxis = new Point3D(0, -1, 0);
+    public static Point3D zAxis = new Point3D(0, 0, 1);
+    public static final double HALF_PI = Math.PI / 2;
+    public static final double TWO_PI = Math.PI * 2;
+    public static final double RAD_TO_DEG = 180 / Math.PI;
+    public static final double DEG_TO_RAD = Math.PI / 180;
+
+    public static double invSqrt(double x)
+    {
+        double xhalf = 0.5d * x;
+        long i = Double.doubleToLongBits(x);
+        i = 0x5fe6ec85e7de30daL - (i >> 1);
+        x = Double.longBitsToDouble(i);
+        x = x * (1.5d - xhalf * x * x);
+        return x;
+    }
+
+    public static void matrixRotateNode(Node n, double alf, double bet, double gam)
+    {
+        double A11 = Math.cos(alf) * Math.cos(gam);
+        double A12 = Math.cos(bet) * Math.sin(alf) + Math.cos(alf) * Math.sin(bet) * Math.sin(gam);
+        double A13 = Math.sin(alf) * Math.sin(bet) - Math.cos(alf) * Math.cos(bet) * Math.sin(gam);
+        double A21 = -Math.cos(gam) * Math.sin(alf);
+        double A22 = Math.cos(alf) * Math.cos(bet) - Math.sin(alf) * Math.sin(bet) * Math.sin(gam);
+        double A23 = Math.cos(alf) * Math.sin(bet) + Math.cos(bet) * Math.sin(alf) * Math.sin(gam);
+        double A31 = Math.sin(gam);
+        double A32 = -Math.cos(gam) * Math.sin(bet);
+        double A33 = Math.cos(bet) * Math.cos(gam);
+
+        double d = Math.acos((A11 + A22 + A33 - 1d) / 2d);
+        if (d != 0d)
+        {
+            double den = 2d * Math.sin(d);
+            Point3D p = new Point3D((A32 - A23) / den, (A13 - A31) / den, (A21 - A12) / den);
+            n.setRotationAxis(p);
+            n.setRotate(Math.toDegrees(d));
+        }
+    }
+
+    public static Point3D sphericalToCartesianLocalSpaceAdjusted(PolarCoordinate polarCoordinate)
+    {
+        // This method converts from spherical to cartesian coords with the following special assumptions
+        // 1- the cartesian coordinate system is as per JavaFX - x->right, z->away (into screen), y->down
+        // 2- an azimuth of 0 represents looking from the front - ie straight down the z axis
+        // 3- the output is referenced to 0,0,0
+
+        // Theta - angle from reference plane (elevation) - 0-PI
+        // Phi - angle from x axis - counter clockwise - 0-2PI
+        // x=r cos(theta) cos(phi)
+        // y=r cos(theta) sin(phi)
+        // z=r sin(theta)
+        // Adjust for javafx axes - x->right, y->down, z->up
+        // x=r cos(theta) cos(phi)
+        // z=r cos(theta) sin(phi)
+        // y=- r sin(theta)
+        // 270 is front view - need to adjust so that an input of 0 give this value
+        double azimuthRadians = polarCoordinate.getPhi();
+
+        azimuthRadians -= HALF_PI;
+        azimuthRadians = boundAzimuthRadians(azimuthRadians);
+
+        double newX = polarCoordinate.getRadius() * Math.cos(polarCoordinate.getTheta()) * Math.cos(azimuthRadians);
+        double newZ = polarCoordinate.getRadius() * Math.cos(polarCoordinate.getTheta()) * Math.sin(azimuthRadians);
+        double newY = -polarCoordinate.getRadius() * Math.sin(polarCoordinate.getTheta());
+
+        return new Point3D(newX, newY, newZ);
+    }
+
+    public static PolarCoordinate cartesianToSphericalLocalSpaceAdjusted(Point3D cartesianCoordinate)
+    {
+        // Convert from cartesian to spherical
+        // r= sqrt(x^2 + y^2 + z^2)
+        // theta = arcsin(z/r)
+        // phi = arctan(y/x)
+        //
+        //Adjust for javafx coords
+        // theta = arcsin(-y / r)
+        // phi = arctan(z / x)
+        double r = Math.sqrt((cartesianCoordinate.getX() * cartesianCoordinate.getX())
+                + (cartesianCoordinate.getY() * cartesianCoordinate.getY())
+                + (cartesianCoordinate.getZ() * cartesianCoordinate.getZ()));
+        double theta = Math.asin(-cartesianCoordinate.getY() / r);
+        double phi = Math.atan2(cartesianCoordinate.getZ(), cartesianCoordinate.getX());
+
+        //Adjust for the 0 deg azimuth = front view
+        phi += HALF_PI;
+        phi = boundAzimuthRadians(phi);
+
+        double thetaDeg = Math.toDegrees(theta);
+        double phiDeg = Math.toDegrees(phi);
+
+        return new PolarCoordinate(theta, phi, r);
+    }
+
+    public static Point3D sphericalToCartesianLocalSpaceUnadjusted(PolarCoordinate polarCoordinate)
+    {
+        // This method converts from spherical to cartesian coords with the following special assumptions
+        // 1- the cartesian coordinate system is as per JavaFX - x->right, z->away (into screen), y->down
+        // 2- an azimuth of 0 represents looking from the front - ie straight down the z axis
+        // 3- the output is referenced to 0,0,0
+
+        // Theta - angle from reference plane (elevation) - 0-PI
+        // Phi - angle from x axis - counter clockwise - 0-2PI
+        // x=r cos(theta) cos(phi)
+        // y=r cos(theta) sin(phi)
+        // z=r sin(theta)
+        // Adjust for javafx axes - x->right, y->down, z->up
+        // x=r cos(theta) cos(phi)
+        // z=r cos(theta) sin(phi)
+        // y=- r sin(theta)
+        // 270 is front view - need to adjust so that an input of 0 give this value
+        double azimuthRadians = polarCoordinate.getPhi();
+
+        azimuthRadians = boundAzimuthRadians(azimuthRadians);
+
+        double newX = polarCoordinate.getRadius() * Math.cos(polarCoordinate.getTheta()) * Math.cos(azimuthRadians);
+        double newZ = polarCoordinate.getRadius() * Math.cos(polarCoordinate.getTheta()) * Math.sin(azimuthRadians);
+        double newY = -polarCoordinate.getRadius() * Math.sin(polarCoordinate.getTheta());
+
+        return new Point3D(newX, newY, newZ);
+    }
+
+    public static PolarCoordinate cartesianToSphericalLocalSpaceUnadjusted(Point3D cartesianCoordinate)
+    {
+        // Convert from cartesian to spherical
+        // r= sqrt(x^2 + y^2 + z^2)
+        // theta = arcsin(z/r)
+        // phi = arctan(y/x)
+        //
+        //Adjust for javafx coords
+        // theta = arcsin(-y / r)
+        // phi = arctan(z / x)
+        double r = Math.sqrt((cartesianCoordinate.getX() * cartesianCoordinate.getX())
+                + (cartesianCoordinate.getY() * cartesianCoordinate.getY())
+                + (cartesianCoordinate.getZ() * cartesianCoordinate.getZ()));
+        double theta = Math.asin(-cartesianCoordinate.getY() / r);
+        double phi = Math.atan2(cartesianCoordinate.getZ(), cartesianCoordinate.getX());
+
+        phi = boundAzimuthRadians(phi);
+
+        double thetaDeg = Math.toDegrees(theta);
+        double phiDeg = Math.toDegrees(phi);
+
+        return new PolarCoordinate(theta, phi, r);
+    }
+
+    public static double cartesianToAngleDegreesCWFromTop(double xPos, double yPos)
+    {
+        // Returns an angle assuming the input is relative to a zero centre point
+        // Rotation is clockwise
+        double angle = Math.PI - Math.atan2(xPos, yPos);
+        angle = boundAzimuthRadians(angle);
+        return angle * RAD_TO_DEG;
+    }
+
+    public static Point2D angleDegreesToCartesianCWFromTop(double angle, double radius)
+    {
+        // Returns an angle assuming the input is relative to a zero centre point
+        // Rotation is clockwise
+        
+        angle += Math.PI;
+        double xPos = Math.sin(DEG_TO_RAD * angle) * radius;
+        double yPos = Math.cos(DEG_TO_RAD * angle) * radius;
+
+        return new Point2D(xPos, yPos);
+    }
+
+    public static double cartesianToAngleDegreesCCWFromRight(double xPos, double yPos)
+    {
+        // Returns an angle assuming the input is relative to a zero centre point
+        // Rotation is clockwise
+        double angle = Math.atan2(xPos, yPos);
+        angle -= HALF_PI;
+        angle = boundAzimuthRadians(angle);
+        return angle * RAD_TO_DEG;
+    }
+
+    public static double boundAzimuthRadians(double azimuth)
+    {
+        double outputAzimuth = 0;
+        if (azimuth > TWO_PI)
+        {
+            outputAzimuth = azimuth - TWO_PI;
+        } else if (azimuth < 0)
+        {
+            outputAzimuth = azimuth + TWO_PI;
+        } else
+        {
+            outputAzimuth = azimuth;
+        }
+
+        return outputAzimuth;
+    }
+    
+        public static double boundAzimuthDegrees(double azimuth)
+    {
+        double outputAzimuth = 0;
+        if (azimuth > 360)
+        {
+            outputAzimuth = azimuth - 360;
+        } else if (azimuth < 0)
+        {
+            outputAzimuth = azimuth + 360;
+        } else
+        {
+            outputAzimuth = azimuth;
+        }
+
+        return outputAzimuth;
+    }
+}

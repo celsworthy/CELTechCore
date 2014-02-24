@@ -1,0 +1,58 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package celtech.utils.gcode.representation;
+
+import java.util.ArrayList;
+
+/**
+ *
+ * @author ianhudson
+ */
+public class Layer
+{
+
+    private float zHeight;
+    private ArrayList<CompoundMovement> movements = new ArrayList<>();
+    private int layerNumber = 0;
+
+    public void addMovement(CompoundMovement movement)
+    {
+        movements.add(movement);
+    }
+
+    public ArrayList<CompoundMovement> getMovements()
+    {
+        return movements;
+    }
+
+    public void setLayerNumber(int layerNumber)
+    {
+        this.layerNumber = layerNumber;
+    }
+
+    public int getLayerNumber()
+    {
+        return layerNumber;
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder stringOut = new StringBuilder();
+
+        stringOut.append("There are ");
+        stringOut.append(movements.size());
+        stringOut.append(" moves\n");
+
+        for (CompoundMovement movement : movements)
+        {
+            stringOut.append(movement.toString());
+        }
+
+        stringOut.append("End of layer\n");
+
+        return stringOut.toString();
+    }
+}

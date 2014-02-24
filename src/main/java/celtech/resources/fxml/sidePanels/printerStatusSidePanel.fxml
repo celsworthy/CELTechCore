@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import celtech.coreUI.components.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.shape.*?>
+<?scenebuilder-preview-i18n-resource ../../i18n/LanguageData.properties?>
+<?scenebuilder-stylesheet ../../css/AutoMaker.css?>
+
+<HBox alignment="CENTER" styleClass="background" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.sidePanels.PrinterStatusSidePanelController">
+    <children>
+        <BorderPane id="StatusPanel" prefHeight="-1.0" styleClass="sidePanel">
+            <bottom>
+                <VBox alignment="TOP_CENTER" prefHeight="-1.0" prefWidth="-1.0" />
+            </bottom>
+            <top>
+                <VBox alignment="TOP_CENTER" fillWidth="true" minWidth="360.0" prefWidth="-1.0" BorderPane.alignment="CENTER">
+                    <children>
+                        <ImageView fitHeight="80.0" fitWidth="0.0" pickOnBounds="true" preserveRatio="true" scaleX="1.0" scaleY="1.0" smooth="false">
+                            <image>
+                                <Image url="@../../images/PrinterStatusIndicator.png" />
+                            </image>
+                        </ImageView>
+                        <Separator prefWidth="-1.0" />
+                        <ListView fx:id="printerStatusTable" prefHeight="120.0">
+                        </ListView>
+                        <HBox>
+                            <children>
+                                <Label text="%sidePanel_printerStatus.statusLabel" />
+                                <Label fx:id="printerStatusLabel" text="-" />
+                            </children>
+                        </HBox>
+                        <HBox>
+                            <children>
+                                <Label text="%sidePanel_printerStatus.headStatusLabel" />
+                                <Label fx:id="printHeadLabel" text="-" />
+                            </children>
+                        </HBox>
+                        <HBox>
+                            <children>
+                                <Label text="%sidePanel_printerStatus.filamentStatusLabel" />
+                                <Label fx:id="filamentStatusLabel" text="-" />
+                            </children>
+                        </HBox>
+                        <VBox fx:id="temperatureVBox" fillWidth="true" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" styleClass="sidePanelVBox">
+                            <children>
+                                <Label text="%sidePanel_printerStatus.temperatureStatusLabel" />
+                                <GridPane fx:id="targetTemperatureColumn" alignment="CENTER" gridLinesVisible="true" hgap="5.0" prefWidth="-1.0" vgap="5.0">
+                                    <children>
+                                        <Label styleClass="sidePanelInformationLabel" text="%sidePanel_printerStatus.nozzleLabel" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                            <graphic>
+                                                <Rectangle id="nozzleTempLegend" arcHeight="0.0" arcWidth="0.0" fill="#41cc00" height="10.0" stroke="BLACK" strokeType="INSIDE" width="10.0" />
+                                            </graphic>
+                                        </Label>
+                                        <HBox GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                        <Label fx:id="nozzleTemperatureLabel" styleClass="sidePanelInformationLabel" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                        <Label styleClass="sidePanelInformationLabel" text="%sidePanel_printerStatus.bedLabel" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                                            <graphic>
+                                                <Rectangle id="bedTempLegend" arcHeight="0.0" arcWidth="0.0" height="10.0" stroke="BLACK" strokeType="INSIDE" width="10.0">
+                                                    <fill>
+                                                        <Color blue="0.000" green="0.800" red="0.255" fx:id="x2" />
+                                                    </fill>
+                                                </Rectangle>
+                                            </graphic>
+                                        </Label>
+                                        <Label fx:id="bedTemperatureLabel" styleClass="sidePanelInformationLabel" text="-" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                        <Label fx:id="ambientTemperatureLabel" styleClass="sidePanelInformationLabel" text="-" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                        <Label id="ambientTempLegend" styleClass="sidePanelInformationLabel" text="%sidePanel_printerStatus.ambientLabel" GridPane.columnIndex="0" GridPane.rowIndex="3">
+                                            <graphic>
+                                                <Rectangle id="ambientTempLegend" arcHeight="0.0" arcWidth="0.0" fill="$x2" height="10.0" stroke="BLACK" strokeType="INSIDE" width="10.0" />
+                                            </graphic>
+                                        </Label>
+                                        <HBox id="HBox" fx:id="targetNozzleTempHBox" alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                                            <children>
+                                                <RestrictedTextField fx:id="nozzleTargetTemperature" maxLength="4" prefWidth="60.0" restrict="0-9" />
+                                                <Label text="%misc.degrees" />
+                                            </children>
+                                        </HBox>
+                                        <HBox id="HBox" fx:id="nozzleHeaterHBox" alignment="CENTER" spacing="5.0" GridPane.columnIndex="3" GridPane.rowIndex="1">
+                                            <children>
+                                                <ToggleButton fx:id="nozzleHeaterOff" text="%misc.Off">
+                                                    <toggleGroup>
+                                                        <ToggleGroup fx:id="nozzleHeaterControlGroup" />
+                                                    </toggleGroup> 
+                                                </ToggleButton>
+                                                <ToggleButton fx:id="nozzleHeaterOn" text="%misc.On" toggleGroup="$nozzleHeaterControlGroup" /> 
+                                            </children>
+                                        </HBox>
+                                        <HBox id="HBox" fx:id="targetBedTempHBox" alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                                            <children>
+                                                <RestrictedTextField fx:id="bedTargetTemperature" maxLength="50" prefHeight="20.0" prefWidth="60.0" restrict="0-9">
+                                                </RestrictedTextField>
+                                                <Label text="%misc.degrees" />
+                                            </children>
+                                        </HBox>
+                                        <HBox id="HBox" fx:id="bedHeaterHBox" alignment="CENTER" spacing="5.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
+                                            <children>
+                                                <ToggleButton fx:id="bedHeaterOff" text="%misc.Off">
+                                                    <toggleGroup>
+                                                        <ToggleGroup fx:id="bedHeaterControlGroup" />
+                                                    </toggleGroup> 
+                                                </ToggleButton>
+                                                <ToggleButton fx:id="bedHeaterOn" text="%misc.On" toggleGroup="$bedHeaterControlGroup" /> 
+                                            </children>
+                                        </HBox>
+                                        <HBox id="HBox" fx:id="targetAmbientTempHBox" alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                                            <children>
+                                                <RestrictedTextField fx:id="ambientTargetTemperature" maxHeight="20.0" maxLength="50" prefWidth="60.0" restrict="0-9" HBox.hgrow="NEVER">
+                                                </RestrictedTextField>
+                                                <Label text="%misc.degrees" />
+                                            </children>
+                                        </HBox>
+                                        <Label text="%sidePanel_settings.currentTemperature" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                        <Label fx:id="targetTempLabel" alignment="CENTER" text="%sidePanel_settings.targetTemperature" textAlignment="LEFT" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                                        <Label fx:id="heaterStatusLabel" alignment="CENTER" text="%sidePanel_settings.heaters" textAlignment="LEFT" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+                                    </children>
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="NEVER" />
+                                        <ColumnConstraints hgrow="NEVER" />
+                                        <ColumnConstraints fillWidth="false" hgrow="NEVER" />
+                                        <ColumnConstraints />
+                                    </columnConstraints>
+                                    <rowConstraints>
+                                        <RowConstraints vgrow="SOMETIMES" />
+                                        <RowConstraints vgrow="SOMETIMES" />
+                                        <RowConstraints vgrow="SOMETIMES" />
+                                        <RowConstraints vgrow="SOMETIMES" />
+                                    </rowConstraints>
+                                </GridPane>
+                                <LineChart fx:id="temperatureChart" alternativeColumnFillVisible="true" alternativeRowFillVisible="true" animated="false" legendVisible="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="300.0" verticalGridLinesVisible="true">
+                                    <xAxis>
+                                        <NumberAxis fx:id="timeAxis" animated="false" autoRanging="false" lowerBound="0.0" side="BOTTOM" tickLabelsVisible="false" tickUnit="30.0" upperBound="190.0" />
+                                    </xAxis>
+                                    <yAxis>
+                                        <NumberAxis id="temperatureGraphTempAxis" fx:id="temperatureAxis" animated="false" autoRanging="false" label="%misc.degreesC" minorTickCount="3" side="LEFT" tickUnit="50.0" upperBound="350.0" />
+                                    </yAxis>
+                                    <padding>
+                                        <Insets left="5.0" right="5.0" />
+                                    </padding>
+                                </LineChart>
+                                <HBox id="HBox" alignment="CENTER_RIGHT" prefWidth="-1.0" spacing="75.0">
+                                    <children>
+                                        <Label text="3 min" HBox.hgrow="NEVER" />
+                                        <Label style="-fx-font-size:14px;" text="Time">
+                                        </Label>
+                                        <Label text="Now" HBox.hgrow="NEVER" />
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+            </top>
+            <opaqueInsets>
+                <Insets />
+            </opaqueInsets>
+            <HBox.margin>
+                <Insets />
+            </HBox.margin>
+            <padding>
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+            </padding>
+        </BorderPane>
+        <fx:include source="printerStatusSlideOutPanel.fxml" />
+    </children>
+</HBox>

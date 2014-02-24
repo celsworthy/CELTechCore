@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.transform.*?>
+<?scenebuilder-preview-i18n-resource ../i18n/LanguageData.properties?>
+<?scenebuilder-stylesheet ../css/AutoMaker.css?>
+
+<AnchorPane id="AnchorPane" prefHeight="-1.0" prefWidth="-1.0" styleClass="modalDialogBackground" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="celtech.coreUI.controllers.PrinterIDDialogController">
+  <children>
+    <VBox alignment="TOP_CENTER" layoutX="0.0" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" AnchorPane.bottomAnchor="10.0">
+      <children>
+        <Label fx:id="dialogTitle" alignment="CENTER" prefWidth="301.0" styleClass="titleText" text="%printerIDDialog.title" />
+        <Label id="dialogMessage" alignment="CENTER" prefHeight="17.0" prefWidth="349.0" styleClass="labelText" text="%printerIDDialog.NameMessage" textAlignment="CENTER" wrapText="true" />
+        <TextField fx:id="roboxNameField" prefWidth="-1.0" VBox.vgrow="NEVER">
+          <VBox.margin>
+            <Insets left="10.0" right="10.0" />
+          </VBox.margin>
+        </TextField>
+        <Label fx:id="dialogMessage" alignment="CENTER" prefHeight="17.0" prefWidth="349.0" styleClass="labelText" text="%printerIDDialog.enterSerialNumber" textAlignment="CENTER" wrapText="true">
+          <VBox.margin>
+            <Insets top="5.0" fx:id="x1" />
+          </VBox.margin>
+        </Label>
+        <TextField id="roboxNameField" fx:id="roboxSerialNumber" prefWidth="-1.0" VBox.vgrow="NEVER">
+          <VBox.margin>
+            <Insets left="10.0" right="10.0" />
+          </VBox.margin>
+        </TextField>
+        <Label id="dialogMessage" alignment="CENTER" prefHeight="17.0" prefWidth="349.0" styleClass="labelText" text="%printerIDDialog.ColourMessage" textAlignment="CENTER" wrapText="true" VBox.margin="$x1" />
+        <ColorPicker fx:id="roboxColourChooser" />
+        <Button fx:id="okButton" mnemonicParsing="false" onMousePressed="#okButtonPressed" text="%printerIDDialog.OK">
+          <VBox.margin>
+            <Insets top="5.0" fx:id="x1" />
+          </VBox.margin>
+        </Button>
+      </children>
+      <padding>
+        <Insets top="3.0" />
+      </padding>
+    </VBox>
+  </children>
+  <padding>
+    <Insets />
+  </padding>
+</AnchorPane>

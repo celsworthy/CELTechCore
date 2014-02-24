@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import celtech.coreUI.components.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?scenebuilder-preview-i18n-resource ../../i18n/LanguageData.properties?>
+<?scenebuilder-stylesheet ../../css/AutoMaker.css?>
+
+<HBox stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.sidePanels.LayoutSidePanelController" styleClass="background" >
+    <children>
+        <BorderPane id="AnchorPane" maxWidth="320.0" minWidth="320.0" prefHeight="-1.0" prefWidth="320.0" >
+            <bottom>
+                <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="20.0" visible="false">
+                    <children>
+                        <Slider id="zslider" blockIncrement="5.0" majorTickUnit="90.0" max="360.0" minorTickCount="2" orientation="VERTICAL" showTickLabels="true" showTickMarks="true" fx:id="xslider" />
+                        <Slider id="zslider" fx:id="yslider" blockIncrement="5.0" majorTickUnit="90.0" max="360.0" minorTickCount="2" orientation="VERTICAL" showTickLabels="true" showTickMarks="true" />
+                        <Slider fx:id="zslider" blockIncrement="5.0" majorTickUnit="90.0" max="360.0" minorTickCount="2" orientation="VERTICAL" showTickLabels="true" showTickMarks="true" />
+                    </children>
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                    </padding>
+                </HBox>
+            </bottom>
+            <top>
+                <VBox alignment="TOP_CENTER" fillWidth="false" prefWidth="-1.0" spacing="0.0">
+                    <children>
+                        <ImageView fitHeight="80.0" fitWidth="0.0" pickOnBounds="true" preserveRatio="true" scaleX="1.0" scaleY="1.0" smooth="false">
+                            <image>
+                                <Image url="@../../images/LayoutIndicator.png" />
+                            </image>
+                            <VBox.margin>
+                                <Insets />
+                            </VBox.margin>
+                        </ImageView>
+                        <Separator prefWidth="310.0" />
+                        <StackPane prefHeight="-1.0" prefWidth="-1.0">
+                            <children>
+                                <VBox id="VBox" fx:id="meshPanel" alignment="CENTER" opacity="1.0" spacing="5.0" visible="true">
+                                    <children>
+                                        <VBox prefHeight="-1.0" prefWidth="-1.0" >
+                                            <children>
+                                                <Label  text="Model data:" />
+                                            </children>
+                                        </VBox>
+                                        <TableView fx:id="modelDataTableView" editable="false" minWidth="-1.0" prefHeight="200.0" prefWidth="-1.0" tableMenuButtonVisible="false" />
+                                        <VBox padding="$x1" prefHeight="-1.0" prefWidth="-1.0" spacing="0.0">
+                                            <children>
+                                                <Separator prefWidth="-1.0" />
+                                                <GridPane fx:id="selectedItemGrid" hgap="5.0" prefHeight="164.0" prefWidth="300.0" vgap="0.0">
+                                                    <children>
+                                                        <GridPane vgap="5.0" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
+                                                            <children>
+                                                                <Label text="X Axis" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                                                <Label text="Y Axis" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                                                <TextField prefWidth="50.0" text="-" GridPane.columnIndex="1" GridPane.rowIndex="0" fx:id="xAxisTextField" />
+                                                                <TextField fx:id="yAxisTextField" prefWidth="50.0" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                            </children>
+                                                            <columnConstraints>
+                                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0" />
+                                                                <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0" prefWidth="70.0" />
+                                                            </columnConstraints>
+                                                            <rowConstraints>
+                                                                <RowConstraints maxHeight="-1.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                <RowConstraints maxHeight="-1.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                <RowConstraints maxHeight="-1.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                            </rowConstraints>
+                                                        </GridPane>
+                                                        <Label  text="%sidePanel_layout.PositionLabel" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                                        <Label  text="%sidePanel_layout.SizeLabel" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                                        <GridPane hgap="5.0" vgap="0.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                                            <children>
+                                                                <Label text="%sidePanel_layout.WidthLabel" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                                                <Label text="%sidePanel_layout.DepthLabel" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                                                <TextField fx:id="widthTextField" prefWidth="50.0" text="-" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                                                <TextField id="lengthTextField" fx:id="depthTextField" prefWidth="50.0" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                                <Label text="mm" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                                                                <Label text="mm" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                                                                <Label text="mm" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                                                                <Label text="%sidePanel_layout.HeightLabel" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                                                <TextField fx:id="heightTextField" prefWidth="50.0" text="-" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                                            </children>
+                                                            <columnConstraints>
+                                                                <ColumnConstraints hgrow="SOMETIMES" maxWidth="39.0" minWidth="10.0" prefWidth="39.0" />
+                                                                <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" maxWidth="57.0" minWidth="10.0" prefWidth="54.0" />
+                                                                <ColumnConstraints hgrow="SOMETIMES" maxWidth="38.0" minWidth="10.0" prefWidth="24.0" />
+                                                            </columnConstraints>
+                                                            <padding>
+                                                                <Insets />
+                                                            </padding>
+                                                            <rowConstraints>
+                                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                            </rowConstraints>
+                                                        </GridPane>
+                                                        <Label  text="%sidePanel_layout.ScaleLabel" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                                        <Label  text="%sidePanel_layout.RotationLabel" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                                        <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                                            <children>
+                                                                <TextField fx:id="rotationTextField" prefWidth="50.0" text="-" />
+                                                                <Label text="º" />
+                                                            </children>
+                                                        </HBox>
+                                                        <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                                            <children>
+                                                                <TextField fx:id="scaleTextField" prefWidth="50.0" text="-" />
+                                                                <Label text="\%" />
+                                                            </children>
+                                                        </HBox>
+                                                    </children>
+                                                    <columnConstraints>
+                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="80.0" />
+                                                        <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                    </columnConstraints>
+                                                    <padding>
+                                                        <Insets left="5.0" right="5.0" fx:id="x1" />
+                                                    </padding>
+                                                    <rowConstraints>
+                                                        <RowConstraints maxHeight="21.0" minHeight="10.0" prefHeight="21.0" vgrow="SOMETIMES" />
+                                                        <RowConstraints maxHeight="81.0" minHeight="10.0" prefHeight="81.0" vgrow="SOMETIMES" />
+                                                        <RowConstraints maxHeight="31.0" minHeight="10.0" prefHeight="31.0" vgrow="SOMETIMES" />
+                                                        <RowConstraints maxHeight="31.0" minHeight="10.0" prefHeight="31.0" vgrow="SOMETIMES" />
+                                                    </rowConstraints>
+                                                </GridPane>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </VBox>
+                                <VBox fx:id="gcodePanel" alignment="TOP_CENTER" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" visible="false">
+                                    <children>
+                                        <Label  text="%gcodeEditor.featureControlTitle">
+                                            <VBox.margin>
+                                                <Insets top="10.0" />
+                                            </VBox.margin>
+                                        </Label>
+                                        <CheckBox fx:id="showTravel" mnemonicParsing="false" selected="true" text="%gcodeEditor.showTravel" />
+                                        <CheckBox fx:id="showSupport" mnemonicParsing="false" selected="true" text="%gcodeEditor.showSupport" />
+                                        <Label  text="%gcodeEditor.layerControlTitle">
+                                            <VBox.margin>
+                                                <Insets top="10.0" />
+                                            </VBox.margin>
+                                        </Label>
+                                        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="70.0">
+                                            <children>
+                                                <VBox alignment="CENTER" prefHeight="-1.0" prefWidth="-1.0" spacing="0.0">
+                                                    <children>
+                                                        <HBox alignment="CENTER" prefHeight="-1.0" prefWidth="-1.0">
+                                                            <children>
+                                                                <Slider fx:id="minLayerSlider" orientation="VERTICAL" />
+                                                                <Label fx:id="minLayerValue" minWidth="-Infinity" prefWidth="25.0" text="Label" />
+                                                            </children>
+                                                        </HBox>
+                                                        <Label text="%gcodeEditor.minimum" />
+                                                    </children>
+                                                </VBox>
+                                                <VBox alignment="CENTER" prefHeight="-1.0" prefWidth="-1.0">
+                                                    <children>
+                                                        <HBox alignment="CENTER" prefHeight="-1.0" prefWidth="-1.0">
+                                                            <children>
+                                                                <Slider fx:id="maxLayerSlider" orientation="VERTICAL" />
+                                                                <Label fx:id="maxLayerValue" minWidth="-Infinity" prefWidth="25.0" text="Label" />
+                                                            </children>
+                                                        </HBox>
+                                                        <Label text="%gcodeEditor.maximum" />
+                                                    </children>
+                                                </VBox>
+                                            </children>
+                                        </HBox>
+                                        <Label text="%gcodeEditor.selectedGCodeElementTitle">
+                                            <VBox.margin>
+                                                <Insets top="10.0" />
+                                            </VBox.margin>
+                                        </Label>
+                                        <VBox fx:id="selectedGCodeBox" prefHeight="-1.0" prefWidth="-1.0" spacing="10.0">
+                                            <children>
+                                                <HBox prefHeight="-1.0" prefWidth="-1.0" spacing="5.0">
+                                                    <children>
+                                                        <Label text="%gcodeEditor.line" />
+                                                        <Label fx:id="gcodeLineNumber" text="" />
+                                                        <Label text="%gcodeEditor.of" />
+                                                        <Label fx:id="totalGCodeLines" text="" />
+                                                    </children>
+                                                </HBox>
+                                                <HBox prefHeight="-1.0" prefWidth="-1.0" spacing="5.0">
+                                                    <children>
+                                                        <Label text="%gcodeEditor.layer" />
+                                                        <Label id="gcodeLineNumber" fx:id="layerNumber" text="" />
+                                                        <Label text="%gcodeEditor.of" />
+                                                        <Label id="totalGCodeLines" fx:id="totalLayers" text="" />
+                                                    </children>
+                                                </HBox>
+                                            </children>
+                                            <padding>
+                                                <Insets left="10.0" right="10.0" />
+                                            </padding>
+                                        </VBox>
+                                    </children>
+                                    <padding>
+                                        <Insets left="5.0" right="5.0" top="20.0" />
+                                    </padding>
+                                </VBox>
+                            </children>
+                            <padding>
+                                <Insets left="5.0" right="5.0" fx:id="x1" />
+                            </padding>
+                        </StackPane>
+                    </children>
+                    <padding>
+                        <Insets bottom="10.0" />
+                    </padding>
+                </VBox>
+            </top>
+        </BorderPane>
+    </children>
+</HBox>

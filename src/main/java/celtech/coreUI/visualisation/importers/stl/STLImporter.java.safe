@@ -1,0 +1,596 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package celtech.coreUI.visualisation.importers.stl;
+
+import celtech.coreUI.visualisation.importers.ModelLoadResult;
+import celtech.configuration.PrintBed;
+import celtech.coreUI.components.ProjectTab;
+import celtech.coreUI.visualisation.ApplicationMaterials;
+import celtech.coreUI.visualisation.importers.FloatArrayList;
+import celtech.coreUI.visualisation.importers.IntegerArrayList;
+import celtech.coreUI.visualisation.importers.MetaTriangle;
+import celtech.modelcontrol.ModelContainer;
+import celtech.services.modelLoader.ModelLoaderTask;
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Scanner;
+import java.util.Set;
+import javafx.beans.property.DoubleProperty;
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Point3D;
+import javafx.scene.shape.CullFace;
+import javafx.scene.shape.MeshView;
+import javafx.scene.shape.TriangleMesh;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
+
+/**
+ *
+ * @author Ian Hudson @ Liberty Systems Limited
+ */
+public class STLImporter
+{
+
+    private final Stenographer steno = StenographerFactory.getStenographer(STLImporter.class.getName());
+    private STLLoadState loadState = STLLoadState.IDLE;
+    private TriangleMesh meshToOutput = null;
+    private ModelLoaderTask parentTask = null;
+    private int vertexGroupCount = 0;
+    private DoubleProperty percentProgressProperty = null;
+    private StringBuilder hashStringHolder = new StringBuilder();
+
+    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, ProjectTab targetProjectTab, DoubleProperty percentProgressProperty)
+    {
+        this.parentTask = parentTask;
+        this.percentProgressProperty = percentProgressProperty;
+        boolean fileIsBinary;
+        boolean modelIsTooLarge = false;
+        File modelFile = new File(modelFileToLoad);
+
+        steno.info("Starting STL load");
+
+        //Note that FileReader is used, not File, since File is not Closeable
+        try
+        {
+            Scanner scanner = new Scanner(new FileReader(modelFile));
+            fileIsBinary = isFileBinary(modelFile);
+            int lineNumber = 1;
+
+            if (!fileIsBinary)
+            {
+                steno.debug("I have an ASCII file");
+            } else
+            {
+                steno.debug("I'm guessing I have a binary file");
+                fileIsBinary = true;
+            }
+
+            try
+            {
+                if (fileIsBinary)
+                {
+                    processBinarySTLData(modelFile);
+
+                } else
+                {
+                    int linesInFile = getLines(modelFile);
+                    ArrayList<MetaTriangle> inputTriangles = new ArrayList<>();
+                    HashMap<Long, Point3D> hashedVertices = new HashMap<>();
+                    Point3D[] facetVertices = new Point3D[3];
+
+                    //first use a Scanner to get each line
+                    int progressPercent = 0;
+                    while (scanner.hasNextLine() && !parentTask.isCancelled())
+                    {
+                        processASCIILine(scanner.nextLine(), inputTriangles, hashedVertices, facetVertices);
+                        lineNumber++;
+
+                        int progressUpdate = (int) (((double) lineNumber / (double) linesInFile) * 100);
+                        if (progressUpdate != progressPercent)
+                        {
+                            progressPercent = progressUpdate;
+                            percentProgressProperty.set(progressPercent);
+                        }
+
+                    }
+
+                    if (!parentTask.isCancelled())
+                    {
+                        meshToOutput = simplifyMesh(inputTriangles, hashedVertices);
+                    }
+                }
+            } catch (STLFileParsingException ex)
+            {
+                steno.error("File parsing exception whilst processing " + modelFile.getName() + " : " + ex + " on line " + lineNumber);
+            } finally
+            {
+                //ensure the underlying stream is always closed
+                //this only has any effect if the item passed to the Scanner
+                //constructor implements Closeable (which it does in this case).
+                scanner.close();
+            }
+
+        } catch (FileNotFoundException ex)
+        {
+            steno.error("Couldn't find or open " + modelFile.getName());
+        }
+
+        steno.info("loaded and processing mesh");
+
+        if (!parentTask.isCancelled())
+        {
+            MeshView meshView = new MeshView();
+
+//            float[] pointArray = meshToOutput.getPoints().toArray(null);
+//            int[] faceArray = meshToOutput.getFaces().toArray(null);
+//
+//            for (int i = 0; i < pointArray.length; i++)
+//            {
+//                steno.info("Point " + i + ":" + pointArray[i]);
+//            }
+//
+//            for (int i = 0; i < faceArray.length; i++)
+//            {
+//                steno.info("Face " + i + ":" + faceArray[i]);
+//            }
+            meshView.setMesh(meshToOutput);
+            meshView.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+            meshView.setCullFace(CullFace.BACK);
+            meshView.setId(modelFile.getName() + "_mesh");
+
+            ModelContainer modelContainer = new ModelContainer(modelFile.getName(), meshView);
+
+            BoundingBox bounds = (BoundingBox) modelContainer.getBoundsInLocal();
+            steno.info("Model bounds are : " + bounds);
+            modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(bounds);
+
+            ModelLoadResult result = new ModelLoadResult(modelIsTooLarge, modelFileToLoad, modelFile.getName(), targetProjectTab, modelContainer);
+            steno.info("Done");
+            return result;
+        } else
+        {
+            return null;
+        }
+    }
+
+    private String quote(String aText)
+    {
+        String QUOTE = "'";
+        return QUOTE + aText + QUOTE;
+    }
+
+    @SuppressWarnings("empty-statement")
+    private int getLines(File aFile)
+    {
+        LineNumberReader reader = null;
+        try
+        {
+            reader = new LineNumberReader(new FileReader(aFile));
+            while ((reader.readLine()) != null);
+            return reader.getLineNumber();
+        } catch (Exception ex)
+        {
+            return -1;
+        } finally
+        {
+            if (reader != null)
+            {
+                try
+                {
+                    reader.close();
+                } catch (IOException ex)
+                {
+                    steno.error("Failed to close file during line number read: " + ex);
+                }
+            }
+        }
+    }
+
+    private boolean isFileBinary(File stlFile)
+    {
+        boolean fileIsBinary = false;
+        BufferedInputStream inputFileStream;
+        ByteBuffer dataBuffer;
+        byte[] facetBytes = new byte[4];     // Holds the number of faces
+
+        try
+        {
+            inputFileStream = new BufferedInputStream(new FileInputStream(stlFile));
+            inputFileStream.mark(4000);
+            byte[] asciiHeaderBytes = new byte[80];
+            int bytesRead = inputFileStream.read(asciiHeaderBytes);
+            String asciiHeader = new String(asciiHeaderBytes, "UTF-8");
+            steno.debug("The header was: " + asciiHeader);
+
+            bytesRead = inputFileStream.read(facetBytes);                      // We get the 4 bytes
+            dataBuffer = ByteBuffer.wrap(facetBytes);   // ByteBuffer for reading correctly the int
+            dataBuffer.order(ByteOrder.nativeOrder());    // Set the right order
+            int numberOfFacets = dataBuffer.getInt();
+
+            int filesize = (numberOfFacets * 50) + 84;
+            inputFileStream.reset();
+
+            if (stlFile.length() == filesize)
+            {
+                fileIsBinary = true;
+            }
+        } catch (IOException ex)
+        {
+            steno.error("Failed to determine whether " + stlFile.getName() + " was binary or ascii." + ex.toString());
+        }
+
+        return fileIsBinary;
+    }
+
+    protected void processBinarySTLData(File stlFile) throws STLFileParsingException
+    {
+        DataInputStream inputFileStream;
+        ByteBuffer dataBuffer;
+        byte[] facetBytes = new byte[4];     // Holds the number of faces
+        byte[] facetData;
+        int progressPercent = 0;
+
+        try
+        {
+            inputFileStream = new DataInputStream(new FileInputStream(stlFile));
+            byte[] asciiHeaderBytes = new byte[80];
+            inputFileStream.read(asciiHeaderBytes);
+            String asciiHeader = new String(asciiHeaderBytes, "UTF-8");
+            steno.debug("The header was: " + asciiHeader);
+
+            inputFileStream.read(facetBytes);                      // We get the 4 bytes
+            dataBuffer = ByteBuffer.wrap(facetBytes);   // ByteBuffer for reading correctly the int
+            dataBuffer.order(ByteOrder.nativeOrder());    // Set the right order
+            int numberOfFacets = dataBuffer.getInt();
+
+            steno.debug("There are " + numberOfFacets + " facets");
+
+            facetData = new byte[50 * numberOfFacets];        // Each face has 50 bytes of data
+            inputFileStream.read(facetData);                         // We get the rest of the file
+            dataBuffer = ByteBuffer.wrap(facetData);      // Now we have all the data in this ByteBuffer
+            dataBuffer.order(ByteOrder.nativeOrder());
+
+            ArrayList<MetaTriangle> inputTriangles = new ArrayList<>();
+            HashMap<Long, Point3D> hashedVertices = new HashMap<>();
+
+            for (int facetNum = 0; facetNum < numberOfFacets; facetNum++)
+            {
+                if (parentTask.isCancelled())
+                {
+                    break;
+                }
+
+                int progressUpdate = (int) (((double) facetNum / (double) numberOfFacets) * 100);
+                if (progressUpdate != progressPercent)
+                {
+                    progressPercent = progressUpdate;
+                    percentProgressProperty.set(progressPercent);
+                }
+                // Read the Normal and place it 3 times (one for each vertex)
+                float inputNormalX, inputNormalY, inputNormalZ;
+                inputNormalX = dataBuffer.getFloat();
+                inputNormalY = dataBuffer.getFloat();
+                inputNormalZ = dataBuffer.getFloat();
+
+                float inputVertexX, inputVertexY, inputVertexZ;
+
+                inputVertexX = dataBuffer.getFloat();
+                inputVertexY = dataBuffer.getFloat();
+                inputVertexZ = dataBuffer.getFloat();
+//                steno.info("Input Vertex " + inputVertexX + ":" + inputVertexY + ":" + inputVertexZ);
+
+                Point3D vertex1 = new Point3D(inputVertexX, -inputVertexZ, inputVertexY);
+//                steno.info("Stored vertex " + vertex1);
+
+//                String vertex1Hash = createVertexHash(vertex1);
+//                hashedVertices.put(vertex1Hash, vertex1);
+                Long vertex1Hash = getHashValue(vertex1);
+                hashedVertices.put(vertex1Hash, vertex1);
+
+//                System.out.println("V1 x" + inputVertexX + " y" + inputVertexY + " z" + inputVertexZ);
+                inputVertexX = dataBuffer.getFloat();
+                inputVertexY = dataBuffer.getFloat();
+                inputVertexZ = dataBuffer.getFloat();
+//                steno.info("Input Vertex " + inputVertexX + ":" + inputVertexY + ":" + inputVertexZ);
+                Point3D vertex2 = new Point3D(inputVertexX, -inputVertexZ, inputVertexY);
+//                steno.info("Stored vertex " + vertex2);
+//                String vertex2Hash = createVertexHash(vertex2);
+//                hashedVertices.put(vertex2Hash, vertex2);
+                Long vertex2Hash = getHashValue(vertex2);
+                hashedVertices.put(vertex2Hash, vertex2);
+
+//                System.out.println("V2 x" + inputVertexX + " y" + inputVertexY + " z" + inputVertexZ);
+                inputVertexX = dataBuffer.getFloat();
+                inputVertexY = dataBuffer.getFloat();
+                inputVertexZ = dataBuffer.getFloat();
+//                 steno.info("Input Vertex " + inputVertexX + ":" + inputVertexY + ":" + inputVertexZ);
+                Point3D vertex3 = new Point3D(inputVertexX, -inputVertexZ, inputVertexY);
+//                steno.info("Stored vertex " + vertex3);
+//                String vertex3Hash = createVertexHash(vertex3);
+//                hashedVertices.put(vertex3Hash, vertex3);
+                Long vertex3Hash = getHashValue(vertex3);
+                hashedVertices.put(vertex3Hash, vertex3);
+
+//                System.out.println("V3 x" + inputVertexX + " y" + inputVertexY + " z" + inputVertexZ);
+                MetaTriangle metaTriangle = new MetaTriangle(vertex1Hash, vertex2Hash, vertex3Hash);
+//                triangle.setNormal(facetNormal);
+
+                inputTriangles.add(metaTriangle);
+
+                // After each facet there are 2 bytes without information
+                // In the last iteration we dont have to skip those bytes..
+                if (facetNum != numberOfFacets - 1)
+                {
+                    dataBuffer.get();
+                    dataBuffer.get();
+                }
+            }
+
+            meshToOutput = simplifyMesh(inputTriangles, hashedVertices);
+
+        } catch (FileNotFoundException ex)
+        {
+            steno.error(ex.toString());
+        } catch (IOException ex)
+        {
+            steno.error(ex.toString());
+        }
+    }
+
+    private long getHashValue(Point3D point)
+    {
+        long result = 0;
+
+        result = ((Double.doubleToLongBits(point.getX()) * 73856093) ^ (Double.doubleToLongBits(point.getY()) * 19349663) ^ (Double.doubleToLongBits(point.getZ()) * 83492791)) % 1000000L;
+        return result;
+    }
+
+    private TriangleMesh simplifyMesh(ArrayList<MetaTriangle> inputTriangles, HashMap<Long, Point3D> hashedVertices)
+    {
+        TriangleMesh triangleMesh = new TriangleMesh();
+
+        steno.info("Started with " + inputTriangles.size() + " triangles");
+        steno.info("Now have " + hashedVertices.size() + " vertices");
+
+        HashMap<Long, Integer> vertexLookupTable = new HashMap<>();
+        float[] outputVertices = new float[hashedVertices.size() * 3];
+        steno.info("About to process vertices");
+
+        Set<Entry<Long, Point3D>> vertexEntries = hashedVertices.entrySet();
+        int vertexCounter = 0;
+        for (Entry<Long, Point3D> vertexEntry : vertexEntries)
+        {
+            Long vertexHash = vertexEntry.getKey();
+            Point3D vertexValue = vertexEntry.getValue();
+
+            outputVertices[vertexCounter * 3] = (float) vertexValue.getX();
+            outputVertices[(vertexCounter * 3) + 1] = (float) vertexValue.getY();
+            outputVertices[(vertexCounter * 3) + 2] = (float) vertexValue.getZ();
+
+            vertexLookupTable.put(vertexHash, vertexCounter);
+            vertexCounter++;
+        }
+
+        steno.info("About to process triangles");
+        IntegerArrayList faces = new IntegerArrayList();
+
+        for (MetaTriangle metaTriangle : inputTriangles)
+        {
+            faces.add(vertexLookupTable.get(metaTriangle.getVertex1Hash()));
+            faces.add(0);
+
+            faces.add(vertexLookupTable.get(metaTriangle.getVertex2Hash()));
+            faces.add(0);
+
+            faces.add(vertexLookupTable.get(metaTriangle.getVertex3Hash()));
+            faces.add(0);
+        }
+
+        steno.info("Setting up buffers");
+
+        FloatArrayList texCoords = new FloatArrayList();
+        texCoords.add(0f);
+        texCoords.add(0f);
+
+        triangleMesh.getPoints().addAll(outputVertices);
+        triangleMesh.getTexCoords().addAll(texCoords.toFloatArray());
+        triangleMesh.getFaces().addAll(faces.toIntArray());
+        int[] smoothingGroups = new int[faces.size() / 6];
+        for (int i = 0; i < smoothingGroups.length; i++)
+        {
+            smoothingGroups[i] = 0;
+        }
+        triangleMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
+
+        steno.info("The mesh contains " + triangleMesh.getPoints().size()
+                + " points, " + triangleMesh.getTexCoords().size() + " tex coords and "
+                + triangleMesh.getFaces().size() + " faces");
+
+        meshToOutput = triangleMesh;
+
+        return triangleMesh;
+    }
+
+    private String createVertexHash(Point3D vertex)
+    {
+
+//        StringBuilder hashString = new StringBuilder();
+        hashStringHolder.setLength(0);
+//        hashStringHolder.append("X");
+        hashStringHolder.append(vertex.getX());
+//        hashStringHolder.append("Y");
+        hashStringHolder.append(vertex.getY());
+//        hashStringHolder.append("Z");
+        hashStringHolder.append(vertex.getZ());
+
+        return hashStringHolder.toString();
+//        return "X" + vertex.getX() + "Y" + vertex.getY() + "Z" + vertex.getZ();
+    }
+
+    protected void processASCIILine(String aLine, ArrayList<MetaTriangle> inputTriangles, HashMap<Long, Point3D> hashedVertices, Point3D[] facetVertices) throws STLFileParsingException
+    {
+        int vertexCounter = 0;
+        //Get rid of the leading and trailing spaces
+        aLine = aLine.trim();
+
+        //use a second Scanner to parse the content of each line 
+        Scanner scanner = new Scanner(aLine);
+        scanner.useDelimiter(" +");
+        if (scanner.hasNext())
+        {
+            /*
+             solid CATIA STL
+             facet normal -3.135569e-002 -9.972335e-001  6.739524e-002
+             outer loop
+             vertex -5.647915e+000 -1.535569e+002  3.085470e+000
+             vertex -7.534769e-012 -1.539431e+002  4.116263e-012
+             vertex -4.773464e+000 -1.533782e+002  6.137561e+000
+             endloop
+             endfacet
+             endsolid CATIA STL
+             */
+            switch (loadState)
+            {
+                case IDLE:
+                    enforceNextStringToken(scanner, "solid", STLLoadState.ASCII_FILE_STARTED);
+                    break;
+
+                case ASCII_FILE_STARTED:
+                    enforceNextStringToken(scanner, "facet", STLLoadState.FACET_STARTED);
+                    enforceNextStringToken(scanner, "normal", STLLoadState.FACET_STARTED);
+                    scanner.nextFloat();
+                    scanner.nextFloat();
+                    scanner.nextFloat();
+                    break;
+                case FACET_ENDED:
+                    if (testNextStringToken(scanner, "endsolid"))
+                    {
+                        loadState = STLLoadState.FILE_ENDED_OK;
+
+                        meshToOutput = simplifyMesh(inputTriangles, hashedVertices);
+                    } else
+                    {
+                        //Store the last facet
+//                        String vertex1Hash = createVertexHash(facetVertices[0]);
+//                        hashedVertices.put(vertex1Hash, facetVertices[0]);
+                        Long vertex1Hash = getHashValue(facetVertices[0]);
+                        hashedVertices.put(vertex1Hash, facetVertices[0]);
+
+//                        String vertex2Hash = createVertexHash(facetVertices[1]);
+//                        hashedVertices.put(vertex2Hash, facetVertices[1]);
+                        Long vertex2Hash = getHashValue(facetVertices[1]);
+                        hashedVertices.put(vertex2Hash, facetVertices[1]);
+
+//                        String vertex3Hash = createVertexHash(facetVertices[2]);
+//                        hashedVertices.put(vertex3Hash, facetVertices[2]);
+                        Long vertex3Hash = getHashValue(facetVertices[2]);
+                        hashedVertices.put(vertex3Hash, facetVertices[2]);
+
+                        MetaTriangle metaTriangle = new MetaTriangle(vertex1Hash, vertex2Hash, vertex3Hash);
+                        inputTriangles.add(metaTriangle);
+
+                        enforceNextStringToken(scanner, "facet", STLLoadState.FACET_STARTED);
+                        enforceNextStringToken(scanner, "normal", STLLoadState.FACET_STARTED);
+                        scanner.nextFloat();
+                        scanner.nextFloat();
+                        scanner.nextFloat();
+                        //Ignore the normals - javafx will calculate them for us
+//                        normalList.add(new Point3D(x, z, -y));
+//                        normalList.add(new Point3D(x, z, -y));
+//                        normalList.add(new Point3D(x, z, -y));
+                    }
+                    break;
+
+                case FACET_STARTED:
+                    enforceNextStringToken(scanner, "outer", STLLoadState.LOOP_STARTED);
+                    break;
+
+                case LOOP_STARTED:
+                    if (testNextStringToken(scanner, "endloop"))
+                    {
+                        if (vertexGroupCount != 3)
+                        {
+                            throw new STLFileParsingException("Loop ended with less than 3 vertices - not a triangle!");
+                        } else
+                        {
+                            loadState = STLLoadState.LOOP_ENDED;
+                        }
+                    } else
+                    {
+
+                        enforceNextStringToken(scanner, "vertex", STLLoadState.LOOP_STARTED);
+
+                        if (vertexGroupCount > 2)
+                        {
+                            throw new STLFileParsingException("Found shape with more than 3 vertices - not a triangle!");
+                        }
+
+                        float vertexX = scanner.nextFloat();
+                        float vertexY = scanner.nextFloat();
+                        float vertexZ = scanner.nextFloat();
+                        Point3D vertex = new Point3D(vertexX, -vertexZ, vertexY);
+                        facetVertices[vertexGroupCount] = vertex;
+                        vertexGroupCount++;
+                        vertexCounter++;
+                    }
+                    break;
+
+                case LOOP_ENDED:
+                    enforceNextStringToken(scanner, "endfacet", STLLoadState.FACET_ENDED);
+                    vertexGroupCount = 0;
+                    break;
+
+                default:
+                    steno.error("unrecognised state");
+                    throw new STLFileParsingException("Parser in unknown state");
+            }
+        } else
+        {
+            steno.warning("Empty or invalid line. Unable to process.");
+        }
+
+        //no need to call scanner.close(), since the source is a String
+    }
+
+    boolean enforceNextStringToken(Scanner scanner, String tokenToFind, STLLoadState nextState) throws STLFileParsingException
+    {
+        boolean tokenPresent = false;
+
+        if (scanner.next().equalsIgnoreCase(tokenToFind))
+        {
+            tokenPresent = true;
+            //log("Got token: " + tokenToFind);
+            loadState = nextState;
+        } else
+        {
+            throw new STLFileParsingException("Error in file - expected " + tokenToFind);
+        }
+        return tokenPresent;
+    }
+
+    boolean testNextStringToken(Scanner scanner, String tokenToFind)
+    {
+        boolean tokenPresent = false;
+
+        if (scanner.hasNext(tokenToFind))
+        {
+            tokenPresent = true;
+            //log("Next token is confirmed as : " + tokenToFind);
+        }
+        return tokenPresent;
+    }
+}
