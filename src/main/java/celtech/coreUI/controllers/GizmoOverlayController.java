@@ -5,15 +5,18 @@
  */
 package celtech.coreUI.controllers;
 
-import celtech.coreUI.visualisation.PolarCamera;
 import celtech.coreUI.visualisation.SelectionContainer;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.coreUI.visualisation.Xform;
 import celtech.coreUI.visualisation.modelDisplay.GizmoMode;
 import celtech.modelcontrol.ModelContainer;
 import celtech.utils.Math.MathUtils;
+import java.awt.AWTException;
+import java.awt.Robot;
+import java.awt.event.InputEvent;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -26,19 +29,18 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Point2D;
-import javafx.scene.CacheHint;
-import javafx.scene.Cursor;
-import javafx.scene.DepthTest;
+import javafx.geometry.Point3D;
 import javafx.scene.Group;
+import javafx.scene.control.Button;
 import javafx.scene.effect.BlurType;
 import javafx.scene.effect.InnerShadow;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Arc;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Path;
+import javafx.scene.shape.SVGPath;
 import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
@@ -58,25 +60,169 @@ public class GizmoOverlayController implements Initializable
     private AnchorPane gizmoGroup;
     
     @FXML
-    private Circle innerCircle;
-    
-    @FXML
-    private Circle outerCircle;
-    
-    @FXML
     private Arc rotationArc;
     
     @FXML
-    private Path xHandle;
+    private Button rotationRing;
     
     @FXML
-    private Path zHandle;
+    private SVGPath rotationPath;
     
     @FXML
-    private Arc xzHandle;
+    private Button xHandleButton;
+    
+    @FXML
+    private Button zHandleButton;
+    
+    @FXML
+    private Button xzHandleButton;
     
     @FXML
     private Text rotationAngleText;
+    
+    private Xform parentXform = null;
+    private AnchorPane base = null;
+    
+    Robot robot = null;
+    
+    @FXML
+    void xHandlePressed(MouseEvent event)
+    {
+                steno.info("got event " + event);
+
+//        xHandleButton.setMouseTransparent(true);
+        
+//        steno.info("got event " + event);
+//        double screenX = event.getScreenX();
+//        double screenY = event.getScreenY();
+//        steno.info("Screen " + screenX + ":" + screenY);
+//        
+//        Point2D baseX = base.screenToLocal(screenX, screenY);
+//        steno.info("Base " + baseX);
+//        
+//        Point3D parentX = parentXform.parentToLocal(baseX.getX(), baseX.getY(), 0);
+//        steno.info("Parent " + parentX);
+
+        
+//        if (xHandleButton.contains(parentX))
+//        {
+//            steno.info("Contained");
+//        }
+//        else
+//        {
+//            steno.info("Not contained");
+//        }
+//        if (viewManager.getDragMode() == false)
+//        {
+//            steno.info("Fired press");
+//            Platform.runLater(new Runnable()
+//            {
+//
+//                @Override
+//                public void run()
+//                {
+//            gizmoGroup.setMouseTransparent(true);
+//            
+//            viewManager.setDragMode(true);
+//            robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+//                }
+//            });
+//        }
+//        viewManager.checkit(event.getScreenX(), event.getScreenY());
+        enterTranslateMode(GizmoMode.XTRANSLATE, event.getScreenX(), event.getScreenY());
+    }
+
+        @FXML
+    void xHandleDragDetected(MouseEvent event)
+    {
+        steno.info("got event " + event);
+//                xHandleButton.startFullDrag();
+    }
+    
+    @FXML
+    void xHandleDragged(MouseEvent event)
+    {
+        steno.info("got event " + event);
+    
+//        robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+
+        translate(event.getScreenX(), event.getScreenY());
+    }
+    
+    @FXML
+    void xHandleReleased(MouseEvent event)
+    {
+        steno.info("got event " + event);
+//        xHandleButton.setMouseTransparent(false);
+//        if (viewManager.getDragMode() == true)
+//        {
+//            steno.info("Fired release");
+//            robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+//            gizmoGroup.setMouseTransparent(false);
+//            viewManager.setDragMode(false);
+//        }
+        exitTranslateMode();
+    }
+    
+    @FXML
+    void zHandlePressed(MouseEvent event)
+    {
+//        enterTranslateMode(GizmoMode.ZTRANSLATE, event.getX(), event.getY());
+    }
+    
+    @FXML
+    void zHandleDragged(MouseEvent event)
+    {
+//        translate(event.getX(), event.getY());
+    }
+    
+    @FXML
+    void zHandleReleased(MouseEvent event)
+    {
+//        exitTranslateMode();
+    }
+    
+    @FXML
+    void xzHandlePressed(MouseEvent event)
+    {
+//        enterTranslateMode(GizmoMode.XZTRANSLATE, event.getX(), event.getY());
+    }
+    
+    @FXML
+    void xzHandleDragged(MouseEvent event)
+    {
+//        translate(event.getX(), event.getY());
+    }
+    
+    @FXML
+    void xzHandleReleased(MouseEvent event)
+    {
+//        exitTranslateMode();
+    }
+    
+    @FXML
+    void rotationRingPressed(MouseEvent event)
+    {
+        Point3D intersectedPoint = event.getPickResult().getIntersectedPoint();
+        enterRotateMode(intersectedPoint.getX(), intersectedPoint.getY());
+    }
+    
+    @FXML
+    void rotationRingDragged(MouseEvent event)
+    {
+        steno.info("Event: X" + event.getSceneX() + ":" + event.getSceneY());
+        if (event.getPickResult().getIntersectedNode() == rotationRing || event.getPickResult().getIntersectedNode() == rotationPath)
+        {
+            Point3D intersectedPoint = event.getPickResult().getIntersectedPoint();
+            rotate(event.isShiftDown(), intersectedPoint.getX(), intersectedPoint.getY());
+        }
+    }
+    
+    @FXML
+    void rotationRingReleased(MouseEvent event)
+    {
+        exitRotateMode();
+    }
     
     private Xform xHandleXform = new Xform();
     private Shape rotationDisc = null;
@@ -89,8 +235,7 @@ public class GizmoOverlayController implements Initializable
     private DoubleProperty rotationTextY = new SimpleDoubleProperty(0);
     private double modelStartingAngle = 0;
     
-    private double translateStartPointX = 0;
-    private double translateStartPointZ = 0;
+    private Point2D translateStartPoint = null;
     private double modelStartingX = 0;
     private double modelStartingZ = 0;
     
@@ -98,22 +243,12 @@ public class GizmoOverlayController implements Initializable
     private ObservableList<ModelContainer> loadedModels = null;
     private SelectionContainer selectionContainer = null;
     
-    private double radius = 0;
+    private double xoffset = 175;
+    private double yoffset = 350;
     private double scaleStartPointY;
     
     private InnerShadow unselectedControlEffect = new InnerShadow(BlurType.THREE_PASS_BOX, Color.BLACK, 10, 0, 0, 0);
     private InnerShadow selectedControlEffect = new InnerShadow(BlurType.THREE_PASS_BOX, Color.BLACK, 10, 0.6, 0, 0);
-    
-    private Color rotationDiscDefaultColour = Color.LIGHTGREY;
-    private Color rotationDiscPressedColour = Color.web("#404040");
-    private Color xArrowDefaultColour = Color.RED;
-    private Color xArrowPressedColour = Color.DARKRED;
-    private Color zArrowDefaultColour = Color.web("#10cc00");
-    private Color zArrowPressedColour = Color.web("#0c9500");
-    private Color rotationArcDefaultColour = Color.web("#99a9ff");
-    private Color rotationArcPressedColour = Color.web("#545d8c");
-    private Color xzArcDefaultColour = Color.web("#7266ff");
-    private Color xzArcPressedColour = Color.web("#3f398d");
 
     /**
      * Initializes the controller class.
@@ -121,30 +256,13 @@ public class GizmoOverlayController implements Initializable
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        radius = outerCircle.getRadius();
-        
-        rotationDisc = Path.subtract(outerCircle, innerCircle);
-        rotationDisc.setFill(rotationDiscDefaultColour);
-        rotationDisc.setTranslateX(radius);
-        rotationDisc.setTranslateY(radius);
-        
-        gizmoGroup.getChildren().removeAll(outerCircle, innerCircle);
-        
-        xHandle.setFill(xArrowDefaultColour);
-        zHandle.setFill(zArrowDefaultColour);
-        xzHandle.setFill(xzArcDefaultColour);
-        rotationArc.setFill(rotationArcDefaultColour);
-        
-//        xHandle.setTranslateX(-radius);
-//        xHandle.setTranslateY(-radius);
-//        xzHandle.setTranslateX(-radius);
-//        xzHandle.setTranslateY(-radius);
-//        zHandle.setTranslateX(-radius);
-//        zHandle.setTranslateY(-radius);
-//        xHandleXform.setTranslate(radius, radius);
-//        xHandleXform.getChildren().addAll(xHandle, xzHandle, zHandle);
-        
-        gizmoGroup.getChildren().add(0, rotationDisc);
+        try
+        {
+            robot = new Robot();
+        } catch (AWTException ex)
+        {
+            steno.error("Error creating robot for gizmo");
+        }
         
         rotationArc.visibleProperty().bind(modeProperty.isEqualTo(GizmoMode.ROTATE));
         rotationArc.setStartAngle(0);
@@ -171,12 +289,12 @@ public class GizmoOverlayController implements Initializable
 //                steno.info("Start " + modelStartingAngle + " delta " + t1.doubleValue());
                 if (selectionContainer.selectedModelsProperty().size() == 1)
                 {
-                    viewManager.rotateSelection(modelStartingAngle + t1.doubleValue());
+                    viewManager.rotateSelection(-modelStartingAngle + t1.doubleValue());
                 } else
                 {
                     steno.info("Rotate val = " + t1.doubleValue() + " last:" + lastRotationSent);
                     double sentValue = t1.doubleValue() - lastRotationSent;
-                    viewManager.rotateSelection(sentValue);
+                    viewManager.rotateSelection(-sentValue);
                     lastRotationSent = t1.doubleValue();
                 }
             }
@@ -191,150 +309,38 @@ public class GizmoOverlayController implements Initializable
         this.viewManager = viewManager;
         this.loadedModels = viewManager.getLoadedModels();
         this.selectionContainer = viewManager.getSelectionContainer();
-        PolarCamera camera = viewManager.getCamera();
         
         rotationAngleText.setVisible(false);
         
         gizmoGroup.visibleProperty().bind(Bindings.isNotEmpty(selectionContainer.selectedModelsProperty()));
         
-        xHandleXform.setRz(camera.getCameraAzimuthRadians() * MathUtils.RAD_TO_DEG);
-        
-        camera.cameraAzimuthRadiansProperty().addListener(new ChangeListener<Number>()
+        viewManager.dragModeProperty().addListener(new ChangeListener<Boolean>()
         {
             @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
             {
-                xHandleXform.setRz(t1.doubleValue() * MathUtils.RAD_TO_DEG);
+                gizmoGroup.setMouseTransparent(false);
             }
         });
         
-        rotationDisc.setOnMousePressed(new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent t)
-            {
-                enterRotateMode(t.getX(), t.getY());
-            }
-        });
-        
-        rotationDisc.setOnMouseDragged(new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent t)
-            {
-                rotate(t.isShiftDown(), t.getX(), t.getY());
-            }
-        });
-        
-        rotationDisc.setOnMouseReleased(new EventHandler<MouseEvent>()
-        {
-            
-            @Override
-            public void handle(MouseEvent t)
-            {
-                exitRotateMode();
-            }
-        });
-        
-        xHandle.setOnMousePressed(new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent t)
-            {
-                enterTranslateMode(GizmoMode.XTRANSLATE, t.getX(), t.getY());
-            }
-        });
-        
-        xHandle.setOnMouseDragged(new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent t)
-            {
-                translate(t.getX(), t.getY());
-            }
-        });
-        
-        xHandle.setOnMouseReleased(new EventHandler<MouseEvent>()
-        {
-            
-            @Override
-            public void handle(MouseEvent t)
-            {
-                exitTranslateMode();
-            }
-        });
-        
-        zHandle.setOnMousePressed(new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent t)
-            {
-                enterTranslateMode(GizmoMode.ZTRANSLATE, t.getX(), t.getY());
-            }
-        });
-        
-        zHandle.setOnMouseDragged(new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent t)
-            {
-                translate(t.getX(), t.getY());
-            }
-        });
-        
-        zHandle.setOnMouseReleased(new EventHandler<MouseEvent>()
-        {
-            
-            @Override
-            public void handle(MouseEvent t)
-            {
-                exitTranslateMode();
-            }
-        });
-        
-        xzHandle.setOnMousePressed(new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent t)
-            {
-                enterTranslateMode(GizmoMode.XZTRANSLATE, t.getX(), t.getY());
-            }
-        });
-        
-        xzHandle.setOnMouseDragged(new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent t)
-            {
-                translate(t.getX(), t.getY());
-            }
-        });
-        
-        xzHandle.setOnMouseReleased(new EventHandler<MouseEvent>()
-        {
-            
-            @Override
-            public void handle(MouseEvent t)
-            {
-                exitTranslateMode();
-            }
-        });
     }
     
     private void enterRotateMode(double xPos, double yPos)
     {
 //        rotationDisc.setEffect(selectedControlEffect);
-        rotationDisc.setFill(rotationDiscPressedColour);
-        viewManager.getSubScene().setCursor(Cursor.HAND);
-        
-        xPos -= radius;
-        yPos -= radius;
+//        viewManager.getSubScene().setCursor(Cursor.HAND);
+
+        steno.info("<<<<<<<<<<<<<<<<<");
+        steno.info("got " + xPos + ":" + yPos);
+        xPos -= xoffset;
+        yPos -= yoffset;
         
         modelStartingAngle = selectionContainer.getRotationX();
         
         modeProperty.set(GizmoMode.ROTATE);
-//        steno.info("got " + xPos + ":" + yPos);
-//        steno.info("Angle " + MathUtils.cartesianToAngleDegreesCWFromTop(xPos, yPos));
+        steno.info(">>>>>>>>>>>>>>>>>");
+        steno.info("got " + xPos + ":" + yPos);
+        steno.info("Angle " + MathUtils.cartesianToAngleDegreesCWFromTop(xPos, yPos));
         rotationStartAngle.set(MathUtils.cartesianToAngleDegreesCWFromTop(xPos, yPos));
         rotationArc.setLength(.01);
         
@@ -350,10 +356,9 @@ public class GizmoOverlayController implements Initializable
     private void exitRotateMode()
     {
         modeProperty.set(GizmoMode.IDLE);
-        rotationDisc.setFill(rotationDiscDefaultColour);
 //        rotationDisc.setEffect(unselectedControlEffect);
-        viewManager.getSubScene().setCursor(Cursor.DEFAULT);
-        
+//        viewManager.getSubScene().setCursor(Cursor.DEFAULT);
+
         rotationAngleText.textProperty().unbind();
         rotationAngleText.setVisible(false);
         
@@ -366,8 +371,8 @@ public class GizmoOverlayController implements Initializable
             rotationAngleText.textProperty().bind(rotationDelta.asString("%.0fº"));
             rotationAngleText.setVisible(true);
             
-            xPos -= radius;
-            yPos -= radius;
+            xPos -= xoffset;
+            yPos -= yoffset;
             
             double newAngle = MathUtils.cartesianToAngleDegreesCWFromTop(xPos, yPos);
             
@@ -380,8 +385,8 @@ public class GizmoOverlayController implements Initializable
             {
                 resultantAngle += 360;
             }
-
-//            steno.info("new " + newAngle + " start " + rotationStartAngle.doubleValue() + " Result " + resultantAngle);
+            
+            steno.info("new " + newAngle + " start " + rotationStartAngle.doubleValue() + " Result " + resultantAngle);
             rotationDelta.set(resultantAngle);
             Point2D newTextPosition = MathUtils.angleDegreesToCartesianCWFromTop(180 - rotationStartAngle.doubleValue() - (rotationDelta.doubleValue() / 2), 50);
             
@@ -396,65 +401,29 @@ public class GizmoOverlayController implements Initializable
         modelStartingX = selectionContainer.getCentreX();
         modelStartingZ = selectionContainer.getCentreZ();
         
-        translateStartPointX = xPos;
-        translateStartPointZ = yPos;
+        translateStartPoint = gizmoGroup.localToScreen(xPos, yPos);
+        steno.info("Got screen coords of " + translateStartPoint);
         
-        viewManager.getSubScene().setCursor(Cursor.HAND);
-        
-        switch (mode)
-        {
-            case XTRANSLATE:
-                xHandle.setFill(xArrowPressedColour);
-//                xHandle.setEffect(selectedControlEffect);
-                break;
-            case ZTRANSLATE:
-                zHandle.setFill(zArrowPressedColour);
-//                zHandle.setEffect(selectedControlEffect);
-                break;
-            case XZTRANSLATE:
-                xzHandle.setFill(xzArcPressedColour);
-//                xzHandle.setEffect(selectedControlEffect);
-                break;
-        }
+//        viewManager.setDragMode(true);
+//        gizmoGroup.setMouseTransparent(true);
+
+//        viewManager.getSubScene().setCursor(Cursor.HAND);
     }
     
     private void exitTranslateMode()
     {
-        viewManager.getSubScene().setCursor(Cursor.DEFAULT);
-        
+//        viewManager.getSubScene().setCursor(Cursor.DEFAULT);
+
         modeProperty.set(GizmoMode.IDLE);
-        xHandle.setFill(xArrowDefaultColour);
-        zHandle.setFill(zArrowDefaultColour);
-        xzHandle.setFill(xzArcDefaultColour);
-//        xHandle.setEffect(unselectedControlEffect);
-//        zHandle.setEffect(unselectedControlEffect);
-//        xzHandle.setEffect(unselectedControlEffect);
     }
     
     private void translate(double xPos, double yPos)
     {
-        double resultantX = 0;
-        double resultantZ = 0;
-        double modifier = 0.1;
-        
-        switch (modeProperty.get())
-        {
-            case XTRANSLATE:
-                resultantX = xPos - translateStartPointX;
-                break;
-            case ZTRANSLATE:
-                resultantZ = translateStartPointZ - yPos;
-                break;
-            case XZTRANSLATE:
-                resultantX = xPos - translateStartPointX;
-                resultantZ = translateStartPointZ - yPos;
-                break;
-        }
-        
-        viewManager.translateSelection(resultantX * modifier, resultantZ * modifier);
-        
-        translateStartPointX = xPos;
-        translateStartPointZ = yPos;
+        Point2D screenCoords = gizmoGroup.localToScreen(xPos, yPos);
+        steno.info("Got screen coords of " + screenCoords);
+
+        viewManager.translateSelectionFromScreenCoords(translateStartPoint, screenCoords);
+        translateStartPoint = screenCoords;
     }
     
     private void enterScaleMode(double xPos, double yPos)
@@ -462,14 +431,14 @@ public class GizmoOverlayController implements Initializable
         modeProperty.set(GizmoMode.SCALE);
         
         scaleStartPointY = yPos;
-        viewManager.getSubScene().setCursor(Cursor.HAND);
+//        viewManager.getSubScene().setCursor(Cursor.HAND);
 //        scaleHandle.setEffect(selectedControlEffect);
     }
     
     private void exitScaleMode()
     {
         modeProperty.set(GizmoMode.IDLE);
-        viewManager.getSubScene().setCursor(Cursor.DEFAULT);
+//        viewManager.getSubScene().setCursor(Cursor.DEFAULT);
 //        scaleHandle.setEffect(unselectedControlEffect);
     }
     
@@ -480,14 +449,30 @@ public class GizmoOverlayController implements Initializable
         
         scaleStartPointY = yPos;
     }
-
-    private void centreChanged()
+    
+    public void wasXHandleHit(double screenX, double screenY)
     {
-//        steno.info("Before " + centreX + ":" + centreZ);
-//
-//        Point2D translate = ringXform.sceneToLocal(newCentre.getX(), newCentre.getY());
-//        steno.info("After " + translate.getX() + " Y" + translate.getY());
-//        me.setTranslateX(newCentre.getX());
-//        me.setTranslateY(newCentre.getY());
+        steno.info(xHandleButton.getBoundsInParent() + ":" + xHandleButton.getBoundsInParent());
+        Point2D groupPoint = xHandleButton.screenToLocal(screenX, screenY);
+//        Point2D scenePoint = gizmoGroup.localToScene(groupPoint);
+//        xHandleButton.c
+        if (xHandleButton.contains(groupPoint))
+        {
+            steno.info("A veritable hit (1)");
+        }
+//        if (xHandleButton.contains(scenePoint))
+//        {
+//            steno.info("A veritable hit (2)");
+//        }
+    }
+
+    public void setXform(Xform gizmoXform)
+    {
+        parentXform = gizmoXform;
+    }
+
+    public void setBase(AnchorPane basePane)
+    {
+        base = basePane;
     }
 }

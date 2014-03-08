@@ -33,7 +33,7 @@
                 </Path>
             </graphic>
         </Button>
-        <Button cacheShape="false" centerShape="false" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" mnemonicParsing="false" onDragDetected="#xHandleDragDetected" onMouseDragged="#xHandleDragged" onMousePressed="#xHandlePressed" onMouseReleased="#xHandleReleased" pickOnBounds="false" scaleShape="false" styleClass="gizmoControlButton" text="Button" translateX="160.0" translateY="140.0" fx:id="xHandleButton">
+        <Button cacheShape="false" centerShape="false" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" mnemonicParsing="false" onMouseDragged="#xHandleDragged" onMousePressed="#xHandlePressed" onMouseReleased="#xHandleReleased" pickOnBounds="false" scaleShape="false" styleClass="gizmoControlButton" text="Button" translateX="160.0" translateY="140.0" fx:id="xHandleButton">
             <graphic>
                 <Path id="xHandle" cacheHint="ROTATE" fill="RED" strokeType="OUTSIDE" strokeWidth="0.0">
                     <elements>

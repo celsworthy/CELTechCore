@@ -15,10 +15,11 @@ import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
 import celtech.coreUI.components.ProjectTab;
-import celtech.coreUI.controllers.LayoutControlsController;
 import celtech.coreUI.controllers.MenuStripController;
+import celtech.coreUI.controllers.PrinterStatusPageController;
 import celtech.coreUI.controllers.sidePanels.LayoutSidePanelController;
 import celtech.coreUI.controllers.sidePanels.SettingsSidePanelController;
+import celtech.coreUI.controllers.sidePanels.SidePanelManager;
 import celtech.coreUI.visualisation.CameraPositionPreset;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
@@ -37,15 +38,16 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
+import javafx.fxml.Initializable;
+import javafx.geometry.Side;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
@@ -67,6 +69,7 @@ import javafx.stage.Stage;
 import libertysystems.configuration.Configuration;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.controlsfx.control.MasterDetailPane;
 
 /**
  *
@@ -94,12 +97,19 @@ public class DisplayManager implements EventHandler<KeyEvent>
     private HBox mainHolder = null;
     private StackPane sidePanelContainer = null;
     private AnchorPane modeSelectionControl = null;
-    private final HashMap<ApplicationMode, SidePanel> sidePanels = new HashMap<>();
+    private final HashMap<ApplicationMode, HBox> sidePanels = new HashMap<>();
+    private final HashMap<ApplicationMode, HBox> slideOutPanels = new HashMap<>();
+    private final MasterDetailPane rhPanel = new MasterDetailPane(Side.LEFT, true);
+    private final HBox emptyHBox = new HBox();
+    private final StackPane slideOutHolder = new StackPane();
+    private final HashMap<ApplicationMode, SidePanelManager> sidePanelControllers = new HashMap<>();
+    private final HashMap<ApplicationMode, Initializable> slideOutControllers = new HashMap<>();
     private static TabPane tabDisplay = null;
     private MenuStripController menuStripController = null;
     private static SingleSelectionModel<Tab> tabDisplaySelectionModel = null;
     private static Tab printerStatusTab = null;
     private static Tab addPageTab = null;
+    private Tab lastLayoutTab = null;
 
     /*
      * Project loading
@@ -205,11 +215,28 @@ public class DisplayManager implements EventHandler<KeyEvent>
         // Remove the existing side panel
         if (oldMode != null)
         {
-            sidePanelContainer.getChildren().remove(sidePanels.get(oldMode).getSidePanelNode());
+            sidePanelContainer.getChildren().remove(sidePanels.get(oldMode));
         }
 
         // Now add the relevant new one...
-        sidePanelContainer.getChildren().add(sidePanels.get(newMode).getSidePanelNode());
+        sidePanelContainer.getChildren().add(sidePanels.get(newMode));
+
+        Node detailNode = slideOutPanels.get(newMode);
+
+        if (detailNode == null)
+        {
+            rhPanel.setShowDetailNode(false);
+        } else
+        {
+            if (slideOutHolder.getChildren().isEmpty() == false)
+            {
+                slideOutHolder.getChildren().remove(0);
+            }
+            HBox slideout = slideOutPanels.get(newMode);
+            slideOutHolder.getChildren().add(slideout);
+            slideOutHolder.setMaxWidth(slideout.getMaxWidth());
+            rhPanel.setShowDetailNode(true);
+        }
 
         if (newMode == ApplicationMode.LAYOUT)
         {
@@ -227,12 +254,19 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 if (tabDisplaySelectionModel.getSelectedItem() instanceof ProjectTab == false)
                 {
                     //Select the second tab (first is always status)
-                    tabDisplaySelectionModel.select(1);
+                    if (lastLayoutTab != null)
+                    {
+                        tabDisplaySelectionModel.select(lastLayoutTab);
+                    } else
+                    {
+                        tabDisplaySelectionModel.select(1);
+                    }
                 }
             }
 
             projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
-            ((LayoutSidePanelController) (sidePanels.get(ApplicationMode.LAYOUT).getSidePanelController())).bindLoadedModels(projectTab.getThreeDViewManager());
+//            ((LayoutSidePanelController) (sidePanels.get(ApplicationMode.LAYOUT).getSidePanelController())).bindLoadedModels(projectTab.getThreeDViewManager());
+            ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).bindLoadedModels(projectTab.getThreeDViewManager());
             menuStripController.bindSelectedModels(projectTab.getSelectionContainer());
         } else if (newMode == ApplicationMode.STATUS)
         {
@@ -269,36 +303,56 @@ public class DisplayManager implements EventHandler<KeyEvent>
         // Load in all of the side panels
         for (ApplicationMode mode : ApplicationMode.values())
         {
-            URL fxmlFileName = getClass().getResource(mode.getSidePanelFXMLName());
-            steno.debug("About to load side panel fxml: " + fxmlFileName);
             try
             {
+                URL fxmlFileName = getClass().getResource(mode.getSidePanelFXMLName());
+                steno.debug("About to load side panel fxml: " + fxmlFileName);
                 FXMLLoader sidePanelLoader = new FXMLLoader(fxmlFileName, i18nBundle);
                 HBox sidePanel = (HBox) sidePanelLoader.load();
-                Object sidePanelController = sidePanelLoader.getController();
+                SidePanelManager sidePanelController = sidePanelLoader.getController();
                 sidePanel.setId(mode.name());
-                sidePanels.put(mode, new SidePanel(sidePanel, sidePanelController));
-            } catch (IOException ex)
+                sidePanels.put(mode, sidePanel);
+                sidePanelControllers.put(mode, sidePanelController);
+            } catch (Exception ex)
             {
+                sidePanels.put(mode, null);
+                sidePanelControllers.put(mode, null);
                 steno.error("Couldn't load side panel for mode:" + mode + ". " + ex);
                 System.out.println("Exception: " + ex.getMessage());
-                ex.printStackTrace();
+            }
+
+            try
+            {
+                URL fxmlSlideOutFileName = getClass().getResource(mode.getSlideOutFXMLName());
+                steno.debug("About to load slideout fxml: " + fxmlSlideOutFileName);
+                FXMLLoader slideOutLoader = new FXMLLoader(fxmlSlideOutFileName, i18nBundle);
+                HBox slideOut = (HBox) slideOutLoader.load();
+                Initializable slideOutController = slideOutLoader.getController();
+                slideOutPanels.put(mode, slideOut);
+                slideOutControllers.put(mode, slideOutController);
+                sidePanelControllers.get(mode).configure(slideOutController);
+            } catch (Exception ex)
+            {
+                slideOutPanels.put(mode, null);
+                slideOutControllers.put(mode, null);
+                steno.error("Couldn't load slideout panel for mode:" + mode + ". " + ex);
+                System.out.println("Exception: " + ex.getMessage());
             }
         }
 
         // Create a place to hang the side panels from
         sidePanelContainer = new StackPane();
-        sidePanelContainer.getStyleClass().add("sidePanelContainer");
         HBox.setHgrow(sidePanelContainer, Priority.NEVER);
 
         mainHolder.getChildren().add(sidePanelContainer);
 
-        VBox rhPanel = new VBox();
         rhPanel.setPrefSize(-1, -1);
+        rhPanel.getStyleClass().add("master-details-pane");
         HBox.setHgrow(rhPanel, Priority.ALWAYS);
         mainHolder.getChildren().add(rhPanel);
 
         // Configure the main display tab pane - just the printer status page to start with
+        VBox tabPaneHolder = new VBox();
         tabDisplay = new TabPane();
         tabDisplay.setPickOnBounds(false);
         tabDisplay.setOnKeyPressed(this);
@@ -311,8 +365,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
         // The printer status tab will always be visible - the page is static
         try
         {
-            Parent printerStatusPage = FXMLLoader.<Parent>load(getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "PrinterStatusPage.fxml"), i18nBundle);
-//            gcodeEntrySlideout = FXMLLoader.<Parent>load(getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "GCodeEntryPanel.fxml"), i18nBundle);
+            FXMLLoader printerStatusPageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "PrinterStatusPage.fxml"), i18nBundle);
+            StackPane printerStatusPage = printerStatusPageLoader.load();
+            PrinterStatusPageController printerStatusPageController = printerStatusPageLoader.getController();
+            printerStatusPageController.configure(tabPaneHolder);
 
             printerStatusTab = new Tab();
             printerStatusTab.setText(i18nBundle.getString("printerStatusTabTitle"));
@@ -331,29 +387,34 @@ public class DisplayManager implements EventHandler<KeyEvent>
             addPageTab.setClosable(false);
             tabDisplay.getTabs().add(addPageTab);
 
-            tabDisplaySelectionModel.selectedItemProperty().addListener((ObservableValue<? extends Tab> ov, Tab t, Tab t1) ->
+            tabDisplaySelectionModel.selectedItemProperty().addListener((ObservableValue<? extends Tab> ov, Tab lastTab, Tab newTab) ->
             {
-                if (t1 == addPageTab)
+                if (newTab == addPageTab)
                 {
                     ProjectTab projectTab = new ProjectTab(instance, tabDisplay.widthProperty(), tabDisplay.heightProperty());
                     tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, projectTab);
                     tabDisplaySelectionModel.select(projectTab);
-                } else if (t1 instanceof ProjectTab)
+                } else if (newTab instanceof ProjectTab)
                 {
                     if (applicationStatus.getMode() != ApplicationMode.LAYOUT)
                     {
                         applicationStatus.setMode(ApplicationMode.LAYOUT);
                     }
 
-                    if (t != t1)
+                    if (lastTab != newTab)
                     {
                         ProjectTab projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
-                        ((LayoutSidePanelController) (sidePanels.get(ApplicationMode.LAYOUT).getSidePanelController())).bindLoadedModels(projectTab.getThreeDViewManager());
+                        ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).bindLoadedModels(projectTab.getThreeDViewManager());
                         menuStripController.bindSelectedModels(projectTab.getSelectionContainer());
-                        ((SettingsSidePanelController) (sidePanels.get(ApplicationMode.SETTINGS).getSidePanelController())).bindLoadedModels(projectTab.getProject());
+//                        ((SettingsSidePanelController) (sidePanels.get(ApplicationMode.SETTINGS).getSidePanelController())).bindLoadedModels(projectTab.getProject());
+//                        ((SettingsSidePanelController) (sidePanelControllers.get(ApplicationMode.SETTINGS))).bindLoadedModels(projectTab.getProject());
                     }
                 } else
                 {
+                    if (lastTab instanceof ProjectTab)
+                    {
+                        lastLayoutTab = lastTab;
+                    }
                     //Must have clicked on the status tab
                     if (applicationStatus.getMode() != ApplicationMode.STATUS)
                     {
@@ -362,8 +423,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 }
             });
 
-            rhPanel.getChildren().add(tabDisplay);
-
+            tabPaneHolder.getChildren().add(tabDisplay);
         } catch (IOException ex)
         {
             steno.error("Failed to load printer status page:" + ex);
@@ -373,6 +433,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
         {
             switchPagesForMode(oldMode, newMode);
         });
+
+        rhPanel.setMasterNode(tabPaneHolder);
+        rhPanel.setDetailNode(slideOutHolder);
 
         applicationStatus.setMode(ApplicationMode.STATUS);
 
@@ -384,7 +447,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             menuStripController = menuStripLoader.getController();
             menuStripControls.prefWidthProperty().bind(rhPanel.widthProperty());
             VBox.setVgrow(menuStripControls, Priority.NEVER);
-            rhPanel.getChildren().add(menuStripControls);
+            tabPaneHolder.getChildren().add(menuStripControls);
         } catch (IOException ex)
         {
             steno.error("Failed to load menu strip controls:" + ex);
@@ -394,14 +457,11 @@ public class DisplayManager implements EventHandler<KeyEvent>
         projectFileChooser.getExtensionFilters()
                 .addAll(
                         new FileChooser.ExtensionFilter(i18nBundle.getString("dialogs.projectFileChooserDescription"), "*." + ApplicationConfiguration.projectFileExtension));
-        projectFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getProjectDirectory()));
 
         projectLoader = new ProjectLoader();
 
         scene = new Scene(root, ApplicationConfiguration.DEFAULT_WIDTH, ApplicationConfiguration.DEFAULT_HEIGHT);
 
-//        scene.getStylesheets()
-//                .add(ApplicationConfiguration.mainCSSFile);
         scene.getStylesheets()
                 .add("/celtech/resources/css/JMetroDarkTheme.css");
 
@@ -413,6 +473,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
         mainStage.setScene(scene);
 
         loadProjectsAtStartup();
+
+        root.layout();
     }
 
     public static Stage getMainStage()
@@ -425,9 +487,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
         return i18nBundle;
     }
 
-    /*
-    
-     */
     private void addGCode(Group gCodeParts)
     {
 //        viewControl.addGCodeParts(gCodeParts);
@@ -627,26 +686,21 @@ public class DisplayManager implements EventHandler<KeyEvent>
             }
         }
     }
-    
+
     public VBox getSidePanelSlideOutHandle(ApplicationMode mode)
     {
-         return sidePanels.get(mode).getSlideOutContainer();         
-    }
+        HBox slideOut = slideOutPanels.get(mode);
 
-    public void showAdvancedStatusPanel(boolean showPanel)
-    {
-//        if (showPanel)
-//        {
-//            if (statusSubContainer.getChildren().contains(supplementaryStatusControlContainer) == false)
-//            {
-//                statusSubContainer.getChildren().add(0, supplementaryStatusControlContainer);
-//            }
-//        } else
-//        {
-//            if (statusSubContainer.getChildren().contains(supplementaryStatusControlContainer) == true)
-//            {
-//                statusSubContainer.getChildren().remove(supplementaryStatusControlContainer);
-//            }
-//        }
+        VBox container = null;
+
+        for (Node subNode : slideOut.getChildren())
+        {
+            if (subNode.getId().equalsIgnoreCase("Container") && subNode instanceof VBox)
+            {
+                container = (VBox) subNode;
+                break;
+            }
+        }
+        return container;
     }
 }

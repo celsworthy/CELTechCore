@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox fx:id="slideout" maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="380.0" styleClass="slideOutPanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.sidePanels.SettingsSlideOutPanelController" >
+    <children>
+        <TabPane fx:id="customTabPane" maxWidth="-1.0" opacity="1.0" tabClosingPolicy="UNAVAILABLE">
+            <tabs>
+                <Tab text="%genericFirstLetterCapitalised.Filament">
+                    <content>
+                        <AnchorPane>
+                            <children>
+                                <fx:include fx:id="materialDetails" source="../utilityPanels/materialDetails.fxml"/>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+                <Tab text="%sidePanel_settings.ExtrusionTabTitle">
+                    <content>
+                        <GridPane>
+                            <columnConstraints>
+                                <ColumnConstraints halignment="RIGHT" percentWidth="60.0" />
+                                <ColumnConstraints percentWidth="40.0" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                            </rowConstraints>
+                            <children>
+                                <Label text="%extrusion.layerHeight" />
+                                <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="1">
+                                    <children>
+                                        <TextField id="unretractLength" fx:id="layerHeight" prefWidth="50.0" GridPane.columnIndex="1" />
+                                        <Label text="%misc.mm" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="-1.0" text="%extrusion.fillDensity" GridPane.rowIndex="1" />
+                                <TextField id="unretractLength" fx:id="fillDensity" prefColumnCount="5" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                <ChoiceBox id="fillPatternChoiceBox" fx:id="fillPatternChoice" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                </ChoiceBox>
+                                <Label minWidth="-1.0" text="%extrusion.fillPattern" GridPane.rowIndex="2" />
+                                <Label minWidth="-1.0" text="%extrusion.infillEveryN" GridPane.rowIndex="3" />
+                                <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                    <children>
+                                        <TextField id="unretractLength" fx:id="infillEveryN" prefWidth="50.0" />
+                                        <Label minWidth="-1.0" text="%misc.layers" />
+                                    </children>
+                                </HBox>
+                                <TextField id="unretractLength" fx:id="solidLayers" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                <Label minWidth="-1.0" text="%extrusion.solidLayers" textAlignment="RIGHT" wrapText="true" GridPane.rowIndex="4" />
+                                <Label minWidth="-1.0" text="%sidePanel_settings.numberOfPerimeters" GridPane.rowIndex="5" />
+                                <TextField id="unretractLength" fx:id="numberOfPerimeters" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                <CheckBox id="autoUnretract" fx:id="spiralVase" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="%extrusion.spiralVase" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                                <Label minWidth="-1.0" text="%extrusion.brimWidth" GridPane.rowIndex="7" />
+                                <TextField id="unretractLength" fx:id="brimWidth" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                                <Label layoutX="10.0" layoutY="230.0" minWidth="-1.0" text="%extrusion.spiralVase" GridPane.rowIndex="6" />
+                            </children>
+                        </GridPane>
+                    </content>
+                </Tab>
+                <Tab text="%sidePanel_settings.NozzleTab">
+                    <content>
+                        <GridPane id="Content" maxHeight="-1.0">
+                            <children>
+                                <Label text="%extrusion.perimeterNozzle" />
+                                <ChoiceBox fx:id="perimeterNozzleChoice" GridPane.columnIndex="1">
+                                </ChoiceBox>
+                                <Label prefWidth="99.0" text="%extrusion.fillNozzle" GridPane.rowIndex="1" />
+                                <ChoiceBox fx:id="fillNozzleChoice" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                </ChoiceBox>
+                                <Label prefWidth="99.0" text="%extrusion.supportNozzle" GridPane.rowIndex="2" />
+                                <ChoiceBox fx:id="supportNozzleChoice" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                </ChoiceBox>
+                                <ToggleButton fx:id="nozzle1Button" mnemonicParsing="false" selected="true" text="%sidePanel_settings.Nozzle1Title" GridPane.rowIndex="3">
+                                    <toggleGroup>
+                                        <ToggleGroup fx:id="nozzleChoiceGroup" />
+                                    </toggleGroup>
+                                </ToggleButton>
+                                <ToggleButton fx:id="nozzle2Button" mnemonicParsing="false" text="%sidePanel_settings.Nozzle2Title" toggleGroup="$nozzleChoiceGroup" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                <Label minWidth="95.0" text="%nozzle.finishUnretract" GridPane.rowIndex="4" />
+                                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                    <children>
+                                        <TextField id="nozzle1FinishUnretract" fx:id="nozzleFinishUnretract" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                        <Label text="%nozzle.mmAfterStart" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="95.0" text="%nozzle.finishOpen" GridPane.rowIndex="5" />
+                                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                    <children>
+                                        <TextField id="nozzle1FinishOpen" fx:id="nozzleFinishOpen" prefWidth="50.0" />
+                                        <Label text="%nozzle.mmAfterStart" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="95.0" text="%nozzle.startRetract" GridPane.rowIndex="6" />
+                                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                                    <children>
+                                        <TextField id="nozzle1StartRetract" fx:id="nozzleStartRetract" prefWidth="50.0" />
+                                        <Label text="%nozzle.mmBeforeEnd" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="95.0" text="%nozzle.finishRetract" GridPane.rowIndex="7" />
+                                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                                    <children>
+                                        <TextField id="nozzle1FinishRetract" fx:id="nozzleFinishRetract" prefWidth="50.0" />
+                                        <Label text="%nozzle.mmBeforeEnd" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="95.0" text="%nozzle.startClose" GridPane.rowIndex="8" />
+                                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="8">
+                                    <children>
+                                        <TextField id="nozzle1StartClose" fx:id="nozzleStartClose" prefWidth="50.0" />
+                                        <Label text="%nozzle.mmBeforeEnd" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="95.0" text="%nozzle.finishClose" GridPane.rowIndex="9" />
+                                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="9">
+                                    <children>
+                                        <TextField id="nozzle1FinishClose" fx:id="nozzleFinishClose" prefWidth="50.0" />
+                                        <Label text="%nozzle.mmBeforeEnd" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="95.0" text="%nozzle.partialOpenValue" GridPane.rowIndex="10" />
+                                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="10">
+                                    <children>
+                                        <TextField id="nozzle1FinishClose" fx:id="partialOpenValue" prefWidth="50.0" />
+                                        <Label text="%nozzle.partialOpenValueUnits" />
+                                    </children>
+                                </HBox>
+                            </children>
+                            <columnConstraints>
+                                <ColumnConstraints />
+                                <ColumnConstraints />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                            </rowConstraints>
+                        </GridPane>
+                    </content>
+                </Tab>
+                <Tab text="%sidePanel_settings.RetractTabTitle">
+                    <content>
+                        <GridPane id="Content" hgap="5.0" vgap="5.0">
+                            <children>
+                                <CheckBox fx:id="autoUnretract" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="%extrusion.autoUnretract" GridPane.columnIndex="1" />
+                                <Label minWidth="95.0" text="%extrusion.unretractLength" GridPane.rowIndex="1" />
+                                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                    <children>
+                                        <TextField fx:id="unretractLength" prefWidth="50.0" />
+                                        <Label text="%misc.mm" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="95.0" text="%extrusion.retractLength" GridPane.rowIndex="2" />
+                                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                    <children>
+                                        <TextField fx:id="retractLength" prefWidth="50.0" />
+                                        <Label text="%misc.mm" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="95.0" text="%extrusion.retractSpeed" GridPane.rowIndex="3" />
+                                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                    <children>
+                                        <TextField fx:id="retractSpeed" prefWidth="50.0" />
+                                        <Label text="%misc.mmpersec" />
+                                    </children>
+                                </HBox>
+                                <Label layoutX="10.0" layoutY="41.0" minWidth="95.0" text="%extrusion.autoUnretract" />
+                            </children>
+                            <columnConstraints>
+                                <ColumnConstraints halignment="RIGHT" percentWidth="60.0" />
+                                <ColumnConstraints />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                            </rowConstraints>
+                            <padding>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                            </padding>
+                        </GridPane>
+                    </content>
+                </Tab>
+                <Tab text="%sidePanel_settings.supportTab">
+                    <content>
+                        <GridPane id="Content">
+                            <children>
+                                <CheckBox contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="CheckBox" GridPane.columnIndex="1" />
+                                <Label minWidth="95.0" text="%support.overhangThreshold" GridPane.rowIndex="1" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                    <children>
+                                        <TextField id="retractLength" fx:id="supportOverhangThreshold" prefWidth="50.0" GridPane.columnIndex="1" />
+                                        <Label text="%misc.degrees" GridPane.rowIndex="2" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="95.0" text="%support.forceSupportLayers" textAlignment="RIGHT" wrapText="true" GridPane.rowIndex="2" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                    <children>
+                                        <TextField id="retractLength" fx:id="forcedSupportLayers" prefColumnCount="1" />
+                                        <Label text="%support.layers" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="-1.0" text="%support.supportPattern" GridPane.rowIndex="3" />
+                                <ChoiceBox id="fillPatternChoiceBox" fx:id="supportPattern" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                </ChoiceBox>
+                                <Label minWidth="95.0" text="%support.patternSpacing" GridPane.rowIndex="4" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                    <children>
+                                        <TextField id="retractLength" fx:id="supportPatternSpacing" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                        <Label text="%misc.mm" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="95.0" text="%support.patternAngle" GridPane.rowIndex="5" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                    <children>
+                                        <TextField id="retractLength" fx:id="supportPatternAngle" prefWidth="50.0" />
+                                        <Label text="%misc.degrees" />
+                                    </children>
+                                </HBox>
+                                <Label layoutX="31.0" layoutY="61.0" minWidth="95.0" text="%support.supportEnabled" textAlignment="RIGHT" wrapText="true" />
+                            </children>
+                            <columnConstraints>
+                                <ColumnConstraints halignment="RIGHT" />
+                                <ColumnConstraints />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                            </rowConstraints>
+                        </GridPane>
+                    </content>
+                </Tab>
+                <Tab text="%sidePanel_settings.speedTab">
+                    <content>
+                        <GridPane id="Content" minHeight="0.0" minWidth="0.0">
+                            <children>
+                                <Label minWidth="115.0" text="%speed.perimeters" />
+                                <HBox GridPane.columnIndex="1">
+                                    <children>
+                                        <TextField id="retractLength" fx:id="perimeterSpeed" layoutX="141.0" prefWidth="50.0" GridPane.columnIndex="1" />
+                                        <Label text="%misc.mmpersec" />
+                                    </children>
+                                </HBox>
+                                <Label alignment="TOP_RIGHT" minWidth="115.0" text="%speed.smallPerimeters" GridPane.rowIndex="1" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                    <children>
+                                        <TextField id="retractLength" fx:id="smallPerimeterSpeed" prefWidth="50.0" />
+                                        <Label text="%misc.mmpersec" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="115.0" text="%speed.externalPerimeters" GridPane.rowIndex="2" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                    <children>
+                                        <TextField id="retractLength" fx:id="externalPerimeterSpeed" prefWidth="50.0" />
+                                        <Label text="%misc.mmpersec" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="115.0" text="%speed.infill" GridPane.rowIndex="3" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                    <children>
+                                        <TextField id="retractLength" fx:id="infillSpeed" prefWidth="50.0" />
+                                        <Label text="%misc.mmpersec" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="115.0" text="%speed.solidInfill" GridPane.rowIndex="4" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                    <children>
+                                        <TextField id="retractLength" fx:id="solidInfillSpeed" prefWidth="50.0" />
+                                        <Label text="%misc.mmpersec" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="115.0" text="%speed.topSolidInfill" GridPane.rowIndex="5" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                    <children>
+                                        <TextField id="retractLength" fx:id="topSolidInfillSpeed" prefWidth="50.0" />
+                                        <Label text="%misc.mmpersec" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="115.0" text="%speed.supportMaterial" GridPane.rowIndex="6" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="6">
+                                    <children>
+                                        <TextField id="retractLength" fx:id="supportMaterialSpeed" prefWidth="50.0" />
+                                        <Label text="%misc.mmpersec" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="115.0" text="%speed.bridges" GridPane.rowIndex="7" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="7">
+                                    <children>
+                                        <TextField id="retractLength" fx:id="bridgesSpeed" prefWidth="50.0" />
+                                        <Label text="%misc.mmpersec" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="115.0" text="%speed.gapFill" GridPane.rowIndex="8" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="8">
+                                    <children>
+                                        <TextField id="retractLength" fx:id="gapFillSpeed" prefWidth="50.0" />
+                                        <Label text="%misc.mmpersec" />
+                                    </children>
+                                </HBox>
+                            </children>
+                            <columnConstraints>
+                                <ColumnConstraints halignment="RIGHT" />
+                                <ColumnConstraints />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                            </rowConstraints>
+                        </GridPane>
+                    </content>
+                </Tab>
+                <Tab text="%sidePanel_settings.coolingTabTitle">
+                    <content>
+                        <GridPane id="Content" styleClass="tab-pane">
+                            <children>
+                                <CheckBox id="autoUnretract" fx:id="enableAutoCooling" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="%cooling.enableAutoCooling" GridPane.columnIndex="1" />
+                                <Label styleClass="sidePanelDivider" text="%cooling.fanSettingsTitle" GridPane.rowIndex="1" />
+                                <Label minWidth="-1.0" text="%cooling.enableAutoCooling" />
+                                <Label minWidth="-1.0" text="%cooling.MinimumSpeed" GridPane.rowIndex="2" />
+                                <TextField id="unretractLength" fx:id="minFanSpeed" prefColumnCount="4" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                <Label minWidth="-1.0" text="%cooling.MaximumSpeed" GridPane.rowIndex="3" />
+                                <TextField id="unretractLength" fx:id="maxFanSpeed" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                <Label minWidth="-1.0" text="%cooling.bridgesFanSpeedLabel" GridPane.rowIndex="4" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                    <children>
+                                        <TextField id="unretractLength" fx:id="bridgesFanSpeed" prefWidth="50.0" />
+                                        <Label minWidth="-1.0" text="\%" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="-1.0" text="%cooling.disableFanForFirst" GridPane.rowIndex="5" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                    <children>
+                                        <TextField id="unretractLength" fx:id="disableFanForFirstNLayers" prefWidth="50.0" />
+                                        <Label minWidth="-1.0" text="%misc.layers" />
+                                    </children>
+                                </HBox>
+                                <Label styleClass="sidePanelDivider" text="%cooling.thresholdsTitle" GridPane.rowIndex="6" />
+                                <Label minWidth="-1.0" text="%cooling.enableFanIfPrintTimeBelow" GridPane.rowIndex="7" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="7">
+                                    <children>
+                                        <TextField id="unretractLength" fx:id="enableFanIfLayerTimeBelow" prefWidth="50.0" />
+                                        <Label minWidth="-1.0" text="%misc.secs" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="-1.0" text="%cooling.slowFanIfBelow" GridPane.rowIndex="8" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="8">
+                                    <children>
+                                        <TextField id="unretractLength" fx:id="slowFanIfLayerTimeBelow" prefWidth="50.0" />
+                                        <Label minWidth="-1.0" text="%misc.secs" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="-1.0" text="%cooling.minPrintSpeed" GridPane.rowIndex="9" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="9">
+                                    <children>
+                                        <TextField id="unretractLength" fx:id="minPrintSpeed" prefWidth="50.0" />
+                                        <Label minWidth="-1.0" text="%misc.mmpersec" />
+                                    </children>
+                                </HBox>
+                            </children>
+                            <columnConstraints>
+                                <ColumnConstraints halignment="RIGHT" percentWidth="60.0" />
+                                <ColumnConstraints />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                            </rowConstraints>
+                        </GridPane>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+        <!--<fx:include fx:id="SlideOutHandle" source="SlideOutHandle.fxml" />-->
+    </children>
+</HBox>

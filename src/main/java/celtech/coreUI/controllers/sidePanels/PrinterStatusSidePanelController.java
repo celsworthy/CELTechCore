@@ -9,7 +9,7 @@ import celtech.appManager.ApplicationStatus;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.PrinterStatusListCell;
-import celtech.coreUI.controllers.StatusScreenMode;
+import celtech.coreUI.controllers.SlidablePanel;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.RoboxCommsManager;
@@ -17,50 +17,56 @@ import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Side;
+import javafx.scene.Parent;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.controlsfx.control.MasterDetailPane;
 
 /**
  * FXML Controller class
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class PrinterStatusSidePanelController implements Initializable
+public class PrinterStatusSidePanelController implements Initializable, SidePanelManager
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(PrinterStatusSidePanelController.class.getName());
     private ApplicationStatus applicationStatus = null;
+
+    @FXML
+    private HBox myContainer;
+
+    @FXML
+    private HBox slideout;
+
+    @FXML
+    private PrinterStatusSlideOutPanelController slideoutController;
 
     @FXML
     private ListView printerStatusTable;
@@ -76,9 +82,6 @@ public class PrinterStatusSidePanelController implements Initializable
 
     @FXML
     private TextField bedTargetTemperature;
-
-//    @FXML
-//    private Label doorStatusLabel;
 
     @FXML
     private Label filamentStatusLabel;
@@ -96,6 +99,9 @@ public class PrinterStatusSidePanelController implements Initializable
     private Label printerStatusLabel;
 
     @FXML
+    private HBox printerStatusHBox;
+
+    @FXML
     private VBox temperatureVBox;
 
     @FXML
@@ -106,22 +112,12 @@ public class PrinterStatusSidePanelController implements Initializable
     private HBox targetBedTempHBox;
     @FXML
     private Label heaterStatusLabel;
+
     @FXML
-    private HBox nozzleHeaterHBox;
+    private CheckBox nozzleHeaterCheckBox;
     @FXML
-    private HBox bedHeaterHBox;
-    @FXML
-    private ToggleGroup bedHeaterControlGroup;
-    @FXML
-    private Toggle bedHeaterOn;
-    @FXML
-    private Toggle bedHeaterOff;
-    @FXML
-    private ToggleGroup nozzleHeaterControlGroup;
-    @FXML
-    private Toggle nozzleHeaterOn;
-    @FXML
-    private Toggle nozzleHeaterOff;
+    private CheckBox bedHeaterCheckBox;
+
     @FXML
     private HBox targetAmbientTempHBox;
 
@@ -152,14 +148,16 @@ public class PrinterStatusSidePanelController implements Initializable
     private String headNotAttachedString;
     private String tempOutOfRangeString;
 
+    private PrinterStatusSlideOutPanelController slideOutController = null;
+
     private PrinterIDDialog printerIDDialog = null;
 
     private ChangeListener<Number> targetExtruderTempListener = null;
     private ChangeListener<Number> targetBedTempListener = null;
     private ChangeListener<Number> targetAmbientTempListener = null;
 
-    private ChangeListener<Toggle> nozzleHeaterToggleListener = null;
-    private ChangeListener<Toggle> bedHeaterToggleListener = null;
+    private ChangeListener<Boolean> nozzleHeaterCheckBoxListener = null;
+    private ChangeListener<Boolean> bedHeaterCheckBoxListener = null;
     private ChangeListener<Boolean> bedHeaterStatusListener = null;
     private ChangeListener<Boolean> nozzleHeaterStatusListener = null;
 
@@ -175,7 +173,6 @@ public class PrinterStatusSidePanelController implements Initializable
 
     private ListChangeListener<XYChart.Data<Number, Number>> graphDataPointChangeListener = new ListChangeListener<XYChart.Data<Number, Number>>()
     {
-
         @Override
         public void onChanged(ListChangeListener.Change<? extends XYChart.Data<Number, Number>> change)
         {
@@ -193,6 +190,60 @@ public class PrinterStatusSidePanelController implements Initializable
             }
         }
     };
+
+    @FXML
+    void setNozzleTargetTemp(ActionEvent event)
+    {
+        if (lastSelectedPrinter != null)
+        {
+            try
+            {
+                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.setNozzleTemperature + Integer.valueOf(nozzleTargetTemperature.getText()), false);
+            } catch (NumberFormatException ex)
+            {
+                steno.error("Couldn't translate value to float");
+            } catch (RoboxCommsException ex)
+            {
+                steno.error("Error whilst sending new temperature to printer");
+            }
+        }
+    }
+
+    @FXML
+    void setAmbientTargetTemp(ActionEvent event)
+    {
+        if (lastSelectedPrinter != null)
+        {
+            try
+            {
+                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.setAmbientTemperature + Integer.valueOf(ambientTargetTemperature.getText()), false);
+            } catch (NumberFormatException ex)
+            {
+                steno.error("Couldn't translate value to float");
+            } catch (RoboxCommsException ex)
+            {
+                steno.error("Error whilst sending new temperature to printer");
+            }
+        }
+    }
+
+    @FXML
+    void setBedTargetTemp(ActionEvent event)
+    {
+        if (lastSelectedPrinter != null)
+        {
+            try
+            {
+                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.setBedTemperature + Float.valueOf(bedTargetTemperature.getText()), false);
+            } catch (NumberFormatException ex)
+            {
+                steno.error("Couldn't translate value to float");
+            } catch (RoboxCommsException ex)
+            {
+                steno.error("Error whilst sending new temperature to printer");
+            }
+        }
+    }
 
     /**
      * Initializes the controller class.
@@ -252,7 +303,6 @@ public class PrinterStatusSidePanelController implements Initializable
             }
         }
         );
-
 
         printerStatusTable.setOnMouseClicked(new EventHandler<MouseEvent>()
         {
@@ -345,7 +395,6 @@ public class PrinterStatusSidePanelController implements Initializable
         });
 
 //        statusScreenState.modeProperty().bind(Bindings.when(advancedControlsToggle.selectedProperty().and(printerStatusTableSelectionModel.selectedItemProperty().isNotNull())).then(StatusScreenMode.ADVANCED).otherwise(StatusScreenMode.NORMAL));
-
         targetAmbientTempListener = new ChangeListener<Number>()
         {
             @Override
@@ -386,28 +435,6 @@ public class PrinterStatusSidePanelController implements Initializable
 //        heaterStatusLabel.visibleProperty().bind(advancedControlsToggle.selectedProperty());
 //
 //        targetAmbientTempHBox.visibleProperty().bind(advancedControlsToggle.selectedProperty());
-
-        ambientTargetTemperature.setOnKeyPressed(new EventHandler<KeyEvent>()
-        {
-            @Override
-            public void handle(KeyEvent t)
-            {
-                if (t.getCode() == KeyCode.ENTER && lastSelectedPrinter != null)
-                {
-                    try
-                    {
-                        lastSelectedPrinter.transmitDirectGCode(GCodeConstants.setAmbientTemperature + Integer.valueOf(ambientTargetTemperature.getText()), false);
-                    } catch (NumberFormatException ex)
-                    {
-                        steno.error("Couldn't translate value to float");
-                    } catch (RoboxCommsException ex)
-                    {
-                        steno.error("Error whilst sending new temperature to printer");
-                    }
-                }
-            }
-        });
-
         ambientTargetTemperature.focusedProperty().addListener(new ChangeListener<Boolean>()
         {
 
@@ -423,28 +450,6 @@ public class PrinterStatusSidePanelController implements Initializable
 
 //        targetBedTempHBox.visibleProperty().bind(advancedControlsToggle.selectedProperty());
 //        bedHeaterHBox.visibleProperty().bind(advancedControlsToggle.selectedProperty());
-
-        bedTargetTemperature.setOnKeyPressed(new EventHandler<KeyEvent>()
-        {
-            @Override
-            public void handle(KeyEvent t)
-            {
-                if (t.getCode() == KeyCode.ENTER && lastSelectedPrinter != null)
-                {
-                    try
-                    {
-                        lastSelectedPrinter.transmitDirectGCode(GCodeConstants.setBedTemperature + Float.valueOf(bedTargetTemperature.getText()), false);
-                    } catch (NumberFormatException ex)
-                    {
-                        steno.error("Couldn't translate value to float");
-                    } catch (RoboxCommsException ex)
-                    {
-                        steno.error("Error whilst sending new temperature to printer");
-                    }
-                }
-            }
-        });
-
         bedTargetTemperature.focusedProperty().addListener(new ChangeListener<Boolean>()
         {
 
@@ -458,29 +463,21 @@ public class PrinterStatusSidePanelController implements Initializable
             }
         });
 
-        bedHeaterToggleListener = new ChangeListener<Toggle>()
+        bedHeaterCheckBoxListener = new ChangeListener<Boolean>()
         {
             @Override
-            public void changed(ObservableValue<? extends Toggle> ov, Toggle t, Toggle t1)
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
             {
-
-                if ((t1 == null))
-                {
-                    Platform.runLater(new Runnable()
-                    {
-
-                        public void run()
-                        {
-                            bedHeaterControlGroup.selectToggle(t);
-                        }
-                    });
-                } else if (t1 == bedHeaterOn)
+                if (t1 == true)
                 {
                     try
                     {
                         if (lastSelectedPrinter != null)
                         {
-                            lastSelectedPrinter.transmitDirectGCode(GCodeConstants.setBedTemperatureToTarget, true);
+                            if (lastSelectedPrinter.getBedHeaterOn() == false)
+                            {
+                                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.setBedTemperatureToTarget, false);
+                            }
                         }
                     } catch (RoboxCommsException ex)
                     {
@@ -492,38 +489,34 @@ public class PrinterStatusSidePanelController implements Initializable
                     {
                         if (lastSelectedPrinter != null)
                         {
-                            lastSelectedPrinter.transmitDirectGCode(GCodeConstants.switchBedHeaterOff, true);
+                            if (lastSelectedPrinter.getBedHeaterOn() == true)
+                            {
+                                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.switchBedHeaterOff, false);
+                            }
                         }
                     } catch (RoboxCommsException ex)
                     {
                         steno.error("Error whilst setting bed target temperature");
                     }
                 }
-
             }
         };
 
-        nozzleHeaterToggleListener = new ChangeListener<Toggle>()
+        nozzleHeaterCheckBoxListener = new ChangeListener<Boolean>()
         {
             @Override
-            public void changed(ObservableValue<? extends Toggle> ov, Toggle t, Toggle t1)
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
             {
-                if ((t1 == null))
-                {
-                    Platform.runLater(new Runnable()
-                    {
-                        public void run()
-                        {
-                            nozzleHeaterControlGroup.selectToggle(t);
-                        }
-                    });
-                } else if (t1 == nozzleHeaterOn)
+                if (t1 == true)
                 {
                     try
                     {
                         if (lastSelectedPrinter != null)
                         {
-                            lastSelectedPrinter.transmitDirectGCode(GCodeConstants.setNozzleTemperatureToTarget, true);
+                            if (lastSelectedPrinter.getNozzleHeaterOn() == false)
+                            {
+                                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.setNozzleTemperatureToTarget, false);
+                            }
                         }
                     } catch (RoboxCommsException ex)
                     {
@@ -535,7 +528,10 @@ public class PrinterStatusSidePanelController implements Initializable
                     {
                         if (lastSelectedPrinter != null)
                         {
-                            lastSelectedPrinter.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, true);
+                            if (lastSelectedPrinter.getNozzleHeaterOn() == true)
+                            {
+                                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+                            }
                         }
                     } catch (RoboxCommsException ex)
                     {
@@ -544,42 +540,16 @@ public class PrinterStatusSidePanelController implements Initializable
                 }
             }
         };
-
 //        targetNozzleTempHBox.visibleProperty()
 //                .bind(advancedControlsToggle.selectedProperty());
 //        nozzleHeaterHBox.visibleProperty()
 //                .bind(advancedControlsToggle.selectedProperty());
-
-        nozzleTargetTemperature.setOnKeyPressed(
-                new EventHandler<KeyEvent>()
-                {
-                    @Override
-                    public void handle(KeyEvent t
-                    )
-                    {
-                        if (t.getCode() == KeyCode.ENTER && lastSelectedPrinter != null)
-                        {
-                            try
-                            {
-                                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.setNozzleTemperature + Integer.valueOf(nozzleTargetTemperature.getText()), false);
-                            } catch (NumberFormatException ex)
-                            {
-                                steno.error("Couldn't translate value to float");
-                            } catch (RoboxCommsException ex)
-                            {
-                                steno.error("Error whilst sending new temperature to printer");
-                            }
-                        }
-                    }
-                }
-        );
         nozzleTargetTemperature.focusedProperty()
                 .addListener(new ChangeListener<Boolean>()
                         {
 
                             @Override
-                            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1
-                            )
+                            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
                             {
                                 if (t1.booleanValue() == false && lastSelectedPrinter != null)
                                 {
@@ -601,41 +571,28 @@ public class PrinterStatusSidePanelController implements Initializable
 //                            }
 //                }
 //                );
-
         bedHeaterStatusListener = new ChangeListener<Boolean>()
         {
             @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean oldValue, Boolean newValue)
             {
-                if (t1.booleanValue() == true && t1.booleanValue() == false)
-                {
-                    bedHeaterControlGroup.selectToggle(bedHeaterOn);
-                } else if (t1.booleanValue() == false && t1.booleanValue() == true)
-                {
-                    bedHeaterControlGroup.selectToggle(bedHeaterOff);
-                }
+                bedHeaterCheckBox.setSelected(newValue);
             }
         };
 
         nozzleHeaterStatusListener = new ChangeListener<Boolean>()
         {
             @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean oldValue, Boolean newValue)
             {
-                if (t1.booleanValue() == true && t1.booleanValue() == false)
-                {
-                    nozzleHeaterControlGroup.selectToggle(nozzleHeaterOn);
-                } else if (t1.booleanValue() == false && t1.booleanValue() == true)
-                {
-                    nozzleHeaterControlGroup.selectToggle(nozzleHeaterOff);
-                }
+                nozzleHeaterCheckBox.setSelected(newValue);
             }
         };
 
-        bedHeaterControlGroup.selectedToggleProperty()
-                .addListener(bedHeaterToggleListener);
-        nozzleHeaterControlGroup.selectedToggleProperty()
-                .addListener(nozzleHeaterToggleListener);
+        bedHeaterCheckBox.selectedProperty()
+                .addListener(bedHeaterCheckBoxListener);
+        nozzleHeaterCheckBox.selectedProperty()
+                .addListener(nozzleHeaterCheckBoxListener);
 
     }
 
@@ -709,34 +666,8 @@ public class PrinterStatusSidePanelController implements Initializable
             temperatureChart.getData().add(selectedPrinter.bedTargetTemperatureHistory());
             temperatureChart.getData().add(selectedPrinter.nozzleTargetTemperatureHistory());
 
-            if (selectedPrinter.bedHeaterOnProperty().get() == true)
-            {
-                if (bedHeaterControlGroup.getSelectedToggle() != bedHeaterOn)
-                {
-                    bedHeaterControlGroup.selectToggle(bedHeaterOn);
-                }
-            } else
-            {
-                if (bedHeaterControlGroup.getSelectedToggle() != bedHeaterOff)
-                {
-                    bedHeaterControlGroup.selectToggle(bedHeaterOff);
-                }
-            }
-
-            if (selectedPrinter.nozzleHeaterOnProperty().get() == true)
-            {
-                if (nozzleHeaterControlGroup.getSelectedToggle() != nozzleHeaterOn)
-                {
-                    nozzleHeaterControlGroup.selectToggle(nozzleHeaterOn);
-                }
-            } else
-            {
-                if (nozzleHeaterControlGroup.getSelectedToggle() != nozzleHeaterOff)
-                {
-                    nozzleHeaterControlGroup.selectToggle(nozzleHeaterOff);
-                }
-            }
-
+            bedHeaterCheckBox.setSelected(selectedPrinter.getBedHeaterOn());
+            nozzleHeaterCheckBox.setSelected(selectedPrinter.getNozzleHeaterOn());
             selectedPrinter.bedHeaterOnProperty().addListener(bedHeaterStatusListener);
             selectedPrinter.nozzleHeaterOnProperty().addListener(nozzleHeaterStatusListener);
 
@@ -747,7 +678,15 @@ public class PrinterStatusSidePanelController implements Initializable
     private void controlDetailsVisibility()
     {
         boolean visible = printerStatusList.size() > 0 && !printerStatusTableSelectionModel.isEmpty();
+
+        printerStatusHBox.setVisible(visible);
         temperatureVBox.setVisible(visible);
         temperatureChart.setVisible(visible);
+    }
+
+    @Override
+    public void configure(Initializable slideOutController)
+    {
+        this.slideOutController = (PrinterStatusSlideOutPanelController) slideOutController;
     }
 }

@@ -18,8 +18,10 @@ import javafx.collections.ObservableList;
  */
 public class Head
 {
+
     private StringProperty typeCode = new SimpleStringProperty("");
     private StringProperty friendlyName = new SimpleStringProperty("");
+    private StringProperty uniqueID = new SimpleStringProperty("");
     private FloatProperty maximumTemperature = new SimpleFloatProperty(0);
     private FloatProperty beta = new SimpleFloatProperty(0);
     private FloatProperty tcal = new SimpleFloatProperty(0);
@@ -31,6 +33,7 @@ public class Head
     private FloatProperty nozzle2_Y_offset = new SimpleFloatProperty(0);
     private FloatProperty nozzle2_Z_offset = new SimpleFloatProperty(0);
     private FloatProperty nozzle2_B_offset = new SimpleFloatProperty(0);
+    private FloatProperty headHours = new SimpleFloatProperty(0);
 
     public Head(String typeCode, String friendlyName,
             float maximumTemperature,
@@ -88,6 +91,21 @@ public class Head
     public StringProperty friendlyNameProperty()
     {
         return friendlyName;
+    }
+
+    public void setUniqueID(String value)
+    {
+        uniqueID.set(value);
+    }
+
+    public String getUniqueID()
+    {
+        return uniqueID.get();
+    }
+
+    public StringProperty uniqueIDProperty()
+    {
+        return uniqueID;
     }
 
     public FloatProperty getMaximumTemperatureProperty()
@@ -177,7 +195,7 @@ public class Head
 
     public float getNozzle1_Z_offset()
     {
-        return nozzle1_X_offset.get();
+        return nozzle1_Z_offset.get();
     }
 
     public FloatProperty getNozzle1_B_offsetProperty()
@@ -237,7 +255,7 @@ public class Head
 
     public float getNozzle2_Z_offset()
     {
-        return nozzle2_X_offset.get();
+        return nozzle2_Z_offset.get();
     }
 
     public FloatProperty getNozzle2_B_offsetProperty()
@@ -253,6 +271,21 @@ public class Head
     public float getNozzle2_B_offset()
     {
         return nozzle2_B_offset.get();
+    }
+
+    public FloatProperty getHeadHoursProperty()
+    {
+        return headHours;
+    }
+
+    public void setHeadHours(float value)
+    {
+        headHours.set(value);
+    }
+
+    public float getHeadHours()
+    {
+        return headHours.get();
     }
 
     @Override

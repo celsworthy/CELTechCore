@@ -7,7 +7,9 @@ package celtech.coreUI.visualisation;
 
 import celtech.modelcontrol.ModelContainer;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -31,6 +33,8 @@ public class SelectionContainer
     private final DoubleProperty rotationX = new SimpleDoubleProperty(0);
     private final DoubleProperty rotationY = new SimpleDoubleProperty(0.1);
     private final DoubleProperty rotationZ = new SimpleDoubleProperty(0);
+    private final DoubleProperty screenX = new SimpleDoubleProperty(0);
+    private final DoubleProperty screenY = new SimpleDoubleProperty(0);
     private final ObservableList<ModelContainer> selectedModels = FXCollections.observableArrayList();
 
     public void addSelectedModel(ModelContainer model)
@@ -96,6 +100,36 @@ public class SelectionContainer
     public DoubleProperty centreZProperty()
     {
         return centreZ;
+    }
+
+    public void setScreenX(double value)
+    {
+        screenX.set(value);
+    }
+
+    public double getScreenX()
+    {
+        return screenX.get();
+    }
+
+    public DoubleProperty screenXProperty()
+    {
+        return screenX;
+    }
+
+    public void setScreenY(double value)
+    {
+        screenY.set(value);
+    }
+
+    public double getScreenY()
+    {
+        return screenY.get();
+    }
+
+    public DoubleProperty screenYProperty()
+    {
+        return screenY;
     }
 
     public void setWidth(double value)

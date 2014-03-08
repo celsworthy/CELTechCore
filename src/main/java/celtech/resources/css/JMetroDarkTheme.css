@@ -1,6 +1,29 @@
+*{
+    black: rgb(0,0,0);
+    dark_grey: rgb(45,45,45);
+    mid_grey: rgb(65,65,65);
+    light_grey: rgb(100,100,100);
+    blue_colour: rgb(15%, 65%, 85%);
+    background_colour: rgb(0,0,0);
+    unselected_colour: #1d1d1d;
+    selected_colour: #ffffff;
+    pressed_colour: #ffffff;
+    hover_colour: #5a5a5a;
+    outline_colour: #e2e2e2;
+    unselected_text_colour: #ffffff;
+    selected_text_colour: #000000;
+    gizmoXHandle: #47cc6f;
+    gizmoZHandle: #e06039;
+    gizmoXZHandle: #5d53e4;
+    gizmoRotationHandle: #88c8d3;
+    gizmoXHandle_pressed: #379a55;
+    gizmoZHandle_pressed: #a74c30;
+    gizmoXZHandle_pressed: #554dc9;
+    gizmoRotationHandle_pressed: #53919d;
+}
 
 .background{
-    -fx-background-color: #1d1d1d;
+    -fx-background-color: background_colour;
 }
 
 .label{
@@ -22,6 +45,7 @@
 
 .RestrictedTextField {
     -fx-font-size: 12pt;
+    -fx-pref-column-count: 5;
 }
 
 .SlideOutPanel .circle {
@@ -46,7 +70,7 @@
 
 .button {
     -fx-padding: 5 22 5 22;   
-    -fx-border-color: #e2e2e2;
+    -fx-border-color: outline_colour;
     -fx-border-width: 2;
 
     -fx-background-radius: 0;
@@ -59,13 +83,13 @@
 }
 
 .button:hover{
-    -fx-background-color: #5a5a5a;
+    -fx-background-color: hover_colour;
 }
 
 .button:pressed, .button:default:hover:pressed
 {
-    -fx-background-color: white;
-    -fx-text-fill: #1d1d1d;
+    -fx-background-color: pressed_colour;
+    -fx-text-fill: background_colour;
 }
 
 .button:focused
@@ -94,10 +118,13 @@
     -fx-background-color: #219297;
 }
 
+/*
+ * Borderless button (typically round)
+ */
 .borderlessGraphicButton {
     -fx-padding: 0 0 0 0;
     -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
-    -fx-background-radius: 30;
+    -fx-background-radius: 50;
     -fx-content-display: graphic-only;
     -fx-border-color: transparent;
 }
@@ -108,6 +135,93 @@
 
 .borderlessGraphicButton:pressed .graphic {
     -fx-fill: black;   
+}
+
+/*
+ * Print control arrows - seems to require special settings...?
+ */
+
+.printerControlButton {
+    -fx-background-color: transparent;
+    -fx-padding: -0 -0 -0 -0;
+    -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
+    -fx-background-radius: 20;
+    -fx-font-weight: bold;
+    -fx-font-size: 1.1em;
+    -fx-border-color: transparent;
+    -fx-content-display: graphic-only;
+}
+
+.printerControlButton:hover {
+    -fx-background-color: transparent;
+    -fx-padding: -0 -0 -0 -0;
+    -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
+    -fx-background-radius: 20;
+    -fx-font-weight: bold;
+    -fx-font-size: 1.1em;
+    -fx-effect: dropshadow(three-pass-box, #000000, 10, 0, 0, 0);
+    -fx-border-color: transparent;
+}
+
+.printerControlButton:pressed {
+    -fx-background-color: transparent;
+    -fx-padding: -0 -0 -0 -0;
+    -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
+    -fx-background-radius: 20;
+    -fx-font-weight: bold;
+    -fx-font-size: 1.1em;
+    -fx-effect: innershadow(three-pass-box, #000000, 10, 0, 0, 0);
+    -fx-border-color: transparent;
+}
+
+.gizmoControlButton, .gizmoControlButton:hover, .gizmoControlButton:focused {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    /*-fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;*/
+    /*-fx-background-radius: 0;*/
+    /*-fx-font-weight: bold;*/
+    /*-fx-font-size: 1.1em;*/
+    -fx-border-color: transparent; 
+    -fx-content-display: graphic-only;
+}
+
+.gizmoControlButton:pressed {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-border-color: transparent; 
+    -fx-content-display: graphic-only;
+}
+
+.gizmoControlButton #zHandle {
+    -fx-fill: gizmoZHandle;
+}
+
+.gizmoControlButton #xHandle {
+    -fx-fill: gizmoXHandle;
+}
+
+.gizmoControlButton #xzHandle {
+    -fx-fill: gizmoXZHandle;
+}
+
+.gizmoControlButton #rotationHandle {
+    -fx-fill: gizmoRotationHandle;
+}
+
+.gizmoControlButton:pressed #zHandle {
+    -fx-fill: gizmoZHandle_pressed;
+}
+
+.gizmoControlButton:pressed #xHandle {
+    -fx-fill: gizmoXHandle_pressed;
+}
+
+.gizmoControlButton:pressed #xzHandle {
+    -fx-fill: gizmoXZHandle_pressed;
+}
+
+.gizmoControlButton:pressed #rotationHandle {
+    -fx-fill: gizmoRotationHandle_pressed;
 }
 
 /*******************************************************************************
@@ -715,13 +829,118 @@
 /*
  * Tab pane settings
  */
-
-.tab-pane .tab-header-area .tab-header-background .tab-content-area {
+.tab-pane, .tab-header-background{
     -fx-background-color: black;
-    -fx-background-insets: 0,1,1;
+    /*-fx-border-color: transparent;*/
+}
+
+.tab:hover, .tab:hover .tab-label{
+    -fx-background-color: dark_grey;
+}
+
+.tab:selected, .tab:selected .tab-label{
+    -fx-background-color: blue_colour;
+}
+
+.tab, .tab .tab-label{
+    -fx-background-color: mid_grey;
     -fx-text-fill: white;
 }
 
-.projectTabHeader {
-    -fx-background-color: #000000;
+
+/*
+.tab .tab-label, .tab .nonEditableProjectTab {
+    -fx-background-color: mid_grey;
+    -fx-text-fill: white;
+    -fx-border-color: transparent;
+}
+
+.tab:selected, .tab:selected .tab-label, .tab:selected .nonEditableProjectTab{
+    -fx-background-color: purple;
+    -fx-text-fill: white;
+    -fx-border-color: transparent;
+}
+
+.tab:hover, .tab:hover .tab-label, .tab:hover .nonEditableProjectTab{
+    -fx-background-color: light_grey;
+    -fx-text-fill: black;
+    -fx-border-color: transparent;
+}
+
+.editableProjectTab{
+    -fx-background-color: selected_colour;
+}*/
+
+/*
+ * Sliders
+ */
+.slider .axis:bottom {
+    -fx-tick-label-fill: white;
+    -fx-tick-label-font: 16 "Segoe UI";
+}
+
+
+/*
+ * 3D gizmo
+ */
+
+/*
+ * Panels
+ */
+
+
+
+.menubar{
+    -fx-background-color: black;
+}
+
+.sidePanel{
+    -fx-background-color: mid_grey;
+}
+
+.sidePanelDivider{
+    -fx-background-color: dark_grey;
+    -fx-max-width: 100000;
+}
+
+.sidePanelTitle{
+    -fx-text-fill: blue_colour;
+    -fx-pref-height: 82;
+    -fx-scale-x: 2;
+    -fx-scale-y: 2;
+}
+
+.slideOutPanel{
+    -fx-background-color: mid_grey;
+}
+
+.slideOutPanel GridPane{
+    -fx-vgap: 5;
+    -fx-hgap: 5;
+    -fx-background-color: mid_grey;
+    -fx-padding: 5;
+}
+
+.slideOutPanel AnchorPane{
+    -fx-vgap: 5;
+    -fx-hgap: 5;
+    -fx-background-color: mid_grey;
+    -fx-padding: 5;
+}
+
+.slideOutPanel GridPane HBox{
+    -fx-spacing: 5;
+}
+
+.slideOutPanel GridPane Label{
+    -fx-wrap-text: true;
+    -fx-text-alignment: right;
+}
+
+.slideOutPanel HBox TextField{
+    -fx-pref-width: 45;
+}
+
+.master-details-pane{
+    -fx-border-color: black;
 }

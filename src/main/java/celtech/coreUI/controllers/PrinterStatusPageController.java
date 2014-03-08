@@ -28,6 +28,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -52,7 +53,7 @@ public class PrinterStatusPageController implements Initializable
 
     @FXML
     private StackPane statusPane;
-    
+
     @FXML
     private Button extrudeButton;
 
@@ -443,28 +444,6 @@ public class PrinterStatusPageController implements Initializable
     public void initialize(URL url, ResourceBundle rb)
     {
         statusScreenState = StatusScreenState.getInstance();
-        
-//        statusPane.widthProperty().addListener(new ChangeListener<Number>()
-//        {
-//
-//            @Override
-//            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-//            {
-//                steno.info("Width is " + t1.doubleValue());
-//            }
-//        });
-//        
-//                statusPane.heightProperty().addListener(new ChangeListener<Number>()
-//        {
-//
-//            @Override
-//            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-//            {
-//                steno.info("Height is " + t1.doubleValue());
-//            }
-//        });
-//        printerClosedImage.fitWidthProperty().bind(statusPane.widthProperty());
-//        printerClosedImage.fitHeightProperty().bind(statusPane.heightProperty());
 
         filamentColourListener = new ChangeListener<Filament>()
         {
@@ -629,6 +608,36 @@ public class PrinterStatusPageController implements Initializable
                 }
             }
         });
+    }
+
+    public void configure(VBox parent)
+    {
+
+//        parent.widthProperty().addListener(new ChangeListener<Number>()
+//        {
+//
+//            @Override
+//            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+//            {
+//                steno.info("Width is " + t1.doubleValue());
+//            }
+//        });
+//
+//        parent.heightProperty().addListener(new ChangeListener<Number>()
+//        {
+//
+//            @Override
+//            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+//            {
+//                steno.info("Height is " + t1.doubleValue());
+//            }
+//        });
+        printerClosedImage.fitWidthProperty().bind(parent.widthProperty());
+        printerClosedImage.fitHeightProperty().bind(parent.heightProperty());
+        printerOpenImage.fitWidthProperty().bind(parent.widthProperty());
+        printerOpenImage.fitHeightProperty().bind(parent.heightProperty());
+        printerSilhouette.fitWidthProperty().bind(parent.widthProperty());
+        printerSilhouette.fitHeightProperty().bind(parent.heightProperty());
     }
 
     private void selectNozzle(int nozzleNumber)

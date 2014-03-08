@@ -10,13 +10,10 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectMode;
 import celtech.coreUI.DisplayManager;
-import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.coreUI.visualisation.SelectionContainer;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.Printer;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
@@ -24,11 +21,9 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
@@ -36,10 +31,8 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
@@ -54,7 +47,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class LayoutSidePanelController implements Initializable
+public class LayoutSidePanelController implements Initializable, SidePanelManager
 {
 
     private Stenographer steno = StenographerFactory.getStenographer(LayoutSidePanelController.class.getName());
@@ -62,78 +55,33 @@ public class LayoutSidePanelController implements Initializable
     private ModelContainer boundModel = null;
     private StatusScreenState statusScreenState = null;
 
-    @FXML
-    private Slider xslider;
-    @FXML
-    private Slider yslider;
-    @FXML
-    private Slider zslider;
+     @FXML
+    private TextField widthTextField;
 
     @FXML
     private TextField depthTextField;
 
     @FXML
-    private Label gcodeLineNumber;
-
-    @FXML
-    private Label layerNumber;
-
-    @FXML
-    private Label totalLayers;
-
-    @FXML
-    private VBox gcodePanel;
-
-    @FXML
-    private TextField heightTextField;
-
-    @FXML
-    private Slider maxLayerSlider;
-
-    @FXML
-    private VBox meshPanel;
-
-    @FXML
-    private Slider minLayerSlider;
-
-    @FXML
-    private TableView<ModelContainer> modelDataTableView;
-
-    @FXML
-    private TextField rotationTextField;
-
-    @FXML
-    private TextField scaleTextField;
-
-    @FXML
-    private VBox selectedGCodeBox;
-
-    @FXML
-    private CheckBox showSupport;
-
-    @FXML
-    private CheckBox showTravel;
-
-    @FXML
-    private Label totalGCodeLines;
-
-    @FXML
-    private TextField widthTextField;
+    private VBox selectedItemDetails;
 
     @FXML
     private TextField xAxisTextField;
 
     @FXML
+    private TextField scaleTextField;
+
+    @FXML
+    private TextField heightTextField;
+
+    @FXML
     private TextField yAxisTextField;
 
     @FXML
-    private Label minLayerValue;
+    private TextField rotationTextField;
 
     @FXML
-    private Label maxLayerValue;
+    private TableView<ModelContainer> modelDataTableView;
 
-    @FXML
-    private GridPane selectedItemGrid;
 
     private TableColumn modelNameColumn = new TableColumn();
     private TableColumn scaleColumn = new TableColumn();
@@ -174,36 +122,6 @@ public class LayoutSidePanelController implements Initializable
     public void initialize(URL url, ResourceBundle rb)
     {
         statusScreenState = StatusScreenState.getInstance();
-
-        xslider.valueProperty().addListener(new ChangeListener<Number>()
-        {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                selectionContainer.selectedModelsProperty().get(0).setRotationX(t1.doubleValue());
-            }
-        });
-
-        yslider.valueProperty().addListener(new ChangeListener<Number>()
-        {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                selectionContainer.selectedModelsProperty().get(0).setRotationY(t1.doubleValue());
-            }
-        });
-
-        zslider.valueProperty().addListener(new ChangeListener<Number>()
-        {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                selectionContainer.selectedModelsProperty().get(0).setRotationZ(t1.doubleValue());
-            }
-        });
 
         ResourceBundle languageBundle = DisplayManager.getLanguageBundle();
         String modelNameLabelString = languageBundle.getString("sidePanel_layout.ModelNameLabel");
@@ -380,37 +298,32 @@ public class LayoutSidePanelController implements Initializable
 
         modelDataTableView.getSelectionModel().getSelectedItems().addListener(selectionListener);
 
-        selectionContainerModelsListener = new ListChangeListener<ModelContainer>()
+        selectionContainerModelsListener = (ListChangeListener.Change<? extends ModelContainer> change) ->
         {
-
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends ModelContainer> change)
+            while (change.next())
             {
-                while (change.next())
+                if (change.wasAdded())
                 {
-                    if (change.wasAdded())
+                    for (ModelContainer additem : change.getAddedSubList())
                     {
-                        for (ModelContainer additem : change.getAddedSubList())
-                        {
-                            modelDataTableView.getSelectionModel().select(additem);
-                        }
-                    } else if (change.wasRemoved())
-                    {
-                        for (ModelContainer additem : change.getRemoved())
-                        {
-                            int modelIndex = modelDataTableView.getItems().indexOf(additem);
-                            if (modelIndex != -1)
-                            {
-                                modelDataTableView.getSelectionModel().clearSelection(modelIndex);
-                            }
-                        }
-                    } else if (change.wasReplaced())
-                    {
-                        steno.info("Replaced: ");
-                    } else if (change.wasUpdated())
-                    {
-                        steno.info("Updated: ");
+                        modelDataTableView.getSelectionModel().select(additem);
                     }
+                } else if (change.wasRemoved())
+                {
+                    for (ModelContainer additem : change.getRemoved())
+                    {
+                        int modelIndex = modelDataTableView.getItems().indexOf(additem);
+                        if (modelIndex != -1)
+                        {
+                            modelDataTableView.getSelectionModel().clearSelection(modelIndex);
+                        }
+                    }
+                } else if (change.wasReplaced())
+                {
+                    steno.info("Replaced: ");
+                } else if (change.wasUpdated())
+                {
+                    steno.info("Updated: ");
                 }
             }
         };
@@ -442,6 +355,18 @@ public class LayoutSidePanelController implements Initializable
                 }
         );
 
+        scaleTextField.focusedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                if (newValue == false)
+                {
+                    displayManager.getCurrentlyVisibleViewManager().scaleSelection(Double.valueOf(scaleTextField.getText()) / 100);
+                }
+            }
+        });
+
         rotationTextField.setOnKeyPressed(
                 new EventHandler<KeyEvent>()
                 {
@@ -468,6 +393,18 @@ public class LayoutSidePanelController implements Initializable
                     }
                 }
         );
+
+        rotationTextField.focusedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                if (newValue == false)
+                {
+                    displayManager.getCurrentlyVisibleViewManager().rotateSelection(Double.valueOf(rotationTextField.getText()));
+                }
+            }
+        });
 
         widthTextField.setOnKeyPressed(
                 new EventHandler<KeyEvent>()
@@ -496,6 +433,18 @@ public class LayoutSidePanelController implements Initializable
                 }
         );
 
+        widthTextField.focusedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                if (newValue == false)
+                {
+                    displayManager.getCurrentlyVisibleViewManager().resizeSelectionWidth(Double.valueOf(widthTextField.getText()));
+                }
+            }
+        });
+
         heightTextField.setOnKeyPressed(
                 new EventHandler<KeyEvent>()
                 {
@@ -522,6 +471,18 @@ public class LayoutSidePanelController implements Initializable
                     }
                 }
         );
+
+        heightTextField.focusedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                if (newValue == false)
+                {
+                    displayManager.getCurrentlyVisibleViewManager().resizeSelectionHeight(Double.valueOf(heightTextField.getText()));
+                }
+            }
+        });
 
         depthTextField.setOnKeyPressed(
                 new EventHandler<KeyEvent>()
@@ -550,6 +511,18 @@ public class LayoutSidePanelController implements Initializable
                 }
         );
 
+        depthTextField.focusedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                if (newValue == false)
+                {
+                    displayManager.getCurrentlyVisibleViewManager().resizeSelectionDepth(Double.valueOf(depthTextField.getText()));
+                }
+            }
+        });
+
         xAxisTextField.setOnKeyPressed(
                 new EventHandler<KeyEvent>()
                 {
@@ -576,6 +549,18 @@ public class LayoutSidePanelController implements Initializable
                     }
                 }
         );
+
+        xAxisTextField.focusedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                if (newValue == false)
+                {
+                    displayManager.getCurrentlyVisibleViewManager().translateSelectionXTo(Double.valueOf(xAxisTextField.getText()));
+                }
+            }
+        });
 
         yAxisTextField.setOnKeyPressed(
                 new EventHandler<KeyEvent>()
@@ -604,29 +589,17 @@ public class LayoutSidePanelController implements Initializable
                 }
         );
 
-        showTravel.selectedProperty()
-                .addListener(new ChangeListener<Boolean>()
-                        {
-                            @Override
-                            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1
-                            )
-                            {
-                                boundProject.getLoadedModels().get(0).showTravel(t1.booleanValue());
-                            }
+        yAxisTextField.focusedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                if (newValue == false)
+                {
+                    displayManager.getCurrentlyVisibleViewManager().translateSelectionZTo(Double.valueOf(yAxisTextField.getText()));
                 }
-                );
-
-        showSupport.selectedProperty()
-                .addListener(new ChangeListener<Boolean>()
-                        {
-                            @Override
-                            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1
-                            )
-                            {
-                                boundProject.getLoadedModels().get(0).showSupport(t1.booleanValue());
-                            }
-                }
-                );
+            }
+        });
 
         modelChangeListener = new ListChangeListener<ModelContainer>()
         {
@@ -642,16 +615,6 @@ public class LayoutSidePanelController implements Initializable
                         {
                             boundModel = additem;
                             boundModel = boundProject.getLoadedModels().get(0);
-                            minLayerSlider.maxProperty().bind(boundModel.numberOfLayersProperty());
-                            maxLayerSlider.maxProperty().bind(boundModel.numberOfLayersProperty());
-                            minLayerSlider.valueProperty().set(0);
-                            maxLayerSlider.valueProperty().set(boundModel.numberOfLayersProperty().get());
-                            boundModel.minLayerVisibleProperty().bind(minLayerSlider.valueProperty());
-                            boundModel.maxLayerVisibleProperty().bind(maxLayerSlider.valueProperty());
-                            gcodeLineNumber.textProperty().bind(boundModel.selectedGCodeLineProperty().asString());
-                            totalGCodeLines.textProperty().bind(boundModel.linesOfGCodeProperty().asString());
-                            layerNumber.textProperty().bind(boundModel.currentLayerProperty().asString());
-                            totalLayers.textProperty().bind(boundModel.numberOfLayersProperty().asString());
                         }
                     } else if (change.wasRemoved())
                     {
@@ -713,41 +676,6 @@ public class LayoutSidePanelController implements Initializable
                 yAxisTextField.setText(doubleOneDigitConverter.toString(t1));
             }
         };
-
-        minLayerValue.textProperty()
-                .bind(minLayerSlider.valueProperty().asString("%.0f"));
-        maxLayerValue.textProperty()
-                .bind(maxLayerSlider.valueProperty().asString("%.0f"));
-
-        minLayerSlider.valueProperty()
-                .addListener(new ChangeListener<Number>()
-                        {
-                            @Override
-                            public void changed(ObservableValue<? extends Number> ov, Number oldValue, Number newValue
-                            )
-                            {
-                                if (newValue.doubleValue() >= maxLayerSlider.getValue())
-                                {
-                                    maxLayerSlider.adjustValue(newValue.doubleValue() + 1);
-                                }
-                            }
-                }
-                );
-
-        maxLayerSlider.valueProperty()
-                .addListener(new ChangeListener<Number>()
-                        {
-                            @Override
-                            public void changed(ObservableValue<? extends Number> ov, Number oldValue, Number newValue
-                            )
-                            {
-                                if (newValue.doubleValue() <= minLayerSlider.getValue())
-                                {
-                                    minLayerSlider.adjustValue(newValue.doubleValue() - 1);
-                                }
-                            }
-                }
-                );
     }
 
     public void bindLoadedModels(final ThreeDViewManager viewManager)
@@ -764,7 +692,7 @@ public class LayoutSidePanelController implements Initializable
             selectionContainer.centreZProperty().removeListener(yAxisListener);
             selectionContainer.scaleProperty().removeListener(modelScaleChangeListener);
             selectionContainer.rotationYProperty().removeListener(modelRotationChangeListener);
-            selectedItemGrid.visibleProperty().unbind();
+            selectedItemDetails.visibleProperty().unbind();
         }
 
         selectionContainer = viewManager.getSelectionContainer();
@@ -793,7 +721,7 @@ public class LayoutSidePanelController implements Initializable
             rotationTextField.setText("-");
         }
 
-        selectedItemGrid.visibleProperty().bind(Bindings.isNotEmpty(selectionContainer.selectedModelsProperty()));
+        selectedItemDetails.visibleProperty().bind(Bindings.isNotEmpty(selectionContainer.selectedModelsProperty()));
         selectionContainer.centreXProperty().addListener(xAxisListener);
         selectionContainer.centreZProperty().addListener(yAxisListener);
         selectionContainer.widthProperty().addListener(widthListener);
@@ -804,12 +732,7 @@ public class LayoutSidePanelController implements Initializable
 
         if (boundProject != null)
         {
-            meshPanel.visibleProperty().unbind();
-            gcodePanel.visibleProperty().unbind();
             boundProject.getLoadedModels().removeListener(modelChangeListener);
-            minLayerSlider.maxProperty().unbind();
-            maxLayerSlider.maxProperty().unbind();
-            gcodeLineNumber.textProperty().unbind();
         }
 
         if (boundModel != null)
@@ -819,25 +742,17 @@ public class LayoutSidePanelController implements Initializable
         }
 
         boundProject = displayManager.getCurrentlyVisibleProject();
-        meshPanel.visibleProperty().bind(boundProject.projectModeProperty().isEqualTo(ProjectMode.MESH));
-        gcodePanel.visibleProperty().bind(boundProject.projectModeProperty().isEqualTo(ProjectMode.GCODE));
 
         if (boundProject.getLoadedModels().size() > 0)
         {
             boundModel = boundProject.getLoadedModels().get(0);
-            minLayerSlider.maxProperty().bind(boundModel.numberOfLayersProperty());
-            maxLayerSlider.maxProperty().bind(boundModel.numberOfLayersProperty());
-            minLayerSlider.valueProperty().set(0);
-            maxLayerSlider.valueProperty().set(boundModel.numberOfLayersProperty().get());
-            boundModel.minLayerVisibleProperty().bind(minLayerSlider.valueProperty());
-            boundModel.maxLayerVisibleProperty().bind(maxLayerSlider.valueProperty());
-            gcodeLineNumber.textProperty().bind(boundModel.selectedGCodeLineProperty().asString());
-            totalGCodeLines.textProperty().bind(boundModel.linesOfGCodeProperty().asString());
-            layerNumber.textProperty().bind(boundModel.currentLayerProperty().asString());
-            totalLayers.textProperty().bind(boundModel.numberOfLayersProperty().asString());
         }
 
         boundProject.getLoadedModels().addListener(modelChangeListener);
     }
 
+    @Override
+    public void configure(Initializable slideOutController)
+    {
+    }
 }

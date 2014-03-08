@@ -5,6 +5,9 @@
  */
 package celtech.configuration;
 
+import ca.beq.util.win32.registry.RegistryKey;
+import ca.beq.util.win32.registry.RegistryValue;
+import ca.beq.util.win32.registry.RootKey;
 import celtech.appManager.ProjectMode;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,18 +30,20 @@ import libertysystems.stenographer.StenographerFactory;
 public class ApplicationConfiguration
 {
 
+    private static String applicationName = null;
     public static final String resourcePath = "/celtech/resources/";
     public static final String modelResourcePath = resourcePath + "models/";
     public static final String imageResourcePath = resourcePath + "images/";
     public static final String fxmlResourcePath = resourcePath + "fxml/";
     public static final String fxmlSidePanelResourcePath = resourcePath + "fxml/sidePanels/";
+    public static final String fxmlUtilityPanelResourcePath = resourcePath + "fxml/utilityPanels/";
     public static final String fontResourcePath = resourcePath + "fonts/";
     public static final String cssResourcePath = resourcePath + "css/";
 
     public static final String macroFileExtension = ".gcode";
     public static final String macroFileSubpath = "macros/";
 
-    public static final String mainCSSFile = cssResourcePath + "AutoMaker.css";
+    public static final String mainCSSFile = cssResourcePath + "JMetroDarkTheme.css";
 
     public static final double DEFAULT_WIDTH = 1440;
     public static final double DEFAULT_HEIGHT = 900;
@@ -124,6 +129,33 @@ public class ApplicationConfiguration
         return machineType;
     }
 
+    public static String getApplicationName()
+    {
+        if (configuration == null)
+        {
+            try
+            {
+                configuration = Configuration.getInstance();
+            } catch (ConfigNotLoadedException ex)
+            {
+                steno.error("Couldn't load configuration - the application cannot derive the install directory");
+            }
+        }
+
+        if (configuration != null && applicationName == null)
+        {
+            try
+            {
+                applicationName = configuration.getFilenameString(applicationConfigComponent, "ApplicationName", null);
+                steno.info("Application name = " + applicationName);
+            } catch (ConfigNotLoadedException ex)
+            {
+                steno.error("Couldn't determine application name - the application will not run correctly");
+            }
+        }
+        return applicationName;
+    }
+
     public static String getApplicationInstallDirectory(Class classToCheck)
     {
         if (configuration == null)
@@ -184,15 +216,36 @@ public class ApplicationConfiguration
             }
         }
 
+        String regValueToUse = "Personal";
+
         if (configuration != null && userStorageDirectory == null)
         {
-            try
+            if (getMachineType() == MachineType.WINDOWS)
             {
-                userStorageDirectory = configuration.getFilenameString(applicationConfigComponent, userStorageDirectoryComponent, null);
-                steno.info("User storage directory = " + userStorageDirectory);
-            } catch (ConfigNotLoadedException ex)
+                RegistryKey regKey = new RegistryKey(RootKey.HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders");
+
+                if (regKey.exists())
+                {
+                    if (regKey.hasValue(regValueToUse))
+                    {
+                        RegistryValue value = regKey.getValue(regValueToUse);
+                        userStorageDirectory = value.getStringValue() + "\\" + getApplicationName() + "\\";
+                    }
+                }
+            }
+
+            // Other OSes +
+            // Just in case we're on a windows machine and the lookup failed...
+            if (userStorageDirectory == null)
             {
-                steno.error("Couldn't determine user storage location - the application will not run correctly");
+                try
+                {
+                    userStorageDirectory = configuration.getFilenameString(applicationConfigComponent, userStorageDirectoryComponent, null);
+                    steno.info("User storage directory = " + userStorageDirectory);
+                } catch (ConfigNotLoadedException ex)
+                {
+                    steno.error("Couldn't determine user storage location - the application will not run correctly");
+                }
             }
         }
         return userStorageDirectory;

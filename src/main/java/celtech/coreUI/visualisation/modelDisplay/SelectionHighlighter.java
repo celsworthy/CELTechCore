@@ -14,12 +14,13 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
-import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.DrawMode;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -31,10 +32,13 @@ import libertysystems.stenographer.StenographerFactory;
 public class SelectionHighlighter extends Group
 {
 
+    public static final String idString = "selectionHighlighter";
+    public static final String scaleHandleString = "scaleHandle";
     private final Stenographer steno = StenographerFactory.getStenographer(SelectionHighlighter.class.getName());
     private ApplicationStatus applicationStatus = null;
 
     private final PhongMaterial greenMaterial = new PhongMaterial(Color.LIMEGREEN);
+    private final PhongMaterial selectedMaterial = new PhongMaterial(Color.YELLOW);
 
     private final Xform selectionBox = new Xform(Xform.RotateOrder.XYZ);
     private Xform selectionBoxBackLeftTop = null;
@@ -46,9 +50,35 @@ public class SelectionHighlighter extends Group
     private Xform selectionBoxFrontLeftBottom = null;
     private Xform selectionBoxFrontRightBottom = null;
 
+    private Xform gizmoXform = new Xform(Xform.RotateOrder.XYZ);
+
+    private final double cornerBracketLength = 5;
+    private final double cornerBoxSize = 2;
+    private final double halfCornerBoxSize = cornerBoxSize / 2;
+
     public SelectionHighlighter(final SelectionContainer selectionContainer, final DoubleProperty cameraDistance)
     {
         applicationStatus = ApplicationStatus.getInstance();
+
+        this.setId(idString);
+
+        this.setOnMouseEntered(new EventHandler<MouseEvent>()
+        {
+            @Override
+            public void handle(MouseEvent event)
+            {
+                greenMaterial.setDiffuseColor(Color.PURPLE);
+            }
+        });
+
+        this.setOnMouseExited(new EventHandler<MouseEvent>()
+        {
+            @Override
+            public void handle(MouseEvent event)
+            {
+                greenMaterial.setDiffuseColor(Color.LIMEGREEN);
+            }
+        });
 
         buildSelectionBox();
         getChildren().add(selectionBox);
@@ -150,7 +180,8 @@ public class SelectionHighlighter extends Group
             @Override
             public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
             {
-                double newScale = t1.doubleValue() / 400.0;
+                steno.info("Camera distance is now " + t1.doubleValue());
+                double newScale = t1.doubleValue() / 295;
 
                 for (Node node : selectionBox.getChildren())
                 {
@@ -169,80 +200,73 @@ public class SelectionHighlighter extends Group
                 }
             }
         });
-
     }
 
     private void buildSelectionBox()
     {
-        selectionBoxBackLeftBottom = generateSelectionCornerGroup();
-        selectionBoxBackLeftBottom.setRotateY(90);
+        selectionBoxBackLeftBottom = generateSelectionCornerGroup(0, 90, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize);
 
-        selectionBoxBackRightBottom = generateSelectionCornerGroup();
-        selectionBoxBackRightBottom.setRotateY(-180);
+        selectionBoxBackRightBottom = generateSelectionCornerGroup(0, -180, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize);
 
-        selectionBoxBackLeftTop = generateSelectionCornerGroup();
-        selectionBoxBackLeftTop.setRotateX(180);
+        selectionBoxBackLeftTop = generateSelectionCornerGroup(180, 0, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize);
 
-        selectionBoxBackRightTop = generateSelectionCornerGroup();
-        selectionBoxBackRightTop.setRotateX(180);
-        selectionBoxBackRightTop.setRotateY(90);
+        selectionBoxBackRightTop = generateSelectionCornerGroup(180, 90, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize);
 
-        selectionBoxFrontLeftBottom = generateSelectionCornerGroup();
+        selectionBoxFrontLeftBottom = generateSelectionCornerGroup(0, 0, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize);
 
-        selectionBoxFrontRightBottom = generateSelectionCornerGroup();
-        selectionBoxFrontRightBottom.setRotateY(-90);
+        selectionBoxFrontRightBottom = generateSelectionCornerGroup(0, -90, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize);
 
-        selectionBoxFrontLeftTop = generateSelectionCornerGroup();
-        selectionBoxFrontLeftTop.setRotateX(180);
-        selectionBoxFrontLeftTop.setRotateY(-90);
+        selectionBoxFrontLeftTop = generateSelectionCornerGroup(180, -90, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize);
 
-        selectionBoxFrontRightTop = generateSelectionCornerGroup();
-        selectionBoxFrontRightTop.setRotateZ(180);
+        selectionBoxFrontRightTop = generateSelectionCornerGroup(0, 0, 180, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize);
 
-        selectionBox.getChildren().addAll(selectionBoxBackLeftBottom, selectionBoxBackLeftTop, selectionBoxBackRightBottom, selectionBoxBackRightTop,
-                selectionBoxFrontLeftBottom, selectionBoxFrontLeftTop, selectionBoxFrontRightBottom, selectionBoxFrontRightTop);
+        selectionBox.getChildren().addAll(selectionBoxBackLeftBottom, selectionBoxBackRightBottom, selectionBoxBackLeftTop, selectionBoxBackRightTop,
+                selectionBoxFrontLeftBottom, selectionBoxFrontRightBottom, selectionBoxFrontLeftTop, selectionBoxFrontRightTop);
 
     }
 
-    private Xform generateSelectionCornerGroup()
+    private Xform generateSelectionCornerGroup(double xRotate, double yRotate, double zRotate, double cornerBoxXOffset, double cornerBoxYOffset, double cornerBoxZOffset)
     {
         final int cylSamples = 4;
-        final double cylHeight = 5;
         final double cylRadius = .05;
 
         Xform selectionCornerTransform = new Xform();
         Group selectionCorner = new Group();
         selectionCornerTransform.getChildren().add(selectionCorner);
 
-        Box part1 = new Box(cylRadius, cylHeight, cylRadius);
+        Box part1 = new Box(cylRadius, cornerBracketLength, cylRadius);
 //        Cylinder part1 = new Cylinder(cylRadius, cylHeight, cylSamples);
         part1.setMaterial(greenMaterial);
         part1.setDrawMode(DrawMode.LINE);
-        part1.setTranslateY(-cylHeight / 2);
+        part1.setTranslateY(-cornerBracketLength / 2);
 
-        Box part2 = new Box(cylRadius, cylHeight, cylRadius);
+        Box part2 = new Box(cylRadius, cornerBracketLength, cylRadius);
 //        Cylinder part2 = new Cylinder(cylRadius, cylHeight, cylSamples);
         part2.setMaterial(greenMaterial);
         part2.setDrawMode(DrawMode.LINE);
         part2.setRotationAxis(MathUtils.zAxis);
         part2.setRotate(-90);
-        part2.setTranslateX(cylHeight / 2);
+        part2.setTranslateX(cornerBracketLength / 2);
 
-        Box part3 = new Box(cylRadius, cylHeight, cylRadius);
+        Box part3 = new Box(cylRadius, cornerBracketLength, cylRadius);
 //        Cylinder part3 = new Cylinder(cylRadius, cylHeight, cylSamples);
         part3.setMaterial(greenMaterial);
         part3.setRotationAxis(MathUtils.xAxis);
         part3.setDrawMode(DrawMode.LINE);
         part3.setRotate(-90);
-        part3.setTranslateZ(cylHeight / 2);
+        part3.setTranslateZ(cornerBracketLength / 2);
 
-        Box part4 = new Box(2, 2, 2);
+        Box part4 = new Box(cornerBoxSize, cornerBoxSize, cornerBoxSize);
         part4.setMaterial(greenMaterial);
-        part4.setId("scaleHandle");
-//        part4.setDrawMode(DrawMode.LINE);
-//        part4.se
+        part4.setId(scaleHandleString);
+        part4.setTranslateX(cornerBoxXOffset);
+        part4.setTranslateY(cornerBoxYOffset);
+        part4.setTranslateZ(cornerBoxZOffset);
+        selectionCorner.getChildren().addAll(part1, part2, part3, part4);
 
-        selectionCorner.getChildren().addAll(part1, part2, part3);
+        selectionCornerTransform.setRotateX(xRotate);
+        selectionCornerTransform.setRotateY(yRotate);
+        selectionCornerTransform.setRotateZ(zRotate);
 
         return selectionCornerTransform;
     }
@@ -256,7 +280,7 @@ public class SelectionHighlighter extends Group
         double minZ = selectionContainer.getCentreZ() - halfDepth;
         double maxZ = selectionContainer.getCentreZ() + halfDepth;
         double minY = -selectionContainer.getHeight();
-        
+
         selectionBoxBackLeftBottom.setTz(maxZ);
         selectionBoxBackLeftBottom.setTx(minX);
 
@@ -284,7 +308,7 @@ public class SelectionHighlighter extends Group
         selectionBoxFrontRightTop.setTz(minZ);
         selectionBoxFrontRightTop.setTx(maxX);
         selectionBoxFrontRightTop.setTy(minY);
-        
+
         selectionBox.setPivot(selectionContainer.getCentreX(), 0, selectionContainer.getCentreZ());
     }
 }

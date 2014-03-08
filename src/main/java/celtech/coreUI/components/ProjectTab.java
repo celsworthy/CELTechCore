@@ -29,6 +29,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.util.List;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -37,6 +41,7 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.control.Label;
@@ -49,8 +54,11 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.TransformChangedEvent;
+import javafx.util.Duration;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -71,8 +79,24 @@ public class ProjectTab extends Tab
     private DisplayManager displayManager = null;
     private ProjectManager projectManager = ProjectManager.getInstance();
     private boolean titleBeingEdited = false;
-    private PolarCamera camera = null;
-    private Xform gizmoXform = new Xform(Xform.RotateOrder.XYZ);
+//    private PolarCamera camera = null;
+    private Xform gizmoXform = new Xform(Xform.RotateOrder.YXZ);
+    private AnchorPane gizmoOverlay = null;
+
+    final Rectangle testRect = new Rectangle(5, 5);
+
+    private ChangeListener<Number> selectionContainerMoveListener = new ChangeListener<Number>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+        {
+            Point2D reference = basePane.localToScreen(0, 0);
+            double x = viewManager.getSelectionContainer().getScreenX() - reference.getX();
+            double y = viewManager.getSelectionContainer().getScreenY() - reference.getY();
+            gizmoXform.setTx(x);
+            gizmoXform.setTy(y);
+        }
+    };
 
     public ProjectTab(DisplayManager dispManagerRef, ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
@@ -120,6 +144,9 @@ public class ProjectTab extends Tab
 
     private void initialise(ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
+        nonEditableProjectNameField.getStyleClass().add("nonEditableProjectTab");
+        editableProjectNameField.getStyleClass().add("editableProjectTab");
+
         setOnCloseRequest((Event t) ->
         {
             saveProject();
@@ -127,10 +154,9 @@ public class ProjectTab extends Tab
         });
 
         viewManager = new ThreeDViewManager(project.getLoadedModels(), tabDisplayWidthProperty, tabDisplayHeightProperty);
-        camera = viewManager.getCamera();
+//        camera = viewManager.getCamera();
 
         basePane = new AnchorPane();
-        basePane.getStyleClass().add("threeDPane");
 
         basePane.setOnDragOver(new EventHandler<DragEvent>()
         {
@@ -260,90 +286,48 @@ public class ProjectTab extends Tab
         {
             URL layoutControlsURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "GizmoOverlay.fxml");
             FXMLLoader gizmoOverlayLoader = new FXMLLoader(layoutControlsURL, DisplayManager.getLanguageBundle());
-            final AnchorPane gizmoOverlay = (AnchorPane) gizmoOverlayLoader.load();
+            gizmoOverlay = (AnchorPane) gizmoOverlayLoader.load();
             GizmoOverlayController gizmoOverlayController = gizmoOverlayLoader.getController();
             gizmoOverlayController.configure(viewManager);
-            AnchorPane.setTopAnchor(gizmoOverlay, 30.0);
-            AnchorPane.setRightAnchor(gizmoOverlay, 10.0);
+            gizmoOverlayController.setXform(gizmoXform);
+            gizmoOverlayController.setBase(basePane);
+            viewManager.associateGizmoOverlayController(gizmoOverlayController);
 
+            gizmoOverlay.setRotationAxis(MathUtils.xAxis);
+            gizmoOverlay.setRotate(90);
             gizmoXform.getChildren().add(gizmoOverlay);
+            gizmoOverlay.setPickOnBounds(false);
             basePane.getChildren().add(gizmoXform);
 
-//            camera.cameraAzimuthRadiansProperty().addListener(new ChangeListener<Number>()
-//            {
-//
-//                @Override
-//                public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-//                {
-//                    double rotationDegrees = t1.doubleValue() * MathUtils.RAD_TO_DEG;
-//                    gizmoXform.setRotate(rotationDegrees);
-//                }
-//            });
+            gizmoXform.setRotateX(viewManager.demandedCameraRotationXProperty().get());
+            gizmoXform.setRotateY(viewManager.demandedCameraRotationYProperty().get());
 
-            camera.cameraPitchRadiansProperty().addListener(new ChangeListener<Number>()
+            viewManager.demandedCameraRotationXProperty().addListener(new ChangeListener<Number>()
             {
-
                 @Override
-                public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+                public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
                 {
-                    double xDegrees = t1.doubleValue() * MathUtils.RAD_TO_DEG;
-                    steno.info("Camera elevation is " + xDegrees);
-                    xDegrees += 90;
-                    steno.info("Angle is " + xDegrees);
-                    gizmoXform.setRotateX(xDegrees);
-//                Point2D zeroPosition = viewManager.getSelectionHighlighter().localToScreen(0, 0, 0);
-//                steno.info("Camera screen pos " + zeroPosition.toString());
+                    gizmoXform.setRotateX(newValue.doubleValue());
                 }
             });
+
+            viewManager.demandedCameraRotationYProperty().addListener(new ChangeListener<Number>()
+            {
+                @Override
+                public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+                {
+                    gizmoXform.setRotateY(newValue.doubleValue());
+                }
+            });
+
         } catch (IOException ex)
         {
             steno.error("Failed to load 3d Gizmo:" + ex);
         }
 
-        viewManager.screenCentreOfSelectionXProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                recentreGizmoX(t1.intValue());
-            }
-        });
+        viewManager.getSelectionContainer().screenXProperty().addListener(selectionContainerMoveListener);
+        viewManager.getSelectionContainer().screenYProperty().addListener(selectionContainerMoveListener);
 
-        viewManager.screenCentreOfSelectionYProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                recentreGizmoY(t1.intValue());
-            }
-        });
-
-//        viewManager.getSelectionContainer().centreXProperty().addListener(new ChangeListener<Number>()
-//        {
-//
-//            @Override
-//            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-//            {
-//                steno.info("SC X " + t1.doubleValue());
-//            }
-//        });
-//        viewManager.getSelectionHighlighter().translateYProperty().addListener(new ChangeListener<Number>()
-//        {
-//            @Override
-//            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-//            {
-//                steno.info("Highlighter ty = " + t1.doubleValue());
-//            }
-//        });
-//
-//        viewManager.getSelectionHighlighter().translateZProperty().addListener(new ChangeListener<Number>()
-//        {
-//            @Override
-//            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-//            {
-//                steno.info("Highlighter tz = " + t1.doubleValue());
-//            }
-//        });
         try
         {
             URL gcodeEditorURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "GCodeEditorPanel.fxml");
@@ -520,7 +504,7 @@ public class ProjectTab extends Tab
 
     public void switchToPresetCameraView(CameraPositionPreset cameraPositionPreset)
     {
-        viewManager.getCamera().gotoPreset(cameraPositionPreset);
+//        viewManager.getCamera().gotoPreset(cameraPositionPreset);
     }
 
     public void deselectModel(ModelContainer selectedModel)

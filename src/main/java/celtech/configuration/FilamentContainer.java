@@ -5,8 +5,10 @@
  */
 package celtech.configuration;
 
+import celtech.utils.FXUtils;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -14,6 +16,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.scene.paint.Color;
+import javafx.util.StringConverter;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -30,44 +33,71 @@ public class FilamentContainer
     private static final ObservableList<Filament> userFilamentList = FXCollections.observableArrayList();
     private static final ObservableList<Filament> completeFilamentList = FXCollections.observableArrayList();
     private static final ObservableMap<String, Filament> completeFilamentMap = FXCollections.observableHashMap();
+    public static final Filament createNewFilament = new Filament(null, null, null, null,
+            0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, false);
+
+    private static final String nameProperty = "name";
+    private static final String materialProperty = "material";
+    private static final String diameterProperty = "diameter_mm";
+    private static final String maxExtrusionRateProperty = "max_extrusion_rate";
+    private static final String extrusionMultiplierProperty = "extrusion_multiplier";
+    private static final String ambientTempProperty = "ambient_temperature_C";
+    private static final String firstLayerBedTempProperty = "first_layer_bed_temperature_C";
+    private static final String bedTempProperty = "bed_temperature_C";
+    private static final String firstLayerNozzleTempProperty = "first_layer_nozzle_temperature_C";
+    private static final String nozzleTempProperty = "nozzle_temperature_C";
+    private static final String displayColourProperty = "display_colour";
+    
+    private static final StringConverter<Integer> intConverter = FXUtils.getIntConverter();
+    private static final StringConverter<Float> floatConverter = FXUtils.getFloatConverter(2);
 
     private FilamentContainer()
     {
+        loadFilamentData();
+    }
+
+    private static void loadFilamentData()
+    {
+        completeFilamentList.clear();
+        appFilamentList.clear();
+        userFilamentList.clear();
+        
         File applicationFilamentDirHandle = new File(ApplicationConfiguration.getApplicationFilamentDirectory());
         File[] applicationfilaments = applicationFilamentDirHandle.listFiles(new FilamentFileFilter());
-        ArrayList<Filament> filaments = ingestFilaments(applicationfilaments);
+        ArrayList<Filament> filaments = ingestFilaments(applicationfilaments, false);
         appFilamentList.addAll(filaments);
         completeFilamentList.addAll(filaments);
 
         File userFilamentDirHandle = new File(ApplicationConfiguration.getUserFilamentDirectory());
         File[] userfilaments = userFilamentDirHandle.listFiles(new FilamentFileFilter());
-        filaments = ingestFilaments(userfilaments);
+        filaments = ingestFilaments(userfilaments, true);
         completeFilamentList.addAll(filaments);
         userFilamentList.addAll(filaments);
     }
 
-    private ArrayList<Filament> ingestFilaments(File[] userfilaments)
+    private static ArrayList<Filament> ingestFilaments(File[] filamentFiles, boolean filamentsAreMutable)
     {
         ArrayList<Filament> filamentList = new ArrayList<>();
 
-        for (File filamentFile : userfilaments)
+        for (File filamentFile : filamentFiles)
         {
             try
             {
                 Properties filamentProperties = new Properties();
                 filamentProperties.load(new FileInputStream(filamentFile));
 
-                String name = filamentProperties.getProperty("name");
-                String material = filamentProperties.getProperty("material");
-                String diameterString = filamentProperties.getProperty("diameter_mm");
-                String maxExtrusionRateString = filamentProperties.getProperty("max_extrusion_rate");
-                String extrusionMultiplierString = filamentProperties.getProperty("extrusion_multiplier");
-                String ambientTempString = filamentProperties.getProperty("ambient_temperature_C");
-                String firstLayerBedTempString = filamentProperties.getProperty("first_layer_bed_temperature_C");
-                String bedTempString = filamentProperties.getProperty("bed_temperature_C");
-                String firstLayerNozzleTempString = filamentProperties.getProperty("first_layer_nozzle_temperature_C");
-                String nozzleTempString = filamentProperties.getProperty("nozzle_temperature_C");
-                String displayColourString = filamentProperties.getProperty("display_colour");
+                String filename = filamentFile.getName();
+                String name = filamentProperties.getProperty(nameProperty);
+                String material = filamentProperties.getProperty(materialProperty);
+                String diameterString = filamentProperties.getProperty(diameterProperty);
+                String maxExtrusionRateString = filamentProperties.getProperty(maxExtrusionRateProperty);
+                String extrusionMultiplierString = filamentProperties.getProperty(extrusionMultiplierProperty);
+                String ambientTempString = filamentProperties.getProperty(ambientTempProperty);
+                String firstLayerBedTempString = filamentProperties.getProperty(firstLayerBedTempProperty);
+                String bedTempString = filamentProperties.getProperty(bedTempProperty);
+                String firstLayerNozzleTempString = filamentProperties.getProperty(firstLayerNozzleTempProperty);
+                String nozzleTempString = filamentProperties.getProperty(nozzleTempProperty);
+                String displayColourString = filamentProperties.getProperty(displayColourProperty);
 
                 if (name != null
                         && material != null
@@ -95,7 +125,8 @@ public class FilamentContainer
 
                         String filamentTypeCode = filamentFile.getName().replaceAll(ApplicationConfiguration.filamentFileExtension, "");
 
-                        Filament newFilament = new Filament(filamentTypeCode,
+                        Filament newFilament = new Filament(filename,
+                                filamentTypeCode,
                                 name,
                                 material,
                                 diameter,
@@ -106,7 +137,8 @@ public class FilamentContainer
                                 bedTemp,
                                 firstLayerNozzleTemp,
                                 nozzleTemp,
-                                colour);
+                                colour,
+                                filamentsAreMutable);
 
                         filamentList.add(newFilament);
                         completeFilamentMap.put(filamentTypeCode, newFilament);
@@ -124,6 +156,47 @@ public class FilamentContainer
         }
 
         return filamentList;
+    }
+
+    public static boolean saveFilament(Filament filament)
+    {
+        boolean success = false;
+
+        try
+        {
+            Properties filamentProperties = new Properties();
+
+            filamentProperties.setProperty(nameProperty, filament.getFriendlyFilamentName());
+            filamentProperties.setProperty(materialProperty, filament.getMaterial());
+            filamentProperties.setProperty(diameterProperty, floatConverter.toString(filament.getDiameter()));
+            filamentProperties.setProperty(maxExtrusionRateProperty, floatConverter.toString(filament.getMaxExtrusionRate()));
+            filamentProperties.setProperty(extrusionMultiplierProperty, floatConverter.toString(filament.getExtrusionMultiplier()));
+            filamentProperties.setProperty(ambientTempProperty, intConverter.toString(filament.getAmbientTemperature()));
+            filamentProperties.setProperty(firstLayerBedTempProperty, intConverter.toString(filament.getFirstLayerBedTemperature()));
+            filamentProperties.setProperty(bedTempProperty, intConverter.toString(filament.getBedTemperature()));
+            filamentProperties.setProperty(firstLayerNozzleTempProperty, intConverter.toString(filament.getFirstLayerNozzleTemperature()));
+            filamentProperties.setProperty(nozzleTempProperty, intConverter.toString(filament.getNozzleTemperature()));
+            
+            String webColour = String.format( "#%02X%02X%02X",
+            (int)( filament.getDisplayColour().getRed() * 255 ),
+            (int)( filament.getDisplayColour().getGreen() * 255 ),
+            (int)( filament.getDisplayColour().getBlue() * 255 ) );
+            filamentProperties.setProperty(displayColourProperty, webColour);
+
+            String filename = filament.getFileName();
+            if (filename.endsWith(ApplicationConfiguration.filamentFileExtension) == false)
+            {
+                filename = filename + ApplicationConfiguration.filamentFileExtension;
+            }
+            
+            File filamentFile = new File(ApplicationConfiguration.getUserFilamentDirectory() + filename);
+            filamentProperties.store(new FileOutputStream(filamentFile), "Robox data");
+            loadFilamentData();
+        } catch (IOException ex)
+        {
+            steno.error("Error whilst storing filament file " + filament.getFileName());
+        }
+        return success;
     }
 
     public static FilamentContainer getInstance()

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import celtech.coreUI.components.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="container" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="370" minHeight="-Infinity" minWidth="-Infinity" styleClass="sidePanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.MaterialDetailsController">
+    <children> 
+        <GridPane hgap="5.0" vgap="5.0">
+            <columnConstraints>
+                <ColumnConstraints halignment="RIGHT" hgrow="NEVER" percentWidth="40.0" />
+                <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="60.0" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+<RowConstraints />
+<RowConstraints />
+            </rowConstraints>
+            <children>
+                <Label text="%genericFirstLetterCapitalised.FileName" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                <Label text="%genericFirstLetterCapitalised.Name" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                <Label text="%genericFirstLetterCapitalised.Material" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                <Label text="%sidePanel_settings.reelIdentifier" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                <Label text="%sidePanel_settings.filamentDiameterLabel" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                <Label text="%sidePanel_settings.firstLayerBedTemp" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                <Label text="%sidePanel_settings.bedTemp" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                <Label text="%sidePanel_settings.firstLayerNozzleTemp" textAlignment="RIGHT" wrapText="true" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+                <Label text="%sidePanel_settings.nozzleTemp" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+                <Label text="%sidePanel_settings.ambientTemp" GridPane.columnIndex="0" GridPane.rowIndex="9" />
+                <Label text="%genericFirstLetterCapitalised.Colour" GridPane.columnIndex="0" GridPane.rowIndex="10" />        
+                <RestrictedTextField fx:id="filename" forceUpperCase="false" maxLength="40" maxWidth="-Infinity" prefWidth="210.0" restrict="0-9.A-Za-z-" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                <RestrictedTextField fx:id="name" forceUpperCase="false" maxLength="20" maxWidth="-Infinity" prefWidth="150.0" restrict="0-9.A-Za-z-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <RestrictedTextField fx:id="material" forceUpperCase="false" maxLength="10" maxWidth="-Infinity" prefWidth="150.0" restrict="0-9.A-Za-z-" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <RestrictedTextField fx:id="reelID" forceUpperCase="true" maxLength="8" maxWidth="-Infinity" prefWidth="150.0" restrict="0-9A-Z-" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="4"> 
+                    <children>
+                        <RestrictedTextField fx:id="filamentDiameter" forceUpperCase="true" maxLength="4" restrict="0-9." />
+                        <Label text="%misc.mm" />
+                    </children>
+                </HBox>
+                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="5"> 
+                    <children>
+                        <RestrictedTextField fx:id="firstLayerBedTemperature" forceUpperCase="true" maxLength="3" restrict="0-9" />
+                        <Label text="%misc.degreesC" />
+                    </children>
+                </HBox>
+                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6"> 
+                    <children>
+                        <RestrictedTextField fx:id="bedTemperature" forceUpperCase="true" maxLength="3" restrict="0-9" />
+                        <Label text="%misc.degreesC" />
+                    </children>
+                </HBox>
+                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="7"> 
+                    <children>
+                        <RestrictedTextField fx:id="firstLayerNozzleTemperature" forceUpperCase="true" maxLength="3" restrict="0-9" />
+                        <Label text="%misc.degreesC" />
+                    </children>
+                </HBox>
+                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="8"> 
+                    <children>
+                        <RestrictedTextField fx:id="nozzleTemperature" forceUpperCase="true" maxLength="3" restrict="0-9" />
+                        <Label text="%misc.degreesC" />
+                    </children>
+                </HBox>
+                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="9"> 
+                    <children>
+                        <RestrictedTextField fx:id="ambientTemperature" forceUpperCase="true" maxLength="3" restrict="0-9" />
+                        <Label text="%misc.degreesC" />
+                    </children>
+                </HBox>
+                <ColorPicker fx:id="colour" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+            </children>
+            <padding>
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+            </padding>
+        </GridPane>
+        <HBox alignment="CENTER" spacing="5.0" VBox.vgrow="NEVER">
+            <children>
+                <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveMaterialData" prefWidth="100.0" text="%genericFirstLetterCapitalised.Save" GridPane.rowIndex="10" />
+                <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#cancelEdit" prefWidth="100.0" text="%genericFirstLetterCapitalised.Cancel" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+            </children>
+        </HBox>
+    </children>
+</VBox>

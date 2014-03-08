@@ -7,21 +7,21 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<HBox id="SlideOut" maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" styleClass="background" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.sidePanels.PrinterStatusSlideOutPanelController">
+<HBox fx:id="slideout" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="370.0" styleClass="sidePanel_slideout" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.sidePanels.PrinterStatusSlideOutPanelController">
     <children>
-        <VBox id="Container" spacing="10.0">
+        <VBox id="Container" fx:id="gcodeEditParent" spacing="10.0" HBox.hgrow="ALWAYS">
             <children>
-                <VBox fx:id="gcodeEditParent" spacing="5.0" VBox.vgrow="ALWAYS">
+                <VBox minWidth="0.0" spacing="5.0" VBox.vgrow="ALWAYS">
                     <children>
-                        <TextArea fx:id="gcodeTranscript" prefColumnCount="10" VBox.vgrow="ALWAYS">
+                        <TextArea fx:id="gcodeTranscript" minWidth="0.0" prefColumnCount="10" VBox.vgrow="ALWAYS">
                             <font>
                                 <Font size="12.0" />
                             </font>
                         </TextArea>
                         <HBox spacing="5.0">
                             <children>
-                                <RestrictedTextField fx:id="gcodeEntryField" forceUpperCase="true" maxLength="50" onAction="#sendGCodeA" prefColumnCount="5" restrict="A-Z0-9?. \-" HBox.hgrow="ALWAYS" />
-                                <Button fx:id="sendGCodeButton" mnemonicParsing="false" onAction="#sendGCodeM" text="%gcodeEntry.sendGCode" />
+                                <RestrictedTextField fx:id="gcodeEntryField" forceUpperCase="true" maxLength="50" minWidth="0.0" onAction="#sendGCodeA" prefColumnCount="5" restrict="A-Z0-9?. \-" HBox.hgrow="ALWAYS" />
+                                <Button fx:id="sendGCodeButton" minWidth="0.0" mnemonicParsing="false" onAction="#sendGCodeA" text="%gcodeEntry.sendGCode" />
                             </children>
                         </HBox>
                     </children>
@@ -31,6 +31,6 @@
                 </VBox>
             </children>
         </VBox>
-        <fx:include source="SlideOutHandle.fxml" />
+        <!--<fx:include fx:id="SlideOutHandle" source="SlideOutHandle.fxml" />-->
     </children>
 </HBox>

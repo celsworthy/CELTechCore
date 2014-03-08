@@ -27,4 +27,9 @@ public enum ApplicationMode
     {
         return ApplicationConfiguration.fxmlSidePanelResourcePath + contentFXMLPrefix + "SidePanel" + ".fxml";
     }
+
+    public String getSlideOutFXMLName()
+    {
+        return ApplicationConfiguration.fxmlSidePanelResourcePath + contentFXMLPrefix + "SlideOutPanel" + ".fxml";
+    }
 }

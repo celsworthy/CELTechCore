@@ -7,6 +7,8 @@ package celtech.printerControl;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
+import celtech.configuration.Head;
+import celtech.configuration.HeadContainer;
 import celtech.configuration.PrintHead;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
@@ -173,6 +175,7 @@ public class Printer
     private FloatProperty headNozzle2ZOffset = new SimpleFloatProperty(0);
     private FloatProperty headNozzle2BOffset = new SimpleFloatProperty(0);
     private FloatProperty headHoursCounter = new SimpleFloatProperty(0);
+    private ObjectProperty<Head> attachedHead = new SimpleObjectProperty<Head>();
 
     /* 
      * Reel parameters
@@ -924,6 +927,11 @@ public class Printer
     /*
      * Head data
      */
+    public ObjectProperty<Head> attachedHeadProperty()
+    {
+        return attachedHead;
+    }
+
     public BooleanProperty getHeadDataChangedToggle()
     {
         return headDataChangedToggle;
@@ -1364,6 +1372,16 @@ public class Printer
                     {
                         reelFriendlyName.set(loadedFilamentCandidate.toString());
                         loadedFilament.set(loadedFilamentCandidate);
+                        loadedFilament.get().setUniqueID(reelResponse.getReelUniqueID());
+                        loadedFilament.get().setRequiredAmbientTemperature(reelResponse.getReelAmbientTemperature());
+                        loadedFilament.get().setBedTemperature(reelResponse.getReelBedTemperature());
+                        loadedFilament.get().setRequiredFirstLayerBedTemperature(reelResponse.getReelFirstLayerBedTemperature());
+                        loadedFilament.get().setRequiredNozzleTemperature(reelResponse.getReelNozzleTemperature());
+                        loadedFilament.get().setRequiredFirstLayerNozzleTemperature(reelResponse.getReelFirstLayerNozzleTemperature());
+                        loadedFilament.get().setMaxExtrusionRate(reelResponse.getReelMaxExtrusionRate());
+                        loadedFilament.get().setExtrusionMultiplier(reelResponse.getReelExtrusionMultiplier());
+                        loadedFilament.get().setRemainingFilament(reelResponse.getReelRemainingFilament());
+                        loadedFilament.get().setDiameter(reelResponse.getReelFilamentDiameter());
                     } else
                     {
                         reelFriendlyName.set(DisplayManager.getLanguageBundle().getString("sidePanel_settings.filamentUnknown"));
@@ -1392,11 +1410,35 @@ public class Printer
                 headTypeCode.set(headTypeCodeString);
                 try
                 {
-                    headType.set(PrintHead.getPrintHeadForType(headTypeCodeString).getShortName());
+                    Head attachedHeadCandidate = HeadContainer.getHeadByID(headTypeCodeString);
+                    if (attachedHeadCandidate != null)
+                    {
+                        headType.set(PrintHead.getPrintHeadForType(headTypeCodeString).getShortName());
+                        attachedHead.set(attachedHeadCandidate);
+                        attachedHead.get().setUniqueID(headResponse.getUniqueID());
+                        attachedHead.get().setHeadHours(headResponse.getHoursUsed());
+                        attachedHead.get().setMaximumTemperature(headResponse.getMaximumTemperature());
+                        attachedHead.get().setNozzle1_B_offset(headResponse.getNozzle1BOffset());
+                        attachedHead.get().setNozzle1_X_offset(headResponse.getNozzle1XOffset());
+                        attachedHead.get().setNozzle1_Y_offset(headResponse.getNozzle1YOffset());
+                        attachedHead.get().setNozzle1_Z_offset(headResponse.getNozzle1ZOffset());
+                        attachedHead.get().setNozzle2_B_offset(headResponse.getNozzle2BOffset());
+                        attachedHead.get().setNozzle2_X_offset(headResponse.getNozzle2XOffset());
+                        attachedHead.get().setNozzle2_Y_offset(headResponse.getNozzle2YOffset());
+                        attachedHead.get().setNozzle2_Z_offset(headResponse.getNozzle2ZOffset());
+                        attachedHead.get().setBeta(headResponse.getThermistorBeta());
+                        attachedHead.get().setTcal(headResponse.getThermistorTCal());
+                    } else
+                    {
+                        headType.set("Unknown");
+                        attachedHead.set(null);
+                    }
                 } catch (IllegalArgumentException ex)
                 {
+                    reelFriendlyName.set(DisplayManager.getLanguageBundle().getString("sidePanel_settings.filamentUnknown"));
                     headType.set("Unknown");
                 }
+
                 headUniqueID.set(headResponse.getUniqueID());
                 headHoursCounter.set(headResponse.getHoursUsed());
                 headMaximumTemperature.set(headResponse.getMaximumTemperature());
@@ -1410,6 +1452,7 @@ public class Printer
                 headNozzle2ZOffset.set(headResponse.getNozzle2ZOffset());
                 headThermistorBeta.set(headResponse.getThermistorBeta());
                 headThermistorTCal.set(headResponse.getThermistorTCal());
+
                 headDataChangedToggle.set(!headDataChangedToggle.get());
                 break;
             default:
@@ -1559,11 +1602,11 @@ public class Printer
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.START_OF_DATA_FILE);
         gcodePacket.setMessagePayload(fileID);
 
-        AckResponse response = (AckResponse)printerCommsManager.submitForWrite(portName, gcodePacket);
+        AckResponse response = (AckResponse) printerCommsManager.submitForWrite(portName, gcodePacket);
         boolean success = false;
         // Only check for SD card errors here...
         success = !response.isSdCardError();
-        
+
         return success;
     }
 
@@ -1762,7 +1805,7 @@ public class Printer
             sequenceNumber = 0;
             printInitiated = false;
         }
-        
+
         return success;
     }
 

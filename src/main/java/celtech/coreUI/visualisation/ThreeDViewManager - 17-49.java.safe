@@ -2,52 +2,38 @@
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
  */
-
-
 package celtech.coreUI.visualisation;
 
 import celtech.CoreTest;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.MachineType;
 import celtech.configuration.PrintBed;
 import celtech.coreUI.LayoutSubmode;
-import celtech.coreUI.controllers.GizmoOverlayController;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.coreUI.visualisation.importers.obj.ObjImporter;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
+import celtech.coreUI.visualisation.shapes.SubdivisionMesh;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelContentsEnumeration;
-import com.sun.javafx.scene.CameraHelper;
+import celtech.utils.Math.MathUtils;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ListIterator;
 import javafx.animation.Timeline;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableFloatArray;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
@@ -67,6 +53,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.PickResult;
+import javafx.scene.input.RotateEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.ZoomEvent;
 import javafx.scene.layout.AnchorPane;
@@ -74,8 +61,16 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.MeshView;
+import javafx.scene.shape.Shape3D;
+import javafx.scene.shape.TriangleMesh;
+import javafx.scene.transform.Rotate;
+import javafx.scene.transform.Translate;
+import javafx.util.Duration;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
  *
@@ -111,10 +106,8 @@ public class ThreeDViewManager
      */
     private Point3D lastDragPosition = null;
     private final int dragPlaneHalfSize = 500;
-    private final Box translationDragPlane = new Box(dragPlaneHalfSize * 2, 0.1, dragPlaneHalfSize * 2);
-    private final Box scaleDragPlane = new Box(dragPlaneHalfSize * 2, dragPlaneHalfSize * 2, 0.1);
+    private final Box dragPlane = new Box(dragPlaneHalfSize * 2, 0.1, dragPlaneHalfSize * 2);
     private SelectionHighlighter threeDControl = null;
-    private GizmoOverlayController gizmoOverlayController = null;
     /*
      * 
      */
@@ -126,7 +119,7 @@ public class ThreeDViewManager
     /*
      * Selection stuff
      */
-    private BooleanProperty dragMode = new SimpleBooleanProperty(false);
+    private boolean inDragMode = false;
 
 
     /*
@@ -146,16 +139,12 @@ public class ThreeDViewManager
     /*
      * ALT stuff
      */
-    private final Xform bedTranslateXform = new Xform(Xform.RotateOrder.YXZ);
+    private final Xform bedXform = new Xform();
     private final PerspectiveCamera camera = new PerspectiveCamera(true);
 
-//    private final Rotate rotateCameraAroundXAxis = new Rotate(0, MathUtils.xAxis);
-//    private final Rotate rotateCameraAroundYAxis = new Rotate(0, MathUtils.yAxis);
-//    private final Rotate rotateCameraAroundZAxis = new Rotate(0, MathUtils.zAxis);
-//    private final Translate translateCamera = new Translate();
-    private final DoubleProperty cameraDistance = new SimpleDoubleProperty(-350);
-    private final DoubleProperty demandedCameraRotationX = new SimpleDoubleProperty(0);
-    private final DoubleProperty demandedCameraRotationY = new SimpleDoubleProperty(0);
+    private final Xform cameraXform = new Xform();
+    private final Xform cameraXform2 = new Xform();
+    private final DoubleProperty cameraDistance = new SimpleDoubleProperty(200);
 
     private double mousePosX;
     private double mousePosY;
@@ -169,60 +158,17 @@ public class ThreeDViewManager
 
     private double dragStartX, dragStartY;
 
-    private void rotateCameraAroundAxes(double xangle, double yangle)
-    {
-        double yAxisRotation = demandedCameraRotationY.get() - yangle;
-
-        if (yAxisRotation > 360)
-        {
-            yAxisRotation = yAxisRotation - 360;
-        } else if (yAxisRotation < 0)
-        {
-            yAxisRotation = yAxisRotation + 360;
-        }
-        demandedCameraRotationY.set(yAxisRotation);
-
-        double xAxisRotation = demandedCameraRotationX.get() - xangle;
-        if (xAxisRotation > 89)
-        {
-            xAxisRotation = 89;
-        } else if (xAxisRotation < 0)
-        {
-            xAxisRotation = 0;
-        }
-        demandedCameraRotationX.set(xAxisRotation);
-
-        bedTranslateXform.setRotateY(yAxisRotation);
-        bedTranslateXform.setRotateX(xAxisRotation);
-
-    }
-
-    private final ChangeListener<Boolean> dragModeListener = new ChangeListener<Boolean>()
-    {
-        @Override
-        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-        {
-            if (oldValue == false && newValue == true)
-            {
-                translationDragPlane.setVisible(true);
-//                dragPlane.setTranslateX(lastDragPosition.getX());
-//                dragPlane.setTranslateY(lastDragPosition.getY());
-//                dragPlane.setTranslateZ(lastDragPosition.getZ());
-                translationDragPlane.setMouseTransparent(false);
-                models.setMouseTransparent(true);
-            } else if (oldValue == true && newValue == false)
-            {
-                models.setMouseTransparent(false);
-                translationDragPlane.setVisible(false);
-//                translationDragPlane.setMouseTransparent(true);
-            }
-        }
-    };
-
     private final EventHandler<MouseEvent> mouseEventHandler = event ->
     {
-//        steno.info("Mouse event " + event);
-        
+        // System.out.println("MouseEvent ...");
+
+        double yFlip = 1.0;
+//        if (getYUp()) {
+//            yFlip = 1.0;
+//        }
+//        else {
+//            yFlip = -1.0;
+//        }
         if (event.getEventType() == MouseEvent.MOUSE_PRESSED)
         {
             dragStartX = event.getSceneX();
@@ -231,46 +177,40 @@ public class ThreeDViewManager
             mousePosY = event.getSceneY();
             mouseOldX = event.getSceneX();
             mouseOldY = event.getSceneY();
-            
+
             if (event.isPrimaryButtonDown())
             {
-//                gizmoOverlayController.wasXHandleHit(event.getScreenX(), event.getScreenY());
+                PickResult pickResult = event.getPickResult();
+                Point3D pickedPoint = pickResult.getIntersectedPoint();
 
-                if (dragMode.get() == false)
+                Node intersectedNode = pickResult.getIntersectedNode();
+
+                if (intersectedNode != null && intersectedNode instanceof MeshView)
                 {
-                    PickResult pickResult = event.getPickResult();
-                    Point3D pickedPoint = pickResult.getIntersectedPoint();
+                    lastDragPosition = intersectedNode.localToScene(pickedPoint);
+                    dragMode(true);
 
-                    Node intersectedNode = pickResult.getIntersectedNode();
-
-                    if (intersectedNode != null && intersectedNode instanceof MeshView)
+                    Parent parent = intersectedNode.getParent();
+                    if (!(parent instanceof ModelContainer))
                     {
-                        lastDragPosition = intersectedNode.localToScene(pickedPoint);
-                        setDragMode(true);
-
-                        Parent parent = intersectedNode.getParent();
-                        if (!(parent instanceof ModelContainer))
-                        {
-                            parent = parent.getParent();
-                        }
-                        ModelContainer pickedModel = (ModelContainer) parent;
-
-                        if (pickedModel.isSelected() == false)
-                        {
-                            if (event.isControlDown() == false)
-                            {
-                                deselectAllModels();
-                            }
-                            selectModel(pickedModel);
-                        } else if (event.isControlDown())
-                        {
-                            deselectModel(pickedModel);
-                        }
-                    } 
-                    else if (intersectedNode == null)
-                    {
-                        deselectAllModels();
+                        parent = parent.getParent();
                     }
+                    ModelContainer pickedModel = (ModelContainer) parent;
+
+                    if (pickedModel.isSelected() == false)
+                    {
+                        if (event.isControlDown() == false)
+                        {
+                            deselectAllModels();
+                        }
+                        selectModel(pickedModel);
+                    } else if (event.isControlDown())
+                    {
+                        deselectModel(pickedModel);
+                    }
+                } else
+                {
+                    deselectAllModels();
                 }
                 recalculateCentre();
             }
@@ -278,6 +218,8 @@ public class ThreeDViewManager
         {
             double xDelta = event.getSceneX() - dragStartX;
             double yDelta = event.getSceneY() - dragStartY;
+            //cameraXRotate.setAngle(dragStartRotateX - (yDelta*0.7));
+            //cameraYRotate.setAngle(dragStartRotateY + (xDelta*0.7));
 
             double modifier = 1.0;
             double modifierFactor = 0.3;
@@ -295,7 +237,7 @@ public class ThreeDViewManager
             mouseOldY = mousePosY;
             mousePosX = event.getSceneX();
             mousePosY = event.getSceneY();
-            mouseDeltaX = (mousePosX - mouseOldX); //*DELTA_MULTIPLIER;
+            mouseDeltaX = -(mousePosX - mouseOldX); //*DELTA_MULTIPLIER;
             mouseDeltaY = (mousePosY - mouseOldY); //*DELTA_MULTIPLIER;
 
             double flip = -1.0;
@@ -303,17 +245,18 @@ public class ThreeDViewManager
             boolean alt = (true || event.isAltDown());  // For now, don't require ALT to be pressed
             if (alt && event.isSecondaryButtonDown())
             {
-                bedTranslateXform.setTx(bedTranslateXform.getTx() + mouseDeltaX * modifierFactor * modifier * 0.3);  // -
-                bedTranslateXform.setTy(bedTranslateXform.getTy() + mouseDeltaY * modifierFactor * modifier * 0.3);  // -
+                cameraXform2.t.setX(cameraXform2.t.getX() + flip * mouseDeltaX * modifierFactor * modifier * 0.3);  // -
+                cameraXform2.t.setY(cameraXform2.t.getY() + yFlip * mouseDeltaY * modifierFactor * modifier * 0.3);  // -
             } else if (alt && (event.isMiddleButtonDown() || (event.isPrimaryButtonDown() && event.isSecondaryButtonDown())))
             {
-                rotateCameraAroundAxes(-mouseDeltaY * modifierFactor * modifier * 2.0, mouseDeltaX * modifierFactor * modifier * 2.0);
-            } else if (dragMode.get() && event.isPrimaryButtonDown())
+                cameraXform.ry.setAngle(cameraXform.ry.getAngle() - yFlip * mouseDeltaX * modifierFactor * modifier * 2.0);  // +
+                cameraXform.rx.setAngle(cameraXform.rx.getAngle() + flip * mouseDeltaY * modifierFactor * modifier * 2.0);  // -
+            } else if (selectionContainer.selectedModelsProperty().size() > 0 && event.isPrimaryButtonDown())
             {
                 Node intersectedNode = event.getPickResult().getIntersectedNode();
 
                 //Move the model!
-                if (intersectedNode == translationDragPlane)
+                if (intersectedNode == dragPlane)
                 {
                     Point3D currentDragPosition = intersectedNode.localToScene(event.getPickResult().getIntersectedPoint());
 //                steno.info("Pick drag " + me.getPickResult().getIntersectedNode().getId());
@@ -324,31 +267,16 @@ public class ThreeDViewManager
 //                        steno.info("Resultant " + resultant);
                         translateSelection(resultant.getX(), resultant.getZ());
                     }
-                    translationDragPlane.setTranslateX(currentDragPosition.getX());
-                    translationDragPlane.setTranslateZ(currentDragPosition.getZ());
+                    dragPlane.setTranslateX(currentDragPosition.getX());
+                    dragPlane.setTranslateZ(currentDragPosition.getZ());
                     lastDragPosition = currentDragPosition;
-                }
-                else if (intersectedNode == scaleDragPlane)
-                {
-//                    Point3D currentDragPosition = intersectedNode.localToScene(event.getPickResult().getIntersectedPoint());
-////                steno.info("Pick drag " + me.getPickResult().getIntersectedNode().getId());
-////                    steno.info("Drag from " + lastDragPosition + " to " + currentDragPosition);
-//                    if (lastDragPosition != null)
-//                    {
-//                        Point3D resultant = currentDragPosition.subtract(lastDragPosition);
-////                        steno.info("Resultant " + resultant);
-//                        translateSelection(resultant.getX(), resultant.getZ());
-//                    }
-//                    scaleDragPlane.setTranslateX(currentDragPosition.getX());
-//                    scaleDragPlane.setTranslateZ(currentDragPosition.getZ());
-//                    lastDragPosition = currentDragPosition;
                 }
             }
             recalculateCentre();
 
         } else if (event.getEventType() == MouseEvent.MOUSE_RELEASED)
         {
-            setDragMode(false);
+            dragMode(false);
             lastDragPosition = null;
             recalculateCentre();
         }
@@ -358,28 +286,24 @@ public class ThreeDViewManager
     {
         if (event.getTouchCount() > 0)
         { // touch pad scroll
-            bedTranslateXform.setTx(bedTranslateXform.getTx() - (0.01 * event.getDeltaX()));  // -
-            bedTranslateXform.setTy(bedTranslateXform.getTy() + (0.01 * event.getDeltaY()));  // -
+            cameraXform2.t.setX(cameraXform2.t.getX() - (0.01 * event.getDeltaX()));  // -
+            cameraXform2.t.setY(cameraXform2.t.getY() + (0.01 * event.getDeltaY()));  // -
         } else
         {
-            double z = bedTranslateXform.getTz() - (event.getDeltaY() * 0.2);
-//            z = Math.max(z, 2000);
-//            z = Math.min(z, -2000);
-            cameraDistance.set(z);
-            bedTranslateXform.setTz(z);
+            double z = cameraXform2.t.getZ() - (event.getDeltaY() * 0.2);
+            z = Math.max(z, -1000);
+            z = Math.min(z, 0);
+            cameraXform2.t.setZ(z);
         }
-        recalculateCentre();
     };
     private final EventHandler<ZoomEvent> zoomEventHandler = event ->
     {
         if (!Double.isNaN(event.getZoomFactor()) && event.getZoomFactor() > 0.8 && event.getZoomFactor() < 1.2)
         {
-            double z = bedTranslateXform.getTz() / event.getZoomFactor();
-//            z = Math.max(z, 2000);
-//            z = Math.min(z, -2000);
-            cameraDistance.set(z);
-            bedTranslateXform.setTz(z);
-            recalculateCentre();
+            double z = cameraXform2.t.getZ() / event.getZoomFactor();
+            z = Math.max(z, -1000);
+            z = Math.min(z, 0);
+            cameraXform2.t.setZ(z);
         }
     };
     private final EventHandler<KeyEvent> keyEventHandler = event ->
@@ -391,147 +315,145 @@ public class ThreeDViewManager
          z = Math.min(z,0);
          cameraPosition.setZ(z);
          }
-         
-        
-         System.out.println("KeyEvent ...");
-         Timeline timeline = getTimeline();
-         Duration currentTime;
-         double CONTROL_MULTIPLIER = 0.1;
-         double SHIFT_MULTIPLIER = 0.1;
-         double ALT_MULTIPLIER = 0.5;
-         //System.out.println("--> handleKeyboard>handle");
-
-         // event.getEventType();
-         switch (event.getCode())
-         {
-         case F:
-         if (event.isControlDown())
-         {
-         //onButtonSave();
-         }
-         break;
-         case O:
-         if (event.isControlDown())
-         {
-         //onButtonLoad();
-         }
-         break;
-         case Z:
-         if (event.isShiftDown())
-         {
-         //                    rotationXform.ry.setAngle(0.0);
-         //                    rotationXform.rx.setAngle(0.0);
-         rotateCameraAroundXAxis.setAngle(0.0);
-         camera.setTranslateZ(-300.0);
-         }
-         translateCamera.setX(0.0);
-         translateCamera.setY(0.0);
-         break;
-            
-         case SPACE:
-         if (timelinePlaying) {
-         timeline.pause();
-         timelinePlaying = false;
-         }
-         else {
-         timeline.play();
-         timelinePlaying = true;
-         }
-         break;
-             
-         case UP:
-         if (event.isControlDown() && event.isShiftDown())
-         {
-         translateCamera.setY(translateCamera.getY() - 10.0 * CONTROL_MULTIPLIER);
-         } else if (event.isAltDown() && event.isShiftDown())
-         {
-         //                    rotationXform.rx.setAngle(rotationXform.rx.getAngle() - 10.0 * ALT_MULTIPLIER);
-         } else if (event.isControlDown())
-         {
-         translateCamera.setY(translateCamera.getY() - 1.0 * CONTROL_MULTIPLIER);
-         } else if (event.isAltDown())
-         {
-         //                    rotationXform.rx.setAngle(rotationXform.rx.getAngle() - 2.0 * ALT_MULTIPLIER);
-         } else if (event.isShiftDown())
-         {
-         double z = camera.getTranslateZ();
-         double newZ = z + 5.0 * SHIFT_MULTIPLIER;
-         camera.setTranslateZ(newZ);
-         }
-         break;
-         case DOWN:
-         if (event.isControlDown() && event.isShiftDown())
-         {
-         translateCamera.setY(translateCamera.getY() + 10.0 * CONTROL_MULTIPLIER);
-         } else if (event.isAltDown() && event.isShiftDown())
-         {
-         //                    rotationXform.rx.setAngle(rotationXform.rx.getAngle() + 10.0 * ALT_MULTIPLIER);
-         } else if (event.isControlDown())
-         {
-         translateCamera.setY(translateCamera.getY() + 1.0 * CONTROL_MULTIPLIER);
-         } else if (event.isAltDown())
-         {
-         //                    rotationXform.rx.setAngle(rotationXform.rx.getAngle() + 2.0 * ALT_MULTIPLIER);
-         } else if (event.isShiftDown())
-         {
-         double z = camera.getTranslateZ();
-         double newZ = z - 5.0 * SHIFT_MULTIPLIER;
-         camera.setTranslateZ(newZ);
-         }
-         break;
-         case RIGHT:
-         if (event.isControlDown() && event.isShiftDown())
-         {
-         translateCamera.setX(translateCamera.getX() + 10.0 * CONTROL_MULTIPLIER);
-         } else if (event.isAltDown() && event.isShiftDown())
-         {
-         //                    rotationXform.ry.setAngle(rotationXform.ry.getAngle() - 10.0 * ALT_MULTIPLIER);
-         } else if (event.isControlDown())
-         {
-         translateCamera.setX(translateCamera.getX() + 1.0 * CONTROL_MULTIPLIER);
-         } else if (event.isShiftDown())
-         {
-         currentTime = timeline.getCurrentTime();
-         timeline.jumpTo(Frame.frame(Math.round(Frame.toFrame(currentTime) / 10.0) * 10 + 10));
-         // timeline.jumpTo(Duration.seconds(currentTime.toSeconds() + ONE_FRAME));
-         } else if (event.isAltDown())
-         {
-         //                    rotationXform.ry.setAngle(rotationXform.ry.getAngle() - 2.0 * ALT_MULTIPLIER);
-         } else
-         {
-         currentTime = timeline.getCurrentTime();
-         timeline.jumpTo(Frame.frame(Frame.toFrame(currentTime) + 1));
-         // timeline.jumpTo(Duration.seconds(currentTime.toSeconds() + ONE_FRAME));
-         }
-         break;
-         case LEFT:
-         if (event.isControlDown() && event.isShiftDown())
-         {
-         translateCamera.setX(translateCamera.getX() - 10.0 * CONTROL_MULTIPLIER);
-         } else if (event.isAltDown() && event.isShiftDown())
-         {
-         //                    rotationXform.ry.setAngle(rotationXform.ry.getAngle() + 10.0 * ALT_MULTIPLIER);  // -
-         } else if (event.isControlDown())
-         {
-         translateCamera.setX(translateCamera.getX() - 1.0 * CONTROL_MULTIPLIER);
-         } else if (event.isShiftDown())
-         {
-         currentTime = timeline.getCurrentTime();
-         timeline.jumpTo(Frame.frame(Math.round(Frame.toFrame(currentTime) / 10.0) * 10 - 10));
-         // timeline.jumpTo(Duration.seconds(currentTime.toSeconds() - ONE_FRAME));
-         } else if (event.isAltDown())
-         {
-         //                    rotationXform.ry.setAngle(rotationXform.ry.getAngle() + 2.0 * ALT_MULTIPLIER);  // -
-         } else
-         {
-         currentTime = timeline.getCurrentTime();
-         timeline.jumpTo(Frame.frame(Frame.toFrame(currentTime) - 1));
-         // timeline.jumpTo(Duration.seconds(currentTime.toSeconds() - ONE_FRAME));
-         }
-         break;
-         }
-         //System.out.println(cameraXform.getTranslateX() + ", " + cameraXform.getTranslateY() + ", " + cameraXform.getTranslateZ());
          */
+        System.out.println("KeyEvent ...");
+        Timeline timeline = getTimeline();
+        Duration currentTime;
+        double CONTROL_MULTIPLIER = 0.1;
+        double SHIFT_MULTIPLIER = 0.1;
+        double ALT_MULTIPLIER = 0.5;
+        //System.out.println("--> handleKeyboard>handle");
+
+        // event.getEventType();
+        switch (event.getCode())
+        {
+            case F:
+                if (event.isControlDown())
+                {
+                    //onButtonSave();
+                }
+                break;
+            case O:
+                if (event.isControlDown())
+                {
+                    //onButtonLoad();
+                }
+                break;
+            case Z:
+                if (event.isShiftDown())
+                {
+                    cameraXform.ry.setAngle(0.0);
+                    cameraXform.rx.setAngle(0.0);
+                    camera.setTranslateZ(-300.0);
+                }
+                cameraXform2.t.setX(0.0);
+                cameraXform2.t.setY(0.0);
+                break;
+            /*
+             case SPACE:
+             if (timelinePlaying) {
+             timeline.pause();
+             timelinePlaying = false;
+             }
+             else {
+             timeline.play();
+             timelinePlaying = true;
+             }
+             break;
+             */
+            case UP:
+                if (event.isControlDown() && event.isShiftDown())
+                {
+                    cameraXform2.t.setY(cameraXform2.t.getY() - 10.0 * CONTROL_MULTIPLIER);
+                } else if (event.isAltDown() && event.isShiftDown())
+                {
+                    cameraXform.rx.setAngle(cameraXform.rx.getAngle() - 10.0 * ALT_MULTIPLIER);
+                } else if (event.isControlDown())
+                {
+                    cameraXform2.t.setY(cameraXform2.t.getY() - 1.0 * CONTROL_MULTIPLIER);
+                } else if (event.isAltDown())
+                {
+                    cameraXform.rx.setAngle(cameraXform.rx.getAngle() - 2.0 * ALT_MULTIPLIER);
+                } else if (event.isShiftDown())
+                {
+                    double z = camera.getTranslateZ();
+                    double newZ = z + 5.0 * SHIFT_MULTIPLIER;
+                    camera.setTranslateZ(newZ);
+                }
+                break;
+            case DOWN:
+                if (event.isControlDown() && event.isShiftDown())
+                {
+                    cameraXform2.t.setY(cameraXform2.t.getY() + 10.0 * CONTROL_MULTIPLIER);
+                } else if (event.isAltDown() && event.isShiftDown())
+                {
+                    cameraXform.rx.setAngle(cameraXform.rx.getAngle() + 10.0 * ALT_MULTIPLIER);
+                } else if (event.isControlDown())
+                {
+                    cameraXform2.t.setY(cameraXform2.t.getY() + 1.0 * CONTROL_MULTIPLIER);
+                } else if (event.isAltDown())
+                {
+                    cameraXform.rx.setAngle(cameraXform.rx.getAngle() + 2.0 * ALT_MULTIPLIER);
+                } else if (event.isShiftDown())
+                {
+                    double z = camera.getTranslateZ();
+                    double newZ = z - 5.0 * SHIFT_MULTIPLIER;
+                    camera.setTranslateZ(newZ);
+                }
+                break;
+            case RIGHT:
+                if (event.isControlDown() && event.isShiftDown())
+                {
+                    cameraXform2.t.setX(cameraXform2.t.getX() + 10.0 * CONTROL_MULTIPLIER);
+                } else if (event.isAltDown() && event.isShiftDown())
+                {
+                    cameraXform.ry.setAngle(cameraXform.ry.getAngle() - 10.0 * ALT_MULTIPLIER);
+                } else if (event.isControlDown())
+                {
+                    cameraXform2.t.setX(cameraXform2.t.getX() + 1.0 * CONTROL_MULTIPLIER);
+                } else if (event.isShiftDown())
+                {
+                    currentTime = timeline.getCurrentTime();
+                    timeline.jumpTo(Frame.frame(Math.round(Frame.toFrame(currentTime) / 10.0) * 10 + 10));
+                    // timeline.jumpTo(Duration.seconds(currentTime.toSeconds() + ONE_FRAME));
+                } else if (event.isAltDown())
+                {
+                    cameraXform.ry.setAngle(cameraXform.ry.getAngle() - 2.0 * ALT_MULTIPLIER);
+                } else
+                {
+                    currentTime = timeline.getCurrentTime();
+                    timeline.jumpTo(Frame.frame(Frame.toFrame(currentTime) + 1));
+                    // timeline.jumpTo(Duration.seconds(currentTime.toSeconds() + ONE_FRAME));
+                }
+                break;
+            case LEFT:
+                if (event.isControlDown() && event.isShiftDown())
+                {
+                    cameraXform2.t.setX(cameraXform2.t.getX() - 10.0 * CONTROL_MULTIPLIER);
+                } else if (event.isAltDown() && event.isShiftDown())
+                {
+                    cameraXform.ry.setAngle(cameraXform.ry.getAngle() + 10.0 * ALT_MULTIPLIER);  // -
+                } else if (event.isControlDown())
+                {
+                    cameraXform2.t.setX(cameraXform2.t.getX() - 1.0 * CONTROL_MULTIPLIER);
+                } else if (event.isShiftDown())
+                {
+                    currentTime = timeline.getCurrentTime();
+                    timeline.jumpTo(Frame.frame(Math.round(Frame.toFrame(currentTime) / 10.0) * 10 - 10));
+                    // timeline.jumpTo(Duration.seconds(currentTime.toSeconds() - ONE_FRAME));
+                } else if (event.isAltDown())
+                {
+                    cameraXform.ry.setAngle(cameraXform.ry.getAngle() + 2.0 * ALT_MULTIPLIER);  // -
+                } else
+                {
+                    currentTime = timeline.getCurrentTime();
+                    timeline.jumpTo(Frame.frame(Frame.toFrame(currentTime) - 1));
+                    // timeline.jumpTo(Duration.seconds(currentTime.toSeconds() - ONE_FRAME));
+                }
+                break;
+        }
+        //System.out.println(cameraXform.getTranslateX() + ", " + cameraXform.getTranslateY() + ", " + cameraXform.getTranslateZ());
+
     };
 
 
@@ -554,9 +476,12 @@ public class ThreeDViewManager
         AnchorPane.setRightAnchor(root3D, 0.0);
         root3D.setPickOnBounds(false);
 
-//        camera.getTransforms().addAll(rotateCameraAroundYAxis, translateCamera);
-        root3D.getChildren().add(camera);
+        root3D.getChildren().add(cameraXform);
+        cameraXform.getChildren().add(cameraXform2);
+        cameraXform2.getChildren().add(camera);
+        cameraXform2.t.setZ(-cameraDistance.get());
 
+//        root3D.getStyleClass().add("roboxPanel");
         camera.setNearClip(0.1);
         camera.setFarClip(10000.0);
 
@@ -567,45 +492,58 @@ public class ThreeDViewManager
         subScene.setCamera(camera);
 
         Group bed = buildBed();
-        translationDragPlane.setId("DragPlane");
-        translationDragPlane.setVisible(false);
-        translationDragPlane.setOpacity(1.0);
-//        translationDragPlane.setMouseTransparent(true);
+        dragPlane.setId("DragPlane");
+        dragPlane.setVisible(false);
+        dragPlane.setOpacity(0.0);
+        dragPlane.setMouseTransparent(true);
 
-        bedTranslateXform.getChildren().addAll(bed, models, translationDragPlane, threeDControl);
-        root3D.getChildren().add(bedTranslateXform);
+        bedXform.getChildren().addAll(bed, models, dragPlane, threeDControl);
+        root3D.getChildren().add(bedXform);
 
         bedXOffsetFromCameraZero = -printBedData.getPrintVolumeBounds().getWidth() / 2;
         bedZOffsetFromCameraZero = -printBedData.getPrintVolumeBounds().getDepth() / 2;
 
-        bedTranslateXform.setTx(bedXOffsetFromCameraZero);
-        bedTranslateXform.setTz(bedZOffsetFromCameraZero - cameraDistance.get());
-        bedTranslateXform.setPivot(-bedXOffsetFromCameraZero, 0, -bedZOffsetFromCameraZero);
+        bedXform.setTx(bedXOffsetFromCameraZero);
+        bedXform.setTz(bedZOffsetFromCameraZero);
 
-        rotateCameraAroundAxes(-30, 0);
-
+//        buildAxes();
+//        contentProperty()
+//                .addListener(new ChangeListener<Node>()
+//                        {
+//                            @Override
+//                            public void changed(ObservableValue<? extends Node> ov, Node oldContent, Node newContent
+//                            )
+//                            {
+//                                autoScalingGroup.getChildren().remove(oldContent);
+//                                autoScalingGroup.getChildren().add(newContent);
+////                setWireFrame(newContent, wireframe);
+//                                // TODO mesh is updated each time these are called even if no rendering needs to happen
+//                                setSubdivisionLevel(newContent, subdivisionLevel);
+//                                setBoundaryMode(newContent, boundaryMode);
+//                                setMapBorderMode(newContent, mapBorderMode);
+//                            }
+//                }
+//                );
         subScene.widthProperty().bind(widthPropertyToFollow);
         subScene.heightProperty().bind(heightPropertyToFollow);
 
-        subScene.widthProperty().addListener(new ChangeListener<Number>()
-        {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                recalculateCentre();
-            }
-        });
-
-        subScene.heightProperty().addListener(new ChangeListener<Number>()
-        {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                recalculateCentre();
-            }
-        });
+//        subScene.widthProperty().addListener(new ChangeListener<Number>()
+//        {
+//
+//            @Override
+//            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+//            {
+//steno.info("Scene width = " + t1.doubleValue());            }
+//        });
+//        
+//                subScene.heightProperty().addListener(new ChangeListener<Number>()
+//        {
+//
+//            @Override
+//            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+//            {
+//steno.info("Scene height = " + t1.doubleValue());            }
+//        });
 //        leapController = new Controller();
 //        leapMotionListener = new LeapMotionListener();
 //        leapController.addListener(leapMotionListener);
@@ -653,16 +591,7 @@ public class ThreeDViewManager
         // subScene.addEventFilter(KeyEvent.ANY, keyEventHandler);
         subScene.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
         subScene.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
-//
-//        subScene.addEventFilter(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>()
-//        {
-//
-//            @Override
-//            public void handle(MouseEvent event)
-//            {
-//                steno.info("Filter caught event " + event);
-//            }
-//        });
+
         layoutSubmodeProperty().addListener(new ChangeListener<LayoutSubmode>()
         {
             @Override
@@ -678,7 +607,6 @@ public class ThreeDViewManager
             }
         });
 
-        dragMode.addListener(dragModeListener);
     }
 
     private void goToPreset(CameraPositionPreset preset)
@@ -705,43 +633,22 @@ public class ThreeDViewManager
 
     private void recalculateCentre()
     {
-//        steno.info("=================");
-//        steno.info("From " + selectionContainer.getCentreX() + ":" + selectionContainer.getCentreY() + ":" + selectionContainer.getCentreZ());
-        Point3D testPoint = new Point3D(selectionContainer.getCentreX(), selectionContainer.getCentreY(), selectionContainer.getCentreZ());
-        Point3D correctedBed = bedTranslateXform.localToScene(testPoint);
-//        steno.info("Corrected bed = " + correctedBed);
-        Point3D localToScene = camera.sceneToLocal(correctedBed);
-//        steno.info("Local to scene " + localToScene);
-        Point2D localToSceneToScreen = camera.localToScreen(localToScene);
-//        steno.info("Local to scene to screen " + localToSceneToScreen);
-        selectionContainer.setScreenX(localToSceneToScreen.getX());
-        selectionContainer.setScreenY(localToSceneToScreen.getY());
+        steno.info("=================");
+        steno.info("From " + selectionContainer.getCentreX() + ":" + selectionContainer.getCentreY() + ":" + selectionContainer.getCentreZ());
+//        Point3D testPoint = new Point3D(selectionContainer.getCentreX() + bedXOffsetFromCameraZero, selectionContainer.getCentreY(), selectionContainer.getCentreZ() + bedZOffsetFromCameraZero);
+        Point3D testPoint = new Point3D(0,0,0);
+        steno.info("Conditioned point " + testPoint);
+        Point3D sceneToCamera = camera.sceneToLocal(testPoint);
+        steno.info("Scene to camera " + sceneToCamera);
+        Point3D xform2 = cameraXform2.sceneToLocal(testPoint);
+        steno.info("Xform 2 " + xform2);
+        Point3D xformToScreen = cameraXform.sceneToLocal(testPoint);
+        steno.info("XformToScreen " + xformToScreen);
+//        Point2D xformToScreen = cameraXform.localToScreen(xform2);
+//        steno.info("XformToScreen " + xformToScreen);
         
-//        Point2D dragPoint = CameraHelper.pickNodeXYPlane(camera, translationDragPlane, localToSceneToScreen.getX(), localToSceneToScreen.getY());
-//        steno.info("Drag point = " + dragPoint);
-//        Point3D projectPoint = CameraHelper.pickProjectPlane(camera, localToSceneToScreen.getX(), localToSceneToScreen.getY());
-//        steno.info("Project point = " + projectPoint);
-//        PickRay pickRay = pickingHelper.getDeathRay(localToSceneToScreen.getX(), localToSceneToScreen.getY());
-//        PickResult pickResult = pickingHelper.pick(pickRay);
-//        steno.info("Pick result was " + pickResult);
-        
-//steno.info("View width = " + viewWidth);
-//             PickRay pickRay = PickRay.computePerspectivePickRay(x, y, true,
-//                camera.g,
-//                getViewHeight(),
-//                camera.getFieldOfView(),
-//                camera.isVerticalFieldOfView(),
-//                camera.getCameraTransform(),
-//                camera.getNearClip(), camera.getFarClip(),
-//                null);
-//             
-//             camera.impl_pickNode(pickRay, null);
-//        Point3D screenToScene = camera.sceneToLocal(localToSceneToScreen.getX(), localToSceneToScreen.getY(), cameraDistance.get());
-//        steno.info("Reverse 1 " + screenToScene);
-//        
-//        PickRay.computePerspectivePickRay(mousePosX, mousePosX, true, mousePosX, mousePosX, mouseOldX, true, null, mouseOldX, mouseOldX, null)
-                
-//        PickRay pickRay = new PickRay(, mousePosX, mousePosX, mouseOldX, mouseOldX)
+        selectionContainer.setScreenX(xformToScreen.getX());
+        selectionContainer.setScreenY(xformToScreen.getY());
     }
 
     private Group buildBed()
@@ -797,7 +704,7 @@ public class ThreeDViewManager
         roboxLogoTransformNode.setTz(logoSide_mm
                 + PrintBed.getPrintVolumeCentre().getZ() / 2);
         roboxLogoTransformNode.setTy(
-                -.25);
+                -.1);
         roboxLogoTransformNode.setTx(PrintBed.getPrintVolumeCentre().getX() / 2);
         roboxLogoTransformNode.getChildren()
                 .add(roboxLogoView);
@@ -918,6 +825,28 @@ public class ThreeDViewManager
 //        controller.removeListener(leapMotionListener);
     }
 
+    private void dragMode(boolean on)
+    {
+        if (on && !inDragMode)
+        {
+            dragPlane.setVisible(true);
+            dragPlane.setTranslateX(lastDragPosition.getX());
+            dragPlane.setTranslateY(lastDragPosition.getY());
+            dragPlane.setTranslateZ(lastDragPosition.getZ());
+            dragPlane.setMouseTransparent(false);
+            models.setMouseTransparent(true);
+
+            inDragMode = true;
+        } else if (!on && inDragMode)
+        {
+            models.setMouseTransparent(false);
+            dragPlane.setVisible(false);
+            dragPlane.setMouseTransparent(true);
+
+            inDragMode = false;
+        }
+    }
+
 //    public PolarCamera getCamera()
 //    {
 //        return camera;
@@ -937,7 +866,7 @@ public class ThreeDViewManager
             selectionContainer.setDepth(depth);
             selectionContainer.setScale(model.getScale());
 //            selectionContainer.setRotationX(model.getRotationX());
-            selectionContainer.setRotationY(model.getRotateY());
+            selectionContainer.setRotationY(model.getRotationY());
 //            selectionContainer.setRotationZ(model.getRotationZ());
 //            selectionContainer.setMinX(model.getCentreX() - );
 
@@ -1001,8 +930,6 @@ public class ThreeDViewManager
                 selectionContainer.setScale(1);
             }
         }
-
-        recalculateCentre();
     }
 
     public void selectModel(ModelContainer selectedNode)
@@ -1146,8 +1073,7 @@ public class ThreeDViewManager
     {
         if (selectionContainer.selectedModelsProperty().size() == 1)
         {
-            ModelContainer model = selectionContainer.selectedModelsProperty().get(0);
-            model.scale(newScale);
+            selectionContainer.selectedModelsProperty().get(0).scale(newScale);
         } else
         {
             for (ModelContainer model : loadedModels)
@@ -1160,7 +1086,6 @@ public class ThreeDViewManager
         }
 
         recalculateSelectionBounds(false);
-        recalculateCentre();
         collideModels();
     }
 
@@ -1168,11 +1093,10 @@ public class ThreeDViewManager
     {
         if (selectionContainer.selectedModelsProperty().size() == 1)
         {
-            
-            selectionContainer.selectedModelsProperty().get(0).setRy(rotation);
-            steno.info("Pivot is " + selectionContainer.selectedModelsProperty().get(0).getPivot());
+            selectionContainer.selectedModelsProperty().get(0).setRotationY(rotation);
+//            steno.info(selectionContainer.selectedModelsProperty().get(0).toString());
             selectionContainer.setRotationY(rotation);
-//            recalculateSelectionBounds(false);
+            recalculateSelectionBounds(false);
         } else
         {
             for (ModelContainer model : loadedModels)
@@ -1303,111 +1227,4 @@ public class ThreeDViewManager
     {
         return root3D;
     }
-
-    public DoubleProperty demandedCameraRotationYProperty()
-    {
-        return demandedCameraRotationY;
-    }
-
-    public DoubleProperty demandedCameraRotationXProperty()
-    {
-        return demandedCameraRotationX;
-    }
-
-    public void setDragMode(boolean value)
-    {
-        dragMode.set(value);
-    }
-
-    public boolean getDragMode()
-    {
-        return dragMode.get();
-    }
-
-    public BooleanProperty dragModeProperty()
-    {
-        return dragMode;
-    }
-
-    public void associateGizmoOverlayController(GizmoOverlayController controller)
-    {
-        this.gizmoOverlayController = controller;
-    }
-
-    public void checkit(double screenX, double screenY)
-    {
-        Point2D screenToLocal = camera.screenToLocal(screenX, screenY);
-//        Point2D localToSceneToScreen = camera.localToScreen(localToScene);
-        steno.info("screen to local " + screenToLocal);
-
-        Point3D localToScene = camera.localToScene(screenToLocal.getX(), screenToLocal.getY(), 0);
-        steno.info("Local to scene " + localToScene);
-
-        Point3D correctedBed = bedTranslateXform.sceneToLocal(localToScene);
-        steno.info("Corrected bed = " + correctedBed);
-
-//        Point3D testPoint = new Point3D(selectionContainer.getCentreX(), selectionContainer.getCentreY(), selectionContainer.getCentreZ());
-    }
-
-    public void translateSelectionFromScreenCoords(Point2D translateStartPoint, Point2D screenCoords)
-    {
-        Point2D screenToLocal = camera.screenToLocal(translateStartPoint);
-        steno.info("Screen to local " + screenToLocal);
-        
-//    final PickResultChooser result = new PickResultChooser();
-//    PickRay pickRay = new PickRay(null, null, mouseOldX, mouseOldX)
-//    subScene.getRoot().impl_pickNode(new PickRay(screenToLocal.getX(), screenToLocal.getY()), result);
-//    Node nodeToSendEvent = result.getIntersectedNode();
-//        
-        
-    }
-    
-//        public Point3D sceneToLocal3D(Node n, double sceneX, double sceneY) {
-//        Scene scene = n.getScene();
-//        if (scene == null) {
-//            return null;
-//        }
-//
-//        Point2D pt = new Point2D(screenX, screenY);
-//        final SubScene subScene = NodeHelper.getSubScene(n);
-//        if (subScene != null) {
-//            pt = SceneUtils.sceneToSubScenePlane(subScene, pt);
-//            if (pt == null) {
-//                return null;
-//            }
-//        }
-//
-//        // compute pick ray
-//        final Camera cam = subScene != null
-//                ? SubSceneHelper.getEffectiveCamera(subScene)
-//                : SceneHelper.getEffectiveCamera(scene);
-//        
-//        final PickRay pickRay = cam.computePickRay(pt.getX(), pt.getY(), null);
-//
-//        // convert it to node's local pickRay
-//        final Affine3D localToSceneTx = new Affine3D();
-//        n.getLocalToSceneTransform().impl_apply(localToSceneTx);
-//        try {
-//            Vec3d origin = pickRay.getOriginNoClone();
-//            Vec3d direction = pickRay.getDirectionNoClone();
-//            localToSceneTx.inverseTransform(origin, origin);
-//            localToSceneTx.inverseDeltaTransform(direction, direction);
-//        } catch (NoninvertibleTransformException e) {
-//            return null;
-//        }
-//
-//        // compute the intersection
-//        final PickResultChooser result = new PickResultChooser();
-//        impl_computeIntersects(pickRay, result);
-//        if (result.getIntersectedNode() == n) {
-//            return result.getIntersectedPoint();
-//        }
-//
-//        // there is none, use point on projection plane instead
-//        final Point3D ppIntersect = CameraAccess.getCameraAccess().pickProjectPlane(cam, pt.getX(), pt.getY());
-//        return n.sceneToLocal(ppIntersect);
-//    }
-
-
-
 }

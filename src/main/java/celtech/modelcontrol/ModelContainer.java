@@ -99,6 +99,7 @@ public class ModelContainer extends Xform implements Serializable
     {
         super(RotateOrder.XYZ);
         initialiseObject(name);
+        configureModelOnLoad();
     }
 
     public ModelContainer(String name, GCodeMeshData gcodeMeshData, ArrayList<String> fileLines)
@@ -106,6 +107,7 @@ public class ModelContainer extends Xform implements Serializable
         super(RotateOrder.XYZ);
         modelContentsType = ModelContentsEnumeration.GCODE;
         initialiseObject(name);
+        configureModelOnLoad();
         getChildren().add(gcodeMeshData.getAllParts());
         this.gcodeMeshData = gcodeMeshData;
         numberOfMeshes = 0;
@@ -158,6 +160,7 @@ public class ModelContainer extends Xform implements Serializable
         modelContentsType = ModelContentsEnumeration.MESH;
         getChildren().add(meshToAdd);
         initialiseObject(name);
+        configureModelOnLoad();
         numberOfMeshes = 1;
     }
 
@@ -168,7 +171,23 @@ public class ModelContainer extends Xform implements Serializable
         modelContentsType = ModelContentsEnumeration.MESH;
         getChildren().addAll(meshes);
         initialiseObject(name);
+        configureModelOnLoad();
         numberOfMeshes = meshes.size();
+    }
+
+    private void configureModelOnLoad()
+    {
+        calculateBounds();
+        centreX = 0;
+        centreY = 0;
+        centreZ = 0;
+        centreXOffset = originalModelBounds.getCentreX();
+        centreYOffset = originalModelBounds.getCentreY();
+        centreZOffset = originalModelBounds.getCentreZ();
+        setTx(centreXOffset);
+        setTz(centreZOffset);
+        setPivot(originalModelBounds.getCentreX(), 0, originalModelBounds.getCentreZ());
+        steno.info("Bounds are " + originalModelBounds);
     }
 
     private void initialiseObject(String name)
@@ -191,42 +210,6 @@ public class ModelContainer extends Xform implements Serializable
         numberOfLayers = new SimpleIntegerProperty(0);
         maxLayerVisible = new SimpleIntegerProperty(0);
         minLayerVisible = new SimpleIntegerProperty(0);
-
-//        for (Node node : getChildren())
-//        {
-//            if (node instanceof MeshView)
-//            {
-//                MeshView foundMesh = (MeshView)node;
-//                steno.info("Got a mesh with bounds " + foundMesh);
-//            }
-//        }
-//        originalModelBounds = getBoundsInLocal();
-        calculateBounds();
-        centreX = 0;
-        centreY = 0;
-        centreZ = 0;
-        centreXOffset = originalModelBounds.getCentreX();
-        centreYOffset = originalModelBounds.getCentreY();
-        centreZOffset = originalModelBounds.getCentreZ();
-        setPivot(centreXOffset, 0, centreZOffset);
-//        tran
-        setTx(centreXOffset);
-        setTz(centreZOffset);
-//        setPivot(originalModelBounds.getCentreX(), originalModelBounds.getCentreY(), originalModelBounds.getCentreZ());
-        steno.info("Bounds are " + originalModelBounds);
-
-//        scaleProperty().addListener(new ChangeListener<Number>()
-//        {
-//
-//            @Override
-//            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-//            {
-//                if (t1.doubleValue() != getScale())
-//                {
-//                    setScale(t1.doubleValue());
-//                }
-//            }
-//        });
         this.setId(name);
     }
 
@@ -342,11 +325,11 @@ public class ModelContainer extends Xform implements Serializable
             finalZPosition -= (newMaxZ - printBed.getPrintVolumeMaximums().getZ());
         }
 
-        setTx(finalXPosition - centreXOffset);
-        setTz(finalZPosition - centreZOffset);
+        setTx(finalXPosition - (scale.get() * centreXOffset));
+        setTz(finalZPosition - (scale.get() * centreZOffset));
 
-        centreX = xPosition;
-        centreZ = zPosition;
+        centreX = finalXPosition;
+        centreZ = finalZPosition;
 
         checkOffBed();
     }
@@ -586,13 +569,23 @@ public class ModelContainer extends Xform implements Serializable
 //            }
         }
 
-        out.writeDouble(getTx());
-        out.writeDouble(getTy());
-        out.writeDouble(getTz());
-        out.writeDouble(scale.get());
-        out.writeDouble(rotationX.get());
-        out.writeDouble(rotationY.get());
-        out.writeDouble(rotationZ.get());
+        steno.info("Pivot is " + this.getPivot());
+
+        double translationX = getTx();
+        double translationY = getTy();
+        double translationZ = getTz();
+        double storedscale = scale.get();
+        double xrot = getRotationX();
+        double yrot = getRotationY();
+        double zrot = getRotationZ();
+
+        out.writeDouble(translationX);
+        out.writeDouble(translationY);
+        out.writeDouble(translationZ);
+        out.writeDouble(storedscale);
+        out.writeDouble(xrot);
+        out.writeDouble(yrot);
+        out.writeDouble(zrot);
 
         out.writeDouble(centreX);
         out.writeDouble(centreY);
@@ -648,8 +641,8 @@ public class ModelContainer extends Xform implements Serializable
 //                getChildren().add(node);
 //            }
         }
-        this.getTransforms().clear();
-        this.getTransforms().addAll(new Xform(RotateOrder.XYZ).getTransforms());
+//        this.getTransforms().clear();
+//        this.getTransforms().addAll(new Xform(RotateOrder.XYZ).getTransforms());
 
         initialiseObject(modelName);
 
@@ -666,7 +659,7 @@ public class ModelContainer extends Xform implements Serializable
         double offsetX = in.readDouble();
         double offsetY = in.readDouble();
         double offsetZ = in.readDouble();
-        
+
         centreX = xCentre;
         centreY = yCentre;
         centreZ = zCentre;
@@ -674,17 +667,17 @@ public class ModelContainer extends Xform implements Serializable
         centreYOffset = offsetY;
         centreZOffset = offsetZ;
 
-        setPivot(centreXOffset, 0, centreZOffset);
-
-        setTx(translationX);
-        setTy(translationY);
-        setTz(translationZ);
-
-        setScale(storedscale);
         setRotationX(xrot);
         setRotationY(yrot);
         setRotationZ(zrot);
 
+        calculateBounds();
+//        setTx(translationX);
+//        setTz(translationZ);
+        setPivot(centreXOffset, 0, centreZOffset);
+        setScale(storedscale);
+        setTx(centreX - (storedscale * centreXOffset));
+        setTz(centreZ - (storedscale * centreZOffset));
     }
 
     private void readObjectNoData()
@@ -696,7 +689,6 @@ public class ModelContainer extends Xform implements Serializable
     public void scale(double newScale)
     {
         setScale(newScale);
-        dropModelOnBed();
     }
 
     public MeshView getMeshView()
@@ -1002,7 +994,7 @@ public class ModelContainer extends Xform implements Serializable
         currentRotation = newRotation.applyTo(currentRotation);
         double resultingAngles[] = currentRotation.getAngles(RotationOrder.XYZ);
 //        steno.info("Angles were " + angles [0] + ":" + angles[1] + ":" + angles[2]);
-        this.setPivot(centreXOffset, centreYOffset, centreZOffset);
+//        this.setPivot(centreXOffset, centreYOffset, centreZOffset);
         this.setRotationX(resultingAngles[0] * MathUtils.RAD_TO_DEG);
         this.setRotationY(resultingAngles[1] * MathUtils.RAD_TO_DEG);
         this.setRotationZ(resultingAngles[2] * MathUtils.RAD_TO_DEG);

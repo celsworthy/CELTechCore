@@ -12,7 +12,7 @@
 <?scenebuilder-preview-i18n-resource ../i18n/LanguageData.properties?>
 <?scenebuilder-stylesheet ../css/AutoMaker.css?>
 
-<StackPane id="AnchorPane" fx:id="statusPane" styleClass="background" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.PrinterStatusPageController">
+<StackPane id="AnchorPane" fx:id="statusPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="300.0" minWidth="300.0" prefHeight="640.0" prefWidth="710.0" styleClass="background" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.PrinterStatusPageController">
   <children>
     <ImageView fx:id="printerSilhouette" fitHeight="0.0" fitWidth="600.0" pickOnBounds="true" preserveRatio="true" visible="true">
       <image>

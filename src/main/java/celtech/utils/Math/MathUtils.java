@@ -157,6 +157,11 @@ public class MathUtils
 
         phi = boundAzimuthRadians(phi);
 
+        if (r == 0)
+        {
+            theta = 0;
+            phi = 0;
+        }
         double thetaDeg = Math.toDegrees(theta);
         double phiDeg = Math.toDegrees(phi);
 

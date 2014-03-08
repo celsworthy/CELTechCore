@@ -34,11 +34,13 @@ public class MenuStripController
 {
 
     private Stenographer steno = StenographerFactory.getStenographer(MenuStripController.class.getName());
+    private SettingsScreenState settingsScreenState = null;
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
     private final FileChooser modelFileChooser = new FileChooser();
     private Project boundProject = null;
     private ResourceBundle i18nBundle = null;
+    private File lastModelDirectory = null;
 
     @FXML
     private ResourceBundle resources;
@@ -51,6 +53,9 @@ public class MenuStripController
 
     @FXML
     private Button forwardButton;
+
+    @FXML
+    private Button printButton;
 
     @FXML
     private HBox layoutButtonHBox;
@@ -75,6 +80,14 @@ public class MenuStripController
             default:
                 break;
         }
+    }
+
+    @FXML
+    void printPressed(ActionEvent event)
+    {
+        Project currentProject = DisplayManager.getInstance().getCurrentlyVisibleProject();
+        settingsScreenState.getSelectedPrinter().printProject(currentProject, settingsScreenState.getFilament(), settingsScreenState.getPrintQuality(), settingsScreenState.getSettings());
+        applicationStatus.setMode(ApplicationMode.STATUS);
     }
 
     @FXML
@@ -132,11 +145,14 @@ public class MenuStripController
             modelFileChooser.getExtensionFilters().addAll(
                     new FileChooser.ExtensionFilter(descriptionOfFile,
                             ApplicationConfiguration.getSupportedFileExtensionWildcards(projectMode)));
+            
+            modelFileChooser.setInitialDirectory(lastModelDirectory);
 
             final File file = modelFileChooser.showOpenDialog(displayManager.getMainStage());
-
+            
             if (file != null)
             {
+                lastModelDirectory = file.getParentFile();
                 displayManager.loadExternalModel(file);
             }
         });
@@ -172,9 +188,13 @@ public class MenuStripController
         displayManager = DisplayManager.getInstance();
         i18nBundle = DisplayManager.getLanguageBundle();
         applicationStatus = ApplicationStatus.getInstance();
+        settingsScreenState = SettingsScreenState.getInstance();
 
+        lastModelDirectory = new File(ApplicationConfiguration.getProjectDirectory());
+        
         backwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.STATUS));
         forwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS));
+        printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS));
 
         layoutButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LAYOUT));
 
