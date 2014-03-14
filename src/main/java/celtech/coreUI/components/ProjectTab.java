@@ -157,6 +157,7 @@ public class ProjectTab extends Tab
 //        camera = viewManager.getCamera();
 
         basePane = new AnchorPane();
+        basePane.getStyleClass().add("project-view-background");
 
         basePane.setOnDragOver(new EventHandler<DragEvent>()
         {

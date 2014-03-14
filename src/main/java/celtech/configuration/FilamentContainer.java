@@ -33,11 +33,12 @@ public class FilamentContainer
     private static final ObservableList<Filament> userFilamentList = FXCollections.observableArrayList();
     private static final ObservableList<Filament> completeFilamentList = FXCollections.observableArrayList();
     private static final ObservableMap<String, Filament> completeFilamentMap = FXCollections.observableHashMap();
-    public static final Filament createNewFilament = new Filament(null, null, null, null,
+    public static final Filament createNewFilament = new Filament(null, null, null,
             0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, false);
 
     private static final String nameProperty = "name";
     private static final String materialProperty = "material";
+    private static final String reelIDProperty = "reelID";
     private static final String diameterProperty = "diameter_mm";
     private static final String maxExtrusionRateProperty = "max_extrusion_rate";
     private static final String extrusionMultiplierProperty = "extrusion_multiplier";
@@ -47,7 +48,7 @@ public class FilamentContainer
     private static final String firstLayerNozzleTempProperty = "first_layer_nozzle_temperature_C";
     private static final String nozzleTempProperty = "nozzle_temperature_C";
     private static final String displayColourProperty = "display_colour";
-    
+
     private static final StringConverter<Integer> intConverter = FXUtils.getIntConverter();
     private static final StringConverter<Float> floatConverter = FXUtils.getFloatConverter(2);
 
@@ -61,7 +62,7 @@ public class FilamentContainer
         completeFilamentList.clear();
         appFilamentList.clear();
         userFilamentList.clear();
-        
+
         File applicationFilamentDirHandle = new File(ApplicationConfiguration.getApplicationFilamentDirectory());
         File[] applicationfilaments = applicationFilamentDirHandle.listFiles(new FilamentFileFilter());
         ArrayList<Filament> filaments = ingestFilaments(applicationfilaments, false);
@@ -88,6 +89,7 @@ public class FilamentContainer
 
                 String filename = filamentFile.getName();
                 String name = filamentProperties.getProperty(nameProperty);
+                String reelID = filamentProperties.getProperty(reelIDProperty);
                 String material = filamentProperties.getProperty(materialProperty);
                 String diameterString = filamentProperties.getProperty(diameterProperty);
                 String maxExtrusionRateString = filamentProperties.getProperty(maxExtrusionRateProperty);
@@ -101,6 +103,7 @@ public class FilamentContainer
 
                 if (name != null
                         && material != null
+                        && reelID != null
                         && diameterString != null
                         && maxExtrusionRateString != null
                         && extrusionMultiplierString != null
@@ -122,13 +125,12 @@ public class FilamentContainer
                         int firstLayerNozzleTemp = Integer.valueOf(firstLayerNozzleTempString);
                         int nozzleTemp = Integer.valueOf(nozzleTempString);
                         Color colour = Color.web(displayColourString);
+                        MaterialType selectedMaterial = MaterialType.valueOf(material);
 
-                        String filamentTypeCode = filamentFile.getName().replaceAll(ApplicationConfiguration.filamentFileExtension, "");
-
-                        Filament newFilament = new Filament(filename,
-                                filamentTypeCode,
+                        Filament newFilament = new Filament(
                                 name,
-                                material,
+                                selectedMaterial,
+                                reelID,
                                 diameter,
                                 maxExtrusionRate,
                                 extrusionMultiplier,
@@ -141,7 +143,7 @@ public class FilamentContainer
                                 filamentsAreMutable);
 
                         filamentList.add(newFilament);
-                        completeFilamentMap.put(filamentTypeCode, newFilament);
+                        completeFilamentMap.put(reelID, newFilament);
 
                     } catch (NumberFormatException ex)
                     {
@@ -167,7 +169,14 @@ public class FilamentContainer
             Properties filamentProperties = new Properties();
 
             filamentProperties.setProperty(nameProperty, filament.getFriendlyFilamentName());
-            filamentProperties.setProperty(materialProperty, filament.getMaterial());
+            filamentProperties.setProperty(materialProperty, filament.getMaterial().toString());
+            if (filament.getReelID() == null)
+            {
+                filamentProperties.setProperty(reelIDProperty, Filament.generateUserReelID());
+            } else
+            {
+                filamentProperties.setProperty(reelIDProperty, filament.getReelID());
+            }
             filamentProperties.setProperty(diameterProperty, floatConverter.toString(filament.getDiameter()));
             filamentProperties.setProperty(maxExtrusionRateProperty, floatConverter.toString(filament.getMaxExtrusionRate()));
             filamentProperties.setProperty(extrusionMultiplierProperty, floatConverter.toString(filament.getExtrusionMultiplier()));
@@ -176,11 +185,11 @@ public class FilamentContainer
             filamentProperties.setProperty(bedTempProperty, intConverter.toString(filament.getBedTemperature()));
             filamentProperties.setProperty(firstLayerNozzleTempProperty, intConverter.toString(filament.getFirstLayerNozzleTemperature()));
             filamentProperties.setProperty(nozzleTempProperty, intConverter.toString(filament.getNozzleTemperature()));
-            
-            String webColour = String.format( "#%02X%02X%02X",
-            (int)( filament.getDisplayColour().getRed() * 255 ),
-            (int)( filament.getDisplayColour().getGreen() * 255 ),
-            (int)( filament.getDisplayColour().getBlue() * 255 ) );
+
+            String webColour = String.format("#%02X%02X%02X",
+                    (int) (filament.getDisplayColour().getRed() * 255),
+                    (int) (filament.getDisplayColour().getGreen() * 255),
+                    (int) (filament.getDisplayColour().getBlue() * 255));
             filamentProperties.setProperty(displayColourProperty, webColour);
 
             String filename = filament.getFileName();
@@ -188,7 +197,7 @@ public class FilamentContainer
             {
                 filename = filename + ApplicationConfiguration.filamentFileExtension;
             }
-            
+
             File filamentFile = new File(ApplicationConfiguration.getUserFilamentDirectory() + filename);
             filamentProperties.store(new FileOutputStream(filamentFile), "Robox data");
             loadFilamentData();

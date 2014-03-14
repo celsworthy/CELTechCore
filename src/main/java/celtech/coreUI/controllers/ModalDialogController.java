@@ -7,13 +7,17 @@ package celtech.coreUI.controllers;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -33,9 +37,15 @@ public class ModalDialogController implements Initializable
     private Label dialogMessage;
     @FXML
     private HBox buttonHolder;
+    @FXML
+    private VBox container;
+    @FXML
+    private VBox defaultContent;
+
     private EventHandler<ActionEvent> buttonHandler = null;
     private int buttonValue = -1;
     private Stage myStage = null;
+    private Node customContent = null;
     /*
      * 
      */
@@ -76,10 +86,21 @@ public class ModalDialogController implements Initializable
 
     public int addButton(String text)
     {
+        return addButton(text, null);
+    }
+
+    public int addButton(String text, ReadOnlyBooleanProperty disabler)
+    {
         Button newButton = new Button(text);
         newButton.setOnAction(buttonHandler);
         buttonHolder.getChildren().add(newButton);
         buttons.add(newButton);
+        
+        if (disabler != null)
+        {
+            newButton.disableProperty().bind(disabler);
+        }
+        
         return buttons.indexOf(newButton);
     }
 
@@ -91,5 +112,17 @@ public class ModalDialogController implements Initializable
     public void configure(Stage dialogStage)
     {
         myStage = dialogStage;
+    }
+
+    public void setContent(Node content)
+    {
+        defaultContent.setVisible(false);
+        if (customContent != null)
+        {
+            container.getChildren().remove(customContent);
+        }
+
+        customContent = content;
+        container.getChildren().add(0, customContent);
     }
 }

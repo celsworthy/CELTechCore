@@ -1,9 +1,17 @@
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
 package celtech.utils;
 
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.LineNumberReader;
 import java.util.List;
 import java.util.UUID;
 import libertysystems.stenographer.Stenographer;
@@ -93,6 +101,98 @@ public class SystemUtils
 // divisible by ten
         return Character.forDigit((10 - (sum % 10)) % 10, 10);
 
+    }
+
+    public static int countLinesInFile(File aFile, String commentCharacter)
+    {
+        LineNumberReader reader = null;
+        int numberOfLines = 0;
+        try
+        {
+            String lineRead;
+            reader = new LineNumberReader(new FileReader(aFile));
+
+            while ((lineRead = reader.readLine()) != null)
+            {
+                if (lineRead.startsWith(commentCharacter) == false)
+                {
+                    numberOfLines++;
+                }
+            };
+            return numberOfLines;
+        } catch (Exception ex)
+        {
+            return -1;
+        } finally
+        {
+            if (reader != null)
+            {
+                try
+                {
+                    reader.close();
+                } catch (IOException ex)
+                {
+                    steno.error("Failed to close file during line number read: " + ex);
+                }
+            }
+        }
+    }
+
+    public static int countLinesInFile(File aFile)
+    {
+        LineNumberReader reader = null;
+        try
+        {
+            reader = new LineNumberReader(new FileReader(aFile));
+            while ((reader.readLine()) != null);
+            return reader.getLineNumber();
+        } catch (Exception ex)
+        {
+            return -1;
+        } finally
+        {
+            if (reader != null)
+            {
+                try
+                {
+                    reader.close();
+                } catch (IOException ex)
+                {
+                    steno.error("Failed to close file during line number read: " + ex);
+                }
+            }
+        }
+    }
+
+    public static String getIncrementalFilenameOnly(String directory, String filename, String fileextension)
+    {
+        String chosenFilename = null;
+
+        boolean notFound = true;
+        int suffix = 1;
+
+//        File testFile = new File(directory + File.separator + filename + "_" + suffix + fileextension);
+//
+//        if (testFile.exists() == true)
+//        {
+            while (notFound)
+            {
+                File outfile = new File(directory + File.separator + filename + "_" + suffix + fileextension);
+                if (!outfile.exists())
+                {
+                    chosenFilename = outfile.getName().replaceFirst("\\..*$", "");
+                    break;
+                }
+
+                suffix++;
+            }
+//        }
+//        else
+//        {
+//            chosenFilename = filename;
+//        }
+
+        return chosenFilename;
     }
 
 }

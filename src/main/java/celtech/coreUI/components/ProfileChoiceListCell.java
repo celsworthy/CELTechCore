@@ -8,7 +8,9 @@ package celtech.coreUI.components;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
+import celtech.configuration.PrintProfileContainer;
 import celtech.coreUI.DisplayManager;
+import celtech.services.slicer.SlicerSettings;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -21,47 +23,44 @@ import javafx.scene.shape.Rectangle;
  *
  * @author Ian
  */
-public class MaterialChoiceListCell extends ListCell<Filament>
-{
-    
-    private final static String LIST_CELL_STYLE_CLASS = "material-choice-list-cell";
+public class ProfileChoiceListCell extends ListCell<SlicerSettings>
+{   
+    private final static String LIST_CELL_STYLE_CLASS = "profile-choice-list-cell";
     private final GridPane grid = new GridPane();
-    private final Rectangle colourRectangle = new Rectangle(10, 10);
     private final Label name = new Label();
     private static Image padlockImage = null;
     private ImageView padlock = new ImageView();
-    private final Label createNewFilamentLabel = new Label();
+    private final Label createNewProfileLabel = new Label();
     
-    public MaterialChoiceListCell()
+    public ProfileChoiceListCell()
     {
         if (padlockImage == null)
         {
-            padlockImage = new Image(MaterialChoiceListCell.class.getResource(ApplicationConfiguration.imageResourcePath + "padlock.png").toExternalForm());
+            padlockImage = new Image(ProfileChoiceListCell.class.getResource(ApplicationConfiguration.imageResourcePath + "padlock.png").toExternalForm());
         }
         padlock.setImage(padlockImage);
         
-        createNewFilamentLabel.setText(DisplayManager.getLanguageBundle().getString("sidePanel_settings.createNewMaterial"));
-        createNewFilamentLabel.setAlignment(Pos.CENTER);
+        createNewProfileLabel.setText(DisplayManager.getLanguageBundle().getString("sidePanel_settings.createNewProfile"));
+        createNewProfileLabel.setAlignment(Pos.CENTER);
         
         grid.setHgap(10);
         grid.setVgap(4);
-        grid.add(colourRectangle, 1, 1);
-        grid.add(padlock, 2, 1);
-        grid.add(name, 3, 1);
+        grid.add(padlock, 1, 1);
+        grid.add(name, 2, 1);
         
         grid.getStyleClass().add(LIST_CELL_STYLE_CLASS);
     }
     
     @Override
-    protected void updateItem(Filament filament, boolean empty)
+    protected void updateItem(SlicerSettings settings, boolean empty)
     {
-        super.updateItem(filament, empty);
+        super.updateItem(settings, empty);
         if (empty)
         {
             clearContent();
         } else
         {
-            addContent(filament);
+            addContent(settings);
         }
     }
     
@@ -71,17 +70,16 @@ public class MaterialChoiceListCell extends ListCell<Filament>
         setGraphic(null);
     }
     
-    private void addContent(Filament filament)
+    private void addContent(SlicerSettings settings)
     {
         setText(null);
-        if (filament == FilamentContainer.createNewFilament)
+        if (settings == PrintProfileContainer.createNewProfile)
         {
-            setGraphic(createNewFilamentLabel);
+            setGraphic(createNewProfileLabel);
         } else
         {
-            colourRectangle.setFill(filament.getDisplayColour());
-            padlock.setVisible(!filament.isMutable());
-            name.textProperty().bind(filament.getFriendlyFilamentNameProperty());
+            padlock.setVisible(!settings.isMutable());
+            name.textProperty().bind(settings.getProfileNameProperty());
             setGraphic(grid);
         }
     }

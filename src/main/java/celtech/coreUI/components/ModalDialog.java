@@ -4,14 +4,17 @@
  */
 package celtech.coreUI.components;
 
-import celtech.coreUI.DisplayManager;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.ModalDialogController;
 import java.io.IOException;
 import java.net.URL;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -30,9 +33,29 @@ public class ModalDialog
     private Stage dialogStage = null;
     private ModalDialogController dialogController = null;
 
+    public ModalDialog(String windowTitle)
+    {
+        initialise(windowTitle);
+    }
+
     public ModalDialog()
     {
-        dialogStage = new Stage(StageStyle.TRANSPARENT);
+        initialise(null);
+    }
+
+    private void initialise(String windowTitle)
+    {
+        if (windowTitle != null)
+        {
+            dialogStage = new Stage(StageStyle.UTILITY);
+            dialogStage.setTitle(windowTitle);
+        } else
+        {
+            dialogStage = new Stage(StageStyle.TRANSPARENT);
+        }
+
+        dialogStage.setResizable(false);
+
         URL dialogFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "ModalDialog.fxml");
         FXMLLoader dialogLoader = new FXMLLoader(dialogFXMLURL);
         try
@@ -67,6 +90,11 @@ public class ModalDialog
         return dialogController.addButton(text);
     }
 
+    public int addButton(String text, ReadOnlyBooleanProperty disabler)
+    {
+        return dialogController.addButton(text, disabler);
+    }
+
     public int show()
     {
         dialogStage.showAndWait();
@@ -82,5 +110,10 @@ public class ModalDialog
     public boolean isShowing()
     {
         return dialogStage.isShowing();
+    }
+
+    public void setContent(Node content)
+    {
+        dialogController.setContent(content);
     }
 }

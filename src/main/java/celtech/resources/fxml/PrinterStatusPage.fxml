@@ -12,7 +12,7 @@
 <?scenebuilder-preview-i18n-resource ../i18n/LanguageData.properties?>
 <?scenebuilder-stylesheet ../css/AutoMaker.css?>
 
-<StackPane id="AnchorPane" fx:id="statusPane" styleClass="background" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.PrinterStatusPageController">
+<StackPane id="AnchorPane" fx:id="statusPane" styleClass="project-view-background" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.PrinterStatusPageController">
   <children>
     <ImageView fx:id="printerSilhouette" fitHeight="0.0" fitWidth="600.0" pickOnBounds="true" preserveRatio="true" visible="true">
       <image>
@@ -223,7 +223,7 @@
                 </ImageView>
               </graphic>
             </Button>
-            <Button id="pausePrintButton" fx:id="resumePrintButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#resumePrint" text="ResumePrint">
+            <Button id="pausePrintButton" fx:id="resumePrintButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#resumePrint" styleClass="borderlessGraphicButton" text="ResumePrint">
               <graphic>
                 <ImageView fitHeight="0.0" fitWidth="0.0" pickOnBounds="true" preserveRatio="true">
                   <image>
@@ -234,7 +234,7 @@
             </Button>
           </children>
         </StackPane>
-        <Button fx:id="cancelPrintButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#cancelPrint" styleClass="circularGraphicButton" text="CancelPrint">
+        <Button fx:id="cancelPrintButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#cancelPrint" styleClass="borderlessGraphicButton" text="CancelPrint">
           <graphic>
             <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
               <image>

@@ -44,20 +44,16 @@ import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.printing.PrintQueue;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.SlicerSettings;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -208,7 +204,7 @@ public class Printer
      */
     private final ObservableList<String> gcodeTranscript = FXCollections.observableArrayList();
 
-    private final PrintQueue printQueue = new PrintQueue();
+    private final PrintQueue printQueue = new PrintQueue(this);
 
     /*
      * From printer interface
@@ -1292,10 +1288,10 @@ public class Printer
                 setBedHeaterOn(statusResponse.isBedHeaterOn());
                 setNozzleHeaterOn(statusResponse.isNozzleHeaterOn());
                 setHeadFanOn(statusResponse.isHeadFanOn());
-                setPrintJobID(statusResponse.getRunningPrintJobID());
-                setPrintJobLineNumber(statusResponse.getPrintJobLineNumber());
                 setBusy(statusResponse.isBusyStatus());
                 setPaused(statusResponse.isPauseStatus());
+                setPrintJobLineNumber(statusResponse.getPrintJobLineNumber());
+                setPrintJobID(statusResponse.getRunningPrintJobID());
                 setXStopSwitch(statusResponse.isxSwitchStatus());
                 setYStopSwitch(statusResponse.isySwitchStatus());
                 setZStopSwitch(statusResponse.iszSwitchStatus());
@@ -1486,15 +1482,9 @@ public class Printer
         if (getErrorsDetected())
         {
             setPrinterStatus(PrinterStatusEnumeration.ERROR);
-        } else if (paused.get() == true)
-        {
-            setPrinterStatus(PrinterStatusEnumeration.PAUSED);
-        } else if (getPrintJobID() != null && getPrintJobID().charAt(0) != '\0')
-        {
-            setPrinterStatus(PrinterStatusEnumeration.PRINTING);
         } else
         {
-            setPrinterStatus(PrinterStatusEnumeration.IDLE);
+            setPrinterStatus(printQueue.getPrintStatus());
         }
     }
 
@@ -1654,7 +1644,7 @@ public class Printer
         printerCommsManager.submitForWrite(portName, gcodePacket);
     }
 
-    private void transmitAbortPrint() throws RoboxCommsException
+    public void transmitAbortPrint() throws RoboxCommsException
     {
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.ABORT_PRINT);
 
@@ -1897,48 +1887,23 @@ public class Printer
                 steno.error("Failure to set temperatures prior to print");
             }
         }
-        printQueue.printProject(this, project, printQuality, settings);
+        printQueue.printProject(project, printQuality, settings);
     }
 
     public void abortPrint()
     {
-        printQueue.cancelRun();
+        printQueue.abortPrint();
         sendInProgress = false;
-        if (isPrintInitiated())
-        {
-            try
-            {
-                transmitAbortPrint();
-                String response = transmitStoredGCode(GCodeMacros.ABORT_PRINT, true);
-            } catch (RoboxCommsException ex)
-            {
-                steno.error("Robox comms exception when sending abort print command " + ex);
-            }
-        }
     }
 
     public void pausePrint()
     {
-        try
-        {
-            transmitPausePrint();
-            transmitStoredGCode(GCodeMacros.PAUSE_PRINT, true);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Robox comms exception when sending pause print command " + ex);
-        }
+        printQueue.pausePrint();
     }
 
     public void resumePrint()
     {
-        try
-        {
-            transmitStoredGCode(GCodeMacros.RESUME_PRINT, true);
-            transmitResumePrint();
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Robox comms exception when sending resume print command " + ex);
-        }
+        printQueue.resumePrint();
     }
 
     public int getSequenceNumber()

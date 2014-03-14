@@ -12,12 +12,20 @@ import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.visualisation.SelectionContainer;
+import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterStatusEnumeration;
+import celtech.printerControl.comms.commands.GCodeConstants;
+import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import java.io.File;
 import java.net.URL;
 import java.util.ListIterator;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -87,6 +95,14 @@ public class MenuStripController
     {
         Project currentProject = DisplayManager.getInstance().getCurrentlyVisibleProject();
         settingsScreenState.getSelectedPrinter().printProject(currentProject, settingsScreenState.getFilament(), settingsScreenState.getPrintQuality(), settingsScreenState.getSettings());
+        try
+        {
+            settingsScreenState.getSelectedPrinter().transmitDirectGCode(GCodeConstants.setNozzleTemperatureToTarget, true);
+            settingsScreenState.getSelectedPrinter().transmitDirectGCode(GCodeConstants.setBedTemperatureToTarget, true);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error whilst sending preheat commands");
+        }
         applicationStatus.setMode(ApplicationMode.STATUS);
     }
 
@@ -145,11 +161,11 @@ public class MenuStripController
             modelFileChooser.getExtensionFilters().addAll(
                     new FileChooser.ExtensionFilter(descriptionOfFile,
                             ApplicationConfiguration.getSupportedFileExtensionWildcards(projectMode)));
-            
+
             modelFileChooser.setInitialDirectory(lastModelDirectory);
 
             final File file = modelFileChooser.showOpenDialog(displayManager.getMainStage());
-            
+
             if (file != null)
             {
                 lastModelDirectory = file.getParentFile();
@@ -182,6 +198,9 @@ public class MenuStripController
         displayManager.activateSnapToGround();
     }
 
+    private Printer currentPrinter = null;
+    private BooleanProperty printerOKToPrint = new SimpleBooleanProperty(false);
+
     @FXML
     void initialize()
     {
@@ -191,10 +210,28 @@ public class MenuStripController
         settingsScreenState = SettingsScreenState.getInstance();
 
         lastModelDirectory = new File(ApplicationConfiguration.getProjectDirectory());
-        
+
         backwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.STATUS));
         forwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS));
-        printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS));
+        printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(printerOKToPrint));
+
+        settingsScreenState.selectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
+            {
+                if (newValue != null)
+                {
+                    if (currentPrinter != null)
+                    {
+                        printerOKToPrint.unbind();
+                        printerOKToPrint.set(false);
+                    }
+                    printerOKToPrint.bind(newValue.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.IDLE));
+                    currentPrinter = newValue;
+                }
+            }
+        });
 
         layoutButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LAYOUT));
 

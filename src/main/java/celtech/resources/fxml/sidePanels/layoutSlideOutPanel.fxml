@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox fx:id="slideout" maxHeight="1.7976931348623157E308" maxWidth="380.0" minWidth="-Infinity" styleClass="sidePanel_slideout" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.sidePanels.LayoutSlideOutPanelController">
+    <children>
+        <VBox id="Container" fx:id="gcodeEditParent" spacing="10.0" HBox.hgrow="ALWAYS">
+<children><Label styleClass="sidePanelDivider" text="Label" />
+</children>
+        </VBox>
+        <!--<fx:include fx:id="SlideOutHandle" source="SlideOutHandle.fxml" />-->
+    </children>
+</HBox>

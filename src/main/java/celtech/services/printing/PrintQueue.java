@@ -4,12 +4,16 @@
  */
 package celtech.services.printing;
 
+import celtech.appManager.Notifier;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.coreUI.DisplayManager;
 import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.GCodeMacros;
+import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.services.ControllableService;
 import celtech.services.modelLoader.ModelLoaderService;
 import celtech.services.slicer.PrintQualityEnumeration;
@@ -21,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javafx.beans.property.BooleanProperty;
@@ -37,8 +42,10 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
+import javafx.util.Duration;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.controlsfx.control.Notifications;
 
 /**
  *
@@ -49,8 +56,8 @@ public class PrintQueue implements ControllableService
 
     private Stenographer steno = StenographerFactory.getStenographer(PrintQueue.class.getName());
 
-    private Printer boundPrinter = null;
-    private PrintState printState = PrintState.IDLE;
+    private Printer associatedPrinter = null;
+    private PrinterStatusEnumeration printState = PrinterStatusEnumeration.IDLE;
     private PrintService printService = new PrintService();
     private SlicerService slicerService = new SlicerService();
     private GCodePrintService gcodePrintService = new GCodePrintService();
@@ -81,11 +88,32 @@ public class PrintQueue implements ControllableService
     private ChangeListener<Number> printLineNumberListener = null;
     private ChangeListener<String> printJobIDListener = null;
     private ModelLoaderService modelLoaderService = new ModelLoaderService();
-    private int idleToPrintTrigger = 0;
+    private int numberOfLinesInGCode = 0;
 
-    public PrintQueue()
+    private ResourceBundle i18nBundle = null;
+    private String printTransferSuccessfulNotification = null;
+    private String printJobCancelledNotification = null;
+    private String printJobCompletedNotification = null;
+    private String printJobFailedNotification = null;
+    private String sliceSuccessfulNotification = null;
+    private String sliceFailedNotification = null;
+    private String detectedPrintInProgressNotification = null;
+    private String notificationTitle = null;
+
+    public PrintQueue(Printer associatedPrinter)
     {
+        this.associatedPrinter = associatedPrinter;
         exec = Executors.newFixedThreadPool(1);
+
+        i18nBundle = DisplayManager.getLanguageBundle();
+        printTransferSuccessfulNotification = i18nBundle.getString("notification.printTransferredSuccessfully");
+        printJobCancelledNotification = i18nBundle.getString("notification.printJobCancelled");
+        printJobCompletedNotification = i18nBundle.getString("notification.printJobCompleted");
+        printJobFailedNotification = i18nBundle.getString("notification.printJobFailed");
+        sliceSuccessfulNotification = i18nBundle.getString("notification.sliceSuccessful");
+        sliceFailedNotification = i18nBundle.getString("notification.sliceFailed");
+        notificationTitle = i18nBundle.getString("notification.PrintQueueTitle");
+        detectedPrintInProgressNotification = i18nBundle.getString("notification.activePrintDetected");
 
         cancelSliceEventHandler = new EventHandler<WorkerStateEvent>()
         {
@@ -102,7 +130,8 @@ public class PrintQueue implements ControllableService
             public void handle(WorkerStateEvent t)
             {
                 steno.info(t.getSource().getTitle() + " has failed");
-                setPrintStatus(PrintState.IDLE);
+                setPrintStatus(PrinterStatusEnumeration.IDLE);
+                Notifier.showErrorNotification(notificationTitle, sliceFailedNotification);
             }
         };
 
@@ -127,10 +156,13 @@ public class PrintQueue implements ControllableService
                     gcodePrintService.setModelFileToPrint(modelFileToPrint);
                     gcodePrintService.setPrinterToUse(result.getPrinterToUse());
                     gcodePrintService.start();
-                    setPrintStatus(PrintState.SENDING_TO_PRINTER);
+                    linesInCurrentGCodeFile = gcodePrintService.getLinesInGCodeFile();
+                    Notifier.showInformationNotification(notificationTitle, sliceSuccessfulNotification);
+                    setPrintStatus(PrinterStatusEnumeration.SENDING_TO_PRINTER);
                 } else
                 {
-                    setPrintStatus(PrintState.IDLE);
+                    Notifier.showErrorNotification(notificationTitle, sliceFailedNotification);
+                    setPrintStatus(PrinterStatusEnumeration.IDLE);
                 }
             }
         };
@@ -141,6 +173,7 @@ public class PrintQueue implements ControllableService
             public void handle(WorkerStateEvent t)
             {
                 steno.info(t.getSource().getTitle() + " has been cancelled");
+                Notifier.showInformationNotification(notificationTitle, printJobCancelledNotification);
             }
         };
 
@@ -150,7 +183,8 @@ public class PrintQueue implements ControllableService
             public void handle(WorkerStateEvent t)
             {
                 steno.error(t.getSource().getTitle() + " has failed");
-                setPrintStatus(PrintState.IDLE);
+                Notifier.showErrorNotification(notificationTitle, printJobFailedNotification);
+                setPrintStatus(PrinterStatusEnumeration.IDLE);
             }
         };
 
@@ -163,11 +197,13 @@ public class PrintQueue implements ControllableService
                 if (succeeded)
                 {
                     steno.info(t.getSource().getTitle() + " has succeeded");
-                    setPrintStatus(PrintState.PRINTING);
+                    Notifier.showInformationNotification(notificationTitle, printTransferSuccessfulNotification + " " + associatedPrinter.getPrinterFriendlyName());
+                    setPrintStatus(PrinterStatusEnumeration.PRINTING);
                 } else
                 {
+                    Notifier.showErrorNotification(notificationTitle, printJobFailedNotification);
                     steno.error("Submission of job to printer failed");
-                    cancelRun();
+                    abortPrint();
                 }
             }
         };
@@ -177,42 +213,9 @@ public class PrintQueue implements ControllableService
             @Override
             public void changed(ObservableValue<? extends String> ov, String oldValue, String newValue)
             {
-                steno.info("Print job ID number is " + newValue + " and was " + oldValue);
+//                steno.info("Print job ID number is " + newValue + " and was " + oldValue);
 
-                boolean roboxIsPrinting = false;
-
-                if (newValue != null)
-                {
-                    if (newValue.codePointAt(0) != 0)
-                    {
-                        roboxIsPrinting = true;
-                    }
-                }
-
-                switch (printState)
-                {
-                    case IDLE:
-                        if (roboxIsPrinting)
-                        {
-                            //We must be printing!
-                            steno.info("Print progress detected whilst in idle... switching to print mode");
-                            double percentDone = (double) boundPrinter.getPrintJobLineNumber() / (double) gcodePrintService.getLinesInGCodeFile() * 100;
-                            printQueueStatusString.setValue(String.format("Printing %.1f%%", percentDone));
-//                            fxToJMEInterface.exposeGCodeModel(percentDone);
-                            setPrintStatus(PrintState.PRINTING);
-                        }
-                        break;
-                    case SENDING_TO_PRINTER:
-                    case PRINTING:
-                        if (roboxIsPrinting == false)
-                        {
-//                            fxToJMEInterface.exposeGCodeModel(0);
-                            setPrintStatus(PrintState.IDLE);
-                        }
-                        break;
-                    default:
-                        break;
-                }
+                detectAlreadyPrinting();
             }
         };
 
@@ -221,7 +224,7 @@ public class PrintQueue implements ControllableService
             @Override
             public void changed(ObservableValue<? extends Number> ov, Number oldValue, Number newValue)
             {
-                steno.info("Line number is " + newValue.toString() + " and was " + oldValue.toString());
+//                steno.info("Line number is " + newValue.toString() + " and was " + oldValue.toString());
                 switch (printState)
                 {
                     case IDLE:
@@ -229,8 +232,7 @@ public class PrintQueue implements ControllableService
 //Ignore this state...
                         break;
                     case PRINTING:
-                        int linesInFile = gcodePrintService.getLinesInGCodeFile();
-                        double percentDone = newValue.doubleValue() / (double) linesInFile;
+                        double percentDone = newValue.doubleValue() / (double) linesInCurrentGCodeFile;
                         printProgressPercent.set(percentDone);
 //                        printQueueStatusString.setValue(String.format("Printing %.1f%%", percentDone));
 //                        fxToJMEInterface.exposeGCodeModel(percentDone);
@@ -240,6 +242,7 @@ public class PrintQueue implements ControllableService
                 }
             }
         };
+
         slicerService.setOnCancelled(cancelSliceEventHandler);
 
         slicerService.setOnFailed(failedSliceEventHandler);
@@ -252,7 +255,65 @@ public class PrintQueue implements ControllableService
 
         gcodePrintService.setOnSucceeded(succeededPrintEventHandler);
 
-        setPrintStatus(PrintState.IDLE);
+        setPrintStatus(PrinterStatusEnumeration.IDLE);
+
+        associatedPrinter.printJobLineNumberProperty().addListener(printLineNumberListener);
+        associatedPrinter.printJobIDProperty().addListener(printJobIDListener);
+    }
+
+    private void detectAlreadyPrinting()
+    {
+        boolean roboxIsPrinting = false;
+
+        if (associatedPrinter != null)
+        {
+            String printJobID = associatedPrinter.printJobIDProperty().get();
+            if (printJobID != null)
+            {
+                if (printJobID.codePointAt(0) != 0)
+                {
+                    roboxIsPrinting = true;
+                }
+            }
+
+            switch (printState)
+            {
+                case IDLE:
+                    if (roboxIsPrinting)
+                    {
+                        //We've detected a print job when we're idle...
+                        //Try to find the print job and determine how many lines there were in it
+
+                        File gcodeFromPrintJob = new File(ApplicationConfiguration.getPrintSpoolDirectory() + associatedPrinter.getPrintJobID() + File.separator + associatedPrinter.getPrintJobID() + ApplicationConfiguration.gcodeTempFileExtension);
+                        int numberOfLines = SystemUtils.countLinesInFile(gcodeFromPrintJob);
+                        linesInCurrentGCodeFile = numberOfLines;
+                        double percentDone = (double) associatedPrinter.getPrintJobLineNumber() / numberOfLines;
+
+                        printProgressPercent.set(percentDone);
+//                            fxToJMEInterface.exposeGCodeModel(percentDone);
+                        Notifier.showInformationNotification(notificationTitle, detectedPrintInProgressNotification);
+
+                        if (associatedPrinter.getPaused() == true)
+                        {
+                            setPrintStatus(PrinterStatusEnumeration.PAUSED);
+                        } else
+                        {
+                            setPrintStatus(PrinterStatusEnumeration.PRINTING);
+                        }
+                    }
+                    break;
+                case SENDING_TO_PRINTER:
+                case PRINTING:
+                    if (roboxIsPrinting == false)
+                    {
+//                            fxToJMEInterface.exposeGCodeModel(0);
+                        setPrintStatus(PrinterStatusEnumeration.IDLE);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     public void shutdown()
@@ -268,26 +329,11 @@ public class PrintQueue implements ControllableService
     /*
      * Properties
      */
-    private void setPrintQueueStatusString(String value)
-    {
-        printQueueStatusString.set(value);
-    }
-
-    public final String getPrintQueueStatusString()
-    {
-        return printQueueStatusString.get();
-    }
-
-    public final StringProperty printQueueStatusStringProperty()
-    {
-        return printQueueStatusString;
-    }
-
-    public synchronized boolean printProject(Printer printerToUse, Project project, PrintQualityEnumeration printQuality, SlicerSettings settings)
+    public synchronized boolean printProject(Project project, PrintQualityEnumeration printQuality, SlicerSettings settings)
     {
         boolean acceptedPrintRequest = false;
 
-        if (printState == PrintState.IDLE)
+        if (printState == PrinterStatusEnumeration.IDLE)
         {
             //Create the print job directory
             String printUUID = SystemUtils.generate16DigitID();
@@ -304,18 +350,14 @@ public class PrintQueue implements ControllableService
                 //Write out the slicer config
                 settings.setStart_gcode(GCodeMacros.PRE_PRINT.getMacroContentsInOneLine());
                 settings.setEnd_gcode(GCodeMacros.POST_PRINT.getMacroContentsInOneLine());
-                settings.renderToFile(printJobDirectoryName + File.separator + printUUID + ApplicationConfiguration.printProfileFileExtension);
+                settings.writeToFile(printJobDirectoryName + File.separator + printUUID + ApplicationConfiguration.printProfileFileExtension);
 
-                boundPrinter = printerToUse;
-                printerToUse.printJobLineNumberProperty().addListener(printLineNumberListener);
-                printerToUse.printJobIDProperty().addListener(printJobIDListener);
-
-                setPrintStatus(PrintState.SLICING);
+                setPrintStatus(PrinterStatusEnumeration.SLICING);
                 slicerService.reset();
                 slicerService.setProject(project);
                 slicerService.setSettings(settings);
                 slicerService.setPrintJobUUID(printUUID);
-                slicerService.setPrinterToUse(printerToUse);
+                slicerService.setPrinterToUse(associatedPrinter);
                 slicerService.start();
 
 //            fxToJMEInterface.clearGCodeDisplay();
@@ -338,9 +380,9 @@ public class PrintQueue implements ControllableService
                     gcodePrintService.reset();
                     gcodePrintService.setCurrentPrintJobID(printUUID);
                     gcodePrintService.setModelFileToPrint(printjobFilename);
-                    gcodePrintService.setPrinterToUse(printerToUse);
+                    gcodePrintService.setPrinterToUse(associatedPrinter);
                     gcodePrintService.start();
-                    setPrintStatus(PrintState.SENDING_TO_PRINTER);
+                    setPrintStatus(PrinterStatusEnumeration.SENDING_TO_PRINTER);
                     acceptedPrintRequest = true;
                 } catch (IOException ex)
                 {
@@ -352,28 +394,29 @@ public class PrintQueue implements ControllableService
         return acceptedPrintRequest;
     }
 
-    private void setPrintStatus(PrintState newState)
+    public PrinterStatusEnumeration getPrintStatus()
+    {
+        return printState;
+    }
+
+    private void setPrintStatus(PrinterStatusEnumeration newState)
     {
         switch (newState)
         {
             case IDLE:
-                setPrintQueueStatusString("Idle");
                 printProgressMessage.unbind();
                 setPrintProgressMessage("");
                 printProgressPercent.unbind();
                 setPrintProgressPercent(0);
                 setPrintInProgress(false);
                 setDialogRequired(false);
-                idleToPrintTrigger = 0;
-                if (boundPrinter != null)
+                if (associatedPrinter != null)
                 {
-                    boundPrinter.printJobIDProperty().unbind();
-                    boundPrinter.printJobLineNumberProperty().unbind();
+                    associatedPrinter.printJobIDProperty().unbind();
+                    associatedPrinter.printJobLineNumberProperty().unbind();
                 }
                 break;
             case SLICING:
-                setPrintQueueStatusString("Preparing");
-                setPrintProgressTitle("Preparing print");
                 printProgressMessage.unbind();
                 printProgressMessage.bind(slicerService.messageProperty());
                 printProgressPercent.unbind();
@@ -382,7 +425,6 @@ public class PrintQueue implements ControllableService
                 setDialogRequired(true);
                 break;
             case SENDING_TO_PRINTER:
-                setPrintProgressTitle("Sending layout to printer");
                 printProgressMessage.unbind();
                 printProgressMessage.bind(gcodePrintService.messageProperty());
                 printProgressPercent.unbind();
@@ -390,54 +432,29 @@ public class PrintQueue implements ControllableService
                 setPrintInProgress(true);
                 setDialogRequired(true);
                 break;
-            case PRINTING:
-                setPrintProgressTitle("Printing");
+            case PAUSED:
                 printProgressMessage.unbind();
                 printProgressPercent.unbind();
-                setPrintProgressPercent(0);
+                printProgressMessage.set("");
+                setPrintInProgress(true);
+                setDialogRequired(false);
+                break;
+            case PRINTING:
+                printProgressMessage.unbind();
+                printProgressPercent.unbind();
+                if (printState != PrinterStatusEnumeration.PAUSED)
+                {
+                    setPrintProgressPercent(0);
+                }
                 printProgressMessage.set("");
                 setPrintInProgress(true);
                 setDialogRequired(false);
                 break;
             default:
-                setPrintQueueStatusString("?");
                 break;
         }
+        setPrintProgressTitle(newState.getDescription());
         printState = newState;
-    }
-
-    @Override
-    public boolean cancelRun()
-    {
-        boolean cancelledRun = false;
-
-        switch (printState)
-        {
-            case SLICING:
-                if (slicerService.isRunning())
-                {
-                    slicerService.cancelRun();
-                    setPrintStatus(PrintState.IDLE);
-                    cancelledRun = true;
-                }
-                break;
-            case SENDING_TO_PRINTER:
-            case PRINTING:
-
-                if (gcodePrintService.isRunning())
-                {
-                    gcodePrintService.cancelRun();
-                }
-//                printerUtils.sendAbortPrint(printJobSettings.getPrinter());
-                setPrintStatus(PrintState.IDLE);
-//                fxToJMEInterface.clearGCodeDisplay();
-                cancelledRun = true;
-                break;
-            default:
-                break;
-        }
-
-        return cancelledRun;
     }
 
     private void setDialogRequired(boolean value)
@@ -492,5 +509,94 @@ public class PrintQueue implements ControllableService
     public ReadOnlyStringProperty titleProperty()
     {
         return printProgressTitle;
+    }
+
+    public void pausePrint()
+    {
+        switch (printState)
+        {
+            case PRINTING:
+                try
+                {
+                    associatedPrinter.transmitPausePrint();
+                    associatedPrinter.transmitStoredGCode(GCodeMacros.PAUSE_PRINT, true);
+                    setPrintStatus(PrinterStatusEnumeration.PAUSED);
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Robox comms exception when sending pause print command " + ex);
+                }
+                break;
+            default:
+                steno.warning("Attempt to pause print in print state " + printState);
+                break;
+        }
+    }
+
+    public void resumePrint()
+    {
+        switch (printState)
+        {
+            case PAUSED:
+                try
+                {
+                    associatedPrinter.transmitStoredGCode(GCodeMacros.RESUME_PRINT, true);
+                    associatedPrinter.transmitResumePrint();
+                    setPrintStatus(PrinterStatusEnumeration.PRINTING);
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Robox comms exception when sending resume print command " + ex);
+                }
+                break;
+            default:
+                steno.warning("Attempt to resume print in print state " + printState);
+                break;
+        }
+    }
+
+    public boolean abortPrint()
+    {
+        boolean cancelledRun = false;
+
+        switch (printState)
+        {
+            case SLICING:
+                if (slicerService.isRunning())
+                {
+                    slicerService.cancelRun();
+                    setPrintStatus(PrinterStatusEnumeration.IDLE);
+                    cancelledRun = true;
+                }
+                break;
+            case PAUSED:
+            case SENDING_TO_PRINTER:
+            case PRINTING:
+                if (gcodePrintService.isRunning())
+                {
+                    gcodePrintService.cancelRun();
+                }
+                try
+                {
+                    associatedPrinter.transmitAbortPrint();
+                    String response = associatedPrinter.transmitStoredGCode(GCodeMacros.ABORT_PRINT, true);
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Robox comms exception when sending abort print command " + ex);
+                }
+                setPrintStatus(PrinterStatusEnumeration.IDLE);
+//                fxToJMEInterface.clearGCodeDisplay();
+                cancelledRun = true;
+                break;
+            default:
+                steno.warning("Attempt to abort print in print state " + printState);
+                break;
+        }
+
+        return cancelledRun;
+    }
+
+    @Override
+    public boolean cancelRun()
+    {
+        return false;
     }
 }

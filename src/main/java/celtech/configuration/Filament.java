@@ -39,6 +39,7 @@
 
 package celtech.configuration;
 
+import celtech.utils.SystemUtils;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -55,12 +56,10 @@ import javafx.scene.paint.Color;
  */
 public class Filament
 {
-
     private boolean mutable = false;
-    private final StringProperty fileName = new SimpleStringProperty("");
-    private final StringProperty reelTypeCode = new SimpleStringProperty("");
     private final StringProperty friendlyFilamentName = new SimpleStringProperty("");
-    private final StringProperty material = new SimpleStringProperty("");
+    private final ObjectProperty<MaterialType> material = new SimpleObjectProperty();
+    private final StringProperty reelID = new SimpleStringProperty();
     private final StringProperty uniqueID = new SimpleStringProperty("");
 
     private final FloatProperty diameter = new SimpleFloatProperty(0);
@@ -74,10 +73,10 @@ public class Filament
     private ObjectProperty<Color> displayColour = new SimpleObjectProperty<>();
     private final FloatProperty remainingFilament = new SimpleFloatProperty(0);
 
-    public Filament(String fileName,
-            String reelTypeCode,
+    public Filament(
             String friendlyFilamentName,
-            String material,
+            MaterialType material,
+            String reelID,
             float diameter,
             float maxExtrusionRate,
             float extrusionMultiplier,
@@ -89,10 +88,9 @@ public class Filament
             Color displayColour,
             boolean mutable)
     {
-        this.fileName.set(fileName);
-        this.reelTypeCode.set(reelTypeCode);
         this.friendlyFilamentName.set(friendlyFilamentName);
         this.material.set(material);
+        this.reelID.set(reelID);
         this.diameter.set(diameter);
         this.maxExtrusionRate.set(maxExtrusionRate);
         this.extrusionMultiplier.set(extrusionMultiplier);
@@ -105,24 +103,9 @@ public class Filament
         this.mutable = mutable;
     }
 
-    public StringProperty getFileNameProperty()
-    {
-        return fileName;
-    }
-
     public String getFileName()
     {
-        return fileName.get();
-    }
-
-    public StringProperty getReelTypeCodeProperty()
-    {
-        return reelTypeCode;
-    }
-
-    public String getReelTypeCode()
-    {
-        return reelTypeCode.get();
+        return friendlyFilamentName.get() + "_" + material.toString();
     }
 
     public StringProperty getFriendlyFilamentNameProperty()
@@ -135,6 +118,16 @@ public class Filament
         return friendlyFilamentName.get();
     }
 
+    public String getReelID()
+    {
+        return reelID.get();
+    }
+    
+    public StringProperty getReelIDProperty()
+    {
+        return reelID;
+    }
+    
     public StringProperty getUniqueIDProperty()
     {
         return uniqueID;
@@ -145,12 +138,12 @@ public class Filament
         return friendlyFilamentName.get();
     }
 
-    public StringProperty getMaterialProperty()
+    public ObjectProperty<MaterialType> getMaterialProperty()
     {
         return material;
     }
 
-    public String getMaterial()
+    public MaterialType getMaterial()
     {
         return material.get();
     }
@@ -255,11 +248,6 @@ public class Filament
         return remainingFilament.get();
     }
 
-    public void setReelTypeCode(String reelTypeCode)
-    {
-        this.reelTypeCode.set(reelTypeCode);
-    }
-
     public void setFriendlyColourName(String friendlyColourName)
     {
         this.friendlyFilamentName.set(friendlyColourName);
@@ -270,7 +258,7 @@ public class Filament
         this.uniqueID.set(value);
     }
 
-    public void setMaterial(String material)
+    public void setMaterial(MaterialType material)
     {
         this.material.set(material);
     }
@@ -334,5 +322,14 @@ public class Filament
     public String toString()
     {
         return friendlyFilamentName.get() + " " + material.get();
+    }
+    
+    public static String generateUserReelID()
+    {
+        String fullID = SystemUtils.generate16DigitID();
+        StringBuilder id = new StringBuilder();
+        id.append('U');
+        id.append(fullID.substring(1, fullID.length() - 1));
+        return id.toString();
     }
 }

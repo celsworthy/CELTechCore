@@ -2,6 +2,10 @@
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
+ *//*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package celtech.services.slicer;
 
@@ -38,12 +42,12 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class SlicerSettings implements Serializable
+public class SlicerSettings implements Serializable, Cloneable
 {
 
     private Stenographer LOCAL_steno = StenographerFactory.getStenographer(SlicerSettings.class.getName());
-    private String LOCAL_profileName = null;
-    private boolean LOCAL_locked = false;
+    private StringProperty LOCAL_profileName = new SimpleStringProperty("");
+    private boolean LOCAL_mutable = false;
 
     //Immutable
     protected StringProperty print_center = new SimpleStringProperty("105,75");
@@ -191,6 +195,15 @@ public class SlicerSettings implements Serializable
     protected FloatProperty top_infill_extrusion_width = new SimpleFloatProperty(0.3f);
 
     protected IntegerProperty perimeters = new SimpleIntegerProperty(3);
+
+    public SlicerSettings()
+    {
+    }
+
+    public SlicerSettings(boolean mutable)
+    {
+        this.LOCAL_mutable = mutable;
+    }
 
     public void setFilament_diameter(float value)
     {
@@ -1396,10 +1409,30 @@ public class SlicerSettings implements Serializable
         this.un_retract_ratio = un_retract_ratio;
     }
 
-    public void readFromFile(String profileName, boolean locked, String filename)
+    public boolean isMutable()
     {
-        LOCAL_profileName = profileName;
-        LOCAL_locked = locked;
+        return LOCAL_mutable;
+    }
+    
+    public void setMutable(boolean mutable)
+    {
+        LOCAL_mutable = mutable;
+    }
+
+    public String getProfileName()
+    {
+        return LOCAL_profileName.get();
+    }
+
+    public StringProperty getProfileNameProperty()
+    {
+        return LOCAL_profileName;
+    }
+
+    public void readFromFile(String profileName, boolean mutable, String filename)
+    {
+        LOCAL_profileName.set(profileName);
+        LOCAL_mutable = mutable;
         File inputFile = new File(filename);
         BufferedReader fileReader = null;
 
@@ -1531,7 +1564,7 @@ public class SlicerSettings implements Serializable
         }
     }
 
-    public void renderToFile(String filename)
+    public void writeToFile(String filename)
     {
         File outputFile = new File(filename);
         FileWriter fileWriter = null;
@@ -1539,6 +1572,8 @@ public class SlicerSettings implements Serializable
         try
         {
             fileWriter = new FileWriter(outputFile);
+
+            fileWriter.append("#Profile: " + LOCAL_profileName.get() + "\n");
 
             Field[] fields = this.getClass().getDeclaredFields();
 
@@ -2032,10 +2067,203 @@ public class SlicerSettings implements Serializable
     {
 
     }
-    
+
+    @Override
+    public SlicerSettings clone()
+    {
+        SlicerSettings clone = new SlicerSettings();
+
+        clone.getProfileNameProperty().set(getProfileName());
+        clone.filament_diameter.set(filament_diameter.get());
+        clone.extrusion_multiplier.set(extrusion_multiplier.get());
+        clone.print_center.set(print_center.get());
+        clone.retract_restart_extra_toolchange.set(retract_restart_extra_toolchange.get());
+        int bed_size_counter = 0;
+        for (IntegerProperty sizeProp : bed_size)
+        {
+            clone.bed_size.get(bed_size_counter).set(sizeProp.get());
+            bed_size_counter++;
+        }
+        clone.duplicate_grid.set(duplicate_grid.get());
+        clone.z_offset.set(z_offset.get());
+        clone.gcode_flavor.set(gcode_flavor.get());
+        clone.use_relative_e_distances.set(use_relative_e_distances.get());
+        clone.output_nozzle_control.set(output_nozzle_control.get());
+        clone.vibration_limit.set(vibration_limit.get());
+        clone.end_gcode.set(end_gcode.get());
+        clone.layer_gcode.set(layer_gcode.get());
+        clone.toolchange_gcode.set(toolchange_gcode.get());
+        clone.retract_lift.set(retract_lift.get());
+        clone.retract_restart_extra.set(retract_restart_extra.get());
+        clone.retract_before_travel.set(retract_before_travel.get());
+        clone.retract_layer_change.set(retract_layer_change.get());
+        clone.wipe.set(wipe.get());
+        int nozzle_diameter_counter = 0;
+        for (FloatProperty nozzleDiameterProp : nozzle_diameter)
+        {
+            clone.nozzle_diameter.get(nozzle_diameter_counter).set(nozzleDiameterProp.get());
+            nozzle_diameter_counter++;
+        }
+        clone.perimeter_acceleration.set(perimeter_acceleration.get());
+        clone.infill_acceleration.set(infill_acceleration.get());
+        clone.bridge_acceleration.set(bridge_acceleration.get());
+        clone.default_acceleration.set(default_acceleration.get());
+        int nozzle_open_angle_counter = 0;
+        for (FloatProperty nozzleProp : nozzle_open_angle)
+        {
+            clone.nozzle_open_angle.get(nozzle_open_angle_counter).set(nozzleProp.get());
+            nozzle_open_angle_counter++;
+        }
+        int nozzle_close_angle_counter = 0;
+        for (FloatProperty nozzleProp : nozzle_close_angle)
+        {
+            clone.nozzle_close_angle.get(nozzle_close_angle_counter).set(nozzleProp.get());
+            nozzle_close_angle_counter++;
+        }
+        int nozzle_partial_open_angle_counter = 0;
+        for (FloatProperty nozzleProp : nozzle_partial_open_angle)
+        {
+            clone.nozzle_partial_open_angle.get(nozzle_partial_open_angle_counter).set(nozzleProp.get());
+            nozzle_partial_open_angle_counter++;
+        }
+        int nozzle_home_angle_counter = 0;
+        for (FloatProperty nozzleProp : nozzle_home_angle)
+        {
+            clone.nozzle_home_angle.get(nozzle_home_angle_counter).set(nozzleProp.get());
+            nozzle_home_angle_counter++;
+        }
+        clone.infill_only_where_needed.set(infill_only_where_needed.get());
+        clone.solid_infill_every_layers.set(solid_infill_every_layers.get());
+        clone.fill_angle.set(fill_angle.get());
+        clone.solid_infill_below_area.set(solid_infill_below_area.get());
+        clone.only_retract_when_crossing_perimeters.set(only_retract_when_crossing_perimeters.get());
+        clone.infill_first.set(infill_first.get());
+        clone.cooling.set(cooling.get());
+        clone.fan_always_on.set(fan_always_on.get());
+        clone.max_fan_speed.set(max_fan_speed.get());
+        clone.min_fan_speed.set(min_fan_speed.get());
+        clone.bridge_fan_speed.set(bridge_fan_speed.get());
+        clone.disable_fan_first_layers.set(disable_fan_first_layers.get());
+        clone.fan_below_layer_time.set(fan_below_layer_time.get());
+        clone.slowdown_below_layer_time.set(slowdown_below_layer_time.get());
+        clone.min_print_speed.set(min_print_speed.get());
+        clone.avoid_crossing_perimeters.set(avoid_crossing_perimeters.get());
+        clone.bridge_flow_ratio.set(bridge_flow_ratio.get());
+        clone.brim_width.set(brim_width.get());
+        clone.complete_objects.set(complete_objects.get());
+        clone.duplicate.set(duplicate.get());
+        clone.duplicate_distance.set(duplicate_distance.get());
+        clone.external_perimeters_first.set(external_perimeters_first.get());
+        clone.extra_perimeters.set(extra_perimeters.get());
+        clone.extruder_clearance_height.set(extruder_clearance_height.get());
+        clone.extruder_clearance_radius.set(extruder_clearance_radius.get());
+        clone.extrusion_axis.set(extrusion_axis.get());
+        clone.first_layer_extrusion_width.set(first_layer_extrusion_width.get());
+        clone.first_layer_height.set(first_layer_height.get());
+        clone.g0.set(g0.get());
+        clone.gcode_arcs.set(gcode_arcs.get());
+        clone.gcode_comments.set(gcode_comments.get());
+        clone.infill_extruder.set(infill_extruder.get());
+        clone.min_skirt_length.set(min_skirt_length.get());
+        clone.notes.set(notes.get());
+        clone.output_filename_format.set(output_filename_format.get());
+        clone.perimeter_extruder.set(perimeter_extruder.get());
+        clone.post_process.set(post_process.get());
+        clone.randomize_start.set(randomize_start.get());
+        clone.resolution.set(resolution.get());
+        clone.retract_length_toolchange.set(retract_length_toolchange.get());
+        clone.rotate.set(rotate.get());
+        clone.scale.set(scale.get());
+        clone.skirt_distance.set(skirt_distance.get());
+        clone.skirt_height.set(skirt_height.get());
+        clone.skirts.set(skirts.get());
+        clone.solid_fill_pattern.set(solid_fill_pattern.get());
+        clone.threads.set(threads.get());
+        clone.un_retract_ratio.set(un_retract_ratio.get());
+        clone.support_material_interface_layers.set(support_material_interface_layers.get());
+        clone.support_material_interface_spacing.set(support_material_interface_spacing.get());
+        clone.raft_layers.set(raft_layers.get());
+        clone.travel_speed.set(travel_speed.get());
+        int nozzle_offset_counter = 0;
+        for (StringProperty nozzleProp : nozzle_offset)
+        {
+            clone.nozzle_offset.get(nozzle_offset_counter).set(nozzleProp.get());
+            nozzle_offset_counter++;
+        }
+        clone.start_gcode.set(start_gcode.get());
+        clone.perimeter_nozzle.set(perimeter_nozzle.get());
+        clone.infill_nozzle.set(infill_nozzle.get());
+        clone.support_material_nozzle.set(support_material_nozzle.get());
+        clone.auto_unretract.set(auto_unretract.get());
+        clone.unretract_length.set(unretract_length.get());
+        clone.retract_length.set(retract_length.get());
+        clone.retract_speed.set(retract_speed.get());
+        int nozzle_finish_unretract_by_counter = 0;
+        for (FloatProperty nozzleProp : nozzle_finish_unretract_by)
+        {
+            clone.nozzle_finish_unretract_by.get(nozzle_finish_unretract_by_counter).set(nozzleProp.get());
+            nozzle_finish_unretract_by_counter++;
+        }
+        int nozzle_start_retract_by_counter = 0;
+        for (FloatProperty nozzleProp : nozzle_start_retract_by)
+        {
+            clone.nozzle_start_retract_by.get(nozzle_start_retract_by_counter).set(nozzleProp.get());
+        }
+        int nozzle_finish_retract_by_counter = 0;
+        for (FloatProperty nozzleProp : nozzle_finish_retract_by)
+        {
+            clone.nozzle_finish_retract_by.get(nozzle_finish_retract_by_counter).set(nozzleProp.get());
+        }
+        int nozzle_finish_open_by_counter = 0;
+        for (FloatProperty nozzleProp : nozzle_finish_open_by)
+        {
+            clone.nozzle_finish_open_by.get(nozzle_finish_open_by_counter).set(nozzleProp.get());
+        }
+        int nozzle_start_close_by_counter = 0;
+        for (FloatProperty nozzleProp : nozzle_start_close_by)
+        {
+            clone.nozzle_start_close_by.get(nozzle_start_close_by_counter).set(nozzleProp.get());
+        }
+        int nozzle_finish_close_by_counter = 0;
+        for (FloatProperty nozzleProp : nozzle_finish_close_by)
+        {
+            clone.nozzle_finish_close_by.get(nozzle_finish_close_by_counter).set(nozzleProp.get());
+        }
+        clone.fill_density.set(fill_density.get());
+        clone.fill_pattern.set(fill_pattern.get());
+        clone.infill_every_layers.set(infill_every_layers.get());
+        clone.bottom_solid_layers.set(bottom_solid_layers.get());
+        clone.top_solid_layers.set(top_solid_layers.get());
+        clone.support_material.set(support_material.get());
+        clone.support_material_threshold.set(support_material_threshold.get());
+        clone.support_material_enforce_layers.set(support_material_enforce_layers.get());
+        clone.support_material_pattern.set(support_material_pattern.get());
+        clone.support_material_spacing.set(support_material_spacing.get());
+        clone.support_material_angle.set(support_material_angle.get());
+        clone.layer_height.set(layer_height.get());
+        clone.perimeter_speed.set(perimeter_speed.get());
+        clone.small_perimeter_speed.set(small_perimeter_speed.get());
+        clone.external_perimeter_speed.set(external_perimeter_speed.get());
+        clone.infill_speed.set(infill_speed.get());
+        clone.solid_infill_speed.set(solid_infill_speed.get());
+        clone.top_solid_infill_speed.set(top_solid_infill_speed.get());
+        clone.support_material_speed.set(support_material_speed.get());
+        clone.bridge_speed.set(bridge_speed.get());
+        clone.gap_fill_speed.set(gap_fill_speed.get());
+        clone.first_layer_speed.set(first_layer_speed.get());
+        clone.spiral_vase.set(spiral_vase.get());
+        clone.perimeter_extrusion_width.set(perimeter_extrusion_width.get());
+        clone.infill_extrusion_width.set(infill_extrusion_width.get());
+        clone.solid_infill_extrusion_width.set(solid_infill_extrusion_width.get());
+        clone.top_infill_extrusion_width.set(top_infill_extrusion_width.get());
+        clone.perimeters.set(perimeters.get());
+
+        return clone;
+    }
+
     @Override
     public String toString()
     {
-        return LOCAL_profileName;
+        return LOCAL_profileName.get();
     }
 }

@@ -6,6 +6,7 @@ package celtech.services.printing;
 
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.utils.SystemUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -49,7 +50,7 @@ public class GCodePrinterTask extends Task<Boolean>
         int sequenceNumber = 0;
         boolean successfulWrite = false;
         File gcodeFile = new File(gcodeFileToPrint);
-        int numberOfLines = getLines(gcodeFile);
+        int numberOfLines = SystemUtils.countLinesInFile(gcodeFile);
         linesInFile.setValue(numberOfLines);
 
         steno.info("Start of file " + gcodeFileToPrint);
@@ -116,30 +117,5 @@ public class GCodePrinterTask extends Task<Boolean>
         return gotToEndOK;
     }
 
-    private int getLines(File aFile)
-    {
-        LineNumberReader reader = null;
-        try
-        {
-            reader = new LineNumberReader(new FileReader(aFile));
-
-            while ((reader.readLine()) != null);
-            return reader.getLineNumber();
-        } catch (Exception ex)
-        {
-            return -1;
-        } finally
-        {
-            if (reader != null)
-            {
-                try
-                {
-                    reader.close();
-                } catch (IOException ex)
-                {
-                    steno.error("Failed to close file during line number read: " + ex);
-                }
-            }
-        }
-    }
+   
 }

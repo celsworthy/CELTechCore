@@ -2,6 +2,10 @@
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
+ *//*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package celtech.coreUI;
 
@@ -15,6 +19,7 @@ import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
 import celtech.coreUI.components.ProjectTab;
+import celtech.coreUI.components.SlideoutAndProjectHolder;
 import celtech.coreUI.controllers.MenuStripController;
 import celtech.coreUI.controllers.PrinterStatusPageController;
 import celtech.coreUI.controllers.sidePanels.LayoutSidePanelController;
@@ -99,9 +104,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
     private AnchorPane modeSelectionControl = null;
     private final HashMap<ApplicationMode, HBox> sidePanels = new HashMap<>();
     private final HashMap<ApplicationMode, HBox> slideOutPanels = new HashMap<>();
-    private final MasterDetailPane rhPanel = new MasterDetailPane(Side.LEFT, true);
+    private final SlideoutAndProjectHolder rhPanel = new SlideoutAndProjectHolder();
     private final HBox emptyHBox = new HBox();
-    private final StackPane slideOutHolder = new StackPane();
     private final HashMap<ApplicationMode, SidePanelManager> sidePanelControllers = new HashMap<>();
     private final HashMap<ApplicationMode, Initializable> slideOutControllers = new HashMap<>();
     private static TabPane tabDisplay = null;
@@ -206,7 +210,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
         {
             ProjectTab newProjectTab = new ProjectTab(instance, fileName + ApplicationConfiguration.projectFileExtension, tabDisplay.widthProperty(), tabDisplay.heightProperty());
             tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
-            tabDisplaySelectionModel.select(newProjectTab);
         }
     }
 
@@ -221,22 +224,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
         // Now add the relevant new one...
         sidePanelContainer.getChildren().add(sidePanels.get(newMode));
 
-        Node detailNode = slideOutPanels.get(newMode);
-
-        if (detailNode == null)
-        {
-            rhPanel.setShowDetailNode(false);
-        } else
-        {
-            if (slideOutHolder.getChildren().isEmpty() == false)
-            {
-                slideOutHolder.getChildren().remove(0);
-            }
-            HBox slideout = slideOutPanels.get(newMode);
-            slideOutHolder.getChildren().add(slideout);
-            slideOutHolder.setMaxWidth(slideout.getMaxWidth());
-            rhPanel.setShowDetailNode(true);
-        }
+        rhPanel.switchInSlideout(slideOutPanels.get(newMode));
 
         if (newMode == ApplicationMode.LAYOUT)
         {
@@ -352,13 +340,14 @@ public class DisplayManager implements EventHandler<KeyEvent>
         mainHolder.getChildren().add(rhPanel);
 
         // Configure the main display tab pane - just the printer status page to start with
-        VBox tabPaneHolder = new VBox();
+        
         tabDisplay = new TabPane();
         tabDisplay.setPickOnBounds(false);
         tabDisplay.setOnKeyPressed(this);
         tabDisplay.setTabMinHeight(30);
         tabDisplay.setTabMaxHeight(30);
         tabDisplaySelectionModel = tabDisplay.getSelectionModel();
+        tabDisplay.getStyleClass().add("main-project-tabPane");
 
         VBox.setVgrow(tabDisplay, Priority.ALWAYS);
 
@@ -368,7 +357,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             FXMLLoader printerStatusPageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "PrinterStatusPage.fxml"), i18nBundle);
             StackPane printerStatusPage = printerStatusPageLoader.load();
             PrinterStatusPageController printerStatusPageController = printerStatusPageLoader.getController();
-            printerStatusPageController.configure(tabPaneHolder);
+            printerStatusPageController.configure(rhPanel.getProjectTabPaneHolder());
 
             printerStatusTab = new Tab();
             printerStatusTab.setText(i18nBundle.getString("printerStatusTabTitle"));
@@ -423,7 +412,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 }
             });
 
-            tabPaneHolder.getChildren().add(tabDisplay);
+            rhPanel.populateProjectDisplay(tabDisplay);
         } catch (IOException ex)
         {
             steno.error("Failed to load printer status page:" + ex);
@@ -433,9 +422,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
         {
             switchPagesForMode(oldMode, newMode);
         });
-
-        rhPanel.setMasterNode(tabPaneHolder);
-        rhPanel.setDetailNode(slideOutHolder);
 
         applicationStatus.setMode(ApplicationMode.STATUS);
 
@@ -447,7 +433,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             menuStripController = menuStripLoader.getController();
             menuStripControls.prefWidthProperty().bind(rhPanel.widthProperty());
             VBox.setVgrow(menuStripControls, Priority.NEVER);
-            tabPaneHolder.getChildren().add(menuStripControls);
+            rhPanel.populateProjectDisplay(menuStripControls);
         } catch (IOException ex)
         {
             steno.error("Failed to load menu strip controls:" + ex);

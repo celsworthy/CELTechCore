@@ -22,8 +22,8 @@
     gizmoRotationHandle_pressed: #53919d;
 }
 
-.background{
-    -fx-background-color: background_colour;
+.project-view-background{
+    -fx-background-color: linear-gradient(to bottom, #838383, #dadada);
 }
 
 .label{
@@ -43,11 +43,6 @@
     -fx-opacity: 0.6;
 }   
 
-.RestrictedTextField {
-    -fx-font-size: 12pt;
-    -fx-pref-column-count: 5;
-}
-
 .SlideOutPanel .circle {
     -fx-fill-color: grey;
 }
@@ -56,12 +51,16 @@
  * Text area
  */
 .text{
-    -fx-font-size: 12pt;
+    -fx-font-size: 10pt;
 }
 
 .text-field {
-    -fx-font-size: 12pt;
+    -fx-font-size: 10pt;
+    -fx-background-radius: 0px;
+    -fx-padding: 0 0 0 0;
 }
+
+
 /*******************************************************************************
  *                                                                             *
  * Push Button                                                                 *
@@ -829,10 +828,14 @@
 /*
  * Tab pane settings
  */
-.tab-pane, .tab-header-background{
-    -fx-background-color: black;
-    /*-fx-border-color: transparent;*/
+.tab-header-area{
+    -fx-padding: 0px;
 }
+.tab-pane, .tab-header-background{
+    -fx-background-color: dark_grey;
+    -fx-border-width: 0;
+}
+
 
 .tab:hover, .tab:hover .tab-label{
     -fx-background-color: dark_grey;
@@ -840,11 +843,91 @@
 
 .tab:selected, .tab:selected .tab-label{
     -fx-background-color: blue_colour;
+    -fx-border-width: 0;
 }
 
-.tab, .tab .tab-label{
+.tab .tab-label{
     -fx-background-color: mid_grey;
     -fx-text-fill: white;
+}
+
+.tab{
+    -fx-background-color: mid_grey;
+    -fx-background-radius: 0px;
+    -fx-background-insets: 0px;
+    -fx-border-color: black;
+}
+
+.fattab:top{
+    -fx-background-color: blue;
+}
+
+.main-project-tabPane .tab-header-background{
+    -fx-background-color: black;
+}
+
+/*
+ * List view
+ */
+
+.list-view {
+    -fx-background-color: #4a4a4a, -fx-control-inner-background;
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0) , 8, 0.0 , 0 , 0 );
+}
+
+.list-view .list-cell{
+    -fx-background-color: #4a4a4a;
+    -fx-text-fill: white;
+}
+
+.list-view .list-cell:hover{
+    -fx-background-color: #dedede;
+    -fx-text-fill: #1d1d1d;
+}
+
+.list-view .list-cell:filled:selected{
+    -fx-background-color: #55c4fe;
+}
+
+.list-view .list-cell:filled:selected:hover {
+    -fx-background-color: #6dcdff;
+}
+
+.list-view .list-cell:filled:pressed, .list-view .list-cell:filled:selected:pressed
+{
+    -fx-background-color: #d3d3d3;
+    -fx-text-fill: #1d1d1d;
+}
+
+/*
+ * Table view
+ */
+table-view .column-header-background {
+    -fx-background-color: transparent;
+}
+
+.table-view .column-header, .table-view .filler {
+    -fx-size: 35;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color:
+        transparent
+        transparent
+        derive(-fx-base, 80%)
+        transparent;
+    -fx-border-insets: 0 10 1 0;
+    -fx-text-fill: black;
+}
+
+.table-view .column-header .label {
+    -fx-font-size: 20pt;
+    -fx-font-family: "Segoe UI Light";
+    -fx-text-fill: black;
+    -fx-alignment: center-left;
+    -fx-opacity: 1;
+}
+
+.table-view:focused .table-row-cell:filled:focused:selected {
+    -fx-background-color: -fx-focus-color;
 }
 
 
@@ -898,6 +981,10 @@
     -fx-background-color: mid_grey;
 }
 
+.sidePanel BorderPane{
+    -fx-padding: 0;
+}
+
 .sidePanelDivider{
     -fx-background-color: dark_grey;
     -fx-max-width: 100000;
@@ -910,26 +997,33 @@
     -fx-scale-y: 2;
 }
 
-.slideOutPanel{
-    -fx-background-color: mid_grey;
+.slideOutPanel, .slideOutPanel .tab-pane{
+    -fx-background-color: dark_grey;
+    -fx-border-width: 0;
 }
 
 .slideOutPanel GridPane{
     -fx-vgap: 5;
     -fx-hgap: 5;
-    -fx-background-color: mid_grey;
+    -fx-background-color: dark_grey;
     -fx-padding: 5;
+    -fx-border-width: 0;
+}
+
+.slideOutPanel HBox{
+    -fx-border-width: 0;
 }
 
 .slideOutPanel AnchorPane{
     -fx-vgap: 5;
     -fx-hgap: 5;
-    -fx-background-color: mid_grey;
+    -fx-background-color: dark_grey;
     -fx-padding: 5;
 }
 
 .slideOutPanel GridPane HBox{
     -fx-spacing: 5;
+    -fx-background-color: dark_grey;
 }
 
 .slideOutPanel GridPane Label{
@@ -938,9 +1032,86 @@
 }
 
 .slideOutPanel HBox TextField{
-    -fx-pref-width: 45;
+    -fx-pref-width: 60;
 }
 
-.master-details-pane{
-    -fx-border-color: black;
+.slideOutPanel TextField{
+    -fx-pref-width: 60;
+}
+
+.slideout-and-project-holder{
+    -fx-background-color: mid_grey;
+}
+
+.slideout-control-button{
+    -fx-min-height:10;
+    -fx-max-height: 5000;
+    -fx-min-width: 16;
+    -fx-max-width: 16;
+    -fx-content-display: graphic-only;
+    -fx-border-width: 0px;
+    -fx-background-color: dark_grey;
+    -fx-padding: 0 0 0 0;
+    -fx-content-display: graphic-only;
+    -fx-cursor: E_RESIZE;
+}
+
+.slideout-control-button:hover{
+    -fx-background-color: dark_grey;
+    -fx-border-width: 0px;
+}
+
+.slideout-control-button:pressed, .slideout-control-button:default:hover:pressed
+{
+    -fx-background-color: dark_grey;
+    -fx-border-width: 0px;
+}
+
+.slideout-control-button:focused
+{
+    -fx-background-color: dark_grey;
+    -fx-border-width: 0px;
+}
+
+.slideout-control-button:disabled, .slideout-control-button:default:disabled
+{
+    -fx-background-color: dark_grey;
+    -fx-border-width: 0px;
+}
+/*
+.button:default
+{
+    -fx-background-color: mid_grey;
+    -fx-border-color: transparent;
+}
+
+.button:default:hover{
+    -fx-background-color: mid_grey;
+    -fx-border-color: transparent;
+}*/
+
+.slideout-control-button:hover .slideout-control-button-graphic{
+    -fx-fill: light_grey;
+}
+
+.slideout-control-button:pressed .slideout-control-button-graphic, .slideout-control-button:default:hover:pressed .slideout-control-button-graphic{
+    -fx-fill: white;
+}
+
+.slideout-control-button .slideout-control-button-graphic{
+    -fx-fill: mid_grey;
+}
+
+/*
+ * Standard dialogues
+ */
+
+.modal-dialogue{
+    -fx-background-color: mid_grey;
+}
+
+.RestrictedTextField{
+    -fx-font-size: 10pt;
+    -fx-padding: 2 2 2 2;
+    -fx-alignment: CENTER_RIGHT;
 }

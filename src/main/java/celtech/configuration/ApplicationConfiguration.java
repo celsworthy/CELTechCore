@@ -17,7 +17,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Properties;
+import javafx.geometry.Pos;
 import javafx.scene.paint.Color;
+import javafx.util.Duration;
 import libertysystems.configuration.ConfigNotLoadedException;
 import libertysystems.configuration.Configuration;
 import libertysystems.stenographer.Stenographer;
@@ -37,6 +39,7 @@ public class ApplicationConfiguration
     public static final String fxmlResourcePath = resourcePath + "fxml/";
     public static final String fxmlSidePanelResourcePath = resourcePath + "fxml/sidePanels/";
     public static final String fxmlUtilityPanelResourcePath = resourcePath + "fxml/utilityPanels/";
+    public static final String fxmlPopupResourcePath = resourcePath + "fxml/popups/";
     public static final String fontResourcePath = resourcePath + "fonts/";
     public static final String cssResourcePath = resourcePath + "css/";
 
@@ -110,6 +113,9 @@ public class ApplicationConfiguration
     public static final Color zAxisColour = Color.GREEN;
 
     private static MachineType machineType = null;
+
+    public static final Duration notificationDisplayDelay = Duration.seconds(5);
+    public static final Pos notificationPosition = Pos.BOTTOM_RIGHT;
 
     public static MachineType getMachineType()
     {

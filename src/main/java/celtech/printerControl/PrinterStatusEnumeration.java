@@ -4,13 +4,15 @@
  */
 package celtech.printerControl;
 
+import celtech.coreUI.DisplayManager;
+
 /**
  *
  * @author ianhudson
  */
 public enum PrinterStatusEnumeration
 {
-    IDLE(0, "Idle"), SLICING(5, "Slicing"), PRINTING(10, "Printing"), PAUSED(15, "Paused"), ERROR(90, "Error");
+    IDLE(0, "PrintQueue.Idle"), SLICING(5, "PrintQueue.Slicing"), SENDING_TO_PRINTER(10, "PrintQueue.SendingToPrinter"), PRINTING(15, "PrintQueue.Printing"), PAUSED(20, "PrintQueue.Paused"), ERROR(90, "PrintQueue.Error");
     
     private final int statusValue;
     private final String description;
@@ -28,7 +30,7 @@ public enum PrinterStatusEnumeration
     
     public String getDescription()
     {
-        return description;
+        return DisplayManager.getLanguageBundle().getString(description);
     }
     
     @Override

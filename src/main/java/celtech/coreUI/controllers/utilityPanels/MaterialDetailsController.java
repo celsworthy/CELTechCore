@@ -17,8 +17,10 @@
  */
 package celtech.coreUI.controllers.utilityPanels;
 
+import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
+import celtech.configuration.MaterialType;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.utils.FXUtils;
 import java.net.URL;
@@ -28,11 +30,13 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
+import javafx.scene.control.ComboBox;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import libertysystems.stenographer.Stenographer;
@@ -52,13 +56,7 @@ public class MaterialDetailsController implements Initializable
     private VBox container;
 
     @FXML
-    private RestrictedTextField filename;
-
-    @FXML
     private RestrictedTextField bedTemperature;
-
-    @FXML
-    private RestrictedTextField reelID;
 
     @FXML
     private RestrictedTextField firstLayerNozzleTemperature;
@@ -67,7 +65,7 @@ public class MaterialDetailsController implements Initializable
     private ColorPicker colour;
 
     @FXML
-    private RestrictedTextField material;
+    private ComboBox<MaterialType> material;
 
     @FXML
     private RestrictedTextField filamentDiameter;
@@ -113,17 +111,26 @@ public class MaterialDetailsController implements Initializable
         }
     }
 
-    private BooleanProperty isDirty = new SimpleBooleanProperty(false);
-    private BooleanProperty isMutable = new SimpleBooleanProperty(false);
-    private BooleanProperty showButtons = new SimpleBooleanProperty(true);
+    private final BooleanProperty isDirty = new SimpleBooleanProperty(false);
+    private final BooleanProperty isMutable = new SimpleBooleanProperty(false);
+    private final BooleanProperty showButtons = new SimpleBooleanProperty(true);
 
-    private StringConverter<Integer> intConverter = FXUtils.getIntConverter();
-    private StringConverter<Float> floatConverter = FXUtils.getFloatConverter(2);
+    private final StringConverter<Integer> intConverter = FXUtils.getIntConverter();
+    private final StringConverter<Float> floatConverter = FXUtils.getFloatConverter(2);
 
-    private ChangeListener<String> dirtyStringListener = new ChangeListener<String>()
+    private final ChangeListener<String> dirtyStringListener = new ChangeListener<String>()
     {
         @Override
         public void changed(ObservableValue<? extends String> ov, String t, String t1)
+        {
+            isDirty.set(true);
+        }
+    };
+
+    private final ChangeListener<MaterialType> dirtyMaterialTypeListener = new ChangeListener<MaterialType>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends MaterialType> ov, MaterialType t, MaterialType t1)
         {
             isDirty.set(true);
         }
@@ -141,13 +148,16 @@ public class MaterialDetailsController implements Initializable
         cancelButton.visibleProperty().bind(isDirty.and(showButtons));
 
         container.disableProperty().bind(isMutable.not());
+        
+        for (MaterialType materialType : MaterialType.values())
+        {
+            material.getItems().add(materialType);
+        }
 
-        filename.textProperty().addListener(dirtyStringListener);
         bedTemperature.textProperty().addListener(dirtyStringListener);
-        reelID.textProperty().addListener(dirtyStringListener);
         firstLayerNozzleTemperature.textProperty().addListener(dirtyStringListener);
         colour.valueProperty().asString().addListener(dirtyStringListener);
-        material.textProperty().addListener(dirtyStringListener);
+        material.valueProperty().addListener(dirtyMaterialTypeListener);
         filamentDiameter.textProperty().addListener(dirtyStringListener);
         firstLayerBedTemperature.textProperty().addListener(dirtyStringListener);
         name.textProperty().addListener(dirtyStringListener);
@@ -159,10 +169,8 @@ public class MaterialDetailsController implements Initializable
     {
         if (filament != null)
         {
-            filename.setText(filament.getFileName());
-            reelID.setText(filament.getReelTypeCode());
             name.setText(filament.getFriendlyFilamentName());
-            material.setText(filament.getMaterial());
+            material.getSelectionModel().select(filament.getMaterial());
             filamentDiameter.setText(floatConverter.toString(filament.getDiameter()));
             //No extrusion rate here...        
             //No extrusion multiplier
@@ -180,10 +188,10 @@ public class MaterialDetailsController implements Initializable
 
     public Filament getMaterialData()
     {
-        return new Filament(filename.getText(),
-                reelID.getText(),
+        return new Filament(
                 name.getText(),
-                material.getText(),
+                material.getSelectionModel().getSelectedItem(),
+                null,
                 floatConverter.fromString(filamentDiameter.getText()),
                 0.0f, //Extrusion rate
                 1.0f, //Extrusion multiplier

@@ -13,14 +13,14 @@
 <?scenebuilder-preview-i18n-resource ../../i18n/LanguageData.properties?>
 <?scenebuilder-stylesheet ../../css/AutoMaker.css?>
 
-<HBox fx:id="myContainer" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="352.0" styleClass="sidePanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.sidePanels.PrinterStatusSidePanelController">
+<HBox fx:id="myContainer" maxWidth="360.0" minWidth="-Infinity" prefWidth="360.0" styleClass="sidePanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.sidePanels.PrinterStatusSidePanelController">
     <children>
-        <BorderPane id="StatusPanel" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="-1.0" prefWidth="332.0" styleClass="sidePanel">
+        <BorderPane id="StatusPanel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="-1.0" styleClass="sidePanel" HBox.hgrow="ALWAYS">
             <opaqueInsets>
                 <Insets />
             </opaqueInsets>
             <HBox.margin>
-                <Insets bottom="10.0" left="10.0" right="10.0" top="5.0" />
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
             </HBox.margin>
             <bottom>
                 <VBox fx:id="temperatureVBox" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" styleClass="sidePanelVBox">
@@ -53,7 +53,7 @@
                                 </Label>
                                 <HBox id="HBox" fx:id="targetNozzleTempHBox" alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
                                     <children>
-                                        <RestrictedTextField fx:id="nozzleTargetTemperature" maxLength="4" onAction="#setNozzleTargetTemp" prefWidth="60.0" restrict="0-9">
+                                        <RestrictedTextField fx:id="nozzleTargetTemperature" alignment="CENTER_RIGHT" maxLength="4" onAction="#setNozzleTargetTemp" prefColumnCount="3" restrict="0-9" text="555">
                                             <font>
                                                 <Font size="10.0" />
                                             </font>
@@ -63,14 +63,14 @@
                                 </HBox>
                                 <HBox id="HBox" fx:id="targetBedTempHBox" alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
                                     <children>
-                                        <RestrictedTextField fx:id="bedTargetTemperature" maxLength="50" onAction="#setBedTargetTemp" prefHeight="20.0" prefWidth="60.0" restrict="0-9">
+                                        <RestrictedTextField fx:id="bedTargetTemperature" maxLength="50" onAction="#setBedTargetTemp" prefColumnCount="3" restrict="0-9" text="666">
                                         </RestrictedTextField>
                                         <Label text="%misc.degrees" />
                                     </children>
                                 </HBox>
                                 <HBox id="HBox" fx:id="targetAmbientTempHBox" alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
                                     <children>
-                                        <RestrictedTextField fx:id="ambientTargetTemperature" maxHeight="20.0" maxLength="50" onAction="#setAmbientTargetTemp" prefWidth="60.0" restrict="0-9" HBox.hgrow="NEVER">
+                                        <RestrictedTextField fx:id="ambientTargetTemperature" maxHeight="20.0" maxLength="50" minHeight="0.0" minWidth="0.0" onAction="#setAmbientTargetTemp" prefColumnCount="3" restrict="0-9" HBox.hgrow="NEVER">
                                         </RestrictedTextField>
                                         <Label text="%misc.degrees" />
                                     </children>
@@ -79,17 +79,20 @@
                                 <Label fx:id="targetTempLabel" alignment="CENTER" text="%sidePanel_settings.targetTemperature" textAlignment="LEFT" GridPane.columnIndex="2" GridPane.rowIndex="0" />
                                 <Label fx:id="heaterStatusLabel" alignment="CENTER" text="%sidePanel_settings.heaters" textAlignment="LEFT" GridPane.columnIndex="3" GridPane.rowIndex="0" />
                                 <CheckBox fx:id="nozzleHeaterCheckBox" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-                                <CheckBox fx:id="bedHeaterCheckBox" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="CheckBox" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                                <CheckBox fx:id="bedHeaterCheckBox" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.halignment="RIGHT" GridPane.rowIndex="2">
+<cursor>
+<Cursor fx:constant="DEFAULT" />
+</cursor></CheckBox>
                             </children>
                             <columnConstraints>
-                                <ColumnConstraints hgrow="NEVER" />
-                                <ColumnConstraints hgrow="NEVER" />
-                                <ColumnConstraints />
-                                <ColumnConstraints fillWidth="false" />
+                                <ColumnConstraints hgrow="SOMETIMES" />
+                                <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" />
+                                <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" />
+                                <ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="SOMETIMES" />
                             </columnConstraints>
                             <rowConstraints>
                                 <RowConstraints vgrow="SOMETIMES" />
-                                <RowConstraints vgrow="SOMETIMES" />
+                                <RowConstraints vgrow="NEVER" />
                                 <RowConstraints vgrow="SOMETIMES" />
                                 <RowConstraints vgrow="SOMETIMES" />
                             </rowConstraints>
@@ -223,14 +226,12 @@
                                     <children>
                                         <VBox alignment="TOP_RIGHT">
                                             <children>
-                                                <Label text="%sidePanel_printerStatus.statusLabel" />
                                                 <Label text="%sidePanel_printerStatus.headStatusLabel" />
                                                 <Label text="%sidePanel_printerStatus.filamentStatusLabel" />
                                             </children>
                                         </VBox>
                                         <VBox>
                                             <children>
-                                                <Label fx:id="printerStatusLabel" text="-" />
                                                 <Label fx:id="printHeadLabel" text="-" />
                                                 <Label fx:id="filamentStatusLabel" text="-" />
                                             </children>

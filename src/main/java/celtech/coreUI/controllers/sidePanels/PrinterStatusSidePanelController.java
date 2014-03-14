@@ -96,12 +96,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private Label printHeadLabel;
 
     @FXML
-    private Label printerStatusLabel;
-
-    @FXML
-    private HBox printerStatusHBox;
-
-    @FXML
     private VBox temperatureVBox;
 
     @FXML
@@ -598,10 +592,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private void bindDetails(Printer selectedPrinter)
     {
-
-        printerStatusLabel.textProperty().unbind();
-        printerStatusLabel.setText("-");
-
         nozzleTemperatureLabel.textProperty().unbind();
         bedTemperatureLabel.textProperty().unbind();
         ambientTemperatureLabel.textProperty().unbind();
@@ -628,8 +618,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         if (selectedPrinter != null)
         {
-
-            printerStatusLabel.textProperty().bind(Bindings.when(selectedPrinter.printerConnectedProperty()).then(selectedPrinter.printerStatusProperty().asString()).otherwise(notConnectedString));
             // Temperatures / Heaters / Fans
             nozzleTemperatureLabel.textProperty().bind(Bindings.when(selectedPrinter.printerConnectedProperty().not()).then("-").otherwise(Bindings.when(selectedPrinter.extruderTemperatureProperty().greaterThan(maxTempToDisplay)).then(tempOutOfRangeString).otherwise(selectedPrinter.extruderTemperatureProperty().asString("%d°C"))));
             nozzleTargetTemperature.setText(String.format("%d", selectedPrinter.getNozzleTargetTemperature()));
@@ -679,7 +667,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     {
         boolean visible = printerStatusList.size() > 0 && !printerStatusTableSelectionModel.isEmpty();
 
-        printerStatusHBox.setVisible(visible);
         temperatureVBox.setVisible(visible);
         temperatureChart.setVisible(visible);
     }

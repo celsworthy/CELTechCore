@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.*?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.shape.*?>
 
-<BorderPane styleClass="background" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.MenuStripController">
+<BorderPane styleClass="menubar" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.MenuStripController">
     <right>
         <StackPane>
             <children>
@@ -18,7 +19,7 @@
                 </Button>
                 <Button fx:id="printButton" mnemonicParsing="false" onAction="#printPressed" pickOnBounds="false" styleClass="borderlessGraphicButton" text="Button" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0" BorderPane.alignment="CENTER">
                     <graphic>
-                        <SVGPath content="M277.352,420.572c0-11.446,9.388-20.841,20.806-20.841  c11.416,0,20.85,9.448,20.85,20.841c0,11.395-9.389,20.808-20.85,20.808C286.695,441.38,277.352,432.018,277.352,420.572  L277.352,420.572z M274.189,420.595c0,13.096,10.859,23.968,23.989,23.968s24.011-10.908,24.011-23.968  s-10.914-24.032-24.011-24.032C285.082,396.563,274.189,407.499,274.189,420.595L274.189,420.595z M292.332,411.552l15.773,9.009  l-15.773,9.015V411.552z" fill="WHITE" styleClass="graphic"/>
+                        <SVGPath content="M277.352,420.572c0-11.446,9.388-20.841,20.806-20.841  c11.416,0,20.85,9.448,20.85,20.841c0,11.395-9.389,20.808-20.85,20.808C286.695,441.38,277.352,432.018,277.352,420.572  L277.352,420.572z M274.189,420.595c0,13.096,10.859,23.968,23.989,23.968s24.011-10.908,24.011-23.968  s-10.914-24.032-24.011-24.032C285.082,396.563,274.189,407.499,274.189,420.595L274.189,420.595z M292.332,411.552l15.773,9.009  l-15.773,9.015V411.552z" fill="WHITE" styleClass="graphic" />
                     </graphic>
                 </Button>
             </children>
@@ -248,4 +249,7 @@
             </children>
         </HBox>
     </center>
+<padding>
+<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+</padding>
 </BorderPane>
