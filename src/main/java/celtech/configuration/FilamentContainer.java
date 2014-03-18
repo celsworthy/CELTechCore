@@ -40,8 +40,8 @@ public class FilamentContainer
     private static final String materialProperty = "material";
     private static final String reelIDProperty = "reelID";
     private static final String diameterProperty = "diameter_mm";
-    private static final String maxExtrusionRateProperty = "max_extrusion_rate";
-    private static final String extrusionMultiplierProperty = "extrusion_multiplier";
+    private static final String filamentMultiplierProperty = "filament_multiplier";
+    private static final String feedRateMultiplierProperty = "feed_rate_multiplier";
     private static final String ambientTempProperty = "ambient_temperature_C";
     private static final String firstLayerBedTempProperty = "first_layer_bed_temperature_C";
     private static final String bedTempProperty = "bed_temperature_C";
@@ -55,6 +55,11 @@ public class FilamentContainer
     private FilamentContainer()
     {
         loadFilamentData();
+    }
+
+    public static String constructFilePath(Filament filament)
+    {
+        return ApplicationConfiguration.getUserFilamentDirectory() + filament.getFriendlyFilamentName() + "-" + filament.getMaterial().getFriendlyName() + ApplicationConfiguration.filamentFileExtension;
     }
 
     private static void loadFilamentData()
@@ -92,8 +97,8 @@ public class FilamentContainer
                 String reelID = filamentProperties.getProperty(reelIDProperty);
                 String material = filamentProperties.getProperty(materialProperty);
                 String diameterString = filamentProperties.getProperty(diameterProperty);
-                String maxExtrusionRateString = filamentProperties.getProperty(maxExtrusionRateProperty);
-                String extrusionMultiplierString = filamentProperties.getProperty(extrusionMultiplierProperty);
+                String filamentMultiplierString = filamentProperties.getProperty(filamentMultiplierProperty);
+                String feedRateMultiplierString = filamentProperties.getProperty(feedRateMultiplierProperty);
                 String ambientTempString = filamentProperties.getProperty(ambientTempProperty);
                 String firstLayerBedTempString = filamentProperties.getProperty(firstLayerBedTempProperty);
                 String bedTempString = filamentProperties.getProperty(bedTempProperty);
@@ -105,8 +110,8 @@ public class FilamentContainer
                         && material != null
                         && reelID != null
                         && diameterString != null
-                        && maxExtrusionRateString != null
-                        && extrusionMultiplierString != null
+                        && feedRateMultiplierString != null
+                        && filamentMultiplierString != null
                         && ambientTempString != null
                         && firstLayerBedTempString != null
                         && bedTempString != null
@@ -117,8 +122,8 @@ public class FilamentContainer
                     try
                     {
                         float diameter = Float.valueOf(diameterString);
-                        float maxExtrusionRate = Float.valueOf(maxExtrusionRateString);
-                        float extrusionMultiplier = Float.valueOf(extrusionMultiplierString);
+                        float filamentMultiplier = Float.valueOf(filamentMultiplierString);
+                        float feedRateMultiplier = Float.valueOf(feedRateMultiplierString);
                         int ambientTemp = Integer.valueOf(ambientTempString);
                         int firstLayerBedTemp = Integer.valueOf(firstLayerBedTempString);
                         int bedTemp = Integer.valueOf(bedTempString);
@@ -132,8 +137,8 @@ public class FilamentContainer
                                 selectedMaterial,
                                 reelID,
                                 diameter,
-                                maxExtrusionRate,
-                                extrusionMultiplier,
+                                filamentMultiplier,
+                                feedRateMultiplier,
                                 ambientTemp,
                                 firstLayerBedTemp,
                                 bedTemp,
@@ -169,7 +174,7 @@ public class FilamentContainer
             Properties filamentProperties = new Properties();
 
             filamentProperties.setProperty(nameProperty, filament.getFriendlyFilamentName());
-            filamentProperties.setProperty(materialProperty, filament.getMaterial().toString());
+            filamentProperties.setProperty(materialProperty, filament.getMaterial().getFriendlyName());
             if (filament.getReelID() == null)
             {
                 filamentProperties.setProperty(reelIDProperty, Filament.generateUserReelID());
@@ -178,8 +183,8 @@ public class FilamentContainer
                 filamentProperties.setProperty(reelIDProperty, filament.getReelID());
             }
             filamentProperties.setProperty(diameterProperty, floatConverter.toString(filament.getDiameter()));
-            filamentProperties.setProperty(maxExtrusionRateProperty, floatConverter.toString(filament.getMaxExtrusionRate()));
-            filamentProperties.setProperty(extrusionMultiplierProperty, floatConverter.toString(filament.getExtrusionMultiplier()));
+            filamentProperties.setProperty(filamentMultiplierProperty, floatConverter.toString(filament.getFilamentMultiplier()));
+            filamentProperties.setProperty(feedRateMultiplierProperty, floatConverter.toString(filament.getFeedRateMultiplier()));
             filamentProperties.setProperty(ambientTempProperty, intConverter.toString(filament.getAmbientTemperature()));
             filamentProperties.setProperty(firstLayerBedTempProperty, intConverter.toString(filament.getFirstLayerBedTemperature()));
             filamentProperties.setProperty(bedTempProperty, intConverter.toString(filament.getBedTemperature()));
@@ -191,14 +196,10 @@ public class FilamentContainer
                     (int) (filament.getDisplayColour().getGreen() * 255),
                     (int) (filament.getDisplayColour().getBlue() * 255));
             filamentProperties.setProperty(displayColourProperty, webColour);
+            
+            String filename = constructFilePath(filament);
 
-            String filename = filament.getFileName();
-            if (filename.endsWith(ApplicationConfiguration.filamentFileExtension) == false)
-            {
-                filename = filename + ApplicationConfiguration.filamentFileExtension;
-            }
-
-            File filamentFile = new File(ApplicationConfiguration.getUserFilamentDirectory() + filename);
+            File filamentFile = new File(filename);
             filamentProperties.store(new FileOutputStream(filamentFile), "Robox data");
             loadFilamentData();
         } catch (IOException ex)
@@ -206,6 +207,13 @@ public class FilamentContainer
             steno.error("Error whilst storing filament file " + filament.getFileName());
         }
         return success;
+    }
+
+    public static void deleteFilament(Filament filamentToSave)
+    {
+        File filamentToDelete = new File(constructFilePath(filamentToSave));
+        filamentToDelete.delete();
+        loadFilamentData();
     }
 
     public static FilamentContainer getInstance()

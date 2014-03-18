@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.comms.commands;
 
 /**
@@ -10,17 +6,23 @@ package celtech.printerControl.comms.commands;
  */
 public class GCodeConstants
 {
+
     public static final String extruderRelativeMoveMode = "M83";
     public static final String carriageRelativeMoveMode = "G91";
     public static final String carriageAbsoluteMoveMode = "G90";
+
     public static final String setAmbientTemperature = "M170 S";
-    public static final String setBedTemperatureToTarget = "M140";
+
+    public static final String setFirstLayerBedTemperatureTarget = "M139 S";
+    public static final String setBedTemperatureTarget = "M140 S";
+    public static final String switchBedHeaterOn = "M140";
     public static final String switchBedHeaterOff = "M140 S0";
-    public static final String setBedTemperature = "M140 S";
-    public static final String setNozzleTemperature = "M104 S";
-    public static final String setNozzleTemperatureToTarget = "M104";
+
+    public static final String setFirstLayerNozzleTemperatureTarget = "M103 S";
+    public static final String setNozzleTemperatureTarget = "M104 S";
+    public static final String switchNozzleHeaterOn = "M104";
     public static final String switchNozzleHeaterOff = "M104 S0";
-    public static final String setFirstLayerNozzleTemperature = "M103 S";
+
     public static final String homeXAxis = "G28 X";
     public static final String homeYAxis = "G28 Y";
     public static final String homeZAxis = "G28 Z";

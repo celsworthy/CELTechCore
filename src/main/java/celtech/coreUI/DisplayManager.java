@@ -23,7 +23,7 @@ import celtech.coreUI.components.SlideoutAndProjectHolder;
 import celtech.coreUI.controllers.MenuStripController;
 import celtech.coreUI.controllers.PrinterStatusPageController;
 import celtech.coreUI.controllers.sidePanels.LayoutSidePanelController;
-import celtech.coreUI.controllers.sidePanels.SettingsSidePanelController;
+import celtech.coreUI.controllers.sidePanels.LayoutSlideOutPanelController;
 import celtech.coreUI.controllers.sidePanels.SidePanelManager;
 import celtech.coreUI.visualisation.CameraPositionPreset;
 import celtech.coreUI.visualisation.ThreeDViewManager;
@@ -50,7 +50,6 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Side;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -74,7 +73,6 @@ import javafx.stage.Stage;
 import libertysystems.configuration.Configuration;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.control.MasterDetailPane;
 
 /**
  *
@@ -253,7 +251,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             }
 
             projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
-//            ((LayoutSidePanelController) (sidePanels.get(ApplicationMode.LAYOUT).getSidePanelController())).bindLoadedModels(projectTab.getThreeDViewManager());
+            ((LayoutSlideOutPanelController) slideOutControllers.get(ApplicationMode.LAYOUT)).bindLoadedModels(projectTab.getProject());
             ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).bindLoadedModels(projectTab.getThreeDViewManager());
             menuStripController.bindSelectedModels(projectTab.getSelectionContainer());
         } else if (newMode == ApplicationMode.STATUS)
@@ -355,7 +353,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
         try
         {
             FXMLLoader printerStatusPageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "PrinterStatusPage.fxml"), i18nBundle);
-            StackPane printerStatusPage = printerStatusPageLoader.load();
+            AnchorPane printerStatusPage = printerStatusPageLoader.load();
             PrinterStatusPageController printerStatusPageController = printerStatusPageLoader.getController();
             printerStatusPageController.configure(rhPanel.getProjectTabPaneHolder());
 

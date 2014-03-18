@@ -9,7 +9,9 @@
  */
 package celtech.coreUI.controllers.utilityPanels;
 
+import celtech.CoreTest;
 import celtech.appManager.ApplicationStatus;
+import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PrintProfileContainer;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.SettingsScreenState;
@@ -22,6 +24,7 @@ import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -33,13 +36,15 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -47,6 +52,7 @@ import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.controlsfx.control.textfield.CustomTextField;
 
 /**
  * FXML Controller class
@@ -119,7 +125,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private TextField supportOverhangThreshold;
 
     @FXML
-    private ChoiceBox<String> fillNozzleChoice;
+    private ComboBox<String> fillNozzleChoice;
 
     @FXML
     private GridPane retractGrid;
@@ -137,7 +143,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private CheckBox supportMaterialEnabled;
 
     @FXML
-    private ChoiceBox<String> supportNozzleChoice;
+    private ComboBox<String> supportNozzleChoice;
 
     @FXML
     private TextField nozzleStartRetract;
@@ -182,7 +188,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private TextField retractLength;
 
     @FXML
-    private ChoiceBox<String> fillPatternChoice;
+    private ComboBox<String> fillPatternChoice;
 
     @FXML
     private Label perimeterNozzleChoiceLabel;
@@ -233,7 +239,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private TabPane customTabPane;
 
     @FXML
-    private ChoiceBox<String> perimeterNozzleChoice;
+    private ComboBox<String> perimeterNozzleChoice;
 
     @FXML
     private TextField supportPatternSpacing;
@@ -266,7 +272,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private HBox nozzleFinishOpenHBox;
 
     @FXML
-    private ChoiceBox<String> supportPattern;
+    private ComboBox<String> supportPattern;
 
     @FXML
     private TextField bridgesFanSpeed;
@@ -322,6 +328,14 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         }
     }
 
+    @FXML
+    private CustomTextField profileNameField;
+
+    private BooleanProperty profileNameInvalid = new SimpleBooleanProperty(true);
+
+    private final Image redcrossImage = new Image(CoreTest.class.getResource(ApplicationConfiguration.imageResourcePath + "redcross.png").toExternalForm());
+    private final ImageView redcrossHolder = new ImageView(redcrossImage);
+
     private final BooleanProperty isDirty = new SimpleBooleanProperty(false);
     private final BooleanProperty isMutable = new SimpleBooleanProperty(false);
     private final BooleanProperty showButtons = new SimpleBooleanProperty(true);
@@ -355,6 +369,18 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         applicationStatus = ApplicationStatus.getInstance();
         displayManager = DisplayManager.getInstance();
         settingsScreenState = SettingsScreenState.getInstance();
+
+        profileNameField.setRight(redcrossHolder);
+        profileNameField.getRight().visibleProperty().bind(profileNameInvalid);
+
+        profileNameField.textProperty().addListener(new ChangeListener<String>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue)
+            {
+                validateProfileName();
+            }
+        });
 
         editingOptions.visibleProperty().bind(isDirty.and(showButtons).and(isMutable));
         notEditingOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable));
@@ -688,5 +714,38 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     public void provideReceiver(PopupCommandReceiver receiver)
     {
         commandReceiver = receiver;
+    }
+
+    private void validateProfileName()
+    {
+        boolean invalid = false;
+        String profileNameText = profileNameField.getText();
+
+        if (profileNameText.equals(""))
+        {
+            invalid = true;
+        } else
+        {
+            ObservableList<SlicerSettings> existingProfileList = PrintProfileContainer.getUserProfileList();
+            for (SlicerSettings settings : existingProfileList)
+            {
+                if (settings.getProfileName().equals(profileNameText))
+                {
+                    invalid = true;
+                    break;
+                }
+            }
+        }
+        profileNameInvalid.set(invalid);
+    }
+
+    public ReadOnlyBooleanProperty getProfileNameInvalidProperty()
+    {
+        return profileNameInvalid;
+    }
+
+    public String getProfileName()
+    {
+        return profileNameField.getText();
     }
 }

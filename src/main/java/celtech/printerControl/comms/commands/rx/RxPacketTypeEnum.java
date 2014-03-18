@@ -10,7 +10,7 @@ package celtech.printerControl.comms.commands.rx;
  */
 public enum RxPacketTypeEnum
 {
-    STATUS_RESPONSE((byte)0xE1, 157, false, 0),
+    STATUS_RESPONSE((byte)0xE1, 165, false, 0),
     FIRMWARE_RESPONSE((byte)0xE4, 9, false, 0),
     ACK_WITH_ERRORS((byte)0xE3, 33, false, 0),
     PRINTER_ID_RESPONSE((byte)0xE5, 257, false, 0),

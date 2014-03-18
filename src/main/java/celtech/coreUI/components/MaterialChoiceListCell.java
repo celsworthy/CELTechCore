@@ -9,6 +9,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
 import celtech.coreUI.DisplayManager;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -23,15 +24,16 @@ import javafx.scene.shape.Rectangle;
  */
 public class MaterialChoiceListCell extends ListCell<Filament>
 {
-    
+
     private final static String LIST_CELL_STYLE_CLASS = "material-choice-list-cell";
     private final GridPane grid = new GridPane();
-    private final Rectangle colourRectangle = new Rectangle(10, 10);
+    private final Rectangle colourRectangle = new Rectangle(15, 15);
     private final Label name = new Label();
+    private final Label remainingFilament = new Label();
     private static Image padlockImage = null;
-    private ImageView padlock = new ImageView();
+    private final ImageView padlock = new ImageView();
     private final Label createNewFilamentLabel = new Label();
-    
+
     public MaterialChoiceListCell()
     {
         if (padlockImage == null)
@@ -39,19 +41,18 @@ public class MaterialChoiceListCell extends ListCell<Filament>
             padlockImage = new Image(MaterialChoiceListCell.class.getResource(ApplicationConfiguration.imageResourcePath + "padlock.png").toExternalForm());
         }
         padlock.setImage(padlockImage);
-        
+
         createNewFilamentLabel.setText(DisplayManager.getLanguageBundle().getString("sidePanel_settings.createNewMaterial"));
         createNewFilamentLabel.setAlignment(Pos.CENTER);
-        
-        grid.setHgap(10);
-        grid.setVgap(4);
+
         grid.add(colourRectangle, 1, 1);
         grid.add(padlock, 2, 1);
         grid.add(name, 3, 1);
-        
+        grid.add(remainingFilament, 4, 1);
+
         grid.getStyleClass().add(LIST_CELL_STYLE_CLASS);
     }
-    
+
     @Override
     protected void updateItem(Filament filament, boolean empty)
     {
@@ -64,13 +65,13 @@ public class MaterialChoiceListCell extends ListCell<Filament>
             addContent(filament);
         }
     }
-    
+
     private void clearContent()
     {
         setText(null);
         setGraphic(null);
     }
-    
+
     private void addContent(Filament filament)
     {
         setText(null);
@@ -82,6 +83,10 @@ public class MaterialChoiceListCell extends ListCell<Filament>
             colourRectangle.setFill(filament.getDisplayColour());
             padlock.setVisible(!filament.isMutable());
             name.textProperty().bind(filament.getFriendlyFilamentNameProperty());
+            if (filament.isMutable() == false)
+            {
+                remainingFilament.textProperty().bind(filament.getRemainingFilamentProperty().asString("%.0fm"));
+            }
             setGraphic(grid);
         }
     }

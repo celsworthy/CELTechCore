@@ -1,42 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-
-
-
-
-
 package celtech.configuration;
 
 import celtech.utils.SystemUtils;
@@ -56,6 +17,7 @@ import javafx.scene.paint.Color;
  */
 public class Filament
 {
+
     private boolean mutable = false;
     private final StringProperty friendlyFilamentName = new SimpleStringProperty("");
     private final ObjectProperty<MaterialType> material = new SimpleObjectProperty();
@@ -63,8 +25,8 @@ public class Filament
     private final StringProperty uniqueID = new SimpleStringProperty("");
 
     private final FloatProperty diameter = new SimpleFloatProperty(0);
-    private final FloatProperty maxExtrusionRate = new SimpleFloatProperty(0);
-    private final FloatProperty extrusionMultiplier = new SimpleFloatProperty(0);
+    private final FloatProperty filamentMultiplier = new SimpleFloatProperty(0);
+    private final FloatProperty feedRateMultiplier = new SimpleFloatProperty(0);
     private final IntegerProperty requiredAmbientTemperature = new SimpleIntegerProperty(0);
     private final IntegerProperty requiredFirstLayerBedTemperature = new SimpleIntegerProperty(0);
     private final IntegerProperty requiredBedTemperature = new SimpleIntegerProperty(0);
@@ -78,8 +40,8 @@ public class Filament
             MaterialType material,
             String reelID,
             float diameter,
-            float maxExtrusionRate,
-            float extrusionMultiplier,
+            float filamentMultiplier,
+            float feedRateMultiplier,
             int requiredAmbientTemperature,
             int requiredFirstLayerBedTemperature,
             int requiredBedTemperature,
@@ -92,8 +54,8 @@ public class Filament
         this.material.set(material);
         this.reelID.set(reelID);
         this.diameter.set(diameter);
-        this.maxExtrusionRate.set(maxExtrusionRate);
-        this.extrusionMultiplier.set(extrusionMultiplier);
+        this.filamentMultiplier.set(filamentMultiplier);
+        this.feedRateMultiplier.set(feedRateMultiplier);
         this.requiredAmbientTemperature.set(requiredAmbientTemperature);
         this.requiredFirstLayerBedTemperature.set(requiredFirstLayerBedTemperature);
         this.requiredBedTemperature.set(requiredBedTemperature);
@@ -122,12 +84,12 @@ public class Filament
     {
         return reelID.get();
     }
-    
+
     public StringProperty getReelIDProperty()
     {
         return reelID;
     }
-    
+
     public StringProperty getUniqueIDProperty()
     {
         return uniqueID;
@@ -158,24 +120,24 @@ public class Filament
         return diameter.get();
     }
 
-    public FloatProperty getMaxExtrusionRateProperty()
+    public FloatProperty getFilamentMultiplierProperty()
     {
-        return maxExtrusionRate;
+        return filamentMultiplier;
     }
 
-    public float getMaxExtrusionRate()
+    public float getFilamentMultiplier()
     {
-        return maxExtrusionRate.get();
+        return filamentMultiplier.get();
     }
 
-    public FloatProperty getExtrusionMultiplierProperty()
+    public FloatProperty getFeedRateMultiplierProperty()
     {
-        return extrusionMultiplier;
+        return feedRateMultiplier;
     }
 
-    public float getExtrusionMultiplier()
+    public float getFeedRateMultiplier()
     {
-        return extrusionMultiplier.get();
+        return feedRateMultiplier.get();
     }
 
     public IntegerProperty getAmbientTemperatureProperty()
@@ -268,14 +230,14 @@ public class Filament
         this.diameter.set(diameter);
     }
 
-    public void setMaxExtrusionRate(float maxExtrusionRate)
+    public void setFilamentMultiplier(float filamentMultiplier)
     {
-        this.maxExtrusionRate.set(maxExtrusionRate);
+        this.filamentMultiplier.set(filamentMultiplier);
     }
 
-    public void setExtrusionMultiplier(float extrusionMultiplier)
+    public void setFeedRateMultiplier(float feedRateMultiplier)
     {
-        this.extrusionMultiplier.set(extrusionMultiplier);
+        this.feedRateMultiplier.set(feedRateMultiplier);
     }
 
     public void setRequiredAmbientTemperature(int requiredAmbientTemperature)
@@ -323,7 +285,7 @@ public class Filament
     {
         return friendlyFilamentName.get() + " " + material.get();
     }
-    
+
     public static String generateUserReelID()
     {
         String fullID = SystemUtils.generate16DigitID();

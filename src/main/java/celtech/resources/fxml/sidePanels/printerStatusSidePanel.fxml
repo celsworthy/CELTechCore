@@ -53,26 +53,34 @@
                                 </Label>
                                 <HBox id="HBox" fx:id="targetNozzleTempHBox" alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
                                     <children>
+<StackPane>
+<children><Label fx:id="nozzleTemperaturePlaceholder" text="-" /><RestrictedTextField fx:id="nozzleFirstLayerTargetTemperature" onAction="#setNozzleFirstLayerTargetTemp" prefColumnCount="3" />
                                         <RestrictedTextField fx:id="nozzleTargetTemperature" alignment="CENTER_RIGHT" maxLength="4" onAction="#setNozzleTargetTemp" prefColumnCount="3" restrict="0-9" text="555">
                                             <font>
                                                 <Font size="10.0" />
                                             </font>
                                         </RestrictedTextField>
-                                        <Label text="%misc.degrees" />
+</children>
+</StackPane>
+                                        <Label text="%misc.degreesC" />
                                     </children>
                                 </HBox>
                                 <HBox id="HBox" fx:id="targetBedTempHBox" alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
                                     <children>
+<StackPane>
+<children><RestrictedTextField fx:id="bedFirstLayerTargetTemperature" onAction="#setBedFirstLayerTargetTemp" prefColumnCount="3" />
                                         <RestrictedTextField fx:id="bedTargetTemperature" maxLength="50" onAction="#setBedTargetTemp" prefColumnCount="3" restrict="0-9" text="666">
-                                        </RestrictedTextField>
-                                        <Label text="%misc.degrees" />
+                                        </RestrictedTextField><Label fx:id="bedTemperaturePlaceholder" text="-" />
+</children>
+</StackPane>
+                                        <Label text="%misc.degreesC" />
                                     </children>
                                 </HBox>
                                 <HBox id="HBox" fx:id="targetAmbientTempHBox" alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
                                     <children>
                                         <RestrictedTextField fx:id="ambientTargetTemperature" maxHeight="20.0" maxLength="50" minHeight="0.0" minWidth="0.0" onAction="#setAmbientTargetTemp" prefColumnCount="3" restrict="0-9" HBox.hgrow="NEVER">
                                         </RestrictedTextField>
-                                        <Label text="%misc.degrees" />
+                                        <Label text="%misc.degreesC" />
                                     </children>
                                 </HBox>
                                 <Label text="%sidePanel_settings.currentTemperature" GridPane.columnIndex="1" GridPane.rowIndex="0" />
@@ -115,6 +123,12 @@
                                 </Label>
                                 <Label text="Now" HBox.hgrow="NEVER" />
                             </children>
+<VBox.margin>
+<Insets top="-15.0" />
+</VBox.margin>
+<padding>
+<Insets right="5.0" />
+</padding>
                         </HBox>
                     </children>
                     <BorderPane.margin>

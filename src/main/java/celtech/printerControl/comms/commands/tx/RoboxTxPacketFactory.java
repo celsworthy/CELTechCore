@@ -95,6 +95,9 @@ public class RoboxTxPacketFactory
                 case SET_TEMPERATURES:
                     returnVal = new SetTemperatures();
                     break;
+                case SET_FILAMENT_INFO:
+                    returnVal = new SetTemperatures();
+                    break;
                 default:
                     break;
             }

@@ -8,16 +8,16 @@
 <?scenebuilder-preview-i18n-resource ../i18n/LanguageData.properties?>
 <?scenebuilder-stylesheet ../css/AutoMaker.css?>
 
-<AnchorPane fx:id="gizmoGroup" cacheShape="false" centerShape="false" layoutX="-175.0" layoutY="-175.0" mouseTransparent="true" pickOnBounds="false" scaleShape="false" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.GizmoOverlayController">
+<AnchorPane fx:id="gizmoGroup" cacheShape="false" centerShape="false" layoutX="-175.0" layoutY="-175.0" mouseTransparent="true" opacity="0.46" pickOnBounds="false" scaleShape="false" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.GizmoOverlayController">
     <children>
-        <Button fx:id="rotationRing" cacheShape="false" centerShape="false" contentDisplay="BOTTOM" focusTraversable="false" mnemonicParsing="false" pickOnBounds="false" scaleShape="false" styleClass="gizmoControlButton" text="Button">
+        <Button fx:id="rotationRing" cacheShape="false" centerShape="false" contentDisplay="BOTTOM" focusTraversable="false" mnemonicParsing="false" mouseTransparent="true" pickOnBounds="false" scaleShape="false" styleClass="gizmoControlButton" text="Button">
             <graphic>
                 <SVGPath id="rotationHandle" fx:id="rotationPath" content="M175 175a175 175 0 1 0 1 0m0 30a145 145 0 1 1 -1 0" fill="#53919d" onMouseDragged="#rotationRingDragged" onMousePressed="#rotationRingPressed" onMouseReleased="#rotationRingReleased" />
             </graphic>
         </Button>
         <Arc fx:id="rotationArc" centerX="175.0" centerY="175.0" fill="#545d8c" length="90.0" mouseTransparent="true" radiusX="140.0" radiusY="140.0" startAngle="135.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" type="ROUND" />
-        <Text fx:id="rotationAngleText" fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="labelText" text="Text" translateX="75.0" translateY="100.0" />
-        <Button fx:id="zHandleButton" cacheShape="false" centerShape="false" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" mnemonicParsing="false" onMouseDragged="#zHandleDragged" onMousePressed="#zHandlePressed" onMouseReleased="#zHandleReleased" pickOnBounds="false" scaleShape="false" styleClass="gizmoControlButton" text="Button" translateX="140.0" translateY="40.0">
+        <Text fx:id="rotationAngleText" fill="WHITE" mouseTransparent="true" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="labelText" text="Text" translateX="75.0" translateY="100.0" />
+        <Button fx:id="zHandleButton" cacheShape="false" centerShape="false" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" mnemonicParsing="false" mouseTransparent="true" onMouseDragged="#zHandleDragged" onMousePressed="#zHandlePressed" onMouseReleased="#zHandleReleased" pickOnBounds="false" scaleShape="false" styleClass="gizmoControlButton" text="Button" translateX="140.0" translateY="40.0">
             <graphic>
                 <Path id="zHandle" fill="#0c9500" strokeType="OUTSIDE" strokeWidth="0.0">
                     <elements>
@@ -33,7 +33,7 @@
                 </Path>
             </graphic>
         </Button>
-        <Button cacheShape="false" centerShape="false" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" mnemonicParsing="false" onDragDetected="#xHandleDragDetected" onMouseDragged="#xHandleDragged" onMousePressed="#xHandlePressed" onMouseReleased="#xHandleReleased" pickOnBounds="false" scaleShape="false" styleClass="gizmoControlButton" text="Button" translateX="160.0" translateY="140.0" fx:id="xHandleButton">
+        <Button cacheShape="false" centerShape="false" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" mnemonicParsing="false" mouseTransparent="true" onDragDetected="#xHandleDragDetected" onMouseDragged="#xHandleDragged" onMousePressed="#xHandlePressed" onMouseReleased="#xHandleReleased" pickOnBounds="false" scaleShape="false" styleClass="gizmoControlButton" text="Button" translateX="160.0" translateY="140.0" fx:id="xHandleButton">
             <graphic>
                 <Path id="xHandle" cacheHint="ROTATE" fill="RED" strokeType="OUTSIDE" strokeWidth="0.0">
                     <elements>
@@ -49,7 +49,7 @@
                 </Path>
             </graphic>
         </Button>
-        <Button id="xzHandle" cacheShape="false" centerShape="false" contentDisplay="BOTTOM" focusTraversable="false" mnemonicParsing="false" onMousePressed="#xzHandlePressed" onMouseReleased="#xzHandleReleased" pickOnBounds="false" scaleShape="false" styleClass="gizmoControlButton" text="Button" translateX="191.0" translateY="105.0" fx:id="xzHandleButton">
+        <Button id="xzHandle" cacheShape="false" centerShape="false" contentDisplay="BOTTOM" focusTraversable="false" mnemonicParsing="false" mouseTransparent="true" onMousePressed="#xzHandlePressed" onMouseReleased="#xzHandleReleased" pickOnBounds="false" scaleShape="false" styleClass="gizmoControlButton" text="Button" translateX="191.0" translateY="105.0" fx:id="xzHandleButton">
             <graphic>
                 <Arc id="xzHandle" fill="#3f398d" length="90.0" radiusX="55.0" radiusY="55.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" type="ROUND" />
             </graphic>

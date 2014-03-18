@@ -9,6 +9,7 @@ import celtech.appManager.Project;
 import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
+import celtech.printerControl.PrintJob;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.printerControl.comms.RoboxCommsManager;
@@ -42,10 +43,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
-import javafx.util.Duration;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.control.Notifications;
 
 /**
  *
@@ -156,7 +155,9 @@ public class PrintQueue implements ControllableService
                     gcodePrintService.setModelFileToPrint(modelFileToPrint);
                     gcodePrintService.setPrinterToUse(result.getPrinterToUse());
                     gcodePrintService.start();
-                    linesInCurrentGCodeFile = gcodePrintService.getLinesInGCodeFile();
+                    File gcodeFromPrintJob = new File(ApplicationConfiguration.getPrintSpoolDirectory() + jobUUID + File.separator + jobUUID + ApplicationConfiguration.gcodeTempFileExtension);
+                    int numberOfLines = SystemUtils.countLinesInFile(gcodeFromPrintJob);
+                    linesInCurrentGCodeFile = numberOfLines;
                     Notifier.showInformationNotification(notificationTitle, sliceSuccessfulNotification);
                     setPrintStatus(PrinterStatusEnumeration.SENDING_TO_PRINTER);
                 } else
@@ -234,6 +235,7 @@ public class PrintQueue implements ControllableService
                     case PRINTING:
                         double percentDone = newValue.doubleValue() / (double) linesInCurrentGCodeFile;
                         printProgressPercent.set(percentDone);
+//                        steno.info("Printing " + newValue.intValue() + " of " + linesInCurrentGCodeFile);
 //                        printQueueStatusString.setValue(String.format("Printing %.1f%%", percentDone));
 //                        fxToJMEInterface.exposeGCodeModel(percentDone);
                         break;
@@ -344,6 +346,8 @@ public class PrintQueue implements ControllableService
             File printJobDirectory = new File(printJobDirectoryName);
             printJobDirectory.mkdirs();
 
+            PrintJob printJob = new PrintJob(printUUID, printQuality, settings);
+
             if (project.getProjectMode() == ProjectMode.MESH)
             {
 
@@ -420,6 +424,7 @@ public class PrintQueue implements ControllableService
                 printProgressMessage.unbind();
                 printProgressMessage.bind(slicerService.messageProperty());
                 printProgressPercent.unbind();
+                setPrintProgressPercent(0);
                 printProgressPercent.bind(slicerService.progressProperty());
                 setPrintInProgress(true);
                 setDialogRequired(true);
@@ -428,6 +433,7 @@ public class PrintQueue implements ControllableService
                 printProgressMessage.unbind();
                 printProgressMessage.bind(gcodePrintService.messageProperty());
                 printProgressPercent.unbind();
+                setPrintProgressPercent(0);
                 printProgressPercent.bind(gcodePrintService.progressProperty());
                 setPrintInProgress(true);
                 setDialogRequired(true);
@@ -515,11 +521,11 @@ public class PrintQueue implements ControllableService
     {
         switch (printState)
         {
+            case SENDING_TO_PRINTER:
             case PRINTING:
                 try
                 {
                     associatedPrinter.transmitPausePrint();
-                    associatedPrinter.transmitStoredGCode(GCodeMacros.PAUSE_PRINT, true);
                     setPrintStatus(PrinterStatusEnumeration.PAUSED);
                 } catch (RoboxCommsException ex)
                 {
@@ -539,7 +545,6 @@ public class PrintQueue implements ControllableService
             case PAUSED:
                 try
                 {
-                    associatedPrinter.transmitStoredGCode(GCodeMacros.RESUME_PRINT, true);
                     associatedPrinter.transmitResumePrint();
                     setPrintStatus(PrinterStatusEnumeration.PRINTING);
                 } catch (RoboxCommsException ex)

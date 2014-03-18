@@ -3,6 +3,7 @@
     dark_grey: rgb(45,45,45);
     mid_grey: rgb(65,65,65);
     light_grey: rgb(100,100,100);
+    entrybox_background_grey: rgb(180,180,180);
     blue_colour: rgb(15%, 65%, 85%);
     background_colour: rgb(0,0,0);
     unselected_colour: #1d1d1d;
@@ -149,6 +150,7 @@
     -fx-font-size: 1.1em;
     -fx-border-color: transparent;
     -fx-content-display: graphic-only;
+    -fx-opacity: 0.3;
 }
 
 .printerControlButton:hover {
@@ -159,7 +161,8 @@
     -fx-font-weight: bold;
     -fx-font-size: 1.1em;
     -fx-effect: dropshadow(three-pass-box, #000000, 10, 0, 0, 0);
-    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-opacity: 1.0;
 }
 
 .printerControlButton:pressed {
@@ -169,10 +172,12 @@
     -fx-background-radius: 20;
     -fx-font-weight: bold;
     -fx-font-size: 1.1em;
-    -fx-effect: innershadow(three-pass-box, #000000, 10, 0, 0, 0);
-    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-effect: dropshadow(three-pass-box, #ffffff, 10, 0, 0, 0);
 }
-
+.printerControlButton:focused {
+    -fx-border-width: 0;
+}
 .gizmoControlButton, .gizmoControlButton:hover, .gizmoControlButton:focused {
     -fx-background-color: transparent;
     -fx-padding: 0;
@@ -638,14 +643,13 @@
 
 .combo-box-base:hover {
     -fx-background-color: transparent, white, transparent, #4a4a4a;
-
 }
 
-/*.combo-box-base:focused {
-    -fx-background-color: -fx-focus-color, -fx-outer-border, -fx-inner-border, -fx-body-color;
-    -fx-background-radius: 6.4, 4, 5, 3;
-    -fx-background-insets: -1.4, 0, 1, 2;
-}*/
+.combo-box-base:focused{
+    -fx-border-color:white;
+    -fx-background-radius: 0, 0, 0, 0;
+    -fx-padding: 0.166667em; /* 2 */
+}
 
 .combo-box-base:disabled {
     -fx-opacity: .4;
@@ -871,9 +875,13 @@
  */
 
 .list-view {
+    -fx-background-color: #4a4a4a;
+    -fx-border-color: white;
+}
+/*.list-view {
     -fx-background-color: #4a4a4a, -fx-control-inner-background;
     -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0) , 8, 0.0 , 0 , 0 );
-}
+}*/
 
 .list-view .list-cell{
     -fx-background-color: #4a4a4a;
@@ -1035,9 +1043,9 @@ table-view .column-header-background {
     -fx-pref-width: 60;
 }
 
-.slideOutPanel TextField{
+/*.slideOutPanel TextField{
     -fx-pref-width: 60;
-}
+}*/
 
 .slideout-and-project-holder{
     -fx-background-color: mid_grey;
@@ -1114,4 +1122,9 @@ table-view .column-header-background {
     -fx-font-size: 10pt;
     -fx-padding: 2 2 2 2;
     -fx-alignment: CENTER_RIGHT;
+}
+
+.material-choice-list-cell{
+    -fx-padding: 0;
+    -fx-hgap:10;
 }

@@ -97,8 +97,8 @@ public class MenuStripController
         settingsScreenState.getSelectedPrinter().printProject(currentProject, settingsScreenState.getFilament(), settingsScreenState.getPrintQuality(), settingsScreenState.getSettings());
         try
         {
-            settingsScreenState.getSelectedPrinter().transmitDirectGCode(GCodeConstants.setNozzleTemperatureToTarget, true);
-            settingsScreenState.getSelectedPrinter().transmitDirectGCode(GCodeConstants.setBedTemperatureToTarget, true);
+            settingsScreenState.getSelectedPrinter().transmitDirectGCode(GCodeConstants.switchNozzleHeaterOn, true);
+            settingsScreenState.getSelectedPrinter().transmitDirectGCode(GCodeConstants.switchBedHeaterOn, true);
         } catch (RoboxCommsException ex)
         {
             steno.error("Error whilst sending preheat commands");

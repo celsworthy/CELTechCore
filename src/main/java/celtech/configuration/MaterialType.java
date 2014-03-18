@@ -21,6 +21,11 @@ public enum MaterialType
         this.friendlyName = friendlyName;
     }
     
+    public String getFriendlyName()
+    {
+        return friendlyName;
+    }
+    
     @Override
     public String toString()
     {

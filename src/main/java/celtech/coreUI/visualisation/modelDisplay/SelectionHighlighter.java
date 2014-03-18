@@ -204,28 +204,28 @@ public class SelectionHighlighter extends Group
 
     private void buildSelectionBox()
     {
-        selectionBoxBackLeftBottom = generateSelectionCornerGroup(0, 90, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize);
+        selectionBoxBackLeftBottom = generateSelectionCornerGroup(0, 90, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize, false);
 
-        selectionBoxBackRightBottom = generateSelectionCornerGroup(0, -180, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize);
+        selectionBoxBackRightBottom = generateSelectionCornerGroup(0, -180, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize, false);
 
-        selectionBoxBackLeftTop = generateSelectionCornerGroup(180, 0, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize);
+        selectionBoxBackLeftTop = generateSelectionCornerGroup(180, 0, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize, true);
 
-        selectionBoxBackRightTop = generateSelectionCornerGroup(180, 90, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize);
+        selectionBoxBackRightTop = generateSelectionCornerGroup(180, 90, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize, true);
 
-        selectionBoxFrontLeftBottom = generateSelectionCornerGroup(0, 0, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize);
+        selectionBoxFrontLeftBottom = generateSelectionCornerGroup(0, 0, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize, false);
 
-        selectionBoxFrontRightBottom = generateSelectionCornerGroup(0, -90, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize);
+        selectionBoxFrontRightBottom = generateSelectionCornerGroup(0, -90, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize, false);
 
-        selectionBoxFrontLeftTop = generateSelectionCornerGroup(180, -90, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize);
+        selectionBoxFrontLeftTop = generateSelectionCornerGroup(180, -90, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize, true);
 
-        selectionBoxFrontRightTop = generateSelectionCornerGroup(0, 0, 180, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize);
+        selectionBoxFrontRightTop = generateSelectionCornerGroup(0, 0, 180, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize, true);
 
         selectionBox.getChildren().addAll(selectionBoxBackLeftBottom, selectionBoxBackRightBottom, selectionBoxBackLeftTop, selectionBoxBackRightTop,
                 selectionBoxFrontLeftBottom, selectionBoxFrontRightBottom, selectionBoxFrontLeftTop, selectionBoxFrontRightTop);
 
     }
 
-    private Xform generateSelectionCornerGroup(double xRotate, double yRotate, double zRotate, double cornerBoxXOffset, double cornerBoxYOffset, double cornerBoxZOffset)
+    private Xform generateSelectionCornerGroup(double xRotate, double yRotate, double zRotate, double cornerBoxXOffset, double cornerBoxYOffset, double cornerBoxZOffset, boolean generateCornerBox)
     {
         final int cylSamples = 4;
         final double cylRadius = .05;
@@ -255,14 +255,18 @@ public class SelectionHighlighter extends Group
         part3.setDrawMode(DrawMode.LINE);
         part3.setRotate(-90);
         part3.setTranslateZ(cornerBracketLength / 2);
+        selectionCorner.getChildren().addAll(part1, part2, part3);
 
-        Box part4 = new Box(cornerBoxSize, cornerBoxSize, cornerBoxSize);
-        part4.setMaterial(greenMaterial);
-        part4.setId(scaleHandleString);
-        part4.setTranslateX(cornerBoxXOffset);
-        part4.setTranslateY(cornerBoxYOffset);
-        part4.setTranslateZ(cornerBoxZOffset);
-        selectionCorner.getChildren().addAll(part1, part2, part3, part4);
+        if (generateCornerBox)
+        {
+            Box part4 = new Box(cornerBoxSize, cornerBoxSize, cornerBoxSize);
+            part4.setMaterial(greenMaterial);
+            part4.setId(scaleHandleString);
+            part4.setTranslateX(cornerBoxXOffset);
+            part4.setTranslateY(cornerBoxYOffset);
+            part4.setTranslateZ(cornerBoxZOffset);
+            selectionCorner.getChildren().add(part4);
+        }
 
         selectionCornerTransform.setRotateX(xRotate);
         selectionCornerTransform.setRotateY(yRotate);

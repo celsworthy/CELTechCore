@@ -24,7 +24,7 @@ public class WriteReelEEPROM extends RoboxTxPacket
 
     public void populateEEPROM(String reelTypeCode, String reelUniqueID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
             float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter,
-            float reelMaxExtrusionRate, float reelExtrusionMultiplier, float reelRemainingFilament)
+            float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament)
     {
         StringBuilder payload = new StringBuilder();
 
@@ -36,8 +36,8 @@ public class WriteReelEEPROM extends RoboxTxPacket
         payload.append(String.format("%08.2f", reelFirstLayerBedTemperature));
         payload.append(String.format("%08.2f", reelAmbientTemperature));
         payload.append(String.format("%08.2f", reelFilamentDiameter));
-        payload.append(String.format("%08.2f", reelMaxExtrusionRate));
-        payload.append(String.format("%08.2f", reelExtrusionMultiplier));
+        payload.append(String.format("%08.2f", reelFilamentMultiplier));
+        payload.append(String.format("%08.2f", reelFeedRateMultiplier));
         payload.append(String.format("%1$80s", " "));
         payload.append(String.format("%08.2f", reelRemainingFilament));
 

@@ -139,7 +139,6 @@ public class SlicerSettings implements Serializable, Cloneable
     protected ObservableList<StringProperty> nozzle_offset = FXCollections.observableArrayList(new SimpleStringProperty("0x0x0"), new SimpleStringProperty("0x0x0"));
 
     protected FloatProperty filament_diameter = new SimpleFloatProperty(1.75f);
-    protected FloatProperty extrusion_multiplier = new SimpleFloatProperty(0.9f);
 
     //END of firmware overridden
     //Advanced controls
@@ -218,21 +217,6 @@ public class SlicerSettings implements Serializable, Cloneable
     public FloatProperty filament_diameterProperty()
     {
         return filament_diameter;
-    }
-
-    public void setExtrusion_multiplier(float value)
-    {
-        extrusion_multiplier.set(value);
-    }
-
-    public float getExtrusion_multiplier()
-    {
-        return extrusion_multiplier.get();
-    }
-
-    public FloatProperty extrusion_multiplierProperty()
-    {
-        return extrusion_multiplier;
     }
 
     //END Advanced controls
@@ -1759,7 +1743,6 @@ public class SlicerSettings implements Serializable, Cloneable
             throws IOException
     {
         out.writeFloat(filament_diameter.get());
-        out.writeFloat(extrusion_multiplier.get());
 
         out.writeUTF(print_center.get());
         out.writeInt(retract_restart_extra_toolchange.get());
@@ -1931,7 +1914,6 @@ public class SlicerSettings implements Serializable, Cloneable
             throws IOException, ClassNotFoundException
     {
         filament_diameter = new SimpleFloatProperty(in.readFloat());
-        extrusion_multiplier = new SimpleFloatProperty(in.readFloat());
 
         print_center = new SimpleStringProperty(in.readUTF());
         retract_restart_extra_toolchange = new SimpleIntegerProperty(in.readInt());
@@ -2075,7 +2057,6 @@ public class SlicerSettings implements Serializable, Cloneable
 
         clone.getProfileNameProperty().set(getProfileName());
         clone.filament_diameter.set(filament_diameter.get());
-        clone.extrusion_multiplier.set(extrusion_multiplier.get());
         clone.print_center.set(print_center.get());
         clone.retract_restart_extra_toolchange.set(retract_restart_extra_toolchange.get());
         int bed_size_counter = 0;

@@ -1,6 +1,9 @@
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
 package celtech.printerControl;
 
@@ -9,6 +12,7 @@ import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
 import celtech.configuration.Head;
 import celtech.configuration.HeadContainer;
+import celtech.configuration.HeaterMode;
 import celtech.configuration.PrintHead;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
@@ -33,6 +37,7 @@ import celtech.printerControl.comms.commands.tx.ReadReelEEPROM;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacketFactory;
 import celtech.printerControl.comms.commands.tx.SetAmbientLEDColour;
+import celtech.printerControl.comms.commands.tx.SetFilamentInfo;
 import celtech.printerControl.comms.commands.tx.SetTemperatures;
 import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
 import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
@@ -93,8 +98,10 @@ public class Printer
     private final IntegerProperty ambientTemperature = new SimpleIntegerProperty(0);
     private IntegerProperty ambientTargetTemperature = new SimpleIntegerProperty(0);
     private IntegerProperty bedTemperature = new SimpleIntegerProperty(0);
+    private IntegerProperty bedFirstLayerTargetTemperature = new SimpleIntegerProperty(0);
     private IntegerProperty bedTargetTemperature = new SimpleIntegerProperty(0);
-    private IntegerProperty extruderTemperature = new SimpleIntegerProperty(0);
+    private IntegerProperty nozzleTemperature = new SimpleIntegerProperty(0);
+    private IntegerProperty nozzleFirstLayerTargetTemperature = new SimpleIntegerProperty(0);
     private IntegerProperty nozzleTargetTemperature = new SimpleIntegerProperty(0);
 
     private final LineChart.Series<Number, Number> ambientTemperatureHistory = new LineChart.Series<>();
@@ -114,16 +121,14 @@ public class Printer
 
     private final BooleanProperty printerConnected = new SimpleBooleanProperty(false);
     private final BooleanProperty ambientFanOn = new SimpleBooleanProperty(false);
-    private final BooleanProperty bedHeaterOn = new SimpleBooleanProperty(false);
-    private final BooleanProperty nozzleHeaterOn = new SimpleBooleanProperty(false);
+    private final ObjectProperty<HeaterMode> bedHeaterMode = new SimpleObjectProperty<>();
+    private final ObjectProperty<HeaterMode> nozzleHeaterMode = new SimpleObjectProperty<>();
     private final BooleanProperty headFanOn = new SimpleBooleanProperty(false);
     private final BooleanProperty errorsDetected = new SimpleBooleanProperty(false);
     private final StringProperty firmwareVersion = new SimpleStringProperty();
     private final FloatProperty headXPosition = new SimpleFloatProperty(0);
     private FloatProperty headYPosition = new SimpleFloatProperty(0);
     private FloatProperty headZPosition = new SimpleFloatProperty(0);
-    private FloatProperty EPosition = new SimpleFloatProperty(0);
-    private FloatProperty DPosition = new SimpleFloatProperty(0);
     private FloatProperty BPosition = new SimpleFloatProperty(0);
     private final ObjectProperty<PrinterStatusEnumeration> printerStatus = new SimpleObjectProperty<>(PrinterStatusEnumeration.IDLE);
     private IntegerProperty printJobLineNumber = new SimpleIntegerProperty(0);
@@ -179,7 +184,7 @@ public class Printer
     /*
      * Reel data
      */
-    private BooleanProperty reelDataChangedToggle = new SimpleBooleanProperty(false);
+    private final BooleanProperty reelDataChangedToggle = new SimpleBooleanProperty(false);
     private IntegerProperty reelAmbientTemperature = new SimpleIntegerProperty(0);
     private IntegerProperty reelBedTemperature = new SimpleIntegerProperty(0);
     private IntegerProperty reelFirstLayerBedTemperature = new SimpleIntegerProperty(0);
@@ -389,21 +394,6 @@ public class Printer
         return headZPosition;
     }
 
-    public final void setEPosition(float value)
-    {
-        EPosition.set(value);
-    }
-
-    public final float getEPosition()
-    {
-        return EPosition.get();
-    }
-
-    public final FloatProperty EPositionProperty()
-    {
-        return EPosition;
-    }
-
     public final void setBPosition(float value)
     {
         BPosition.set(value);
@@ -489,6 +479,26 @@ public class Printer
         return ambientFanOn;
     }
 
+    public final HeaterMode getBedHeaterMode()
+    {
+        return bedHeaterMode.get();
+    }
+
+    public final ObjectProperty<HeaterMode> getBedHeaterModeProperty()
+    {
+        return bedHeaterMode;
+    }
+
+    public final HeaterMode getNozzleHeaterMode()
+    {
+        return nozzleHeaterMode.get();
+    }
+
+    public final ObjectProperty<HeaterMode> getNozzleHeaterModeProperty()
+    {
+        return nozzleHeaterMode;
+    }
+
     public final void setBedTemperature(int value)
     {
         bedTemperature.set(value);
@@ -514,6 +524,21 @@ public class Printer
         return bedTargetTemperatureSeries;
     }
 
+    public final void setBedFirstLayerTargetTemperature(int value)
+    {
+        bedFirstLayerTargetTemperature.set(value);
+    }
+
+    public final int getBedFirstLayerTargetTemperature()
+    {
+        return bedFirstLayerTargetTemperature.get();
+    }
+
+    public final IntegerProperty bedFirstLayerTargetTemperatureProperty()
+    {
+        return bedFirstLayerTargetTemperature;
+    }
+
     public final void setBedTargetTemperature(int value)
     {
         bedTargetTemperature.set(value);
@@ -529,34 +554,19 @@ public class Printer
         return bedTargetTemperature;
     }
 
-    public final void setBedHeaterOn(boolean value)
-    {
-        bedHeaterOn.set(value);
-    }
-
-    public final boolean getBedHeaterOn()
-    {
-        return bedHeaterOn.get();
-    }
-
-    public final BooleanProperty bedHeaterOnProperty()
-    {
-        return bedHeaterOn;
-    }
-
     public final void setExtruderTemperature(int value)
     {
-        extruderTemperature.set(value);
+        nozzleTemperature.set(value);
     }
 
     public final int getExtruderTemperature()
     {
-        return extruderTemperature.get();
+        return nozzleTemperature.get();
     }
 
     public final IntegerProperty extruderTemperatureProperty()
     {
-        return extruderTemperature;
+        return nozzleTemperature;
     }
 
     public final XYChart.Series<Number, Number> nozzleTemperatureHistory()
@@ -569,6 +579,21 @@ public class Printer
         return nozzleTargetTemperatureSeries;
     }
 
+    public final void setNozzleFirstLayerTargetTemperature(int value)
+    {
+        nozzleFirstLayerTargetTemperature.set(value);
+    }
+
+    public final int getNozzleFirstLayerTargetTemperature()
+    {
+        return nozzleFirstLayerTargetTemperature.get();
+    }
+
+    public final IntegerProperty nozzleFirstLayerTargetTemperatureProperty()
+    {
+        return nozzleFirstLayerTargetTemperature;
+    }
+
     public final void setNozzleTargetTemperature(int value)
     {
         nozzleTargetTemperature.set(value);
@@ -579,24 +604,9 @@ public class Printer
         return nozzleTargetTemperature.get();
     }
 
-    public final IntegerProperty extruderTargetTemperatureProperty()
+    public final IntegerProperty nozzleTargetTemperatureProperty()
     {
         return nozzleTargetTemperature;
-    }
-
-    public final void setNozzleHeaterOn(boolean value)
-    {
-        nozzleHeaterOn.set(value);
-    }
-
-    public final boolean getNozzleHeaterOn()
-    {
-        return nozzleHeaterOn.get();
-    }
-
-    public final BooleanProperty nozzleHeaterOnProperty()
-    {
-        return nozzleHeaterOn;
     }
 
     public final void setHeadFanOn(boolean value)
@@ -1261,7 +1271,9 @@ public class Printer
                 setAmbientTargetTemperature(statusResponse.getAmbientTargetTemperature());
                 setBedTemperature(statusResponse.getBedTemperature());
                 setExtruderTemperature(statusResponse.getNozzleTemperature());
+                setBedFirstLayerTargetTemperature(statusResponse.getBedFirstLayerTargetTemperature());
                 setBedTargetTemperature(statusResponse.getBedTargetTemperature());
+                setNozzleFirstLayerTargetTemperature(statusResponse.getNozzleFirstLayerTargetTemperature());
                 setNozzleTargetTemperature(statusResponse.getNozzleTargetTemperature());
 
                 long now = System.currentTimeMillis();
@@ -1281,12 +1293,38 @@ public class Printer
                 }
 
                 ambientTargetPoint.setYValue(statusResponse.getAmbientTargetTemperature());
-                bedTargetPoint.setYValue(statusResponse.getBedTargetTemperature());
-                nozzleTargetPoint.setYValue(statusResponse.getNozzleTargetTemperature());
+                switch (statusResponse.getBedHeaterMode())
+                {
+                    case OFF:
+                        bedTargetPoint.setYValue(0);
+                        break;
+                    case FIRST_LAYER:
+                        bedTargetPoint.setYValue(statusResponse.getBedFirstLayerTargetTemperature());
+                        break;
+                    case NORMAL:
+                        bedTargetPoint.setYValue(statusResponse.getBedTargetTemperature());
+                        break;
+                    default:
+                        break;
+                }
+                switch (statusResponse.getNozzleHeaterMode())
+                {
+                    case OFF:
+                        nozzleTargetPoint.setYValue(0);
+                        break;
+                    case FIRST_LAYER:
+                        nozzleTargetPoint.setYValue(statusResponse.getNozzleFirstLayerTargetTemperature());
+                        break;
+                    case NORMAL:
+                        nozzleTargetPoint.setYValue(statusResponse.getNozzleTargetTemperature());
+                        break;
+                    default:
+                        break;
+                }
 
                 setAmbientFanOn(statusResponse.isAmbientFanOn());
-                setBedHeaterOn(statusResponse.isBedHeaterOn());
-                setNozzleHeaterOn(statusResponse.isNozzleHeaterOn());
+                bedHeaterMode.set(statusResponse.getBedHeaterMode());
+                nozzleHeaterMode.set(statusResponse.getNozzleHeaterMode());
                 setHeadFanOn(statusResponse.isHeadFanOn());
                 setBusy(statusResponse.isBusyStatus());
                 setPaused(statusResponse.isPauseStatus());
@@ -1323,8 +1361,6 @@ public class Printer
                 setHeadXPosition(statusResponse.getHeadXPosition());
                 setHeadYPosition(statusResponse.getHeadYPosition());
                 setHeadZPosition(statusResponse.getHeadZPosition());
-                setEPosition(statusResponse.getEPosition());
-                setBPosition(statusResponse.getBPosition());
                 updatePrinterStatus();
                 break;
             case PRINTER_INVALID_RESPONSE:
@@ -1374,8 +1410,8 @@ public class Printer
                         loadedFilament.get().setRequiredFirstLayerBedTemperature(reelResponse.getReelFirstLayerBedTemperature());
                         loadedFilament.get().setRequiredNozzleTemperature(reelResponse.getReelNozzleTemperature());
                         loadedFilament.get().setRequiredFirstLayerNozzleTemperature(reelResponse.getReelFirstLayerNozzleTemperature());
-                        loadedFilament.get().setMaxExtrusionRate(reelResponse.getReelMaxExtrusionRate());
-                        loadedFilament.get().setExtrusionMultiplier(reelResponse.getReelExtrusionMultiplier());
+                        loadedFilament.get().setFeedRateMultiplier(reelResponse.getReelMaxExtrusionRate());
+                        loadedFilament.get().setFilamentMultiplier(reelResponse.getReelExtrusionMultiplier());
                         loadedFilament.get().setRemainingFilament(reelResponse.getReelRemainingFilament());
                         loadedFilament.get().setDiameter(reelResponse.getReelFilamentDiameter());
                     } else
@@ -1693,12 +1729,12 @@ public class Printer
 
     public void transmitWriteReelEEPROM(String reelTypeCode, String reelUniqueID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
             float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter,
-            float reelMaxExtrusionRate, float reelExtrusionMultiplier, float reelRemainingFilament) throws RoboxCommsException
+            float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament) throws RoboxCommsException
     {
         WriteReelEEPROM writeReelEEPROM = (WriteReelEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_REEL_EEPROM);
         writeReelEEPROM.populateEEPROM(reelTypeCode, reelUniqueID, reelFirstLayerNozzleTemperature, reelNozzleTemperature,
                 reelFirstLayerBedTemperature, reelBedTemperature, reelAmbientTemperature, reelFilamentDiameter,
-                reelMaxExtrusionRate, reelExtrusionMultiplier, reelRemainingFilament);
+                reelFilamentMultiplier, reelFeedRateMultiplier, reelRemainingFilament);
         printerCommsManager.submitForWrite(portName, writeReelEEPROM);
     }
 
@@ -1778,6 +1814,13 @@ public class Printer
         SetTemperatures setTemperatures = (SetTemperatures) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.SET_TEMPERATURES);
         setTemperatures.setTemperatures(nozzleTarget, nozzleFirstLayerTarget, bedTarget, bedFirstLayerTarget, ambientTarget);
         printerCommsManager.submitForWrite(portName, setTemperatures);
+    }
+
+    public void transmitSetFilamentInfo(double filamentDiameter, double filamentMultiplier, double feedRateMultiplier) throws RoboxCommsException
+    {
+        SetFilamentInfo setFilamentInfo = (SetFilamentInfo) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.SET_FILAMENT_INFO);
+        setFilamentInfo.setFilamentInfo(filamentDiameter, filamentMultiplier, feedRateMultiplier);
+        printerCommsManager.submitForWrite(portName, setFilamentInfo);
     }
 
     public boolean initialiseDataFileSend(String fileID) throws DatafileSendAlreadyInProgress, RoboxCommsException
@@ -1879,9 +1922,7 @@ public class Printer
             try
             {
                 transmitSetTemperatures(filament.getNozzleTemperature(), filament.getNozzleTemperature(), filament.getFirstLayerBedTemperature(), filament.getBedTemperature(), filament.getAmbientTemperature());
-                //Temporary fix as there is no interface to allow filament diameter or extrusion multiplier to be overridden using a Robox command.
-                settings.setFilament_diameter(filament.getDiameter());
-                settings.setExtrusion_multiplier(filament.getExtrusionMultiplier());
+                transmitSetFilamentInfo(filament.getDiameter(), filament.getFilamentMultiplier(), filament.getFeedRateMultiplier());
             } catch (RoboxCommsException ex)
             {
                 steno.error("Failure to set temperatures prior to print");

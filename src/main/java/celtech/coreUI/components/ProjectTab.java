@@ -8,12 +8,12 @@ package celtech.coreUI.components;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
 import celtech.appManager.ProjectMode;
+import celtech.appManager.UndoBuffer;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.GCodeEditorPanelController;
 import celtech.coreUI.controllers.GizmoOverlayController;
 import celtech.coreUI.visualisation.CameraPositionPreset;
-import celtech.coreUI.visualisation.PolarCamera;
 import celtech.coreUI.visualisation.SelectionContainer;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.coreUI.visualisation.Xform;
@@ -29,10 +29,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.util.List;
-import javafx.animation.Interpolator;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -41,9 +37,7 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
-import javafx.scene.Group;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
@@ -54,11 +48,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.transform.TransformChangedEvent;
-import javafx.util.Duration;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -75,11 +65,11 @@ public class ProjectTab extends Tab
     private final TextField editableProjectNameField = new TextField();
     private Project project = null;
     private AnchorPane basePane = null;
+    private UndoBuffer undoBuffer = new UndoBuffer();
     private ThreeDViewManager viewManager = null;
     private DisplayManager displayManager = null;
     private ProjectManager projectManager = ProjectManager.getInstance();
     private boolean titleBeingEdited = false;
-//    private PolarCamera camera = null;
     private Xform gizmoXform = new Xform(Xform.RotateOrder.YXZ);
     private AnchorPane gizmoOverlay = null;
 
@@ -133,7 +123,7 @@ public class ProjectTab extends Tab
             reader.close();
         } catch (IOException ex)
         {
-            steno.error("Failed to load project manager");
+            steno.error("Failed to load project " + projectName);
         } catch (ClassNotFoundException ex)
         {
             steno.error("Couldn't locate class while loading project " + projectName);
@@ -153,7 +143,7 @@ public class ProjectTab extends Tab
             projectManager.projectClosed(project.getProjectName());
         });
 
-        viewManager = new ThreeDViewManager(project.getLoadedModels(), tabDisplayWidthProperty, tabDisplayHeightProperty);
+        viewManager = new ThreeDViewManager(project, tabDisplayWidthProperty, tabDisplayHeightProperty);
 //        camera = viewManager.getCamera();
 
         basePane = new AnchorPane();

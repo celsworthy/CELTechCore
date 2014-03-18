@@ -281,7 +281,7 @@ public class PrinterHandler extends Thread
 //                            }
 //                        } else
 //                        {
-                        controlInterface.publishEvent(portName, new RoboxEvent(RoboxEventType.PRINTER_ACK, response));
+                        controlInterface.publishEvent(portName, new RoboxEvent(RoboxEventType.PRINTER_STATUS_UPDATE, response));
                         commsState = RoboxCommsState.CHECKING_FIRMWARE;
 //                        }
                     } catch (RoboxCommsException ex)
@@ -361,13 +361,13 @@ public class PrinterHandler extends Thread
                                     });
                                 } else
                                 {
-                                    controlInterface.printerConnected(portName);
                                     controlInterface.publishEvent(portName, new RoboxEvent(RoboxEventType.FIRMWARE_VERSION_INFO, response));
                                     if (suppressPrinterIDChecks == false)
                                     {
                                         commsState = RoboxCommsState.CHECKING_ID;
                                     } else
                                     {
+                                        controlInterface.printerConnected(portName);
                                         commsState = RoboxCommsState.CONNECTED;
                                     }
                                 }
@@ -448,6 +448,7 @@ public class PrinterHandler extends Thread
 
                     if (success)
                     {
+                        controlInterface.printerConnected(portName);
                         controlInterface.publishEvent(portName, new RoboxEvent(RoboxEventType.PRINTER_ID_INFO, lastPrinterIDResponse));
                         commsState = RoboxCommsState.CONNECTED;
                     }

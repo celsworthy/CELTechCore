@@ -21,10 +21,9 @@ import celtech.coreUI.components.MaterialChoiceListCell;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.ProfileChoiceListCell;
 import celtech.coreUI.controllers.SettingsScreenState;
-import celtech.coreUI.controllers.popups.CreateNewMaterialController;
-import celtech.coreUI.controllers.popups.CreateNewProfileController;
 import celtech.coreUI.controllers.popups.PopupCommandReceiver;
 import celtech.coreUI.controllers.utilityPanels.MaterialDetailsController;
+import celtech.coreUI.controllers.utilityPanels.ProfileDetailsController;
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.services.slicer.PrintQualityEnumeration;
@@ -32,12 +31,12 @@ import celtech.services.slicer.SlicerSettings;
 import celtech.utils.SystemUtils;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -56,12 +55,6 @@ import javafx.util.Callback;
 import javafx.util.StringConverter;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.control.ButtonBar;
-import org.controlsfx.control.ButtonBar.ButtonType;
-import org.controlsfx.control.action.Action;
-import org.controlsfx.dialog.AbstractDialogAction;
-import org.controlsfx.dialog.Dialog;
-import org.controlsfx.dialog.Dialog.ActionTrait;
 
 /**
  * FXML Controller class
@@ -132,6 +125,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private VBox createMaterialPage = null;
     private ModalDialog createMaterialDialogue = null;
     private int saveMaterialAction = 0;
+    private int cancelMaterialSaveAction = 0;
 
     private VBox createProfilePage = null;
     private ModalDialog createProfileDialogue = null;
@@ -140,8 +134,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     private SettingsSlideOutPanelController slideOutController = null;
 
-    private CreateNewMaterialController materialDetailsController = null;
-    private CreateNewProfileController profileDetailsController = null;
+    private MaterialDetailsController materialDetailsController = null;
+    private ProfileDetailsController profileDetailsController = null;
 
     /**
      * Initializes the controller class.
@@ -156,22 +150,17 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         try
         {
-            FXMLLoader createMaterialPageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlPopupResourcePath + "createNewMaterial.fxml"), DisplayManager.getLanguageBundle());
+            FXMLLoader createMaterialPageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlUtilityPanelResourcePath + "materialDetails.fxml"), DisplayManager.getLanguageBundle());
             createMaterialPage = createMaterialPageLoader.load();
             materialDetailsController = createMaterialPageLoader.getController();
             materialDetailsController.updateMaterialData(new Filament("", MaterialType.ABS, null,
                     0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, true));
             materialDetailsController.showButtons(false);
 
-//            createMaterialDialogue = new Dialog(DisplayManager.getMainStage(), DisplayManager.getLanguageBundle().getString("sidePanel_settings.createMaterialDialogueTitle"), false, true);
-//            createMaterialDialogue.setContent(createMaterialPage);
-//            createMaterialDialogue.setResizable(false);
-//            createMaterialDialogue.getStylesheets().add("modal-dialogue");
-//            createMaterialDialogue.getActions().addAll(actionCreateMaterial, Dialog.Actions.CANCEL);
             createMaterialDialogue = new ModalDialog(DisplayManager.getLanguageBundle().getString("sidePanel_settings.createMaterialDialogueTitle"));
             createMaterialDialogue.setContent(createMaterialPage);
             saveMaterialAction = createMaterialDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Save"), materialDetailsController.getProfileNameInvalidProperty());
-            cancelProfileSaveAction = createProfileDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Cancel"));
+            cancelMaterialSaveAction = createMaterialDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Cancel"));
 
         } catch (Exception ex)
         {
@@ -189,7 +178,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         try
         {
-            FXMLLoader createProfilePageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlPopupResourcePath + "createNewProfile.fxml"), DisplayManager.getLanguageBundle());
+            FXMLLoader createProfilePageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetails.fxml"), DisplayManager.getLanguageBundle());
             createProfilePage = createProfilePageLoader.load();
             profileDetailsController = createProfilePageLoader.getController();
             profileDetailsController.updateProfileData(new SlicerSettings(true));
@@ -331,43 +320,66 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         printerChooser.getSelectionModel()
                 .clearSelection();
 
-        printerChooser.getItems()
-                .addListener(new ListChangeListener<Printer>()
+        printerChooser.getItems().addListener(new ListChangeListener<Printer>()
+        {
+            @Override
+            public void onChanged(ListChangeListener.Change<? extends Printer> change
+            )
+            {
+                while (change.next())
+                {
+                    if (change.wasAdded())
+                    {
+                        for (Printer addedPrinter : change.getAddedSubList())
                         {
-                            @Override
-                            public void onChanged(ListChangeListener.Change<? extends Printer> change
-                            )
+                            Platform.runLater(new Runnable()
                             {
-                                while (change.next())
-                                {
-                                    if (change.wasAdded())
-                                    {
-                                        for (Printer addedPrinter : change.getAddedSubList())
-                                        {
-                                            if (printerChooser.getSelectionModel().getSelectedItem() == null)
-                                            {
-                                                printerChooser.getSelectionModel().select(0);
-                                                break;
-                                            }
-                                        }
-                                    } else if (change.wasRemoved())
-                                    {
-                                        if (printerChooser.getItems().isEmpty() && applicationStatus.getMode() == ApplicationMode.SETTINGS)
-                                        {
-                                            applicationStatus.setMode(ApplicationMode.STATUS);
-                                        }
-                                    } else if (change.wasReplaced())
-                                    {
-                                    } else if (change.wasUpdated())
-                                    {
-                                    }
-                                }
-                            }
-                }
-                );
 
-        settingsScreenState.selectedPrinterProperty()
-                .bind(printerChooser.valueProperty());
+                                @Override
+                                public void run()
+                                {
+                                    printerChooser.setValue(addedPrinter);
+                                }
+                            });
+                        }
+                    } else if (change.wasRemoved())
+                    {
+                        for (Printer removedPrinter : change.getRemoved())
+                        {
+                            if (printerChooser.getItems().isEmpty())
+                            {
+                                Platform.runLater(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        printerChooser.getSelectionModel().select(null);
+                                    }
+                                });
+                            } else
+                            {
+                                Platform.runLater(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        printerChooser.getSelectionModel().selectFirst();
+                                    }
+                                });
+                            }
+                        }
+                    } else if (change.wasReplaced())
+                    {
+                        steno.info("Replace");
+                    } else if (change.wasUpdated())
+                    {
+                        steno.info("Update");
+
+                    }
+                }
+            }
+        }
+        );
 
         printerChooser.getSelectionModel()
                 .selectedItemProperty().addListener(new ChangeListener<Printer>()
@@ -392,6 +404,9 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                                 {
                                     currentPrinter = null;
                                 }
+
+                                settingsScreenState.setSelectedPrinter(selectedPrinter);
+
                             }
                 }
                 );

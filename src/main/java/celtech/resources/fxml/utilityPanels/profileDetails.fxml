@@ -4,10 +4,20 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import org.controlsfx.control.textfield.*?>
 
-<VBox fx:id="container" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="380.0" styleClass="slideOutPanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.ProfileDetailsController">
+<VBox fx:id="container" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="380.0" spacing="5.0" styleClass="slideOutPanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.ProfileDetailsController">
     <children>
-        <TabPane fx:id="customTabPane" maxWidth="-1.0" opacity="1.0" tabClosingPolicy="UNAVAILABLE">
+        <HBox alignment="TOP_CENTER" spacing="5.0">
+            <children>
+                <Label text="%sidePanel_settings.Profilename" />
+                <CustomTextField fx:id="profileNameField" />
+            </children>
+            <VBox.margin>
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+            </VBox.margin>
+        </HBox>
+        <TabPane fx:id="customTabPane" opacity="1.0" tabClosingPolicy="UNAVAILABLE">
             <tabs>
                 <Tab text="%sidePanel_settings.ExtrusionTabTitle">
                     <content>
@@ -36,8 +46,6 @@
                                 </HBox>
                                 <Label minWidth="-1.0" text="%extrusion.fillDensity" GridPane.rowIndex="1" />
                                 <TextField id="unretractLength" fx:id="fillDensity" maxWidth="-Infinity" prefColumnCount="5" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                <ChoiceBox id="fillPatternChoiceBox" fx:id="fillPatternChoice" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                                </ChoiceBox>
                                 <Label minWidth="-1.0" text="%extrusion.fillPattern" GridPane.rowIndex="2" />
                                 <Label minWidth="-1.0" text="%extrusion.infillEveryN" GridPane.rowIndex="3" />
                                 <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
@@ -54,6 +62,7 @@
                                 <Label minWidth="-1.0" text="%extrusion.brimWidth" GridPane.rowIndex="7" />
                                 <TextField id="unretractLength" fx:id="brimWidth" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
                                 <Label layoutX="10.0" layoutY="230.0" minWidth="-1.0" text="%extrusion.spiralVase" GridPane.rowIndex="6" />
+                                <ComboBox fx:id="fillPatternChoice" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                             </children>
                         </GridPane>
                     </content>
@@ -63,11 +72,11 @@
                         <GridPane id="Content" alignment="TOP_CENTER" maxHeight="-1.0">
                             <children>
                                 <Label fx:id="perimeterNozzleChoiceLabel" text="%extrusion.perimeterNozzle" />
-                                <ChoiceBox fx:id="perimeterNozzleChoice" GridPane.columnIndex="1" />
+                                <ComboBox fx:id="perimeterNozzleChoice" GridPane.columnIndex="1" />
                                 <Label fx:id="fillNozzleChoiceLabel" prefWidth="99.0" text="%extrusion.fillNozzle" GridPane.rowIndex="1" />
-                                <ChoiceBox fx:id="fillNozzleChoice" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                <ComboBox fx:id="fillNozzleChoice" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                 <Label fx:id="supportNozzleChoiceLabel" prefWidth="99.0" text="%extrusion.supportNozzle" GridPane.rowIndex="2" />
-                                <ChoiceBox fx:id="supportNozzleChoice" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                <ComboBox fx:id="supportNozzleChoice" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                 <Label fx:id="nozzleFinishUnretractLabel" minWidth="95.0" text="%nozzle.finishUnretract" GridPane.rowIndex="4" />
                                 <HBox fx:id="nozzleFinishUnretractHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
                                     <children>
@@ -208,8 +217,8 @@
                                     </children>
                                 </HBox>
                                 <Label minWidth="-1.0" text="%support.supportPattern" GridPane.rowIndex="3" />
-                                <ChoiceBox id="fillPatternChoiceBox" fx:id="supportPattern" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                                </ChoiceBox>
+                                <ComboBox id="fillPatternComboBox" fx:id="supportPattern" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                </ComboBox>
                                 <Label minWidth="95.0" text="%support.patternSpacing" GridPane.rowIndex="4" />
                                 <HBox GridPane.columnIndex="1" GridPane.rowIndex="4">
                                     <children>
@@ -352,7 +361,7 @@
                                         <Label minWidth="-1.0" text="%misc.layers" />
                                     </children>
                                 </HBox>
-                                <Label styleClass="sidePanelDivider" text="%cooling.thresholdsTitle" GridPane.rowIndex="6" />
+                                <Label text="%cooling.thresholdsTitle" GridPane.rowIndex="6" />
                                 <Label minWidth="-1.0" text="%cooling.enableFanIfPrintTimeBelow" GridPane.rowIndex="7" />
                                 <HBox GridPane.columnIndex="1" GridPane.rowIndex="7">
                                     <children>
@@ -376,8 +385,8 @@
                                 </HBox>
                             </children>
                             <columnConstraints>
-                                <ColumnConstraints halignment="RIGHT" percentWidth="50.0" />
-                                <ColumnConstraints percentWidth="50.0" />
+                                <ColumnConstraints fillWidth="false" halignment="RIGHT" percentWidth="50.0" />
+                                <ColumnConstraints fillWidth="false" percentWidth="50.0" />
                             </columnConstraints>
                             <rowConstraints>
                                 <RowConstraints />
@@ -396,26 +405,26 @@
                 </Tab>
             </tabs>
         </TabPane>
-<StackPane>
-<children>
-        <HBox fx:id="editingOptions" alignment="CENTER" spacing="5.0" VBox.vgrow="NEVER">
+        <StackPane>
             <children>
-                <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveData" prefWidth="100.0" text="%genericFirstLetterCapitalised.Save" GridPane.rowIndex="10" />
-                <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#cancelEdit" prefWidth="100.0" text="%genericFirstLetterCapitalised.Cancel" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+                <HBox fx:id="editingOptions" alignment="CENTER" spacing="5.0" VBox.vgrow="NEVER">
+                    <children>
+                        <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveData" prefWidth="100.0" text="%genericFirstLetterCapitalised.Save" GridPane.rowIndex="10" />
+                        <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#cancelEdit" prefWidth="100.0" text="%genericFirstLetterCapitalised.Cancel" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+                    </children>
+                </HBox>
+                <HBox fx:id="notEditingOptions" alignment="CENTER" layoutX="10.0" layoutY="10.0" spacing="5.0">
+                    <children>
+                        <Button fx:id="saveAsButton" mnemonicParsing="false" onAction="#launchSaveAsDialogue" prefWidth="120.0" text="%genericFirstLetterCapitalised.SaveAs" GridPane.rowIndex="10" />
+                        <Button fx:id="deleteProfileButton" mnemonicParsing="false" onAction="#deleteProfile" prefWidth="120.0" text="%genericFirstLetterCapitalised.Delete" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+                    </children>
+                </HBox>
+                <HBox fx:id="immutableOptions" alignment="CENTER" layoutX="10.0" layoutY="10.0" spacing="5.0">
+                    <children>
+                        <Button mnemonicParsing="false" onAction="#launchSaveAsDialogue" prefWidth="120.0" text="%genericFirstLetterCapitalised.SaveAs" GridPane.rowIndex="10" />
+                    </children>
+                </HBox>
             </children>
-        </HBox>
-<HBox fx:id="notEditingOptions" alignment="CENTER" layoutX="10.0" layoutY="10.0" spacing="5.0">
-<children>
-<Button fx:id="saveAsButton" mnemonicParsing="false" onAction="#launchSaveAsDialogue" prefWidth="120.0" text="%genericFirstLetterCapitalised.SaveAs" GridPane.rowIndex="10" />
-<Button fx:id="deleteProfileButton" mnemonicParsing="false" onAction="#deleteProfile" prefWidth="120.0" text="%genericFirstLetterCapitalised.Delete" GridPane.columnIndex="1" GridPane.rowIndex="10" />
-</children>
-</HBox>
-<HBox fx:id="immutableOptions" alignment="CENTER" layoutX="10.0" layoutY="10.0" spacing="5.0">
-<children>
-<Button mnemonicParsing="false" onAction="#launchSaveAsDialogue" prefWidth="120.0" text="%genericFirstLetterCapitalised.SaveAs" GridPane.rowIndex="10" />
-</children>
-</HBox>
-</children>
-</StackPane>
+        </StackPane>
     </children>
 </VBox>

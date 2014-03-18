@@ -22,6 +22,7 @@ package celtech.coreUI.visualisation;
 import celtech.CoreTest;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
+import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PrintBed;
 import celtech.coreUI.LayoutSubmode;
@@ -32,7 +33,7 @@ import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelContentsEnumeration;
-import com.sun.javafx.scene.CameraHelper;
+import com.leapmotion.leap.Controller;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -132,8 +133,8 @@ public class ThreeDViewManager
     /*
      * Leap Motion
      */
-//    private Controller leapController = null;
-//    private LeapMotionListener leapMotionListener = null;
+    private Controller leapController = null;
+    private LeapMotionListener leapMotionListener = null;
     /*
     
      */
@@ -169,7 +170,7 @@ public class ThreeDViewManager
 
     private double dragStartX, dragStartY;
 
-    private void rotateCameraAroundAxes(double xangle, double yangle)
+    public void rotateCameraAroundAxes(double xangle, double yangle)
     {
         double yAxisRotation = demandedCameraRotationY.get() - yangle;
 
@@ -197,6 +198,34 @@ public class ThreeDViewManager
 
     }
 
+        public void rotateCameraAroundAxesTo(double xangle, double yangle)
+    {
+        double yAxisRotation = yangle;
+
+        if (yAxisRotation > 360)
+        {
+            yAxisRotation = yAxisRotation - 360;
+        } else if (yAxisRotation < 0)
+        {
+            yAxisRotation = yAxisRotation + 360;
+        }
+        demandedCameraRotationY.set(yAxisRotation);
+
+        double xAxisRotation = xangle;
+        if (xAxisRotation > 89)
+        {
+            xAxisRotation = 89;
+        } else if (xAxisRotation < 0)
+        {
+            xAxisRotation = 0;
+        }
+        demandedCameraRotationX.set(xAxisRotation);
+
+        bedTranslateXform.setRotateY(yAxisRotation);
+        bedTranslateXform.setRotateX(xAxisRotation);
+
+    }
+
     private final ChangeListener<Boolean> dragModeListener = new ChangeListener<Boolean>()
     {
         @Override
@@ -204,17 +233,14 @@ public class ThreeDViewManager
         {
             if (oldValue == false && newValue == true)
             {
-                translationDragPlane.setVisible(true);
-//                dragPlane.setTranslateX(lastDragPosition.getX());
-//                dragPlane.setTranslateY(lastDragPosition.getY());
-//                dragPlane.setTranslateZ(lastDragPosition.getZ());
+//                translationDragPlane.setVisible(true);
                 translationDragPlane.setMouseTransparent(false);
                 models.setMouseTransparent(true);
             } else if (oldValue == true && newValue == false)
             {
                 models.setMouseTransparent(false);
-                translationDragPlane.setVisible(false);
-//                translationDragPlane.setMouseTransparent(true);
+//                translationDragPlane.setVisible(false);
+                translationDragPlane.setMouseTransparent(true);
             }
         }
     };
@@ -222,7 +248,7 @@ public class ThreeDViewManager
     private final EventHandler<MouseEvent> mouseEventHandler = event ->
     {
 //        steno.info("Mouse event " + event);
-        
+
         if (event.getEventType() == MouseEvent.MOUSE_PRESSED)
         {
             dragStartX = event.getSceneX();
@@ -231,49 +257,47 @@ public class ThreeDViewManager
             mousePosY = event.getSceneY();
             mouseOldX = event.getSceneX();
             mouseOldY = event.getSceneY();
-            
+
             if (event.isPrimaryButtonDown())
             {
 //                gizmoOverlayController.wasXHandleHit(event.getScreenX(), event.getScreenY());
 
-                if (dragMode.get() == false)
+                PickResult pickResult = event.getPickResult();
+                Point3D pickedPoint = pickResult.getIntersectedPoint();
+
+                Node intersectedNode = pickResult.getIntersectedNode();
+                lastDragPosition = null;
+                translationDragPlane.setTranslateX(pickedPoint.getX());
+                translationDragPlane.setTranslateY(pickedPoint.getY());
+                translationDragPlane.setTranslateZ(pickedPoint.getZ());
+
+                setDragMode(true);
+                if (intersectedNode != null && intersectedNode instanceof MeshView)
                 {
-                    PickResult pickResult = event.getPickResult();
-                    Point3D pickedPoint = pickResult.getIntersectedPoint();
-
-                    Node intersectedNode = pickResult.getIntersectedNode();
-
-                    if (intersectedNode != null && intersectedNode instanceof MeshView)
+                    Parent parent = intersectedNode.getParent();
+                    if (!(parent instanceof ModelContainer))
                     {
-                        lastDragPosition = intersectedNode.localToScene(pickedPoint);
-                        setDragMode(true);
-
-                        Parent parent = intersectedNode.getParent();
-                        if (!(parent instanceof ModelContainer))
-                        {
-                            parent = parent.getParent();
-                        }
-                        ModelContainer pickedModel = (ModelContainer) parent;
-
-                        if (pickedModel.isSelected() == false)
-                        {
-                            if (event.isControlDown() == false)
-                            {
-                                deselectAllModels();
-                            }
-                            selectModel(pickedModel);
-                        } else if (event.isControlDown())
-                        {
-                            deselectModel(pickedModel);
-                        }
-                    } 
-                    else if (intersectedNode == null)
-                    {
-                        deselectAllModels();
+                        parent = parent.getParent();
                     }
+                    ModelContainer pickedModel = (ModelContainer) parent;
+
+                    if (pickedModel.isSelected() == false)
+                    {
+                        if (event.isControlDown() == false)
+                        {
+                            deselectAllModels();
+                        }
+                        selectModel(pickedModel);
+                    } else if (event.isControlDown())
+                    {
+                        deselectModel(pickedModel);
+                    }
+                } else if (intersectedNode == subScene)
+                {
+                    deselectAllModels();
                 }
-                recalculateCentre();
             }
+            recalculateCentre();
         } else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED)
         {
             double xDelta = event.getSceneX() - dragStartX;
@@ -300,35 +324,36 @@ public class ThreeDViewManager
 
             double flip = -1.0;
 
-            boolean alt = (true || event.isAltDown());  // For now, don't require ALT to be pressed
+            boolean alt = event.isAltDown();
             if (alt && event.isSecondaryButtonDown())
             {
                 bedTranslateXform.setTx(bedTranslateXform.getTx() + mouseDeltaX * modifierFactor * modifier * 0.3);  // -
                 bedTranslateXform.setTy(bedTranslateXform.getTy() + mouseDeltaY * modifierFactor * modifier * 0.3);  // -
-            } else if (alt && (event.isMiddleButtonDown() || (event.isPrimaryButtonDown() && event.isSecondaryButtonDown())))
+            } else if (event.isSecondaryButtonDown())
             {
                 rotateCameraAroundAxes(-mouseDeltaY * modifierFactor * modifier * 2.0, mouseDeltaX * modifierFactor * modifier * 2.0);
             } else if (dragMode.get() && event.isPrimaryButtonDown())
             {
                 Node intersectedNode = event.getPickResult().getIntersectedNode();
-
+//                    steno.info("Pick drag " + event.getPickResult().getIntersectedNode().getId());
                 //Move the model!
                 if (intersectedNode == translationDragPlane)
                 {
-                    Point3D currentDragPosition = intersectedNode.localToScene(event.getPickResult().getIntersectedPoint());
-//                steno.info("Pick drag " + me.getPickResult().getIntersectedNode().getId());
+//                    Point3D currentDragPosition = intersectedNode.localToScene(event.getPickResult().getIntersectedPoint());
+                    Point3D currentDragPosition = event.getPickResult().getIntersectedPoint();
+//                    steno.info("Pick drag " + event.getPickResult().getIntersectedNode().getId());
 //                    steno.info("Drag from " + lastDragPosition + " to " + currentDragPosition);
                     if (lastDragPosition != null)
                     {
                         Point3D resultant = currentDragPosition.subtract(lastDragPosition);
+
 //                        steno.info("Resultant " + resultant);
                         translateSelection(resultant.getX(), resultant.getZ());
                     }
-                    translationDragPlane.setTranslateX(currentDragPosition.getX());
-                    translationDragPlane.setTranslateZ(currentDragPosition.getZ());
+//                    translationDragPlane.setTranslateX(currentDragPosition.getX());
+//                    translationDragPlane.setTranslateZ(currentDragPosition.getZ());
                     lastDragPosition = currentDragPosition;
-                }
-                else if (intersectedNode == scaleDragPlane)
+                } else if (intersectedNode == scaleDragPlane)
                 {
 //                    Point3D currentDragPosition = intersectedNode.localToScene(event.getPickResult().getIntersectedPoint());
 ////                steno.info("Pick drag " + me.getPickResult().getIntersectedNode().getId());
@@ -539,10 +564,13 @@ public class ThreeDViewManager
      * Snap to ground
      */
     private ObjectProperty<LayoutSubmode> layoutSubmode = new SimpleObjectProperty<>(LayoutSubmode.SELECT);
+    
+    private Project associatedProject = null;
 
-    public ThreeDViewManager(ObservableList<ModelContainer> loadedModels, ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
+    public ThreeDViewManager(Project project, ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
     {
-        this.loadedModels = loadedModels;
+        this.associatedProject = project;
+        this.loadedModels = project.getLoadedModels();
         threeDControl = new SelectionHighlighter(selectionContainer, cameraDistance);
 
         this.widthPropertyToFollow = widthProperty;
@@ -568,9 +596,9 @@ public class ThreeDViewManager
 
         Group bed = buildBed();
         translationDragPlane.setId("DragPlane");
-        translationDragPlane.setVisible(false);
-        translationDragPlane.setOpacity(1.0);
-//        translationDragPlane.setMouseTransparent(true);
+//        translationDragPlane.setVisible(false);
+        translationDragPlane.setOpacity(0.0);
+        translationDragPlane.setMouseTransparent(true);
 
         bedTranslateXform.getChildren().addAll(bed, models, translationDragPlane, threeDControl);
         root3D.getChildren().add(bedTranslateXform);
@@ -606,9 +634,9 @@ public class ThreeDViewManager
                 recalculateCentre();
             }
         });
-//        leapController = new Controller();
-//        leapMotionListener = new LeapMotionListener();
-//        leapController.addListener(leapMotionListener);
+        leapController = new Controller();
+        leapMotionListener = new LeapMotionListener(this);
+        leapController.addListener(leapMotionListener);
         if (loadedModels.isEmpty() == false)
         {
             for (ModelContainer model : loadedModels)
@@ -716,7 +744,7 @@ public class ThreeDViewManager
 //        steno.info("Local to scene to screen " + localToSceneToScreen);
         selectionContainer.setScreenX(localToSceneToScreen.getX());
         selectionContainer.setScreenY(localToSceneToScreen.getY());
-        
+
 //        Point2D dragPoint = CameraHelper.pickNodeXYPlane(camera, translationDragPlane, localToSceneToScreen.getX(), localToSceneToScreen.getY());
 //        steno.info("Drag point = " + dragPoint);
 //        Point3D projectPoint = CameraHelper.pickProjectPlane(camera, localToSceneToScreen.getX(), localToSceneToScreen.getY());
@@ -724,7 +752,6 @@ public class ThreeDViewManager
 //        PickRay pickRay = pickingHelper.getDeathRay(localToSceneToScreen.getX(), localToSceneToScreen.getY());
 //        PickResult pickResult = pickingHelper.pick(pickRay);
 //        steno.info("Pick result was " + pickResult);
-        
 //steno.info("View width = " + viewWidth);
 //             PickRay pickRay = PickRay.computePerspectivePickRay(x, y, true,
 //                camera.g,
@@ -740,7 +767,6 @@ public class ThreeDViewManager
 //        steno.info("Reverse 1 " + screenToScene);
 //        
 //        PickRay.computePerspectivePickRay(mousePosX, mousePosX, true, mousePosX, mousePosX, mouseOldX, true, null, mouseOldX, mouseOldX, null)
-                
 //        PickRay pickRay = new PickRay(, mousePosX, mousePosX, mouseOldX, mouseOldX)
     }
 
@@ -901,6 +927,7 @@ public class ThreeDViewManager
     {
         models.getChildren().remove(modelGroup);
         loadedModels.remove(modelGroup);
+        
     }
 
     public void addGCodeParts(Group gCodeParts)
@@ -915,7 +942,7 @@ public class ThreeDViewManager
 
     public void shutdown()
     {
-//        controller.removeListener(leapMotionListener);
+        leapController.removeListener(leapMotionListener);
     }
 
 //    public PolarCamera getCamera()
@@ -924,6 +951,7 @@ public class ThreeDViewManager
 //    }
     private void recalculateSelectionBounds(boolean addedOrRemoved)
     {
+        
         if (selectionContainer.selectedModelsProperty().size() == 1)
         {
             ModelContainer model = selectionContainer.selectedModelsProperty().get(0);
@@ -1168,7 +1196,7 @@ public class ThreeDViewManager
     {
         if (selectionContainer.selectedModelsProperty().size() == 1)
         {
-            
+
             selectionContainer.selectedModelsProperty().get(0).setRy(rotation);
             steno.info("Pivot is " + selectionContainer.selectedModelsProperty().get(0).getPivot());
             selectionContainer.setRotationY(rotation);
@@ -1353,15 +1381,14 @@ public class ThreeDViewManager
     {
         Point2D screenToLocal = camera.screenToLocal(translateStartPoint);
         steno.info("Screen to local " + screenToLocal);
-        
+
 //    final PickResultChooser result = new PickResultChooser();
 //    PickRay pickRay = new PickRay(null, null, mouseOldX, mouseOldX)
 //    subScene.getRoot().impl_pickNode(new PickRay(screenToLocal.getX(), screenToLocal.getY()), result);
 //    Node nodeToSendEvent = result.getIntersectedNode();
 //        
-        
     }
-    
+
 //        public Point3D sceneToLocal3D(Node n, double sceneX, double sceneY) {
 //        Scene scene = n.getScene();
 //        if (scene == null) {
@@ -1407,7 +1434,4 @@ public class ThreeDViewManager
 //        final Point3D ppIntersect = CameraAccess.getCameraAccess().pickProjectPlane(cam, pt.getX(), pt.getY());
 //        return n.sceneToLocal(ppIntersect);
 //    }
-
-
-
 }

@@ -1,6 +1,15 @@
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
 package celtech.printerControl.comms.commands.rx;
 
@@ -30,8 +39,8 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
     private int reelBedTemperature;
     private int reelAmbientTemperature;
     private float reelFilamentDiameter;
-    private float reelMaxExtrusionRate;
-    private float reelExtrusionMultiplier;
+    private float reelFilamentMultiplier;
+    private float reelFeedRateMultiplier;
     private float reelRemainingFilament;
 
     public ReelEEPROMDataResponse()
@@ -125,21 +134,21 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
 
             try
             {
-                reelMaxExtrusionRate = numberFormatter.parse(maxExtrusionRateString.trim()).intValue();
+                reelFilamentMultiplier = numberFormatter.parse(maxExtrusionRateString.trim()).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse max extrusion rate - " + maxExtrusionRateString);
             }
 
-            String extrusionMultiplierString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
+            String feedRateMultiplierString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
             {
-                reelExtrusionMultiplier = numberFormatter.parse(extrusionMultiplierString.trim()).floatValue();
+                reelFeedRateMultiplier = numberFormatter.parse(feedRateMultiplierString.trim()).floatValue();
             } catch (ParseException ex)
             {
-                steno.error("Couldn't parse extrusion multiplier - " + extrusionMultiplierString);
+                steno.error("Couldn't parse extrusion multiplier - " + feedRateMultiplierString);
             }
 
             byteOffset += 80;
@@ -222,12 +231,12 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
 
     public float getReelMaxExtrusionRate()
     {
-        return reelMaxExtrusionRate;
+        return reelFilamentMultiplier;
     }
 
     public float getReelExtrusionMultiplier()
     {
-        return reelExtrusionMultiplier;
+        return reelFeedRateMultiplier;
     }
 
     public float getReelRemainingFilament()

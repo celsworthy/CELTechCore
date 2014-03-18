@@ -15,32 +15,42 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
+
 package celtech.coreUI.controllers.utilityPanels;
 
+import celtech.CoreTest;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
 import celtech.configuration.MaterialType;
+import celtech.configuration.PrintProfileContainer;
 import celtech.coreUI.components.RestrictedTextField;
+import celtech.services.slicer.SlicerSettings;
 import celtech.utils.FXUtils;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.controlsfx.control.textfield.CustomTextField;
 
 /**
  * FXML Controller class
@@ -54,6 +64,15 @@ public class MaterialDetailsController implements Initializable
 
     @FXML
     private VBox container;
+
+    @FXML
+    private HBox editingOptions;
+
+    @FXML
+    private HBox notEditingOptions;
+
+    @FXML
+    private HBox immutableOptions;
 
     @FXML
     private RestrictedTextField bedTemperature;
@@ -74,7 +93,7 @@ public class MaterialDetailsController implements Initializable
     private RestrictedTextField firstLayerBedTemperature;
 
     @FXML
-    private RestrictedTextField name;
+    private CustomTextField name;
 
     @FXML
     private RestrictedTextField nozzleTemperature;
@@ -89,17 +108,11 @@ public class MaterialDetailsController implements Initializable
     private Button cancelButton;
 
     @FXML
-    void saveMaterialData(ActionEvent event)
+    void saveData(ActionEvent event)
     {
         final Filament filamentToSave = getMaterialData();
-        Platform.runLater(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                FilamentContainer.saveFilament(filamentToSave);
-            }
-        });
+        FilamentContainer.saveFilament(filamentToSave);
+        isDirty.set(false);
     }
 
     @FXML
@@ -109,6 +122,22 @@ public class MaterialDetailsController implements Initializable
         {
             updateMaterialData(lastFilamentUpdate);
         }
+    }
+
+    @FXML
+    void deleteProfile(ActionEvent event)
+    {
+        final Filament filamentToDelete = getMaterialData();
+        FilamentContainer.deleteFilament(filamentToDelete);
+    }
+
+    @FXML
+    void launchSaveAsDialogue(ActionEvent event)
+    {
+//        if (commandReceiver != null)
+//        {
+//            commandReceiver.triggerSaveAs();
+//        }
     }
 
     private final BooleanProperty isDirty = new SimpleBooleanProperty(false);
@@ -138,17 +167,33 @@ public class MaterialDetailsController implements Initializable
 
     private Filament lastFilamentUpdate = null;
 
+    private BooleanProperty materialNameInvalid = new SimpleBooleanProperty(true);
+    private final Image redcrossImage = new Image(CoreTest.class.getResource(ApplicationConfiguration.imageResourcePath + "redcross.png").toExternalForm());
+    private final ImageView redcrossHolder = new ImageView(redcrossImage);
+
     /**
      * Initializes the controller class.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        saveButton.visibleProperty().bind(isDirty.and(showButtons));
-        cancelButton.visibleProperty().bind(isDirty.and(showButtons));
+        name.setRight(redcrossHolder);
+        name.getRight().visibleProperty().bind(materialNameInvalid);
+        name.textProperty().addListener(new ChangeListener<String>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue)
+            {
+                validateMaterialName();
+            }
+        });
+
+        editingOptions.visibleProperty().bind(isDirty.and(showButtons).and(isMutable));
+        notEditingOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable));
+        immutableOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable.not()));
 
         container.disableProperty().bind(isMutable.not());
-        
+
         for (MaterialType materialType : MaterialType.values())
         {
             material.getItems().add(materialType);
@@ -204,9 +249,37 @@ public class MaterialDetailsController implements Initializable
                 isMutable.get()
         );
     }
-    
+
+    private void validateMaterialName()
+    {
+        boolean invalid = false;
+        String profileNameText = name.getText();
+
+        if (profileNameText.equals(""))
+        {
+            invalid = true;
+        } else
+        {
+            ObservableList<Filament> existingMaterialList = FilamentContainer.getUserFilamentList();
+            for (Filament material : existingMaterialList)
+            {
+                if (material.getFriendlyFilamentName().equals(profileNameText))
+                {
+                    invalid = true;
+                    break;
+                }
+            }
+        }
+        materialNameInvalid.set(invalid);
+    }
+
     public void showButtons(boolean show)
     {
         showButtons.set(show);
+    }
+
+    public ReadOnlyBooleanProperty getProfileNameInvalidProperty()
+    {
+        return materialNameInvalid;
     }
 }

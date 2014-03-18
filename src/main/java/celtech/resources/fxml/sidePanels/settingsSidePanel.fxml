@@ -8,13 +8,13 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.shape.*?>
 
-<HBox maxWidth="360.0" minWidth="-Infinity" prefWidth="360.0" styleClass="sidePanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<HBox maxWidth="360.0" minWidth="-Infinity" prefWidth="360.0" styleClass="sidePanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.sidePanels.SettingsSidePanelController">
     <children>
         <BorderPane id="AnchorPane" maxHeight="-1.0" styleClass="sidePanel" HBox.hgrow="ALWAYS">
             <top>
                 <VBox alignment="TOP_CENTER" fillWidth="true" maxWidth="-1.0" prefWidth="-1.0" spacing="25.0" BorderPane.alignment="CENTER">
                     <children>
-                        <VBox maxWidth="-1.0">
+                        <VBox maxWidth="-1.0" spacing="5.0">
                             <children>
                                 <Label styleClass="sidePanelTitle" text="%sidePanel_settings.title" translateX="51.0"> 
                                     <graphic>     
@@ -178,42 +178,46 @@
                                 </Label>
                             </children>
                         </VBox>
-<VBox spacing="5.0">
-<children>
-                                <Label layoutX="141.0" layoutY="141.0" maxWidth="-1.0" styleClass="sidePanelDivider" text="%sidePanel_settings.printerSelectionLabel" HBox.hgrow="ALWAYS" />
-                        <ComboBox fx:id="printerChooser" maxWidth="1.7976931348623157E308" promptText="%sidePanel_settings.printerSelectionLabel" VBox.vgrow="NEVER">
-                        </ComboBox>
-</children>
-</VBox>
-<VBox spacing="5.0">
-<children>
-                                <Label fx:id="materialLabel" styleClass="sidePanelDivider" text="%sidePanel_settings.materialSelectionLabel" HBox.hgrow="ALWAYS">
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label layoutX="141.0" layoutY="141.0" maxWidth="-1.0" styleClass="sidePanelDivider" text="%sidePanel_settings.printerSelectionLabel" />
+                                <ComboBox fx:id="printerChooser" maxWidth="1.7976931348623157E308" promptText="%sidePanel_printerStatus.noPrinterPlaceholder" VBox.vgrow="NEVER">
+                                </ComboBox>
+                            </children>
+                        </VBox>
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label fx:id="materialLabel" styleClass="sidePanelDivider" text="%sidePanel_settings.materialSelectionLabel">
   
                                 </Label>
-                        <ComboBox fx:id="materialChooser" layoutX="10.0" layoutY="117.0" maxWidth="1.7976931348623157E308" promptText="%sidePanel_settings.materialSelectionLabel">
-                        </ComboBox>
-</children>
-</VBox>
-<VBox spacing="5.0">
-<children>
+                                <ComboBox fx:id="materialChooser" layoutX="10.0" layoutY="117.0" maxWidth="1.7976931348623157E308" promptText="%sidePanel_settings.materialSelectionLabel">
+                                </ComboBox>
+                            </children>
+                        </VBox>
+                        <VBox spacing="5.0">
+                            <children>
                                 <Label fx:id="printQualityLabel" styleClass="sidePanelDivider" text="%sidePanel_settings.printQualityLabel">
                                 </Label>
-                        <Slider fx:id="qualityChooser" majorTickUnit="1.0" max="3.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true">
-<padding>
-<Insets left="10.0" top="10.0" />
-</padding></Slider>
-</children>
-</VBox>
+                                <Slider fx:id="qualityChooser" majorTickUnit="1.0" max="3.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true">
+                                    <padding>
+                                        <Insets left="20.0" right="20.0" />
+                                    </padding>
+                                    <VBox.margin>
+                                        <Insets />
+                                    </VBox.margin>
+                                </Slider>
+                            </children>
+                        </VBox>
                         <StackPane>
                             <children>
-<VBox fx:id="customProfileVBox" spacing="5.0">
-<children>
-                                <Label fx:id="customSettingsLabel" styleClass="sidePanelDivider" text="%sidePanel_settings.customButtonLabel">
-                                </Label>
-                                <ComboBox fx:id="customProfileChooser" maxWidth="1.7976931348623157E308">
-                                </ComboBox>
-</children>
-</VBox>
+                                <VBox fx:id="customProfileVBox">
+                                    <children>
+                                        <ComboBox fx:id="customProfileChooser" maxWidth="1.7976931348623157E308">
+                                        </ComboBox>
+                                        <Label fx:id="customSettingsLabel" styleClass="sidePanelDivider" text="%sidePanel_settings.customButtonLabel">
+                                        </Label>
+                                    </children>
+                                </VBox>
                                 <VBox fx:id="supportVBox" alignment="CENTER_LEFT" maxWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" VBox.vgrow="NEVER">
                                     <children>
                                         <Label styleClass="sidePanelDivider" text="%sidePanel_settings.supportMaterialLabel" />
@@ -234,9 +238,9 @@
                     </children>
                 </VBox>
             </top>
-<HBox.margin>
-<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-</HBox.margin>
+            <HBox.margin>
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+            </HBox.margin>
         </BorderPane>
     </children>
 </HBox>
