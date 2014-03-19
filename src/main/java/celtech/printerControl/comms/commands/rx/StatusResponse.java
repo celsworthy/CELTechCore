@@ -1,17 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 
 package celtech.printerControl.comms.commands.rx;
 
@@ -121,7 +107,7 @@ public class StatusResponse extends RoboxRxPacket
     private float BPosition = 0;
     private float filamentDiameter = 0;
     private float filamentMultiplier = 0;
-    private float extrusionRateMultiplier = 0;
+    private float feedRateMultiplier = 0;
 
     private NumberFormat numberFormatter = NumberFormat.getNumberInstance();
 
@@ -300,9 +286,9 @@ public class StatusResponse extends RoboxRxPacket
         return filamentMultiplier;
     }
 
-    public float getExtrusionRateMultiplier()
+    public float getFeedRateMultiplier()
     {
-        return extrusionRateMultiplier;
+        return feedRateMultiplier;
     }
 
     /*
@@ -540,14 +526,14 @@ public class StatusResponse extends RoboxRxPacket
                 steno.error("Couldn't parse filament multiplier - " + filamentMultiplierString);
             }
 
-            String extrusionRateMultiplierString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
+            String feedRateMultiplierString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
-                this.extrusionRateMultiplier = numberFormatter.parse(extrusionRateMultiplierString).floatValue();
+                this.feedRateMultiplier = numberFormatter.parse(feedRateMultiplierString).floatValue();
             } catch (ParseException ex)
             {
-                steno.error("Couldn't parse extrusion rate multiplier - " + extrusionRateMultiplierString);
+                steno.error("Couldn't parse feed rate multiplier - " + feedRateMultiplierString);
             }
 
             success = true;

@@ -47,7 +47,7 @@ public class AutoUpdate extends Thread
     {
         int strikes = 0;
 
-        while (strikes < 3 && keepRunning)
+        while (strikes < 1 && keepRunning)
         {
             int status = checkForUpdates();
 

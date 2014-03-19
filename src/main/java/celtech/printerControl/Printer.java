@@ -4,6 +4,96 @@
  *//*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
 package celtech.printerControl;
 
@@ -191,8 +281,8 @@ public class Printer
     private IntegerProperty reelFirstLayerNozzleTemperature = new SimpleIntegerProperty(0);
     private IntegerProperty reelNozzleTemperature = new SimpleIntegerProperty(0);
     private FloatProperty reelFilamentDiameter = new SimpleFloatProperty(0);
-    private FloatProperty reelExtrusionMultiplier = new SimpleFloatProperty(0);
-    private FloatProperty reelMaxExtrusionRate = new SimpleFloatProperty(0);
+    private FloatProperty reelFeedRateMultiplier = new SimpleFloatProperty(0);
+    private FloatProperty reelFilamentMultiplier = new SimpleFloatProperty(0);
     private FloatProperty reelRemainingFilament = new SimpleFloatProperty(0);
     private StringProperty reelTypeCode = new SimpleStringProperty("unknown");
     private StringProperty reelUniqueID = new SimpleStringProperty("unknown");
@@ -1086,14 +1176,14 @@ public class Printer
         return reelFirstLayerNozzleTemperature;
     }
 
-    public FloatProperty getReelMaxExtrusionRate()
+    public FloatProperty getReelFilamentMultiplier()
     {
-        return reelMaxExtrusionRate;
+        return reelFilamentMultiplier;
     }
 
-    public FloatProperty getReelExtrusionMultiplier()
+    public FloatProperty getReelFeedRateMultiplier()
     {
-        return reelExtrusionMultiplier;
+        return reelFeedRateMultiplier;
     }
 
     public IntegerProperty getReelNozzleTemperature()
@@ -1410,8 +1500,8 @@ public class Printer
                         loadedFilament.get().setRequiredFirstLayerBedTemperature(reelResponse.getReelFirstLayerBedTemperature());
                         loadedFilament.get().setRequiredNozzleTemperature(reelResponse.getReelNozzleTemperature());
                         loadedFilament.get().setRequiredFirstLayerNozzleTemperature(reelResponse.getReelFirstLayerNozzleTemperature());
-                        loadedFilament.get().setFeedRateMultiplier(reelResponse.getReelMaxExtrusionRate());
-                        loadedFilament.get().setFilamentMultiplier(reelResponse.getReelExtrusionMultiplier());
+                        loadedFilament.get().setFilamentMultiplier(reelResponse.getReelFilamentMultiplier());
+                        loadedFilament.get().setFeedRateMultiplier(reelResponse.getReelFeedRateMultiplier());
                         loadedFilament.get().setRemainingFilament(reelResponse.getReelRemainingFilament());
                         loadedFilament.get().setDiameter(reelResponse.getReelFilamentDiameter());
                     } else
@@ -1430,8 +1520,8 @@ public class Printer
                 reelFirstLayerBedTemperature.set(reelResponse.getReelFirstLayerBedTemperature());
                 reelNozzleTemperature.set(reelResponse.getReelNozzleTemperature());
                 reelFirstLayerNozzleTemperature.set(reelResponse.getReelFirstLayerNozzleTemperature());
-                reelMaxExtrusionRate.set(reelResponse.getReelMaxExtrusionRate());
-                reelExtrusionMultiplier.set(reelResponse.getReelExtrusionMultiplier());
+                reelFilamentMultiplier.set(reelResponse.getReelFilamentMultiplier());
+                reelFeedRateMultiplier.set(reelResponse.getReelFeedRateMultiplier());
                 reelRemainingFilament.set(reelResponse.getReelRemainingFilament());
                 reelFilamentDiameter.set(reelResponse.getReelFilamentDiameter());
                 reelDataChangedToggle.set(!reelDataChangedToggle.get());

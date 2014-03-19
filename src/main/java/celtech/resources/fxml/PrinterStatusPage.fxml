@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import celtech.coreUI.components.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.effect.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.paint.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.text.*?>
 <?scenebuilder-preview-i18n-resource ../i18n/LanguageData.properties?>
@@ -37,110 +37,8 @@
                         <Image url="@../images/Filament_reel.png" />
                     </image>
                 </ImageView>
-                <Button fx:id="retractButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onMousePressed="#retract" styleClass="printerControlButton" text="retract" translateX="-240.0" translateY="-30.0">
-                    <graphic>
-                        <ImageView fx:id="retractArrow" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" x="0.0" y="0.0">
-                            <image>
-                                <Image url="@../images/Reel_up_arrow.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button id="extrudeArrow" fx:id="extrudeButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onMousePressed="#extrude" styleClass="printerControlButton" text="extrude" translateX="-240.0" translateY="130.0">
-                    <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" x="0.0" y="0.0">
-                            <image>
-                                <Image url="@../images/Reel_down_arrow.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button id="extrudeArrow" fx:id="headForwardButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onMousePressed="#headForward" styleClass="printerControlButton" text="forward" translateX="-120.0" translateY="235.0">
-                    <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" x="0.0" y="0.0">
-                            <image>
-                                <Image url="@../images/printerbed_fwd_arrow.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button id="extrudeArrow" fx:id="headBackButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onMousePressed="#headBack" styleClass="printerControlButton" text="back" translateX="-93.0" translateY="125.0">
-                    <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" x="0.0" y="0.0">
-                            <image>
-                                <Image url="@../images/printerbed_bkwd_arrow.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button id="extrudeArrow" fx:id="yHomeButton" contentDisplay="CENTER" mnemonicParsing="false" onMousePressed="#yHome" styleClass="printerControlButton" text="Y" textFill="WHITE" translateX="-87.0" translateY="60.0">
-                    <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="75.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" x="0.0" y="0.0">
-                            <image>
-                                <Image url="@../images/Y%20Home%20-%20Icons.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button id="extrudeArrow" fx:id="headRightButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onMousePressed="#headRight" styleClass="printerControlButton" text="right" translateX="120.0" translateY="0.0">
-                    <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" x="0.0" y="0.0">
-                            <image>
-                                <Image url="@../images/printerhead_right_arrow.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button id="extrudeArrow" fx:id="zHomeButton" contentDisplay="CENTER" mnemonicParsing="false" onMousePressed="#zHome" styleClass="printerControlButton" text="Z" translateX="24.0" translateY="180.0">
-                    <graphic>
-                        <ImageView fitWidth="75.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" x="0.0" y="0.0">
-                            <image>
-                                <Image url="@../images/Z%20Home%20-%20Icons.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                    <textFill>
-                        <Color blue="0.875" green="0.875" red="0.875" fx:id="x1" />
-                    </textFill>
-                </Button>
-                <Button id="extrudeArrow" fx:id="headDownButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onMousePressed="#headDown" styleClass="printerControlButton" text="down" translateX="24.0" translateY="105.0">
-                    <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" x="0.0" y="0.0">
-                            <image>
-                                <Image url="@../images/printerhead_down_arrow.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Rectangle fx:id="printerColourRectangle" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="20.0" stroke="BLACK" strokeType="INSIDE" translateX="20.0" translateY="-94.0" width="105.0" />
-                <Button id="extrudeArrow" fx:id="headUpButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onMousePressed="#headUp" styleClass="printerControlButton" text="up" translateX="24.0" translateY="-120.0">
-                    <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" x="0.0" y="0.0">
-                            <image>
-                                <Image url="@../images/printerhead_up_arrow.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button id="extrudeArrow" fx:id="headLeftButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onMousePressed="#headLeft" styleClass="printerControlButton" text="left" translateX="-70.0" translateY="0.0">
-                    <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" x="0.0" y="0.0">
-                            <image>
-                                <Image url="@../images/printerhead_left_arrow.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button id="extrudeArrow" contentDisplay="CENTER" mnemonicParsing="false" onMousePressed="#xHome" styleClass="printerControlButton" text="X" textFill="$x1" translateX="-150.0" translateY="0.0" fx:id="xHomeButton">
-                    <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="75.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" x="0.0" y="0.0">
-                            <image>
-                                <Image url="@../images/X%20Home%20-%20Icons.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button fx:id="ejectReelButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#ejectReel" scaleX="0.8" scaleY="0.8" styleClass="borderlessGraphicButton" text="Eject Reel" translateX="-250.0" translateY="50.0">
+                <Rectangle fx:id="printerColourRectangle" arcHeight="10.0" arcWidth="5.0" fill="DODGERBLUE" height="20.0" stroke="BLACK" strokeType="INSIDE" translateX="24.0" translateY="-94.0" width="105.0" />
+                <Button fx:id="ejectReelButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#ejectReel" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="Eject Reel" translateX="-250.0" translateY="50.0">
                     <graphic>
                         <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -149,7 +47,7 @@
                         </ImageView>
                     </graphic>
                 </Button>
-                <Button id="ejectReelButton" fx:id="unlockLidButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#unlockLid" scaleX="0.8" scaleY="0.8" styleClass="borderlessGraphicButton" text="Unlock Lid" translateX="-140.0" translateY="-190.0">
+                <Button id="ejectReelButton" fx:id="unlockLidButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#unlockLid" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="Unlock Lid" translateX="25.0" translateY="190.0">
                     <graphic>
                         <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -158,102 +56,358 @@
                         </ImageView>
                     </graphic>
                 </Button>
-                <HBox id="HBox" fx:id="headXBox" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="50.0" prefWidth="80.0" spacing="1.0" translateX="22.0" translateY="-40.0" />
-                <HBox id="HBox" fx:id="headYBox" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="50.0" prefWidth="80.0" spacing="1.0" translateX="22.0" translateY="-15.0" />
-                <HBox id="HBox" fx:id="headZBox" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="50.0" prefWidth="80.0" spacing="1.0" translateX="22.0" translateY="10.0" />
-                <HBox id="HBox" fx:id="EBox" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="50.0" prefWidth="80.0" spacing="1.0" translateX="-240.0" translateY="-110.0" />
-                <HBox id="HBox" fx:id="BBox" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="50.0" prefWidth="80.0" spacing="1.0" translateX="22.0" translateY="35.0" />
-                <Button id="extrudeArrow" fx:id="homeNozzleButton" contentDisplay="CENTER" mnemonicParsing="false" onAction="#homeNozzle" styleClass="printerControlButton" text="N" textFill="$x1" translateX="90.0" translateY="-200.0">
+                <JogButton fx:id="extruder_minus100" axis="E" distance="-100.0" onAction="#jogButton" translateX="-301.0">
                     <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" x="0.0" y="0.0">
+                        <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
-                                <Image url="@../images/home_button.png" />
+                                <Image url="@../images/advancedHomeAndJog/Extruder%20-100%20-%20Icons.png" />
                             </image>
                         </ImageView>
                     </graphic>
-                </Button>
+                </JogButton>
+                <JogButton fx:id="extruder_minus20" axis="E" distance="-20.0" onAction="#jogButton" translateX="-256.0">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/Extruder%20-20%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton fx:id="extruder_minus5" axis="E" distance="-5.0" onAction="#jogButton" translateX="-229.0">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/Extruder%20-5%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton fx:id="extruder_plus100" axis="E" distance="100.0" onAction="#jogButton" translateX="-200.0" translateY="100.0">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/Extruder%20+100%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton fx:id="extruder_plus20" axis="E" distance="20.0" onAction="#jogButton" translateX="-245.0" translateY="100.0">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/Extruder%20+20%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton fx:id="extruder_plus5" axis="E" distance="5.0" onAction="#jogButton" translateX="-271.0" translateY="100.0">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/Extruder%20+5%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton axis="X" distance="-100.0" onAction="#jogButton" translateX="-11.0" translateY="66.0" fx:id="x_minus100">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/X%20-100%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton axis="X" distance="-10.0" onAction="#jogButton" translateX="43.0" translateY="66.0" fx:id="x_minus10">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/X%20-10%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton axis="X" distance="-1.0" onAction="#jogButton" translateX="75.0" translateY="66.0" fx:id="x_minus1">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/X%20-1%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton axis="X" distance="100.0" onAction="#jogButton" translateX="189.0" translateY="66.0" fx:id="x_plus100">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/X%20+100%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton axis="X" distance="10.0" onAction="#jogButton" translateX="136.0" translateY="66.0" fx:id="x_plus10">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/X%20+10%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton axis="X" distance="1.0" onAction="#jogButton" translateX="104.0" translateY="66.0" fx:id="x_plus1">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/X%20+1%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton fx:id="y_minus100" axis="Y" distance="-100.0" onAction="#jogButton" translateX="-124.0" translateY="97.0">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/Y%20-100%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton fx:id="y_minus10" axis="Y" distance="-10.0" onAction="#jogButton" translateX="-131.0" translateY="126.0">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/Y%20-10%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton fx:id="y_minus1" axis="Y" distance="-1.0" onAction="#jogButton" translateX="-135.0" translateY="141.0">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/Y%20-1%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton fx:id="y_plus100" axis="Y" distance="100.0" onAction="#jogButton" translateX="-151.0" translateY="210.0">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/Y%20+100%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton fx:id="y_plus10" axis="Y" distance="10.0" onAction="#jogButton" translateX="-143.0" translateY="172.0">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/Y%20+10%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton fx:id="y_plus1" axis="Y" distance="1.0" onAction="#jogButton" translateX="-139.0" translateY="155.0">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/Y%20+1%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton fx:id="z_minus10" axis="Z" distance="-10.0" onAction="#jogButton" translateX="-114.0" translateY="-20.0">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/Z%20-10%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton fx:id="z_minus1" axis="Z" distance="-1.0" onAction="#jogButton" translateX="-115.0" translateY="-60.0">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/Z%20-1%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton fx:id="z_minus0_1" axis="Z" distance="-0.1" onAction="#jogButton" translateX="-115.0" translateY="-79.0">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/Z%20-01%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton fx:id="z_plus10" axis="Z" distance="10.0" onAction="#jogButton" translateX="-116.0" translateY="-158.0">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/Z%20+10%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton fx:id="z_plus1" axis="Z" distance="1.0" onAction="#jogButton" translateX="-115.0" translateY="-114.0">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/Z%20+1%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+                <JogButton fx:id="z_plus0_1" axis="Z" distance="0.1" onAction="#jogButton" translateX="-115.0" translateY="-95.0">
+                    <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/Z%20+01%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JogButton>
+<Button id="ejectReelButton" fx:id="yHomeButton" contentDisplay="GRAPHIC_ONLY" layoutX="328.0" layoutY="294.0" mnemonicParsing="false" onAction="#homeY" scaleX="0.8" scaleY="0.8" styleClass="jog-button" text="YHome" translateX="-114.0" translateY="65.0">
+<graphic>
+<ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+<image>
+<Image url="@../images/advancedHomeAndJog/Y%20Home%20-%20Icons.png" />
+</image>
+</ImageView>
+</graphic>
+</Button>
+<Button id="ejectReelButton" contentDisplay="GRAPHIC_ONLY" layoutX="335.0" layoutY="313.0" mnemonicParsing="false" onAction="#homeX" scaleX="0.8" scaleY="0.8" styleClass="jog-button" text="XHome" translateX="-70.0" translateY="65.0" fx:id="xHomeButton">
+<graphic>
+<ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+<image>
+<Image url="@../images/advancedHomeAndJog/X%20Home%20-%20Icons.png" />
+</image>
+</ImageView>
+</graphic>
+</Button>
+<Button id="ejectReelButton" fx:id="headLEDButton" contentDisplay="GRAPHIC_ONLY" layoutX="336.0" layoutY="315.0" mnemonicParsing="false" onAction="#toggleHeadLED" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="HeadLED" translateX="25.0" translateY="25.0">
+<graphic>
+<ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+<image>
+<Image url="@../images/Head%20LED_Icons.png" />
+</image>
+</ImageView>
+</graphic>
+</Button>
+<Button id="ejectReelButton" fx:id="headFanButton" contentDisplay="GRAPHIC_ONLY" layoutX="336.0" layoutY="315.0" mnemonicParsing="false" onAction="#toggleHeadFan" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="HeadFan" translateX="25.0" translateY="-50.0">
+<graphic>
+<ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+<image>
+<Image url="@../images/H%20Fan_Icons.png" />
+</image>
+</ImageView>
+</graphic>
+</Button>
+<Button id="ejectReelButton" fx:id="ambientLEDButton" contentDisplay="GRAPHIC_ONLY" layoutX="328.0" layoutY="293.0" mnemonicParsing="false" onAction="#toggleAmbientLED" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="AmbientLED" translateX="26.0" translateY="-96.0">
+<graphic>
+<ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+<image>
+<Image url="@../images/Ambient%20LED_Icons.png" />
+</image>
+</ImageView>
+</graphic>
+</Button>
+<Button id="ejectReelButton" fx:id="zHomeButton" contentDisplay="GRAPHIC_ONLY" layoutX="335.0" layoutY="313.0" mnemonicParsing="false" onAction="#homeZ" scaleX="0.8" scaleY="0.8" styleClass="jog-button" text="ZHome" translateX="-112.0" translateY="30.0">
+<graphic>
+<ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+<image>
+<Image url="@../images/advancedHomeAndJog/Z%20Home%20-%20Icons.png" />
+</image>
+</ImageView>
+</graphic>
+</Button>
             </children>
         </StackPane>
-                <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="55.0" prefWidth="-1.0" spacing="10.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="120.0">
+        <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="55.0" prefWidth="-1.0" spacing="10.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="120.0">
+            <children>
+                <HBox alignment="CENTER" maxHeight="-1.0" maxWidth="-1.0" minHeight="-1.0" minWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" spacing="10.0" translateX="0.0" translateY="0.0">
                     <children>
-                        <HBox alignment="CENTER" maxHeight="-1.0" maxWidth="-1.0" minHeight="-1.0" minWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" spacing="10.0" translateX="0.0" translateY="0.0">
-                            <children>
-                                <ToggleButton fx:id="selectNozzle1" mnemonicParsing="false" selected="true" text="%printerStatus.Nozzle1ControlLabel">
-                                    <toggleGroup>
-                                        <ToggleGroup fx:id="nozzleSelect" />
-                                    </toggleGroup>
-                                </ToggleButton>
-                                <ToggleButton fx:id="selectNozzle2" mnemonicParsing="false" text="%printerStatus.Nozzle2ControlLabel" toggleGroup="$nozzleSelect" />
-                            </children>
-                        </HBox>
-                        <HBox alignment="CENTER" maxHeight="-1.0" maxWidth="-1.0" minHeight="-1.0" minWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" spacing="10.0" translateX="0.0" translateY="0.0">
-                            <children>
-                                <ToggleButton fx:id="closeNozzleButton" mnemonicParsing="false" onAction="#closeNozzle" selected="true" text="%printerStatus.NozzleCloseLabel">
-                                    <toggleGroup>
-                                        <ToggleGroup fx:id="nozzleOpen" />
-                                    </toggleGroup>
-                                </ToggleButton>
-                                <ToggleButton fx:id="openNozzleButton" mnemonicParsing="false" onAction="#openNozzle" selected="false" text="%printerStatus.NozzleOpenLabel" toggleGroup="$nozzleOpen" />
-                            </children>
-                        </HBox>
+                        <ToggleButton fx:id="selectNozzle1" mnemonicParsing="false" selected="true" text="%printerStatus.Nozzle1ControlLabel">
+                            <toggleGroup>
+                                <ToggleGroup fx:id="nozzleSelect" />
+                            </toggleGroup>
+                        </ToggleButton>
+                        <ToggleButton fx:id="selectNozzle2" mnemonicParsing="false" text="%printerStatus.Nozzle2ControlLabel" toggleGroup="$nozzleSelect" />
                     </children>
-                </VBox>
-                <VBox id="VBox" fx:id="progressGroup" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="120.0" prefWidth="500.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                </HBox>
+                <HBox alignment="CENTER" maxHeight="-1.0" maxWidth="-1.0" minHeight="-1.0" minWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" spacing="10.0" translateX="0.0" translateY="0.0">
                     <children>
-                        <Text id="progressText" fx:id="progressTitle" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" translateY="0.0" />
-                        <StackPane id="StackPane">
-                            <children>
-                                <ProgressBar fx:id="progressBar" prefHeight="30.0" prefWidth="500.0" progress="0.0" translateY="0.0">
-                                    <effect>
-                                        <InnerShadow />
-                                    </effect>
-                                </ProgressBar>
-                                <Text id="progressText" fx:id="progressPercent" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" translateY="0.0" />
-                            </children>
-                        </StackPane>
-                        <Text id="progressText" fx:id="progressMessage" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="labelText" text="Text" translateY="0.0" />
+                        <ToggleButton fx:id="closeNozzleButton" mnemonicParsing="false" selected="true" text="%printerStatus.NozzleCloseLabel">
+                            <toggleGroup>
+                                <ToggleGroup fx:id="nozzleOpen" />
+                            </toggleGroup>
+                        </ToggleButton>
+                        <ToggleButton fx:id="openNozzleButton" mnemonicParsing="false" selected="false" text="%printerStatus.NozzleOpenLabel" toggleGroup="$nozzleOpen" />
                     </children>
-                </VBox>
-                <HBox fx:id="printControlButtons" alignment="TOP_RIGHT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="70.0" prefWidth="-1.0" spacing="5.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
+                </HBox>
+            </children>
+        </VBox>
+        <VBox id="VBox" fx:id="progressGroup" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="120.0" prefWidth="500.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+            <children>
+                <Text id="progressText" fx:id="progressTitle" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" translateY="0.0" />
+                <StackPane id="StackPane">
                     <children>
-                        <StackPane id="StackPane" fx:id="pauseResumeStack" HBox.hgrow="NEVER">
-                            <children>
-                                <Button fx:id="pausePrintButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#pausePrint" styleClass="borderlessGraphicButton" text="PausePrint">
-                                    <graphic>
-                                        <ImageView fitHeight="0.0" fitWidth="0.0" pickOnBounds="true" preserveRatio="true">
-                                            <image>
-                                                <Image url="@../images/Print_pause.png" />
-                                            </image>
-                                        </ImageView>
-                                    </graphic>
-                                </Button>
-                                <Button id="pausePrintButton" fx:id="resumePrintButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#resumePrint" styleClass="borderlessGraphicButton" text="ResumePrint">
-                                    <graphic>
-                                        <ImageView fitHeight="0.0" fitWidth="0.0" pickOnBounds="true" preserveRatio="true">
-                                            <image>
-                                                <Image url="@../images/Print_play.png" />
-                                            </image>
-                                        </ImageView>
-                                    </graphic>
-                                </Button>
-                            </children>
-                        </StackPane>
-                        <Button fx:id="cancelPrintButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#cancelPrint" styleClass="borderlessGraphicButton" text="CancelPrint">
+                        <ProgressBar fx:id="progressBar" prefHeight="30.0" prefWidth="500.0" progress="0.0" translateY="0.0">
+                            <effect>
+                                <InnerShadow />
+                            </effect>
+                        </ProgressBar>
+                        <Text id="progressText" fx:id="progressPercent" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" translateY="0.0" />
+                    </children>
+                </StackPane>
+                <Text id="progressText" fx:id="progressMessage" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="labelText" text="Text" translateY="0.0" />
+            </children>
+        </VBox>
+        <HBox fx:id="printControlButtons" alignment="TOP_RIGHT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="70.0" prefWidth="-1.0" spacing="5.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
+            <children>
+                <StackPane id="StackPane" fx:id="pauseResumeStack" HBox.hgrow="NEVER">
+                    <children>
+                        <Button fx:id="pausePrintButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#pausePrint" styleClass="borderlessGraphicButton" text="PausePrint">
                             <graphic>
-                                <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+                                <ImageView fitHeight="0.0" fitWidth="0.0" pickOnBounds="true" preserveRatio="true">
                                     <image>
-                                        <Image url="@../images/stop_print.png" />
+                                        <Image url="@../images/Print_pause.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                        <Button id="pausePrintButton" fx:id="resumePrintButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#resumePrint" styleClass="borderlessGraphicButton" text="ResumePrint">
+                            <graphic>
+                                <ImageView fitHeight="0.0" fitWidth="0.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../images/Print_play.png" />
                                     </image>
                                 </ImageView>
                             </graphic>
                         </Button>
                     </children>
-                    <padding>
-                        <Insets right="5.0" />
-                    </padding>
-                    <StackPane.margin>
-                        <Insets />
-                    </StackPane.margin>
-                </HBox>
+                </StackPane>
+                <Button fx:id="cancelPrintButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#cancelPrint" styleClass="borderlessGraphicButton" text="CancelPrint">
+                    <graphic>
+                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/stop_print.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+            </children>
+            <padding>
+                <Insets right="5.0" />
+            </padding>
+            <StackPane.margin>
+                <Insets />
+            </StackPane.margin>
+        </HBox>
     </children>
 </AnchorPane>

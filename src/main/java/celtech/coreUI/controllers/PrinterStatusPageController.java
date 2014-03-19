@@ -6,11 +6,13 @@
 package celtech.coreUI.controllers;
 
 import celtech.configuration.Filament;
+import celtech.coreUI.components.JogButton;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.utils.AxisSpecifier;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
@@ -30,9 +32,11 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
@@ -53,52 +57,49 @@ public class PrinterStatusPageController implements Initializable
     private ChangeListener<Filament> filamentColourListener = null;
 
     @FXML
-    private StackPane statusPane;
-
-    @FXML
-    private Button extrudeButton;
-
-    @FXML
-    private Rectangle filamentRectangle;
-
-    @FXML
-    private Button headBackButton;
-
-    @FXML
-    private Button headDownButton;
-
-    @FXML
-    private Button headForwardButton;
-
-    @FXML
-    private Button headLeftButton;
-
-    @FXML
-    private Button headRightButton;
-
-    @FXML
-    private Button headUpButton;
-
-    @FXML
-    private ImageView printerClosedImage;
-
-    @FXML
-    private ImageView printerOpenImage;
+    private AnchorPane container;
 
     @FXML
     private ImageView printerSilhouette;
 
     @FXML
-    private ImageView reel;
+    private Button headLEDButton;
 
     @FXML
-    private ImageView retractArrow;
-
-    @FXML
-    private Button retractButton;
+    private Button ambientLEDButton;
 
     @FXML
     private Button xHomeButton;
+
+    @FXML
+    private JogButton x_minus1;
+
+    @FXML
+    private JogButton x_minus100;
+
+    @FXML
+    private JogButton z_plus0_1;
+
+    @FXML
+    private JogButton z_plus10;
+
+    @FXML
+    private JogButton z_minus0_1;
+
+    @FXML
+    private JogButton y_plus10;
+
+    @FXML
+    private JogButton extruder_minus20;
+
+    @FXML
+    private JogButton z_minus1;
+
+    @FXML
+    private JogButton x_plus100;
+
+    @FXML
+    private JogButton y_minus1;
 
     @FXML
     private Button yHomeButton;
@@ -107,67 +108,121 @@ public class PrinterStatusPageController implements Initializable
     private Button zHomeButton;
 
     @FXML
-    private Rectangle printerColourRectangle;
+    private JogButton x_plus10;
 
     @FXML
-    private ProgressBar progressBar;
+    private ToggleGroup nozzleOpen;
 
     @FXML
-    private VBox progressGroup;
+    private JogButton y_minus10;
 
     @FXML
-    private Text progressPercent;
-
-    @FXML
-    private Text progressTitle;
-
-    @FXML
-    private Text progressMessage;
-
-    @FXML
-    private HBox printControlButtons;
-
-    @FXML
-    private Button pausePrintButton;
-
-    @FXML
-    private Button resumePrintButton;
-
-    @FXML
-    private Button cancelPrintButton;
-
-    @FXML
-    private StackPane pauseResumeStack;
+    private ImageView printerOpenImage;
 
     @FXML
     private Button ejectReelButton;
 
     @FXML
-    private Button unlockLidButton;
+    private ImageView reel;
 
     @FXML
-    private HBox headXBox;
+    private JogButton x_plus1;
+
     @FXML
-    private HBox headYBox;
+    private Button pausePrintButton;
+
     @FXML
-    private HBox headZBox;
+    private JogButton extruder_plus100;
+
     @FXML
-    private HBox EBox;
+    private Rectangle printerColourRectangle;
+
     @FXML
-    private HBox BBox;
+    private ToggleButton selectNozzle2;
+
+    @FXML
+    private ToggleButton openNozzleButton;
+
+    @FXML
+    private StackPane statusPane;
+
+    @FXML
+    private ToggleButton selectNozzle1;
+
+    @FXML
+    private JogButton extruder_minus5;
+
+    @FXML
+    private Button headFanButton;
+
+    @FXML
+    private JogButton y_plus100;
+
+    @FXML
+    private JogButton y_minus100;
+
+    @FXML
+    private Text progressTitle;
 
     @FXML
     private ToggleGroup nozzleSelect;
+
     @FXML
-    private ToggleButton selectNozzle1;
+    private Button resumePrintButton;
+
     @FXML
-    private ToggleButton selectNozzle2;
+    private JogButton extruder_minus100;
+
     @FXML
-    private ToggleButton openNozzleButton;
+    private StackPane pauseResumeStack;
+
+    @FXML
+    private Button unlockLidButton;
+
+    @FXML
+    private JogButton x_minus10;
+
     @FXML
     private ToggleButton closeNozzleButton;
+
     @FXML
-    private Button homeNozzleButton;
+    private ProgressBar progressBar;
+
+    @FXML
+    private JogButton y_plus1;
+
+    @FXML
+    private Text progressPercent;
+
+    @FXML
+    private Button cancelPrintButton;
+
+    @FXML
+    private JogButton extruder_plus20;
+
+    @FXML
+    private HBox printControlButtons;
+
+    @FXML
+    private JogButton z_plus1;
+
+    @FXML
+    private Rectangle filamentRectangle;
+
+    @FXML
+    private JogButton extruder_plus5;
+
+    @FXML
+    private ImageView printerClosedImage;
+
+    @FXML
+    private VBox progressGroup;
+
+    @FXML
+    private JogButton z_minus10;
+
+    @FXML
+    private Text progressMessage;
 
     private Node[] advancedControls = null;
     private BooleanProperty advancedControlsVisible = new SimpleBooleanProperty(false);
@@ -178,187 +233,7 @@ public class PrinterStatusPageController implements Initializable
     private Printer lastSelectedPrinter = null;
 
     @FXML
-    void extrude(MouseEvent event)
-    {
-        Node node = (Node) event.getSource();
-        Bounds bounds = node.getLayoutBounds();
-        double moveValue = Math.pow((event.getY() / bounds.getHeight()) * headMoveFactor, 2);
-//        steno.info("Move  " + moveValue);
-
-        try
-        {
-            printerToUse.transmitDirectGCode(GCodeConstants.extruderRelativeMoveMode, true);
-            printerToUse.transmitDirectGCode(String.format("G1 E%.2f", moveValue), true);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Failed to send printer control command");
-        }
-    }
-
-    @FXML
-    void retract(MouseEvent event)
-    {
-        Node node = (Node) event.getSource();
-        Bounds bounds = node.getLayoutBounds();
-        double moveValue = Math.pow(((bounds.getHeight() - event.getY()) / bounds.getHeight()) * headMoveFactor, 2);
-//        steno.info("Move  " + moveValue);
-
-        try
-        {
-            printerToUse.transmitDirectGCode(GCodeConstants.extruderRelativeMoveMode, true);
-            printerToUse.transmitDirectGCode(String.format("G1 E-%.2f", moveValue), true);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Failed to send printer control command");
-        }
-    }
-
-    @FXML
-    void headBack(MouseEvent event)
-    {
-        Node node = (Node) event.getSource();
-        Bounds bounds = node.getLayoutBounds();
-        double moveValue = Math.pow(((bounds.getHeight() - event.getY()) / bounds.getHeight()) * headMoveFactor, 2);
-//        steno.info("Move  " + moveValue);
-
-        try
-        {
-            printerToUse.transmitDirectGCode(GCodeConstants.carriageRelativeMoveMode, true);
-            printerToUse.transmitDirectGCode(String.format("G0 Y-%.2f", moveValue), true);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Failed to send printer control command");
-        }
-    }
-
-    @FXML
-    void headDown(MouseEvent event)
-    {
-        Node node = (Node) event.getSource();
-        Bounds bounds = node.getLayoutBounds();
-        double moveValue = Math.pow((event.getY() / bounds.getHeight()) * headMoveFactor, 2);
-//        steno.info("Move  " + moveValue);
-
-        try
-        {
-            printerToUse.transmitDirectGCode(GCodeConstants.carriageRelativeMoveMode, true);
-            printerToUse.transmitDirectGCode(String.format("G0 Z-%.2f", moveValue), true);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Failed to send printer control command");
-        }
-    }
-
-    @FXML
-    void headForward(MouseEvent event)
-    {
-        Node node = (Node) event.getSource();
-        Bounds bounds = node.getLayoutBounds();
-        double moveValue = Math.pow((event.getY() / bounds.getHeight()) * headMoveFactor, 2);
-//        steno.info("Move  " + moveValue);
-
-        try
-        {
-            printerToUse.transmitDirectGCode(GCodeConstants.carriageRelativeMoveMode, true);
-            printerToUse.transmitDirectGCode(String.format("G0 Y%.2f", moveValue), true);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Failed to send printer control command");
-        }
-    }
-
-    @FXML
-    void headLeft(MouseEvent event)
-    {
-        Node node = (Node) event.getSource();
-        Bounds bounds = node.getLayoutBounds();
-        double moveValue = Math.pow(((bounds.getWidth() - event.getX()) / bounds.getWidth()) * headMoveFactor, 2);
-//        steno.info("Move  " + moveValue);
-
-        try
-        {
-            printerToUse.transmitDirectGCode(GCodeConstants.carriageRelativeMoveMode, true);
-            printerToUse.transmitDirectGCode(String.format("G0 X-%.2f", moveValue), true);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Failed to send printer control command");
-        }
-    }
-
-    @FXML
-    void headRight(MouseEvent event)
-    {
-        Node node = (Node) event.getSource();
-        Bounds bounds = node.getLayoutBounds();
-        double moveValue = Math.pow((event.getX() / bounds.getWidth()) * headMoveFactor, 2);
-//        steno.info("Move  " + moveValue);
-
-        try
-        {
-            printerToUse.transmitDirectGCode(GCodeConstants.carriageRelativeMoveMode, true);
-            printerToUse.transmitDirectGCode(String.format("G0 X%.2f", moveValue), true);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Failed to send printer control command");
-        }
-    }
-
-    @FXML
-    void headUp(MouseEvent event)
-    {
-        Node node = (Node) event.getSource();
-        Bounds bounds = node.getLayoutBounds();
-        double moveValue = Math.pow(((bounds.getHeight() - event.getY()) / bounds.getHeight()) * headMoveFactor, 2);
-//        steno.info("Move  " + moveValue);
-
-        try
-        {
-            printerToUse.transmitDirectGCode(GCodeConstants.carriageRelativeMoveMode, true);
-            printerToUse.transmitDirectGCode(String.format("G0 Z%.2f", moveValue), true);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Failed to send printer control command");
-        }
-    }
-
-    @FXML
-    void closeNozzle(ActionEvent event)
-    {
-        try
-        {
-            printerToUse.transmitDirectGCode(GCodeConstants.closeNozzle, true);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Failed to send close nozzle");
-        }
-    }
-
-    @FXML
-    void homeNozzle(ActionEvent event)
-    {
-        try
-        {
-            printerToUse.transmitDirectGCode(GCodeConstants.homeNozzle, true);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Failed to send home nozzle");
-        }
-    }
-
-    @FXML
-    void openNozzle(ActionEvent event)
-    {
-        try
-        {
-            printerToUse.transmitDirectGCode(GCodeConstants.openNozzle, true);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Failed to send open nozzle");
-        }
-    }
-
-    @FXML
-    void xHome(MouseEvent event)
+    void homeX(ActionEvent event)
     {
         try
         {
@@ -370,7 +245,7 @@ public class PrinterStatusPageController implements Initializable
     }
 
     @FXML
-    void yHome(MouseEvent event)
+    void homeY(ActionEvent event)
     {
         try
         {
@@ -382,7 +257,7 @@ public class PrinterStatusPageController implements Initializable
     }
 
     @FXML
-    void zHome(MouseEvent event)
+    void homeZ(ActionEvent event)
     {
         try
         {
@@ -439,6 +314,85 @@ public class PrinterStatusPageController implements Initializable
         }
     }
 
+    @FXML
+    void jogButton(ActionEvent event)
+    {
+        JogButton button = (JogButton) event.getSource();
+        AxisSpecifier axis = button.getAxis();
+        float distance = button.getDistance();
+
+        try
+        {
+            printerToUse.transmitDirectGCode(GCodeConstants.carriageRelativeMoveMode, true);
+            printerToUse.transmitDirectGCode(String.format("G0 " + axis.name() + "%.2f", distance), true);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Failed to send printer jog command");
+        }
+    }
+
+    boolean headLEDOn = false;
+
+    @FXML
+    void toggleHeadLED(ActionEvent event)
+    {
+        try
+        {
+            if (headLEDOn == true)
+            {
+                printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, true);
+                headLEDOn = false;
+            } else
+            {
+                printerToUse.transmitDirectGCode(GCodeConstants.switchOnHeadLEDs, true);
+                headLEDOn = true;
+            }
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Failed to send head LED command");
+        }
+    }
+
+    @FXML
+    void toggleHeadFan(ActionEvent event)
+    {
+        try
+        {
+            if (printerToUse.getHeadFanOn())
+            {
+                printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadFan, true);
+            } else
+            {
+                printerToUse.transmitDirectGCode(GCodeConstants.switchOnHeadFan, true);
+            }
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Failed to send head fan command");
+        }
+    }
+
+    boolean ambientLEDOn = true;
+
+    @FXML
+    void toggleAmbientLED(ActionEvent event)
+    {
+        try
+        {
+            if (ambientLEDOn == true)
+            {
+                printerToUse.transmitSetAmbientLEDColour(Color.BLACK);
+                ambientLEDOn = false;
+            } else
+            {
+                printerToUse.transmitSetAmbientLEDColour(printerToUse.getPrinterColour());
+                ambientLEDOn = true;
+            }
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Failed to send ambient LED command");
+        }
+    }
+
     /**
      * Initializes the controller class.
      */
@@ -465,16 +419,9 @@ public class PrinterStatusPageController implements Initializable
         cancelPrintButton.setVisible(false);
         pausePrintButton.setVisible(false);
         resumePrintButton.setVisible(false);
-//        printControlButtons.setVisible(false);
 
         ejectReelButton.setVisible(false);
         unlockLidButton.setVisible(false);
-
-        headXBox.setVisible(false);
-        headYBox.setVisible(false);
-        headZBox.setVisible(false);
-        EBox.setVisible(false);
-        BBox.setVisible(false);
 
         reel.setVisible(false);
         filamentRectangle.setVisible(false);
@@ -486,23 +433,19 @@ public class PrinterStatusPageController implements Initializable
             {
                 case IDLE:
                 case ERROR:
-//                    printControlButtons.setVisible(false);
                     break;
                 case PAUSED:
-//                    printControlButtons.setVisible(true);
                     cancelPrintButton.setVisible(true);
                     resumePrintButton.setVisible(true);
                     pausePrintButton.setVisible(false);
                     break;
                 case SENDING_TO_PRINTER:
                 case PRINTING:
-//                    printControlButtons.setVisible(true);
                     cancelPrintButton.setVisible(false);
                     resumePrintButton.setVisible(false);
                     pausePrintButton.setVisible(true);
                     break;
                 default:
-//                    printControlButtons.setVisible(false);
                     break;
             }
         }
@@ -530,7 +473,6 @@ public class PrinterStatusPageController implements Initializable
                     printerColourRectangle.setVisible(false);
                     pausePrintButton.setVisible(false);
                     resumePrintButton.setVisible(false);
-//                    printControlButtons.setVisible(false);
 
                     ejectReelButton.setVisible(false);
                     unlockLidButton.setVisible(false);
@@ -555,7 +497,6 @@ public class PrinterStatusPageController implements Initializable
                     resumePrintButton.visibleProperty().bind(selectedPrinter.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.PAUSED));
                     cancelPrintButton.visibleProperty().bind(selectedPrinter.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.PAUSED).or(selectedPrinter.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.SLICING)));
 
-//                    printControlButtons.visibleProperty().bind(selectedPrinter.getPrintQueue().printInProgressProperty());
                     ejectReelButton.visibleProperty().bind(selectedPrinter.Filament1LoadedProperty().and(selectedPrinter.printerStatusProperty().isNotEqualTo(PrinterStatusEnumeration.PRINTING)));
 
                     unlockLidButton.visibleProperty().bind(Bindings.not(selectedPrinter.LidOpenProperty()).and(selectedPrinter.bedTemperatureProperty().lessThan(65.0).and(selectedPrinter.extruderTemperatureProperty().lessThan(65.0))));
@@ -578,11 +519,13 @@ public class PrinterStatusPageController implements Initializable
 
         advancedControls = new Node[]
         {
-            retractButton, extrudeButton,
-            headForwardButton, headBackButton, headLeftButton, headRightButton, headUpButton, headDownButton,
-            xHomeButton, yHomeButton, zHomeButton,
-            openNozzleButton, closeNozzleButton, homeNozzleButton, selectNozzle1, selectNozzle2,
-            headXBox, headYBox, headZBox, EBox, BBox
+            extruder_minus100, extruder_minus20, extruder_minus5, extruder_plus100, extruder_plus20, extruder_plus5,
+            xHomeButton, x_minus1, x_minus10, x_minus100, x_plus1, x_plus10, x_plus100,
+            yHomeButton, y_minus1, y_minus10, y_minus100, y_plus1, y_plus10, y_plus100,
+            zHomeButton, z_minus0_1, z_minus1, z_minus10, z_plus0_1, z_plus1, z_plus10,
+            openNozzleButton, closeNozzleButton, selectNozzle1, selectNozzle2,
+            ambientLEDButton,
+            headFanButton, headLEDButton
         };
 
         for (Node node : advancedControls)
@@ -624,12 +567,57 @@ public class PrinterStatusPageController implements Initializable
                 .addListener(new ChangeListener<Toggle>()
                         {
                             @Override
-                            public void changed(ObservableValue<? extends Toggle> ov, Toggle t, Toggle t1
+                            public void changed(ObservableValue<? extends Toggle> ov, Toggle lastCommand, Toggle currentCommand
                             )
                             {
-                                if (t1 != null)
+                                if (currentCommand != null && lastCommand != null)
                                 {
-                                    selectNozzle((int) t1.getUserData());
+                                    if (currentCommand != lastCommand)
+                                    {
+                                        selectNozzle((int) currentCommand.getUserData());
+                                    }
+                                } else if (currentCommand == null && lastCommand != null)
+                                {
+                                    lastCommand.setSelected(true);
+                                }
+                            }
+                }
+                );
+
+        nozzleOpen.selectedToggleProperty()
+                .addListener(new ChangeListener<Toggle>()
+                        {
+                            @Override
+                            public void changed(ObservableValue<? extends Toggle> ov, Toggle lastCommand, Toggle currentCommand
+                            )
+                            {
+                                if (currentCommand != null && lastCommand != null)
+                                {
+                                    if (currentCommand != lastCommand)
+                                    {
+                                        if (currentCommand == closeNozzleButton)
+                                        {
+                                            try
+                                            {
+                                                printerToUse.transmitDirectGCode(GCodeConstants.closeNozzle, true);
+                                            } catch (RoboxCommsException ex)
+                                            {
+                                                steno.error("Failed to send close nozzle");
+                                            }
+                                        } else if (currentCommand == openNozzleButton)
+                                        {
+                                            try
+                                            {
+                                                printerToUse.transmitDirectGCode(GCodeConstants.openNozzle, true);
+                                            } catch (RoboxCommsException ex)
+                                            {
+                                                steno.error("Failed to send open nozzle");
+                                            }
+                                        }
+                                    }
+                                } else if (currentCommand == null && lastCommand != null)
+                                {
+                                    lastCommand.setSelected(true);
                                 }
                             }
                 }
@@ -706,8 +694,8 @@ public class PrinterStatusPageController implements Initializable
             newWidth = parent.getWidth();
         }
 
-        double xScale = newWidth / beginWidth;
-        double yScale = newHeight / beginHeight;
+        double xScale = Double.min((newWidth / beginWidth), 1.0);
+        double yScale = Double.min((newHeight / beginHeight), 1.0);
 
         statusPane.setScaleX(xScale);
         statusPane.setScaleY(yScale);

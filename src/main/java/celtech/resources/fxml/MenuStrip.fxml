@@ -246,6 +246,110 @@
                         </Group>
                     </graphic>
                 </Button>
+<Button layoutX="63.0" layoutY="10.0" mnemonicParsing="false" onAction="#deleteModel" styleClass="borderlessGraphicButton" stylesheets="@../css/JMetroDarkTheme.css" text="Button">
+<graphic>
+<Group>
+<children>
+<Polygon opacity="1" points="425.376,285.966,434.062,282.749,434.062,306.055,417.091,315.232,417.091,304.743,425.365,301.009">
+<fill>
+<Color blue="0.803921568627451" green="0.807843137254902" opacity="1" red="0.8156862745098039" />
+</fill>
+</Polygon>
+<Polygon opacity="1" points="425.376,285.966,416.316,283.102,425.4,280.238,434.062,282.749">
+<fill>
+<Color blue="0.8784313725490196" green="0.8823529411764706" opacity="1" red="0.8823529411764706" />
+</fill>
+</Polygon>
+<Polygon opacity="1" points="416.317,283.102,416.317,297.419,425.365,301.009,425.376,285.965">
+<fill>
+<Color blue="0.38823529411764707" green="0.38823529411764707" opacity="1" red="0.38823529411764707" />
+</fill>
+</Polygon>
+<Polygon opacity="1" points="425.365,301.009,417.091,304.743,407.867,300.563,416.317,297.418">
+<fill>
+<Color blue="0.8784313725490196" green="0.8823529411764706" opacity="1" red="0.8823529411764706" />
+</fill>
+</Polygon>
+<Polygon opacity="1" points="417.091,315.232,408.033,310.393,407.867,300.563,417.091,304.743">
+<fill>
+<Color blue="0.38823529411764707" green="0.38823529411764707" opacity="1" red="0.38823529411764707" />
+</fill>
+</Polygon>
+<SVGPath content="M420.964,276.297c-11.823,0-21.439,9.617-21.439,21.438c0,11.821,9.616,21.439,21.439,21.439   c11.821,0,21.438-9.618,21.438-21.439C442.402,285.913,432.785,276.297,420.964,276.297L420.964,276.297z M420.964,321.736   c-13.233,0-24.002-10.767-24.002-24c0-13.233,10.769-24,24.002-24c13.235,0,24.001,10.765,24.001,24   C444.965,310.969,434.199,321.736,420.964,321.736z" opacity="1">
+<fill>
+<Color blue="1" green="1" opacity="1" red="1" />
+</fill>
+</SVGPath>
+<Group>
+<children>
+<SVGPath content="M425.734,310.056c0-4.957,4.02-8.977,8.974-8.977c4.957,0,8.977,4.02,8.977,8.977s-4.02,8.976-8.977,8.976    C429.753,319.032,425.734,315.013,425.734,310.056z" opacity="1">
+<fill>
+<Color blue="0.08627450980392157" green="0.050980392156862744" opacity="1" red="0.8588235294117647" />
+</fill>
+</SVGPath>
+<Rectangle height="1.791" opacity="1" width="10.626" x="429.395" y="309.161">
+<fill>
+<Color blue="1" green="1" opacity="1" red="1" />
+</fill>
+</Rectangle>
+</children>
+</Group>
+</children>
+</Group>
+</graphic>
+</Button>
+<Button layoutX="116.0" layoutY="10.0" mnemonicParsing="false" onAction="#deleteModel" styleClass="borderlessGraphicButton" stylesheets="@../css/JMetroDarkTheme.css" text="Button">
+<graphic>
+<Group>
+<children>
+<Polygon opacity="1" points="425.376,285.966,434.062,282.749,434.062,306.055,417.091,315.232,417.091,304.743,425.365,301.009">
+<fill>
+<Color blue="0.803921568627451" green="0.807843137254902" opacity="1" red="0.8156862745098039" />
+</fill>
+</Polygon>
+<Polygon opacity="1" points="425.376,285.966,416.316,283.102,425.4,280.238,434.062,282.749">
+<fill>
+<Color blue="0.8784313725490196" green="0.8823529411764706" opacity="1" red="0.8823529411764706" />
+</fill>
+</Polygon>
+<Polygon opacity="1" points="416.317,283.102,416.317,297.419,425.365,301.009,425.376,285.965">
+<fill>
+<Color blue="0.38823529411764707" green="0.38823529411764707" opacity="1" red="0.38823529411764707" />
+</fill>
+</Polygon>
+<Polygon opacity="1" points="425.365,301.009,417.091,304.743,407.867,300.563,416.317,297.418">
+<fill>
+<Color blue="0.8784313725490196" green="0.8823529411764706" opacity="1" red="0.8823529411764706" />
+</fill>
+</Polygon>
+<Polygon opacity="1" points="417.091,315.232,408.033,310.393,407.867,300.563,417.091,304.743">
+<fill>
+<Color blue="0.38823529411764707" green="0.38823529411764707" opacity="1" red="0.38823529411764707" />
+</fill>
+</Polygon>
+<SVGPath content="M420.964,276.297c-11.823,0-21.439,9.617-21.439,21.438c0,11.821,9.616,21.439,21.439,21.439   c11.821,0,21.438-9.618,21.438-21.439C442.402,285.913,432.785,276.297,420.964,276.297L420.964,276.297z M420.964,321.736   c-13.233,0-24.002-10.767-24.002-24c0-13.233,10.769-24,24.002-24c13.235,0,24.001,10.765,24.001,24   C444.965,310.969,434.199,321.736,420.964,321.736z" opacity="1">
+<fill>
+<Color blue="1" green="1" opacity="1" red="1" />
+</fill>
+</SVGPath>
+<Group>
+<children>
+<SVGPath content="M425.734,310.056c0-4.957,4.02-8.977,8.974-8.977c4.957,0,8.977,4.02,8.977,8.977s-4.02,8.976-8.977,8.976    C429.753,319.032,425.734,315.013,425.734,310.056z" opacity="1">
+<fill>
+<Color blue="0.08627450980392157" green="0.050980392156862744" opacity="1" red="0.8588235294117647" />
+</fill>
+</SVGPath>
+<Rectangle height="1.791" opacity="1" width="10.626" x="429.395" y="309.161">
+<fill>
+<Color blue="1" green="1" opacity="1" red="1" />
+</fill>
+</Rectangle>
+</children>
+</Group>
+</children>
+</Group>
+</graphic>
+</Button>
             </children>
         </HBox>
     </center>

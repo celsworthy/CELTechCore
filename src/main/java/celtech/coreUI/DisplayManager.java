@@ -55,6 +55,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -359,12 +360,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
             printerStatusTab = new Tab();
             printerStatusTab.setText(i18nBundle.getString("printerStatusTabTitle"));
-            final Image printerStatusImage = new Image(CoreTest.class.getResource(ApplicationConfiguration.imageResourcePath + "PrinterStatusIndicator.png").toExternalForm());
-            final ImageView printerStatusImageView = new ImageView();
-            printerStatusImageView.setImage(printerStatusImage);
-            printerStatusImageView.setPreserveRatio(true);
-            printerStatusImageView.setFitHeight(28);
-            printerStatusTab.setGraphic(printerStatusImageView);
+            FXMLLoader printerStatusPageLabelLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "infoScreenIndicator.fxml"), i18nBundle);
+            Label printerStatusLabelGroup = printerStatusPageLabelLoader.load();
+            printerStatusTab.setGraphic(printerStatusLabelGroup);
             printerStatusTab.setClosable(false);
             printerStatusTab.setContent(printerStatusPage);
             tabDisplay.getTabs().add(printerStatusTab);

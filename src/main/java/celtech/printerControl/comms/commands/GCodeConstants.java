@@ -28,11 +28,8 @@ public class GCodeConstants
     public static final String homeZAxis = "G28 Z";
     public static final String probeZAxis = "G28 Z?";
     public static final String queryZHomeDelta = "M113";
-    public static final String setHeadFanSpeed = "M106 S";
     public static final String switchOnHeadLEDs = "M129";
     public static final String switchOffHeadLEDs = "M128";
-    public static final String switchOnHeadFan = "M106";
-    public static final String switchOffHeadFan = "M107";
     public static final String homeNozzle = "G28 B";
     public static final String closeNozzle = "G0 B0";
     public static final String openNozzle = "G0 B1";
@@ -41,4 +38,8 @@ public class GCodeConstants
     public static final String disableStepperMotorsUntilNextMove = "M84";
     public static final String ejectFilament1 = "M121 E";
     public static final String ejectFilament2 = "M121 D";
+
+    public static final String setHeadFanSpeed = "M106 S";
+    public static final String switchOnHeadFan = "M106";
+    public static final String switchOffHeadFan = "M107";
 }

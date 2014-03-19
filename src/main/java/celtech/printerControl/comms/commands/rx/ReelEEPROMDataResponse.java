@@ -1,16 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.comms.commands.rx;
 
 import java.io.UnsupportedEncodingException;
@@ -129,15 +116,15 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
                 steno.error("Couldn't parse filament diameter - " + filamentDiameterString);
             }
 
-            String maxExtrusionRateString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
+            String filamentMultiplierString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
             {
-                reelFilamentMultiplier = numberFormatter.parse(maxExtrusionRateString.trim()).intValue();
+                reelFilamentMultiplier = numberFormatter.parse(filamentMultiplierString.trim()).floatValue();
             } catch (ParseException ex)
             {
-                steno.error("Couldn't parse max extrusion rate - " + maxExtrusionRateString);
+                steno.error("Couldn't parse max extrusion rate - " + filamentMultiplierString);
             }
 
             String feedRateMultiplierString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
@@ -229,12 +216,12 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
         return reelFilamentDiameter;
     }
 
-    public float getReelMaxExtrusionRate()
+    public float getReelFilamentMultiplier()
     {
         return reelFilamentMultiplier;
     }
 
-    public float getReelExtrusionMultiplier()
+    public float getReelFeedRateMultiplier()
     {
         return reelFeedRateMultiplier;
     }

@@ -736,7 +736,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             selectedPrinter.bedTargetTemperatureProperty().addListener(targetBedTempListener);
             bedFirstLayerTargetTemperature.visibleProperty().bind(selectedPrinter.getBedHeaterModeProperty().isEqualTo(HeaterMode.FIRST_LAYER));
             bedTargetTemperature.visibleProperty().bind(selectedPrinter.getBedHeaterModeProperty().isEqualTo(HeaterMode.NORMAL));
-            bedTemperaturePlaceholder.visibleProperty().bind(selectedPrinter.getNozzleHeaterModeProperty().isEqualTo(HeaterMode.OFF));
+            bedTemperaturePlaceholder.visibleProperty().bind(selectedPrinter.getBedHeaterModeProperty().isEqualTo(HeaterMode.OFF));
 
             ambientTemperatureLabel.textProperty().bind(Bindings.when(selectedPrinter.printerConnectedProperty().not()).then("-").otherwise(Bindings.when(selectedPrinter.ambientTemperatureProperty().greaterThan(maxTempToDisplay)).then(tempOutOfRangeString).otherwise(selectedPrinter.ambientTemperatureProperty().asString("%d°C"))));
             ambientTargetTemperature.setText(String.format("%d", selectedPrinter.getAmbientTargetTemperature()));

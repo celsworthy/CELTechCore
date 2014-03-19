@@ -1,7 +1,6 @@
 package celtech.coreUI.components;
 
 import celtech.configuration.ApplicationConfiguration;
-import celtech.coreUI.controllers.sidePanels.SidePanelManager;
 import java.net.URL;
 import javafx.animation.Animation;
 import javafx.animation.Transition;
@@ -14,10 +13,8 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.TabPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
@@ -28,7 +25,7 @@ import javafx.util.Duration;
 public class SlideoutAndProjectHolder extends HBox
 {
 
-    private final StackPane slideOutHolder = new StackPane();
+    private final VBox slideOutHolder = new VBox();
     private Button slideButton = null;
     private final VBox projectTabPaneHolder = new VBox();
 
@@ -105,7 +102,7 @@ public class SlideoutAndProjectHolder extends HBox
             }
         });
         slideButton.disableProperty().bind(panelToSlide.isNull());
-
+        
         getChildren().addAll(slideOutHolder, slideButton, projectTabPaneHolder);
     }
 

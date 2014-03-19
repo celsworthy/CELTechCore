@@ -138,10 +138,10 @@
 }
 
 /*
- * Print control arrows - seems to require special settings...?
+ * Jog Button
  */
 
-.printerControlButton {
+.jog-button {
     -fx-background-color: transparent;
     -fx-padding: -0 -0 -0 -0;
     -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
@@ -150,10 +150,10 @@
     -fx-font-size: 1.1em;
     -fx-border-color: transparent;
     -fx-content-display: graphic-only;
-    -fx-opacity: 0.3;
+    -fx-opacity: 0.4;
 }
 
-.printerControlButton:hover {
+.jog-button:hover {
     -fx-background-color: transparent;
     -fx-padding: -0 -0 -0 -0;
     -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
@@ -165,7 +165,7 @@
     -fx-opacity: 1.0;
 }
 
-.printerControlButton:pressed {
+.jog-button:pressed {
     -fx-background-color: transparent;
     -fx-padding: -0 -0 -0 -0;
     -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
@@ -175,7 +175,7 @@
     -fx-border-width: 0;
     -fx-effect: dropshadow(three-pass-box, #ffffff, 10, 0, 0, 0);
 }
-.printerControlButton:focused {
+.jog-button:focused {
     -fx-border-width: 0;
 }
 .gizmoControlButton, .gizmoControlButton:hover, .gizmoControlButton:focused {
@@ -1127,4 +1127,10 @@ table-view .column-header-background {
 .material-choice-list-cell{
     -fx-padding: 0;
     -fx-hgap:10;
+}
+
+.status-tab-graphic{
+    -fx-background-color: mid_grey;
+    -fx-content-display: graphic-only;
+    -fx-padding: 0 0 5 0;
 }
