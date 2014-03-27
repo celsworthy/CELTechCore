@@ -23,6 +23,10 @@
     gizmoRotationHandle_pressed: #53919d;
 }
 
+.standardPanel{
+    -fx-background-color: mid_grey;
+}
+
 .project-view-background{
     -fx-background-color: linear-gradient(to bottom, #838383, #dadada);
 }
@@ -1124,6 +1128,12 @@ table-view .column-header-background {
     -fx-alignment: CENTER_RIGHT;
 }
 
+.custom-text-field{
+    -fx-font-size: 10pt;
+    -fx-padding: 2 2 2 2;
+    -fx-alignment: CENTER_RIGHT;
+}
+
 .material-choice-list-cell{
     -fx-padding: 0;
     -fx-hgap:10;
@@ -1133,4 +1143,86 @@ table-view .column-header-background {
     -fx-background-color: mid_grey;
     -fx-content-display: graphic-only;
     -fx-padding: 0 0 5 0;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * ProjectMenu                                                                    *
+ *                                                                             *
+ ******************************************************************************/
+
+.menu-button  {
+    -fx-background-color: transparent, #e2e2e2, transparent, #4a4a4a;
+    -fx-background-radius: 0, 0, 0, 0;
+    -fx-padding: 0.166667em;
+}
+
+.menu-button  .list-cell{
+    -fx-text-fill: white;
+}
+
+.menu-button:hover {
+    -fx-background-color: transparent, white, transparent, #4a4a4a;
+}
+
+.menu-button:focused{
+    -fx-border-color:white;
+    -fx-background-radius: 0, 0, 0, 0;
+    -fx-padding: 0.166667em; /* 2 */
+}
+
+.menu-button:disabled {
+    -fx-opacity: .4;
+}
+
+/* ------- OPEN BUTTON ------- */
+.menu-button .arrow-button {
+    -fx-background-color: transparent, transparent, #4a4a4a;
+}
+
+/* ------- ARROW* ------- */
+.menu-button .arrow {
+    -fx-padding: 0.333333em 0.333333em 0.333333em 0.333333em; /* 4 4 4 4 */
+    -fx-shape: "M8.124,13.625l4.125-3.375v2.889l-4.125,3.86L4,13.139V10.25L8.124,13.625z";
+    -fx-background-color: transparent, #1d1d1d;
+}
+
+.menu-item .list-view {
+    -fx-background-color: #4a4a4a, -fx-control-inner-background;
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0) , 8, 0.0 , 0 , 0 );
+}
+
+/*.menu-button-popup .list-view .list-cell{
+    -fx-background-color: #4a4a4a;
+    -fx-text-fill: white;
+}
+
+.menu-button-popup .list-view .list-cell:hover{
+    -fx-background-color: #dedede;
+    -fx-text-fill: #1d1d1d;
+}
+
+
+
+.menu-button-popup .list-view .list-cell:filled:selected{
+    -fx-background-color: #55c4fe;
+}
+
+.menu-button-popup .list-view .list-cell:filled:selected:hover {
+    -fx-background-color: #6dcdff;
+}
+
+.menu-button-popup .list-view .list-cell:filled:pressed, .menu-button-popup .list-view .list-cell:filled:selected:pressed
+{
+    -fx-background-color: #d3d3d3;
+    -fx-text-fill: #1d1d1d;
+}*/
+
+/*
+ * Project menu button
+ */
+
+.project-menu-button{
+        -fx-content-display: graphic-only;
+        -fx-pref-width: 10px;
 }

@@ -196,7 +196,7 @@ public class FilamentContainer
                     (int) (filament.getDisplayColour().getGreen() * 255),
                     (int) (filament.getDisplayColour().getBlue() * 255));
             filamentProperties.setProperty(displayColourProperty, webColour);
-            
+
             String filename = constructFilePath(filament);
 
             File filamentFile = new File(filename);
@@ -228,19 +228,23 @@ public class FilamentContainer
 
     public static Filament getFilamentByID(String filamentID)
     {
+        Filament returnedFilament = null;
+
         if (instance == null)
         {
             FilamentContainer.getInstance();
         }
 
-        Filament returnedFilament = completeFilamentMap.get(filamentID);
-        if (returnedFilament == null)
+        if (filamentID != null)
         {
-            //Try replacing dashes with underscores...
-            returnedFilament = completeFilamentMap.get(filamentID.replaceAll("-", "_"));
+            returnedFilament = completeFilamentMap.get(filamentID);
+            if (returnedFilament == null)
+            {
+                //Try replacing dashes with underscores...
+                returnedFilament = completeFilamentMap.get(filamentID.replaceAll("-", "_"));
+            }
         }
         return returnedFilament;
-
     }
 
     public static ObservableList<Filament> getCompleteFilamentList()

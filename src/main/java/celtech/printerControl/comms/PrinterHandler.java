@@ -35,14 +35,8 @@ import celtech.printerControl.comms.events.RoboxEvent;
 import celtech.printerControl.comms.events.RoboxEventType;
 import celtech.services.firmware.FirmwareLoadService;
 import celtech.services.firmware.FirmwareLoadTask;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Enumeration;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
-import javafx.concurrent.Worker;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.scene.paint.Color;
@@ -204,6 +198,17 @@ public class PrinterHandler extends Thread
                                         }
                                     });
                                 }
+                            }
+                        });
+                    } else
+                    {
+                        steno.error("Other error when updating firmware");
+                        Platform.runLater(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                firmwareFailureDialog.show();
                             }
                         });
                     }

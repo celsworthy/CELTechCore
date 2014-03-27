@@ -6,7 +6,6 @@ package celtech.printerControl.comms.commands;
  */
 public class GCodeConstants
 {
-
     public static final String extruderRelativeMoveMode = "M83";
     public static final String carriageRelativeMoveMode = "G91";
     public static final String carriageAbsoluteMoveMode = "G90";
@@ -15,12 +14,16 @@ public class GCodeConstants
 
     public static final String setFirstLayerBedTemperatureTarget = "M139 S";
     public static final String setBedTemperatureTarget = "M140 S";
-    public static final String switchBedHeaterOn = "M140";
+    public static final String goToTargetFirstLayerBedTemperature = "M139";
+    public static final String goToTargetBedTemperature = "M140";
+    public static final String waitForBedTemperature = "M190";
     public static final String switchBedHeaterOff = "M140 S0";
 
     public static final String setFirstLayerNozzleTemperatureTarget = "M103 S";
     public static final String setNozzleTemperatureTarget = "M104 S";
-    public static final String switchNozzleHeaterOn = "M104";
+    public static final String goToTargetFirstLayerNozzleTemperature = "M103";
+    public static final String goToTargetNozzleTemperature = "M104";
+    public static final String waitForNozzleTemperature = "M109";
     public static final String switchNozzleHeaterOff = "M104 S0";
 
     public static final String homeXAxis = "G28 X";

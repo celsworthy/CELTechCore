@@ -1,6 +1,6 @@
-
 package celtech.printerControl.comms.commands.rx;
 
+import celtech.configuration.EEPROMState;
 import celtech.configuration.HeaterMode;
 import java.io.UnsupportedEncodingException;
 import java.text.NumberFormat;
@@ -55,7 +55,6 @@ public class StatusResponse extends RoboxRxPacket
      ffffffff = Feed rate multiplier (decimal float format)
      total length = 165
      */
-    
     private final String charsetToUse = "US-ASCII";
     private String runningPrintJobID = null;
     private final int runningPrintJobIDBytes = 16;
@@ -97,8 +96,8 @@ public class StatusResponse extends RoboxRxPacket
     private String ambientTargetTemperatureString = null;
     private int ambientTargetTemperature = 0;
     private boolean headFanOn = false;
-    private boolean headEEPROMPresent = false;
-    private boolean reelEEPROMPresent = false;
+    private EEPROMState headEEPROMState = EEPROMState.NOT_PRESENT;
+    private EEPROMState reelEEPROMState = EEPROMState.NOT_PRESENT;
     private boolean sdCardPresent = false;
     private final int decimalFloatFormatBytes = 8;
     private float headXPosition = 0;
@@ -246,14 +245,14 @@ public class StatusResponse extends RoboxRxPacket
         return headFanOn;
     }
 
-    public boolean isHeadEEPROMPresent()
+    public EEPROMState getHeadEEPROMState()
     {
-        return headEEPROMPresent;
+        return headEEPROMState;
     }
 
-    public boolean isReelEEPROMPresent()
+    public EEPROMState getReelEEPROMState()
     {
-        return reelEEPROMPresent;
+        return reelEEPROMState;
     }
 
     public boolean isSDCardPresent()
@@ -457,11 +456,13 @@ public class StatusResponse extends RoboxRxPacket
             this.headFanOn = (byteData[byteOffset] & 1) > 0 ? true : false;
             byteOffset += 1;
 
-            this.headEEPROMPresent = (byteData[byteOffset] & 1) > 0 ? true : false;
+            String headEEPROMStateString = new String(byteData, byteOffset, 1, charsetToUse);
             byteOffset += 1;
+            this.headEEPROMState = EEPROMState.modeFromValue(Integer.valueOf(headEEPROMStateString, 16));
 
-            this.reelEEPROMPresent = (byteData[byteOffset] & 1) > 0 ? true : false;
+            String reelEEPROMStateString = new String(byteData, byteOffset, 1, charsetToUse);
             byteOffset += 1;
+            this.reelEEPROMState = EEPROMState.modeFromValue(Integer.valueOf(reelEEPROMStateString, 16));
 
             this.sdCardPresent = (byteData[byteOffset] & 1) > 0 ? true : false;
             byteOffset += 1;
@@ -607,9 +608,9 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append("\n");
         outputString.append("Head fan on: " + isHeadFanOn());
         outputString.append("\n");
-        outputString.append("Head EEPROM present: " + isHeadEEPROMPresent());
+        outputString.append("Head EEPROM present: " + getHeadEEPROMState());
         outputString.append("\n");
-        outputString.append("Reel EEPROM present: " + isReelEEPROMPresent());
+        outputString.append("Reel EEPROM present: " + getReelEEPROMState());
         outputString.append("\n");
         outputString.append("SD card present: " + isSDCardPresent());
         outputString.append("\n");

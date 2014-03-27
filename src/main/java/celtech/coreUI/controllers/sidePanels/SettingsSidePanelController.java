@@ -9,7 +9,6 @@
  */
 package celtech.coreUI.controllers.sidePanels;
 
-import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
@@ -113,7 +112,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private SlicerSettings lastSettings = null;
 
     private ChangeListener<Toggle> nozzleSelectionListener = null;
-    private ChangeListener<Filament> filamentChangeListener = null;
     private ChangeListener<Boolean> reelDataChangedListener = null;
 
     private ObservableList<Filament> availableFilaments = FXCollections.observableArrayList();
@@ -391,13 +389,11 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                                 if (lastSelectedPrinter != null)
                                 {
                                     lastSelectedPrinter.reelDataChangedProperty().removeListener(reelDataChangedListener);
-                                    lastSelectedPrinter.loadedFilamentProperty().removeListener(filamentChangeListener);
                                 }
                                 if (selectedPrinter != null && selectedPrinter != lastSelectedPrinter)
                                 {
                                     currentPrinter = selectedPrinter;
                                     selectedPrinter.reelDataChangedProperty().addListener(reelDataChangedListener);
-                                    selectedPrinter.loadedFilamentProperty().addListener(filamentChangeListener);
                                 }
 
                                 if (selectedPrinter == null)
@@ -433,30 +429,27 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 if (newValue == FilamentContainer.createNewFilament)
                 {
                     showCreateMaterialDialogue();
-                } else
+                } else if (newValue != null)
                 {
                     slideOutController.updateFilamentData(newValue);
+                    if (newValue.isMutable())
+                    {
+                        settingsScreenState.setFilament(newValue);
+                    }
+                } else
+                {
+                    settingsScreenState.setFilament(null);
                 }
-
             }
         });
-
-        filamentChangeListener = new ChangeListener<Filament>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Filament> ov, Filament t, Filament t1)
-            {
-                currentlyLoadedFilament = t1;
-                updateFilamentList();
-            }
-        };
 
         reelDataChangedListener = new ChangeListener<Boolean>()
         {
             @Override
             public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
             {
-//                updateMaterialTextBoxes();
+                currentlyLoadedFilament = currentPrinter.loadedFilamentProperty().get();
+                updateFilamentList();
             }
         };
 
@@ -476,6 +469,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 }
             }
         });
+        
+        updateFilamentList();
     }
 
     private void updateProfileList()
@@ -491,8 +486,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         if (currentlyLoadedFilament != null)
         {
-            availableFilaments.add(currentlyLoadedFilament);
-            materialChooser.getSelectionModel().select(currentlyLoadedFilament);
+            Filament loadedFilamentCandidate = FilamentContainer.getFilamentByID(currentlyLoadedFilament.getReelID());
+
+            availableFilaments.add(loadedFilamentCandidate);
+            materialChooser.getSelectionModel().select(loadedFilamentCandidate);
         }
 
         availableFilaments.addAll(FilamentContainer.getUserFilamentList());
@@ -513,20 +510,33 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         this.slideOutController = (SettingsSlideOutPanelController) slideOutController;
         this.slideOutController.provideReceiver(this);
         this.slideOutController.updateProfileData(settingsScreenState.getSettings());
+        this.slideOutController.updateFilamentData(settingsScreenState.getFilament());
         updateFilamentList();
         updateProfileList();
     }
 
     @Override
-    public void triggerSaveAs()
+    public void triggerSaveAs(Object source)
     {
-        SlicerSettings settings = settingsScreenState.getSettings().clone();
-        String originalProfileName = settings.getProfileName();
-        String filename = SystemUtils.getIncrementalFilenameOnly(ApplicationConfiguration.getUserPrintProfileDirectory(), originalProfileName, ApplicationConfiguration.printProfileFileExtension);
-        settings.getProfileNameProperty().set(filename);
-        settings.setMutable(true);
-        profileDetailsController.updateProfileData(settings);
-        showCreateProfileDialogue();
+        if (source instanceof MaterialDetailsController)
+        {
+            Filament clonedFilament = settingsScreenState.getFilament().clone();
+            String originalFilamentName = clonedFilament.getFriendlyFilamentName();
+            String filename = SystemUtils.getIncrementalFilenameOnly(ApplicationConfiguration.getUserFilamentDirectory(), originalFilamentName, ApplicationConfiguration.filamentFileExtension);
+            clonedFilament.setFriendlyFilamentName(filename);
+            clonedFilament.setMutable(true);
+            materialDetailsController.updateMaterialData(clonedFilament);
+            showCreateMaterialDialogue();
+        } else if (source instanceof ProfileDetailsController)
+        {
+            SlicerSettings settings = settingsScreenState.getSettings().clone();
+            String originalProfileName = settings.getProfileName();
+            String filename = SystemUtils.getIncrementalFilenameOnly(ApplicationConfiguration.getUserPrintProfileDirectory(), originalProfileName, ApplicationConfiguration.printProfileFileExtension);
+            settings.getProfileNameProperty().set(filename);
+            settings.setMutable(true);
+            profileDetailsController.updateProfileData(settings);
+            showCreateProfileDialogue();
+        }
     }
 
     private int showCreateMaterialDialogue()

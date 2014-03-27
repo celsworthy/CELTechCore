@@ -9,6 +9,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
 import celtech.coreUI.DisplayManager;
+import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -82,7 +83,7 @@ public class MaterialChoiceListCell extends ListCell<Filament>
         {
             colourRectangle.setFill(filament.getDisplayColour());
             padlock.setVisible(!filament.isMutable());
-            name.textProperty().bind(filament.getFriendlyFilamentNameProperty());
+            name.textProperty().bind(Bindings.format("%s %s", filament.getFriendlyFilamentNameProperty(), filament.getMaterialProperty()));
             if (filament.isMutable() == false)
             {
                 remainingFilament.textProperty().bind(filament.getRemainingFilamentProperty().asString("%.0fm"));

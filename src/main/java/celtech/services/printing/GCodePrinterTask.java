@@ -50,7 +50,7 @@ public class GCodePrinterTask extends Task<Boolean>
         int sequenceNumber = 0;
         boolean successfulWrite = false;
         File gcodeFile = new File(gcodeFileToPrint);
-        int numberOfLines = SystemUtils.countLinesInFile(gcodeFile);
+        int numberOfLines = SystemUtils.countLinesInFile(gcodeFile, ";");
         linesInFile.setValue(numberOfLines);
 
         steno.info("Start of file " + gcodeFileToPrint);
@@ -93,8 +93,8 @@ public class GCodePrinterTask extends Task<Boolean>
                     {
                         printerToUse.transmitDirectGCode(line, false);
                     }
+                    lineCounter++;
                 }
-                lineCounter++;
                 if (lineCounter < numberOfLines)
                 {
                     updateProgress(lineCounter, numberOfLines);
@@ -117,5 +117,4 @@ public class GCodePrinterTask extends Task<Boolean>
         return gotToEndOK;
     }
 
-   
 }

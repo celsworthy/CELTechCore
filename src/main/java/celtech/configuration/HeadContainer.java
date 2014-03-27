@@ -48,6 +48,7 @@ public class HeadContainer
                 filamentProperties.load(new FileInputStream(headFile));
 
                 String name = filamentProperties.getProperty("name");
+                String headID = filamentProperties.getProperty("headID");
                 String maximumTemperatureString = filamentProperties.getProperty("maximum_temperature_C");
                 String betaString = filamentProperties.getProperty("beta");
                 String tcalString = filamentProperties.getProperty("tcal");
@@ -61,6 +62,7 @@ public class HeadContainer
                 String nozzle2_B_offsetString = filamentProperties.getProperty("nozzle2_B_offset");
 
                 if (name != null
+                        && headID != null
                         && maximumTemperatureString != null
                         && betaString != null
                         && tcalString != null
@@ -87,9 +89,7 @@ public class HeadContainer
                         float nozzle2_Z_offset = Float.valueOf(nozzle2_Z_offsetString);
                         float nozzle2_B_offset = Float.valueOf(nozzle2_B_offsetString);
 
-                        String typeCode = headFile.getName().replaceAll(ApplicationConfiguration.headFileExtension, "");
-
-                        Head newHead = new Head(typeCode,
+                        Head newHead = new Head(headID,
                                 name,
                                 maximumTemperature,
                                 beta,
@@ -104,7 +104,7 @@ public class HeadContainer
                                 nozzle2_B_offset);
 
                         headList.add(newHead);
-                        completeHeadMap.put(typeCode, newHead);
+                        completeHeadMap.put(headID, newHead);
 
                     } catch (NumberFormatException ex)
                     {
@@ -139,11 +139,6 @@ public class HeadContainer
         }
 
         Head returnedHead = completeHeadMap.get(filamentID);
-        if (returnedHead == null)
-        {
-            //Try replacing dashes with underscores...
-            returnedHead = completeHeadMap.get(filamentID.replaceAll("-", "_"));
-        }
         return returnedHead;
 
     }

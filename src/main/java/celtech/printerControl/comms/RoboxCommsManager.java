@@ -285,6 +285,18 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
                     });
                 } else
                 {
+                    Printer pendingPrinterStat = pendingPrinters.get(portName);
+                    if (pendingPrinterStat != null)
+                    {
+                        Platform.runLater(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                pendingPrinterStat.processRoboxEvent(event);
+                            }
+                        });
+                    }
                     steno.warning("Update " + event.getEventType() + " received for printer on port " + portName + " but printer is not in active list");
                 }
                 break;

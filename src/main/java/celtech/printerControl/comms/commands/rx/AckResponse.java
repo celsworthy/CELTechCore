@@ -1,7 +1,18 @@
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
+
+
 package celtech.printerControl.comms.commands.rx;
 
 import java.text.NumberFormat;
@@ -28,10 +39,13 @@ public class AckResponse extends RoboxRxPacket
     private boolean usbRXError = false;
     private boolean usbTXError = false;
     private boolean badCommandError = false;
-    private boolean eepromError = false;
+    private boolean headEEPROMError = false;
     private boolean badFirmwareFileError = false;
     private boolean flashChecksumError = false;
     private boolean gcodeBufferOverrunError = false;
+    private boolean fileReadClobbered = false;
+    private boolean maxGantryAdjustment = false;
+    private boolean reelEEPROMError = false;
 
     public boolean isSdCardError()
     {
@@ -68,9 +82,9 @@ public class AckResponse extends RoboxRxPacket
         return badCommandError;
     }
 
-    public boolean isEepromError()
+    public boolean isHeadEepromError()
     {
-        return eepromError;
+        return headEEPROMError;
     }
 
     public boolean isBadFirmwareFileError()
@@ -88,12 +102,29 @@ public class AckResponse extends RoboxRxPacket
         return gcodeBufferOverrunError;
     }
 
+    public boolean isFileReadClobbered()
+    {
+        return fileReadClobbered;
+    }
+
+    public boolean isMaxGantryAdjustment()
+    {
+        return maxGantryAdjustment;
+    }
+
+    public boolean isReelEEPROMError()
+    {
+        return reelEEPROMError;
+    }
+
     public boolean isError()
     {
         return sdCardError || chunkSequenceError || fileTooLargeError
                 || gcodeLineTooLongError || usbRXError || usbTXError
-                || badCommandError || eepromError || badFirmwareFileError ||
-                flashChecksumError || gcodeBufferOverrunError;
+                || badCommandError || headEEPROMError || badFirmwareFileError
+                || flashChecksumError || gcodeBufferOverrunError
+                || fileReadClobbered || maxGantryAdjustment
+                || reelEEPROMError;
     }
 
     /*
@@ -132,7 +163,7 @@ public class AckResponse extends RoboxRxPacket
         this.badCommandError = (byteData[byteOffset] & 1) > 0 ? true : false;
         byteOffset += 1;
 
-        this.eepromError = (byteData[byteOffset] & 1) > 0 ? true : false;
+        this.headEEPROMError = (byteData[byteOffset] & 1) > 0 ? true : false;
         byteOffset += 1;
 
         this.badFirmwareFileError = (byteData[byteOffset] & 1) > 0 ? true : false;
@@ -142,6 +173,15 @@ public class AckResponse extends RoboxRxPacket
         byteOffset += 1;
 
         this.gcodeBufferOverrunError = (byteData[byteOffset] & 1) > 0 ? true : false;
+        byteOffset += 1;
+
+        this.fileReadClobbered = (byteData[byteOffset] & 1) > 0 ? true : false;
+        byteOffset += 1;
+        
+        this.maxGantryAdjustment = (byteData[byteOffset] & 1) > 0 ? true : false;
+        byteOffset += 1;
+        
+        this.reelEEPROMError = (byteData[byteOffset] & 1) > 0 ? true : false;
         byteOffset += 1;
 
         byteOffset += errorFlagBytes - 8;
@@ -173,7 +213,9 @@ public class AckResponse extends RoboxRxPacket
         outputString.append("\n");
         outputString.append("Bad command error: " + isBadCommandError());
         outputString.append("\n");
-        outputString.append("EEPROM error: " + isEepromError());
+        outputString.append("Head EEPROM error: " + isHeadEepromError());
+        outputString.append("\n");
+        outputString.append("Reel EEPROM error: " + isReelEEPROMError());
         outputString.append("\n");
         outputString.append("Bad firmware error: " + isBadFirmwareFileError());
         outputString.append("\n");

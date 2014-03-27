@@ -1,20 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 
 
 package celtech.coreUI.visualisation;
@@ -198,7 +182,7 @@ public class ThreeDViewManager
 
     }
 
-        public void rotateCameraAroundAxesTo(double xangle, double yangle)
+    public void rotateCameraAroundAxesTo(double xangle, double yangle)
     {
         double yAxisRotation = yangle;
 
@@ -564,8 +548,48 @@ public class ThreeDViewManager
      * Snap to ground
      */
     private ObjectProperty<LayoutSubmode> layoutSubmode = new SimpleObjectProperty<>(LayoutSubmode.SELECT);
-    
+
     private Project associatedProject = null;
+
+    private ChangeListener<Number> sceneSizeChangeListener = new ChangeListener<Number>()
+    {
+
+        @Override
+        public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+        {
+            recalculateCentre();
+        }
+    };
+
+    private ChangeListener<ApplicationMode> applicationModeListener = new ChangeListener<ApplicationMode>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends ApplicationMode> ov, ApplicationMode oldMode, ApplicationMode newMode)
+        {
+            if (oldMode != newMode)
+            {
+                switch (newMode)
+                {
+                    case SETTINGS:
+                        subScene.removeEventHandler(MouseEvent.ANY, mouseEventHandler);
+                        subScene.removeEventHandler(KeyEvent.ANY, keyEventHandler);
+                        // subScene.addEventFilter(KeyEvent.ANY, keyEventHandler);
+                        subScene.removeEventHandler(ZoomEvent.ANY, zoomEventHandler);
+                        subScene.removeEventHandler(ScrollEvent.ANY, scrollEventHandler);
+                        goToPreset(CameraPositionPreset.TOP);
+                        break;
+                    default:
+                        goToPreset(CameraPositionPreset.FRONT);
+                        subScene.addEventHandler(MouseEvent.ANY, mouseEventHandler);
+                        subScene.addEventHandler(KeyEvent.ANY, keyEventHandler);
+                        // subScene.addEventFilter(KeyEvent.ANY, keyEventHandler);
+                        subScene.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
+                        subScene.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
+                        break;
+                }
+            }
+        }
+    };
 
     public ThreeDViewManager(Project project, ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
     {
@@ -615,25 +639,9 @@ public class ThreeDViewManager
         subScene.widthProperty().bind(widthPropertyToFollow);
         subScene.heightProperty().bind(heightPropertyToFollow);
 
-        subScene.widthProperty().addListener(new ChangeListener<Number>()
-        {
+        subScene.widthProperty().addListener(sceneSizeChangeListener);
+        subScene.heightProperty().addListener(sceneSizeChangeListener);
 
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                recalculateCentre();
-            }
-        });
-
-        subScene.heightProperty().addListener(new ChangeListener<Number>()
-        {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                recalculateCentre();
-            }
-        });
         leapController = new Controller();
         leapMotionListener = new LeapMotionListener(this);
         leapController.addListener(leapMotionListener);
@@ -645,37 +653,8 @@ public class ThreeDViewManager
             }
         }
 
-        applicationStatus.modeProperty().addListener(new ChangeListener<ApplicationMode>()
-        {
+        applicationStatus.modeProperty().addListener(applicationModeListener);
 
-            @Override
-            public void changed(ObservableValue<? extends ApplicationMode> ov, ApplicationMode oldMode, ApplicationMode newMode)
-            {
-                if (oldMode != newMode)
-                {
-                    switch (newMode)
-                    {
-                        case SETTINGS:
-                            subScene.removeEventHandler(MouseEvent.ANY, mouseEventHandler);
-                            subScene.removeEventHandler(KeyEvent.ANY, keyEventHandler);
-                            // subScene.addEventFilter(KeyEvent.ANY, keyEventHandler);
-                            subScene.removeEventHandler(ZoomEvent.ANY, zoomEventHandler);
-                            subScene.removeEventHandler(ScrollEvent.ANY, scrollEventHandler);
-                            goToPreset(CameraPositionPreset.TOP);
-                            break;
-                        default:
-                            goToPreset(CameraPositionPreset.FRONT);
-                            subScene.addEventHandler(MouseEvent.ANY, mouseEventHandler);
-                            subScene.addEventHandler(KeyEvent.ANY, keyEventHandler);
-                            // subScene.addEventFilter(KeyEvent.ANY, keyEventHandler);
-                            subScene.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
-                            subScene.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
-                            break;
-                    }
-                }
-            }
-        }
-        );
         subScene.addEventHandler(MouseEvent.ANY, mouseEventHandler);
         subScene.addEventHandler(KeyEvent.ANY, keyEventHandler);
         // subScene.addEventFilter(KeyEvent.ANY, keyEventHandler);
@@ -691,20 +670,20 @@ public class ThreeDViewManager
 //                steno.info("Filter caught event " + event);
 //            }
 //        });
-        layoutSubmodeProperty().addListener(new ChangeListener<LayoutSubmode>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode t, LayoutSubmode t1)
-            {
-                if (t1 == LayoutSubmode.SNAP_TO_GROUND)
-                {
-                    subScene.setCursor(Cursor.HAND);
-                } else
-                {
-                    subScene.setCursor(Cursor.DEFAULT);
-                }
-            }
-        });
+//        layoutSubmodeProperty().addListener(new ChangeListener<LayoutSubmode>()
+//        {
+//            @Override
+//            public void changed(ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode t, LayoutSubmode t1)
+//            {
+//                if (t1 == LayoutSubmode.SNAP_TO_GROUND)
+//                {
+//                    subScene.setCursor(Cursor.HAND);
+//                } else
+//                {
+//                    subScene.setCursor(Cursor.DEFAULT);
+//                }
+//            }
+//        });
 
         dragMode.addListener(dragModeListener);
     }
@@ -885,16 +864,22 @@ public class ThreeDViewManager
     public void deleteSelectedModels()
     {
         ListIterator<ModelContainer> modelIterator = loadedModels.listIterator();
+        ArrayList<ModelContainer> modelsToRemove = new ArrayList<>();
         while (modelIterator.hasNext())
         {
             ModelContainer model = modelIterator.next();
 
             if (model.isSelected())
             {
-                deselectModel(model);
-                models.getChildren().remove(model);
-                modelIterator.remove();
+                modelsToRemove.add(model);
             }
+        }
+
+        for (ModelContainer chosenModel : modelsToRemove)
+        {
+            selectionContainer.removeSelectedModel(chosenModel);
+            loadedModels.remove(chosenModel);
+            models.getChildren().remove(chosenModel);
         }
         collideModels();
     }
@@ -927,7 +912,7 @@ public class ThreeDViewManager
     {
         models.getChildren().remove(modelGroup);
         loadedModels.remove(modelGroup);
-        
+
     }
 
     public void addGCodeParts(Group gCodeParts)
@@ -942,16 +927,20 @@ public class ThreeDViewManager
 
     public void shutdown()
     {
+        subScene.widthProperty().removeListener(sceneSizeChangeListener);
+        subScene.heightProperty().removeListener(sceneSizeChangeListener);
         leapController.removeListener(leapMotionListener);
+        applicationStatus.modeProperty().removeListener(applicationModeListener);
+        dragMode.removeListener(dragModeListener);
     }
 
 //    public PolarCamera getCamera()
 //    {
 //        return camera;
 //    }
-    private void recalculateSelectionBounds(boolean addedOrRemoved)
+    public void recalculateSelectionBounds(boolean addedOrRemoved)
     {
-        
+
         if (selectionContainer.selectedModelsProperty().size() == 1)
         {
             ModelContainer model = selectionContainer.selectedModelsProperty().get(0);
@@ -978,7 +967,7 @@ public class ThreeDViewManager
             selectionContainer.setCentreY(centreY);
             selectionContainer.setCentreZ(centreZ);
 
-//            steno.info("Ctr X" + centreX + ":Y" + centreY + ":Z" + centreZ);
+            steno.info("Ctr X" + centreX + ":Y" + centreY + ":Z" + centreZ);
 //            steno.info("Screen " + newScreen.getX() + ":Y" + newScreen.getY());
 //            Point3D scene = root3D.localToScene(centreX, centreY, centreZ);
 //            steno.info("Scene " + scene);

@@ -180,7 +180,7 @@ public class SelectionHighlighter extends Group
             @Override
             public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
             {
-                steno.info("Camera distance is now " + t1.doubleValue());
+//                steno.info("Camera distance is now " + t1.doubleValue());
                 double newScale = t1.doubleValue() / 295;
 
                 for (Node node : selectionBox.getChildren())

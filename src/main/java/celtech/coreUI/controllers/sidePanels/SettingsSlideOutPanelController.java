@@ -23,20 +23,15 @@ import celtech.printerControl.Printer;
 import celtech.services.slicer.SlicerSettings;
 import celtech.utils.FXUtils;
 import java.net.URL;
-import java.security.Principal;
 import java.util.ResourceBundle;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Toggle;
-import javafx.scene.layout.AnchorPane;
 import javafx.util.StringConverter;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -120,6 +115,7 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
     public void provideReceiver(PopupCommandReceiver receiver)
     {
         profileDetailsController.provideReceiver(receiver);
+        materialDetailsController.provideReceiver(receiver);
     }
 
 }

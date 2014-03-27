@@ -30,10 +30,10 @@ public class WriteReelEEPROM extends RoboxTxPacket
 
         payload.append(String.format("%1$-16s", reelTypeCode));
         payload.append(String.format("%1$-24s", reelUniqueID));
-        payload.append(String.format("%08.2f", reelNozzleTemperature));
         payload.append(String.format("%08.2f", reelFirstLayerNozzleTemperature));
-        payload.append(String.format("%08.2f", reelBedTemperature));
+        payload.append(String.format("%08.2f", reelNozzleTemperature));
         payload.append(String.format("%08.2f", reelFirstLayerBedTemperature));
+        payload.append(String.format("%08.2f", reelBedTemperature));
         payload.append(String.format("%08.2f", reelAmbientTemperature));
         payload.append(String.format("%08.2f", reelFilamentDiameter));
         payload.append(String.format("%08.2f", reelFilamentMultiplier));

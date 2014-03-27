@@ -6,6 +6,7 @@
 package celtech.coreUI.controllers.sidePanels;
 
 import celtech.appManager.ApplicationStatus;
+import celtech.configuration.EEPROMState;
 import celtech.configuration.HeaterMode;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.PrinterIDDialog;
@@ -320,7 +321,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         openString = languageBundle.getString("genericFirstLetterCapitalised.Open");
         closedString = languageBundle.getString("genericFirstLetterCapitalised.Closed");
         filamentLoadedString = languageBundle.getString("sidePanel_printerStatus.filamentLoaded");
-        filamentNotLoadedString = languageBundle.getString("sidePanel_printerStatus.filamentNotLoaded");
+        filamentNotLoadedString = languageBundle.getString("smartReelProgrammer.noReelLoaded");
         connectedString = languageBundle.getString("sidePanel_printerStatus.connected");
         notConnectedString = languageBundle.getString("sidePanel_printerStatus.notConnected");
         headNotAttachedString = languageBundle.getString("sidePanel_printerStatus.headNotAttached");
@@ -549,7 +550,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                         {
                             if (lastSelectedPrinter.getBedHeaterMode() == HeaterMode.OFF)
                             {
-                                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.switchBedHeaterOn, false);
+                                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.goToTargetBedTemperature, false);
                             }
                         }
                     } catch (RoboxCommsException ex)
@@ -588,7 +589,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                         {
                             if (lastSelectedPrinter.getNozzleHeaterMode() == HeaterMode.OFF)
                             {
-                                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOn, false);
+                                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.goToTargetNozzleTemperature, false);
                             }
                         }
                     } catch (RoboxCommsException ex)
@@ -749,12 +750,12 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             /*
              * Reel
              */
-            filamentStatusLabel.textProperty().bind(Bindings.when(selectedPrinter.reelAttachedProperty()).then(selectedPrinter.reelFriendlyNameProperty()).otherwise(filamentNotLoadedString));
+            filamentStatusLabel.textProperty().bind(Bindings.when(selectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED)).then(selectedPrinter.reelFriendlyNameProperty()).otherwise(filamentNotLoadedString));
 
             /*
              * Head
              */
-            printHeadLabel.textProperty().bind(Bindings.when(selectedPrinter.headAttachedProperty()).then(selectedPrinter.getHeadType()).otherwise(headNotAttachedString));
+            printHeadLabel.textProperty().bind(Bindings.when(selectedPrinter.headEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED)).then(selectedPrinter.getHeadType()).otherwise(headNotAttachedString));
 
             currentAmbientTemperatureHistory = selectedPrinter.ambientTemperatureHistory();
             temperatureChart.getData().add(selectedPrinter.ambientTemperatureHistory());

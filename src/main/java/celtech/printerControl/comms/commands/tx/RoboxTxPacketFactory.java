@@ -44,6 +44,9 @@ public class RoboxTxPacketFactory
                 case END_OF_DATA_FILE:
                     returnVal = new SendDataFileEnd();
                     break;
+                case REPORT_ERRORS:
+                    returnVal = new ReportErrors();
+                    break;
                 case RESET_ERRORS:
                     returnVal = new SendResetErrors();
                     break;
@@ -96,7 +99,7 @@ public class RoboxTxPacketFactory
                     returnVal = new SetTemperatures();
                     break;
                 case SET_FILAMENT_INFO:
-                    returnVal = new SetTemperatures();
+                    returnVal = new SetFilamentInfo();
                     break;
                 default:
                     break;

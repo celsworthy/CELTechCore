@@ -75,6 +75,12 @@ public class MenuStripController
     private Button deleteModelButton;
 
     @FXML
+    private Button duplicateModelButton;
+
+    @FXML
+    private Button distributeModelsButton;
+
+    @FXML
     void forwardPressed(ActionEvent event)
     {
         switch (applicationStatus.getMode())
@@ -97,8 +103,8 @@ public class MenuStripController
         settingsScreenState.getSelectedPrinter().printProject(currentProject, settingsScreenState.getFilament(), settingsScreenState.getPrintQuality(), settingsScreenState.getSettings());
         try
         {
-            settingsScreenState.getSelectedPrinter().transmitDirectGCode(GCodeConstants.switchNozzleHeaterOn, true);
-            settingsScreenState.getSelectedPrinter().transmitDirectGCode(GCodeConstants.switchBedHeaterOn, true);
+            settingsScreenState.getSelectedPrinter().transmitDirectGCode(GCodeConstants.goToTargetFirstLayerNozzleTemperature, true);
+            settingsScreenState.getSelectedPrinter().transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperature, true);
         } catch (RoboxCommsException ex)
         {
             steno.error("Error whilst sending preheat commands");
@@ -212,7 +218,7 @@ public class MenuStripController
         lastModelDirectory = new File(ApplicationConfiguration.getProjectDirectory());
 
         backwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.STATUS));
-        forwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS));
+//        forwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS).and(printerOKToPrint));
         printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(printerOKToPrint));
 
         settingsScreenState.selectedPrinterProperty().addListener(new ChangeListener<Printer>()
@@ -244,16 +250,15 @@ public class MenuStripController
     public void bindSelectedModels(SelectionContainer selectionContainer)
     {
         deleteModelButton.disableProperty().unbind();
-//        copyModelButton.disableProperty().unbind();
+        duplicateModelButton.disableProperty().unbind();
 //        snapToGroundButton.disableProperty().unbind();
-//        autoLayoutButton.disableProperty().unbind();
+        distributeModelsButton.disableProperty().unbind();
 
         deleteModelButton.disableProperty().bind(Bindings.isEmpty(selectionContainer.selectedModelsProperty()));
-//        copyModelButton.disableProperty().bind(Bindings.isEmpty(selectionContainer.selectedModelsProperty()));
+        duplicateModelButton.disableProperty().bind(Bindings.isEmpty(selectionContainer.selectedModelsProperty()));
 //        snapToGroundButton.setDisable(true);
-//        autoLayoutButton.setDisable(true);
+        distributeModelsButton.setDisable(true);
 //        snapToGroundButton.disableProperty().bind(Bindings.isEmpty(selectionContainer.selectedModelsProperty()));
-//        autoLayoutButton.disableProperty().bind(Bindings.isEmpty(selectionContainer.selectedModelsProperty()));
 
 //        if (boundViewManager != null)
 //        {
@@ -269,5 +274,10 @@ public class MenuStripController
 
         boundProject = displayManager.getCurrentlyVisibleProject();
         addModelButton.disableProperty().bind(Bindings.isNotEmpty(boundProject.getLoadedModels()).and(boundProject.projectModeProperty().isEqualTo(ProjectMode.GCODE)));
+
+        distributeModelsButton.disableProperty().bind(Bindings.isEmpty(boundProject.getLoadedModels()));
+
+        forwardButton.visibleProperty().unbind();
+        forwardButton.visibleProperty().bind((applicationStatus.modeProperty().isEqualTo(ApplicationMode.LAYOUT).and(Bindings.isNotEmpty(boundProject.getLoadedModels())).or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.STATUS))));
     }
 }

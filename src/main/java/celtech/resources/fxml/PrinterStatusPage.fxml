@@ -47,6 +47,11 @@
                         </ImageView>
                     </graphic>
                 </Button>
+                <Text fx:id="temperatureWarning" fill="#ff2828" strokeType="OUTSIDE" strokeWidth="0.0" text="%printerStatus.temperatureWarning" translateX="25.0" translateY="150.0">
+                    <font>
+                        <Font name="Segoe UI" size="24.0" />
+                    </font>
+                </Text>
                 <Button id="ejectReelButton" fx:id="unlockLidButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#unlockLid" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="Unlock Lid" translateX="25.0" translateY="190.0">
                     <graphic>
                         <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
@@ -272,60 +277,60 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-<Button id="ejectReelButton" fx:id="yHomeButton" contentDisplay="GRAPHIC_ONLY" layoutX="328.0" layoutY="294.0" mnemonicParsing="false" onAction="#homeY" scaleX="0.8" scaleY="0.8" styleClass="jog-button" text="YHome" translateX="-114.0" translateY="65.0">
-<graphic>
-<ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
-<image>
-<Image url="@../images/advancedHomeAndJog/Y%20Home%20-%20Icons.png" />
-</image>
-</ImageView>
-</graphic>
-</Button>
-<Button id="ejectReelButton" contentDisplay="GRAPHIC_ONLY" layoutX="335.0" layoutY="313.0" mnemonicParsing="false" onAction="#homeX" scaleX="0.8" scaleY="0.8" styleClass="jog-button" text="XHome" translateX="-70.0" translateY="65.0" fx:id="xHomeButton">
-<graphic>
-<ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
-<image>
-<Image url="@../images/advancedHomeAndJog/X%20Home%20-%20Icons.png" />
-</image>
-</ImageView>
-</graphic>
-</Button>
-<Button id="ejectReelButton" fx:id="headLEDButton" contentDisplay="GRAPHIC_ONLY" layoutX="336.0" layoutY="315.0" mnemonicParsing="false" onAction="#toggleHeadLED" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="HeadLED" translateX="25.0" translateY="25.0">
-<graphic>
-<ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
-<image>
-<Image url="@../images/Head%20LED_Icons.png" />
-</image>
-</ImageView>
-</graphic>
-</Button>
-<Button id="ejectReelButton" fx:id="headFanButton" contentDisplay="GRAPHIC_ONLY" layoutX="336.0" layoutY="315.0" mnemonicParsing="false" onAction="#toggleHeadFan" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="HeadFan" translateX="25.0" translateY="-50.0">
-<graphic>
-<ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
-<image>
-<Image url="@../images/H%20Fan_Icons.png" />
-</image>
-</ImageView>
-</graphic>
-</Button>
-<Button id="ejectReelButton" fx:id="ambientLEDButton" contentDisplay="GRAPHIC_ONLY" layoutX="328.0" layoutY="293.0" mnemonicParsing="false" onAction="#toggleAmbientLED" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="AmbientLED" translateX="26.0" translateY="-96.0">
-<graphic>
-<ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
-<image>
-<Image url="@../images/Ambient%20LED_Icons.png" />
-</image>
-</ImageView>
-</graphic>
-</Button>
-<Button id="ejectReelButton" fx:id="zHomeButton" contentDisplay="GRAPHIC_ONLY" layoutX="335.0" layoutY="313.0" mnemonicParsing="false" onAction="#homeZ" scaleX="0.8" scaleY="0.8" styleClass="jog-button" text="ZHome" translateX="-112.0" translateY="30.0">
-<graphic>
-<ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
-<image>
-<Image url="@../images/advancedHomeAndJog/Z%20Home%20-%20Icons.png" />
-</image>
-</ImageView>
-</graphic>
-</Button>
+                <Button id="ejectReelButton" fx:id="yHomeButton" contentDisplay="GRAPHIC_ONLY" layoutX="328.0" layoutY="294.0" mnemonicParsing="false" onAction="#homeY" scaleX="0.8" scaleY="0.8" styleClass="jog-button" text="YHome" translateX="-114.0" translateY="65.0">
+                    <graphic>
+                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/Y%20Home%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button id="ejectReelButton" contentDisplay="GRAPHIC_ONLY" layoutX="335.0" layoutY="313.0" mnemonicParsing="false" onAction="#homeX" scaleX="0.8" scaleY="0.8" styleClass="jog-button" text="XHome" translateX="-70.0" translateY="65.0" fx:id="xHomeButton">
+                    <graphic>
+                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/X%20Home%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button id="ejectReelButton" fx:id="headLEDButton" contentDisplay="GRAPHIC_ONLY" layoutX="336.0" layoutY="315.0" mnemonicParsing="false" onAction="#toggleHeadLED" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="HeadLED" translateX="25.0" translateY="25.0">
+                    <graphic>
+                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/Head%20LED_Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button id="ejectReelButton" fx:id="headFanButton" contentDisplay="GRAPHIC_ONLY" layoutX="336.0" layoutY="315.0" mnemonicParsing="false" onAction="#toggleHeadFan" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="HeadFan" translateX="25.0" translateY="-50.0">
+                    <graphic>
+                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/H%20Fan_Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button id="ejectReelButton" fx:id="ambientLEDButton" contentDisplay="GRAPHIC_ONLY" layoutX="328.0" layoutY="293.0" mnemonicParsing="false" onAction="#toggleAmbientLED" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="AmbientLED" translateX="26.0" translateY="-96.0">
+                    <graphic>
+                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/Ambient%20LED_Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button id="ejectReelButton" fx:id="zHomeButton" contentDisplay="GRAPHIC_ONLY" layoutX="335.0" layoutY="313.0" mnemonicParsing="false" onAction="#homeZ" scaleX="0.8" scaleY="0.8" styleClass="jog-button" text="ZHome" translateX="-112.0" translateY="30.0">
+                    <graphic>
+                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/advancedHomeAndJog/Z%20Home%20-%20Icons.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
             </children>
         </StackPane>
         <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="55.0" prefWidth="-1.0" spacing="10.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="120.0">

@@ -2,6 +2,10 @@
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
+ *//*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package celtech.modelcontrol;
 
@@ -52,7 +56,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class ModelContainer extends Xform implements Serializable
+public class ModelContainer extends Xform implements Serializable, Comparable
 {
 
     private static final long serialVersionUID = 1L;
@@ -186,8 +190,13 @@ public class ModelContainer extends Xform implements Serializable
         centreZOffset = originalModelBounds.getCentreZ();
         setTx(centreXOffset);
         setTz(centreZOffset);
-        setPivot(originalModelBounds.getCentreX(), 0, originalModelBounds.getCentreZ());
-        steno.info("Bounds are " + originalModelBounds);
+        setTy(-originalModelBounds.getMaxY());
+
+        this.s.setPivotX(centreXOffset);
+        this.s.setPivotY(originalModelBounds.getMaxY());
+        this.s.setPivotZ(centreZOffset);
+
+//        steno.info("Bounds are " + originalModelBounds);
     }
 
     private void initialiseObject(String name)
@@ -288,6 +297,12 @@ public class ModelContainer extends Xform implements Serializable
         checkOffBed();
     }
 
+    public void translateFrontLeftTo(double xPosition, double zPosition)
+    {
+        Bounds bounds = this.getBoundsInParent();
+        translateTo(xPosition + bounds.getWidth() / 2, zPosition + bounds.getDepth() / 2);
+    }
+
     public void translateTo(double xPosition, double zPosition)
     {
         //Move the CENTRE of the object to the desired point
@@ -386,9 +401,9 @@ public class ModelContainer extends Xform implements Serializable
 
     private void dropModelOnBed()
     {
-        double yOffset = originalModelBounds.getMaxY();
-
-        setTy(getTy() + (-yOffset));
+//        double yOffset = originalModelBounds.getMaxY();
+//
+//        setTy(getTy() + (-yOffset));
     }
 
     public void setCollision(boolean hasCollided)
@@ -660,9 +675,6 @@ public class ModelContainer extends Xform implements Serializable
         double offsetY = in.readDouble();
         double offsetZ = in.readDouble();
 
-        centreX = xCentre;
-        centreY = yCentre;
-        centreZ = zCentre;
         centreXOffset = offsetX;
         centreYOffset = offsetY;
         centreZOffset = offsetZ;
@@ -671,13 +683,18 @@ public class ModelContainer extends Xform implements Serializable
         setRotationY(yrot);
         setRotationZ(zrot);
 
-        calculateBounds();
-//        setTx(translationX);
-//        setTz(translationZ);
-        setPivot(centreXOffset, 0, centreZOffset);
-        setScale(storedscale);
-        setTx(centreX - (storedscale * centreXOffset));
-        setTz(centreZ - (storedscale * centreZOffset));
+        configureModelOnLoad();
+        
+        double loadedPositionX = translationX;
+        double loadedPositionZ = translationZ - offsetZ;
+        
+        translateTo(xCentre, zCentre);
+
+//        centreX = xCentre;
+//        centreY = yCentre;
+//        centreZ = zCentre;
+        
+        scale(storedscale);
     }
 
     private void readObjectNoData()
@@ -688,6 +705,7 @@ public class ModelContainer extends Xform implements Serializable
 
     public void scale(double newScale)
     {
+//        steno.info("About to scale to " + newScale + "\n" + this.toString());
         setScale(newScale);
     }
 
@@ -1012,9 +1030,9 @@ public class ModelContainer extends Xform implements Serializable
         double minX = 999;
         double minY = 999;
         double minZ = 999;
-        double maxX = 0;
-        double maxY = 0;
-        double maxZ = 0;
+        double maxX = -999;
+        double maxY = -999;
+        double maxZ = -999;
 
         for (int pointOffset = 0; pointOffset < originalPoints.size(); pointOffset += 3)
         {
@@ -1150,4 +1168,39 @@ public class ModelContainer extends Xform implements Serializable
 
         return outputMeshes;
     }
+
+    @Override
+    public int compareTo(Object o) throws ClassCastException
+    {
+        int returnVal = 0;
+
+        ModelContainer compareToThis = (ModelContainer) o;
+        if (getTotalSize() > compareToThis.getTotalSize())
+        {
+            returnVal = 1;
+        } else if (getTotalSize() < compareToThis.getTotalSize())
+        {
+            returnVal = -1;
+        }
+
+        return returnVal;
+    }
+
+    public double getTotalWidth()
+    {
+        double totalwidth = originalModelBounds.getWidth() * getScale();
+        return totalwidth;
+    }
+
+    public double getTotalDepth()
+    {
+        double totaldepth = originalModelBounds.getDepth() * getScale();
+        return totaldepth;
+    }
+
+    public double getTotalSize()
+    {
+        return getTotalWidth() + getTotalDepth();
+    }
+
 }

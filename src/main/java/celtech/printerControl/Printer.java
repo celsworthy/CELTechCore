@@ -1,110 +1,16 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl;
 
 import celtech.appManager.Project;
+import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
 import celtech.configuration.Head;
 import celtech.configuration.HeadContainer;
 import celtech.configuration.HeaterMode;
+import celtech.configuration.MaterialType;
 import celtech.configuration.PrintHead;
 import celtech.coreUI.DisplayManager;
+import celtech.coreUI.ErrorHandler;
 import celtech.coreUI.components.ModalDialog;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.GCodeConstants;
@@ -139,6 +45,7 @@ import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.printing.PrintQueue;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.SlicerSettings;
+import celtech.utils.SystemUtils;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
@@ -243,14 +150,15 @@ public class Printer
     private BooleanProperty Filament1Index = new SimpleBooleanProperty(false);
     private BooleanProperty Filament2Index = new SimpleBooleanProperty(false);
     private BooleanProperty reelButton = new SimpleBooleanProperty(false);
-    private BooleanProperty reelAttached = new SimpleBooleanProperty(false);
+    private ObjectProperty<EEPROMState> reelEEPROMStatus = new SimpleObjectProperty<EEPROMState>(EEPROMState.NOT_PRESENT);
     private StringProperty reelFriendlyName = new SimpleStringProperty();
 
     /*
      * Head parameters  - consider moving to a separate object?
      */
+    private Head temporaryHead = new Head(null, null, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     private BooleanProperty headDataChangedToggle = new SimpleBooleanProperty(false);
-    private BooleanProperty headAttached = new SimpleBooleanProperty(false);
+    private ObjectProperty<EEPROMState> headEEPROMStatus = new SimpleObjectProperty<EEPROMState>(EEPROMState.NOT_PRESENT);
     private StringProperty headTypeCode = new SimpleStringProperty("");
     private StringProperty headType = new SimpleStringProperty("");
     private StringProperty headUniqueID = new SimpleStringProperty("");
@@ -274,6 +182,8 @@ public class Printer
     /*
      * Reel data
      */
+    private Filament temporaryFilament = new Filament(null, null, null,
+            0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, false);
     private final BooleanProperty reelDataChangedToggle = new SimpleBooleanProperty(false);
     private IntegerProperty reelAmbientTemperature = new SimpleIntegerProperty(0);
     private IntegerProperty reelBedTemperature = new SimpleIntegerProperty(0);
@@ -290,7 +200,7 @@ public class Printer
     private BooleanProperty NozzleHomed = new SimpleBooleanProperty(false);
     private BooleanProperty LidOpen = new SimpleBooleanProperty(false);
     private StringProperty errorList = new SimpleStringProperty();
-    private ObjectProperty<Filament> loadedFilament = new SimpleObjectProperty<Filament>();
+    private ObjectProperty<Filament> loadedFilament = new SimpleObjectProperty<Filament>(temporaryFilament);
 
     private BooleanProperty sdCardPresent = new SimpleBooleanProperty(false);
 
@@ -328,6 +238,8 @@ public class Printer
 
     private RoboxCommsManager printerCommsManager = null;
 
+    private ErrorHandler errorHandler = null;
+
     public Printer(String portName, RoboxCommsManager commsManager)
     {
         this.portName = portName;
@@ -340,6 +252,7 @@ public class Printer
             @Override
             public void run()
             {
+                errorHandler = new ErrorHandler();
                 noSDDialog = new ModalDialog();
                 noSDDialog.setTitle(languageBundle.getString("dialogs.noSDCardTitle"));
                 noSDDialog.setMessage(languageBundle.getString("dialogs.noSDCardMessage"));
@@ -1033,14 +946,14 @@ public class Printer
         return headDataChangedToggle;
     }
 
-    public final BooleanProperty headAttachedProperty()
+    public final ObjectProperty<EEPROMState> headEEPROMStatusProperty()
     {
-        return headAttached;
+        return headEEPROMStatus;
     }
 
-    public boolean getHeadAttached()
+    public EEPROMState getHeadEEPROMStatus()
     {
-        return headAttached.get();
+        return headEEPROMStatus.get();
     }
 
     public StringProperty getHeadTypeCode()
@@ -1131,14 +1044,14 @@ public class Printer
         return reelDataChangedToggle;
     }
 
-    public final BooleanProperty reelAttachedProperty()
+    public final ObjectProperty<EEPROMState> reelEEPROMStatusProperty()
     {
-        return reelAttached;
+        return reelEEPROMStatus;
     }
 
-    public boolean getReelAttached()
+    public EEPROMState getReelEEPROMStatus()
     {
-        return reelAttached.get();
+        return reelEEPROMStatus.get();
     }
 
     public final StringProperty reelFriendlyNameProperty()
@@ -1350,7 +1263,7 @@ public class Printer
                 setUSBRxError(ackResponse.isUsbRXError());
                 setUSBTxError(ackResponse.isUsbTXError());
                 setBadCommandError(ackResponse.isBadCommandError());
-                setEEPROMError(ackResponse.isEepromError());
+                setEEPROMError(ackResponse.isHeadEepromError());
                 updatePrinterStatus();
                 break;
             case PRINTER_STATUS_UPDATE:
@@ -1431,8 +1344,70 @@ public class Printer
                 setNozzleHomed(statusResponse.isNozzleSwitchStatus());
                 setLidOpen(statusResponse.isLidSwitchStatus());
                 setReelButton(statusResponse.isReelButtonStatus());
-                reelAttached.set(statusResponse.isReelEEPROMPresent());
-                headAttached.set(statusResponse.isHeadEEPROMPresent());
+
+                if (reelEEPROMStatus.get() != EEPROMState.PROGRAMMED
+                        && statusResponse.getReelEEPROMState() == EEPROMState.PROGRAMMED)
+                {
+                    reelEEPROMStatus.set(statusResponse.getReelEEPROMState());
+                    try
+                    {
+                        transmitReadReelEEPROM();
+                    } catch (RoboxCommsException ex)
+                    {
+                        steno.error("Error from triggered read of Reel EEPROM");
+                    }
+                } else if (reelEEPROMStatus.get() != EEPROMState.NOT_PRESENT
+                        && statusResponse.getReelEEPROMState() == EEPROMState.NOT_PRESENT)
+                {
+                    reelEEPROMStatus.set(statusResponse.getReelEEPROMState());
+                    loadedFilament.set(null);
+                    reelFriendlyName.set(DisplayManager.getLanguageBundle().getString("smartReelProgrammer.noReelLoaded"));
+                    reelUniqueID.set(null);
+                    reelAmbientTemperature.set(0);
+                    reelBedTemperature.set(0);
+                    reelFirstLayerBedTemperature.set(0);
+                    reelNozzleTemperature.set(0);
+                    reelFirstLayerNozzleTemperature.set(0);
+                    reelFilamentMultiplier.set(0);
+                    reelFeedRateMultiplier.set(0);
+                    reelRemainingFilament.set(0);
+                    reelFilamentDiameter.set(0);
+                    reelDataChangedToggle.set(!reelDataChangedToggle.get());
+                }
+
+                if (headEEPROMStatus.get() != EEPROMState.PROGRAMMED
+                        && statusResponse.getHeadEEPROMState() == EEPROMState.PROGRAMMED)
+                {
+                    headEEPROMStatus.set(statusResponse.getHeadEEPROMState());
+                    try
+                    {
+                        transmitReadHeadEEPROM();
+                    } catch (RoboxCommsException ex)
+                    {
+                        steno.error("Error from triggered read of Head EEPROM");
+                    }
+                } else if (headEEPROMStatus.get() != EEPROMState.NOT_PRESENT
+                        && statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PRESENT)
+                {
+                    headEEPROMStatus.set(statusResponse.getHeadEEPROMState());
+
+                    attachedHead.set(null);
+                    headType.set(null);
+                    temporaryHead.setUniqueID(null);
+                    temporaryHead.setHeadHours(0);
+                    temporaryHead.setMaximumTemperature(0);
+                    temporaryHead.setNozzle1_B_offset(0);
+                    temporaryHead.setNozzle1_X_offset(0);
+                    temporaryHead.setNozzle1_Y_offset(0);
+                    temporaryHead.setNozzle1_Z_offset(0);
+                    temporaryHead.setNozzle2_B_offset(0);
+                    temporaryHead.setNozzle2_X_offset(0);
+                    temporaryHead.setNozzle2_Y_offset(0);
+                    temporaryHead.setNozzle2_Z_offset(0);
+                    temporaryHead.setBeta(0);
+                    temporaryHead.setTcal(0);
+                }
+
                 sdCardPresent.set(statusResponse.isSDCardPresent());
                 if (statusResponse.isSDCardPresent() == false)
                 {
@@ -1452,6 +1427,11 @@ public class Printer
                 setHeadYPosition(statusResponse.getHeadYPosition());
                 setHeadZPosition(statusResponse.getHeadZPosition());
                 updatePrinterStatus();
+
+                if (statusResponse.isPauseStatus())
+                {
+                    errorHandler.checkForErrors(this);
+                }
                 break;
             case PRINTER_INVALID_RESPONSE:
                 setPrinterStatus(PrinterStatusEnumeration.ERROR);
@@ -1492,18 +1472,22 @@ public class Printer
                     Filament loadedFilamentCandidate = FilamentContainer.getFilamentByID(reelTypeCode.get());
                     if (loadedFilamentCandidate != null)
                     {
+                        temporaryFilament.setFriendlyFilamentName(loadedFilamentCandidate.getFriendlyFilamentName());
+                        temporaryFilament.setMaterial(loadedFilamentCandidate.getMaterial());
+                        temporaryFilament.setReelID(reelResponse.getReelTypeCode());
+                        temporaryFilament.setDisplayColour(loadedFilamentCandidate.getDisplayColour());
+                        temporaryFilament.setUniqueID(reelResponse.getReelUniqueID());
+                        temporaryFilament.setRequiredAmbientTemperature(reelResponse.getReelAmbientTemperature());
+                        temporaryFilament.setBedTemperature(reelResponse.getReelBedTemperature());
+                        temporaryFilament.setRequiredFirstLayerBedTemperature(reelResponse.getReelFirstLayerBedTemperature());
+                        temporaryFilament.setRequiredNozzleTemperature(reelResponse.getReelNozzleTemperature());
+                        temporaryFilament.setRequiredFirstLayerNozzleTemperature(reelResponse.getReelFirstLayerNozzleTemperature());
+                        temporaryFilament.setFilamentMultiplier(reelResponse.getReelFilamentMultiplier());
+                        temporaryFilament.setFeedRateMultiplier(reelResponse.getReelFeedRateMultiplier());
+                        temporaryFilament.setRemainingFilament(reelResponse.getReelRemainingFilament());
+                        temporaryFilament.setDiameter(reelResponse.getReelFilamentDiameter());
+                        loadedFilament.set(temporaryFilament);
                         reelFriendlyName.set(loadedFilamentCandidate.toString());
-                        loadedFilament.set(loadedFilamentCandidate);
-                        loadedFilament.get().setUniqueID(reelResponse.getReelUniqueID());
-                        loadedFilament.get().setRequiredAmbientTemperature(reelResponse.getReelAmbientTemperature());
-                        loadedFilament.get().setBedTemperature(reelResponse.getReelBedTemperature());
-                        loadedFilament.get().setRequiredFirstLayerBedTemperature(reelResponse.getReelFirstLayerBedTemperature());
-                        loadedFilament.get().setRequiredNozzleTemperature(reelResponse.getReelNozzleTemperature());
-                        loadedFilament.get().setRequiredFirstLayerNozzleTemperature(reelResponse.getReelFirstLayerNozzleTemperature());
-                        loadedFilament.get().setFilamentMultiplier(reelResponse.getReelFilamentMultiplier());
-                        loadedFilament.get().setFeedRateMultiplier(reelResponse.getReelFeedRateMultiplier());
-                        loadedFilament.get().setRemainingFilament(reelResponse.getReelRemainingFilament());
-                        loadedFilament.get().setDiameter(reelResponse.getReelFilamentDiameter());
                     } else
                     {
                         reelFriendlyName.set(DisplayManager.getLanguageBundle().getString("sidePanel_settings.filamentUnknown"));
@@ -1536,20 +1520,20 @@ public class Printer
                     if (attachedHeadCandidate != null)
                     {
                         headType.set(PrintHead.getPrintHeadForType(headTypeCodeString).getShortName());
-                        attachedHead.set(attachedHeadCandidate);
-                        attachedHead.get().setUniqueID(headResponse.getUniqueID());
-                        attachedHead.get().setHeadHours(headResponse.getHoursUsed());
-                        attachedHead.get().setMaximumTemperature(headResponse.getMaximumTemperature());
-                        attachedHead.get().setNozzle1_B_offset(headResponse.getNozzle1BOffset());
-                        attachedHead.get().setNozzle1_X_offset(headResponse.getNozzle1XOffset());
-                        attachedHead.get().setNozzle1_Y_offset(headResponse.getNozzle1YOffset());
-                        attachedHead.get().setNozzle1_Z_offset(headResponse.getNozzle1ZOffset());
-                        attachedHead.get().setNozzle2_B_offset(headResponse.getNozzle2BOffset());
-                        attachedHead.get().setNozzle2_X_offset(headResponse.getNozzle2XOffset());
-                        attachedHead.get().setNozzle2_Y_offset(headResponse.getNozzle2YOffset());
-                        attachedHead.get().setNozzle2_Z_offset(headResponse.getNozzle2ZOffset());
-                        attachedHead.get().setBeta(headResponse.getThermistorBeta());
-                        attachedHead.get().setTcal(headResponse.getThermistorTCal());
+                        temporaryHead.setUniqueID(headResponse.getUniqueID());
+                        temporaryHead.setHeadHours(headResponse.getHoursUsed());
+                        temporaryHead.setMaximumTemperature(headResponse.getMaximumTemperature());
+                        temporaryHead.setNozzle1_B_offset(headResponse.getNozzle1BOffset());
+                        temporaryHead.setNozzle1_X_offset(headResponse.getNozzle1XOffset());
+                        temporaryHead.setNozzle1_Y_offset(headResponse.getNozzle1YOffset());
+                        temporaryHead.setNozzle1_Z_offset(headResponse.getNozzle1ZOffset());
+                        temporaryHead.setNozzle2_B_offset(headResponse.getNozzle2BOffset());
+                        temporaryHead.setNozzle2_X_offset(headResponse.getNozzle2XOffset());
+                        temporaryHead.setNozzle2_Y_offset(headResponse.getNozzle2YOffset());
+                        temporaryHead.setNozzle2_Z_offset(headResponse.getNozzle2ZOffset());
+                        temporaryHead.setBeta(headResponse.getThermistorBeta());
+                        temporaryHead.setTcal(headResponse.getThermistorTCal());
+                        attachedHead.set(temporaryHead);
                     } else
                     {
                         headType.set("Unknown");
@@ -1557,7 +1541,6 @@ public class Printer
                     }
                 } catch (IllegalArgumentException ex)
                 {
-                    reelFriendlyName.set(DisplayManager.getLanguageBundle().getString("sidePanel_settings.filamentUnknown"));
                     headType.set("Unknown");
                 }
 
@@ -1726,23 +1709,32 @@ public class Printer
         return success;
     }
 
-    private void transmitDataFileChunk(final String payloadData, final int sequenceNumber) throws RoboxCommsException
+    private AckResponse transmitDataFileChunk(final String payloadData, final int sequenceNumber) throws RoboxCommsException
     {
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.DATA_FILE_CHUNK);
         gcodePacket.setMessagePayload(payloadData);
         gcodePacket.setSequenceNumber(sequenceNumber);
 
-        printerCommsManager.submitForWrite(portName, gcodePacket);
+        AckResponse response = (AckResponse) printerCommsManager.submitForWrite(portName, gcodePacket);
         dataFileSequenceNumber++;
+
+        return response;
     }
 
-    private void transmitDataFileEnd(final String payloadData, final int sequenceNumber) throws RoboxCommsException
+    private AckResponse transmitDataFileEnd(final String payloadData, final int sequenceNumber) throws RoboxCommsException
     {
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.END_OF_DATA_FILE);
         gcodePacket.setMessagePayload(payloadData);
         gcodePacket.setSequenceNumber(sequenceNumber);
 
-        printerCommsManager.submitForWrite(portName, gcodePacket);
+        return (AckResponse) printerCommsManager.submitForWrite(portName, gcodePacket);
+    }
+
+    public AckResponse transmitReportErrors() throws RoboxCommsException
+    {
+        RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.REPORT_ERRORS);
+
+        return (AckResponse) printerCommsManager.submitForWrite(portName, gcodePacket);
     }
 
     public void transmitResetErrors() throws RoboxCommsException
@@ -1793,28 +1785,45 @@ public class Printer
         printerCommsManager.submitForWrite(portName, gcodePacket);
     }
 
-    public void transmitFormatHeadEEPROM() throws RoboxCommsException
+    public AckResponse transmitFormatHeadEEPROM() throws RoboxCommsException
     {
         FormatHeadEEPROM formatHead = (FormatHeadEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.FORMAT_HEAD_EEPROM);
-        printerCommsManager.submitForWrite(portName, formatHead);
+        return (AckResponse) printerCommsManager.submitForWrite(portName, formatHead);
     }
 
-    public void transmitFormatReelEEPROM() throws RoboxCommsException
+    public AckResponse transmitFormatReelEEPROM() throws RoboxCommsException
     {
         FormatReelEEPROM formatReel = (FormatReelEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.FORMAT_REEL_EEPROM);
-        printerCommsManager.submitForWrite(portName, formatReel);
+        return (AckResponse) printerCommsManager.submitForWrite(portName, formatReel);
     }
 
-    public void transmitReadReelEEPROM() throws RoboxCommsException
+    public ReelEEPROMDataResponse transmitReadReelEEPROM() throws RoboxCommsException
     {
         ReadReelEEPROM readReel = (ReadReelEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_REEL_EEPROM);
-        printerCommsManager.submitForWrite(portName, readReel);
+        return (ReelEEPROMDataResponse) printerCommsManager.submitForWrite(portName, readReel);
     }
 
-    public void transmitReadHeadEEPROM() throws RoboxCommsException
+    public HeadEEPROMDataResponse transmitReadHeadEEPROM() throws RoboxCommsException
     {
         ReadHeadEEPROM readHead = (ReadHeadEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_HEAD_EEPROM);
-        printerCommsManager.submitForWrite(portName, readHead);
+        return (HeadEEPROMDataResponse) printerCommsManager.submitForWrite(portName, readHead);
+    }
+
+    public void transmitWriteReelEEPROM(Filament filament) throws RoboxCommsException
+    {
+        WriteReelEEPROM writeReelEEPROM = (WriteReelEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_REEL_EEPROM);
+        writeReelEEPROM.populateEEPROM(filament.getReelID(),
+                filament.getUniqueID(),
+                filament.getFirstLayerNozzleTemperature(),
+                filament.getNozzleTemperature(),
+                filament.getFirstLayerBedTemperature(),
+                filament.getBedTemperature(),
+                filament.getAmbientTemperature(),
+                filament.getDiameter(),
+                filament.getFilamentMultiplier(),
+                filament.getFeedRateMultiplier(),
+                filament.getRemainingFilament());
+        printerCommsManager.submitForWrite(portName, writeReelEEPROM);
     }
 
     public void transmitWriteReelEEPROM(String reelTypeCode, String reelUniqueID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
@@ -1826,6 +1835,26 @@ public class Printer
                 reelFirstLayerBedTemperature, reelBedTemperature, reelAmbientTemperature, reelFilamentDiameter,
                 reelFilamentMultiplier, reelFeedRateMultiplier, reelRemainingFilament);
         printerCommsManager.submitForWrite(portName, writeReelEEPROM);
+    }
+
+    public void transmitWriteHeadEEPROM(Head headToWrite) throws RoboxCommsException
+    {
+        WriteHeadEEPROM writeHeadEEPROM = (WriteHeadEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_HEAD_EEPROM);
+        writeHeadEEPROM.populateEEPROM(headToWrite.getTypeCode(),
+                headToWrite.getUniqueID(),
+                headToWrite.getMaximumTemperature(),
+                headToWrite.getBeta(),
+                headToWrite.getTcal(),
+                headToWrite.getNozzle1_X_offset(),
+                headToWrite.getNozzle1_Y_offset(),
+                headToWrite.getNozzle1_Z_offset(),
+                headToWrite.getNozzle1_B_offset(),
+                headToWrite.getNozzle2_X_offset(),
+                headToWrite.getNozzle2_Y_offset(),
+                headToWrite.getNozzle2_Z_offset(),
+                headToWrite.getNozzle2_B_offset(),
+                headToWrite.getHeadHours());
+        printerCommsManager.submitForWrite(portName, writeHeadEEPROM);
     }
 
     public void transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature,
@@ -1902,7 +1931,7 @@ public class Printer
     public void transmitSetTemperatures(double nozzleFirstLayerTarget, double nozzleTarget, double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException
     {
         SetTemperatures setTemperatures = (SetTemperatures) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.SET_TEMPERATURES);
-        setTemperatures.setTemperatures(nozzleTarget, nozzleFirstLayerTarget, bedTarget, bedFirstLayerTarget, ambientTarget);
+        setTemperatures.setTemperatures(nozzleFirstLayerTarget, nozzleTarget, bedFirstLayerTarget, bedTarget, ambientTarget);
         printerCommsManager.submitForWrite(portName, setTemperatures);
     }
 
@@ -1946,6 +1975,10 @@ public class Printer
 
     public void sendDataFileChunk(String hexDigits, boolean lastPacket, boolean appendCRLF) throws DatafileSendNotInitialised, RoboxCommsException
     {
+//        if (lastPacket == true)
+//        {
+//            steno.info("Got last packet");
+//        }
         boolean dataIngested = false;
 
         if (appendCRLF)
@@ -1982,24 +2015,29 @@ public class Printer
             }
 
             /*
-             * Send when full
+             * If this is the last packet then send as an end...
              */
-            if ((outputBuffer.capacity() - outputBuffer.length()) == 0)
+            if (dataIngested && lastPacket)
+            {
+                steno.info("Final complete chunk:" + outputBuffer.toString() + " seq:" + sequenceNumber);
+                AckResponse response = transmitDataFileEnd(outputBuffer.toString(), sequenceNumber);
+                if (response.isError())
+                {
+                    steno.error("Error sending final data file chunk - seq " + sequenceNumber);
+                }
+                sendInProgress = false;
+            } else if ((outputBuffer.capacity() - outputBuffer.length()) == 0)
             {
                 /*
-                 * If this is the last packet then send as an end...
+                 * Send when full
                  */
-                if (dataIngested && lastPacket)
+                steno.info("Sending chunk:" + outputBuffer.toString() + " seq:" + sequenceNumber);
+                AckResponse response = transmitDataFileChunk(outputBuffer.toString(), sequenceNumber);
+                if (response.isError())
                 {
-//                    steno.info("Final complete chunk:" + outputBuffer.toString() + " seq:" + sequenceNumber);
-                    transmitDataFileEnd(outputBuffer.toString(), sequenceNumber);
-                    sendInProgress = false;
-                } else
-                {
-//                    steno.info("Sending chunk:" + outputBuffer.toString() + " seq:" + sequenceNumber);
-                    transmitDataFileChunk(outputBuffer.toString(), sequenceNumber);
-                    outputBuffer.delete(0, bufferSize);
+                    steno.error("Error sending data file chunk - seq " + sequenceNumber);
                 }
+                outputBuffer.delete(0, bufferSize);
                 sequenceNumber++;
             }
         }
@@ -2046,4 +2084,5 @@ public class Printer
     {
         return printInitiated;
     }
+
 }

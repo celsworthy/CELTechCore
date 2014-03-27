@@ -1,9 +1,12 @@
 package celtech.configuration;
 
 import celtech.utils.SystemUtils;
+import java.io.Serializable;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -15,10 +18,10 @@ import javafx.scene.paint.Color;
  *
  * @author ianhudson
  */
-public class Filament
+public class Filament implements Serializable, Cloneable
 {
 
-    private boolean mutable = false;
+    private final BooleanProperty mutable = new SimpleBooleanProperty(false);
     private final StringProperty friendlyFilamentName = new SimpleStringProperty("");
     private final ObjectProperty<MaterialType> material = new SimpleObjectProperty();
     private final StringProperty reelID = new SimpleStringProperty();
@@ -62,7 +65,7 @@ public class Filament
         this.requiredFirstLayerNozzleTemperature.set(requiredFirstLayerNozzleTemperature);
         this.requiredNozzleTemperature.set(requiredNozzleTemperature);
         this.displayColour.set(displayColour);
-        this.mutable = mutable;
+        this.mutable.set(mutable);
     }
 
     public String getFileName()
@@ -210,9 +213,14 @@ public class Filament
         return remainingFilament.get();
     }
 
-    public void setFriendlyColourName(String friendlyColourName)
+    public void setFriendlyFilamentName(String friendlyColourName)
     {
         this.friendlyFilamentName.set(friendlyColourName);
+    }
+    
+    public void setReelID(String value)
+    {
+        this.reelID.set(value);
     }
 
     public void setUniqueID(String value)
@@ -277,13 +285,40 @@ public class Filament
 
     public boolean isMutable()
     {
+        return mutable.get();
+    }
+
+    public void setMutable(boolean value)
+    {
+        this.mutable.set(value);
+    }
+
+    public BooleanProperty getMutableProperty()
+    {
         return mutable;
     }
 
     @Override
     public String toString()
     {
-        return friendlyFilamentName.get() + " " + material.get();
+        String prefix = null;
+        String displayName = friendlyFilamentName.get() + " " + material.get();
+
+        if (reelID.get() != null)
+        {
+            if (reelID.get().startsWith("RBX"))
+            {
+                prefix = "Robox® ";
+            }
+        }
+
+        if (prefix == null)
+        {
+            return displayName;
+        } else
+        {
+            return prefix + displayName;
+        }
     }
 
     public static String generateUserReelID()
@@ -293,5 +328,26 @@ public class Filament
         id.append('U');
         id.append(fullID.substring(1, fullID.length() - 1));
         return id.toString();
+    }
+
+    @Override
+    public Filament clone()
+    {
+        Filament clone = new Filament(this.getFriendlyFilamentName(),
+                this.getMaterial(),
+                this.getReelID(),
+                this.getDiameter(),
+                this.getFilamentMultiplier(),
+                this.getFeedRateMultiplier(),
+                this.getAmbientTemperature(),
+                this.getFirstLayerBedTemperature(),
+                this.getBedTemperature(),
+                this.getFirstLayerNozzleTemperature(),
+                this.getNozzleTemperature(),
+                this.getDisplayColour(),
+                this.isMutable()
+        );
+
+        return clone;
     }
 }

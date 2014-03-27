@@ -6,16 +6,13 @@
 package celtech.coreUI.controllers.sidePanels;
 
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.coreUI.components.SlidingComponentDirection;
 import celtech.coreUI.controllers.SlidablePanel;
 import celtech.coreUI.controllers.SlideOutHandleController;
-import celtech.coreUI.controllers.StatusScreenMode;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
@@ -27,7 +24,6 @@ import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;

@@ -21,6 +21,7 @@ public enum TxPacketTypeEnum
     INITIATE_PRINT((byte) 0x94, 17, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
     ABORT_PRINT((byte) 0xFF, 1, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
     PAUSE_RESUME_PRINT((byte) 0x98, 2, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
+    REPORT_ERRORS((byte) 0xb3, 1, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
     RESET_ERRORS((byte) 0xc0, 1, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
     QUERY_FIRMWARE_VERSION((byte) 0xB4, 1, false, RxPacketTypeEnum.FIRMWARE_RESPONSE),
     UPDATE_FIRMWARE((byte) 0x8f, 1, false, RxPacketTypeEnum.ACK_WITH_ERRORS),

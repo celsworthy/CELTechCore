@@ -49,8 +49,8 @@
                         <Label text="%misc.mm" />
                     </children>
                 </HBox>
-                <RestrictedTextField fx:id="filamentMultiplier" forceUpperCase="true" maxLength="4" prefColumnCount="4" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                <RestrictedTextField fx:id="extrusionRateMultiplier" forceUpperCase="true" maxLength="4" prefColumnCount="4" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                <RestrictedTextField fx:id="filamentMultiplier" forceUpperCase="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefWidth="60.0" restrict="0-9." GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="4" />
+                <RestrictedTextField fx:id="feedRateMultiplier" forceUpperCase="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefWidth="60.0" restrict="0-9." GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="5" />
                 <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6"> 
                     <children>
                         <RestrictedTextField fx:id="firstLayerBedTemperature" forceUpperCase="true" maxLength="3" prefColumnCount="4" restrict="0-9" />

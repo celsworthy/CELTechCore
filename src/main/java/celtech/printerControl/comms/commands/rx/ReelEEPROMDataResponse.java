@@ -50,17 +50,6 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
             reelUniqueID = (new String(byteData, byteOffset, uniqueIDBytes, charsetToUse)).trim();
             byteOffset += uniqueIDBytes;
 
-            String printNozzleTempString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
-            byteOffset += decimalFloatFormatBytes;
-
-            try
-            {
-                reelNozzleTemperature = numberFormatter.parse(printNozzleTempString.trim()).intValue();
-            } catch (ParseException ex)
-            {
-                steno.error("Couldn't parse nozzle temperature - " + printNozzleTempString);
-            }
-
             String firstLayerNozzleTempString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
@@ -72,15 +61,15 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
                 steno.error("Couldn't parse first layer nozzle temperature - " + firstLayerNozzleTempString);
             }
 
-            String bedTempString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
+            String printNozzleTempString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
             {
-                reelBedTemperature = numberFormatter.parse(bedTempString.trim()).intValue();
+                reelNozzleTemperature = numberFormatter.parse(printNozzleTempString.trim()).intValue();
             } catch (ParseException ex)
             {
-                steno.error("Couldn't parse bed temperature - " + bedTempString);
+                steno.error("Couldn't parse nozzle temperature - " + printNozzleTempString);
             }
 
             String firstLayerBedTempString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
@@ -92,6 +81,17 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse first layer bed temperature - " + firstLayerBedTempString);
+            }
+
+            String bedTempString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
+            byteOffset += decimalFloatFormatBytes;
+
+            try
+            {
+                reelBedTemperature = numberFormatter.parse(bedTempString.trim()).intValue();
+            } catch (ParseException ex)
+            {
+                steno.error("Couldn't parse bed temperature - " + bedTempString);
             }
 
             String ambientTempString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);

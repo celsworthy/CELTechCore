@@ -156,7 +156,7 @@ public class PrintQueue implements ControllableService
                     gcodePrintService.setPrinterToUse(result.getPrinterToUse());
                     gcodePrintService.start();
                     File gcodeFromPrintJob = new File(ApplicationConfiguration.getPrintSpoolDirectory() + jobUUID + File.separator + jobUUID + ApplicationConfiguration.gcodeTempFileExtension);
-                    int numberOfLines = SystemUtils.countLinesInFile(gcodeFromPrintJob);
+                    int numberOfLines = SystemUtils.countLinesInFile(gcodeFromPrintJob, ";");
                     linesInCurrentGCodeFile = numberOfLines;
                     Notifier.showInformationNotification(notificationTitle, sliceSuccessfulNotification);
                     setPrintStatus(PrinterStatusEnumeration.SENDING_TO_PRINTER);
@@ -287,7 +287,7 @@ public class PrintQueue implements ControllableService
                         //Try to find the print job and determine how many lines there were in it
 
                         File gcodeFromPrintJob = new File(ApplicationConfiguration.getPrintSpoolDirectory() + associatedPrinter.getPrintJobID() + File.separator + associatedPrinter.getPrintJobID() + ApplicationConfiguration.gcodeTempFileExtension);
-                        int numberOfLines = SystemUtils.countLinesInFile(gcodeFromPrintJob);
+                        int numberOfLines = SystemUtils.countLinesInFile(gcodeFromPrintJob, ";");
                         linesInCurrentGCodeFile = numberOfLines;
                         double percentDone = (double) associatedPrinter.getPrintJobLineNumber() / numberOfLines;
 

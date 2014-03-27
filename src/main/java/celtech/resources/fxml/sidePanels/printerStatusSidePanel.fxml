@@ -56,7 +56,7 @@
                                         <StackPane>
                                             <children>
                                                 <Label fx:id="nozzleTemperaturePlaceholder" text="-" />
-                                                <RestrictedTextField fx:id="nozzleFirstLayerTargetTemperature" onAction="#setNozzleFirstLayerTargetTemp" prefColumnCount="3" />
+                                                <RestrictedTextField fx:id="nozzleFirstLayerTargetTemperature" maxLength="4" onAction="#setNozzleFirstLayerTargetTemp" prefColumnCount="3" restrict="0-9" />
                                                 <RestrictedTextField fx:id="nozzleTargetTemperature" alignment="CENTER_RIGHT" maxLength="4" onAction="#setNozzleTargetTemp" prefColumnCount="3" restrict="0-9" text="555">
                                                     <font>
                                                         <Font size="10.0" />
@@ -71,8 +71,8 @@
                                     <children>
                                         <StackPane>
                                             <children>
-                                                <RestrictedTextField fx:id="bedFirstLayerTargetTemperature" onAction="#setBedFirstLayerTargetTemp" prefColumnCount="3" />
-                                                <RestrictedTextField fx:id="bedTargetTemperature" maxLength="50" onAction="#setBedTargetTemp" prefColumnCount="3" restrict="0-9" text="666">
+                                                <RestrictedTextField fx:id="bedFirstLayerTargetTemperature" maxLength="4" onAction="#setBedFirstLayerTargetTemp" prefColumnCount="3" restrict="0-9" />
+                                                <RestrictedTextField fx:id="bedTargetTemperature" maxLength="4" onAction="#setBedTargetTemp" prefColumnCount="3" restrict="0-9" text="666">
                                                 </RestrictedTextField>
                                                 <Label fx:id="bedTemperaturePlaceholder" text="-" />
                                             </children>

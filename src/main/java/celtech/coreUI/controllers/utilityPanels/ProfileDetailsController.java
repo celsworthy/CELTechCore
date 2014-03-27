@@ -21,7 +21,6 @@ import celtech.services.slicer.SlicerSettings;
 import celtech.utils.FXUtils;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -48,7 +47,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -324,7 +322,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     {
         if (commandReceiver != null)
         {
-            commandReceiver.triggerSaveAs();
+            commandReceiver.triggerSaveAs(this);
         }
     }
 
@@ -371,7 +369,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         settingsScreenState = SettingsScreenState.getInstance();
 
         profileNameField.setRight(redcrossHolder);
-        profileNameField.getRight().visibleProperty().bind(profileNameInvalid);
+        profileNameField.getRight().visibleProperty().bind(profileNameInvalid.and(isDirty));
 
         profileNameField.textProperty().addListener(new ChangeListener<String>()
         {
@@ -386,6 +384,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         notEditingOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable));
         immutableOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable.not()));
 
+        profileNameField.disableProperty().bind(isMutable.not());
         coolingGrid.disableProperty().bind(isMutable.not());
         extrusionGrid.disableProperty().bind(isMutable.not());
         retractGrid.disableProperty().bind(isMutable.not());
@@ -469,6 +468,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         supportPattern.setItems(supportPatternOptions);
 
         //Dirty listeners...
+        profileNameField.textProperty().addListener(dirtyStringListener);
         perimeterNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
         fillNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
         supportNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
@@ -557,6 +557,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     {
         if (lastSettings != null)
         {
+            profileNameField.setText(newSettings.getProfileName());
             //Nozzle independent custom settings
             autoUnretract.selectedProperty().unbindBidirectional(lastSettings.auto_unretractProperty());
             Bindings.unbindBidirectional(unretractLength.textProperty(), lastSettings.unretract_lengthProperty());

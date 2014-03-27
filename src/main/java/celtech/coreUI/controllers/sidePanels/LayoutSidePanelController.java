@@ -8,7 +8,6 @@ package celtech.coreUI.controllers.sidePanels;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
-import celtech.appManager.ProjectMode;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.coreUI.visualisation.SelectionContainer;
@@ -24,10 +23,8 @@ import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
-import javafx.scene.control.Slider;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -35,7 +32,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
@@ -55,7 +51,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private ModelContainer boundModel = null;
     private StatusScreenState statusScreenState = null;
 
-     @FXML
+    @FXML
     private TextField widthTextField;
 
     @FXML
@@ -81,7 +77,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     @FXML
     private TableView<ModelContainer> modelDataTableView;
-
 
     private TableColumn modelNameColumn = new TableColumn();
     private TableColumn scaleColumn = new TableColumn();
@@ -557,7 +552,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 if (newValue == false)
                 {
-                    displayManager.getCurrentlyVisibleViewManager().translateSelectionXTo(Double.valueOf(xAxisTextField.getText()));
+                    ThreeDViewManager viewManager = displayManager.getCurrentlyVisibleViewManager();
+                    if (viewManager != null)
+                    {
+                        viewManager.translateSelectionXTo(Double.valueOf(xAxisTextField.getText()));
+                    }
+
                 }
             }
         });
@@ -596,7 +596,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 if (newValue == false)
                 {
-                    displayManager.getCurrentlyVisibleViewManager().translateSelectionZTo(Double.valueOf(yAxisTextField.getText()));
+                    ThreeDViewManager viewManager = displayManager.getCurrentlyVisibleViewManager();
+                    if (viewManager != null)
+                    {
+                        viewManager.translateSelectionZTo(Double.valueOf(yAxisTextField.getText()));
+                    }
                 }
             }
         });

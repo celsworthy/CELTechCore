@@ -5,6 +5,7 @@
  */
 package celtech.coreUI.controllers;
 
+import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.coreUI.components.JogButton;
 import celtech.printerControl.Printer;
@@ -54,7 +55,7 @@ public class PrinterStatusPageController implements Initializable
     private StatusScreenState statusScreenState = null;
     private RoboxCommsManager printerCommsManager = RoboxCommsManager.getInstance();
     private Printer printerToUse = null;
-    private ChangeListener<Filament> filamentColourListener = null;
+    private ChangeListener<Boolean> reelDataChangeListener = null;
 
     @FXML
     private AnchorPane container;
@@ -224,6 +225,9 @@ public class PrinterStatusPageController implements Initializable
     @FXML
     private Text progressMessage;
 
+    @FXML
+    private Text temperatureWarning;
+
     private Node[] advancedControls = null;
     private BooleanProperty advancedControlsVisible = new SimpleBooleanProperty(false);
 
@@ -324,7 +328,7 @@ public class PrinterStatusPageController implements Initializable
         try
         {
             printerToUse.transmitDirectGCode(GCodeConstants.carriageRelativeMoveMode, true);
-            printerToUse.transmitDirectGCode(String.format("G0 " + axis.name() + "%.2f", distance), true);
+            printerToUse.transmitDirectGCode(String.format("G0 " + axis.name() + "%.2f", distance * 2.4), true);
         } catch (RoboxCommsException ex)
         {
             steno.error("Failed to send printer jog command");
@@ -401,12 +405,12 @@ public class PrinterStatusPageController implements Initializable
     {
         statusScreenState = StatusScreenState.getInstance();
 
-        filamentColourListener = new ChangeListener<Filament>()
+        reelDataChangeListener = new ChangeListener<Boolean>()
         {
             @Override
-            public void changed(ObservableValue<? extends Filament> ov, Filament t, Filament t1)
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
             {
-                setFilamentColour(t1);
+                setFilamentColour(printerToUse.loadedFilamentProperty().get());
             }
         };
 
@@ -422,6 +426,7 @@ public class PrinterStatusPageController implements Initializable
 
         ejectReelButton.setVisible(false);
         unlockLidButton.setVisible(false);
+        temperatureWarning.setVisible(false);
 
         reel.setVisible(false);
         filamentRectangle.setVisible(false);
@@ -476,6 +481,7 @@ public class PrinterStatusPageController implements Initializable
 
                     ejectReelButton.setVisible(false);
                     unlockLidButton.setVisible(false);
+                    temperatureWarning.setVisible(false);
 
                     reel.setVisible(false);
                     filamentRectangle.setVisible(false);
@@ -499,12 +505,13 @@ public class PrinterStatusPageController implements Initializable
 
                     ejectReelButton.visibleProperty().bind(selectedPrinter.Filament1LoadedProperty().and(selectedPrinter.printerStatusProperty().isNotEqualTo(PrinterStatusEnumeration.PRINTING)));
 
-                    unlockLidButton.visibleProperty().bind(Bindings.not(selectedPrinter.LidOpenProperty()).and(selectedPrinter.bedTemperatureProperty().lessThan(65.0).and(selectedPrinter.extruderTemperatureProperty().lessThan(65.0))));
+                    unlockLidButton.disableProperty().bind(Bindings.not(selectedPrinter.LidOpenProperty()).and(selectedPrinter.bedTemperatureProperty().lessThan(65.0).and(selectedPrinter.extruderTemperatureProperty().lessThan(65.0))));
+                    temperatureWarning.visibleProperty().bind(selectedPrinter.bedTemperatureProperty().greaterThan(65.0).or(selectedPrinter.extruderTemperatureProperty().greaterThan(65.0)));
 
-                    selectedPrinter.loadedFilamentProperty().addListener(filamentColourListener);
+                    selectedPrinter.reelDataChangedProperty().addListener(reelDataChangeListener);
                     setFilamentColour(selectedPrinter.loadedFilamentProperty().get());
-                    filamentRectangle.visibleProperty().bind(selectedPrinter.reelAttachedProperty());
-                    reel.visibleProperty().bind(selectedPrinter.reelAttachedProperty());
+                    filamentRectangle.visibleProperty().bind(selectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
+                    reel.visibleProperty().bind(selectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
 
                     printerOpenImage.visibleProperty().bind(selectedPrinter.LidOpenProperty());
                     printerClosedImage.visibleProperty().bind(selectedPrinter.LidOpenProperty().not());
@@ -728,7 +735,7 @@ public class PrinterStatusPageController implements Initializable
         reel.visibleProperty().unbind();
         if (lastSelectedPrinter != null)
         {
-            lastSelectedPrinter.loadedFilamentProperty().removeListener(filamentColourListener);
+            lastSelectedPrinter.reelDataChangedProperty().removeListener(reelDataChangeListener);
         }
 
         filamentRectangle.visibleProperty().unbind();
@@ -737,6 +744,8 @@ public class PrinterStatusPageController implements Initializable
         ejectReelButton.setVisible(false);
         unlockLidButton.visibleProperty().unbind();
         unlockLidButton.setVisible(false);
+        temperatureWarning.visibleProperty().unbind();
+        temperatureWarning.setVisible(false);
 
         printerOpenImage.visibleProperty().unbind();
         printerOpenImage.setVisible(false);
