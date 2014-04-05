@@ -61,7 +61,7 @@
                         </ImageView>
                     </graphic>
                 </Button>
-                <JogButton fx:id="extruder_minus100" axis="E" distance="-100.0" onAction="#jogButton" translateX="-301.0">
+                <JogButton fx:id="extruder_minus100" axis="E" distance="-240.0" onAction="#jogButton" translateX="-301.0">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -70,7 +70,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="extruder_minus20" axis="E" distance="-20.0" onAction="#jogButton" translateX="-256.0">
+                <JogButton fx:id="extruder_minus20" axis="E" distance="-48.0" onAction="#jogButton" translateX="-256.0">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -79,7 +79,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="extruder_minus5" axis="E" distance="-5.0" onAction="#jogButton" translateX="-229.0">
+                <JogButton fx:id="extruder_minus5" axis="E" distance="-12.0" onAction="#jogButton" translateX="-229.0">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -88,7 +88,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="extruder_plus100" axis="E" distance="100.0" onAction="#jogButton" translateX="-200.0" translateY="100.0">
+                <JogButton fx:id="extruder_plus100" axis="E" distance="240.0" onAction="#jogButton" translateX="-200.0" translateY="100.0">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -97,7 +97,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="extruder_plus20" axis="E" distance="20.0" onAction="#jogButton" translateX="-245.0" translateY="100.0">
+                <JogButton fx:id="extruder_plus20" axis="E" distance="48.0" onAction="#jogButton" translateX="-245.0" translateY="100.0">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -106,7 +106,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="extruder_plus5" axis="E" distance="5.0" onAction="#jogButton" translateX="-271.0" translateY="100.0">
+                <JogButton fx:id="extruder_plus5" axis="E" distance="12.0" onAction="#jogButton" translateX="-271.0" translateY="100.0">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -337,22 +337,14 @@
             <children>
                 <HBox alignment="CENTER" maxHeight="-1.0" maxWidth="-1.0" minHeight="-1.0" minWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" spacing="10.0" translateX="0.0" translateY="0.0">
                     <children>
-                        <ToggleButton fx:id="selectNozzle1" mnemonicParsing="false" selected="true" text="%printerStatus.Nozzle1ControlLabel">
-                            <toggleGroup>
-                                <ToggleGroup fx:id="nozzleSelect" />
-                            </toggleGroup>
-                        </ToggleButton>
-                        <ToggleButton fx:id="selectNozzle2" mnemonicParsing="false" text="%printerStatus.Nozzle2ControlLabel" toggleGroup="$nozzleSelect" />
+                        <Button fx:id="selectNozzle1" mnemonicParsing="false" text="%printerStatus.Nozzle1ControlLabel" onAction="#selectNozzle1" />
+                        <Button fx:id="selectNozzle2" mnemonicParsing="false" text="%printerStatus.Nozzle2ControlLabel" onAction="#selectNozzle2" />
                     </children>
                 </HBox>
                 <HBox alignment="CENTER" maxHeight="-1.0" maxWidth="-1.0" minHeight="-1.0" minWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" spacing="10.0" translateX="0.0" translateY="0.0">
                     <children>
-                        <ToggleButton fx:id="closeNozzleButton" mnemonicParsing="false" selected="true" text="%printerStatus.NozzleCloseLabel">
-                            <toggleGroup>
-                                <ToggleGroup fx:id="nozzleOpen" />
-                            </toggleGroup>
-                        </ToggleButton>
-                        <ToggleButton fx:id="openNozzleButton" mnemonicParsing="false" selected="false" text="%printerStatus.NozzleOpenLabel" toggleGroup="$nozzleOpen" />
+                        <Button fx:id="closeNozzleButton" mnemonicParsing="false" text="%printerStatus.NozzleCloseLabel" onAction="#closeNozzle" />
+                        <Button fx:id="openNozzleButton" mnemonicParsing="false" text="%printerStatus.NozzleOpenLabel" onAction="#openNozzle" />
                     </children>
                 </HBox>
             </children>

@@ -112,9 +112,6 @@ public class PrinterStatusPageController implements Initializable
     private JogButton x_plus10;
 
     @FXML
-    private ToggleGroup nozzleOpen;
-
-    @FXML
     private JogButton y_minus10;
 
     @FXML
@@ -139,16 +136,16 @@ public class PrinterStatusPageController implements Initializable
     private Rectangle printerColourRectangle;
 
     @FXML
-    private ToggleButton selectNozzle2;
+    private Button selectNozzle2;
 
     @FXML
-    private ToggleButton openNozzleButton;
+    private Button openNozzleButton;
 
     @FXML
     private StackPane statusPane;
 
     @FXML
-    private ToggleButton selectNozzle1;
+    private Button selectNozzle1;
 
     @FXML
     private JogButton extruder_minus5;
@@ -166,9 +163,6 @@ public class PrinterStatusPageController implements Initializable
     private Text progressTitle;
 
     @FXML
-    private ToggleGroup nozzleSelect;
-
-    @FXML
     private Button resumePrintButton;
 
     @FXML
@@ -184,7 +178,7 @@ public class PrinterStatusPageController implements Initializable
     private JogButton x_minus10;
 
     @FXML
-    private ToggleButton closeNozzleButton;
+    private Button closeNozzleButton;
 
     @FXML
     private ProgressBar progressBar;
@@ -311,7 +305,7 @@ public class PrinterStatusPageController implements Initializable
         try
         {
             printerToUse.transmitDirectGCode(GCodeConstants.carriageAbsoluteMoveMode, false);
-            printerToUse.transmitDirectGCode("G0 Z50 Y160", false);
+            printerToUse.transmitDirectGCode("G0 Z50 Y160", true);
         } catch (RoboxCommsException ex)
         {
             steno.error("Error when moving carriage to unlock position");
@@ -328,7 +322,7 @@ public class PrinterStatusPageController implements Initializable
         try
         {
             printerToUse.transmitDirectGCode(GCodeConstants.carriageRelativeMoveMode, true);
-            printerToUse.transmitDirectGCode(String.format("G0 " + axis.name() + "%.2f", distance * 2.4), true);
+            printerToUse.transmitDirectGCode(String.format("G0 " + axis.name() + "%.2f", distance), true);
         } catch (RoboxCommsException ex)
         {
             steno.error("Failed to send printer jog command");
@@ -394,6 +388,42 @@ public class PrinterStatusPageController implements Initializable
         } catch (RoboxCommsException ex)
         {
             steno.error("Failed to send ambient LED command");
+        }
+    }
+
+    @FXML
+    void selectNozzle1(ActionEvent event)
+    {
+        selectNozzle(0);
+    }
+
+    @FXML
+    void selectNozzle2(ActionEvent event)
+    {
+        selectNozzle(1);
+    }
+
+    @FXML
+    void openNozzle(ActionEvent event)
+    {
+        try
+        {
+            printerToUse.transmitDirectGCode(GCodeConstants.openNozzle, true);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Failed to send open nozzle");
+        }
+    }
+
+    @FXML
+    void closeNozzle(ActionEvent event)
+    {
+        try
+        {
+            printerToUse.transmitDirectGCode(GCodeConstants.closeNozzle, true);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Failed to send close nozzle");
         }
     }
 
@@ -505,7 +535,8 @@ public class PrinterStatusPageController implements Initializable
 
                     ejectReelButton.visibleProperty().bind(selectedPrinter.Filament1LoadedProperty().and(selectedPrinter.printerStatusProperty().isNotEqualTo(PrinterStatusEnumeration.PRINTING)));
 
-                    unlockLidButton.disableProperty().bind(Bindings.not(selectedPrinter.LidOpenProperty()).and(selectedPrinter.bedTemperatureProperty().lessThan(65.0).and(selectedPrinter.extruderTemperatureProperty().lessThan(65.0))));
+                    unlockLidButton.setVisible(true);
+                    unlockLidButton.disableProperty().bind(selectedPrinter.LidOpenProperty().not().or(selectedPrinter.bedTemperatureProperty().greaterThan(65.0)).or(selectedPrinter.extruderTemperatureProperty().greaterThan(65.0)));
                     temperatureWarning.visibleProperty().bind(selectedPrinter.bedTemperatureProperty().greaterThan(65.0).or(selectedPrinter.extruderTemperatureProperty().greaterThan(65.0)));
 
                     selectedPrinter.reelDataChangedProperty().addListener(reelDataChangeListener);
@@ -564,72 +595,6 @@ public class PrinterStatusPageController implements Initializable
                     }
                 }
         );
-
-        selectNozzle1.setUserData(
-                0);
-        selectNozzle2.setUserData(
-                1);
-
-        nozzleSelect.selectedToggleProperty()
-                .addListener(new ChangeListener<Toggle>()
-                        {
-                            @Override
-                            public void changed(ObservableValue<? extends Toggle> ov, Toggle lastCommand, Toggle currentCommand
-                            )
-                            {
-                                if (currentCommand != null && lastCommand != null)
-                                {
-                                    if (currentCommand != lastCommand)
-                                    {
-                                        selectNozzle((int) currentCommand.getUserData());
-                                    }
-                                } else if (currentCommand == null && lastCommand != null)
-                                {
-                                    lastCommand.setSelected(true);
-                                }
-                            }
-                }
-                );
-
-        nozzleOpen.selectedToggleProperty()
-                .addListener(new ChangeListener<Toggle>()
-                        {
-                            @Override
-                            public void changed(ObservableValue<? extends Toggle> ov, Toggle lastCommand, Toggle currentCommand
-                            )
-                            {
-                                if (currentCommand != null && lastCommand != null)
-                                {
-                                    if (currentCommand != lastCommand)
-                                    {
-                                        if (currentCommand == closeNozzleButton)
-                                        {
-                                            try
-                                            {
-                                                printerToUse.transmitDirectGCode(GCodeConstants.closeNozzle, true);
-                                            } catch (RoboxCommsException ex)
-                                            {
-                                                steno.error("Failed to send close nozzle");
-                                            }
-                                        } else if (currentCommand == openNozzleButton)
-                                        {
-                                            try
-                                            {
-                                                printerToUse.transmitDirectGCode(GCodeConstants.openNozzle, true);
-                                            } catch (RoboxCommsException ex)
-                                            {
-                                                steno.error("Failed to send open nozzle");
-                                            }
-                                        }
-                                    }
-                                } else if (currentCommand == null && lastCommand != null)
-                                {
-                                    lastCommand.setSelected(true);
-                                }
-                            }
-                }
-                );
-
     }
 
     public void configure(VBox parent)
@@ -742,7 +707,6 @@ public class PrinterStatusPageController implements Initializable
 
         ejectReelButton.visibleProperty().unbind();
         ejectReelButton.setVisible(false);
-        unlockLidButton.visibleProperty().unbind();
         unlockLidButton.setVisible(false);
         temperatureWarning.visibleProperty().unbind();
         temperatureWarning.setVisible(false);

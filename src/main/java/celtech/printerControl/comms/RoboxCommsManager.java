@@ -179,6 +179,10 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
         {
             printerHandler.shutdown();
         }
+        for (PrinterHandler printerHandler : pendingPrinterConnections.values())
+        {
+            printerHandler.shutdown();
+        }
         keepRunning = false;
     }
 

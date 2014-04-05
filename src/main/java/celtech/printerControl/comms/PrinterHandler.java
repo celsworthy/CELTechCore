@@ -773,6 +773,10 @@ public class PrinterHandler extends Thread
 
     void shutdown()
     {
+        if (firmwareLoadService.isRunning())
+        {
+            firmwareLoadService.cancel();
+        }
         keepRunning = false;
     }
 

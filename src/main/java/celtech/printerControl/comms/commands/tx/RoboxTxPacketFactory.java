@@ -92,6 +92,9 @@ public class RoboxTxPacketFactory
                 case SET_AMBIENT_LED_COLOUR:
                     returnVal = new SetAmbientLEDColour();
                     break;
+                case SET_REEL_LED_COLOUR:
+                    returnVal = new SetReelLEDColour();
+                    break;
                 case CONTROL_REEL_LED:
                     returnVal = new ControlReelLED();
                     break;

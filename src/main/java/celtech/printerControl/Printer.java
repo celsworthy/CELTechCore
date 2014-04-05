@@ -34,6 +34,7 @@ import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacketFactory;
 import celtech.printerControl.comms.commands.tx.SetAmbientLEDColour;
 import celtech.printerControl.comms.commands.tx.SetFilamentInfo;
+import celtech.printerControl.comms.commands.tx.SetReelLEDColour;
 import celtech.printerControl.comms.commands.tx.SetTemperatures;
 import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
 import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
@@ -325,6 +326,17 @@ public class Printer
     public StringProperty getPrintercheckByte()
     {
         return printercheckByte;
+    }
+
+    public String getPrinterUniqueID()
+    {
+        return printermodel.get()
+                + printeredition.get()
+                + printerweekOfManufacture.get()
+                + printeryearOfManufacture.get()
+                + printerpoNumber.get()
+                + printerserialNumber.get()
+                + printercheckByte.get();
     }
 
     public StringProperty printerFriendlyNameProperty()
@@ -1345,10 +1357,13 @@ public class Printer
                 setLidOpen(statusResponse.isLidSwitchStatus());
                 setReelButton(statusResponse.isReelButtonStatus());
 
+                EEPROMState lastReelState = reelEEPROMStatus.get();
+
+                reelEEPROMStatus.set(statusResponse.getReelEEPROMState());
+
                 if (reelEEPROMStatus.get() != EEPROMState.PROGRAMMED
                         && statusResponse.getReelEEPROMState() == EEPROMState.PROGRAMMED)
                 {
-                    reelEEPROMStatus.set(statusResponse.getReelEEPROMState());
                     try
                     {
                         transmitReadReelEEPROM();
@@ -1359,7 +1374,6 @@ public class Printer
                 } else if (reelEEPROMStatus.get() != EEPROMState.NOT_PRESENT
                         && statusResponse.getReelEEPROMState() == EEPROMState.NOT_PRESENT)
                 {
-                    reelEEPROMStatus.set(statusResponse.getReelEEPROMState());
                     loadedFilament.set(null);
                     reelFriendlyName.set(DisplayManager.getLanguageBundle().getString("smartReelProgrammer.noReelLoaded"));
                     reelUniqueID.set(null);
@@ -1375,10 +1389,13 @@ public class Printer
                     reelDataChangedToggle.set(!reelDataChangedToggle.get());
                 }
 
+                EEPROMState lastHeadState = headEEPROMStatus.get();
+
+                headEEPROMStatus.set(statusResponse.getHeadEEPROMState());
+
                 if (headEEPROMStatus.get() != EEPROMState.PROGRAMMED
                         && statusResponse.getHeadEEPROMState() == EEPROMState.PROGRAMMED)
                 {
-                    headEEPROMStatus.set(statusResponse.getHeadEEPROMState());
                     try
                     {
                         transmitReadHeadEEPROM();
@@ -1389,8 +1406,6 @@ public class Printer
                 } else if (headEEPROMStatus.get() != EEPROMState.NOT_PRESENT
                         && statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PRESENT)
                 {
-                    headEEPROMStatus.set(statusResponse.getHeadEEPROMState());
-
                     attachedHead.set(null);
                     headType.set(null);
                     temporaryHead.setUniqueID(null);
@@ -1655,14 +1670,26 @@ public class Printer
         return response.getGCodeResponse();
     }
 
+    public String transmitStoredGCode(final String macroName, boolean addToTranscript) throws RoboxCommsException
+    {
+        ArrayList<String> macroContents = GCodeMacros.getMacroContents(macroName);
+
+        return transmitMacroData(macroContents, addToTranscript);
+    }
+
     public String transmitStoredGCode(final GCodeMacros macro, boolean addToTranscript) throws RoboxCommsException
     {
-        RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.EXECUTE_GCODE);
-
         ArrayList<String> macroContents = macro.getMacroContents();
+
+        return transmitMacroData(macroContents, addToTranscript);
+    }
+
+    private String transmitMacroData(ArrayList<String> macroData, boolean addToTranscript) throws RoboxCommsException
+    {
+        RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.EXECUTE_GCODE);
         StringBuilder finalResponse = new StringBuilder();
 
-        for (String gcodeToSend : macroContents)
+        for (String gcodeToSend : macroData)
         {
             gcodeToSend += "\n";
             gcodePacket.setMessagePayload(gcodeToSend);
@@ -1692,8 +1719,8 @@ public class Printer
                 });
             }
         }
-
         return finalResponse.toString();
+
     }
 
     private boolean transmitDataFileStart(final String fileID) throws RoboxCommsException
@@ -1809,7 +1836,7 @@ public class Printer
         return (HeadEEPROMDataResponse) printerCommsManager.submitForWrite(portName, readHead);
     }
 
-    public void transmitWriteReelEEPROM(Filament filament) throws RoboxCommsException
+    public AckResponse transmitWriteReelEEPROM(Filament filament) throws RoboxCommsException
     {
         WriteReelEEPROM writeReelEEPROM = (WriteReelEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_REEL_EEPROM);
         writeReelEEPROM.populateEEPROM(filament.getReelID(),
@@ -1823,7 +1850,7 @@ public class Printer
                 filament.getFilamentMultiplier(),
                 filament.getFeedRateMultiplier(),
                 filament.getRemainingFilament());
-        printerCommsManager.submitForWrite(portName, writeReelEEPROM);
+        return (AckResponse) printerCommsManager.submitForWrite(portName, writeReelEEPROM);
     }
 
     public void transmitWriteReelEEPROM(String reelTypeCode, String reelUniqueID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
@@ -1885,6 +1912,13 @@ public class Printer
     public void transmitSetAmbientLEDColour(Color colour) throws RoboxCommsException
     {
         SetAmbientLEDColour ledColour = (SetAmbientLEDColour) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.SET_AMBIENT_LED_COLOUR);
+        ledColour.setLEDColour(colour);
+        printerCommsManager.submitForWrite(portName, ledColour);
+    }
+
+    public void transmitSetReelLEDColour(Color colour) throws RoboxCommsException
+    {
+        SetReelLEDColour ledColour = (SetReelLEDColour) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.SET_REEL_LED_COLOUR);
         ledColour.setLEDColour(colour);
         printerCommsManager.submitForWrite(portName, ledColour);
     }

@@ -84,7 +84,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     @FXML
     private TextField bedFirstLayerTargetTemperature;
-    
+
     @FXML
     private Label bedTemperaturePlaceholder;
 
@@ -725,7 +725,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             nozzleFirstLayerTargetTemperature.setText(String.format("%d", selectedPrinter.getNozzleFirstLayerTargetTemperature()));
             selectedPrinter.nozzleFirstLayerTargetTemperatureProperty().addListener(targetNozzleFirstLayerTempListener);
             nozzleTargetTemperature.setText(String.format("%d", selectedPrinter.getNozzleTargetTemperature()));
-            selectedPrinter.nozzleTargetTemperatureProperty().addListener(targetNozzleTempListener);            
+            selectedPrinter.nozzleTargetTemperatureProperty().addListener(targetNozzleTempListener);
             nozzleFirstLayerTargetTemperature.visibleProperty().bind(selectedPrinter.getNozzleHeaterModeProperty().isEqualTo(HeaterMode.FIRST_LAYER));
             nozzleTargetTemperature.visibleProperty().bind(selectedPrinter.getNozzleHeaterModeProperty().isEqualTo(HeaterMode.NORMAL));
             nozzleTemperaturePlaceholder.visibleProperty().bind(selectedPrinter.getNozzleHeaterModeProperty().isEqualTo(HeaterMode.OFF));
@@ -766,7 +766,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             temperatureChart.getData().add(selectedPrinter.bedTargetTemperatureHistory());
             temperatureChart.getData().add(selectedPrinter.nozzleTargetTemperatureHistory());
 
+            bedHeaterCheckBox.setSelected((selectedPrinter.getBedHeaterMode() == HeaterMode.OFF) ? false : true);
             selectedPrinter.getBedHeaterModeProperty().addListener(bedHeaterStatusListener);
+            
+            nozzleHeaterCheckBox.setSelected((selectedPrinter.getNozzleHeaterMode() == HeaterMode.OFF) ? false : true);
             selectedPrinter.getNozzleHeaterModeProperty().addListener(nozzleHeaterStatusListener);
 
             lastSelectedPrinter = selectedPrinter;

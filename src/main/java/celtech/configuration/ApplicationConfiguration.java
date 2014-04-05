@@ -83,6 +83,7 @@ public class ApplicationConfiguration
     private static String userFilamentFileDirectory = null;
     public static final String filamentDirectoryPath = "Filaments";
     public static final String filamentFileExtension = ".roboxfilament";
+    public static final int mmOfFilamentOnAReel = 240000;
 
     private static String headFileDirectory = null;
     public static final String headDirectoryPath = "Heads";

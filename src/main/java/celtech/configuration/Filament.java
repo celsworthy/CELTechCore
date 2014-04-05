@@ -36,7 +36,7 @@ public class Filament implements Serializable, Cloneable
     private final IntegerProperty requiredFirstLayerNozzleTemperature = new SimpleIntegerProperty(0);
     private final IntegerProperty requiredNozzleTemperature = new SimpleIntegerProperty(0);
     private ObjectProperty<Color> displayColour = new SimpleObjectProperty<>();
-    private final FloatProperty remainingFilament = new SimpleFloatProperty(0);
+    private final FloatProperty remainingFilament = new SimpleFloatProperty(ApplicationConfiguration.mmOfFilamentOnAReel);
 
     public Filament(
             String friendlyFilamentName,
@@ -100,7 +100,7 @@ public class Filament implements Serializable, Cloneable
 
     public String getUniqueID()
     {
-        return friendlyFilamentName.get();
+        return uniqueID.get();
     }
 
     public ObjectProperty<MaterialType> getMaterialProperty()

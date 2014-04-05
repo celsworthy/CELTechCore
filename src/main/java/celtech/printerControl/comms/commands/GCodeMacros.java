@@ -53,6 +53,32 @@ public enum GCodeMacros
         return macroFilename;
     }
 
+    public static ArrayList<String> getMacroContents(String macroFile)
+    {
+        ArrayList<String> contents = new ArrayList<>();
+
+        String macrofile = ApplicationConfiguration.getApplicationInstallDirectory(null) + ApplicationConfiguration.macroFileSubpath + macroFile + ApplicationConfiguration.macroFileExtension;
+
+        try
+        {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(macrofile)));
+            String line;
+            while ((line = reader.readLine()) != null)
+            {
+                contents.add(line);
+            }
+
+        } catch (FileNotFoundException ex)
+        {
+            steno.error("Couldn't load macro file " + macroFile);
+        } catch (IOException ex)
+        {
+            steno.error("IO Error whilst loading macro file " + macroFile);
+        }
+
+        return contents;
+    }
+
     public ArrayList<String> getMacroContents()
     {
         ArrayList<String> contents = new ArrayList<>();

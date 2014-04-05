@@ -7,6 +7,11 @@
  */
 package celtech.utils;
 
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileReader;
@@ -14,6 +19,7 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.util.List;
 import java.util.UUID;
+import javax.imageio.ImageIO;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -34,6 +40,170 @@ public class SystemUtils
     public static boolean isDoubleSame(double doubleA, double doubleB, double tolerance)
     {
         return Math.abs(doubleA - doubleB) < tolerance;
+    }
+
+    public static char generateUPSModulo10Checksum(String inputString) throws InvalidChecksumException
+    {
+        int sum = 0;
+
+        for (int i = 0; i < inputString.length(); i++)
+        {
+            int a = 0;
+            switch (inputString.charAt(i))
+            {
+                case '0':
+                    a = 0;
+                    break;
+                case '1':
+                    a = 1;
+                    break;
+                case '2':
+                    a = 2;
+                    break;
+                case '3':
+                    a = 3;
+                    break;
+                case '4':
+                    a = 4;
+                    break;
+                case '5':
+                    a = 5;
+                    break;
+                case '6':
+                    a = 6;
+                    break;
+                case '7':
+                    a = 7;
+                    break;
+                case '8':
+                    a = 8;
+                    break;
+                case '9':
+                    a = 9;
+                    break;
+                case 'a':
+                case 'A':
+                    a = 2;
+                    break;
+                case 'b':
+                case 'B':
+                    a = 3;
+                    break;
+                case 'c':
+                case 'C':
+                    a = 4;
+                    break;
+                case 'd':
+                case 'D':
+                    a = 5;
+                    break;
+                case 'e':
+                case 'E':
+                    a = 6;
+                    break;
+                case 'f':
+                case 'F':
+                    a = 7;
+                    break;
+                case 'g':
+                case 'G':
+                    a = 8;
+                    break;
+                case 'h':
+                case 'H':
+                    a = 9;
+                    break;
+                case 'i':
+                case 'I':
+                    a = 0;
+                    break;
+                case 'j':
+                case 'J':
+                    a = 1;
+                    break;
+                case 'k':
+                case 'K':
+                    a = 2;
+                    break;
+                case 'l':
+                case 'L':
+                    a = 3;
+                    break;
+                case 'm':
+                case 'M':
+                    a = 4;
+                    break;
+                case 'n':
+                case 'N':
+                    a = 5;
+                    break;
+                case 'o':
+                case 'O':
+                    a = 6;
+                    break;
+                case 'p':
+                case 'P':
+                    a = 7;
+                    break;
+                case 'q':
+                case 'Q':
+                    a = 8;
+                    break;
+                case 'r':
+                case 'R':
+                    a = 9;
+                    break;
+                case 's':
+                case 'S':
+                    a = 0;
+                    break;
+                case 't':
+                case 'T':
+                    a = 1;
+                    break;
+                case 'u':
+                case 'U':
+                    a = 2;
+                    break;
+                case 'v':
+                case 'V':
+                    a = 3;
+                    break;
+                case 'w':
+                case 'W':
+                    a = 4;
+                    break;
+                case 'x':
+                case 'X':
+                    a = 5;
+                    break;
+                case 'y':
+                case 'Y':
+                    a = 6;
+                    break;
+                case 'z':
+                case 'Z':
+                    a = 7;
+                    break;
+            }
+
+            if (i % 2 == 0)
+            {
+                sum += a;
+            } else
+            {
+                sum += a * 2;
+            }
+        }
+
+        sum = sum % 10;
+        sum = 10 - sum;
+        if (sum == 10)
+        {
+            sum = 0;
+        }
+
+        return Character.forDigit(sum, 10);
     }
 
     public static char generateModulo10Checksum(String inputString) throws InvalidChecksumException
@@ -94,7 +264,7 @@ public class SystemUtils
 //            sum += weight;
 ////            sum += (weighter == false) ? 3 : 1 * digit;
 ////            weighter = !weighter;
-            sum+=digit;
+            sum += digit;
         }
 
 // avoid sum less than 10 (if characters below "0" allowed,
@@ -197,6 +367,25 @@ public class SystemUtils
 //        }
 
         return chosenFilename;
+    }
+
+    public static javafx.scene.image.Image createImage(java.awt.Image image) throws IOException
+    {
+        if (!(image instanceof RenderedImage))
+        {
+            BufferedImage bufferedImage = new BufferedImage(image.getWidth(null),
+                    image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+            Graphics g = bufferedImage.createGraphics();
+            g.drawImage(image, 0, 0, null);
+            g.dispose();
+
+            image = bufferedImage;
+        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ImageIO.write((RenderedImage) image, "png", out);
+        out.flush();
+        ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+        return new javafx.scene.image.Image(in);
     }
 
 }

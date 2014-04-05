@@ -157,6 +157,18 @@
     -fx-opacity: 0.4;
 }
 
+.jog-button:disabled {
+    -fx-background-color: transparent;
+    -fx-padding: -0 -0 -0 -0;
+    -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
+    -fx-background-radius: 20;
+    -fx-font-weight: bold;
+    -fx-font-size: 1.1em;
+    -fx-border-color: transparent;
+    -fx-content-display: graphic-only;
+    -fx-opacity: 0.1;
+}
+
 .jog-button:hover {
     -fx-background-color: transparent;
     -fx-padding: -0 -0 -0 -0;
@@ -1223,6 +1235,6 @@ table-view .column-header-background {
  */
 
 .project-menu-button{
-        -fx-content-display: graphic-only;
-        -fx-pref-width: 10px;
+    -fx-content-display: graphic-only;
+    -fx-pref-width: 10px;
 }

@@ -5,6 +5,7 @@
  */
 package celtech.coreUI.controllers.utilityPanels;
 
+import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
 import celtech.coreUI.DisplayManager;
@@ -36,32 +37,47 @@ public class SmartReelProgrammerController implements Initializable
     private Printer connectedPrinter = null;
     private ChangeListener<Boolean> reelDataChangeListener = new ChangeListener<Boolean>()
     {
+
         @Override
         public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
         {
             if (connectedPrinter != null)
             {
-                switch (connectedPrinter.getReelEEPROMStatus())
-                {
-                    case NOT_PRESENT:
-                        currentReelTitle.setText(DisplayManager.getLanguageBundle().getString("smartReelProgrammer.noReelLoaded"));
-                        break;
-                    case NOT_PROGRAMMED:
-                        currentReelTitle.setText(DisplayManager.getLanguageBundle().getString("smartReelProgrammer.reelNotFormatted"));
-                        break;
-                    case PROGRAMMED:
-                        if (connectedPrinter.loadedFilamentProperty().get() != null)
-                        {
-                            currentReelTitle.setText(connectedPrinter.loadedFilamentProperty().get().toString());
-                        } else
-                        {
-                            currentReelTitle.setText("* " + connectedPrinter.reelFriendlyNameProperty().get());
-                        }
-                        break;
-                }
+                setupSmartReelDisplay(connectedPrinter.getReelEEPROMStatus());
             }
         }
     };
+
+    private ChangeListener<EEPROMState> reelEEPROMStateChangeListener = new ChangeListener<EEPROMState>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends EEPROMState> observable, EEPROMState oldValue, EEPROMState newValue)
+        {
+            setupSmartReelDisplay(newValue);
+        }
+    };
+
+    private void setupSmartReelDisplay(EEPROMState newValue)
+    {
+        switch (newValue)
+        {
+            case NOT_PRESENT:
+                currentReelTitle.setText(DisplayManager.getLanguageBundle().getString("smartReelProgrammer.noReelLoaded"));
+                break;
+            case NOT_PROGRAMMED:
+                currentReelTitle.setText(DisplayManager.getLanguageBundle().getString("smartReelProgrammer.reelNotFormatted"));
+                break;
+            case PROGRAMMED:
+                if (connectedPrinter.loadedFilamentProperty().get() != null)
+                {
+                    currentReelTitle.setText(connectedPrinter.loadedFilamentProperty().get().toString());
+                } else
+                {
+                    currentReelTitle.setText("* " + connectedPrinter.reelFriendlyNameProperty().get());
+                }
+                break;
+        }
+    }
 
     @FXML
     private Label currentReelTitle;
@@ -113,6 +129,7 @@ public class SmartReelProgrammerController implements Initializable
             {
                 if (connectedPrinter != null)
                 {
+                    connectedPrinter.reelEEPROMStatusProperty().removeListener(reelEEPROMStateChangeListener);
                     connectedPrinter.reelDataChangedProperty().removeListener(reelDataChangeListener);
                 }
 
@@ -125,8 +142,9 @@ public class SmartReelProgrammerController implements Initializable
                     materialSelector.setDisable(true);
                 } else
                 {
-                    programReelButton.disableProperty().bind(newPrinter.loadedFilamentProperty().isNull().or(materialSelector.getSelectionModel().selectedItemProperty().isNull()));
-                    materialSelector.disableProperty().bind(newPrinter.loadedFilamentProperty().isNull());
+                    programReelButton.disableProperty().bind(newPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PRESENT).or(materialSelector.getSelectionModel().selectedItemProperty().isNull()));
+                    materialSelector.disableProperty().bind(newPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PRESENT));
+                    newPrinter.reelEEPROMStatusProperty().addListener(reelEEPROMStateChangeListener);
                     newPrinter.reelDataChangedProperty().addListener(reelDataChangeListener);
                 }
 

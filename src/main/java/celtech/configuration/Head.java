@@ -14,7 +14,7 @@ import javafx.beans.property.StringProperty;
  *
  * @author ianhudson
  */
-public class Head
+public class Head implements Cloneable
 {
 
     private StringProperty typeCode = new SimpleStringProperty("");
@@ -58,7 +58,7 @@ public class Head
         this.nozzle2_X_offset.set(nozzle2_X_offset);
         this.nozzle2_Y_offset.set(nozzle2_Y_offset);
         this.nozzle2_Z_offset.set(nozzle2_Z_offset);
-        this.nozzle2_B_offset.set(nozzle1_B_offset);
+        this.nozzle2_B_offset.set(nozzle2_B_offset);
     }
 
     public void setTypeCode(String value)
@@ -290,5 +290,27 @@ public class Head
     public String toString()
     {
         return friendlyName.get();
+    }
+
+    @Override
+    public Head clone()
+    {
+        Head clone = new Head(
+                this.getTypeCode(),
+                this.getFriendlyName(),
+                this.getMaximumTemperature(),
+                this.getBeta(),
+                this.getTcal(),
+                this.getNozzle1_X_offset(),
+                this.getNozzle1_Y_offset(),
+                this.getNozzle1_Z_offset(),
+                this.getNozzle1_B_offset(),
+                this.getNozzle2_X_offset(),
+                this.getNozzle2_Y_offset(),
+                this.getNozzle2_Z_offset(),
+                this.getNozzle2_B_offset()
+        );
+
+        return clone;
     }
 }

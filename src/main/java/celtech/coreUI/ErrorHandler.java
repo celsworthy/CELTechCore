@@ -51,14 +51,16 @@ public class ErrorHandler
         //Check for errors and open a Dialog if there are any present
         try
         {
+            steno.trace("Requesting errors from printer");
             AckResponse errors = printer.transmitReportErrors();
+            steno.trace("Errors are:\n" + errors.toString());
             if (errors.isError())
             {
                 if (errorDialog.isShowing() == false)
                 {
                     genericErrorPopupController.populateErrorList(errors);
                     errorDialog.show();
-                    steno.info("Resetting errors");
+                    steno.trace("Resetting errors");
                     printer.transmitResetErrors();
                 }
             }

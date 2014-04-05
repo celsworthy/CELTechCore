@@ -70,10 +70,10 @@ public class HeadContainer
                         && nozzle1_Y_offsetString != null
                         && nozzle1_Z_offsetString != null
                         && nozzle1_B_offsetString != null
-                        && nozzle1_X_offsetString != null
-                        && nozzle1_Y_offsetString != null
-                        && nozzle1_Z_offsetString != null
-                        && nozzle1_B_offsetString != null)
+                        && nozzle2_X_offsetString != null
+                        && nozzle2_Y_offsetString != null
+                        && nozzle2_Z_offsetString != null
+                        && nozzle2_B_offsetString != null)
                 {
                     try
                     {
