@@ -24,15 +24,10 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -56,6 +51,7 @@ public class PrinterStatusPageController implements Initializable
     private RoboxCommsManager printerCommsManager = RoboxCommsManager.getInstance();
     private Printer printerToUse = null;
     private ChangeListener<Boolean> reelDataChangeListener = null;
+    private ChangeListener<EEPROMState> reelChangeListener = null;
 
     @FXML
     private AnchorPane container;
@@ -444,6 +440,18 @@ public class PrinterStatusPageController implements Initializable
             }
         };
 
+        reelChangeListener = new ChangeListener<EEPROMState>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends EEPROMState> ov, EEPROMState t, EEPROMState t1)
+            {
+                if (t1 == EEPROMState.PROGRAMMED)
+                {
+                    setFilamentColour(lastSelectedPrinter.loadedFilamentProperty().get());
+                }
+            }
+        };
+
         printerSilhouette.setVisible(true);
         printerClosedImage.setVisible(false);
         printerOpenImage.setVisible(false);
@@ -540,6 +548,7 @@ public class PrinterStatusPageController implements Initializable
                     temperatureWarning.visibleProperty().bind(selectedPrinter.bedTemperatureProperty().greaterThan(65.0).or(selectedPrinter.extruderTemperatureProperty().greaterThan(65.0)));
 
                     selectedPrinter.reelDataChangedProperty().addListener(reelDataChangeListener);
+                    selectedPrinter.reelEEPROMStatusProperty().addListener(reelChangeListener);
                     setFilamentColour(selectedPrinter.loadedFilamentProperty().get());
                     filamentRectangle.visibleProperty().bind(selectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
                     reel.visibleProperty().bind(selectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
@@ -701,6 +710,7 @@ public class PrinterStatusPageController implements Initializable
         if (lastSelectedPrinter != null)
         {
             lastSelectedPrinter.reelDataChangedProperty().removeListener(reelDataChangeListener);
+            lastSelectedPrinter.reelEEPROMStatusProperty().removeListener(reelChangeListener);
         }
 
         filamentRectangle.visibleProperty().unbind();

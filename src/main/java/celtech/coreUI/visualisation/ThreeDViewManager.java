@@ -756,7 +756,7 @@ public class ThreeDViewManager
                 .getResource(ApplicationConfiguration.modelResourcePath + "bedOuter.obj").toExternalForm();
         String bedInnerURL = CoreTest.class.getResource(ApplicationConfiguration.modelResourcePath + "bedInner.obj").toExternalForm();
 
-        PhongMaterial bedOuterMaterial = new PhongMaterial(Color.BLACK);
+        PhongMaterial bedOuterMaterial = new PhongMaterial(Color.rgb(65, 65, 65));
 
         bedOuterMaterial.setSpecularColor(Color.WHITE);
 

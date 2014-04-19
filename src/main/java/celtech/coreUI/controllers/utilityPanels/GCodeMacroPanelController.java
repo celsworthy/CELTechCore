@@ -14,6 +14,7 @@ import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.services.printing.GCodePrintService;
+import celtech.utils.SystemUtils;
 import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -182,7 +183,7 @@ public class GCodeMacroPanelController implements Initializable
     private final GCodePrintService gcodePrintService = new GCodePrintService();
 
     @FXML
-    void sendGCode(ActionEvent event)
+    void sendGCodeStream(ActionEvent event)
     {
         gcodeFileChooser.setInitialFileName("Untitled");
         final File file = gcodeFileChooser.showOpenDialog(container.getScene().getWindow());
@@ -191,6 +192,23 @@ public class GCodeMacroPanelController implements Initializable
             gcodePrintService.reset();
             gcodePrintService.setPrintUsingSDCard(false);
             gcodePrintService.setPrinterToUse(connectedPrinter);
+            gcodePrintService.setModelFileToPrint(file.getAbsolutePath());
+            gcodePrintService.start();
+        }
+
+    }
+    
+        @FXML
+    void sendGCodeSD(ActionEvent event)
+    {
+        gcodeFileChooser.setInitialFileName("Untitled");
+        final File file = gcodeFileChooser.showOpenDialog(container.getScene().getWindow());
+        if (file != null)
+        {
+            gcodePrintService.reset();
+            gcodePrintService.setPrintUsingSDCard(true);
+            gcodePrintService.setPrinterToUse(connectedPrinter);
+            gcodePrintService.setCurrentPrintJobID(SystemUtils.generate16DigitID());
             gcodePrintService.setModelFileToPrint(file.getAbsolutePath());
             gcodePrintService.start();
         }

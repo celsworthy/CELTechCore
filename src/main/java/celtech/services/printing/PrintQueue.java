@@ -17,6 +17,8 @@ import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.services.ControllableService;
 import celtech.services.modelLoader.ModelLoaderService;
+import celtech.services.postProcessor.GCodePostProcessingResult;
+import celtech.services.postProcessor.PostProcessorService;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.SliceResult;
 import celtech.services.slicer.SlicerService;
@@ -59,6 +61,7 @@ public class PrintQueue implements ControllableService
     private PrinterStatusEnumeration printState = PrinterStatusEnumeration.IDLE;
     private PrintService printService = new PrintService();
     private SlicerService slicerService = new SlicerService();
+    private PostProcessorService gcodePostProcessorService = new PostProcessorService();
     private GCodePrintService gcodePrintService = new GCodePrintService();
     private int linesInCurrentGCodeFile = 0;
     /*
@@ -68,6 +71,9 @@ public class PrintQueue implements ControllableService
     private EventHandler<WorkerStateEvent> cancelSliceEventHandler = null;
     private EventHandler<WorkerStateEvent> failedSliceEventHandler = null;
     private EventHandler<WorkerStateEvent> succeededSliceEventHandler = null;
+    private EventHandler<WorkerStateEvent> cancelGCodePostProcessEventHandler = null;
+    private EventHandler<WorkerStateEvent> failedGCodePostProcessEventHandler = null;
+    private EventHandler<WorkerStateEvent> succeededGCodePostProcessEventHandler = null;
     private EventHandler<WorkerStateEvent> cancelPrintEventHandler = null;
     private EventHandler<WorkerStateEvent> failedPrintEventHandler = null;
     private EventHandler<WorkerStateEvent> succeededPrintEventHandler = null;
@@ -96,6 +102,8 @@ public class PrintQueue implements ControllableService
     private String printJobFailedNotification = null;
     private String sliceSuccessfulNotification = null;
     private String sliceFailedNotification = null;
+    private String gcodePostProcessSuccessfulNotification = null;
+    private String gcodePostProcessFailedNotification = null;
     private String detectedPrintInProgressNotification = null;
     private String notificationTitle = null;
 
@@ -111,6 +119,8 @@ public class PrintQueue implements ControllableService
         printJobFailedNotification = i18nBundle.getString("notification.printJobFailed");
         sliceSuccessfulNotification = i18nBundle.getString("notification.sliceSuccessful");
         sliceFailedNotification = i18nBundle.getString("notification.sliceFailed");
+        gcodePostProcessSuccessfulNotification = i18nBundle.getString("notification.gcodePostProcessSuccessful");
+        gcodePostProcessFailedNotification = i18nBundle.getString("notification.gcodePostProcessFailed");
         notificationTitle = i18nBundle.getString("notification.PrintQueueTitle");
         detectedPrintInProgressNotification = i18nBundle.getString("notification.activePrintDetected");
 
@@ -144,25 +154,72 @@ public class PrintQueue implements ControllableService
                 if (result.isSuccess())
                 {
                     steno.info(t.getSource().getTitle() + " has succeeded");
-                    String jobUUID = result.getPrintJobUUID();
-                    String modelFileToPrint = ApplicationConfiguration.getPrintSpoolDirectory() + jobUUID + File.separator + jobUUID + ApplicationConfiguration.gcodeTempFileExtension;
-                    modelLoaderService.reset();
-                    modelLoaderService.setModelFileToLoad(modelFileToPrint);
-                    modelLoaderService.start();
-//                fxToJMEInterface.sendGCodeModel(null, null)
-                    gcodePrintService.reset();
-                    gcodePrintService.setCurrentPrintJobID(jobUUID);
-                    gcodePrintService.setModelFileToPrint(modelFileToPrint);
-                    gcodePrintService.setPrinterToUse(result.getPrinterToUse());
-                    gcodePrintService.start();
-                    File gcodeFromPrintJob = new File(ApplicationConfiguration.getPrintSpoolDirectory() + jobUUID + File.separator + jobUUID + ApplicationConfiguration.gcodeTempFileExtension);
-                    int numberOfLines = SystemUtils.countLinesInFile(gcodeFromPrintJob, ";");
-                    linesInCurrentGCodeFile = numberOfLines;
+                    gcodePostProcessorService.reset();
+                    gcodePostProcessorService.setPrintJobUUID(result.getPrintJobUUID());
+                    gcodePostProcessorService.setSettings(result.getSettings());
+                    gcodePostProcessorService.setPrinterToUse(result.getPrinterToUse());
+                    gcodePostProcessorService.start();
+
                     Notifier.showInformationNotification(notificationTitle, sliceSuccessfulNotification);
-                    setPrintStatus(PrinterStatusEnumeration.SENDING_TO_PRINTER);
+                    setPrintStatus(PrinterStatusEnumeration.POST_PROCESSING);
                 } else
                 {
                     Notifier.showErrorNotification(notificationTitle, sliceFailedNotification);
+                    setPrintStatus(PrinterStatusEnumeration.IDLE);
+                }
+            }
+        };
+
+        cancelGCodePostProcessEventHandler = new EventHandler<WorkerStateEvent>()
+        {
+            @Override
+            public void handle(WorkerStateEvent t)
+            {
+                steno.info(t.getSource().getTitle() + " has been cancelled");
+            }
+        };
+
+        failedGCodePostProcessEventHandler = new EventHandler<WorkerStateEvent>()
+        {
+            @Override
+            public void handle(WorkerStateEvent t)
+            {
+                steno.info(t.getSource().getTitle() + " has failed");
+                setPrintStatus(PrinterStatusEnumeration.IDLE);
+                Notifier.showErrorNotification(notificationTitle, gcodePostProcessFailedNotification);
+            }
+        };
+
+        succeededGCodePostProcessEventHandler = new EventHandler<WorkerStateEvent>()
+        {
+            @Override
+            public void handle(WorkerStateEvent t)
+            {
+                GCodePostProcessingResult result = (GCodePostProcessingResult) (t.getSource().getValue());
+
+                if (result.isSuccess())
+                {
+                    steno.info(t.getSource().getTitle() + " has succeeded");
+                    String jobUUID = result.getPrintJobUUID();
+                    
+                    modelLoaderService.reset();
+                    modelLoaderService.setModelFileToLoad(result.getOutputFilename());
+                    modelLoaderService.start();
+
+                    gcodePrintService.reset();
+                    gcodePrintService.setCurrentPrintJobID(jobUUID);
+                    gcodePrintService.setModelFileToPrint(result.getOutputFilename());
+                    gcodePrintService.setPrinterToUse(result.getPrinterToUse());
+                    gcodePrintService.start();
+                    
+                    File gcodeFromPrintJob = new File(result.getOutputFilename());
+                    int numberOfLines = SystemUtils.countLinesInFile(gcodeFromPrintJob, ";");
+                    linesInCurrentGCodeFile = numberOfLines;
+                    Notifier.showInformationNotification(notificationTitle, gcodePostProcessSuccessfulNotification);
+                    setPrintStatus(PrinterStatusEnumeration.SENDING_TO_PRINTER);
+                } else
+                {
+                    Notifier.showErrorNotification(notificationTitle, gcodePostProcessFailedNotification);
                     setPrintStatus(PrinterStatusEnumeration.IDLE);
                 }
             }
@@ -250,6 +307,12 @@ public class PrintQueue implements ControllableService
         slicerService.setOnFailed(failedSliceEventHandler);
 
         slicerService.setOnSucceeded(succeededSliceEventHandler);
+
+        gcodePostProcessorService.setOnCancelled(cancelGCodePostProcessEventHandler);
+
+        gcodePostProcessorService.setOnFailed(failedGCodePostProcessEventHandler);
+
+        gcodePostProcessorService.setOnSucceeded(succeededGCodePostProcessEventHandler);
 
         gcodePrintService.setOnCancelled(cancelPrintEventHandler);
 
@@ -352,8 +415,7 @@ public class PrintQueue implements ControllableService
             {
 
                 //Write out the slicer config
-                settings.setStart_gcode(GCodeMacros.PRE_PRINT.getMacroContentsInOneLine());
-                settings.setEnd_gcode(GCodeMacros.POST_PRINT.getMacroContentsInOneLine());
+                settings.filament_diameterProperty().set((float)1.1283791670955125738961589031215);
                 settings.writeToFile(printJobDirectoryName + File.separator + printUUID + ApplicationConfiguration.printProfileFileExtension);
 
                 setPrintStatus(PrinterStatusEnumeration.SLICING);
@@ -426,6 +488,15 @@ public class PrintQueue implements ControllableService
                 printProgressPercent.unbind();
                 setPrintProgressPercent(0);
                 printProgressPercent.bind(slicerService.progressProperty());
+                setPrintInProgress(true);
+                setDialogRequired(true);
+                break;
+            case POST_PROCESSING:
+                printProgressMessage.unbind();
+                printProgressMessage.bind(gcodePostProcessorService.messageProperty());
+                printProgressPercent.unbind();
+                setPrintProgressPercent(0);
+                printProgressPercent.bind(gcodePostProcessorService.progressProperty());
                 setPrintInProgress(true);
                 setDialogRequired(true);
                 break;
@@ -568,6 +639,14 @@ public class PrintQueue implements ControllableService
                 if (slicerService.isRunning())
                 {
                     slicerService.cancelRun();
+                    setPrintStatus(PrinterStatusEnumeration.IDLE);
+                    cancelledRun = true;
+                }
+                break;
+            case POST_PROCESSING:
+                if (gcodePostProcessorService.isRunning())
+                {
+                    gcodePostProcessorService.cancelRun();
                     setPrintStatus(PrinterStatusEnumeration.IDLE);
                     cancelledRun = true;
                 }

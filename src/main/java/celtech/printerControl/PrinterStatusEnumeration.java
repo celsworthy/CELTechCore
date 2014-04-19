@@ -12,7 +12,7 @@ import celtech.coreUI.DisplayManager;
  */
 public enum PrinterStatusEnumeration
 {
-    IDLE(0, "PrintQueue.Idle"), SLICING(5, "PrintQueue.Slicing"), SENDING_TO_PRINTER(10, "PrintQueue.SendingToPrinter"), PRINTING(15, "PrintQueue.Printing"), PAUSED(20, "PrintQueue.Paused"), ERROR(90, "PrintQueue.Error");
+    IDLE(0, "PrintQueue.Idle"), SLICING(5, "PrintQueue.Slicing"), POST_PROCESSING(6, "PrintQueue.PostProcessing"), SENDING_TO_PRINTER(10, "PrintQueue.SendingToPrinter"), PRINTING(15, "PrintQueue.Printing"), PAUSED(20, "PrintQueue.Paused"), ERROR(90, "PrintQueue.Error");
     
     private final int statusValue;
     private final String description;

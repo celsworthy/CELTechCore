@@ -17,7 +17,8 @@ import javafx.scene.paint.PhongMaterial;
 public class ApplicationMaterials
 {
 
-    private static final PhongMaterial defaultModelMaterial = new PhongMaterial(Color.DARKORCHID);
+    private static final Color roboxBlue = Color.rgb(38,125,216);
+    private static final PhongMaterial defaultModelMaterial = new PhongMaterial(roboxBlue);
     private static final PhongMaterial selectedModelMaterial = new PhongMaterial(Color.LAWNGREEN);
     private static final PhongMaterial collidedModelMaterial = new PhongMaterial(Color.DARKORANGE);
     private static final PhongMaterial collidedSelectedModelMaterial = new PhongMaterial(Color.PERU);
@@ -33,8 +34,8 @@ public class ApplicationMaterials
 
     public static PhongMaterial getDefaultModelMaterial()
     {
-        defaultModelMaterial.setSpecularColor(Color.WHITE);
-        defaultModelMaterial.setSpecularPower(1.5);
+        defaultModelMaterial.setSpecularColor(roboxBlue);
+        defaultModelMaterial.setSpecularPower(1.0);
         return defaultModelMaterial;
     }
 

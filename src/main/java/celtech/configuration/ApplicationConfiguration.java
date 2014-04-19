@@ -100,6 +100,7 @@ public class ApplicationConfiguration
 
     public static final String stlTempFileExtension = ".stl";
     public static final String gcodeTempFileExtension = ".gcode";
+    public static final String gcodePostProcessedFileHandle = "_robox";
 
     private static Properties projectProperties = null;
 
