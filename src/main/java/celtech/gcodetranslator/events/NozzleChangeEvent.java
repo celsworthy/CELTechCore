@@ -6,6 +6,7 @@ package celtech.gcodetranslator.events;
  */
 public class NozzleChangeEvent extends GCodeParseEvent
 {
+
     private int nozzleNumber;
 
     public int getNozzleNumber()
@@ -21,6 +22,13 @@ public class NozzleChangeEvent extends GCodeParseEvent
     @Override
     public String renderForOutput()
     {
-        return "T" + nozzleNumber + "\n";
+        String stringToReturn = "T" + nozzleNumber;
+
+        if (getComment() != null)
+        {
+            stringToReturn += " ; " + getComment();
+        }
+
+        return stringToReturn + "\n";
     }
 }

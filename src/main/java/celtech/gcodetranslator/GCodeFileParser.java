@@ -4,8 +4,10 @@ import celtech.gcodetranslator.events.BlankLineEvent;
 import celtech.gcodetranslator.events.CommentEvent;
 import celtech.gcodetranslator.events.EndOfFileEvent;
 import celtech.gcodetranslator.events.ExtrusionEvent;
+import celtech.gcodetranslator.events.GCodeEvent;
 import celtech.gcodetranslator.events.GCodeParseEvent;
 import celtech.gcodetranslator.events.LayerChangeEvent;
+import celtech.gcodetranslator.events.MCodeEvent;
 import celtech.gcodetranslator.events.NozzleChangeEvent;
 import celtech.gcodetranslator.events.RetractEvent;
 import celtech.gcodetranslator.events.SpiralExtrusionEvent;
@@ -112,19 +114,11 @@ public class GCodeFileParser
                             {
                                 case 'G':
                                     gValue = Integer.valueOf(value);
-                                    if (gValue <= 1)
-                                    {
-                                        gPresent = true;
-                                    }
-                                    else
-                                    {
-                                        passthroughLine = true;
-                                    }
+                                    gPresent = true;
                                     break;
                                 case 'M':
                                     mPresent = true;
                                     mValue = Integer.valueOf(value);
-                                    passthroughLine = true;
                                     break;
                                 case 'S':
                                     sPresent = true;
@@ -166,10 +160,39 @@ public class GCodeFileParser
                     }
                 }
 
-                if (tPresent)
+                if (mPresent)
+                {
+                    MCodeEvent event = new MCodeEvent();
+
+                    event.setMNumber(mValue);
+
+                    if (sPresent)
+                    {
+                        event.setSNumber(sValue);
+                    }
+
+                    if (comment != null)
+                    {
+                        event.setComment(comment);
+                    }
+
+                    eventToOutput = event;
+                } else if (tPresent)
                 {
                     NozzleChangeEvent event = new NozzleChangeEvent();
                     event.setNozzleNumber(tValue);
+
+                    if (comment != null)
+                    {
+                        event.setComment(comment);
+                    }
+
+                    eventToOutput = event;
+                } else if (gPresent && !xPresent && !yPresent && !zPresent && !ePresent)
+                {
+                    GCodeEvent event = new GCodeEvent();
+
+                    event.setGNumber(gValue);
 
                     if (comment != null)
                     {
