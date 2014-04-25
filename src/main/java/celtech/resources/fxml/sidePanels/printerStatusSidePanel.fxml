@@ -249,8 +249,8 @@
                             <children>
                                 <VBox alignment="TOP_RIGHT">
                                     <children>
-                                        <Label text="%sidePanel_printerStatus.headStatusLabel" />
-                                        <Label text="%sidePanel_printerStatus.filamentStatusLabel" />
+                                        <Label fx:id="printHeadValueLabel" text="%sidePanel_printerStatus.headStatusLabel" />
+                                        <Label fx:id="filamentStatusValueLabel" text="%sidePanel_printerStatus.filamentStatusLabel" />
                                     </children>
                                 </VBox>
                                 <VBox>

@@ -253,6 +253,11 @@ public class DisplayManager implements EventHandler<KeyEvent>
             ((LayoutSlideOutPanelController) slideOutControllers.get(ApplicationMode.LAYOUT)).bindLoadedModels(projectTab.getProject());
             ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).bindLoadedModels(projectTab.getThreeDViewManager());
             menuStripController.bindSelectedModels(projectTab.getSelectionContainer());
+            projectTab.setMode(newMode);
+        } else if (newMode == ApplicationMode.SETTINGS)
+        {
+            ProjectTab projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
+            projectTab.setMode(newMode);
         } else if (newMode == ApplicationMode.STATUS)
         {
             tabDisplaySelectionModel.select(0);
@@ -337,7 +342,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
         mainHolder.getChildren().add(rhPanel);
 
         // Configure the main display tab pane - just the printer status page to start with
-        
         tabDisplay = new TabPane();
         tabDisplay.setPickOnBounds(false);
         tabDisplay.setOnKeyPressed(this);
@@ -382,6 +386,11 @@ public class DisplayManager implements EventHandler<KeyEvent>
                     if (applicationStatus.getMode() != ApplicationMode.LAYOUT)
                     {
                         applicationStatus.setMode(ApplicationMode.LAYOUT);
+                    }
+
+                    if (lastTab instanceof ProjectTab)
+                    {
+                        ((ProjectTab) lastTab).setMode(ApplicationMode.LAYOUT);
                     }
 
                     if (lastTab != newTab)

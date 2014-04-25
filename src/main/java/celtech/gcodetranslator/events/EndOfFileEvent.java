@@ -9,6 +9,6 @@ public class EndOfFileEvent extends GCodeParseEvent
     @Override
     public String renderForOutput()
     {
-        return " ; EOF\n";
+        return "; EOF\n";
     }
 }

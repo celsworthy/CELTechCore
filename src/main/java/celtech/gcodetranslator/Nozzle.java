@@ -11,17 +11,19 @@ public class Nozzle
     private int nozzleReferenceNumber = -1;
     private double closedPosition = 0;
     private double openPosition = 1;
-    private double allowedTravelBeforeClose = 2;
+    private double allowedTravelBeforeClose = 3;
     
     private double currentPosition = 0;
-    private double startCloseBy = 0;
-    private double finishCloseBy = 0;    
+    private double ejectionVolume = 0;
+    private double wipeVolume = 0;    
+    private double partialBMinimum = 0;
 
-    public Nozzle(int nozzleReferenceNumber, double startCloseBy, double finishCloseBy)
+    public Nozzle(int nozzleReferenceNumber, double ejectionVolume, double wipeVolume, double partialBMinimum)
     {
         this.nozzleReferenceNumber = nozzleReferenceNumber;
-        this.startCloseBy = startCloseBy;
-        this.finishCloseBy = finishCloseBy;
+        this.ejectionVolume = ejectionVolume;
+        this.wipeVolume = wipeVolume;
+        this.partialBMinimum = partialBMinimum;
     }
 
     public NozzleState getState()
@@ -34,16 +36,21 @@ public class Nozzle
         return nozzleReferenceNumber;
     }
     
-    public double getStartCloseBy()
+    public double getEjectionVolume()
     {
-        return startCloseBy;
+        return ejectionVolume;
     }
     
-    public double getFinishCloseBy()
+    public double getWipeVolume()
     {
-        return finishCloseBy;
+        return wipeVolume;
     }
-    
+        
+    public double getPartialBMinimum()
+    {
+        return partialBMinimum;
+    }
+
     public double closeNozzleFully()
     {
         currentPosition = closedPosition;

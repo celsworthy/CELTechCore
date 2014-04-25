@@ -9,6 +9,7 @@ import celtech.gcodetranslator.events.GCodeParseEvent;
 import celtech.gcodetranslator.events.LayerChangeEvent;
 import celtech.gcodetranslator.events.MCodeEvent;
 import celtech.gcodetranslator.events.NozzleChangeEvent;
+import celtech.gcodetranslator.events.RetractDuringExtrusionEvent;
 import celtech.gcodetranslator.events.RetractEvent;
 import celtech.gcodetranslator.events.SpiralExtrusionEvent;
 import celtech.gcodetranslator.events.TravelEvent;
@@ -273,23 +274,45 @@ public class GCodeFileParser
                     eventToOutput = event;
                 } else if (gPresent && xPresent && yPresent && ePresent && !zPresent)
                 {
-                    ExtrusionEvent event = new ExtrusionEvent();
-
-                    event.setX(xValue);
-                    event.setY(yValue);
-                    event.setE(eValue);
-
-                    if (fPresent)
+                    if (eValue > 0)
                     {
-                        event.setFeedRate(fValue);
-                    }
+                        ExtrusionEvent event = new ExtrusionEvent();
 
-                    if (comment != null)
+                        event.setX(xValue);
+                        event.setY(yValue);
+                        event.setE(eValue);
+
+                        if (fPresent)
+                        {
+                            event.setFeedRate(fValue);
+                        }
+
+                        if (comment != null)
+                        {
+                            event.setComment(comment);
+                        }
+
+                        eventToOutput = event;
+                    } else
                     {
-                        event.setComment(comment);
-                    }
+                        RetractDuringExtrusionEvent event = new RetractDuringExtrusionEvent();
 
-                    eventToOutput = event;
+                        event.setX(xValue);
+                        event.setY(yValue);
+                        event.setE(eValue);
+
+                        if (fPresent)
+                        {
+                            event.setFeedRate(fValue);
+                        }
+
+                        if (comment != null)
+                        {
+                            event.setComment(comment);
+                        }
+
+                        eventToOutput = event;
+                    }
                 } else if (comment != null && !passthroughLine)
                 {
                     CommentEvent event = new CommentEvent();

@@ -18,11 +18,11 @@ public class SliceResult
     private Project project = null;
     private FilamentContainer filament = null;
     private PrintQualityEnumeration printQuality = null;
-    private SlicerSettings settings = null;  
+    private RoboxProfile settings = null;  
     private Printer printerToUse = null;
     private boolean success = false;
 
-    public SliceResult(String printJobUUID, Project project, FilamentContainer filament, PrintQualityEnumeration printQuality, SlicerSettings settings, Printer printerToUse, boolean success)
+    public SliceResult(String printJobUUID, Project project, FilamentContainer filament, PrintQualityEnumeration printQuality, RoboxProfile settings, Printer printerToUse, boolean success)
     {
         this.printJobUUID = printJobUUID;
         this.project = project;
@@ -53,7 +53,7 @@ public class SliceResult
         return printQuality;
     }
 
-    public SlicerSettings getSettings()
+    public RoboxProfile getSettings()
     {
         return settings;
     }

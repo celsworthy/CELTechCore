@@ -46,6 +46,7 @@ public class ProgressDialogController implements Initializable
      * 
      */
     private ControllableService serviceBeingMonitored = null;
+    private ChangeListener<Boolean> registeredListener = null;
     
     public void cancelOperation(MouseEvent event)
     {
@@ -55,12 +56,22 @@ public class ProgressDialogController implements Initializable
     public void configure(ControllableService service, final Stage stage)
     {
         serviceBeingMonitored = service;
+        progressTitle.textProperty().unbind();
         progressTitle.textProperty().bind(serviceBeingMonitored.titleProperty());
+        progressMessage.textProperty().unbind();
         progressMessage.textProperty().bind(serviceBeingMonitored.messageProperty());
+        progressBar.progressProperty().unbind();
         progressBar.progressProperty().bind(serviceBeingMonitored.progressProperty());
+        progressPercent.textProperty().unbind();
         progressPercent.textProperty().bind(serviceBeingMonitored.progressProperty().multiply(100f).asString("%.0f%%"));
         
-        serviceBeingMonitored.runningProperty().addListener(new ChangeListener<Boolean>()
+        if (registeredListener != null)
+        {
+            serviceBeingMonitored.runningProperty().removeListener(registeredListener);
+            registeredListener = null;
+        }
+        
+        ChangeListener<Boolean> serviceRunningListener = new ChangeListener<Boolean>()
         {
             @Override
             public void changed(ObservableValue<? extends Boolean> ov, Boolean oldValue, Boolean newValue)
@@ -74,7 +85,11 @@ public class ProgressDialogController implements Initializable
                     stage.close();
                 }
             }
-        });
+        };
+        
+        serviceBeingMonitored.runningProperty().addListener(serviceRunningListener);
+        
+        registeredListener = serviceRunningListener;
     }
     
     private void rebind()

@@ -45,7 +45,7 @@ import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.printing.PrintQueue;
 import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.services.slicer.SlicerSettings;
+import celtech.services.slicer.RoboxProfile;
 import celtech.utils.SystemUtils;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
@@ -1359,8 +1359,6 @@ public class Printer
 
                 EEPROMState lastReelState = reelEEPROMStatus.get();
 
-                reelEEPROMStatus.set(statusResponse.getReelEEPROMState());
-
                 if (reelEEPROMStatus.get() != EEPROMState.PROGRAMMED
                         && statusResponse.getReelEEPROMState() == EEPROMState.PROGRAMMED)
                 {
@@ -1388,10 +1386,10 @@ public class Printer
                     reelFilamentDiameter.set(0);
                     reelDataChangedToggle.set(!reelDataChangedToggle.get());
                 }
+                
+                reelEEPROMStatus.set(statusResponse.getReelEEPROMState());
 
                 EEPROMState lastHeadState = headEEPROMStatus.get();
-
-                headEEPROMStatus.set(statusResponse.getHeadEEPROMState());
 
                 if (headEEPROMStatus.get() != EEPROMState.PROGRAMMED
                         && statusResponse.getHeadEEPROMState() == EEPROMState.PROGRAMMED)
@@ -1422,6 +1420,8 @@ public class Printer
                     temporaryHead.setBeta(0);
                     temporaryHead.setTcal(0);
                 }
+                
+                headEEPROMStatus.set(statusResponse.getHeadEEPROMState());
 
                 sdCardPresent.set(statusResponse.isSDCardPresent());
                 if (statusResponse.isSDCardPresent() == false)
@@ -1606,6 +1606,9 @@ public class Printer
         if (getErrorsDetected())
         {
             setPrinterStatus(PrinterStatusEnumeration.ERROR);
+        } else if (paused.get() == true)
+        {
+            setPrinterStatus(PrinterStatusEnumeration.PAUSED);
         } else
         {
             setPrinterStatus(printQueue.getPrintStatus());
@@ -2065,7 +2068,7 @@ public class Printer
                 /*
                  * Send when full
                  */
-                steno.info("Sending chunk:" + outputBuffer.toString() + " seq:" + sequenceNumber);
+//                steno.info("Sending chunk:" + outputBuffer.toString() + " seq:" + sequenceNumber);
                 AckResponse response = transmitDataFileChunk(outputBuffer.toString(), sequenceNumber);
                 if (response.isError())
                 {
@@ -2077,7 +2080,7 @@ public class Printer
         }
     }
 
-    public void printProject(Project project, Filament filament, PrintQualityEnumeration printQuality, SlicerSettings settings)
+    public void printProject(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings)
     {
         if (filament != null)
         {

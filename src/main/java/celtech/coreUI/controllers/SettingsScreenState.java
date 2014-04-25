@@ -2,6 +2,10 @@
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
+ *//*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package celtech.coreUI.controllers;
 
@@ -10,7 +14,7 @@ import celtech.configuration.Filament;
 import celtech.configuration.PrintProfileContainer;
 import celtech.printerControl.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.services.slicer.SlicerSettings;
+import celtech.services.slicer.RoboxProfile;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
@@ -24,7 +28,7 @@ public class SettingsScreenState
     private static SettingsScreenState instance = null;
     private final ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
     private final ObjectProperty<Filament> selectedFilament = new SimpleObjectProperty<>(null);
-    private final ObjectProperty<SlicerSettings> settings = new SimpleObjectProperty<>(PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName));
+    private final ObjectProperty<RoboxProfile> settings = new SimpleObjectProperty<>(PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName));
     private final ObjectProperty<PrintQualityEnumeration> printQuality = new SimpleObjectProperty<>();
 
     private SettingsScreenState()
@@ -71,17 +75,17 @@ public class SettingsScreenState
         return selectedFilament;
     }
 
-    public void setSettings(SlicerSettings value)
+    public void setSettings(RoboxProfile value)
     {
         settings.set(value);
     }
 
-    public SlicerSettings getSettings()
+    public RoboxProfile getSettings()
     {
         return settings.get();
     }
 
-    public ObjectProperty<SlicerSettings> getSettingsProperty()
+    public ObjectProperty<RoboxProfile> getSettingsProperty()
     {
         return settings;
     }

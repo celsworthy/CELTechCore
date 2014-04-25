@@ -5,6 +5,7 @@
  */
 package celtech.coreUI.controllers.utilityPanels;
 
+import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
@@ -97,6 +98,15 @@ public class SmartReelProgrammerController implements Initializable
         {
             float remainingFilament = 0;
 
+            if (connectedPrinter.reelEEPROMStatusProperty().get() == EEPROMState.NOT_PROGRAMMED)
+            {
+                connectedPrinter.transmitFormatReelEEPROM();
+                remainingFilament = ApplicationConfiguration.mmOfFilamentOnAReel;
+            } else
+            {
+                remainingFilament = connectedPrinter.getReelRemainingFilament().get();
+            }
+
             connectedPrinter.transmitWriteReelEEPROM(selectedFilament.getReelID(),
                     selectedFilament.getUniqueID(),
                     selectedFilament.getFirstLayerNozzleTemperature(),
@@ -108,6 +118,7 @@ public class SmartReelProgrammerController implements Initializable
                     selectedFilament.getFilamentMultiplier(),
                     selectedFilament.getFeedRateMultiplier(),
                     remainingFilament);
+            
             connectedPrinter.transmitReadReelEEPROM();
         } catch (RoboxCommsException ex)
         {

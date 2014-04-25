@@ -1,6 +1,3 @@
-
-
-
 package celtech.coreUI.visualisation;
 
 import celtech.CoreTest;
@@ -21,7 +18,10 @@ import com.leapmotion.leap.Controller;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ListIterator;
+import javafx.animation.Animation;
+import javafx.animation.AnimationTimer;
 import javafx.animation.Timeline;
+import javafx.animation.Transition;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
@@ -59,6 +59,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.MeshView;
+import javafx.util.Duration;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -153,6 +154,24 @@ public class ThreeDViewManager
     private double bedZOffsetFromCameraZero;
 
     private double dragStartX, dragStartY;
+
+    private double settingsAnimationYAngle = 30;
+    private double settingsAnimationXAngle = 0;
+    private long lastAnimationTrigger = 0;
+
+    private final AnimationTimer settingsScreenAnimationTimer = new AnimationTimer()
+    {
+        @Override
+        public void handle(long now)
+        {
+            long difference = now - lastAnimationTrigger;
+            if (difference > 10000000)
+            {
+                rotateCameraAroundAxes(0, 0.2);
+                lastAnimationTrigger = now;
+            }
+        }
+    };
 
     public void rotateCameraAroundAxes(double xangle, double yangle)
     {
@@ -1423,4 +1442,26 @@ public class ThreeDViewManager
 //        final Point3D ppIntersect = CameraAccess.getCameraAccess().pickProjectPlane(cam, pt.getX(), pt.getY());
 //        return n.sceneToLocal(ppIntersect);
 //    }
+    private double preAnimationCameraXAngle = 0;
+    private double preAnimationCameraYAngle = 0;
+    private boolean needToRevertCameraPosition = false;
+
+    public void startSettingsAnimation()
+    {
+        preAnimationCameraXAngle = demandedCameraRotationX.get();
+        preAnimationCameraYAngle = demandedCameraRotationY.get();
+        rotateCameraAroundAxesTo(30, demandedCameraRotationYProperty().get());
+        needToRevertCameraPosition = true;
+        settingsScreenAnimationTimer.start();
+    }
+
+    public void stopSettingsAnimation()
+    {
+        settingsScreenAnimationTimer.stop();
+        if (needToRevertCameraPosition == true)
+        {
+            rotateCameraAroundAxesTo(preAnimationCameraXAngle, preAnimationCameraYAngle);
+            needToRevertCameraPosition = false;
+        }
+    }
 }

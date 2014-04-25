@@ -92,6 +92,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private Label filamentStatusLabel;
 
     @FXML
+    private Label filamentStatusValueLabel;
+
+    @FXML
     private Label nozzleTemperatureLabel;
 
     @FXML
@@ -106,6 +109,12 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @FXML
     private Label printHeadLabel;
 
+    @FXML
+    private Label printHeadValueLabel;
+
+    @FXML
+    private HBox printerStatusHBox;
+    
     @FXML
     private VBox temperatureVBox;
 
@@ -663,7 +672,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             @Override
             public void changed(ObservableValue<? extends HeaterMode> ov, HeaterMode oldValue, HeaterMode newValue)
             {
-                bedHeaterCheckBox.setSelected((newValue == HeaterMode.OFF) ? false : true);
+                bedHeaterCheckBox.setSelected(newValue != HeaterMode.OFF);
             }
         };
 
@@ -672,14 +681,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             @Override
             public void changed(ObservableValue<? extends HeaterMode> ov, HeaterMode oldValue, HeaterMode newValue)
             {
-                nozzleHeaterCheckBox.setSelected((newValue == HeaterMode.OFF) ? false : true);
+                nozzleHeaterCheckBox.setSelected(newValue != HeaterMode.OFF);
             }
         };
-
-        bedHeaterCheckBox.selectedProperty()
-                .addListener(bedHeaterCheckBoxListener);
-        nozzleHeaterCheckBox.selectedProperty()
-                .addListener(nozzleHeaterCheckBoxListener);
 
     }
 
@@ -714,6 +718,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             bedTargetTemperature.visibleProperty().unbind();
             bedTemperaturePlaceholder.visibleProperty().unbind();
 
+            bedHeaterCheckBox.selectedProperty()
+                    .removeListener(bedHeaterCheckBoxListener);
+            nozzleHeaterCheckBox.selectedProperty()
+                    .removeListener(nozzleHeaterCheckBoxListener);
             lastSelectedPrinter.getBedHeaterModeProperty().removeListener(bedHeaterStatusListener);
             lastSelectedPrinter.getNozzleHeaterModeProperty().removeListener(nozzleHeaterStatusListener);
         }
@@ -766,11 +774,15 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             temperatureChart.getData().add(selectedPrinter.bedTargetTemperatureHistory());
             temperatureChart.getData().add(selectedPrinter.nozzleTargetTemperatureHistory());
 
-            bedHeaterCheckBox.setSelected((selectedPrinter.getBedHeaterMode() == HeaterMode.OFF) ? false : true);
+//            bedHeaterCheckBox.setSelected((selectedPrinter.getBedHeaterMode() == HeaterMode.OFF) ? false : true);
             selectedPrinter.getBedHeaterModeProperty().addListener(bedHeaterStatusListener);
-            
-            nozzleHeaterCheckBox.setSelected((selectedPrinter.getNozzleHeaterMode() == HeaterMode.OFF) ? false : true);
+
+//            nozzleHeaterCheckBox.setSelected((selectedPrinter.getNozzleHeaterMode() == HeaterMode.OFF) ? false : true);
             selectedPrinter.getNozzleHeaterModeProperty().addListener(nozzleHeaterStatusListener);
+            bedHeaterCheckBox.selectedProperty()
+                    .addListener(bedHeaterCheckBoxListener);
+            nozzleHeaterCheckBox.selectedProperty()
+                    .addListener(nozzleHeaterCheckBoxListener);
 
             lastSelectedPrinter = selectedPrinter;
         }
@@ -782,6 +794,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         temperatureVBox.setVisible(visible);
         temperatureChart.setVisible(visible);
+        printerStatusHBox.setVisible(visible);
     }
 
     @Override

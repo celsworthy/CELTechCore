@@ -6,6 +6,14 @@
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
+ *//*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package celtech.coreUI.controllers.popups;
 
@@ -13,7 +21,7 @@ import celtech.CoreTest;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PrintProfileContainer;
 import celtech.coreUI.controllers.utilityPanels.ProfileDetailsController;
-import celtech.services.slicer.SlicerSettings;
+import celtech.services.slicer.RoboxProfile;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
@@ -77,8 +85,8 @@ public class CreateNewProfileController implements Initializable
             invalid = true;
         } else
         {
-            ObservableList<SlicerSettings> existingProfileList = PrintProfileContainer.getUserProfileList();
-            for (SlicerSettings settings : existingProfileList)
+            ObservableList<RoboxProfile> existingProfileList = PrintProfileContainer.getUserProfileList();
+            for (RoboxProfile settings : existingProfileList)
             {
                 if (settings.getProfileName().equals(profileNameText))
                 {
@@ -90,7 +98,7 @@ public class CreateNewProfileController implements Initializable
         profileNameInvalid.set(invalid);
     }
 
-    public void updateProfileData(SlicerSettings slicerSettings)
+    public void updateProfileData(RoboxProfile slicerSettings)
     {
         profileNameField.setText(slicerSettings.getProfileName());
         profileDetailsController.updateProfileData(slicerSettings);
@@ -101,7 +109,7 @@ public class CreateNewProfileController implements Initializable
         profileDetailsController.showButtons(b);
     }
 
-    public SlicerSettings getProfileData()
+    public RoboxProfile getProfileData()
     {
         return profileDetailsController.getProfileData();
     }

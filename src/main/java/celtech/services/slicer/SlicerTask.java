@@ -29,12 +29,12 @@ public class SlicerTask extends Task<SliceResult>
     private Project project = null;
     private FilamentContainer filament = null;
     private PrintQualityEnumeration printQuality = null;
-    private SlicerSettings settings = null;
+    private RoboxProfile settings = null;
     private Printer printerToUse = null;
     private String tempModelFilenameWithPath = null;
     private String tempGcodeFilenameWithPath = null;
 
-    public SlicerTask(String printJobUUID, Project project, PrintQualityEnumeration printQuality, SlicerSettings settings, Printer printerToUse)
+    public SlicerTask(String printJobUUID, Project project, PrintQualityEnumeration printQuality, RoboxProfile settings, Printer printerToUse)
     {
         this.printJobUUID = printJobUUID;
         this.project = project;

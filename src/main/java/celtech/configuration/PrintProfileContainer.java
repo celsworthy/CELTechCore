@@ -6,10 +6,18 @@
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
+ *//*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package celtech.configuration;
 
-import celtech.services.slicer.SlicerSettings;
+import celtech.services.slicer.RoboxProfile;
 import java.io.File;
 import java.util.ArrayList;
 import javafx.collections.FXCollections;
@@ -27,11 +35,11 @@ public class PrintProfileContainer
 
     private static final Stenographer steno = StenographerFactory.getStenographer(PrintProfileContainer.class.getName());
     private static PrintProfileContainer instance = null;
-    private static final ObservableList<SlicerSettings> appProfileList = FXCollections.observableArrayList();
-    private static final ObservableList<SlicerSettings> userProfileList = FXCollections.observableArrayList();
-    private static final ObservableList<SlicerSettings> completeProfileList = FXCollections.observableArrayList();
-    private static final ObservableMap<String, SlicerSettings> profileMap = FXCollections.observableHashMap();
-    public static final SlicerSettings createNewProfile = new SlicerSettings();
+    private static final ObservableList<RoboxProfile> appProfileList = FXCollections.observableArrayList();
+    private static final ObservableList<RoboxProfile> userProfileList = FXCollections.observableArrayList();
+    private static final ObservableList<RoboxProfile> completeProfileList = FXCollections.observableArrayList();
+    private static final ObservableMap<String, RoboxProfile> profileMap = FXCollections.observableHashMap();
+    public static final RoboxProfile createNewProfile = new RoboxProfile();
 
     private PrintProfileContainer()
     {
@@ -51,7 +59,7 @@ public class PrintProfileContainer
 
         File applicationDirHandle = new File(ApplicationConfiguration.getApplicationPrintProfileDirectory());
         File[] applicationprofiles = applicationDirHandle.listFiles(new PrintProfileFileFilter());
-        ArrayList<SlicerSettings> profiles = ingestProfiles(applicationprofiles, false);
+        ArrayList<RoboxProfile> profiles = ingestProfiles(applicationprofiles, false);
         appProfileList.addAll(profiles);
         completeProfileList.addAll(profiles);
 
@@ -62,13 +70,13 @@ public class PrintProfileContainer
         completeProfileList.addAll(profiles);
     }
 
-    private static ArrayList<SlicerSettings> ingestProfiles(File[] userprofiles, boolean mutableProfiles)
+    private static ArrayList<RoboxProfile> ingestProfiles(File[] userprofiles, boolean mutableProfiles)
     {
-        ArrayList<SlicerSettings> profileList = new ArrayList<>();
+        ArrayList<RoboxProfile> profileList = new ArrayList<>();
 
         for (File profileFile : userprofiles)
         {
-            SlicerSettings newSettings = new SlicerSettings();
+            RoboxProfile newSettings = new RoboxProfile();
             String profileName = profileFile.getName().replaceAll(ApplicationConfiguration.printProfileFileExtension, "");
             newSettings.readFromFile(profileName, mutableProfiles, profileFile.getAbsolutePath());
 
@@ -79,7 +87,7 @@ public class PrintProfileContainer
         return profileList;
     }
 
-    public static void saveProfile(SlicerSettings settingsToSave)
+    public static void saveProfile(RoboxProfile settingsToSave)
     {
         settingsToSave.writeToFile(constructFilePath(settingsToSave.getProfileName()));
         loadProfileData();
@@ -102,7 +110,7 @@ public class PrintProfileContainer
         return instance;
     }
 
-    public static SlicerSettings getSettingsByProfileName(String profileName)
+    public static RoboxProfile getSettingsByProfileName(String profileName)
     {
         if (instance == null)
         {
@@ -112,7 +120,7 @@ public class PrintProfileContainer
         return profileMap.get(profileName);
     }
 
-    public static ObservableList<SlicerSettings> getCompleteProfileList()
+    public static ObservableList<RoboxProfile> getCompleteProfileList()
     {
         if (instance == null)
         {
@@ -122,7 +130,7 @@ public class PrintProfileContainer
         return completeProfileList;
     }
 
-    public static ObservableList<SlicerSettings> getUserProfileList()
+    public static ObservableList<RoboxProfile> getUserProfileList()
     {
         if (instance == null)
         {

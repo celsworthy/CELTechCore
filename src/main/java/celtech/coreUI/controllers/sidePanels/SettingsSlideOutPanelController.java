@@ -6,6 +6,14 @@
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
+ *//*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package celtech.coreUI.controllers.sidePanels;
 
@@ -20,7 +28,7 @@ import celtech.coreUI.controllers.popups.PopupCommandTransmitter;
 import celtech.coreUI.controllers.utilityPanels.MaterialDetailsController;
 import celtech.coreUI.controllers.utilityPanels.ProfileDetailsController;
 import celtech.printerControl.Printer;
-import celtech.services.slicer.SlicerSettings;
+import celtech.services.slicer.RoboxProfile;
 import celtech.utils.FXUtils;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -59,11 +67,11 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
     private StringConverter floatConverter = FXUtils.getFloatConverter(2);
     private StringConverter booleanConverter = null;
 
-    private SlicerSettings draftSettings = PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
-    private SlicerSettings normalSettings = PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.normalSettingsProfileName);
-    private SlicerSettings fineSettings = PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.fineSettingsProfileName);
-    private SlicerSettings customSettings = null;
-    private SlicerSettings lastSettings = null;
+    private RoboxProfile draftSettings = PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
+    private RoboxProfile normalSettings = PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.normalSettingsProfileName);
+    private RoboxProfile fineSettings = PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.fineSettingsProfileName);
+    private RoboxProfile customSettings = null;
+    private RoboxProfile lastSettings = null;
 
     private ObservableList<String> nozzleOptions = FXCollections.observableArrayList(new String("0.3mm"), new String("0.8mm"));
     private ObservableList<String> fillPatternOptions = FXCollections.observableArrayList(new String("rectilinear"), new String("line"), new String("concentric"), new String("honeycomb"));
@@ -99,7 +107,7 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
         materialDetailsController.updateMaterialData(filament);
     }
 
-    public void updateProfileData(SlicerSettings settings)
+    public void updateProfileData(RoboxProfile settings)
     {
         if (settings == null)
         {

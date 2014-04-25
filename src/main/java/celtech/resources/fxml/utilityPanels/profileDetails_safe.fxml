@@ -77,53 +77,65 @@
                                 <ComboBox fx:id="fillNozzleChoice" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                 <Label fx:id="supportNozzleChoiceLabel" prefWidth="99.0" text="%extrusion.supportNozzle" GridPane.rowIndex="2" />
                                 <ComboBox fx:id="supportNozzleChoice" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                                <Label fx:id="supportInterfaceNozzleChoiceLabel" text="%extrusion.supportInterfaceNozzle" GridPane.rowIndex="3" />
-                                <ComboBox fx:id="supportInterfaceNozzleChoice" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                                <Label fx:id="nozzleEjectionVolumeLabel" minWidth="95.0" text="%nozzle.ejectionVolume" GridPane.rowIndex="5" />
-                                <HBox fx:id="nozzleEjectionVolumeHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                <Label fx:id="nozzleFinishUnretractLabel" minWidth="95.0" text="%nozzle.finishUnretract" GridPane.rowIndex="4" />
+                                <HBox fx:id="nozzleFinishUnretractHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
                                     <children>
-                                        <TextField fx:id="nozzleEjectionVolume" prefWidth="50.0" />
-                                        <Label text="%misc.mm3" />
+                                        <TextField id="nozzle1FinishUnretract" fx:id="nozzleFinishUnretract" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                        <Label text="%nozzle.mmAfterStart" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                                     </children>
                                 </HBox>
-                                <Label fx:id="nozzleWipeVolumeLabel" minWidth="95.0" text="%nozzle.wipeVolume" GridPane.rowIndex="6" />
-                                <HBox fx:id="nozzleWipeVolumeHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                                <Label fx:id="nozzleFinishOpenLabel" minWidth="95.0" text="%nozzle.finishOpen" GridPane.rowIndex="5" />
+                                <HBox fx:id="nozzleFinishOpenHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
                                     <children>
-                                        <TextField fx:id="nozzleWipeVolume" prefWidth="50.0" />
-                                        <Label text="%misc.mm3" />
+                                        <TextField id="nozzle1FinishOpen" fx:id="nozzleFinishOpen" prefWidth="50.0" />
+                                        <Label text="%nozzle.mmAfterStart" />
                                     </children>
                                 </HBox>
-                                <Label fx:id="nozzlePartialOpenLabel" minWidth="95.0" text="%nozzle.partialOpenValue" GridPane.rowIndex="7" />
-                                <HBox fx:id="nozzlePartialOpenHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                                <Label fx:id="nozzleStartRetractLabel" minWidth="95.0" text="%nozzle.startRetract" GridPane.rowIndex="6" />
+                                <HBox fx:id="nozzleStartRetractHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
                                     <children>
-                                        <TextField fx:id="nozzlePartialOpen" prefWidth="50.0" />
+                                        <TextField id="nozzle1StartRetract" fx:id="nozzleStartRetract" prefWidth="50.0" />
+                                        <Label text="%nozzle.mmBeforeEnd" />
                                     </children>
                                 </HBox>
-                                <Label minWidth="95.0" text="%extrusion.retractLength" GridPane.rowIndex="8" />
-                                <HBox fx:id="retractLengthHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="8">
+                                <Label fx:id="nozzleFinishRetractLabel" minWidth="95.0" text="%nozzle.finishRetract" GridPane.rowIndex="7" />
+                                <HBox fx:id="nozzleFinishRetractHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
                                     <children>
-                                        <TextField fx:id="retractLength" prefWidth="50.0" />
-                                        <Label text="%misc.mm" />
+                                        <TextField id="nozzle1FinishRetract" fx:id="nozzleFinishRetract" prefWidth="50.0" />
+                                        <Label text="%nozzle.mmBeforeEnd" />
                                     </children>
                                 </HBox>
-                                <Label minWidth="95.0" text="%extrusion.retractSpeed" GridPane.rowIndex="9" />
-                                <HBox fx:id="retractSpeedHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="9">
+                                <Label fx:id="nozzleStartCloseLabel" minWidth="95.0" text="%nozzle.startClose" GridPane.rowIndex="8" />
+                                <HBox fx:id="nozzleStartCloseHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="8">
                                     <children>
-                                        <TextField fx:id="retractSpeed" prefWidth="50.0" />
-                                        <Label text="%misc.mmpersec" />
+                                        <TextField id="nozzle1StartClose" fx:id="nozzleStartClose" prefWidth="50.0" />
+                                        <Label text="%nozzle.mmBeforeEnd" />
                                     </children>
                                 </HBox>
-
-                                <ToggleButton fx:id="nozzle1Button" mnemonicParsing="false" selected="true" text="%sidePanel_settings.Nozzle1Title" GridPane.rowIndex="4">
+                                <Label fx:id="nozzleFinishCloseLabel" minWidth="95.0" text="%nozzle.finishClose" GridPane.rowIndex="9" />
+                                <HBox fx:id="nozzleFinishCloseHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="9">
+                                    <children>
+                                        <TextField id="nozzle1FinishClose" fx:id="nozzleFinishClose" prefWidth="50.0" />
+                                        <Label text="%nozzle.mmBeforeEnd" />
+                                    </children>
+                                </HBox>
+                                <Label fx:id="partialOpenValueLabel" minWidth="95.0" text="%nozzle.partialOpenValue" GridPane.rowIndex="10" />
+                                <HBox fx:id="partialOpenValueHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="10">
+                                    <children>
+                                        <TextField id="nozzle1FinishClose" fx:id="partialOpenValue" prefWidth="50.0" />
+                                        <Label text="%nozzle.partialOpenValueUnits" />
+                                    </children>
+                                </HBox>
+                                <ToggleButton fx:id="nozzle1Button" mnemonicParsing="false" selected="true" text="%sidePanel_settings.Nozzle1Title" GridPane.rowIndex="3">
                                     <toggleGroup>
                                         <ToggleGroup fx:id="nozzleChoiceGroup" />
                                     </toggleGroup>
                                 </ToggleButton>
-                                <ToggleButton fx:id="nozzle2Button" mnemonicParsing="false" text="%sidePanel_settings.Nozzle2Title" toggleGroup="$nozzleChoiceGroup" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                <ToggleButton fx:id="nozzle2Button" mnemonicParsing="false" text="%sidePanel_settings.Nozzle2Title" toggleGroup="$nozzleChoiceGroup" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                             </children>
                             <columnConstraints>
-                                <ColumnConstraints halignment="RIGHT" percentWidth="50.0" />
-                                <ColumnConstraints halignment="LEFT" percentWidth="50.0" />
+                                <ColumnConstraints halignment="RIGHT" />
+                                <ColumnConstraints halignment="LEFT" />
                             </columnConstraints>
                             <rowConstraints>
                                 <RowConstraints />
@@ -138,6 +150,50 @@
                                 <RowConstraints />
                                 <RowConstraints />
                             </rowConstraints>
+                        </GridPane>
+                    </content>
+                </Tab>
+                <Tab text="%sidePanel_settings.RetractTabTitle">
+                    <content>
+                        <GridPane id="Content" fx:id="retractGrid" alignment="TOP_CENTER" hgap="5.0" vgap="5.0">
+                            <children>
+                                <CheckBox fx:id="autoUnretract" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="%extrusion.autoUnretract" GridPane.columnIndex="1" />
+                                <Label minWidth="95.0" text="%extrusion.unretractLength" GridPane.rowIndex="1" />
+                                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                    <children>
+                                        <TextField fx:id="unretractLength" prefWidth="50.0" />
+                                        <Label text="%misc.mm" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="95.0" text="%extrusion.retractLength" GridPane.rowIndex="2" />
+                                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                    <children>
+                                        <TextField fx:id="retractLength" prefWidth="50.0" />
+                                        <Label text="%misc.mm" />
+                                    </children>
+                                </HBox>
+                                <Label minWidth="95.0" text="%extrusion.retractSpeed" GridPane.rowIndex="3" />
+                                <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                    <children>
+                                        <TextField fx:id="retractSpeed" prefWidth="50.0" />
+                                        <Label text="%misc.mmpersec" />
+                                    </children>
+                                </HBox>
+                                <Label layoutX="10.0" layoutY="41.0" minWidth="95.0" text="%extrusion.autoUnretract" />
+                            </children>
+                            <columnConstraints>
+                                <ColumnConstraints halignment="RIGHT" percentWidth="50.0" />
+                                <ColumnConstraints percentWidth="50.0" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                            </rowConstraints>
+                            <padding>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                            </padding>
                         </GridPane>
                     </content>
                 </Tab>

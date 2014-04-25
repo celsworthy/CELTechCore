@@ -16,7 +16,7 @@ public class WriteReelEEPROM extends RoboxTxPacket
 {
 
     private Stenographer steno = StenographerFactory.getStenographer(WriteReelEEPROM.class.getName());
-    
+
     public WriteReelEEPROM()
     {
         super(TxPacketTypeEnum.WRITE_REEL_EEPROM, false, false);
@@ -39,7 +39,14 @@ public class WriteReelEEPROM extends RoboxTxPacket
         payload.append(String.format("%08.2f", reelFilamentMultiplier));
         payload.append(String.format("%08.2f", reelFeedRateMultiplier));
         payload.append(String.format("%1$80s", " "));
-        payload.append(String.format("%08.2f", reelRemainingFilament));
+        String remainingFilamentValue = String.format("%08.2f", reelRemainingFilament);
+        if (remainingFilamentValue.length() > 8)
+        {
+            String oldValue = remainingFilamentValue;
+            remainingFilamentValue = remainingFilamentValue.substring(0, 8);
+            steno.warning("Truncated remaining filament value from " + oldValue + " to " + remainingFilamentValue);
+        }
+        payload.append(remainingFilamentValue);
 
         this.setMessagePayload(payload.toString());
     }

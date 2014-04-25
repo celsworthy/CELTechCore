@@ -20,7 +20,7 @@ public class SlicerService extends Service<SliceResult> implements ControllableS
     private String printJobUUID = null;
     private Project project = null;
     private PrintQualityEnumeration printQuality = null;
-    private SlicerSettings settings = null;
+    private RoboxProfile settings = null;
     private Printer printerToUse = null;
 
     public void setPrintJobUUID(String printJobUUID)
@@ -38,7 +38,7 @@ public class SlicerService extends Service<SliceResult> implements ControllableS
         this.printQuality = printQuality;
     }
     
-    public void setSettings(SlicerSettings settings)
+    public void setSettings(RoboxProfile settings)
     {
         this.settings = settings;
     }

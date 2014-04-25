@@ -23,10 +23,10 @@ public enum PrintQualityEnumeration
     CUSTOM("Custom", PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.customSettingsProfileName), 3);
 
     private final String friendlyName;
-    private final SlicerSettings settings;
+    private final RoboxProfile settings;
     private final int enumPosition;
 
-    private PrintQualityEnumeration(String friendlyName, SlicerSettings settings, int enumPosition)
+    private PrintQualityEnumeration(String friendlyName, RoboxProfile settings, int enumPosition)
     {
         this.friendlyName = friendlyName;
         this.settings = settings;
@@ -38,7 +38,7 @@ public enum PrintQualityEnumeration
         return friendlyName;
     }
 
-    public SlicerSettings getSettings()
+    public RoboxProfile getSettings()
     {
         return settings;
     }

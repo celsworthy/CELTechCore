@@ -1,12 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package celtech.services.slicer;
 
 import java.io.BufferedReader;
@@ -42,42 +34,43 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class SlicerSettings implements Serializable, Cloneable
+public class RoboxProfile implements Serializable, Cloneable
 {
 
-    private Stenographer LOCAL_steno = StenographerFactory.getStenographer(SlicerSettings.class.getName());
+    private Stenographer LOCAL_steno = StenographerFactory.getStenographer(RoboxProfile.class.getName());
     private StringProperty LOCAL_profileName = new SimpleStringProperty("");
     private boolean LOCAL_mutable = false;
 
     //Immutable
     protected StringProperty print_center = new SimpleStringProperty("105,75");
-    protected IntegerProperty retract_restart_extra_toolchange = new SimpleIntegerProperty(0);
-    protected ObservableList<IntegerProperty> bed_size = FXCollections.observableArrayList(new SimpleIntegerProperty(210), new SimpleIntegerProperty(150));
+    protected ObservableList<IntegerProperty> bed_size = FXCollections.observableArrayList(new SimpleIntegerProperty(226), new SimpleIntegerProperty(160));
     protected StringProperty duplicate_grid = new SimpleStringProperty("1,1");
     protected FloatProperty z_offset = new SimpleFloatProperty(0.0f);
-    protected StringProperty gcode_flavor = new SimpleStringProperty("robox");
+    protected StringProperty gcode_flavor = new SimpleStringProperty("reprap");
     protected BooleanProperty use_relative_e_distances = new SimpleBooleanProperty(true);
     protected BooleanProperty output_nozzle_control = new SimpleBooleanProperty(true);
     protected IntegerProperty vibration_limit = new SimpleIntegerProperty(0);
     protected StringProperty end_gcode = new SimpleStringProperty("");
     protected StringProperty layer_gcode = new SimpleStringProperty("");
     protected StringProperty toolchange_gcode = new SimpleStringProperty("");
-    protected IntegerProperty retract_lift = new SimpleIntegerProperty(0);
-    protected IntegerProperty retract_restart_extra = new SimpleIntegerProperty(0);
-    protected IntegerProperty retract_before_travel = new SimpleIntegerProperty(1);
+    protected ObservableList<FloatProperty> retract_before_travel = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0));
+    protected ObservableList<FloatProperty> retract_length = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0));
+    protected ObservableList<FloatProperty> retract_length_toolchange = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0));
+    protected ObservableList<FloatProperty> retract_lift = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0));
+    protected ObservableList<FloatProperty> retract_restart_extra = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0));
+    protected ObservableList<FloatProperty> retract_restart_extra_toolchange = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0));
+    protected ObservableList<IntegerProperty> retract_speed = FXCollections.observableArrayList(new SimpleIntegerProperty(0), new SimpleIntegerProperty(0));
     protected BooleanProperty retract_layer_change = new SimpleBooleanProperty(false);
-    protected BooleanProperty wipe = new SimpleBooleanProperty(false);
+    protected ObservableList<IntegerProperty> wipe = FXCollections.observableArrayList(new SimpleIntegerProperty(0), new SimpleIntegerProperty(0));
     protected ObservableList<FloatProperty> nozzle_diameter = FXCollections.observableArrayList(new SimpleFloatProperty(0.3f), new SimpleFloatProperty(0.8f));
+    protected BooleanProperty ooze_prevention = new SimpleBooleanProperty(false);
+    protected BooleanProperty thin_walls = new SimpleBooleanProperty(false);
+    protected BooleanProperty use_firmware_retraction = new SimpleBooleanProperty(false);
 
     protected IntegerProperty perimeter_acceleration = new SimpleIntegerProperty(0);
     protected IntegerProperty infill_acceleration = new SimpleIntegerProperty(0);
     protected IntegerProperty bridge_acceleration = new SimpleIntegerProperty(0);
     protected IntegerProperty default_acceleration = new SimpleIntegerProperty(0);
-
-    protected ObservableList<FloatProperty> nozzle_open_angle = FXCollections.observableArrayList(new SimpleFloatProperty(1), new SimpleFloatProperty(1));
-    protected ObservableList<FloatProperty> nozzle_partial_open_angle = FXCollections.observableArrayList(new SimpleFloatProperty(0.5f), new SimpleFloatProperty(0.5f));
-    protected ObservableList<FloatProperty> nozzle_close_angle = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0));
-    protected ObservableList<FloatProperty> nozzle_home_angle = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0));
 
     protected BooleanProperty infill_only_where_needed = new SimpleBooleanProperty(true);
     protected IntegerProperty solid_infill_every_layers = new SimpleIntegerProperty(0);
@@ -87,7 +80,7 @@ public class SlicerSettings implements Serializable, Cloneable
     protected BooleanProperty infill_first = new SimpleBooleanProperty(false);
 
     protected BooleanProperty cooling = new SimpleBooleanProperty(true);
-    protected BooleanProperty fan_always_on = new SimpleBooleanProperty(false);
+    protected BooleanProperty fan_always_on = new SimpleBooleanProperty(true);
     protected IntegerProperty max_fan_speed = new SimpleIntegerProperty(30);
     protected IntegerProperty min_fan_speed = new SimpleIntegerProperty(100);
     protected IntegerProperty bridge_fan_speed = new SimpleIntegerProperty(100);
@@ -107,7 +100,7 @@ public class SlicerSettings implements Serializable, Cloneable
     protected IntegerProperty extruder_clearance_height = new SimpleIntegerProperty(20);
     protected IntegerProperty extruder_clearance_radius = new SimpleIntegerProperty(20);
     protected StringProperty extrusion_axis = new SimpleStringProperty("E");
-    protected StringProperty first_layer_extrusion_width = new SimpleStringProperty("120%"); // needs to be :0
+    protected StringProperty first_layer_extrusion_width = new SimpleStringProperty("150%"); // needs to be :0
     protected FloatProperty first_layer_height = new SimpleFloatProperty(0.2f);
     protected IntegerProperty g0 = new SimpleIntegerProperty(0);
     protected IntegerProperty gcode_arcs = new SimpleIntegerProperty(0);
@@ -120,7 +113,6 @@ public class SlicerSettings implements Serializable, Cloneable
     protected StringProperty post_process = new SimpleStringProperty("");
     protected BooleanProperty randomize_start = new SimpleBooleanProperty(false);
     protected IntegerProperty resolution = new SimpleIntegerProperty(0);
-    protected IntegerProperty retract_length_toolchange = new SimpleIntegerProperty(0);
     protected IntegerProperty rotate = new SimpleIntegerProperty(0);
     protected IntegerProperty scale = new SimpleIntegerProperty(1);
     protected IntegerProperty skirt_distance = new SimpleIntegerProperty(6);
@@ -134,36 +126,20 @@ public class SlicerSettings implements Serializable, Cloneable
     protected IntegerProperty raft_layers = new SimpleIntegerProperty(0);
     protected IntegerProperty travel_speed = new SimpleIntegerProperty(400);
 
-    //End immutable
-    //Overridden by firmware
-    protected ObservableList<StringProperty> nozzle_offset = FXCollections.observableArrayList(new SimpleStringProperty("0x0x0"), new SimpleStringProperty("0x0x0"));
-
     protected FloatProperty filament_diameter = new SimpleFloatProperty(1.75f);
 
     //END of firmware overridden
     //Advanced controls
     protected StringProperty start_gcode = new SimpleStringProperty("");
 
-    protected IntegerProperty perimeter_nozzle = new SimpleIntegerProperty(1); //DONE
-    protected IntegerProperty infill_nozzle = new SimpleIntegerProperty(1); //DONE
-    protected IntegerProperty support_material_nozzle = new SimpleIntegerProperty(1); //DONE
-
-    protected BooleanProperty auto_unretract = new SimpleBooleanProperty(true); //DONE
-    protected IntegerProperty unretract_length = new SimpleIntegerProperty(0); //DONE
-    protected IntegerProperty retract_length = new SimpleIntegerProperty(0); //DONE
-    protected IntegerProperty retract_speed = new SimpleIntegerProperty(50); //DONE
-
-    protected ObservableList<FloatProperty> nozzle_finish_unretract_by = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0)); //DONE
-    protected ObservableList<FloatProperty> nozzle_start_retract_by = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0)); //DONE
-    protected ObservableList<FloatProperty> nozzle_finish_retract_by = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0)); //DONE
-    protected ObservableList<FloatProperty> nozzle_finish_open_by = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0)); //DONE
-    protected ObservableList<FloatProperty> nozzle_start_close_by = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0)); //DONE
-    protected ObservableList<FloatProperty> nozzle_finish_close_by = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0)); //DONE
+    protected ObservableList<FloatProperty> nozzle_partial_b_minimum = FXCollections.observableArrayList(new SimpleFloatProperty(0.5f), new SimpleFloatProperty(0.5f));
+    protected ObservableList<FloatProperty> nozzle_ejection_volume = FXCollections.observableArrayList(new SimpleFloatProperty(0.5f), new SimpleFloatProperty(0.5f));
+    protected ObservableList<FloatProperty> nozzle_wipe_volume = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0));
 
     protected FloatProperty fill_density = new SimpleFloatProperty(0.4f); //DONE
     protected StringProperty fill_pattern = new SimpleStringProperty("rectilinear"); //DONE
     protected IntegerProperty infill_every_layers = new SimpleIntegerProperty(1);
-    protected IntegerProperty bottom_solid_layers = new SimpleIntegerProperty(0);
+    protected IntegerProperty bottom_solid_layers = new SimpleIntegerProperty(3);
     protected IntegerProperty top_solid_layers = new SimpleIntegerProperty(0);
 
     protected BooleanProperty support_material = new SimpleBooleanProperty(false); // DONE
@@ -177,7 +153,7 @@ public class SlicerSettings implements Serializable, Cloneable
 
     protected IntegerProperty perimeter_speed = new SimpleIntegerProperty(25);
     protected IntegerProperty small_perimeter_speed = new SimpleIntegerProperty(20);
-    protected IntegerProperty external_perimeter_speed = new SimpleIntegerProperty(20);
+    protected IntegerProperty external_perimeter_speed = new SimpleIntegerProperty(30);
     protected IntegerProperty infill_speed = new SimpleIntegerProperty(30);
     protected IntegerProperty solid_infill_speed = new SimpleIntegerProperty(30);
     protected IntegerProperty top_solid_infill_speed = new SimpleIntegerProperty(30);
@@ -188,18 +164,29 @@ public class SlicerSettings implements Serializable, Cloneable
 
     protected BooleanProperty spiral_vase = new SimpleBooleanProperty(false);
 
+    protected FloatProperty extrusion_width = new SimpleFloatProperty(0.8f);
     protected FloatProperty perimeter_extrusion_width = new SimpleFloatProperty(0.3f);
     protected FloatProperty infill_extrusion_width = new SimpleFloatProperty(0.3f);
     protected FloatProperty solid_infill_extrusion_width = new SimpleFloatProperty(0.3f);
     protected FloatProperty top_infill_extrusion_width = new SimpleFloatProperty(0.3f);
+    protected FloatProperty support_material_extrusion_width = new SimpleFloatProperty(0.3f);
 
     protected IntegerProperty perimeters = new SimpleIntegerProperty(3);
 
-    public SlicerSettings()
+    protected BooleanProperty overhangs = new SimpleBooleanProperty(false);
+    protected BooleanProperty start_perimeters_at_concave_points = new SimpleBooleanProperty(false);
+    protected BooleanProperty start_perimeters_at_non_overhang = new SimpleBooleanProperty(false);
+    protected IntegerProperty support_material_extruder = new SimpleIntegerProperty(1);
+    protected IntegerProperty support_material_interface_extruder = new SimpleIntegerProperty(1);
+    protected IntegerProperty first_layer_acceleration = new SimpleIntegerProperty(0);
+
+    protected BooleanProperty autowipe = new SimpleBooleanProperty(false);
+
+    public RoboxProfile()
     {
     }
 
-    public SlicerSettings(boolean mutable)
+    public RoboxProfile(boolean mutable)
     {
         this.LOCAL_mutable = mutable;
     }
@@ -233,12 +220,12 @@ public class SlicerSettings implements Serializable, Cloneable
         this.print_center = print_center;
     }
 
-    public IntegerProperty getRetract_restart_extra_toolchange()
+    public ObservableList<FloatProperty> getRetract_restart_extra_toolchange()
     {
         return retract_restart_extra_toolchange;
     }
 
-    public void setRetract_restart_extra_toolchange(IntegerProperty retract_restart_extra_toolchange)
+    public void setRetract_restart_extra_toolchange(ObservableList<FloatProperty> retract_restart_extra_toolchange)
     {
         this.retract_restart_extra_toolchange = retract_restart_extra_toolchange;
     }
@@ -355,60 +342,70 @@ public class SlicerSettings implements Serializable, Cloneable
 
     public IntegerProperty perimeter_nozzleProperty()
     {
-        return perimeter_nozzle;
+        return perimeter_extruder;
     }
 
     public void setPerimeter_nozzle(int perimeter_nozzle)
     {
-        this.perimeter_nozzle.set(perimeter_nozzle);
+        this.perimeter_extruder.set(perimeter_nozzle);
     }
 
     public IntegerProperty infill_nozzleProperty()
     {
-        return infill_nozzle;
+        return infill_extruder;
     }
 
     public void setInfill_nozzle(int infill_nozzle)
     {
-        this.infill_nozzle.set(infill_nozzle);
+        this.infill_extruder.set(infill_nozzle);
     }
 
     public IntegerProperty support_material_nozzleProperty()
     {
-        return support_material_nozzle;
+        return support_material_extruder;
     }
 
     public void setSupport_material_nozzle(int support_material_nozzle)
     {
-        this.support_material_nozzle.set(support_material_nozzle);
+        this.support_material_extruder.set(support_material_nozzle);
     }
 
-    public IntegerProperty getRetract_lift()
+    public IntegerProperty support_material_interface_nozzleProperty()
+    {
+        return support_material_interface_extruder;
+    }
+
+    public void setSupport_material_interface_nozzle(int support_material_interface_nozzle)
+    {
+        this.support_material_interface_extruder.set(support_material_interface_nozzle);
+    }
+
+    public ObservableList<FloatProperty> getRetract_lift()
     {
         return retract_lift;
     }
 
-    public void setRetract_lift(IntegerProperty retract_lift)
+    public void setRetract_lift(ObservableList<FloatProperty> retract_lift)
     {
         this.retract_lift = retract_lift;
     }
 
-    public IntegerProperty getRetract_restart_extra()
+    public ObservableList<FloatProperty> getRetract_restart_extra()
     {
         return retract_restart_extra;
     }
 
-    public void setRetract_restart_extra(IntegerProperty retract_restart_extra)
+    public void setRetract_restart_extra(ObservableList<FloatProperty> retract_restart_extra)
     {
         this.retract_restart_extra = retract_restart_extra;
     }
 
-    public IntegerProperty getRetract_before_travel()
+    public ObservableList<FloatProperty> getRetract_before_travel()
     {
         return retract_before_travel;
     }
 
-    public void setRetract_before_travel(IntegerProperty retract_before_travel)
+    public void setRetract_before_travel(ObservableList<FloatProperty> retract_before_travel)
     {
         this.retract_before_travel = retract_before_travel;
     }
@@ -423,14 +420,14 @@ public class SlicerSettings implements Serializable, Cloneable
         this.retract_layer_change.set(retract_layer_change);
     }
 
-    public BooleanProperty getWipe()
+    public ObservableList<IntegerProperty> getWipe()
     {
         return wipe;
     }
 
-    public void setWipe(boolean wipe)
+    public void setWipe(ObservableList<IntegerProperty> wipe)
     {
-        this.wipe.set(wipe);
+        this.wipe = wipe;
     }
 
     public ObservableList<FloatProperty> getNozzle_diameter()
@@ -483,149 +480,39 @@ public class SlicerSettings implements Serializable, Cloneable
         this.default_acceleration = default_acceleration;
     }
 
-    public BooleanProperty getAuto_unretract()
-    {
-        return auto_unretract;
-    }
-
-    public void setAuto_unretract(BooleanProperty auto_unretract)
-    {
-        this.auto_unretract = auto_unretract;
-    }
-
-    public BooleanProperty auto_unretractProperty()
-    {
-        return auto_unretract;
-    }
-
-    public void setUnretract_length(int unretract_length)
-    {
-        this.unretract_length.set(unretract_length);
-    }
-
-    public IntegerProperty unretract_lengthProperty()
-    {
-        return unretract_length;
-    }
-
-    public IntegerProperty retract_lengthProperty()
+    public ObservableList<FloatProperty> retract_lengthProperty()
     {
         return retract_length;
     }
 
-    public void setRetract_length(int retract_length)
+    public void setRetract_length(ObservableList<FloatProperty> retract_length)
     {
-        this.retract_length.set(retract_length);
+        this.retract_length = retract_length;
     }
 
-    public IntegerProperty retract_speedProperty()
+    public ObservableList<IntegerProperty> retract_speedProperty()
     {
         return retract_speed;
     }
 
-    public void setRetract_speed(int retract_speed)
+    public void setRetract_speed(ObservableList<IntegerProperty> retract_speed)
     {
-        this.retract_speed.set(retract_speed);
+        this.retract_speed = retract_speed;
     }
 
-    public ObservableList<FloatProperty> getNozzle_finish_unretract_by()
+    public ObservableList<FloatProperty> getNozzle_ejection_volume()
     {
-        return nozzle_finish_unretract_by;
+        return nozzle_ejection_volume;
     }
 
-    public void setNozzle_finish_unretract_by(ObservableList<FloatProperty> nozzle_finish_unretract_by)
+    public ObservableList<FloatProperty> getNozzle_partial_b_minimum()
     {
-        this.nozzle_finish_unretract_by = nozzle_finish_unretract_by;
+        return nozzle_partial_b_minimum;
     }
 
-    public ObservableList<FloatProperty> getNozzle_start_retract_by()
+    public ObservableList<FloatProperty> getNozzle_wipe_volume()
     {
-        return nozzle_start_retract_by;
-    }
-
-    public void setNozzle_start_retract_by(ObservableList<FloatProperty> nozzle_start_retract_by)
-    {
-        this.nozzle_start_retract_by = nozzle_start_retract_by;
-    }
-
-    public ObservableList<FloatProperty> getNozzle_finish_retract_by()
-    {
-        return nozzle_finish_retract_by;
-    }
-
-    public void setNozzle_finish_retract_by(ObservableList<FloatProperty> nozzle_finish_retract_by)
-    {
-        this.nozzle_finish_retract_by = nozzle_finish_retract_by;
-    }
-
-    public ObservableList<FloatProperty> getNozzle_finish_open_by()
-    {
-        return nozzle_finish_open_by;
-    }
-
-    public void setNozzle_finish_open_by(ObservableList<FloatProperty> nozzle_finish_open_by)
-    {
-        this.nozzle_finish_open_by = nozzle_finish_open_by;
-    }
-
-    public ObservableList<FloatProperty> getNozzle_start_close_by()
-    {
-        return nozzle_start_close_by;
-    }
-
-    public void setNozzle_start_close_by(ObservableList<FloatProperty> nozzle_start_close_by)
-    {
-        this.nozzle_start_close_by = nozzle_start_close_by;
-    }
-
-    public ObservableList<FloatProperty> getNozzle_finish_close_by()
-    {
-        return nozzle_finish_close_by;
-    }
-
-    public void setNozzle_finish_close_by(ObservableList<FloatProperty> nozzle_finish_close_by)
-    {
-        this.nozzle_finish_close_by = nozzle_finish_close_by;
-    }
-
-    public ObservableList<FloatProperty> getNozzle_open_angle()
-    {
-        return nozzle_open_angle;
-    }
-
-    public void setNozzle_open_angle(ObservableList<FloatProperty> nozzle_open_angle)
-    {
-        this.nozzle_open_angle = nozzle_open_angle;
-    }
-
-    public ObservableList<FloatProperty> getNozzle_partial_open_angle()
-    {
-        return nozzle_partial_open_angle;
-    }
-
-    public void setNozzle_partial_open_angle(ObservableList<FloatProperty> nozzle_partial_open_angle)
-    {
-        this.nozzle_partial_open_angle = nozzle_partial_open_angle;
-    }
-
-    public ObservableList<FloatProperty> getNozzle_close_angle()
-    {
-        return nozzle_close_angle;
-    }
-
-    public void setNozzle_close_angle(ObservableList<FloatProperty> nozzle_close_angle)
-    {
-        this.nozzle_close_angle = nozzle_close_angle;
-    }
-
-    public ObservableList<FloatProperty> getNozzle_home_angle()
-    {
-        return nozzle_home_angle;
-    }
-
-    public void setNozzle_home_angle(ObservableList<FloatProperty> nozzle_home_angle)
-    {
-        this.nozzle_home_angle = nozzle_home_angle;
+        return nozzle_wipe_volume;
     }
 
     public BooleanProperty getFan_always_on()
@@ -1113,6 +1000,16 @@ public class SlicerSettings implements Serializable, Cloneable
         this.extrusion_axis = extrusion_axis;
     }
 
+    public FloatProperty getExtrusion_width()
+    {
+        return extrusion_width;
+    }
+    
+    public FloatProperty getSupport_material_extrusion_width()
+    {
+        return support_material_extrusion_width;
+    }
+    
     public StringProperty getFirst_layer_extrusion_width()
     {
         return first_layer_extrusion_width;
@@ -1263,12 +1160,12 @@ public class SlicerSettings implements Serializable, Cloneable
         this.resolution = resolution;
     }
 
-    public IntegerProperty getRetract_length_toolchange()
+    public ObservableList<FloatProperty> getRetract_length_toolchange()
     {
         return retract_length_toolchange;
     }
 
-    public void setRetract_length_toolchange(IntegerProperty retract_length_toolchange)
+    public void setRetract_length_toolchange(ObservableList<FloatProperty> retract_length_toolchange)
     {
         this.retract_length_toolchange = retract_length_toolchange;
     }
@@ -1392,12 +1289,17 @@ public class SlicerSettings implements Serializable, Cloneable
     {
         this.un_retract_ratio = un_retract_ratio;
     }
+    
+    public boolean getAutowipe()
+    {
+        return autowipe.get();
+    }
 
     public boolean isMutable()
     {
         return LOCAL_mutable;
     }
-    
+
     public void setMutable(boolean mutable)
     {
         LOCAL_mutable = mutable;
@@ -1522,7 +1424,10 @@ public class SlicerSettings implements Serializable, Cloneable
                     }
                 } catch (NoSuchFieldException ex)
                 {
-                    LOCAL_steno.error("Couldn't parse settings for field " + lineParts[0] + " " + ex);
+                    if (lineParts[0].trim().startsWith("#") == false)
+                    {
+                        LOCAL_steno.error("Couldn't parse settings for field " + lineParts[0] + " " + ex);
+                    }
                 } catch (IllegalAccessException ex)
                 {
                     LOCAL_steno.error("Access exception whilst setting " + lineParts[0] + " " + ex);
@@ -1745,7 +1650,6 @@ public class SlicerSettings implements Serializable, Cloneable
         out.writeFloat(filament_diameter.get());
 
         out.writeUTF(print_center.get());
-        out.writeInt(retract_restart_extra_toolchange.get());
         for (IntegerProperty sizeProp : bed_size)
         {
             out.writeInt(sizeProp.get());
@@ -1759,11 +1663,41 @@ public class SlicerSettings implements Serializable, Cloneable
         out.writeUTF(end_gcode.get());
         out.writeUTF(layer_gcode.get());
         out.writeUTF(toolchange_gcode.get());
-        out.writeInt(retract_lift.get());
-        out.writeInt(retract_restart_extra.get());
-        out.writeInt(retract_before_travel.get());
+
+        for (FloatProperty retract_before_travelProp : retract_before_travel)
+        {
+            out.writeFloat(retract_before_travelProp.get());
+        }
+        for (FloatProperty retract_lengthProp : retract_length)
+        {
+            out.writeFloat(retract_lengthProp.get());
+        }
+        for (FloatProperty retract_length_toolchangeProp : retract_length_toolchange)
+        {
+            out.writeFloat(retract_length_toolchangeProp.get());
+        }
+        for (FloatProperty retract_liftProp : retract_lift)
+        {
+            out.writeFloat(retract_liftProp.get());
+        }
+        for (FloatProperty retract_restart_extraProp : retract_restart_extra)
+        {
+            out.writeFloat(retract_restart_extraProp.get());
+        }
+        for (FloatProperty retract_restart_extra_toolchangeProp : retract_restart_extra_toolchange)
+        {
+            out.writeFloat(retract_restart_extra_toolchangeProp.get());
+        }
+        for (IntegerProperty retract_speedProp : retract_speed)
+        {
+            out.writeInt(retract_speedProp.get());
+        }
+
         out.writeBoolean(retract_layer_change.get());
-        out.writeBoolean(wipe.get());
+        for (IntegerProperty wipeProp : wipe)
+        {
+            out.writeInt(wipeProp.get());
+        }
         for (FloatProperty nozzleDiameterProp : nozzle_diameter)
         {
             out.writeFloat(nozzleDiameterProp.get());
@@ -1772,25 +1706,17 @@ public class SlicerSettings implements Serializable, Cloneable
         out.writeInt(infill_acceleration.get());
         out.writeInt(bridge_acceleration.get());
         out.writeInt(default_acceleration.get());
-        for (FloatProperty nozzleProp : nozzle_open_angle)
+        for (FloatProperty nozzleEjectionVolumeProp : nozzle_ejection_volume)
         {
-            out.writeFloat(nozzleProp.get());
+            out.writeFloat(nozzleEjectionVolumeProp.get());
         }
-        for (FloatProperty nozzleProp : nozzle_close_angle)
+        for (FloatProperty nozzlePartialOpenProp : nozzle_partial_b_minimum)
         {
-            out.writeFloat(nozzleProp.get());
+            out.writeFloat(nozzlePartialOpenProp.get());
         }
-        for (FloatProperty nozzleProp : nozzle_partial_open_angle)
+        for (FloatProperty nozzleWipeProp : nozzle_wipe_volume)
         {
-            out.writeFloat(nozzleProp.get());
-        }
-        for (FloatProperty nozzleProp : nozzle_close_angle)
-        {
-            out.writeFloat(nozzleProp.get());
-        }
-        for (FloatProperty nozzleProp : nozzle_home_angle)
-        {
-            out.writeFloat(nozzleProp.get());
+            out.writeFloat(nozzleWipeProp.get());
         }
         out.writeBoolean(infill_only_where_needed.get());
         out.writeInt(solid_infill_every_layers.get());
@@ -1818,7 +1744,13 @@ public class SlicerSettings implements Serializable, Cloneable
         out.writeInt(extruder_clearance_height.get());
         out.writeInt(extruder_clearance_radius.get());
         out.writeUTF(extrusion_axis.get());
+        out.writeFloat(extrusion_width.get());
         out.writeUTF(first_layer_extrusion_width.get());
+        out.writeFloat(perimeter_extrusion_width.get());
+        out.writeFloat(infill_extrusion_width.get());
+        out.writeFloat(solid_infill_extrusion_width.get());
+        out.writeFloat(top_infill_extrusion_width.get());
+        out.writeFloat(support_material_extrusion_width.get());
         out.writeFloat(first_layer_height.get());
         out.writeInt(g0.get());
         out.writeInt(gcode_arcs.get());
@@ -1831,7 +1763,6 @@ public class SlicerSettings implements Serializable, Cloneable
         out.writeUTF(post_process.get());
         out.writeBoolean(randomize_start.get());
         out.writeInt(resolution.get());
-        out.writeInt(retract_length_toolchange.get());
         out.writeInt(rotate.get());
         out.writeInt(scale.get());
         out.writeInt(skirt_distance.get());
@@ -1844,42 +1775,7 @@ public class SlicerSettings implements Serializable, Cloneable
         out.writeInt(support_material_interface_spacing.get());
         out.writeInt(raft_layers.get());
         out.writeInt(travel_speed.get());
-        for (StringProperty nozzleProp : nozzle_offset)
-        {
-            out.writeUTF(nozzleProp.get());
-        }
         out.writeUTF(start_gcode.get());
-        out.writeInt(perimeter_nozzle.get());
-        out.writeInt(infill_nozzle.get());
-        out.writeInt(support_material_nozzle.get());
-        out.writeBoolean(auto_unretract.get());
-        out.writeInt(unretract_length.get());
-        out.writeInt(retract_length.get());
-        out.writeInt(retract_speed.get());
-        for (FloatProperty nozzleProp : nozzle_finish_unretract_by)
-        {
-            out.writeFloat(nozzleProp.get());
-        }
-        for (FloatProperty nozzleProp : nozzle_start_retract_by)
-        {
-            out.writeFloat(nozzleProp.get());
-        }
-        for (FloatProperty nozzleProp : nozzle_finish_retract_by)
-        {
-            out.writeFloat(nozzleProp.get());
-        }
-        for (FloatProperty nozzleProp : nozzle_finish_open_by)
-        {
-            out.writeFloat(nozzleProp.get());
-        }
-        for (FloatProperty nozzleProp : nozzle_start_close_by)
-        {
-            out.writeFloat(nozzleProp.get());
-        }
-        for (FloatProperty nozzleProp : nozzle_finish_close_by)
-        {
-            out.writeFloat(nozzleProp.get());
-        }
         out.writeFloat(fill_density.get());
         out.writeUTF(fill_pattern.get());
         out.writeInt(infill_every_layers.get());
@@ -1903,11 +1799,14 @@ public class SlicerSettings implements Serializable, Cloneable
         out.writeInt(gap_fill_speed.get());
         out.writeInt(first_layer_speed.get());
         out.writeBoolean(spiral_vase.get());
-        out.writeFloat(perimeter_extrusion_width.get());
-        out.writeFloat(infill_extrusion_width.get());
-        out.writeFloat(solid_infill_extrusion_width.get());
-        out.writeFloat(top_infill_extrusion_width.get());
         out.writeInt(perimeters.get());
+        out.writeBoolean(overhangs.get());
+        out.writeBoolean(start_perimeters_at_concave_points.get());
+        out.writeBoolean(start_perimeters_at_non_overhang.get());
+        out.writeInt(support_material_extruder.get());
+        out.writeInt(support_material_interface_extruder.get());
+        out.writeInt(first_layer_acceleration.get());
+        out.writeBoolean(autowipe.get());
     }
 
     private void readObject(ObjectInputStream in)
@@ -1916,7 +1815,6 @@ public class SlicerSettings implements Serializable, Cloneable
         filament_diameter = new SimpleFloatProperty(in.readFloat());
 
         print_center = new SimpleStringProperty(in.readUTF());
-        retract_restart_extra_toolchange = new SimpleIntegerProperty(in.readInt());
         bed_size = FXCollections.observableArrayList(new SimpleIntegerProperty(in.readInt()), new SimpleIntegerProperty(in.readInt()));
         duplicate_grid = new SimpleStringProperty(in.readUTF());
         z_offset = new SimpleFloatProperty(in.readFloat());
@@ -1927,22 +1825,26 @@ public class SlicerSettings implements Serializable, Cloneable
         end_gcode = new SimpleStringProperty(in.readUTF());
         layer_gcode = new SimpleStringProperty(in.readUTF());
         toolchange_gcode = new SimpleStringProperty(in.readUTF());
-        retract_lift = new SimpleIntegerProperty(in.readInt());
-        retract_restart_extra = new SimpleIntegerProperty(in.readInt());
-        retract_before_travel = new SimpleIntegerProperty(in.readInt());
+
+        retract_before_travel = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
+        retract_length = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
+        retract_length_toolchange = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
+        retract_lift = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
+        retract_restart_extra = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
+        retract_restart_extra_toolchange = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
+        retract_speed = FXCollections.observableArrayList(new SimpleIntegerProperty(in.readInt()), new SimpleIntegerProperty(in.readInt()));
+
         retract_layer_change = new SimpleBooleanProperty(in.readBoolean());
-        wipe = new SimpleBooleanProperty(in.readBoolean());
+        wipe = FXCollections.observableArrayList(new SimpleIntegerProperty(in.readInt()), new SimpleIntegerProperty(in.readInt()));
         nozzle_diameter = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
         perimeter_acceleration = new SimpleIntegerProperty(in.readInt());
         infill_acceleration = new SimpleIntegerProperty(in.readInt());
         bridge_acceleration = new SimpleIntegerProperty(in.readInt());
         default_acceleration = new SimpleIntegerProperty(in.readInt());
 
-        nozzle_open_angle = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
-        nozzle_close_angle = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
-        nozzle_partial_open_angle = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
-        nozzle_close_angle = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
-        nozzle_home_angle = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
+        nozzle_ejection_volume = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
+        nozzle_partial_b_minimum = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
+        nozzle_wipe_volume = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
 
         infill_only_where_needed = new SimpleBooleanProperty(in.readBoolean());
         solid_infill_every_layers = new SimpleIntegerProperty(in.readInt());
@@ -1970,7 +1872,15 @@ public class SlicerSettings implements Serializable, Cloneable
         extruder_clearance_height = new SimpleIntegerProperty(in.readInt());
         extruder_clearance_radius = new SimpleIntegerProperty(in.readInt());
         extrusion_axis = new SimpleStringProperty(in.readUTF());
+
+        extrusion_width = new SimpleFloatProperty(in.readFloat());
         first_layer_extrusion_width = new SimpleStringProperty(in.readUTF());
+        perimeter_extrusion_width = new SimpleFloatProperty(in.readFloat());
+        infill_extrusion_width = new SimpleFloatProperty(in.readFloat());
+        solid_infill_extrusion_width = new SimpleFloatProperty(in.readFloat());
+        top_infill_extrusion_width = new SimpleFloatProperty(in.readFloat());
+        support_material_extrusion_width = new SimpleFloatProperty(in.readFloat());
+
         first_layer_height = new SimpleFloatProperty(in.readFloat());
         g0 = new SimpleIntegerProperty(in.readInt());
         gcode_arcs = new SimpleIntegerProperty(in.readInt());
@@ -1983,7 +1893,6 @@ public class SlicerSettings implements Serializable, Cloneable
         post_process = new SimpleStringProperty(in.readUTF());
         randomize_start = new SimpleBooleanProperty(in.readBoolean());
         resolution = new SimpleIntegerProperty(in.readInt());
-        retract_length_toolchange = new SimpleIntegerProperty(in.readInt());
         rotate = new SimpleIntegerProperty(in.readInt());
         scale = new SimpleIntegerProperty(in.readInt());
         skirt_distance = new SimpleIntegerProperty(in.readInt());
@@ -1996,22 +1905,7 @@ public class SlicerSettings implements Serializable, Cloneable
         support_material_interface_spacing = new SimpleIntegerProperty(in.readInt());
         raft_layers = new SimpleIntegerProperty(in.readInt());
         travel_speed = new SimpleIntegerProperty(in.readInt());
-        nozzle_offset = FXCollections.observableArrayList(new SimpleStringProperty(in.readUTF()), new SimpleStringProperty(in.readUTF()));
         start_gcode = new SimpleStringProperty(in.readUTF());
-        perimeter_nozzle = new SimpleIntegerProperty(in.readInt());
-        infill_nozzle = new SimpleIntegerProperty(in.readInt());
-        support_material_nozzle = new SimpleIntegerProperty(in.readInt());
-        auto_unretract = new SimpleBooleanProperty(in.readBoolean());
-        unretract_length = new SimpleIntegerProperty(in.readInt());
-        retract_length = new SimpleIntegerProperty(in.readInt());
-        retract_speed = new SimpleIntegerProperty(in.readInt());
-
-        nozzle_finish_unretract_by = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
-        nozzle_start_retract_by = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
-        nozzle_finish_retract_by = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
-        nozzle_finish_open_by = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
-        nozzle_start_close_by = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
-        nozzle_finish_close_by = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
 
         fill_density = new SimpleFloatProperty(in.readFloat());
         fill_pattern = new SimpleStringProperty(in.readUTF());
@@ -2036,12 +1930,15 @@ public class SlicerSettings implements Serializable, Cloneable
         gap_fill_speed = new SimpleIntegerProperty(in.readInt());
         first_layer_speed = new SimpleIntegerProperty(in.readInt());
         spiral_vase = new SimpleBooleanProperty(in.readBoolean());
-        perimeter_extrusion_width = new SimpleFloatProperty(in.readFloat());
-        infill_extrusion_width = new SimpleFloatProperty(in.readFloat());
-        solid_infill_extrusion_width = new SimpleFloatProperty(in.readFloat());
-        top_infill_extrusion_width = new SimpleFloatProperty(in.readFloat());
         perimeters = new SimpleIntegerProperty(in.readInt());
 
+        overhangs = new SimpleBooleanProperty(in.readBoolean());
+        start_perimeters_at_concave_points = new SimpleBooleanProperty(in.readBoolean());
+        start_perimeters_at_non_overhang = new SimpleBooleanProperty(in.readBoolean());
+        support_material_extruder = new SimpleIntegerProperty(in.readInt());
+        support_material_interface_extruder = new SimpleIntegerProperty(in.readInt());
+        first_layer_acceleration = new SimpleIntegerProperty(in.readInt());
+        autowipe = new SimpleBooleanProperty(in.readBoolean());
     }
 
     private void readObjectNoData()
@@ -2051,14 +1948,63 @@ public class SlicerSettings implements Serializable, Cloneable
     }
 
     @Override
-    public SlicerSettings clone()
+    public RoboxProfile clone()
     {
-        SlicerSettings clone = new SlicerSettings();
+        RoboxProfile clone = new RoboxProfile();
 
         clone.getProfileNameProperty().set(getProfileName());
         clone.filament_diameter.set(filament_diameter.get());
         clone.print_center.set(print_center.get());
-        clone.retract_restart_extra_toolchange.set(retract_restart_extra_toolchange.get());
+
+        int indexCounter = 0;
+        for (FloatProperty retract_before_travelProp : retract_before_travel)
+        {
+            clone.retract_before_travel.get(indexCounter).set(retract_before_travelProp.get());
+            indexCounter++;
+        }
+
+        indexCounter = 0;
+        for (FloatProperty retract_lengthProp : retract_length)
+        {
+            clone.retract_length.get(indexCounter).set(retract_lengthProp.get());
+            indexCounter++;
+        }
+
+        indexCounter = 0;
+        for (FloatProperty retract_length_toolchangeProp : retract_length_toolchange)
+        {
+            clone.retract_length_toolchange.get(indexCounter).set(retract_length_toolchangeProp.get());
+            indexCounter++;
+        }
+
+        indexCounter = 0;
+        for (FloatProperty retract_liftProp : retract_lift)
+        {
+            clone.retract_lift.get(indexCounter).set(retract_liftProp.get());
+            indexCounter++;
+        }
+
+        indexCounter = 0;
+        for (FloatProperty retract_restart_extraProp : retract_restart_extra)
+        {
+            clone.retract_restart_extra.get(indexCounter).set(retract_restart_extraProp.get());
+            indexCounter++;
+        }
+
+        indexCounter = 0;
+        for (FloatProperty retract_restart_extra_toolchangeProp : retract_restart_extra_toolchange)
+        {
+            clone.retract_restart_extra_toolchange.get(indexCounter).set(retract_restart_extra_toolchangeProp.get());
+            indexCounter++;
+        }
+
+        indexCounter = 0;
+        for (IntegerProperty retract_speedProp : retract_speed)
+        {
+            clone.retract_speed.get(indexCounter).set(retract_speedProp.get());
+            indexCounter++;
+        }
+
         int bed_size_counter = 0;
         for (IntegerProperty sizeProp : bed_size)
         {
@@ -2074,11 +2020,15 @@ public class SlicerSettings implements Serializable, Cloneable
         clone.end_gcode.set(end_gcode.get());
         clone.layer_gcode.set(layer_gcode.get());
         clone.toolchange_gcode.set(toolchange_gcode.get());
-        clone.retract_lift.set(retract_lift.get());
-        clone.retract_restart_extra.set(retract_restart_extra.get());
-        clone.retract_before_travel.set(retract_before_travel.get());
         clone.retract_layer_change.set(retract_layer_change.get());
-        clone.wipe.set(wipe.get());
+
+        int wipeCounter = 0;
+        for (IntegerProperty wipeProp : wipe)
+        {
+            clone.wipe.get(wipeCounter).set(wipeProp.get());
+            wipeCounter++;
+        }
+
         int nozzle_diameter_counter = 0;
         for (FloatProperty nozzleDiameterProp : nozzle_diameter)
         {
@@ -2089,29 +2039,23 @@ public class SlicerSettings implements Serializable, Cloneable
         clone.infill_acceleration.set(infill_acceleration.get());
         clone.bridge_acceleration.set(bridge_acceleration.get());
         clone.default_acceleration.set(default_acceleration.get());
-        int nozzle_open_angle_counter = 0;
-        for (FloatProperty nozzleProp : nozzle_open_angle)
+        int nozzleCounter = 0;
+        for (FloatProperty nozzleProp : nozzle_ejection_volume)
         {
-            clone.nozzle_open_angle.get(nozzle_open_angle_counter).set(nozzleProp.get());
-            nozzle_open_angle_counter++;
+            clone.nozzle_ejection_volume.get(nozzleCounter).set(nozzleProp.get());
+            nozzleCounter++;
         }
-        int nozzle_close_angle_counter = 0;
-        for (FloatProperty nozzleProp : nozzle_close_angle)
+        nozzleCounter = 0;
+        for (FloatProperty nozzleProp : nozzle_partial_b_minimum)
         {
-            clone.nozzle_close_angle.get(nozzle_close_angle_counter).set(nozzleProp.get());
-            nozzle_close_angle_counter++;
+            clone.nozzle_partial_b_minimum.get(nozzleCounter).set(nozzleProp.get());
+            nozzleCounter++;
         }
-        int nozzle_partial_open_angle_counter = 0;
-        for (FloatProperty nozzleProp : nozzle_partial_open_angle)
+        nozzleCounter = 0;
+        for (FloatProperty nozzleProp : nozzle_wipe_volume)
         {
-            clone.nozzle_partial_open_angle.get(nozzle_partial_open_angle_counter).set(nozzleProp.get());
-            nozzle_partial_open_angle_counter++;
-        }
-        int nozzle_home_angle_counter = 0;
-        for (FloatProperty nozzleProp : nozzle_home_angle)
-        {
-            clone.nozzle_home_angle.get(nozzle_home_angle_counter).set(nozzleProp.get());
-            nozzle_home_angle_counter++;
+            clone.nozzle_wipe_volume.get(nozzleCounter).set(nozzleProp.get());
+            nozzleCounter++;
         }
         clone.infill_only_where_needed.set(infill_only_where_needed.get());
         clone.solid_infill_every_layers.set(solid_infill_every_layers.get());
@@ -2139,7 +2083,15 @@ public class SlicerSettings implements Serializable, Cloneable
         clone.extruder_clearance_height.set(extruder_clearance_height.get());
         clone.extruder_clearance_radius.set(extruder_clearance_radius.get());
         clone.extrusion_axis.set(extrusion_axis.get());
+
+        clone.extrusion_width.set(extrusion_width.get());
         clone.first_layer_extrusion_width.set(first_layer_extrusion_width.get());
+        clone.perimeter_extrusion_width.set(perimeter_extrusion_width.get());
+        clone.infill_extrusion_width.set(infill_extrusion_width.get());
+        clone.solid_infill_extrusion_width.set(solid_infill_extrusion_width.get());
+        clone.top_infill_extrusion_width.set(top_infill_extrusion_width.get());
+        clone.support_material_extrusion_width.set(support_material_extrusion_width.get());
+
         clone.first_layer_height.set(first_layer_height.get());
         clone.g0.set(g0.get());
         clone.gcode_arcs.set(gcode_arcs.get());
@@ -2152,7 +2104,6 @@ public class SlicerSettings implements Serializable, Cloneable
         clone.post_process.set(post_process.get());
         clone.randomize_start.set(randomize_start.get());
         clone.resolution.set(resolution.get());
-        clone.retract_length_toolchange.set(retract_length_toolchange.get());
         clone.rotate.set(rotate.get());
         clone.scale.set(scale.get());
         clone.skirt_distance.set(skirt_distance.get());
@@ -2165,51 +2116,7 @@ public class SlicerSettings implements Serializable, Cloneable
         clone.support_material_interface_spacing.set(support_material_interface_spacing.get());
         clone.raft_layers.set(raft_layers.get());
         clone.travel_speed.set(travel_speed.get());
-        int nozzle_offset_counter = 0;
-        for (StringProperty nozzleProp : nozzle_offset)
-        {
-            clone.nozzle_offset.get(nozzle_offset_counter).set(nozzleProp.get());
-            nozzle_offset_counter++;
-        }
         clone.start_gcode.set(start_gcode.get());
-        clone.perimeter_nozzle.set(perimeter_nozzle.get());
-        clone.infill_nozzle.set(infill_nozzle.get());
-        clone.support_material_nozzle.set(support_material_nozzle.get());
-        clone.auto_unretract.set(auto_unretract.get());
-        clone.unretract_length.set(unretract_length.get());
-        clone.retract_length.set(retract_length.get());
-        clone.retract_speed.set(retract_speed.get());
-        int nozzle_finish_unretract_by_counter = 0;
-        for (FloatProperty nozzleProp : nozzle_finish_unretract_by)
-        {
-            clone.nozzle_finish_unretract_by.get(nozzle_finish_unretract_by_counter).set(nozzleProp.get());
-            nozzle_finish_unretract_by_counter++;
-        }
-        int nozzle_start_retract_by_counter = 0;
-        for (FloatProperty nozzleProp : nozzle_start_retract_by)
-        {
-            clone.nozzle_start_retract_by.get(nozzle_start_retract_by_counter).set(nozzleProp.get());
-        }
-        int nozzle_finish_retract_by_counter = 0;
-        for (FloatProperty nozzleProp : nozzle_finish_retract_by)
-        {
-            clone.nozzle_finish_retract_by.get(nozzle_finish_retract_by_counter).set(nozzleProp.get());
-        }
-        int nozzle_finish_open_by_counter = 0;
-        for (FloatProperty nozzleProp : nozzle_finish_open_by)
-        {
-            clone.nozzle_finish_open_by.get(nozzle_finish_open_by_counter).set(nozzleProp.get());
-        }
-        int nozzle_start_close_by_counter = 0;
-        for (FloatProperty nozzleProp : nozzle_start_close_by)
-        {
-            clone.nozzle_start_close_by.get(nozzle_start_close_by_counter).set(nozzleProp.get());
-        }
-        int nozzle_finish_close_by_counter = 0;
-        for (FloatProperty nozzleProp : nozzle_finish_close_by)
-        {
-            clone.nozzle_finish_close_by.get(nozzle_finish_close_by_counter).set(nozzleProp.get());
-        }
         clone.fill_density.set(fill_density.get());
         clone.fill_pattern.set(fill_pattern.get());
         clone.infill_every_layers.set(infill_every_layers.get());
@@ -2233,11 +2140,16 @@ public class SlicerSettings implements Serializable, Cloneable
         clone.gap_fill_speed.set(gap_fill_speed.get());
         clone.first_layer_speed.set(first_layer_speed.get());
         clone.spiral_vase.set(spiral_vase.get());
-        clone.perimeter_extrusion_width.set(perimeter_extrusion_width.get());
-        clone.infill_extrusion_width.set(infill_extrusion_width.get());
-        clone.solid_infill_extrusion_width.set(solid_infill_extrusion_width.get());
-        clone.top_infill_extrusion_width.set(top_infill_extrusion_width.get());
         clone.perimeters.set(perimeters.get());
+
+        clone.overhangs.set(overhangs.get());
+        clone.start_perimeters_at_concave_points.set(start_perimeters_at_concave_points.get());
+        clone.start_perimeters_at_non_overhang.set(start_perimeters_at_non_overhang.get());
+        clone.support_material_extruder.set(support_material_extruder.get());
+        clone.support_material_interface_extruder.set(support_material_interface_extruder.get());
+        clone.first_layer_acceleration.set(first_layer_acceleration.get());
+        
+        clone.autowipe.set(autowipe.get());
 
         return clone;
     }

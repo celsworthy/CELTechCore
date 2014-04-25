@@ -6,6 +6,14 @@
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
+ *//*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package celtech.appManager;
 
@@ -13,7 +21,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PrintProfileContainer;
 import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.PrintJob;
-import celtech.services.slicer.SlicerSettings;
+import celtech.services.slicer.RoboxProfile;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -40,7 +48,7 @@ public class Project implements Serializable
     private ObservableList<ModelContainer> loadedModels = FXCollections.observableArrayList();
     private String gcodeFileName = "";
     private ObjectProperty<ProjectMode> projectMode = new SimpleObjectProperty<>(ProjectMode.NONE);
-    private SlicerSettings customSettings = null;
+    private RoboxProfile customSettings = null;
     private BooleanProperty isDirty = new SimpleBooleanProperty(false);
     private ObservableList<PrintJob> printJobs = FXCollections.observableArrayList();
     
@@ -118,7 +126,7 @@ public class Project implements Serializable
         // We have to be of mesh type as no others are saved...
         projectMode = new SimpleObjectProperty<>(ProjectMode.MESH);
         
-        customSettings = (SlicerSettings) in.readObject();
+        customSettings = (RoboxProfile) in.readObject();
         
         printJobs = FXCollections.observableArrayList();
     }

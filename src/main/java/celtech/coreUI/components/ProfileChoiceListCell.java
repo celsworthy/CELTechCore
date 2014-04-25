@@ -2,6 +2,10 @@
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
+ *//*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package celtech.coreUI.components;
 
@@ -10,7 +14,7 @@ import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
 import celtech.configuration.PrintProfileContainer;
 import celtech.coreUI.DisplayManager;
-import celtech.services.slicer.SlicerSettings;
+import celtech.services.slicer.RoboxProfile;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -23,7 +27,7 @@ import javafx.scene.shape.Rectangle;
  *
  * @author Ian
  */
-public class ProfileChoiceListCell extends ListCell<SlicerSettings>
+public class ProfileChoiceListCell extends ListCell<RoboxProfile>
 {   
     private final static String LIST_CELL_STYLE_CLASS = "profile-choice-list-cell";
     private final GridPane grid = new GridPane();
@@ -52,7 +56,7 @@ public class ProfileChoiceListCell extends ListCell<SlicerSettings>
     }
     
     @Override
-    protected void updateItem(SlicerSettings settings, boolean empty)
+    protected void updateItem(RoboxProfile settings, boolean empty)
     {
         super.updateItem(settings, empty);
         if (empty)
@@ -70,7 +74,7 @@ public class ProfileChoiceListCell extends ListCell<SlicerSettings>
         setGraphic(null);
     }
     
-    private void addContent(SlicerSettings settings)
+    private void addContent(RoboxProfile settings)
     {
         setText(null);
         if (settings == PrintProfileContainer.createNewProfile)

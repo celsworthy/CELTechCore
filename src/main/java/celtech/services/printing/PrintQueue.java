@@ -1,6 +1,9 @@
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
+ *//*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
 package celtech.services.printing;
 
@@ -22,7 +25,7 @@ import celtech.services.postProcessor.PostProcessorService;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.SliceResult;
 import celtech.services.slicer.SlicerService;
-import celtech.services.slicer.SlicerSettings;
+import celtech.services.slicer.RoboxProfile;
 import celtech.utils.SystemUtils;
 import java.io.File;
 import java.io.IOException;
@@ -201,7 +204,7 @@ public class PrintQueue implements ControllableService
                 {
                     steno.info(t.getSource().getTitle() + " has succeeded");
                     String jobUUID = result.getPrintJobUUID();
-                    
+
                     modelLoaderService.reset();
                     modelLoaderService.setModelFileToLoad(result.getOutputFilename());
                     modelLoaderService.start();
@@ -211,7 +214,7 @@ public class PrintQueue implements ControllableService
                     gcodePrintService.setModelFileToPrint(result.getOutputFilename());
                     gcodePrintService.setPrinterToUse(result.getPrinterToUse());
                     gcodePrintService.start();
-                    
+
                     File gcodeFromPrintJob = new File(result.getOutputFilename());
                     int numberOfLines = SystemUtils.countLinesInFile(gcodeFromPrintJob, ";");
                     linesInCurrentGCodeFile = numberOfLines;
@@ -358,13 +361,7 @@ public class PrintQueue implements ControllableService
 //                            fxToJMEInterface.exposeGCodeModel(percentDone);
                         Notifier.showInformationNotification(notificationTitle, detectedPrintInProgressNotification);
 
-                        if (associatedPrinter.getPaused() == true)
-                        {
-                            setPrintStatus(PrinterStatusEnumeration.PAUSED);
-                        } else
-                        {
-                            setPrintStatus(PrinterStatusEnumeration.PRINTING);
-                        }
+                        setPrintStatus(PrinterStatusEnumeration.PRINTING);
                     }
                     break;
                 case SENDING_TO_PRINTER:
@@ -394,7 +391,7 @@ public class PrintQueue implements ControllableService
     /*
      * Properties
      */
-    public synchronized boolean printProject(Project project, PrintQualityEnumeration printQuality, SlicerSettings settings)
+    public synchronized boolean printProject(Project project, PrintQualityEnumeration printQuality, RoboxProfile settings)
     {
         boolean acceptedPrintRequest = false;
 
@@ -415,7 +412,7 @@ public class PrintQueue implements ControllableService
             {
 
                 //Write out the slicer config
-                settings.filament_diameterProperty().set((float)1.1283791670955125738961589031215);
+                settings.filament_diameterProperty().set((float) 1.1283791670955125738961589031215);
                 settings.writeToFile(printJobDirectoryName + File.separator + printUUID + ApplicationConfiguration.printProfileFileExtension);
 
                 setPrintStatus(PrinterStatusEnumeration.SLICING);

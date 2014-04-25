@@ -5,6 +5,7 @@
  */
 package celtech.coreUI.components;
 
+import celtech.appManager.ApplicationMode;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
 import celtech.appManager.ProjectMode;
@@ -65,9 +66,9 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class ProjectTab extends Tab
 {
-    
+
     private final Stenographer steno = StenographerFactory.getStenographer(ProjectTab.class.getName());
-    
+
     private final HBox nonEditableTab = new HBox();
     private final Label nonEditableProjectNameField = new Label();
     private final TextField editableProjectNameField = new TextField();
@@ -82,9 +83,9 @@ public class ProjectTab extends Tab
     private AnchorPane gizmoOverlay = null;
     private final Menu projectMenu = new Menu();
     private final MenuItem projectMenuItem = new MenuItem();
-    
+
     final Rectangle testRect = new Rectangle(5, 5);
-    
+
     private ChangeListener<Number> selectionContainerMoveListener = new ChangeListener<Number>()
     {
         @Override
@@ -97,14 +98,14 @@ public class ProjectTab extends Tab
             gizmoXform.setTy(y);
         }
     };
-    
+
     public ProjectTab(DisplayManager dispManagerRef, ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
         displayManager = dispManagerRef;
         project = new Project();
         initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
     }
-    
+
     public ProjectTab(DisplayManager dispManagerRef, String projectName, ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
         project = loadProject(projectName);
@@ -113,18 +114,18 @@ public class ProjectTab extends Tab
         displayManager = dispManagerRef;
         initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
     }
-    
+
     public ProjectTab(DisplayManager dispManagerRef, Project inboundProject, ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
         project = inboundProject;
         displayManager = dispManagerRef;
         initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
     }
-    
+
     private Project loadProject(String projectName)
     {
         Project loadedProject = null;
-        
+
         try
         {
             FileInputStream projectFile = new FileInputStream(ApplicationConfiguration.getProjectDirectory() + projectName);
@@ -138,10 +139,10 @@ public class ProjectTab extends Tab
         {
             steno.error("Couldn't locate class while loading project " + projectName);
         }
-        
+
         return loadedProject;
     }
-    
+
     private void initialise(ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
 //        projectMenu.getItems().add(projectMenuItem);
@@ -149,7 +150,7 @@ public class ProjectTab extends Tab
 //        nonEditableTab.getChildren().add(projectMenu);
         nonEditableProjectNameField.getStyleClass().add("nonEditableProjectTab");
         editableProjectNameField.getStyleClass().add("editableProjectTab");
-        
+
         setOnCloseRequest((Event t) ->
         {
             steno.info("Beginning save");
@@ -157,13 +158,13 @@ public class ProjectTab extends Tab
             projectManager.projectClosed(project.getProjectName());
             steno.info("Completed save");
         });
-        
+
         viewManager = new ThreeDViewManager(project, tabDisplayWidthProperty, tabDisplayHeightProperty);
 //        camera = viewManager.getCamera();
 
         basePane = new AnchorPane();
         basePane.getStyleClass().add("project-view-background");
-        
+
         basePane.setOnDragOver(new EventHandler<DragEvent>()
         {
             @Override
@@ -187,25 +188,25 @@ public class ProjectTab extends Tab
                                     break;
                                 }
                             }
-                            
+
                             if (!extensionFound)
                             {
                                 accept = false;
                                 break;
                             }
                         }
-                        
+
                         if (accept)
                         {
                             event.acceptTransferModes(TransferMode.COPY);
                         }
                     }
                 }
-                
+
                 event.consume();
             }
         });
-        
+
         basePane.setOnDragEntered(new EventHandler<DragEvent>()
         {
             public void handle(DragEvent event)
@@ -231,36 +232,36 @@ public class ProjectTab extends Tab
                                     break;
                                 }
                             }
-                            
+
                             if (!extensionFound)
                             {
                                 accept = false;
                                 break;
                             }
                         }
-                        
+
                         if (accept)
                         {
                             basePane.setEffect(new Glow());
                         }
                     }
                 }
-                
+
                 event.consume();
             }
         });
-        
+
         basePane.setOnDragExited(new EventHandler<DragEvent>()
         {
             public void handle(DragEvent event)
             {
                 /* mouse moved away, remove the graphical cues */
                 basePane.setEffect(null);
-                
+
                 event.consume();
             }
         });
-        
+
         basePane.setOnDragDropped(new EventHandler<DragEvent>()
         {
             @Override
@@ -281,13 +282,13 @@ public class ProjectTab extends Tab
                 /* let the source know whether the string was successfully 
                  * transferred and used */
                 event.setDropCompleted(success);
-                
+
                 event.consume();
             }
         });
-        
+
         basePane.getChildren().add(viewManager.getSubScene());
-        
+
         try
         {
             URL layoutControlsURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "GizmoOverlay.fxml");
@@ -298,16 +299,16 @@ public class ProjectTab extends Tab
             gizmoOverlayController.setXform(gizmoXform);
             gizmoOverlayController.setBase(basePane);
             viewManager.associateGizmoOverlayController(gizmoOverlayController);
-            
+
             gizmoOverlay.setRotationAxis(MathUtils.xAxis);
             gizmoOverlay.setRotate(90);
             gizmoXform.getChildren().add(gizmoOverlay);
             gizmoOverlay.setPickOnBounds(false);
             basePane.getChildren().add(gizmoXform);
-            
+
             gizmoXform.setRotateX(viewManager.demandedCameraRotationXProperty().get());
             gizmoXform.setRotateY(viewManager.demandedCameraRotationYProperty().get());
-            
+
             viewManager.demandedCameraRotationXProperty().addListener(new ChangeListener<Number>()
             {
                 @Override
@@ -316,7 +317,7 @@ public class ProjectTab extends Tab
                     gizmoXform.setRotateX(newValue.doubleValue());
                 }
             });
-            
+
             viewManager.demandedCameraRotationYProperty().addListener(new ChangeListener<Number>()
             {
                 @Override
@@ -325,15 +326,15 @@ public class ProjectTab extends Tab
                     gizmoXform.setRotateY(newValue.doubleValue());
                 }
             });
-            
+
         } catch (IOException ex)
         {
             steno.error("Failed to load 3d Gizmo:" + ex);
         }
-        
+
         viewManager.getSelectionContainer().screenXProperty().addListener(selectionContainerMoveListener);
         viewManager.getSelectionContainer().screenYProperty().addListener(selectionContainerMoveListener);
-        
+
         try
         {
             URL gcodeEditorURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "GCodeEditorPanel.fxml");
@@ -343,18 +344,18 @@ public class ProjectTab extends Tab
             gcodeEditorController.configure(viewManager.getLoadedModels(), project);
             AnchorPane.setTopAnchor(gcodeEditor, 30.0);
             AnchorPane.setRightAnchor(gcodeEditor, 0.0);
-            
+
             basePane.getChildren().add(gcodeEditor);
         } catch (IOException ex)
         {
             steno.error("Failed to load gcode editor:" + ex);
         }
-        
+
         this.setContent(basePane);
-        
+
         this.setGraphic(nonEditableProjectNameField);
         nonEditableProjectNameField.textProperty().bind(project.projectNameProperty());
-        
+
         nonEditableProjectNameField.setOnMouseClicked((MouseEvent event) ->
         {
             if (event.getClickCount() == 2 && project.getProjectMode() != ProjectMode.GCODE)
@@ -366,7 +367,7 @@ public class ProjectTab extends Tab
                 titleBeingEdited = true;
             }
         });
-        
+
         editableProjectNameField.focusedProperty().addListener(new ChangeListener<Boolean>()
         {
             @Override
@@ -378,14 +379,14 @@ public class ProjectTab extends Tab
                 }
             }
         });
-        
+
         editableProjectNameField.setOnAction((ActionEvent event) ->
         {
             switchToNonEditableTitle();
         });
-        
+
     }
-    
+
     private void switchToNonEditableTitle()
     {
         if (titleBeingEdited == true)
@@ -397,7 +398,7 @@ public class ProjectTab extends Tab
             titleBeingEdited = false;
         }
     }
-    
+
     public void addProjectContainer(String projectName)
     {
         project = loadProject(projectName);
@@ -407,7 +408,7 @@ public class ProjectTab extends Tab
             viewManager.addModel(model);
         }
     }
-    
+
     public void addModelContainer(String fullFilename, ModelContainer modelGroup)
     {
         steno.info("I am loading " + fullFilename);
@@ -429,7 +430,7 @@ public class ProjectTab extends Tab
                     break;
             }
         }
-        
+
         if ((project.getProjectMode() == ProjectMode.GCODE && modelGroup.getModelContentsType() == ModelContentsEnumeration.GCODE)
                 || (project.getProjectMode() == ProjectMode.MESH && modelGroup.getModelContentsType() == ModelContentsEnumeration.MESH))
         {
@@ -439,43 +440,43 @@ public class ProjectTab extends Tab
             steno.warning("Discarded load of " + modelGroup.getModelName() + " due to conflict with project type");
         }
     }
-    
+
     public void removeModel(ModelContainer modelMesh)
     {
         viewManager.removeModel(modelMesh);
     }
-    
+
     public void deleteSelectedModels()
     {
         viewManager.deleteSelectedModels();
     }
-    
+
     public void copySelectedModels()
     {
         viewManager.copySelectedModels();
     }
-    
+
     public SelectionContainer getSelectionContainer()
     {
         return viewManager.getSelectionContainer();
     }
-    
+
     public ObservableList<ModelContainer> getLoadedModels()
     {
         return viewManager.getLoadedModels();
     }
-    
+
     public void autoLayout()
     {
         Collections.sort(viewManager.getLoadedModels());
         PackingThing thing = new PackingThing(210, 150);
-        
+
         ArrayList<Block> blocks = new ArrayList<>();
-        
+
         thing.reference(viewManager.getLoadedModels(), 10);
         thing.pack();
         thing.relocateBlocks();
-        
+
         viewManager.recalculateSelectionBounds(false);
 
 //        for (Block block : blocks)
@@ -498,12 +499,12 @@ public class ProjectTab extends Tab
 //            System.out.println("<<<<<<<<<<");
 //        }
     }
-    
+
     public void selectModel(ModelContainer selectedModel)
     {
         viewManager.selectModel(selectedModel);
     }
-    
+
     public void saveProject()
     {
         //Only save if there are some models and we aren't showing a GCODE project ...
@@ -526,41 +527,56 @@ public class ProjectTab extends Tab
                 }
             }
         }
-        
+
         viewManager.shutdown();
     }
-    
+
     public ThreeDViewManager getThreeDViewManager()
     {
         return viewManager;
     }
-    
+
     public Project getProject()
     {
         return project;
     }
-    
+
     public void switchToPresetCameraView(CameraPositionPreset cameraPositionPreset)
     {
 //        viewManager.getCamera().gotoPreset(cameraPositionPreset);
     }
-    
+
     public void deselectModel(ModelContainer selectedModel)
     {
         viewManager.deselectModel(selectedModel);
     }
-    
+
     private void recentreGizmoX(int screenX)
     {
         Point2D newPosition = basePane.screenToLocal(screenX, 0);
         gizmoXform.setTx(newPosition.getX());
         steno.info("New X pos " + newPosition.getX() + " for " + screenX);
     }
-    
+
     private void recentreGizmoY(int screenY)
     {
         Point2D newPosition = basePane.screenToLocal(0, screenY);
         gizmoXform.setTy(newPosition.getY());
         steno.info("New Y pos " + newPosition.getY() + " for " + screenY);
+    }
+
+    public void setMode(ApplicationMode newMode)
+    {
+        switch (newMode)
+        {
+            case LAYOUT:
+                //stop rotation
+                viewManager.stopSettingsAnimation();
+                break;
+            case SETTINGS:
+                //start rotation
+                viewManager.startSettingsAnimation();
+                break;
+        }
     }
 }
