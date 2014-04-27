@@ -5,7 +5,9 @@
  */
 package celtech.services.calibration;
 
+import celtech.configuration.HeaterMode;
 import celtech.coreUI.DisplayManager;
+import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -21,10 +23,13 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class CalibrateBTask extends Task<Boolean> implements ControllableService
+public class CalibrateBTask extends Task<CalibrationStepResult> implements ControllableService
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(CalibrateBTask.class.getName());
+    private CalibrationState desiredState = null;
+    private int nozzleNumber = -1;
+
     private Printer printerToUse = null;
     private String progressTitle = null;
     private String initialisingMessage = null;
@@ -38,191 +43,155 @@ public class CalibrateBTask extends Task<Boolean> implements ControllableService
     private int progressPercent = 0;
     private boolean lookingForKeyPress = false;
 
-    public CalibrateBTask(Printer printerToUse)
+    public CalibrateBTask(CalibrationState desiredState)
     {
-        this.printerToUse = printerToUse;
+        this.desiredState = desiredState;
+    }
 
-        i18nBundle = DisplayManager.getLanguageBundle();
-        progressTitle = i18nBundle.getString("calibrationPanel.BCalibrationProgressTitle");
-        initialisingMessage = i18nBundle.getString("calibrationPanel.BCalibrationInitialising");
-        heatingMessage = i18nBundle.getString("calibrationPanel.BCalibrationHeating");
-        pressAKeyMessage = i18nBundle.getString("calibrationPanel.pressAKey");
-        preparingExtruderMessage = i18nBundle.getString("calibrationPanel.preparingExtruder");
-        pressAKeyToContinueMessage = i18nBundle.getString("calibrationPanel.pressAKeyToContinue");
-        readyToBeginMessage = i18nBundle.getString("calibrationPanel.readyToBeginTest");
+    public CalibrateBTask(CalibrationState desiredState, int nozzleNumber)
+    {
+        this.desiredState = desiredState;
+        this.nozzleNumber = nozzleNumber;
     }
 
     @Override
-    protected Boolean call() throws Exception
+    protected CalibrationStepResult call() throws Exception
     {
         boolean success = false;
-        float storedNozzle0Offset = 0f;
 
-        RoboxCommsManager.getInstance().setSleepBetweenStatusChecks(printerToUse, 100);
+        StatusScreenState statusScreenState = StatusScreenState.getInstance();
+        printerToUse = statusScreenState.getCurrentlySelectedPrinter();
 
-        updateTitle(progressTitle);
-        try
+        switch (desiredState)
         {
-            updateMessage(initialisingMessage);
-            progressPercent += 5;
-            updateProgress(progressPercent, 100);
-            printerToUse.transmitDirectGCode("G90", false);
-            waitOnBusy();
-            printerToUse.transmitDirectGCode("G0 B0", false);
-            waitOnBusy();
-            printerToUse.transmitDirectGCode("G28 X Y", false);
-            waitOnBusy();
-            printerToUse.transmitDirectGCode("G0 X116.5 Y75", false);
-            waitOnBusy();
-            printerToUse.transmitDirectGCode("G28 Z", false);
-            waitOnBusy();
-            printerToUse.transmitDirectGCode("G0 Z15", false);
-            waitOnBusy();
-
-            updateMessage(heatingMessage);
-            progressPercent += 5;
-            updateProgress(progressPercent, 100);
-            printerToUse.transmitDirectGCode("M104", false);
-            waitUntilNozzleReaches(printerToUse.getNozzleTargetTemperature(), 5);
-
-
-            progressPercent += 5;
-            updateProgress(progressPercent, 100);
-
-            HeadEEPROMDataResponse headData = printerToUse.transmitReadHeadEEPROM();
-            printerToUse.transmitWriteHeadEEPROM(headData.getHeadTypeCode(),
-                    headData.getUniqueID(),
-                    headData.getMaximumTemperature(),
-                    headData.getThermistorBeta(),
-                    headData.getThermistorTCal(),
-                    headData.getNozzle1XOffset(),
-                    headData.getNozzle1YOffset(),
-                    headData.getNozzle1ZOffset(),
-                    0.9f,
-                    headData.getNozzle2XOffset(),
-                    headData.getNozzle2YOffset(),
-                    headData.getNozzle2ZOffset(),
-                    -0.9f,
-                    headData.getHoursUsed());
-
-            waitOnBusy();
-
-            progressPercent += 5;
-            updateProgress(progressPercent, 100);
-
-            updateMessage(readyToBeginMessage);
-            waitForKeyPress();
-
-            boolean keepRunning = true;
-
-            for (int nozzleNumber = 0; nozzleNumber < 2; nozzleNumber++)
-            {
-                if (keepRunning == false)
+            case INITIALISING:
+                try
                 {
-                    break;
-                }
-
-                updateMessage(preparingExtruderMessage);
-                printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
-
-                AckResponse errors = printerToUse.transmitReportErrors();
-                if (errors.isError())
-                {
-                    printerToUse.transmitResetErrors();
-                }
-
-                while (errors.isEFilamentSlipError() == false && isCancelled() == false)
-                {
-                    printerToUse.transmitDirectGCode("G0 E10", false);
+                    printerToUse.transmitDirectGCode("G90", false);
                     waitOnBusy();
-
-                    errors = printerToUse.transmitReportErrors();
-                }
-
-                printerToUse.transmitResetErrors();
-
-                progressPercent += 5;
-                updateProgress(progressPercent, 100);
-
-                updateMessage(pressAKeyMessage + " " + nozzleNumber);
-
-                float offsetValue = 0f;
-
-                lookingForKeyPress = true;
-                while (keyPressed == false && offsetValue < 1.75)
-                {
-                    offsetValue += 0.05;
-
-                    printerToUse.transmitDirectGCode("G0 B" + offsetValue, false);
-                    waitOnBusy();
-                    Thread.sleep(250);
-                }
-                lookingForKeyPress = false;
-
-                if (keyPressed)
-                {
-                    storedNozzle0Offset = 0.8f + offsetValue;
                     printerToUse.transmitDirectGCode("G0 B0", false);
-                    keyPressed = false;
+                    waitOnBusy();
+                    printerToUse.transmitDirectGCode("G28 X Y", false);
+                    waitOnBusy();
+                    printerToUse.transmitDirectGCode("G0 X116.5 Y75", false);
+                    waitOnBusy();
+                    printerToUse.transmitDirectGCode("G28 Z", false);
+                    waitOnBusy();
+                    printerToUse.transmitDirectGCode("G0 Z50", false);
+                    waitOnBusy();
+                    success = true;
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
+                } catch (InterruptedException ex)
+                {
+                    steno.error("Interrrupted during needle valve calibration - mode=" + desiredState.name());
+                }
 
-                    if (nozzleNumber == 0)
+                break;
+            case HEATING:
+                try
+                {
+                    printerToUse.transmitDirectGCode("M104", false);
+                    if (printerToUse.getNozzleHeaterMode() == HeaterMode.FIRST_LAYER)
                     {
-                        updateMessage(pressAKeyToContinueMessage);
-                        waitForKeyPress();
-                    }
-
-                    if (nozzleNumber == 0)
-                    {
-                        printerToUse.transmitWriteHeadEEPROM(headData.getHeadTypeCode(),
-                                headData.getUniqueID(),
-                                headData.getMaximumTemperature(),
-                                headData.getThermistorBeta(),
-                                headData.getThermistorTCal(),
-                                headData.getNozzle1XOffset(),
-                                headData.getNozzle1YOffset(),
-                                headData.getNozzle1ZOffset(),
-                                storedNozzle0Offset,
-                                headData.getNozzle2XOffset(),
-                                headData.getNozzle2YOffset(),
-                                headData.getNozzle2ZOffset(),
-                                headData.getNozzle2BOffset(),
-                                headData.getHoursUsed());
+                        waitUntilNozzleReaches(printerToUse.getNozzleFirstLayerTargetTemperature(), 5);
                     } else
                     {
-                        printerToUse.transmitWriteHeadEEPROM(headData.getHeadTypeCode(),
-                                headData.getUniqueID(),
-                                headData.getMaximumTemperature(),
-                                headData.getThermistorBeta(),
-                                headData.getThermistorTCal(),
-                                headData.getNozzle1XOffset(),
-                                headData.getNozzle1YOffset(),
-                                headData.getNozzle1ZOffset(),
-                                storedNozzle0Offset,
-                                headData.getNozzle2XOffset(),
-                                headData.getNozzle2YOffset(),
-                                headData.getNozzle2ZOffset(),
-                                -(0.8f + offsetValue),
-                                headData.getHoursUsed());
-                        success = true;
+                        waitUntilNozzleReaches(printerToUse.getNozzleTargetTemperature(), 5);
                     }
-
-                    progressPercent += 5;
-                    updateProgress(progressPercent, 100);
-                } else
+                } catch (RoboxCommsException ex)
                 {
-                    keepRunning = false;
+                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
+                } catch (InterruptedException ex)
+                {
+                    steno.error("Interrrupted during needle valve calibration - mode=" + desiredState.name());
                 }
+
+                break;
+            case PRIMING:
+                extrudeUntilStall();
+                break;
+            case MATERIAL_EXTRUDING_CHECK:
+                try
+                {
+                    printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
+                    printerToUse.transmitDirectGCode("G0 B2", false);
+                    if (nozzleNumber == 0)
+                    {
+                        printerToUse.transmitDirectGCode("G1 E10 F75", false);
+                    } else
+                    {
+                        printerToUse.transmitDirectGCode("G1 E10 F100", false);
+                    }
+                    waitOnBusy();
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
+                }
+                break;
+            case PRE_CALIBRATION_PRIMING:
+                success = extrudeUntilStall();
+                break;
+            case CONFIRM_MATERIAL_EXTRUDING:
+                try
+                {
+                    printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
+                    printerToUse.transmitDirectGCode("G0 B1", false);
+                    if (nozzleNumber == 0)
+                    {
+                        printerToUse.transmitDirectGCode("G1 E10 F75", false);
+                    } else
+                    {
+                        printerToUse.transmitDirectGCode("G1 E10 F100", false);
+                    }
+                    waitOnBusy();
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
+                }
+                break;
+        }
+
+        return new CalibrationStepResult(desiredState, success);
+    }
+
+    private boolean extrudeUntilStall()
+    {
+        boolean success = false;
+        try
+        {
+            printerToUse.transmitDirectGCode("M909 S4", false);
+            waitOnBusy();
+
+            printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
+
+            AckResponse errors = printerToUse.transmitReportErrors();
+            if (errors.isError())
+            {
+                printerToUse.transmitResetErrors();
             }
 
-            printerToUse.transmitDirectGCode("G0 B0", false);
-            printerToUse.transmitDirectGCode("M104 S0", false);
+            while (errors.isEFilamentSlipError() == false && isCancelled() == false)
+            {
+                printerToUse.transmitDirectGCode("G0 E10", false);
+                waitOnBusy();
 
+                errors = printerToUse.transmitReportErrors();
+            }
+
+            printerToUse.transmitResetErrors();
+
+            printerToUse.transmitDirectGCode("M909 S70", false);
+            waitOnBusy();
+
+            success = true;
         } catch (RoboxCommsException ex)
         {
-            steno.error("Error during B calibration routine");
-        } finally
+            steno.error("Error in needle valve priming - mode=" + desiredState.name());
+        } catch (InterruptedException ex)
         {
-            RoboxCommsManager.getInstance().setSleepBetweenStatusChecks(printerToUse, 500);
+            steno.error("Interrrupted during needle valve priming - mode=" + desiredState.name());
         }
         return success;
     }

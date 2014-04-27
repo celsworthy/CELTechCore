@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import celtech.coreUI.components.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.*?>
@@ -10,6 +9,7 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.text.*?>
+<?import celtech.coreUI.components.*?>
 <?scenebuilder-preview-i18n-resource ../../i18n/LanguageData.properties?>
 <?scenebuilder-stylesheet ../../css/AutoMaker.css?>
 
@@ -121,7 +121,7 @@
                                 <Insets left="5.0" right="5.0" />
                             </padding>
                         </LineChart>
-                        <HBox id="HBox" alignment="CENTER_RIGHT" prefWidth="-1.0" spacing="75.0">
+                        <HBox id="HBox" alignment="CENTER_RIGHT" prefWidth="-1.0" spacing="90.0">
                             <children>
                                 <Label text="3 min" HBox.hgrow="NEVER" />
                                 <Label style="-fx-font-size:14px;" text="Time">
@@ -132,7 +132,7 @@
                                 <Insets top="-15.0" />
                             </VBox.margin>
                             <padding>
-                                <Insets right="5.0" />
+                                <Insets right="15.0" />
                             </padding>
                         </HBox>
                     </children>

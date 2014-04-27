@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" pickOnBounds="false" prefHeight="400.0" prefWidth="600.0" styleClass="standardPanel" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.CalibrationNozzleBPageController">
+<VBox fx:id="container" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" pickOnBounds="false" prefHeight="400.0" prefWidth="600.0" styleClass="standardPanel" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.CalibrationNozzleBPageController">
     <children>
         <BorderPane pickOnBounds="false" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
             <VBox.margin>
@@ -15,7 +15,7 @@
             <center>
                 <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
                     <children>
-                        <Text fx:id="calibrationStatus" fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" BorderPane.alignment="CENTER">
+                        <Text fx:id="calibrationStatus" fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" BorderPane.alignment="CENTER">
                             <font>
                                 <Font name="Segoe UI" size="24.0" />
                             </font>
@@ -38,9 +38,9 @@
                 </VBox>
             </top>
             <bottom>
-                <VBox alignment="CENTER" pickOnBounds="false" BorderPane.alignment="CENTER">
+                <VBox alignment="CENTER" pickOnBounds="false" spacing="5.0" BorderPane.alignment="CENTER">
                     <children>
-                        <Text fx:id="calibrationInstruction" fill="WHITE" layoutX="278.0" layoutY="177.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text">
+                        <Text fx:id="calibrationInstruction" fill="WHITE" layoutX="278.0" layoutY="177.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER">
                             <font>
                                 <Font name="Segoe UI" size="18.0" />
                             </font>
@@ -49,8 +49,8 @@
                             <children>
                                 <HBox alignment="CENTER" layoutX="10.0" layoutY="10.0" pickOnBounds="false" spacing="10.0">
                                     <children>
-                                        <Button fx:id="yesButton" mnemonicParsing="false" onAction="#startCalibration" text="%misc.Yes" />
-                                        <Button fx:id="noButton" layoutX="5.0" mnemonicParsing="false" onAction="#startCalibration" text="%misc.No" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
+                                        <Button fx:id="yesButton" mnemonicParsing="false" onAction="#yesButtonAction" text="%misc.Yes" />
+                                        <Button fx:id="noButton" layoutX="5.0" mnemonicParsing="false" onAction="#noButtonAction" text="%misc.No" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
                                     </children>
                                 </HBox>
                                 <HBox alignment="CENTER" pickOnBounds="false" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -60,7 +60,7 @@
                                 </HBox>
                                 <HBox alignment="CENTER_RIGHT" pickOnBounds="false">
                                     <children>
-                                        <Button fx:id="cancelCalibrationButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#startCalibration" text="%calibrationPanel.cancelCalibration">
+                                        <Button fx:id="cancelCalibrationButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#cancelCalibration" text="%calibrationPanel.cancelCalibration">
                                             <StackPane.margin>
                                                 <Insets />
                                             </StackPane.margin>
