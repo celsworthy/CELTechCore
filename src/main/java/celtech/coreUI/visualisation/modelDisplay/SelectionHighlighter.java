@@ -55,6 +55,7 @@ public class SelectionHighlighter extends Group
     private final double cornerBracketLength = 5;
     private final double cornerBoxSize = 2;
     private final double halfCornerBoxSize = cornerBoxSize / 2;
+    private boolean scaleActive = false;
 
     public SelectionHighlighter(final SelectionContainer selectionContainer, final DoubleProperty cameraDistance)
     {
@@ -67,6 +68,7 @@ public class SelectionHighlighter extends Group
             @Override
             public void handle(MouseEvent event)
             {
+                scaleActive = true;
                 greenMaterial.setDiffuseColor(Color.PURPLE);
             }
         });
@@ -76,6 +78,7 @@ public class SelectionHighlighter extends Group
             @Override
             public void handle(MouseEvent event)
             {
+                scaleActive = false;
                 greenMaterial.setDiffuseColor(Color.LIMEGREEN);
             }
         });
@@ -314,5 +317,10 @@ public class SelectionHighlighter extends Group
         selectionBoxFrontRightTop.setTy(minY);
 
         selectionBox.setPivot(selectionContainer.getCentreX(), 0, selectionContainer.getCentreZ());
+    }
+    
+    public boolean isScaleActive()
+    {
+        return scaleActive;
     }
 }

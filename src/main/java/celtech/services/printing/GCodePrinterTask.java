@@ -73,7 +73,6 @@ public class GCodePrinterTask extends Task<Boolean>
             while (scanner.hasNextLine() && !isCancelled())
             {
                 String line = scanner.nextLine();
-                line = line.replaceFirst(";.*", "");
                 line = line.trim();
 
                 boolean lineIngested = false;
@@ -81,6 +80,7 @@ public class GCodePrinterTask extends Task<Boolean>
 
                 if (line.equals("") == false && line.startsWith(";") == false)
                 {
+                    line = line.replaceFirst(";.*", "");
                     if (printUsingSDCard)
                     {
                         printerToUse.sendDataFileChunk(line, lineCounter == numberOfLines - 1, true);

@@ -65,7 +65,7 @@ public class ModelLoaderTask extends Task<ModelLoadResult>
         if (modelFileToLoad.endsWith("obj") || modelFileToLoad.endsWith("OBJ"))
         {
             ObjImporter reader = new ObjImporter();
-            modelLoadResult = reader.loadFile(this, "file://" + modelFileToLoad, targetProjectTab);
+            modelLoadResult = reader.loadFile(this, "file:///" + modelFileToLoad, targetProjectTab);
         } else if (modelFileToLoad.endsWith("stl") || modelFileToLoad.endsWith("STL"))
         {
             STLImporter reader = new STLImporter();

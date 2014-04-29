@@ -1151,11 +1151,21 @@ table-view .column-header-background {
     -fx-hgap:10;
 }
 
-.status-tab-graphic{
-    -fx-background-color: mid_grey;
-    -fx-content-display: graphic-only;
-    -fx-padding: 0 0 5 0;
+.bob
+{
+-fx-fill: purple;
 }
+
+.bob:focus
+{
+-fx-fill: green;
+}
+/*.status-tab-graphic, .status-tab-graphi{
+    -fx-background-color: green;
+    -fx-content-display: graphic-only;
+    -fx-fill: purple;
+}*/
+
 
 /*******************************************************************************
  *                                                                             *

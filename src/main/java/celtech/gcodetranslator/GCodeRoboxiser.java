@@ -488,11 +488,17 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             // Bit inefficient doing this here - move later so the checks are carried out once only when the parameters are loaded
             if (compareDouble(currentNozzle.getEjectionVolume(), currentNozzle.getWipeVolume()) == EQUAL && currentNozzle.getEjectionVolume() > 0 && currentNozzle.getWipeVolume() > 0)
             {
+                CommentEvent commentEvent = new CommentEvent();
+                commentEvent.setComment("ERROR -- Ejection volume and wipe volume are greater than zero and equal");
+                writeEventToFile(commentEvent);
                 throw new NozzleCloseSettingsError("Ejection volume and wipe volume are greater than zero and equal");
             }
 
             if (compareDouble(currentNozzle.getEjectionVolume(), currentNozzle.getWipeVolume()) == LESS_THAN)
             {
+                CommentEvent commentEvent = new CommentEvent();
+                commentEvent.setComment("ERROR -- Start is less than finish");
+                writeEventToFile(commentEvent);
                 throw new NozzleCloseSettingsError("Start is less than finish");
             }
 
@@ -557,11 +563,11 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                         {
                             //We can use a shortened wipe with minimum B
                             nozzleStartPosition = currentNozzle.getPartialBMinimum();
-                            nozzleCloseOverVolume = currentNozzle.getEjectionVolume();
+                            nozzleCloseOverVolume = minimumBEjectionVolume;
                             replaceOpenNozzleWithPartialOpen(currentNozzle.getPartialBMinimum());
+                            findWipeIndex(requiredWipeVolume, precursorPoint, comment);
                             ejectionVolumeIndex = getNextExtrusionEventIndex(0);
                             extrusionBuffer.get(ejectionVolumeIndex).setComment("Shortened wipe volume");
-                            findWipeIndex(requiredWipeVolume, precursorPoint, comment);
                         }
                     } else
                     {
@@ -569,9 +575,9 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                         nozzleStartPosition = bValue;
                         nozzleCloseOverVolume = extrusionVolumeAfterWipe;
                         replaceOpenNozzleWithPartialOpen(bValue);
-                        ejectionVolumeIndex = getNextExtrusionEventIndex(0);
-                        extrusionBuffer.get(ejectionVolumeIndex).setComment("Partial open - full wipe volume");
                         findWipeIndex(currentNozzle.getWipeVolume(), precursorPoint, comment);
+                        findEjectionIndex(extrusionVolumeAfterWipe + currentNozzle.getWipeVolume(), precursorPoint, comment);
+                        extrusionBuffer.get(ejectionVolumeIndex).setComment("Partial open - full wipe volume");
                     }
                 }
 
@@ -584,6 +590,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
                         int foundRetractDuringExtrusion = -1;
                         int foundNozzleChange = -1;
+                        double currentNozzlePosition = nozzleStartPosition;
+                        
                         for (int tSearchIndex = extrusionBuffer.size() - 1; tSearchIndex > wipeVolumeIndex; tSearchIndex--)
                         {
 
@@ -615,7 +623,21 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                             {
                                 ExtrusionEvent event = (ExtrusionEvent) candidateevent;
 
-                                if (eventWriteIndex >= wipeVolumeIndex)
+                                if (eventWriteIndex == wipeVolumeIndex && eventWriteIndex == ejectionVolumeIndex)
+                                {
+                                    // No extrusion
+                                    // Proportional B value
+                                    NozzlePositionChangeEvent nozzleEvent = new NozzlePositionChangeEvent();
+                                    nozzleEvent.setX(event.getX());
+                                    nozzleEvent.setY(event.getY());
+                                    nozzleEvent.setLength(event.getLength());
+                                    nozzleEvent.setFeedRate(event.getFeedRate());
+                                    nozzleEvent.setComment(event.getComment() + " after start of close");
+                                    nozzleStartPosition = 0;
+                                    nozzleEvent.setB(0);
+                                    nozzleEvent.setNoExtrusionFlag(true);
+                                    writeEventToFile(nozzleEvent);
+                                } else if (eventWriteIndex >= wipeVolumeIndex)
                                 {
                                     // No extrusion
                                     // No B
@@ -636,12 +658,12 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                     nozzleEvent.setLength(event.getLength());
                                     nozzleEvent.setFeedRate(event.getFeedRate());
                                     nozzleEvent.setComment(event.getComment() + " after start of close");
-                                    nozzleStartPosition = nozzleStartPosition - (event.getE() / nozzleCloseOverVolume);
-                                    if (compareDouble(nozzleStartPosition, 0) == EQUAL)
+                                    currentNozzlePosition = currentNozzlePosition - (nozzleStartPosition * (event.getE() / nozzleCloseOverVolume));
+                                    if (compareDouble(currentNozzlePosition, 0) == EQUAL)
                                     {
-                                        nozzleStartPosition = 0;
+                                        currentNozzlePosition = 0;
                                     }
-                                    nozzleEvent.setB(nozzleStartPosition);
+                                    nozzleEvent.setB(currentNozzlePosition);
                                     nozzleEvent.setNoExtrusionFlag(true);
                                     writeEventToFile(nozzleEvent);
                                 } else
@@ -721,6 +743,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             {
                 NozzleChangeBValueEvent newBEvent = new NozzleChangeBValueEvent();
                 newBEvent.setB(partialOpenValue);
+                newBEvent.setComment("Partial open");
 
                 extrusionBuffer.add(eventSearchIndex + 1, newBEvent);
                 extrusionBuffer.remove(eventSearchIndex);

@@ -1,21 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 
 package celtech.gcodetranslator.events;
 
@@ -67,7 +49,12 @@ public class NozzlePositionChangeEvent extends ExtrusionEvent
             stringToReturn += " F" + String.format("%.3f", getFeedRate());
         }
 
-        stringToReturn += " ; ->" + getLength() + " ";
+        stringToReturn += " ; ->L" + getLength() + " ";
+        
+        if (noExtrusion != false)
+        {
+            stringToReturn += " ; ->E" + getE() + " ";
+        }
 
         if (getComment() != null)
         {

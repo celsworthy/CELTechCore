@@ -62,6 +62,8 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.paint.Color;
@@ -1386,7 +1388,7 @@ public class Printer
                     reelFilamentDiameter.set(0);
                     reelDataChangedToggle.set(!reelDataChangedToggle.get());
                 }
-                
+
                 reelEEPROMStatus.set(statusResponse.getReelEEPROMState());
 
                 EEPROMState lastHeadState = headEEPROMStatus.get();
@@ -1420,7 +1422,7 @@ public class Printer
                     temporaryHead.setBeta(0);
                     temporaryHead.setTcal(0);
                 }
-                
+
                 headEEPROMStatus.set(statusResponse.getHeadEEPROMState());
 
                 sdCardPresent.set(statusResponse.isSDCardPresent());
@@ -1673,57 +1675,35 @@ public class Printer
         return response.getGCodeResponse();
     }
 
-    public String transmitStoredGCode(final String macroName, boolean addToTranscript) throws RoboxCommsException
+    public void transmitStoredGCode(final String macroName, boolean addToTranscript) throws RoboxCommsException
     {
         ArrayList<String> macroContents = GCodeMacros.getMacroContents(macroName);
 
-        return transmitMacroData(macroContents, addToTranscript);
+        transmitMacroData(macroContents, addToTranscript);
     }
 
-    public String transmitStoredGCode(final GCodeMacros macro, boolean addToTranscript) throws RoboxCommsException
+    public void transmitStoredGCode(final GCodeMacros macro, boolean addToTranscript) throws RoboxCommsException
     {
         ArrayList<String> macroContents = macro.getMacroContents();
 
-        return transmitMacroData(macroContents, addToTranscript);
+        transmitMacroData(macroContents, addToTranscript);
     }
 
-    private String transmitMacroData(ArrayList<String> macroData, boolean addToTranscript) throws RoboxCommsException
+    private void transmitMacroData(ArrayList<String> macroData, boolean addToTranscript) throws RoboxCommsException
     {
-        RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.EXECUTE_GCODE);
-        StringBuilder finalResponse = new StringBuilder();
-
-        for (String gcodeToSend : macroData)
+        MacroPrintTask macroPrintTask = new MacroPrintTask(macroData, gcodeTranscript, this, printerCommsManager, portName, addToTranscript);
+    
+        macroPrintTask.setOnFailed(new EventHandler<WorkerStateEvent>()
         {
-            gcodeToSend += "\n";
-            gcodePacket.setMessagePayload(gcodeToSend);
-
-            if (addToTranscript)
+            @Override
+            public void handle(WorkerStateEvent event)
             {
-                addToGCodeTranscript(gcodeToSend);
+                steno.error("Failed to send macro data");
             }
-            GCodeDataResponse response = (GCodeDataResponse) printerCommsManager.submitForWrite(portName, gcodePacket);
-            finalResponse.append(response.getGCodeResponse() + "\n");
-
-            if (addToTranscript)
-            {
-                Platform.runLater(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        if (response == null)
-                        {
-                            addToGCodeTranscript(languageBundle.getString("gcodeEntry.errorMessage"));
-                        } else if (!response.getGCodeResponse().trim().equals(""))
-                        {
-                            addToGCodeTranscript(response.getGCodeResponse());
-                        }
-                    }
-                });
-            }
-        }
-        return finalResponse.toString();
-
+        });
+        
+        Thread macroPrintTaskThread = new Thread(macroPrintTask);
+        macroPrintTaskThread.start();
     }
 
     private boolean transmitDataFileStart(final String fileID) throws RoboxCommsException
@@ -2068,7 +2048,7 @@ public class Printer
                 /*
                  * Send when full
                  */
-//                steno.info("Sending chunk:" + outputBuffer.toString() + " seq:" + sequenceNumber);
+//                steno.info("Sending chunk seq:" + sequenceNumber);
                 AckResponse response = transmitDataFileChunk(outputBuffer.toString(), sequenceNumber);
                 if (response.isError())
                 {

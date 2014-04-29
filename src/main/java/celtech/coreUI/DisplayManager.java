@@ -20,6 +20,7 @@ import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.components.SlideoutAndProjectHolder;
+import celtech.coreUI.controllers.InfoScreenIndicatorController;
 import celtech.coreUI.controllers.MenuStripController;
 import celtech.coreUI.controllers.PrinterStatusPageController;
 import celtech.coreUI.controllers.sidePanels.LayoutSidePanelController;
@@ -72,6 +73,9 @@ import javafx.stage.Stage;
 import libertysystems.configuration.Configuration;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.controlsfx.control.action.Action;
+import org.controlsfx.dialog.Dialogs;
+import org.controlsfx.dialog.Dialogs.CommandLink;
 
 /**
  *
@@ -122,7 +126,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
      */
     private ModelLoaderService modelLoaderService = new ModelLoaderService();
     private ProgressDialog modelLoadDialog = null;
-    private ModalDialog modelTooLargeDialog = null;
 
     /*
      * GCode model loading
@@ -140,6 +143,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
     private VBox supplementaryStatusControlContainer = null;
     private Parent gcodeEntrySlideout = null;
 
+    private InfoScreenIndicatorController infoScreenIndicatorController = null;
+
     private DisplayManager()
     {
 
@@ -150,16 +155,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
         i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData", appLocale);
 
         modelLoadDialog = new ProgressDialog(modelLoaderService);
-        modelTooLargeDialog = new ModalDialog();
 
-        /*
-         * Configure the dialog for when the model is too large...
-         */
-        modelTooLargeDialog.setTitle(i18nBundle.getString("dialogs.ModelTooLargeTitle"));
-        modelTooLargeDialog.setMessage(i18nBundle.getString("dialogs.ModelTooLargeDescription"));
-        int modelShrinkToFit = modelTooLargeDialog.addButton(i18nBundle.getString("dialogs.ShrinkModelToFit"));
-//        int modelCutToSize = modelTooLargeDialog.addButton(i18nBundle.getString("dialogs.CutModelToSize"));
-        int dontLoadModel = modelTooLargeDialog.addButton(i18nBundle.getString("dialogs.ModelTooLargeNo"));
+        CommandLink dontLoadModel = new Dialogs.CommandLink(i18nBundle.getString("dialogs.ModelTooLargeNo"), null);
+        CommandLink shrinkModel = new Dialogs.CommandLink(i18nBundle.getString("dialogs.ShrinkModelToFit"), null);
 
         modelLoaderService.setOnSucceeded((WorkerStateEvent t) ->
         {
@@ -169,9 +167,13 @@ public class DisplayManager implements EventHandler<KeyEvent>
             {
                 if (loadResult.isModelTooLarge())
                 {
-                    int buttonPressed = modelTooLargeDialog.show();
 
-                    if (buttonPressed == modelShrinkToFit)
+                    Action tooBigResponse = Dialogs.create().title(i18nBundle.getString("dialogs.ModelTooLargeTitle"))
+                            .message(i18nBundle.getString("dialogs.ModelTooLargeDescription"))
+                            .masthead(null)
+                            .showCommandLinks(shrinkModel, shrinkModel, dontLoadModel);
+
+                    if (tooBigResponse == shrinkModel)
                     {
                         ModelContainer modelContainer = loadResult.getModelContainer();
                         modelContainer.shrinkToFitBed();
@@ -212,6 +214,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private void switchPagesForMode(ApplicationMode oldMode, ApplicationMode newMode)
     {
+        infoScreenIndicatorController.setSelected(newMode == ApplicationMode.STATUS);
+
         // Remove the existing side panel
         if (oldMode != null)
         {
@@ -363,7 +367,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
             printerStatusTab = new Tab();
             printerStatusTab.setText(i18nBundle.getString("printerStatusTabTitle"));
             FXMLLoader printerStatusPageLabelLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "infoScreenIndicator.fxml"), i18nBundle);
-            Label printerStatusLabelGroup = printerStatusPageLabelLoader.load();
+            VBox printerStatusLabelGroup = printerStatusPageLabelLoader.load();
+            infoScreenIndicatorController = printerStatusPageLabelLoader.getController();
             printerStatusTab.setGraphic(printerStatusLabelGroup);
             printerStatusTab.setClosable(false);
             printerStatusTab.setContent(printerStatusPage);

@@ -658,7 +658,7 @@ public class PrintQueue implements ControllableService
                 try
                 {
                     associatedPrinter.transmitAbortPrint();
-                    String response = associatedPrinter.transmitStoredGCode(GCodeMacros.ABORT_PRINT, true);
+                    associatedPrinter.transmitStoredGCode(GCodeMacros.ABORT_PRINT, true);
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Robox comms exception when sending abort print command " + ex);

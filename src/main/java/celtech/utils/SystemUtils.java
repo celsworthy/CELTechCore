@@ -288,6 +288,7 @@ public class SystemUtils
 
             while ((lineRead = reader.readLine()) != null)
             {
+                lineRead = lineRead.trim();
                 if (lineRead.startsWith(commentCharacter) == false && lineRead.equals("") == false)
                 {
                     numberOfLines++;

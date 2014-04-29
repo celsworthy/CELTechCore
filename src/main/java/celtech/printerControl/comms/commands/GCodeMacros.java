@@ -24,7 +24,7 @@ public enum GCodeMacros
 
     LEVEL_GANTRY("level_gantry"),
     EJECT_ABS("eject_ABS"),
-    EJECT_PLA("eject_ABS"),
+    EJECT_PLA("eject_PLA"),
     PREHEAT_ABS("preheat_ABS"),
     PREHEAT_PLA("preheat_PLA"),
     LEVEL_Y("level_Y"),
@@ -91,7 +91,8 @@ public enum GCodeMacros
             String line;
             while ((line = reader.readLine()) != null)
             {
-                contents.add(line);
+                String strippedLine = line.replaceAll(";.*", "");
+                contents.add(strippedLine);
             }
 
         } catch (FileNotFoundException ex)

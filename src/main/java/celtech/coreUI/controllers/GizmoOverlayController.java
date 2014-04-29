@@ -5,6 +5,7 @@
  */
 package celtech.coreUI.controllers;
 
+import celtech.coreUI.visualisation.DragMode;
 import celtech.coreUI.visualisation.SelectionContainer;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.coreUI.visualisation.Xform;
@@ -314,10 +315,10 @@ public class GizmoOverlayController implements Initializable
         
         gizmoGroup.visibleProperty().bind(Bindings.isNotEmpty(selectionContainer.selectedModelsProperty()));
         
-        viewManager.dragModeProperty().addListener(new ChangeListener<Boolean>()
+        viewManager.dragModeProperty().addListener(new ChangeListener<DragMode>()
         {
             @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            public void changed(ObservableValue<? extends DragMode> observable, DragMode oldValue, DragMode newValue)
             {
                 gizmoGroup.setMouseTransparent(false);
             }

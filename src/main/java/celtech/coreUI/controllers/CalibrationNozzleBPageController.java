@@ -6,6 +6,14 @@
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
+ *//*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ *//*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package celtech.coreUI.controllers;
 
@@ -15,7 +23,7 @@ import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.services.calibration.CalibrateBTask;
-import celtech.services.calibration.CalibrationState;
+import celtech.services.calibration.NozzleBCalibrationState;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
@@ -41,7 +49,7 @@ public class CalibrationNozzleBPageController implements Initializable
 
     private Stenographer steno = StenographerFactory.getStenographer(CalibrationNozzleBPageController.class.getName());
 
-    private CalibrationState state = CalibrationState.IDLE;
+    private NozzleBCalibrationState state = NozzleBCalibrationState.IDLE;
 
     private String initialisingMessage = null;
     private String heatingMessage = null;
@@ -116,7 +124,7 @@ public class CalibrationNozzleBPageController implements Initializable
         switch (state)
         {
             case NO_MATERIAL_CHECK:
-                setState(CalibrationState.FAILED);
+                setState(NozzleBCalibrationState.FAILED);
                 break;
             case MATERIAL_EXTRUDING_CHECK:
                 try
@@ -129,16 +137,16 @@ public class CalibrationNozzleBPageController implements Initializable
                 if (currentNozzleNumber == 0)
                 {
                     currentNozzleNumber++;
-                    setState(CalibrationState.MATERIAL_EXTRUDING_CHECK);
+                    setState(NozzleBCalibrationState.MATERIAL_EXTRUDING_CHECK);
                 } else
                 {
                     currentNozzleNumber = 0;
-                    setState(CalibrationState.HEAD_CLEAN_CHECK);
+                    setState(NozzleBCalibrationState.HEAD_CLEAN_CHECK);
                 }
                 break;
             case HEAD_CLEAN_CHECK:
                 currentNozzleNumber = 0;
-                setState(CalibrationState.PRE_CALIBRATION_PRIMING);
+                setState(NozzleBCalibrationState.PRE_CALIBRATION_PRIMING);
                 break;
             case CALIBRATE_NOZZLE:
                 try
@@ -152,7 +160,7 @@ public class CalibrationNozzleBPageController implements Initializable
                 {
                     nozzle0BOffset = bOffsetStartingValue - 0.1f + nozzlePosition;
                     currentNozzleNumber = 1;
-                    setState(CalibrationState.PRE_CALIBRATION_PRIMING);
+                    setState(NozzleBCalibrationState.PRE_CALIBRATION_PRIMING);
                 } else
                 {
                     nozzle1BOffset = -bOffsetStartingValue + 0.1f - nozzlePosition;
@@ -177,20 +185,20 @@ public class CalibrationNozzleBPageController implements Initializable
                     {
                         steno.error("Error in needle valve calibration - mode=" + state.name());
                     }
-                    setState(CalibrationState.CONFIRM_NO_MATERIAL);
+                    setState(NozzleBCalibrationState.CONFIRM_NO_MATERIAL);
                 }
                 break;
             case CONFIRM_NO_MATERIAL:
-                setState(CalibrationState.FAILED);
+                setState(NozzleBCalibrationState.FAILED);
                 break;
             case CONFIRM_MATERIAL_EXTRUDING:
                 if (currentNozzleNumber == 0)
                 {
                     currentNozzleNumber++;
-                    setState(CalibrationState.CONFIRM_MATERIAL_EXTRUDING);
+                    setState(NozzleBCalibrationState.CONFIRM_MATERIAL_EXTRUDING);
                 } else
                 {
-                    setState(CalibrationState.FINISHED);
+                    setState(NozzleBCalibrationState.FINISHED);
                 }
                 break;
         }
@@ -203,27 +211,27 @@ public class CalibrationNozzleBPageController implements Initializable
         {
             case NO_MATERIAL_CHECK:
                 currentNozzleNumber = 0;
-                setState(CalibrationState.MATERIAL_EXTRUDING_CHECK);
+                setState(NozzleBCalibrationState.MATERIAL_EXTRUDING_CHECK);
                 break;
             case MATERIAL_EXTRUDING_CHECK:
-                setState(CalibrationState.FAILED);
+                setState(NozzleBCalibrationState.FAILED);
                 break;
             case CALIBRATE_NOZZLE:
                 nozzlePosition += 0.1;
                 if (nozzlePosition <= 2f)
                 {
-                    setState(CalibrationState.CALIBRATE_NOZZLE);
+                    setState(NozzleBCalibrationState.CALIBRATE_NOZZLE);
                 } else
                 {
-                    setState(CalibrationState.FAILED);
+                    setState(NozzleBCalibrationState.FAILED);
                 }
                 break;
             case CONFIRM_NO_MATERIAL:
                 currentNozzleNumber = 0;
-                setState(CalibrationState.CONFIRM_MATERIAL_EXTRUDING);
+                setState(NozzleBCalibrationState.CONFIRM_MATERIAL_EXTRUDING);
                 break;
             case CONFIRM_MATERIAL_EXTRUDING:
-                setState(CalibrationState.FAILED);
+                setState(NozzleBCalibrationState.FAILED);
                 break;
         }
     }
@@ -231,7 +239,7 @@ public class CalibrationNozzleBPageController implements Initializable
     @FXML
     void startCalibration(ActionEvent event)
     {
-        setState(CalibrationState.INITIALISING);
+        setState(NozzleBCalibrationState.INITIALISING);
     }
 
     @FXML
@@ -252,7 +260,7 @@ public class CalibrationNozzleBPageController implements Initializable
 
         try
         {
-            if (savedHeadData != null && state != CalibrationState.FINISHED)
+            if (savedHeadData != null && state != NozzleBCalibrationState.FINISHED)
             {
                 printerToUse.transmitWriteHeadEEPROM(savedHeadData.getHeadTypeCode(),
                         savedHeadData.getUniqueID(),
@@ -277,13 +285,13 @@ public class CalibrationNozzleBPageController implements Initializable
             steno.error("Error in needle valve calibration - mode=" + state.name());
         }
 
-        if (state == CalibrationState.IDLE)
+        if (state == NozzleBCalibrationState.IDLE)
         {
             Stage stage = (Stage) container.getScene().getWindow();
             stage.close();
         } else
         {
-            setState(CalibrationState.IDLE);
+            setState(NozzleBCalibrationState.IDLE);
         }
     }
 
@@ -330,10 +338,10 @@ public class CalibrationNozzleBPageController implements Initializable
             }
         });
 
-        setState(CalibrationState.IDLE);
+        setState(NozzleBCalibrationState.IDLE);
     }
 
-    private void setState(CalibrationState state)
+    private void setState(NozzleBCalibrationState state)
     {
         this.state = state;
         switch (state)

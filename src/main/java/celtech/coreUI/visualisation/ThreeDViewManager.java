@@ -112,7 +112,7 @@ public class ThreeDViewManager
     /*
      * Selection stuff
      */
-    private BooleanProperty dragMode = new SimpleBooleanProperty(false);
+    private ObjectProperty<DragMode> dragMode = new SimpleObjectProperty(DragMode.NOT_DRAGGING);
 
 
     /*
@@ -229,21 +229,28 @@ public class ThreeDViewManager
 
     }
 
-    private final ChangeListener<Boolean> dragModeListener = new ChangeListener<Boolean>()
+    private final ChangeListener<DragMode> dragModeListener = new ChangeListener<DragMode>()
     {
         @Override
-        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+        public void changed(ObservableValue<? extends DragMode> observable, DragMode oldValue, DragMode newValue)
         {
-            if (oldValue == false && newValue == true)
+            switch (newValue)
             {
-//                translationDragPlane.setVisible(true);
-                translationDragPlane.setMouseTransparent(false);
-                models.setMouseTransparent(true);
-            } else if (oldValue == true && newValue == false)
-            {
-                models.setMouseTransparent(false);
-//                translationDragPlane.setVisible(false);
-                translationDragPlane.setMouseTransparent(true);
+                case NOT_DRAGGING:
+                    models.setMouseTransparent(false);
+                    translationDragPlane.setMouseTransparent(true);
+                    scaleDragPlane.setMouseTransparent(true);
+                    break;
+                case TRANSLATING:
+                    translationDragPlane.setMouseTransparent(false);
+                    scaleDragPlane.setMouseTransparent(true);
+                    models.setMouseTransparent(true);
+                    break;
+                case SCALING:
+                    scaleDragPlane.setMouseTransparent(false);
+                    translationDragPlane.setMouseTransparent(true);
+                    models.setMouseTransparent(true);
+                    break;
             }
         }
     };
@@ -270,31 +277,58 @@ public class ThreeDViewManager
 
                 Node intersectedNode = pickResult.getIntersectedNode();
                 lastDragPosition = null;
+
                 translationDragPlane.setTranslateX(pickedPoint.getX());
                 translationDragPlane.setTranslateY(pickedPoint.getY());
                 translationDragPlane.setTranslateZ(pickedPoint.getZ());
 
-                setDragMode(true);
-                if (intersectedNode != null && intersectedNode instanceof MeshView)
-                {
-                    Parent parent = intersectedNode.getParent();
-                    if (!(parent instanceof ModelContainer))
-                    {
-                        parent = parent.getParent();
-                    }
-                    ModelContainer pickedModel = (ModelContainer) parent;
+                Point3D bedXToS = bedTranslateXform.localToParent(pickedPoint);
+                scaleDragPlane.setTranslateX(bedXToS.getX());
+                scaleDragPlane.setTranslateY(bedXToS.getY());
+                scaleDragPlane.setTranslateZ(pickedPoint.getZ());
 
-                    if (pickedModel.isSelected() == false)
+                if (threeDControl.isScaleActive())
+                {
+                    setDragMode(DragMode.SCALING);
+                } else
+                {
+                    setDragMode(DragMode.TRANSLATING);
+                }
+
+                if (intersectedNode != null)
+                {
+                    if (intersectedNode instanceof MeshView)
                     {
-                        if (event.isControlDown() == false)
+                        Parent parent = intersectedNode.getParent();
+                        if (!(parent instanceof ModelContainer))
                         {
-                            deselectAllModels();
+                            parent = parent.getParent();
                         }
-                        selectModel(pickedModel);
-                    } else if (event.isControlDown())
+
+                        ModelContainer pickedModel = (ModelContainer) parent;
+
+                        if (pickedModel.isSelected() == false)
+                        {
+                            if (event.isControlDown() == false)
+                            {
+                                deselectAllModels();
+                            }
+                            selectModel(pickedModel);
+                        } else if (event.isControlDown())
+                        {
+                            deselectModel(pickedModel);
+                        }
+                    } else if (intersectedNode instanceof Box)
                     {
-                        deselectModel(pickedModel);
+                        steno.info("Drag on scale");
+
+                        steno.info("Picked point " + pickedPoint.toString());
+
+                        Point3D modelToParent = intersectedNode.localToParent(pickedPoint);
+                        steno.info("L2S " + modelToParent);
+                        steno.info("BedX2S " + bedXToS);
                     }
+
                 } else if (intersectedNode == subScene)
                 {
                     deselectAllModels();
@@ -335,7 +369,7 @@ public class ThreeDViewManager
             } else if (event.isSecondaryButtonDown())
             {
                 rotateCameraAroundAxes(-mouseDeltaY * modifierFactor * modifier * 2.0, mouseDeltaX * modifierFactor * modifier * 2.0);
-            } else if (dragMode.get() && event.isPrimaryButtonDown())
+            } else if (dragMode.get() == DragMode.TRANSLATING && event.isPrimaryButtonDown())
             {
                 Node intersectedNode = event.getPickResult().getIntersectedNode();
 //                    steno.info("Pick drag " + event.getPickResult().getIntersectedNode().getId());
@@ -356,7 +390,16 @@ public class ThreeDViewManager
 //                    translationDragPlane.setTranslateX(currentDragPosition.getX());
 //                    translationDragPlane.setTranslateZ(currentDragPosition.getZ());
                     lastDragPosition = currentDragPosition;
-                } else if (intersectedNode == scaleDragPlane)
+                } else
+                {
+                    steno.error("In translation drag mode but intersected with something other than translation drag plane");
+                }
+            } else if (dragMode.get() == DragMode.SCALING && event.isPrimaryButtonDown())
+            {
+                Node intersectedNode = event.getPickResult().getIntersectedNode();
+//                    steno.info("Pick drag " + event.getPickResult().getIntersectedNode().getId());
+                //Move the model!
+                if (intersectedNode == scaleDragPlane)
                 {
 //                    Point3D currentDragPosition = intersectedNode.localToScene(event.getPickResult().getIntersectedPoint());
 ////                steno.info("Pick drag " + me.getPickResult().getIntersectedNode().getId());
@@ -370,13 +413,16 @@ public class ThreeDViewManager
 //                    scaleDragPlane.setTranslateX(currentDragPosition.getX());
 //                    scaleDragPlane.setTranslateZ(currentDragPosition.getZ());
 //                    lastDragPosition = currentDragPosition;
+                } else
+                {
+                    steno.error("In scale drag mode but intersected with something other than scale drag plane");
                 }
             }
             recalculateCentre();
 
         } else if (event.getEventType() == MouseEvent.MOUSE_RELEASED)
         {
-            setDragMode(false);
+            setDragMode(DragMode.NOT_DRAGGING);
             lastDragPosition = null;
             recalculateCentre();
         }
@@ -642,8 +688,12 @@ public class ThreeDViewManager
 //        translationDragPlane.setVisible(false);
         translationDragPlane.setOpacity(0.0);
         translationDragPlane.setMouseTransparent(true);
+        scaleDragPlane.setId("ScaleDragPlane");
+//        translationDragPlane.setVisible(false);
+        scaleDragPlane.setOpacity(0.0);
+        scaleDragPlane.setMouseTransparent(true);
 
-        bedTranslateXform.getChildren().addAll(bed, models, translationDragPlane, threeDControl);
+        bedTranslateXform.getChildren().addAll(bed, models, translationDragPlane, scaleDragPlane, threeDControl);
         root3D.getChildren().add(bedTranslateXform);
 
         bedXOffsetFromCameraZero = -printBedData.getPrintVolumeBounds().getWidth() / 2;
@@ -1350,17 +1400,17 @@ public class ThreeDViewManager
         return demandedCameraRotationX;
     }
 
-    public void setDragMode(boolean value)
+    public void setDragMode(DragMode value)
     {
         dragMode.set(value);
     }
 
-    public boolean getDragMode()
+    public DragMode getDragMode()
     {
         return dragMode.get();
     }
 
-    public BooleanProperty dragModeProperty()
+    public ObjectProperty<DragMode> dragModeProperty()
     {
         return dragMode;
     }

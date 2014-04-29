@@ -9,6 +9,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.controllers.CalibrationNozzleBPageController;
+import celtech.coreUI.controllers.CalibrationNozzleOffsetPageController;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -40,6 +41,8 @@ public class CalibrationPanelController implements Initializable
 
     private Stage needleValvecalibrationStage = null;
     private CalibrationNozzleBPageController needleValveCalibrationController = null;
+    private Stage offsetCalibrationStage = null;
+    private CalibrationNozzleOffsetPageController nozzleOffsetCalibrationController = null;
 
     @FXML
     void calibrateB(ActionEvent event)
@@ -79,6 +82,36 @@ public class CalibrationPanelController implements Initializable
     @FXML
     void calibrateZOffset(ActionEvent event)
     {
+
+        if (offsetCalibrationStage == null)
+        {
+            offsetCalibrationStage = new Stage(StageStyle.UTILITY);
+            URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "CalibrationNozzleOffsetPage.fxml");
+            FXMLLoader nozzleOffsetCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, i18nBundle);
+            try
+            {
+                Parent dialogBoxScreen = (Parent) nozzleOffsetCalibrationLoader.load();
+                nozzleOffsetCalibrationController = (CalibrationNozzleOffsetPageController) nozzleOffsetCalibrationLoader.getController();
+                Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
+                dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
+                offsetCalibrationStage.setScene(dialogScene);
+                offsetCalibrationStage.initOwner(DisplayManager.getMainStage());
+                offsetCalibrationStage.initModality(Modality.WINDOW_MODAL);
+                offsetCalibrationStage.setOnCloseRequest(new EventHandler<WindowEvent>()
+                {
+                    @Override
+                    public void handle(WindowEvent event)
+                    {
+                        nozzleOffsetCalibrationController.cancelCalibrationAction();
+                    }
+                });
+            } catch (IOException ex)
+            {
+                steno.error("Couldn't load nozzle offset calibration FXML");
+            }
+        }
+
+        offsetCalibrationStage.showAndWait();
     }
 
     /**

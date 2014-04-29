@@ -12,6 +12,8 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.services.ControllableService;
 import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -20,41 +22,35 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implements ControllableService
+public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepResult> implements ControllableService
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(CalibrateBTask.class.getName());
-    private NozzleBCalibrationState desiredState = null;
+    private final Stenographer steno = StenographerFactory.getStenographer(CalibrateNozzleOffsetTask.class.getName());
+    private NozzleOffsetCalibrationState desiredState = null;
     private int nozzleNumber = -1;
 
     private Printer printerToUse = null;
-    private String progressTitle = null;
-    private String initialisingMessage = null;
-    private String heatingMessage = null;
-    private String readyToBeginMessage = null;
-    private String pressAKeyMessage = null;
-    private String pressAKeyToContinueMessage = null;
-    private String preparingExtruderMessage = null;
     private ResourceBundle i18nBundle = null;
-    private boolean keyPressed = false;
-    private int progressPercent = 0;
-    private boolean lookingForKeyPress = false;
 
-    public CalibrateBTask(NozzleBCalibrationState desiredState)
+    private Pattern zDeltaPattern = Pattern.compile(".*(?<offset>[\\-0-9.]+).*");
+    private Matcher zDeltaMatcher = null;
+
+    public CalibrateNozzleOffsetTask(NozzleOffsetCalibrationState desiredState)
     {
         this.desiredState = desiredState;
     }
 
-    public CalibrateBTask(NozzleBCalibrationState desiredState, int nozzleNumber)
+    public CalibrateNozzleOffsetTask(NozzleOffsetCalibrationState desiredState, int nozzleNumber)
     {
         this.desiredState = desiredState;
         this.nozzleNumber = nozzleNumber;
     }
 
     @Override
-    protected NozzleBCalibrationStepResult call() throws Exception
+    protected NozzleOffsetCalibrationStepResult call() throws Exception
     {
         boolean success = false;
+        float returnFloat = 0;
 
         StatusScreenState statusScreenState = StatusScreenState.getInstance();
         printerToUse = statusScreenState.getCurrentlySelectedPrinter();
@@ -70,26 +66,11 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                     waitOnBusy();
                     printerToUse.transmitDirectGCode("G28 Z", false);
                     waitOnBusy();
-                    printerToUse.transmitDirectGCode("G0 Z50", false);
+                    printerToUse.transmitDirectGCode("G0 Z25", false);
                     waitOnBusy();
                     printerToUse.transmitDirectGCode("G28 X Y", false);
                     waitOnBusy();
                     printerToUse.transmitDirectGCode("G0 X116.5 Y75", false);
-                    waitOnBusy();
-                    
-                    success = true;
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
-                } catch (InterruptedException ex)
-                {
-                    steno.error("Interrrupted during needle valve calibration - mode=" + desiredState.name());
-                }
-
-                break;
-            case HEATING:
-                try
-                {
                     printerToUse.transmitDirectGCode("M104", false);
                     if (printerToUse.getNozzleHeaterMode() == HeaterMode.FIRST_LAYER)
                     {
@@ -98,60 +79,72 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                     {
                         waitUntilNozzleReaches(printerToUse.getNozzleTargetTemperature(), 5);
                     }
+                    waitOnBusy();
+//                    printerToUse.transmitDirectGCode("G38", false);
+//                    waitOnBusy();
+                    success = true;
                 } catch (RoboxCommsException ex)
                 {
-                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
+                    steno.error("Error in nozzle offset calibration - mode=" + desiredState.name());
                 } catch (InterruptedException ex)
                 {
-                    steno.error("Interrrupted during needle valve calibration - mode=" + desiredState.name());
+                    steno.error("Interrrupted during nozzle offset calibration - mode=" + desiredState.name());
                 }
 
                 break;
-            case PRIMING:
-                extrudeUntilStall();
-                break;
-            case MATERIAL_EXTRUDING_CHECK:
+
+            case MEASURE_Z_DIFFERENCE:
+                float[] zDifferenceMeasurement = new float[3];
+
                 try
                 {
-                    printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
-                    printerToUse.transmitDirectGCode("G0 B2", false);
-                    if (nozzleNumber == 0)
+                    float sumOfZDifferences = 0;
+                    boolean failed = false;
+
+                    for (int i = 0; i < 3; i++)
                     {
-                        printerToUse.transmitDirectGCode("G1 E10 F75", false);
-                    } else
-                    {
-                        printerToUse.transmitDirectGCode("G1 E10 F100", false);
+                        printerToUse.transmitDirectGCode("T0", false);
+                        waitOnBusy();
+                        printerToUse.transmitDirectGCode("G28 Z", false);
+                        waitOnBusy();
+                        printerToUse.transmitDirectGCode("T1", false);
+                        waitOnBusy();
+                        printerToUse.transmitDirectGCode("G28 Z?", false);
+                        waitOnBusy();
+                        String measurementString = printerToUse.transmitDirectGCode("M113", false);
+                        zDeltaMatcher = zDeltaPattern.matcher(measurementString);
+                        if (zDeltaMatcher.matches() && zDeltaMatcher.groupCount() == 1)
+                        {
+                            zDifferenceMeasurement[i] = Float.valueOf(zDeltaMatcher.group("offset"));
+                            sumOfZDifferences += zDifferenceMeasurement[i];
+                            steno.info("Z Offset measurement " + i + " was " + zDifferenceMeasurement[i]);
+                        } else
+                        {
+                            steno.error("Failed to convert z offset measurement from Robox - " + measurementString);
+                            failed = true;
+                            break;
+                        }
                     }
-                    waitOnBusy();
+
+                    if (failed == false)
+                    {
+                        returnFloat = sumOfZDifferences / 3;
+
+                        steno.info("Average Z Offset was " + returnFloat);
+
+                        success = true;
+                    }
                 } catch (RoboxCommsException ex)
                 {
-                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
-                }
-                break;
-            case PRE_CALIBRATION_PRIMING:
-                success = extrudeUntilStall();
-                break;
-            case CONFIRM_MATERIAL_EXTRUDING:
-                try
+                    steno.error("Error in nozzle offset calibration - mode=" + desiredState.name());
+                } catch (InterruptedException ex)
                 {
-                    printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
-                    printerToUse.transmitDirectGCode("G0 B1", false);
-                    if (nozzleNumber == 0)
-                    {
-                        printerToUse.transmitDirectGCode("G1 E10 F75", false);
-                    } else
-                    {
-                        printerToUse.transmitDirectGCode("G1 E10 F100", false);
-                    }
-                    waitOnBusy();
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
+                    steno.error("Interrrupted during nozzle offset calibration - mode=" + desiredState.name());
                 }
                 break;
         }
 
-        return new NozzleBCalibrationStepResult(desiredState, success);
+        return new NozzleOffsetCalibrationStepResult(desiredState, returnFloat, success);
     }
 
     private boolean extrudeUntilStall()
@@ -194,17 +187,6 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
         return success;
     }
 
-    private void waitForKeyPress() throws InterruptedException
-    {
-        lookingForKeyPress = true;
-        while (keyPressed == false && isCancelled() == false)
-        {
-            Thread.sleep(100);
-        }
-        keyPressed = false;
-        lookingForKeyPress = false;
-    }
-
     private void waitOnBusy() throws InterruptedException
     {
         Thread.sleep(100);
@@ -229,13 +211,5 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
     public boolean cancelRun()
     {
         return cancel();
-    }
-
-    public void keyPressed()
-    {
-        if (lookingForKeyPress)
-        {
-            keyPressed = true;
-        }
     }
 }

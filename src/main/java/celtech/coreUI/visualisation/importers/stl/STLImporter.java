@@ -150,8 +150,7 @@ public class STLImporter
             steno.info("Model bounds are : " + bounds);
             ModelBounds originalBounds = modelContainer.getOriginalModelBounds();
             steno.info("Model orig bounds are : " + originalBounds);
-//            modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(originalBounds);
-            modelIsTooLarge = false;
+            modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(originalBounds);
 
             ModelLoadResult result = new ModelLoadResult(modelIsTooLarge, modelFileToLoad, modelFile.getName(), targetProjectTab, modelContainer);
             steno.info("Done");

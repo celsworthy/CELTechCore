@@ -68,7 +68,8 @@ public class ApplicationConfiguration
 
     public static final String[] supportedModelExtensions =
     {
-        "stl"
+        "stl",
+        "obj"
     };
     public static final String[] supportedProcessedModelExtensions =
     {

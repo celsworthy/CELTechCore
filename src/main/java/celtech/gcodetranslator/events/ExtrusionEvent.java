@@ -34,7 +34,7 @@ public class ExtrusionEvent extends TravelEvent
             stringToReturn += " F" + String.format("%.3f", getFeedRate());
         }
         
-        stringToReturn += " ; ->" + getLength() + " ";
+        stringToReturn += " ; ->L" + getLength() + " ->E" + getE();
         
         if (getComment() != null)
         {
