@@ -102,6 +102,8 @@ public class ApplicationConfiguration
     public static final String stlTempFileExtension = ".stl";
     public static final String gcodeTempFileExtension = ".gcode";
     public static final String gcodePostProcessedFileHandle = "_robox";
+    
+    public static final float bedHotAboveDegrees = 60.0f;
 
     private static Properties projectProperties = null;
 

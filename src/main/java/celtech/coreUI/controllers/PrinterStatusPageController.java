@@ -5,9 +5,12 @@
  */
 package celtech.coreUI.controllers;
 
+import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
+import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.JogButton;
+import celtech.coreUI.components.ModalDialog;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.printerControl.comms.RoboxCommsManager;
@@ -37,6 +40,10 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.controlsfx.control.action.Action;
+import org.controlsfx.dialog.Dialog;
+import org.controlsfx.dialog.Dialogs;
+import org.controlsfx.dialog.Dialogs.CommandLink;
 
 /**
  * FXML Controller class
@@ -52,6 +59,11 @@ public class PrinterStatusPageController implements Initializable
     private Printer printerToUse = null;
     private ChangeListener<Boolean> reelDataChangeListener = null;
     private ChangeListener<EEPROMState> reelChangeListener = null;
+
+    private CommandLink goAheadAndOpenTheLid = null;
+    private CommandLink dontOpenTheLid = null;
+    private String openLidPrinterTooHotTitle = null;
+    private String openLidPrinterTooHotInfo = null;
 
     @FXML
     private AnchorPane container;
@@ -221,9 +233,6 @@ public class PrinterStatusPageController implements Initializable
     private Node[] advancedControls = null;
     private BooleanProperty advancedControlsVisible = new SimpleBooleanProperty(false);
 
-    private double maxHeadMoveMM = 20;
-    private double headMoveFactor = Math.sqrt(maxHeadMoveMM);
-
     private Printer lastSelectedPrinter = null;
 
     @FXML
@@ -265,19 +274,19 @@ public class PrinterStatusPageController implements Initializable
     @FXML
     void pausePrint(ActionEvent event)
     {
-        printerToUse.pausePrint();
+        printerToUse.getPrintQueue().pausePrint();
     }
 
     @FXML
     void resumePrint(ActionEvent event)
     {
-        printerToUse.resumePrint();
+        printerToUse.getPrintQueue().resumePrint();
     }
 
     @FXML
     void cancelPrint(ActionEvent event)
     {
-        printerToUse.abortPrint();
+        printerToUse.getPrintQueue().abortPrint();
     }
 
     @FXML
@@ -298,13 +307,34 @@ public class PrinterStatusPageController implements Initializable
     @FXML
     void unlockLid(ActionEvent event)
     {
-        try
+        boolean openTheLid = true;
+
+        if (printerToUse.bedTemperatureProperty().get() > 60)
         {
-            printerToUse.transmitDirectGCode(GCodeConstants.carriageAbsoluteMoveMode, false);
-            printerToUse.transmitDirectGCode("G0 Z50 Y160", true);
-        } catch (RoboxCommsException ex)
+            Action tooBigResponse = Dialogs.create().title(openLidPrinterTooHotTitle)
+                    .message(openLidPrinterTooHotInfo)
+                    .masthead(null)
+                    .showCommandLinks(dontOpenTheLid, dontOpenTheLid, goAheadAndOpenTheLid);
+
+            if (tooBigResponse != goAheadAndOpenTheLid)
+            {
+                openTheLid = false;
+            }
+        }
+
+        if (openTheLid)
         {
-            steno.error("Error when moving carriage to unlock position");
+                if (printerToUse.getPrintQueue().printInProgressProperty().get() == true)
+                {
+                    printerToUse.getPrintQueue().abortPrint();
+                }
+            try
+            {
+                printerToUse.transmitDirectGCode(GCodeConstants.goToOpenLidPosition, false);
+            } catch (RoboxCommsException ex)
+            {
+                steno.error("Error when moving sending open lid command");
+            }
         }
     }
 
@@ -431,6 +461,13 @@ public class PrinterStatusPageController implements Initializable
     {
         statusScreenState = StatusScreenState.getInstance();
 
+        ResourceBundle i18nBundle = DisplayManager.getLanguageBundle();
+
+        goAheadAndOpenTheLid = new Dialogs.CommandLink(i18nBundle.getString("dialogs.openLidPrinterHotGoAheadHeading"), i18nBundle.getString("dialogs.openLidPrinterHotGoAheadInfo"));
+        dontOpenTheLid = new Dialogs.CommandLink(i18nBundle.getString("dialogs.openLidPrinterHotDontOpenHeading"), null);
+        openLidPrinterTooHotTitle = i18nBundle.getString("dialogs.openLidPrinterHotTitle");
+        openLidPrinterTooHotInfo = i18nBundle.getString("dialogs.openLidPrinterHotInfo");
+        
         reelDataChangeListener = new ChangeListener<Boolean>()
         {
             @Override
@@ -544,8 +581,8 @@ public class PrinterStatusPageController implements Initializable
                     ejectReelButton.visibleProperty().bind(selectedPrinter.Filament1LoadedProperty().and(selectedPrinter.printerStatusProperty().isNotEqualTo(PrinterStatusEnumeration.PRINTING)));
 
                     unlockLidButton.setVisible(true);
-                    unlockLidButton.disableProperty().bind(selectedPrinter.LidOpenProperty().not().or(selectedPrinter.bedTemperatureProperty().greaterThan(65.0)).or(selectedPrinter.extruderTemperatureProperty().greaterThan(65.0)));
-                    temperatureWarning.visibleProperty().bind(selectedPrinter.bedTemperatureProperty().greaterThan(65.0).or(selectedPrinter.extruderTemperatureProperty().greaterThan(65.0)));
+                    unlockLidButton.disableProperty().bind(selectedPrinter.LidOpenProperty());
+                    temperatureWarning.visibleProperty().bind(selectedPrinter.bedTemperatureProperty().greaterThan(ApplicationConfiguration.bedHotAboveDegrees));
 
                     selectedPrinter.reelDataChangedProperty().addListener(reelDataChangeListener);
                     selectedPrinter.reelEEPROMStatusProperty().addListener(reelChangeListener);

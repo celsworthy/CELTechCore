@@ -45,4 +45,6 @@ public class GCodeConstants
     public static final String setHeadFanSpeed = "M106 S";
     public static final String switchOnHeadFan = "M106";
     public static final String switchOffHeadFan = "M107";
+
+    public static final String goToOpenLidPosition = "G37";
 }

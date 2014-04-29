@@ -1610,7 +1610,18 @@ public class Printer
             setPrinterStatus(PrinterStatusEnumeration.ERROR);
         } else if (paused.get() == true)
         {
+            if (printQueue.getPrintStatus() != PrinterStatusEnumeration.PAUSED)
+            {
+                printQueue.printerHasPaused();
+            }
             setPrinterStatus(PrinterStatusEnumeration.PAUSED);
+        } else if (printJobID.get().trim().matches("[0-9a-fA-F]+"))
+        {
+            if (printQueue.getPrintStatus() != PrinterStatusEnumeration.PRINTING)
+            {
+                printQueue.printerIsPrinting();
+            }
+            setPrinterStatus(printQueue.getPrintStatus());
         } else
         {
             setPrinterStatus(printQueue.getPrintStatus());
@@ -1692,7 +1703,7 @@ public class Printer
     private void transmitMacroData(ArrayList<String> macroData, boolean addToTranscript) throws RoboxCommsException
     {
         MacroPrintTask macroPrintTask = new MacroPrintTask(macroData, gcodeTranscript, this, printerCommsManager, portName, addToTranscript);
-    
+
         macroPrintTask.setOnFailed(new EventHandler<WorkerStateEvent>()
         {
             @Override
@@ -1701,7 +1712,7 @@ public class Printer
                 steno.error("Failed to send macro data");
             }
         });
-        
+
         Thread macroPrintTaskThread = new Thread(macroPrintTask);
         macroPrintTaskThread.start();
     }

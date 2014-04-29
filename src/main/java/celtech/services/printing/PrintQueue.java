@@ -62,6 +62,7 @@ public class PrintQueue implements ControllableService
 
     private Printer associatedPrinter = null;
     private PrinterStatusEnumeration printState = PrinterStatusEnumeration.IDLE;
+    private PrinterStatusEnumeration lastStateBeforePause = PrinterStatusEnumeration.IDLE;
     private PrintService printService = new PrintService();
     private SlicerService slicerService = new SlicerService();
     private PostProcessorService gcodePostProcessorService = new PostProcessorService();
@@ -361,7 +362,13 @@ public class PrintQueue implements ControllableService
 //                            fxToJMEInterface.exposeGCodeModel(percentDone);
                         Notifier.showInformationNotification(notificationTitle, detectedPrintInProgressNotification);
 
-                        setPrintStatus(PrinterStatusEnumeration.PRINTING);
+                        if (associatedPrinter.pausedProperty().get() == true)
+                        {
+                            setPrintStatus(PrinterStatusEnumeration.PAUSED);
+                        } else
+                        {
+                            setPrintStatus(PrinterStatusEnumeration.PRINTING);
+                        }
                     }
                     break;
                 case SENDING_TO_PRINTER:
@@ -591,6 +598,7 @@ public class PrintQueue implements ControllableService
         {
             case SENDING_TO_PRINTER:
             case PRINTING:
+                lastStateBeforePause = printState;
                 try
                 {
                     associatedPrinter.transmitPausePrint();
@@ -608,21 +616,17 @@ public class PrintQueue implements ControllableService
 
     public void resumePrint()
     {
-        switch (printState)
+        if (associatedPrinter.pausedProperty().get() == true)
         {
-            case PAUSED:
-                try
-                {
-                    associatedPrinter.transmitResumePrint();
-                    setPrintStatus(PrinterStatusEnumeration.PRINTING);
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Robox comms exception when sending resume print command " + ex);
-                }
-                break;
-            default:
-                steno.warning("Attempt to resume print in print state " + printState);
-                break;
+            try
+            {
+                associatedPrinter.transmitResumePrint();
+
+                setPrintStatus(lastStateBeforePause);
+            } catch (RoboxCommsException ex)
+            {
+                steno.error("Robox comms exception when sending resume print command " + ex);
+            }
         }
     }
 
@@ -679,5 +683,15 @@ public class PrintQueue implements ControllableService
     public boolean cancelRun()
     {
         return false;
+    }
+
+    public void printerHasPaused()
+    {
+        setPrintStatus(PrinterStatusEnumeration.PAUSED);
+    }
+
+    public void printerIsPrinting()
+    {
+        setPrintStatus(PrinterStatusEnumeration.PRINTING);
     }
 }
