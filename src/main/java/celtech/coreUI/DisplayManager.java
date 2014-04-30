@@ -15,7 +15,6 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
 import celtech.coreUI.components.ProjectTab;
@@ -56,7 +55,6 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -68,7 +66,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import libertysystems.configuration.Configuration;
 import libertysystems.stenographer.Stenographer;
@@ -119,7 +116,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
     /*
      * Project loading
      */
-    private FileChooser projectFileChooser = new FileChooser();
     private ProjectLoader projectLoader = null;
     /*
      * Mesh Model loading
@@ -446,11 +442,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
         {
             steno.error("Failed to load menu strip controls:" + ex);
         }
-
-        projectFileChooser.setTitle(i18nBundle.getString("dialogs.projectFileChooser"));
-        projectFileChooser.getExtensionFilters()
-                .addAll(
-                        new FileChooser.ExtensionFilter(i18nBundle.getString("dialogs.projectFileChooserDescription"), "*." + ApplicationConfiguration.projectFileExtension));
 
         projectLoader = new ProjectLoader();
 

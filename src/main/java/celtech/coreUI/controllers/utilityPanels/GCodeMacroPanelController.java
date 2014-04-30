@@ -180,12 +180,16 @@ public class GCodeMacroPanelController implements Initializable
     private ModalDialog generalPurposeDialog = null;
     private ProgressDialog gcodeUpdateProgress = null;
     private FileChooser gcodeFileChooser = new FileChooser();
+    private File lastGCodeDirectory = null;
     private final GCodePrintService gcodePrintService = new GCodePrintService();
 
     @FXML
     void sendGCodeStream(ActionEvent event)
     {
         gcodeFileChooser.setInitialFileName("Untitled");
+
+        gcodeFileChooser.setInitialDirectory(lastGCodeDirectory);
+
         final File file = gcodeFileChooser.showOpenDialog(container.getScene().getWindow());
         if (file != null)
         {
@@ -194,15 +198,19 @@ public class GCodeMacroPanelController implements Initializable
             gcodePrintService.setPrinterToUse(connectedPrinter);
             gcodePrintService.setModelFileToPrint(file.getAbsolutePath());
             gcodePrintService.start();
+            lastGCodeDirectory = file.getParentFile();
         }
-
     }
-    
-        @FXML
+
+    @FXML
     void sendGCodeSD(ActionEvent event)
     {
         gcodeFileChooser.setInitialFileName("Untitled");
+
+        gcodeFileChooser.setInitialDirectory(lastGCodeDirectory);
+
         final File file = gcodeFileChooser.showOpenDialog(container.getScene().getWindow());
+
         if (file != null)
         {
             gcodePrintService.reset();
@@ -211,8 +219,8 @@ public class GCodeMacroPanelController implements Initializable
             gcodePrintService.setCurrentPrintJobID(SystemUtils.generate16DigitID());
             gcodePrintService.setModelFileToPrint(file.getAbsolutePath());
             gcodePrintService.start();
+            lastGCodeDirectory = file.getParentFile();
         }
-
     }
 
     /**
@@ -237,7 +245,8 @@ public class GCodeMacroPanelController implements Initializable
         gcodeFileChooser.getExtensionFilters()
                 .addAll(
                         new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString("gcodeMacroPanel.gcodeFileDescription"), "*.gcode"));
-        gcodeFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getProjectDirectory()));
+
+        lastGCodeDirectory = new File(ApplicationConfiguration.getProjectDirectory());
 
         gcodePrintService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
         {
