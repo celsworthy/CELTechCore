@@ -263,40 +263,18 @@ public class AutoUpdate extends Thread
         {
             commands.add("command.com");
             commands.add("/S");
-            commands.add("/W");
             commands.add("/C");
-            commands.add("\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"");
-            commands.add("--mode");
-            commands.add("unattended");
-            commands.add("--unattendedmodebehavior");
-            commands.add("download");
-            commands.add("--unattendedmodeui");
-            commands.add("minimalWithDialogs");
+            commands.add("\"\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
 
         } else if (osName.startsWith("Windows"))
         {
             commands.add("cmd.exe");
             commands.add("/S");
-            commands.add("/W");
             commands.add("/C");
             commands.add("\"\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
-
-            commands.add("--mode");
-            commands.add("unattended");
-            commands.add("--unattendedmodebehavior");
-            commands.add("download");
-            commands.add("--unattendedmodeui");
-            commands.add("minimalWithDialogs");
         } else if (osName.equals("Mac OS X"))
         {
             commands.add(ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-osx.app/Contents/MacOS/installbuilder.sh");
-
-            commands.add("--mode");
-            commands.add("unattended");
-            commands.add("--unattendedmodebehavior");
-            commands.add("download");
-            commands.add("--unattendedmodeui");
-            commands.add("minimalWithDialogs");
         }
         /*
          * Return codes from the (BitRock) autoupdater
@@ -316,6 +294,7 @@ public class AutoUpdate extends Thread
             try
             {
                 final Process updateProc = autoupdateProcess.start();
+                steno.info("Autoupdate initiated");
             } catch (IOException ex)
             {
                 steno.error("Exception whilst running autoupdate: " + ex);
