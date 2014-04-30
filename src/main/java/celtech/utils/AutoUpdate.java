@@ -5,16 +5,19 @@
  */
 package celtech.utils;
 
+import celtech.appManager.Notifier;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
-import celtech.coreUI.components.ModalDialog;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 import javafx.application.Platform;
 import javafx.stage.Stage;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.controlsfx.control.action.Action;
+import org.controlsfx.dialog.Dialogs;
 
 /**
  *
@@ -26,20 +29,24 @@ public class AutoUpdate extends Thread
     private static final Stenographer steno = StenographerFactory.getStenographer(AutoUpdate.class.getName());
 
     private String applicationName = null;
-    private Stage stage = null;
     private final int ERROR = -1;
     private final int UPGRADE_REQUIRED = 1;
     private final int UPGRADE_NOT_REQUIRED = 0;
-    private ModalDialog upgradeDialog = null;
     private boolean keepRunning = true;
     private Class parentClass = null;
+    private ResourceBundle i18nBundle = null;
+    private Dialogs.CommandLink upgradeApplication = null;
+    private Dialogs.CommandLink dontUpgradeApplication = null;
 
-    public AutoUpdate(String applicationName, Stage stage, Class parentClass)
+    public AutoUpdate(String applicationName, Class parentClass)
     {
         this.applicationName = applicationName;
-        this.stage = stage;
         this.setName("AutoUpdate");
         this.parentClass = parentClass;
+
+        this.i18nBundle = DisplayManager.getLanguageBundle();
+        upgradeApplication = new Dialogs.CommandLink(i18nBundle.getString("misc.Yes"), i18nBundle.getString("dialogs.updateExplanation"));
+        dontUpgradeApplication = new Dialogs.CommandLink(i18nBundle.getString("misc.No"), i18nBundle.getString("dialogs.updateContinueWithCurrent"));
     }
 
     @Override
@@ -47,51 +54,85 @@ public class AutoUpdate extends Thread
     {
         int strikes = 0;
 
+        //Check for a new version 15 secs after startup
+        try
+        {
+            this.sleep(2000);
+            Platform.runLater(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    Notifier.showInformationNotification(i18nBundle.getString("dialogs.updateAboutToUpdate"), null);
+                }
+            });
+            this.sleep(2000);
+        } catch (InterruptedException ex)
+        {
+            steno.warning("AutoUpdate sleep was interrupted");
+        }
+
         while (strikes < 1 && keepRunning)
         {
             int status = checkForUpdates();
 
-            if (status == UPGRADE_NOT_REQUIRED)
+            switch (status)
             {
-                break;
-            } else if (status == UPGRADE_REQUIRED)
-            {
-                Platform.runLater(new Runnable()
-                {
-                    @Override
-                    public void run()
+                case UPGRADE_NOT_REQUIRED:
+                    Platform.runLater(new Runnable()
                     {
-                        upgradeDialog = new ModalDialog();
-                        upgradeDialog.setTitle(DisplayManager.getLanguageBundle().getString("dialogs.updateApplicationTitle"));
-                        upgradeDialog.addButton(DisplayManager.getLanguageBundle().getString("dialogs.OK"));
-                        upgradeDialog.addButton(DisplayManager.getLanguageBundle().getString("dialogs.no"));
-                        upgradeDialog.setMessage(DisplayManager.getLanguageBundle().getString("dialogs.updateApplicationMessagePart1")
-                                + DisplayManager.getLanguageBundle().getString("application.title")
-                                + DisplayManager.getLanguageBundle().getString("dialogs.updateApplicationMessagePart2"));
-
-                        int choice = upgradeDialog.show();
-                        if (choice == 0)
+                        @Override
+                        public void run()
                         {
-                            //Run the autoupdater in the background in download mode
-                            startUpdate();
-                            //Exit
-                            Platform.exit();
+                            Notifier.showInformationNotification(i18nBundle.getString("dialogs.updateApplicationTitle"), i18nBundle.getString("dialogs.updateApplicationNotRequired") + applicationName);
                         }
+                    });
+                    keepRunning = false;
+                    break;
+                case UPGRADE_REQUIRED:
+                    Platform.runLater(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            Action upgradeApplicationResponse = Dialogs.create().title(i18nBundle.getString("dialogs.updateApplicationTitle"))
+                                    .message(i18nBundle.getString("dialogs.updateApplicationMessagePart1")
+                                            + applicationName
+                                            + i18nBundle.getString("dialogs.updateApplicationMessagePart2"))
+                                    .masthead(null)
+                                    .showCommandLinks(upgradeApplication, upgradeApplication, dontUpgradeApplication);
+
+                            if (upgradeApplicationResponse == upgradeApplication)
+                            {
+                                //Run the autoupdater in the background in download mode
+                                startUpdate();
+                                //Exit
+                                Platform.exit();
+                            }
+                        }
+                    });
+                    keepRunning = false;
+                    break;
+                case ERROR:
+                    Platform.runLater(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            Notifier.showErrorNotification(i18nBundle.getString("dialogs.updateApplicationTitle"), i18nBundle.getString("dialogs.updateFailedToContact"));
+                        }
+                    });
+                    try
+                    {
+                        this.sleep(5000);
+                    } catch (InterruptedException ex)
+                    {
+                        steno.warning("AutoUpdate sleep was interrupted");
                     }
-                });
-                break;
+
+                    strikes++;
+                    break;
             }
-
-            try
-            {
-                this.sleep(5000);
-            } catch (InterruptedException ex)
-            {
-                steno.warning("AutoUpdate sleep was interrupted");
-            }
-
-            strikes++;
-
         }
     }
 
@@ -123,7 +164,7 @@ public class AutoUpdate extends Thread
             commands.add("/S");
             commands.add("/W");
             commands.add("/C");
-            commands.add("\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"");
+            commands.add("\"\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
 
             commands.add("--mode");
             commands.add("unattended");
@@ -238,7 +279,7 @@ public class AutoUpdate extends Thread
             commands.add("/S");
             commands.add("/W");
             commands.add("/C");
-            commands.add("\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"");
+            commands.add("\"\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
 
             commands.add("--mode");
             commands.add("unattended");
@@ -284,7 +325,7 @@ public class AutoUpdate extends Thread
             steno.error("Couldn't run autoupdate - no commands for OS " + osName);
         }
     }
-    
+
     public void shutdown()
     {
         keepRunning = false;

@@ -289,48 +289,48 @@ public class ProjectTab extends Tab
 
         basePane.getChildren().add(viewManager.getSubScene());
 
-        try
-        {
-            URL layoutControlsURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "GizmoOverlay.fxml");
-            FXMLLoader gizmoOverlayLoader = new FXMLLoader(layoutControlsURL, DisplayManager.getLanguageBundle());
-            gizmoOverlay = (AnchorPane) gizmoOverlayLoader.load();
-            GizmoOverlayController gizmoOverlayController = gizmoOverlayLoader.getController();
-            gizmoOverlayController.configure(viewManager);
-            gizmoOverlayController.setXform(gizmoXform);
-            gizmoOverlayController.setBase(basePane);
-            viewManager.associateGizmoOverlayController(gizmoOverlayController);
-
-            gizmoOverlay.setRotationAxis(MathUtils.xAxis);
-            gizmoOverlay.setRotate(90);
-            gizmoXform.getChildren().add(gizmoOverlay);
-            gizmoOverlay.setPickOnBounds(false);
-            basePane.getChildren().add(gizmoXform);
-
-            gizmoXform.setRotateX(viewManager.demandedCameraRotationXProperty().get());
-            gizmoXform.setRotateY(viewManager.demandedCameraRotationYProperty().get());
-
-            viewManager.demandedCameraRotationXProperty().addListener(new ChangeListener<Number>()
-            {
-                @Override
-                public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
-                {
-                    gizmoXform.setRotateX(newValue.doubleValue());
-                }
-            });
-
-            viewManager.demandedCameraRotationYProperty().addListener(new ChangeListener<Number>()
-            {
-                @Override
-                public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
-                {
-                    gizmoXform.setRotateY(newValue.doubleValue());
-                }
-            });
-
-        } catch (IOException ex)
-        {
-            steno.error("Failed to load 3d Gizmo:" + ex);
-        }
+//        try
+//        {
+//            URL layoutControlsURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "GizmoOverlay.fxml");
+//            FXMLLoader gizmoOverlayLoader = new FXMLLoader(layoutControlsURL, DisplayManager.getLanguageBundle());
+//            gizmoOverlay = (AnchorPane) gizmoOverlayLoader.load();
+//            GizmoOverlayController gizmoOverlayController = gizmoOverlayLoader.getController();
+//            gizmoOverlayController.configure(viewManager);
+//            gizmoOverlayController.setXform(gizmoXform);
+//            gizmoOverlayController.setBase(basePane);
+//            viewManager.associateGizmoOverlayController(gizmoOverlayController);
+//
+//            gizmoOverlay.setRotationAxis(MathUtils.xAxis);
+//            gizmoOverlay.setRotate(90);
+//            gizmoXform.getChildren().add(gizmoOverlay);
+//            gizmoOverlay.setPickOnBounds(false);
+//            basePane.getChildren().add(gizmoXform);
+//
+//            gizmoXform.setRotateX(viewManager.demandedCameraRotationXProperty().get());
+//            gizmoXform.setRotateY(viewManager.demandedCameraRotationYProperty().get());
+//
+//            viewManager.demandedCameraRotationXProperty().addListener(new ChangeListener<Number>()
+//            {
+//                @Override
+//                public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+//                {
+//                    gizmoXform.setRotateX(newValue.doubleValue());
+//                }
+//            });
+//
+//            viewManager.demandedCameraRotationYProperty().addListener(new ChangeListener<Number>()
+//            {
+//                @Override
+//                public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+//                {
+//                    gizmoXform.setRotateY(newValue.doubleValue());
+//                }
+//            });
+//
+//        } catch (IOException ex)
+//        {
+//            steno.error("Failed to load 3d Gizmo:" + ex);
+//        }
 
         viewManager.getSelectionContainer().screenXProperty().addListener(selectionContainerMoveListener);
         viewManager.getSelectionContainer().screenYProperty().addListener(selectionContainerMoveListener);
