@@ -59,7 +59,7 @@ public class AutoUpdate extends Thread
         //Check for a new version 15 secs after startup
         try
         {
-            this.sleep(2000);
+            this.sleep(1000);
             Platform.runLater(new Runnable()
             {
                 @Override
@@ -210,7 +210,8 @@ public class AutoUpdate extends Thread
                     //The autoupdater is still waiting. Kill it and try again.
                     steno.info("Couldn't get a response from autoupdate - killing it...");
                     updateProc.destroyForcibly();
-                    sleep(5000);
+                    sleep(15000);
+                    upgradeStatus = ERROR;
                 } else
                 {
                     switch (updateProc.exitValue())

@@ -200,6 +200,7 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                         savedHeadData.getNozzle2YOffset(),
                         savedHeadData.getNozzle2ZOffset(),
                         savedHeadData.getNozzle2BOffset(),
+                        savedHeadData.getLastFilamentTemperature(),
                         savedHeadData.getHoursUsed());
             }
 
@@ -307,6 +308,7 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                             defaultHead.getNozzle2_Y_offset(),
                             0,
                             savedHeadData.getNozzle2ZOffset(),
+                            savedHeadData.getLastFilamentTemperature(),
                             savedHeadData.getHoursUsed());
                 } catch (RoboxCommsException ex)
                 {
@@ -384,6 +386,7 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                             savedHeadData.getNozzle2YOffset(),
                             savedHeadData.getNozzle2ZOffset(),
                             (float) (zco + (0.5 * zDifference)),
+                            savedHeadData.getLastFilamentTemperature(),
                             savedHeadData.getHoursUsed());
                 } catch (RoboxCommsException ex)
                 {

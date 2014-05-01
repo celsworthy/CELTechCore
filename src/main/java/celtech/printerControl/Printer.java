@@ -173,11 +173,12 @@ public class Printer
     private FloatProperty headNozzle1ZOffset = new SimpleFloatProperty(0);
     private FloatProperty headNozzle1BOffset = new SimpleFloatProperty(0);
     private FloatProperty headNozzle2XOffset = new SimpleFloatProperty(0);
-    private FloatProperty headNozzle2YOffset = new SimpleFloatProperty(0);
-    private FloatProperty headNozzle2ZOffset = new SimpleFloatProperty(0);
-    private FloatProperty headNozzle2BOffset = new SimpleFloatProperty(0);
-    private FloatProperty headHoursCounter = new SimpleFloatProperty(0);
-    private ObjectProperty<Head> attachedHead = new SimpleObjectProperty<Head>();
+    private final FloatProperty headNozzle2YOffset = new SimpleFloatProperty(0);
+    private final FloatProperty headNozzle2ZOffset = new SimpleFloatProperty(0);
+    private final FloatProperty headNozzle2BOffset = new SimpleFloatProperty(0);
+    private final FloatProperty lastFilamentTemperature = new SimpleFloatProperty(0);
+    private final FloatProperty headHoursCounter = new SimpleFloatProperty(0);
+    private final ObjectProperty<Head> attachedHead = new SimpleObjectProperty<>();
 
     /* 
      * Reel parameters
@@ -1044,7 +1045,11 @@ public class Printer
     {
         return headHoursCounter;
     }
-
+    
+    public FloatProperty getLastFilamentTemperature()
+    {
+        return lastFilamentTemperature;
+    }
     /*
      * Reel data
      */
@@ -1539,6 +1544,7 @@ public class Printer
                         headType.set(PrintHead.getPrintHeadForType(headTypeCodeString).getShortName());
                         temporaryHead.setUniqueID(headResponse.getUniqueID());
                         temporaryHead.setHeadHours(headResponse.getHoursUsed());
+                        temporaryHead.setLastFilamentTemperature(headResponse.getLastFilamentTemperature());
                         temporaryHead.setMaximumTemperature(headResponse.getMaximumTemperature());
                         temporaryHead.setNozzle1_B_offset(headResponse.getNozzle1BOffset());
                         temporaryHead.setNozzle1_X_offset(headResponse.getNozzle1XOffset());
@@ -1562,6 +1568,7 @@ public class Printer
                 }
 
                 headUniqueID.set(headResponse.getUniqueID());
+                lastFilamentTemperature.set(headResponse.getLastFilamentTemperature());
                 headHoursCounter.set(headResponse.getHoursUsed());
                 headMaximumTemperature.set(headResponse.getMaximumTemperature());
                 headNozzle1BOffset.set(headResponse.getNozzle1BOffset());
@@ -1867,6 +1874,7 @@ public class Printer
                 headToWrite.getNozzle2_Y_offset(),
                 headToWrite.getNozzle2_Z_offset(),
                 headToWrite.getNozzle2_B_offset(),
+                headToWrite.getLastFilamentTemperature(),
                 headToWrite.getHeadHours());
         printerCommsManager.submitForWrite(portName, writeHeadEEPROM);
     }
@@ -1875,10 +1883,24 @@ public class Printer
             float thermistorBeta, float thermistorTCal,
             float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset,
             float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
-            float hourCounter) throws RoboxCommsException
+            float lastFilamentTemperature, float hourCounter) throws RoboxCommsException
     {
         WriteHeadEEPROM writeHeadEEPROM = (WriteHeadEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_HEAD_EEPROM);
-        writeHeadEEPROM.populateEEPROM(headTypeCode, headUniqueID, maximumTemperature, thermistorBeta, thermistorTCal, nozzle1XOffset, nozzle1YOffset, nozzle1ZOffset, nozzle1BOffset, nozzle2XOffset, nozzle2YOffset, nozzle2ZOffset, nozzle2BOffset, hourCounter);
+        writeHeadEEPROM.populateEEPROM(headTypeCode,
+                headUniqueID,
+                maximumTemperature,
+                thermistorBeta,
+                thermistorTCal,
+                nozzle1XOffset,
+                nozzle1YOffset,
+                nozzle1ZOffset,
+                nozzle1BOffset,
+                nozzle2XOffset,
+                nozzle2YOffset,
+                nozzle2ZOffset,
+                nozzle2BOffset,
+                lastFilamentTemperature,
+                hourCounter);
         printerCommsManager.submitForWrite(portName, writeHeadEEPROM);
     }
 

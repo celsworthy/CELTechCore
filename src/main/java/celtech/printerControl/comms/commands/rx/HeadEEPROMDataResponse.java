@@ -38,6 +38,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
     private float nozzle2ZOffset = 0;
     private float nozzle2BOffset = 0;
 
+    private float lastFilamentTemperature = 0;
     private float hoursUsed = 0;
 
     public HeadEEPROMDataResponse()
@@ -180,7 +181,18 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             }
 
             //Empty section
-            byteOffset += 40;
+            byteOffset += 32;
+
+            String lastFilamentTemperatureString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
+            byteOffset += decimalFloatFormatBytes;
+
+            try
+            {
+                lastFilamentTemperature = numberFormatter.parse(lastFilamentTemperatureString.trim()).floatValue();
+            } catch (ParseException ex)
+            {
+                steno.error("Couldn't parse last filament temperature - " + lastFilamentTemperatureString);
+            }
 
             String hoursUsedString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
@@ -287,5 +299,9 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
     {
         return thermistorTCal;
     }
-
+    
+    public float getLastFilamentTemperature()
+    {
+        return lastFilamentTemperature;
+    }
 }

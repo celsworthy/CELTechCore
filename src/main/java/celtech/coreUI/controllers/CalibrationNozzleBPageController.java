@@ -1,20 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package celtech.coreUI.controllers;
 
 import celtech.coreUI.DisplayManager;
@@ -179,6 +163,7 @@ public class CalibrationNozzleBPageController implements Initializable
                                 0,
                                 0,
                                 nozzle1BOffset,
+                                savedHeadData.getLastFilamentTemperature(),
                                 savedHeadData.getHoursUsed());
 
                     } catch (RoboxCommsException ex)
@@ -275,6 +260,7 @@ public class CalibrationNozzleBPageController implements Initializable
                         savedHeadData.getNozzle2YOffset(),
                         savedHeadData.getNozzle2ZOffset(),
                         savedHeadData.getNozzle2BOffset(),
+                        savedHeadData.getLastFilamentTemperature(),
                         savedHeadData.getHoursUsed());
             }
 
@@ -379,6 +365,7 @@ public class CalibrationNozzleBPageController implements Initializable
                             0,
                             0,
                             -0.9f,
+                            savedHeadData.getLastFilamentTemperature(),
                             savedHeadData.getHoursUsed());
 
                 } catch (RoboxCommsException ex)
@@ -477,6 +464,7 @@ public class CalibrationNozzleBPageController implements Initializable
                             0,
                             0,
                             -0.9f,
+                            savedHeadData.getLastFilamentTemperature(),
                             savedHeadData.getHoursUsed());
                 } catch (RoboxCommsException ex)
                 {
@@ -548,6 +536,7 @@ public class CalibrationNozzleBPageController implements Initializable
                             savedHeadData.getNozzle2YOffset(),
                             savedHeadData.getNozzle2ZOffset(),
                             nozzle1BOffset,
+                            savedHeadData.getLastFilamentTemperature(),
                             savedHeadData.getHoursUsed());
 
                     printerToUse.transmitDirectGCode("G0 B0", false);

@@ -72,8 +72,10 @@ public class PrinterHandler extends Thread
     /*
      * 
      */
-    private Dialogs.CommandLink firmwareUpdateOK = null;
-    private Dialogs.CommandLink firmwareUpdateNotOK = null;
+    private Dialogs.CommandLink firmwareUpgradeOK = null;
+    private Dialogs.CommandLink firmwareUpgradeNotOK = null;
+    private Dialogs.CommandLink firmwareDowngradeOK = null;
+    private Dialogs.CommandLink firmwareDowngradeNotOK = null;
     private ProgressDialog firmwareUpdateProgress = null;
     private final FirmwareLoadService firmwareLoadService = new FirmwareLoadService();
     private ResourceBundle languageBundle = null;
@@ -127,8 +129,10 @@ public class PrinterHandler extends Thread
             }
         });
 
-        firmwareUpdateOK = new CommandLink(languageBundle.getString("dialogs.firmwareUpgradeOKTitle"), languageBundle.getString("dialogs.firmwareUpgradeOKMessage"));
-        firmwareUpdateNotOK = new CommandLink(languageBundle.getString("dialogs.firmwareUpgradeNotOKTitle"), languageBundle.getString("dialogs.firmwareUpgradeNotOKMessage"));
+        firmwareUpgradeOK = new CommandLink(languageBundle.getString("dialogs.firmwareUpgradeOKTitle"), languageBundle.getString("dialogs.firmwareUpgradeOKMessage"));
+        firmwareUpgradeNotOK = new CommandLink(languageBundle.getString("dialogs.firmwareUpgradeNotOKTitle"), languageBundle.getString("dialogs.firmwareUpgradeNotOKMessage"));
+        firmwareDowngradeOK = new CommandLink(languageBundle.getString("dialogs.firmwareDowngradeOKTitle"), languageBundle.getString("dialogs.firmwareUpgradeOKMessage"));
+        firmwareDowngradeNotOK = new CommandLink(languageBundle.getString("dialogs.firmwareDowngradeNotOKTitle"), languageBundle.getString("dialogs.firmwareUpgradeNotOKMessage"));
 
         firmwareLoadService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
         {
@@ -160,80 +164,6 @@ public class PrinterHandler extends Thread
             }
         });
 
-//        firmwareLoadService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
-//        {
-//            @Override
-//            public void handle(WorkerStateEvent t)
-//            {
-//                int firmwareUpgradeSuccess = (int) (t.getSource().getValue());
-//                if (firmwareUpgradeSuccess == FirmwareLoadTask.SUCCESS)
-//                {
-//                    steno.info("Successfully updated firmware");
-//
-//                    Platform.runLater(new Runnable()
-//                    {
-//                        @Override
-//                        public void run()
-//                        {
-//                            firmwareSuccessDialog.show();
-//
-//                            disconnectSerialPort();
-//                        }
-//                    });
-//                } else
-//                {
-//                    if (firmwareUpgradeSuccess == FirmwareLoadTask.FILE_ERROR)
-//                    {
-//                        steno.error("File error when updating firmware");
-//
-//                        Platform.runLater(new Runnable()
-//                        {
-//                            @Override
-//                            public void run()
-//                            {
-//                                firmwareFailureDialog.show();
-//                            }
-//                        });
-//                    } else if (firmwareUpgradeSuccess == FirmwareLoadTask.SDCARD_ERROR)
-//                    {
-//                        steno.error("SD card error when updating firmware");
-//
-//                        Platform.runLater(new Runnable()
-//                        {
-//                            @Override
-//                            public void run()
-//                            {
-//
-//                                if (!noSDDialog.isShowing())
-//                                {
-//                                    Platform.runLater(new Runnable()
-//                                    {
-//                                        @Override
-//                                        public void run()
-//                                        {
-//                                            noSDDialog.show();
-//
-//                                            disconnectSerialPort();
-//                                        }
-//                                    });
-//                                }
-//                            }
-//                        });
-//                    } else
-//                    {
-//                        steno.error("Other error when updating firmware");
-//                        Platform.runLater(new Runnable()
-//                        {
-//                            @Override
-//                            public void run()
-//                            {
-//                                firmwareFailureDialog.show();
-//                            }
-//                        });
-//                    }
-//                }
-//            }
-//        });
         firmwareLoadService.setOnFailed(new EventHandler<WorkerStateEvent>()
         {
             @Override
@@ -347,15 +277,15 @@ public class PrinterHandler extends Thread
                                                             + requiredFirmwareVersion + ".\n"
                                                             + languageBundle.getString("dialogs.firmwareVersionError3"))
                                                     .masthead(null)
-                                                    .showCommandLinks(firmwareUpdateOK, firmwareUpdateOK, firmwareUpdateNotOK);
+                                                    .showCommandLinks(firmwareDowngradeOK, firmwareDowngradeOK, firmwareDowngradeNotOK);
 
-                                            if (upgradeApplicationResponse == firmwareUpdateOK)
+                                            if (upgradeApplicationResponse == firmwareDowngradeOK)
                                             {
                                                 firmwareLoadService.reset();
                                                 firmwareLoadService.setPrinterToUse(printerToUse);
                                                 firmwareLoadService.setFirmwareFileToLoad(ApplicationConfiguration.getApplicationInstallDirectory(this.getClass()) + "robox_r" + requiredFirmwareVersion + ".bin");
                                                 firmwareLoadService.start();
-                                            } else if (upgradeApplicationResponse == firmwareUpdateNotOK)
+                                            } else if (upgradeApplicationResponse == firmwareDowngradeNotOK)
                                             {
 //                                                //Proceed at risk
                                                 controlInterface.publishEvent(portName, new RoboxEvent(RoboxEventType.FIRMWARE_VERSION_INFO, response));
@@ -389,15 +319,15 @@ public class PrinterHandler extends Thread
                                                             + requiredFirmwareVersion + ".\n"
                                                             + languageBundle.getString("dialogs.firmwareVersionError3"))
                                                     .masthead(null)
-                                                    .showCommandLinks(firmwareUpdateOK, firmwareUpdateOK, firmwareUpdateNotOK);
+                                                    .showCommandLinks(firmwareUpgradeOK, firmwareUpgradeOK, firmwareUpgradeNotOK);
 
-                                            if (upgradeApplicationResponse == firmwareUpdateOK)
+                                            if (upgradeApplicationResponse == firmwareUpgradeOK)
                                             {
                                                 firmwareLoadService.reset();
                                                 firmwareLoadService.setPrinterToUse(printerToUse);
                                                 firmwareLoadService.setFirmwareFileToLoad(ApplicationConfiguration.getApplicationInstallDirectory(this.getClass()) + "robox_r" + requiredFirmwareVersion + ".bin");
                                                 firmwareLoadService.start();
-                                            } else if (upgradeApplicationResponse == firmwareUpdateNotOK)
+                                            } else if (upgradeApplicationResponse == firmwareUpgradeNotOK)
                                             {
 //                                                //Proceed at risk
                                                 controlInterface.publishEvent(portName, new RoboxEvent(RoboxEventType.FIRMWARE_VERSION_INFO, response));

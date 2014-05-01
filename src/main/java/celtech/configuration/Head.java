@@ -31,6 +31,7 @@ public class Head implements Cloneable
     private FloatProperty nozzle2_Y_offset = new SimpleFloatProperty(0);
     private FloatProperty nozzle2_Z_offset = new SimpleFloatProperty(0);
     private FloatProperty nozzle2_B_offset = new SimpleFloatProperty(0);
+    private FloatProperty lastFilamentTemperature = new SimpleFloatProperty(0);
     private FloatProperty headHours = new SimpleFloatProperty(0);
 
     public Head(String typeCode, String friendlyName,
@@ -284,6 +285,16 @@ public class Head implements Cloneable
     public float getHeadHours()
     {
         return headHours.get();
+    }
+
+    public void setLastFilamentTemperature(float value)
+    {
+        lastFilamentTemperature.set(value);
+    }
+
+    public float getLastFilamentTemperature()
+    {
+        return lastFilamentTemperature.get();
     }
 
     @Override

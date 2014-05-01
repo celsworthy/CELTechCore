@@ -22,7 +22,7 @@ public class WriteHeadEEPROM extends RoboxTxPacket
             float thermistorBeta, float thermistorTCal,
             float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset,
             float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
-            float hourCounter)
+            float lastFilamentTemperature, float hourCounter)
     {
         StringBuilder payload = new StringBuilder();
 
@@ -40,7 +40,8 @@ public class WriteHeadEEPROM extends RoboxTxPacket
         payload.append(String.format("%08.2f", nozzle2YOffset));
         payload.append(String.format("%08.2f", nozzle2ZOffset));
         payload.append(String.format("%08.2f", nozzle2BOffset));
-        payload.append(String.format("%1$40s", " "));
+        payload.append(String.format("%1$32s", " "));
+        payload.append(String.format("%08.2f", lastFilamentTemperature));
         payload.append(String.format("%08.2f", hourCounter));
 
         this.setMessagePayload(payload.toString());
