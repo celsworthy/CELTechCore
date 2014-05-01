@@ -15,7 +15,6 @@ import celtech.coreUI.controllers.CalibrationNozzleBPageController;
 import celtech.coreUI.controllers.CalibrationNozzleOffsetPageController;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
-import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.services.firmware.FirmwareLoadService;
@@ -25,12 +24,10 @@ import celtech.utils.SystemUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Worker;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -95,7 +92,7 @@ public class MaintenancePanelController implements Initializable
             {
                 try
                 {
-                    connectedPrinter.transmitStoredGCode(macroName, true);
+                    connectedPrinter.transmitStoredGCode(macroName);
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error sending macro : " + macroName);

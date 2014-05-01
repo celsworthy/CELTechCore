@@ -98,6 +98,7 @@ public class GCodePrintService extends Service<Boolean> implements ControllableS
     @Override
     public boolean cancelRun()
     {
+        steno.info("Print service cancelled - job " + getCurrentPrintJobID());
         return cancel();
     }
 }

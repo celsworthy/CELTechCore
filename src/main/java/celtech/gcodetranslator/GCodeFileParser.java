@@ -14,6 +14,7 @@ import celtech.gcodetranslator.events.RetractEvent;
 import celtech.gcodetranslator.events.SpiralExtrusionEvent;
 import celtech.gcodetranslator.events.TravelEvent;
 import celtech.gcodetranslator.events.UnretractEvent;
+import celtech.utils.SystemUtils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.beans.property.DoubleProperty;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -29,35 +31,40 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class GCodeFileParser
-{
+public class GCodeFileParser {
 
     private final Stenographer steno = StenographerFactory.getStenographer(GCodeFileParser.class.getName());
     private final ArrayList<GCodeTranslationEventHandler> listeners = new ArrayList<>();
 
-    public void addListener(GCodeTranslationEventHandler eventHandler)
-    {
+    public void addListener(GCodeTranslationEventHandler eventHandler) {
         listeners.add(eventHandler);
     }
 
-    public void removeListener(GCodeTranslationEventHandler eventHandler)
-    {
+    public void removeListener(GCodeTranslationEventHandler eventHandler) {
         listeners.remove(eventHandler);
     }
 
-    public void parse(String inputfilename)
-    {
+    public void parse(String inputfilename, DoubleProperty percentProgress) {
         File inputFile = new File(inputfilename);
+
+        int linesInFile = SystemUtils.countLinesInFile(inputFile);
+        int linesSoFar = 0;
+        double lastPercentSoFar = 0;
 
         ArrayList<String> lineRepository = new ArrayList<>();
 
-        try
-        {
+        try {
             BufferedReader fileReader = new BufferedReader(new FileReader(inputFile));
 
             String line;
-            while ((line = fileReader.readLine()) != null)
-            {
+            while ((line = fileReader.readLine()) != null) {
+                linesSoFar++;
+                double percentSoFar = (double) linesSoFar / (double) linesInFile;
+                if (percentSoFar - lastPercentSoFar >= 1) {
+                    percentProgress.set(percentSoFar);
+                    lastPercentSoFar = percentSoFar;
+                }
+
                 GCodeParseEvent eventToOutput = null;
 
                 String comment = null;
@@ -94,25 +101,20 @@ public class GCodeFileParser
 
                 String[] commentSplit = line.trim().split(";");
 
-                if (commentSplit.length == 2)
-                {
+                if (commentSplit.length == 2) {
                     //There was a comment
                     comment = commentSplit[1];
                 }
 
                 String[] lineParts = commentSplit[0].split(" ");
 
-                for (String partToConsider : lineParts)
-                {
-                    if (partToConsider != null)
-                    {
-                        if (partToConsider.length() > 0)
-                        {
+                for (String partToConsider : lineParts) {
+                    if (partToConsider != null) {
+                        if (partToConsider.length() > 0) {
                             char command = partToConsider.charAt(0);
                             String value = partToConsider.substring(1);
 
-                            switch (command)
-                            {
+                            switch (command) {
                                 case 'G':
                                     gValue = Integer.valueOf(value);
                                     gPresent = true;
@@ -150,184 +152,151 @@ public class GCodeFileParser
                                     fValue = Double.valueOf(value);
                                     break;
                             }
-                        } else
-                        {
+                        } else {
                             invalidLine = true;
                         }
-                    } else
-                    {
+                    } else {
                         invalidLine = true;
                         steno.debug("Discarded null");
                     }
                 }
 
-                if (mPresent)
-                {
+                if (mPresent) {
                     MCodeEvent event = new MCodeEvent();
 
                     event.setMNumber(mValue);
 
-                    if (sPresent)
-                    {
+                    if (sPresent) {
                         event.setSNumber(sValue);
                     }
 
-                    if (comment != null)
-                    {
+                    if (comment != null) {
                         event.setComment(comment);
                     }
 
                     eventToOutput = event;
-                } else if (tPresent)
-                {
+                } else if (tPresent) {
                     NozzleChangeEvent event = new NozzleChangeEvent();
                     event.setNozzleNumber(tValue);
 
-                    if (comment != null)
-                    {
+                    if (comment != null) {
                         event.setComment(comment);
                     }
 
                     eventToOutput = event;
-                } else if (gPresent && !xPresent && !yPresent && !zPresent && !ePresent)
-                {
+                } else if (gPresent && !xPresent && !yPresent && !zPresent && !ePresent) {
                     GCodeEvent event = new GCodeEvent();
 
                     event.setGNumber(gValue);
 
-                    if (comment != null)
-                    {
+                    if (comment != null) {
                         event.setComment(comment);
                     }
 
                     eventToOutput = event;
-                } else if (gPresent && zPresent && !xPresent && !yPresent && !ePresent)
-                {
+                } else if (gPresent && zPresent && !xPresent && !yPresent && !ePresent) {
                     LayerChangeEvent event = new LayerChangeEvent();
 
                     event.setZ(zValue);
 
-                    if (fPresent)
-                    {
+                    if (fPresent) {
                         event.setFeedRate(fValue);
                     }
 
-                    if (comment != null)
-                    {
+                    if (comment != null) {
                         event.setComment(comment);
                     }
 
                     eventToOutput = event;
-                } else if (gPresent && ePresent && !xPresent && !yPresent && !zPresent)
-                {
-                    if (eValue < 0)
-                    {
+                } else if (gPresent && ePresent && !xPresent && !yPresent && !zPresent) {
+                    if (eValue < 0) {
                         //Must be a retract
                         RetractEvent event = new RetractEvent();
 
                         event.setE(eValue);
 
-                        if (fPresent)
-                        {
+                        if (fPresent) {
                             event.setFeedRate(fValue);
                         }
 
-                        if (comment != null)
-                        {
+                        if (comment != null) {
                             event.setComment(comment);
                         }
 
                         eventToOutput = event;
-                    } else
-                    {
+                    } else {
                         UnretractEvent event = new UnretractEvent();
                         event.setE(eValue);
 
-                        if (fPresent)
-                        {
+                        if (fPresent) {
                             event.setFeedRate(fValue);
                         }
 
-                        if (comment != null)
-                        {
+                        if (comment != null) {
                             event.setComment(comment);
                         }
 
                         eventToOutput = event;
                     }
-                } else if (gPresent && xPresent && yPresent && !ePresent && !zPresent)
-                {
+                } else if (gPresent && xPresent && yPresent && !ePresent && !zPresent) {
                     TravelEvent event = new TravelEvent();
                     event.setX(xValue);
                     event.setY(yValue);
 
-                    if (fPresent)
-                    {
+                    if (fPresent) {
                         event.setFeedRate(fValue);
                     }
 
-                    if (comment != null)
-                    {
+                    if (comment != null) {
                         event.setComment(comment);
                     }
 
                     eventToOutput = event;
-                } else if (gPresent && xPresent && yPresent && ePresent && !zPresent)
-                {
-                    if (eValue > 0)
-                    {
+                } else if (gPresent && xPresent && yPresent && ePresent && !zPresent) {
+                    if (eValue > 0) {
                         ExtrusionEvent event = new ExtrusionEvent();
 
                         event.setX(xValue);
                         event.setY(yValue);
                         event.setE(eValue);
 
-                        if (fPresent)
-                        {
+                        if (fPresent) {
                             event.setFeedRate(fValue);
                         }
 
-                        if (comment != null)
-                        {
+                        if (comment != null) {
                             event.setComment(comment);
                         }
 
                         eventToOutput = event;
-                    } else
-                    {
+                    } else {
                         RetractDuringExtrusionEvent event = new RetractDuringExtrusionEvent();
 
                         event.setX(xValue);
                         event.setY(yValue);
                         event.setE(eValue);
 
-                        if (fPresent)
-                        {
+                        if (fPresent) {
                             event.setFeedRate(fValue);
                         }
 
-                        if (comment != null)
-                        {
+                        if (comment != null) {
                             event.setComment(comment);
                         }
 
                         eventToOutput = event;
                     }
-                } else if (comment != null && !passthroughLine)
-                {
+                } else if (comment != null && !passthroughLine) {
                     CommentEvent event = new CommentEvent();
                     event.setComment(comment);
 
                     eventToOutput = event;
-                } else if (line.equals(""))
-                {
+                } else if (line.equals("")) {
                     BlankLineEvent event = new BlankLineEvent();
 
                     eventToOutput = event;
-                } else
-                {
-                    for (GCodeTranslationEventHandler listener : listeners)
-                    {
+                } else {
+                    for (GCodeTranslationEventHandler listener : listeners) {
                         listener.unableToParse(line);
                     }
                 }
@@ -440,37 +409,28 @@ public class GCodeFileParser
 //                        listener.unableToParse(line);
 //                    }
 //                }
-                if (eventToOutput != null)
-                {
-                    try
-                    {
-                        for (GCodeTranslationEventHandler listener : listeners)
-                        {
+                if (eventToOutput != null) {
+                    try {
+                        for (GCodeTranslationEventHandler listener : listeners) {
                             listener.processEvent(eventToOutput);
                         }
-                    } catch (NozzleCloseSettingsError ex)
-                    {
+                    } catch (NozzleCloseSettingsError ex) {
                         steno.error("Error processing event - aborting - " + eventToOutput);
                     }
                 }
             }
 
             //End of file - poke the processor
-            try
-            {
-                for (GCodeTranslationEventHandler listener : listeners)
-                {
+            try {
+                for (GCodeTranslationEventHandler listener : listeners) {
                     listener.processEvent(new EndOfFileEvent());
                 }
-            } catch (NozzleCloseSettingsError ex)
-            {
+            } catch (NozzleCloseSettingsError ex) {
                 steno.error("Error processing end of file event");
             }
-        } catch (FileNotFoundException ex)
-        {
+        } catch (FileNotFoundException ex) {
             System.out.println("File not found");
-        } catch (IOException ex)
-        {
+        } catch (IOException ex) {
             System.out.println("IO Exception");
         }
 

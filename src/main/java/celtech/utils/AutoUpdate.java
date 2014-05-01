@@ -22,8 +22,7 @@ import org.controlsfx.dialog.Dialogs;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class AutoUpdate extends Thread
-{
+public class AutoUpdate extends Thread {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(AutoUpdate.class.getName());
 
@@ -37,9 +36,9 @@ public class AutoUpdate extends Thread
     private ResourceBundle i18nBundle = null;
     private Dialogs.CommandLink upgradeApplication = null;
     private Dialogs.CommandLink dontUpgradeApplication = null;
+    private boolean requiresShutdown = false;
 
-    public AutoUpdate(String applicationName, AutoUpdateCompletionListener completionListener)
-    {
+    public AutoUpdate(String applicationName, AutoUpdateCompletionListener completionListener) {
         this.applicationName = applicationName;
         this.setName("AutoUpdate");
         this.parentClass = completionListener.getClass();
@@ -51,52 +50,40 @@ public class AutoUpdate extends Thread
     }
 
     @Override
-    public void run()
-    {
+    public void run() {
         int strikes = 0;
-        boolean requiresShutdown = false;
 
         //Check for a new version 15 secs after startup
-        try
-        {
-            this.sleep(1000);
-            Platform.runLater(new Runnable()
-            {
+        try {
+            Platform.runLater(new Runnable() {
                 @Override
-                public void run()
-                {
+                public void run() {
                     Notifier.showInformationNotification(i18nBundle.getString("dialogs.updateAboutToUpdate"), null);
                 }
             });
             this.sleep(2000);
-        } catch (InterruptedException ex)
-        {
+        } catch (InterruptedException ex) {
             steno.warning("AutoUpdate sleep was interrupted");
         }
 
-        while (strikes < 1 && keepRunning)
-        {
+        while (strikes < 1 && keepRunning) {
             int status = checkForUpdates();
+            requiresShutdown = false;
 
-            switch (status)
-            {
+            switch (status) {
                 case UPGRADE_NOT_REQUIRED:
-                    Platform.runLater(new Runnable()
-                    {
+                    Platform.runLater(new Runnable() {
                         @Override
-                        public void run()
-                        {
+                        public void run() {
                             Notifier.showInformationNotification(i18nBundle.getString("dialogs.updateApplicationTitle"), i18nBundle.getString("dialogs.updateApplicationNotRequired") + applicationName);
                         }
                     });
                     keepRunning = false;
                     break;
                 case UPGRADE_REQUIRED:
-                    Platform.runLater(new Runnable()
-                    {
+                    Platform.runLater(new Runnable() {
                         @Override
-                        public void run()
-                        {
+                        public void run() {
                             Action upgradeApplicationResponse = Dialogs.create().title(i18nBundle.getString("dialogs.updateApplicationTitle"))
                                     .message(i18nBundle.getString("dialogs.updateApplicationMessagePart1")
                                             + applicationName
@@ -104,30 +91,25 @@ public class AutoUpdate extends Thread
                                     .masthead(null)
                                     .showCommandLinks(upgradeApplication, upgradeApplication, dontUpgradeApplication);
 
-                            if (upgradeApplicationResponse == upgradeApplication)
-                            {
+                            if (upgradeApplicationResponse == upgradeApplication) {
                                 //Run the autoupdater in the background in download mode
                                 startUpdate();
+                                requiresShutdown = true;
                             }
                         }
                     });
-                    requiresShutdown = true;
                     keepRunning = false;
                     break;
                 case ERROR:
-                    Platform.runLater(new Runnable()
-                    {
+                    Platform.runLater(new Runnable() {
                         @Override
-                        public void run()
-                        {
+                        public void run() {
                             Notifier.showErrorNotification(i18nBundle.getString("dialogs.updateApplicationTitle"), i18nBundle.getString("dialogs.updateFailedToContact"));
                         }
                     });
-                    try
-                    {
+                    try {
                         this.sleep(5000);
-                    } catch (InterruptedException ex)
-                    {
+                    } catch (InterruptedException ex) {
                         steno.warning("AutoUpdate sleep was interrupted");
                     }
 
@@ -138,16 +120,14 @@ public class AutoUpdate extends Thread
         completionListener.autoUpdateComplete(requiresShutdown);
     }
 
-    private int checkForUpdates()
-    {
+    private int checkForUpdates() {
         int upgradeStatus = ERROR;
 
         String osName = System.getProperty("os.name");
 
         ArrayList<String> commands = new ArrayList<>();
 
-        if (osName.equals("Windows 95"))
-        {
+        if (osName.equals("Windows 95")) {
             commands.add("command.com");
             commands.add("/S");
             commands.add("/W");
@@ -160,8 +140,7 @@ public class AutoUpdate extends Thread
             commands.add("--unattendedmodeui");
             commands.add("minimalWithDialogs");
 
-        } else if (osName.startsWith("Windows"))
-        {
+        } else if (osName.startsWith("Windows")) {
             commands.add("cmd.exe");
             commands.add("/S");
             commands.add("/W");
@@ -174,8 +153,7 @@ public class AutoUpdate extends Thread
             commands.add("onlycheck");
             commands.add("--unattendedmodeui");
             commands.add("minimalWithDialogs");
-        } else if (osName.equals("Mac OS X"))
-        {
+        } else if (osName.equals("Mac OS X")) {
             commands.add(ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-osx.app/Contents/MacOS/installbuilder.sh");
 
             commands.add("--mode");
@@ -196,26 +174,21 @@ public class AutoUpdate extends Thread
          * 5: Update check disabled through check_for_updates setting
          */
 
-        if (commands.size() > 0)
-        {
+        if (commands.size() > 0) {
             ProcessBuilder autoupdateProcess = new ProcessBuilder(commands);
             autoupdateProcess.inheritIO();
-            try
-            {
+            try {
                 final Process updateProc = autoupdateProcess.start();
                 boolean checkFinished = updateProc.waitFor(10, TimeUnit.SECONDS);
 
-                if (checkFinished == false)
-                {
+                if (checkFinished == false) {
                     //The autoupdater is still waiting. Kill it and try again.
                     steno.info("Couldn't get a response from autoupdate - killing it...");
                     updateProc.destroyForcibly();
                     sleep(15000);
                     upgradeStatus = ERROR;
-                } else
-                {
-                    switch (updateProc.exitValue())
-                    {
+                } else {
+                    switch (updateProc.exitValue()) {
                         case 0:
                             upgradeStatus = UPGRADE_REQUIRED;
                             steno.info("Upgrade required");
@@ -241,42 +214,35 @@ public class AutoUpdate extends Thread
                             break;
                     }
                 }
-            } catch (IOException ex)
-            {
+            } catch (IOException ex) {
                 steno.error("Exception whilst running autoupdate: " + ex);
-            } catch (InterruptedException ex)
-            {
+            } catch (InterruptedException ex) {
                 steno.error("Interrupted whilst waiting for autoupdate to complete");
             }
-        } else
-        {
+        } else {
             steno.error("Couldn't run autoupdate - no commands for OS " + osName);
         }
 
         return upgradeStatus;
     }
 
-    private void startUpdate()
-    {
+    private void startUpdate() {
         String osName = System.getProperty("os.name");
 
         ArrayList<String> commands = new ArrayList<>();
 
-        if (osName.equals("Windows 95"))
-        {
+        if (osName.equals("Windows 95")) {
             commands.add("command.com");
             commands.add("/S");
             commands.add("/C");
             commands.add("\"\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
 
-        } else if (osName.startsWith("Windows"))
-        {
+        } else if (osName.startsWith("Windows")) {
             commands.add("cmd.exe");
             commands.add("/S");
             commands.add("/C");
             commands.add("\"\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
-        } else if (osName.equals("Mac OS X"))
-        {
+        } else if (osName.equals("Mac OS X")) {
             commands.add(ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-osx.app/Contents/MacOS/installbuilder.sh");
         }
         /*
@@ -290,26 +256,21 @@ public class AutoUpdate extends Thread
          * 5: Update check disabled through check_for_updates setting
          */
 
-        if (commands.size() > 0)
-        {
+        if (commands.size() > 0) {
             ProcessBuilder autoupdateProcess = new ProcessBuilder(commands);
             autoupdateProcess.inheritIO();
-            try
-            {
+            try {
                 final Process updateProc = autoupdateProcess.start();
                 steno.info("Autoupdate initiated");
-            } catch (IOException ex)
-            {
+            } catch (IOException ex) {
                 steno.error("Exception whilst running autoupdate: " + ex);
             }
-        } else
-        {
+        } else {
             steno.error("Couldn't run autoupdate - no commands for OS " + osName);
         }
     }
 
-    public void shutdown()
-    {
+    public void shutdown() {
         keepRunning = false;
     }
 }

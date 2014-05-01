@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.beans.property.DoubleProperty;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
@@ -82,7 +83,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         gcodeParser.addListener(this);
     }
 
-    public boolean roboxiseFile(String inputFilename, String outputFilename, RoboxProfile settings)
+    public boolean roboxiseFile(String inputFilename, String outputFilename, RoboxProfile settings, DoubleProperty percentProgress)
     {
         boolean success = false;
 
@@ -126,7 +127,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
             insertInitialTemperatures();
 
-            gcodeParser.parse(inputFilename);
+            gcodeParser.parse(inputFilename, percentProgress);
 
             fileWriter.close();
 

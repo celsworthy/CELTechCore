@@ -337,14 +337,14 @@
             <children>
                 <HBox alignment="CENTER" maxHeight="-1.0" maxWidth="-1.0" minHeight="-1.0" minWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" spacing="10.0" translateX="0.0" translateY="0.0">
                     <children>
-                        <Button fx:id="selectNozzle1" mnemonicParsing="false" text="%printerStatus.Nozzle1ControlLabel" onAction="#selectNozzle1" />
-                        <Button fx:id="selectNozzle2" mnemonicParsing="false" text="%printerStatus.Nozzle2ControlLabel" onAction="#selectNozzle2" />
+                        <Button fx:id="selectNozzle1" mnemonicParsing="false" onAction="#selectNozzle1" text="%printerStatus.Nozzle1ControlLabel" />
+                        <Button fx:id="selectNozzle2" mnemonicParsing="false" onAction="#selectNozzle2" text="%printerStatus.Nozzle2ControlLabel" />
                     </children>
                 </HBox>
                 <HBox alignment="CENTER" maxHeight="-1.0" maxWidth="-1.0" minHeight="-1.0" minWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" spacing="10.0" translateX="0.0" translateY="0.0">
                     <children>
-                        <Button fx:id="closeNozzleButton" mnemonicParsing="false" text="%printerStatus.NozzleCloseLabel" onAction="#closeNozzle" />
-                        <Button fx:id="openNozzleButton" mnemonicParsing="false" text="%printerStatus.NozzleOpenLabel" onAction="#openNozzle" />
+                        <Button fx:id="closeNozzleButton" mnemonicParsing="false" onAction="#closeNozzle" text="%printerStatus.NozzleCloseLabel" />
+                        <Button fx:id="openNozzleButton" mnemonicParsing="false" onAction="#openNozzle" text="%printerStatus.NozzleOpenLabel" />
                     </children>
                 </HBox>
             </children>
@@ -362,7 +362,21 @@
                         <Text id="progressText" fx:id="progressPercent" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" translateY="0.0" />
                     </children>
                 </StackPane>
-                <Text id="progressText" fx:id="progressMessage" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="labelText" text="Text" translateY="0.0" />
+                <StackPane id="StackPane" >
+                    <children>
+                        <Text id="progressText" fx:id="progressMessage" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="labelText" text="Text" translateY="0.0" />
+                        <StackPane id="StackPane" layoutX="10.0" layoutY="55.0">
+                            <children>
+                                <ProgressBar fx:id="secondProgressBar" prefHeight="30.0" prefWidth="500.0" progress="0.0" translateY="0.0">
+                                    <effect>
+                                        <InnerShadow />
+                                    </effect>
+                                </ProgressBar>
+                                <Text id="progressText" fx:id="secondProgressPercent" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" translateY="0.0" />
+                            </children>
+                        </StackPane>
+                    </children> 
+                </StackPane>
             </children>
         </VBox>
         <HBox fx:id="printControlButtons" alignment="TOP_RIGHT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="70.0" prefWidth="-1.0" spacing="5.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">

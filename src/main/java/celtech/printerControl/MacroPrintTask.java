@@ -14,9 +14,10 @@ import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -25,22 +26,21 @@ import javafx.concurrent.Task;
 public class MacroPrintTask extends Task<String>
 {
 
+    private final Stenographer steno = StenographerFactory.getStenographer(MacroPrintTask.class.getName());
     private ArrayList<String> macroData = null;
-    private ObservableList<String> gcodeTranscript = null;
     private Printer printer = null;
     private RoboxCommsManager commsManager = null;
     private String portName = null;
-    private boolean addToTranscript = false;
     private ResourceBundle i18nBundle = null;
 
-    public MacroPrintTask(ArrayList<String> macroData, ObservableList<String> gcodeTranscript, Printer printer, RoboxCommsManager commsManager, String portName, boolean addToTranscript)
+    public MacroPrintTask(ArrayList<String> macroData, Printer printer, RoboxCommsManager commsManager, String portName)
     {
         this.macroData = macroData;
-        this.gcodeTranscript = gcodeTranscript;
         this.printer = printer;
-        this.commsManager= commsManager;
+        this.commsManager = commsManager;
         this.portName = portName;
-        this.addToTranscript = addToTranscript;
+
+        updateTitle("Macro print task");
 
         i18nBundle = DisplayManager.getLanguageBundle();
     }
@@ -50,48 +50,28 @@ public class MacroPrintTask extends Task<String>
     {
         StringBuilder finalResponse = new StringBuilder();
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.EXECUTE_GCODE);
+        steno.info("Macro print task started");
 
         for (String gcodeToSend : macroData)
         {
             gcodeToSend += "\n";
             gcodePacket.setMessagePayload(gcodeToSend);
 
-            while (printer.busyProperty().get() == true && isCancelled() == false)
-            {
-                Thread.sleep(250);
-            }
-            
+//            while (printer.getBusy() && !isCancelled())
+//            {
+//                Thread.sleep(250);
+//            }
+
             if (isCancelled())
             {
                 break;
             }
-            
+
             GCodeDataResponse response = (GCodeDataResponse) commsManager.submitForWrite(portName, gcodePacket);
             finalResponse.append(response.getGCodeResponse() + "\n");
-
-            final String gcodeSent = gcodeToSend;
-            
-            if (addToTranscript)
-            {
-                Platform.runLater(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        gcodeTranscript.add(gcodeSent);
-                        if (response == null)
-                        {
-                            gcodeTranscript.add(i18nBundle.getString("gcodeEntry.errorMessage"));
-                        } else if (!response.getGCodeResponse().trim().equals(""))
-                        {
-                            gcodeTranscript.add(response.getGCodeResponse());
-                        }
-                    }
-                });
-            }
-            
-            Thread.sleep(100);
         }
+
+        steno.info("Macro print task ended");
         return finalResponse.toString();
     }
 

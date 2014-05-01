@@ -1,6 +1,6 @@
-
 package celtech.coreUI.controllers;
 
+import celtech.appManager.TaskController;
 import celtech.coreUI.DisplayManager;
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.GCodeConstants;
@@ -151,20 +151,20 @@ public class CalibrationNozzleBPageController implements Initializable
                     try
                     {
                         printerToUse.transmitWriteHeadEEPROM(savedHeadData.getHeadTypeCode(),
-                                savedHeadData.getUniqueID(),
-                                savedHeadData.getMaximumTemperature(),
-                                savedHeadData.getThermistorBeta(),
-                                savedHeadData.getThermistorTCal(),
-                                0,
-                                0,
-                                0,
-                                nozzle0BOffset,
-                                0,
-                                0,
-                                0,
-                                nozzle1BOffset,
-                                savedHeadData.getLastFilamentTemperature(),
-                                savedHeadData.getHoursUsed());
+                                                             savedHeadData.getUniqueID(),
+                                                             savedHeadData.getMaximumTemperature(),
+                                                             savedHeadData.getThermistorBeta(),
+                                                             savedHeadData.getThermistorTCal(),
+                                                             0,
+                                                             0,
+                                                             0,
+                                                             nozzle0BOffset,
+                                                             0,
+                                                             0,
+                                                             0,
+                                                             nozzle1BOffset,
+                                                             savedHeadData.getLastFilamentTemperature(),
+                                                             savedHeadData.getHoursUsed());
 
                     } catch (RoboxCommsException ex)
                     {
@@ -248,20 +248,20 @@ public class CalibrationNozzleBPageController implements Initializable
             if (savedHeadData != null && state != NozzleBCalibrationState.FINISHED)
             {
                 printerToUse.transmitWriteHeadEEPROM(savedHeadData.getHeadTypeCode(),
-                        savedHeadData.getUniqueID(),
-                        savedHeadData.getMaximumTemperature(),
-                        savedHeadData.getThermistorBeta(),
-                        savedHeadData.getThermistorTCal(),
-                        savedHeadData.getNozzle1XOffset(),
-                        savedHeadData.getNozzle1YOffset(),
-                        savedHeadData.getNozzle1ZOffset(),
-                        savedHeadData.getNozzle1BOffset(),
-                        savedHeadData.getNozzle2XOffset(),
-                        savedHeadData.getNozzle2YOffset(),
-                        savedHeadData.getNozzle2ZOffset(),
-                        savedHeadData.getNozzle2BOffset(),
-                        savedHeadData.getLastFilamentTemperature(),
-                        savedHeadData.getHoursUsed());
+                                                     savedHeadData.getUniqueID(),
+                                                     savedHeadData.getMaximumTemperature(),
+                                                     savedHeadData.getThermistorBeta(),
+                                                     savedHeadData.getThermistorTCal(),
+                                                     savedHeadData.getNozzle1XOffset(),
+                                                     savedHeadData.getNozzle1YOffset(),
+                                                     savedHeadData.getNozzle1ZOffset(),
+                                                     savedHeadData.getNozzle1BOffset(),
+                                                     savedHeadData.getNozzle2XOffset(),
+                                                     savedHeadData.getNozzle2YOffset(),
+                                                     savedHeadData.getNozzle2ZOffset(),
+                                                     savedHeadData.getNozzle2BOffset(),
+                                                     savedHeadData.getLastFilamentTemperature(),
+                                                     savedHeadData.getHoursUsed());
             }
 
             printerToUse.transmitDirectGCode("G0 B0", false);
@@ -353,20 +353,20 @@ public class CalibrationNozzleBPageController implements Initializable
                 {
                     savedHeadData = printerToUse.transmitReadHeadEEPROM();
                     printerToUse.transmitWriteHeadEEPROM(savedHeadData.getHeadTypeCode(),
-                            savedHeadData.getUniqueID(),
-                            savedHeadData.getMaximumTemperature(),
-                            savedHeadData.getThermistorBeta(),
-                            savedHeadData.getThermistorTCal(),
-                            0,
-                            0,
-                            0,
-                            0.9f,
-                            0,
-                            0,
-                            0,
-                            -0.9f,
-                            savedHeadData.getLastFilamentTemperature(),
-                            savedHeadData.getHoursUsed());
+                                                         savedHeadData.getUniqueID(),
+                                                         savedHeadData.getMaximumTemperature(),
+                                                         savedHeadData.getThermistorBeta(),
+                                                         savedHeadData.getThermistorTCal(),
+                                                         0,
+                                                         0,
+                                                         0,
+                                                         0.9f,
+                                                         0,
+                                                         0,
+                                                         0,
+                                                         -0.9f,
+                                                         savedHeadData.getLastFilamentTemperature(),
+                                                         savedHeadData.getHoursUsed());
 
                 } catch (RoboxCommsException ex)
                 {
@@ -376,7 +376,10 @@ public class CalibrationNozzleBPageController implements Initializable
                 calibrationTask = new CalibrateBTask(state);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
+                TaskController.getInstance().manageTask(calibrationTask);
+
                 Thread initialiseTaskThread = new Thread(calibrationTask);
+                initialiseTaskThread.setName("Calibration - initialiser");
                 initialiseTaskThread.start();
                 break;
             case HEATING:
@@ -390,7 +393,10 @@ public class CalibrationNozzleBPageController implements Initializable
                 calibrationTask = new CalibrateBTask(state);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
+                TaskController.getInstance().manageTask(calibrationTask);
+
                 Thread heatingTaskThread = new Thread(calibrationTask);
+                heatingTaskThread.setName("Calibration - heating");
                 heatingTaskThread.start();
 
                 break;
@@ -406,7 +412,10 @@ public class CalibrationNozzleBPageController implements Initializable
                 calibrationTask = new CalibrateBTask(state);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
+                TaskController.getInstance().manageTask(calibrationTask);
+
                 Thread primingTaskThread = new Thread(calibrationTask);
+                primingTaskThread.setName("Calibration - priming");
                 primingTaskThread.start();
                 break;
 
@@ -428,7 +437,10 @@ public class CalibrationNozzleBPageController implements Initializable
 
                 calibrationTask = new CalibrateBTask(state, currentNozzleNumber);
                 calibrationTask.setOnFailed(failedTaskHandler);
+                TaskController.getInstance().manageTask(calibrationTask);
+
                 Thread materialExtrudingTaskThread = new Thread(calibrationTask);
+                materialExtrudingTaskThread.setName("Calibration - extrusion check");
                 materialExtrudingTaskThread.start();
                 break;
             case HEAD_CLEAN_CHECK:
@@ -452,20 +464,20 @@ public class CalibrationNozzleBPageController implements Initializable
                 try
                 {
                     printerToUse.transmitWriteHeadEEPROM(savedHeadData.getHeadTypeCode(),
-                            savedHeadData.getUniqueID(),
-                            savedHeadData.getMaximumTemperature(),
-                            savedHeadData.getThermistorBeta(),
-                            savedHeadData.getThermistorTCal(),
-                            0,
-                            0,
-                            0,
-                            0.9f,
-                            0,
-                            0,
-                            0,
-                            -0.9f,
-                            savedHeadData.getLastFilamentTemperature(),
-                            savedHeadData.getHoursUsed());
+                                                         savedHeadData.getUniqueID(),
+                                                         savedHeadData.getMaximumTemperature(),
+                                                         savedHeadData.getThermistorBeta(),
+                                                         savedHeadData.getThermistorTCal(),
+                                                         0,
+                                                         0,
+                                                         0,
+                                                         0.9f,
+                                                         0,
+                                                         0,
+                                                         0,
+                                                         -0.9f,
+                                                         savedHeadData.getLastFilamentTemperature(),
+                                                         savedHeadData.getHoursUsed());
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in needle valve calibration - mode=" + state.name());
@@ -474,7 +486,10 @@ public class CalibrationNozzleBPageController implements Initializable
                 calibrationTask = new CalibrateBTask(state, currentNozzleNumber);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
+                TaskController.getInstance().manageTask(calibrationTask);
+
                 Thread preCalibrationPrimingTaskThread = new Thread(calibrationTask);
+                preCalibrationPrimingTaskThread.setName("Calibration - pre calibration priming");
                 preCalibrationPrimingTaskThread.start();
                 break;
             case CALIBRATE_NOZZLE:
@@ -510,7 +525,10 @@ public class CalibrationNozzleBPageController implements Initializable
 
                 calibrationTask = new CalibrateBTask(state, currentNozzleNumber);
                 calibrationTask.setOnFailed(failedTaskHandler);
+                TaskController.getInstance().manageTask(calibrationTask);
+
                 Thread confirmMaterialExtrudingTaskThread = new Thread(calibrationTask);
+                confirmMaterialExtrudingTaskThread.setName("Calibration - extruding");
                 confirmMaterialExtrudingTaskThread.start();
                 break;
             case FINISHED:
@@ -524,20 +542,20 @@ public class CalibrationNozzleBPageController implements Initializable
                 try
                 {
                     printerToUse.transmitWriteHeadEEPROM(savedHeadData.getHeadTypeCode(),
-                            savedHeadData.getUniqueID(),
-                            savedHeadData.getMaximumTemperature(),
-                            savedHeadData.getThermistorBeta(),
-                            savedHeadData.getThermistorTCal(),
-                            savedHeadData.getNozzle1XOffset(),
-                            savedHeadData.getNozzle1YOffset(),
-                            savedHeadData.getNozzle1ZOffset(),
-                            nozzle0BOffset,
-                            savedHeadData.getNozzle2XOffset(),
-                            savedHeadData.getNozzle2YOffset(),
-                            savedHeadData.getNozzle2ZOffset(),
-                            nozzle1BOffset,
-                            savedHeadData.getLastFilamentTemperature(),
-                            savedHeadData.getHoursUsed());
+                                                         savedHeadData.getUniqueID(),
+                                                         savedHeadData.getMaximumTemperature(),
+                                                         savedHeadData.getThermistorBeta(),
+                                                         savedHeadData.getThermistorTCal(),
+                                                         savedHeadData.getNozzle1XOffset(),
+                                                         savedHeadData.getNozzle1YOffset(),
+                                                         savedHeadData.getNozzle1ZOffset(),
+                                                         nozzle0BOffset,
+                                                         savedHeadData.getNozzle2XOffset(),
+                                                         savedHeadData.getNozzle2YOffset(),
+                                                         savedHeadData.getNozzle2ZOffset(),
+                                                         nozzle1BOffset,
+                                                         savedHeadData.getLastFilamentTemperature(),
+                                                         savedHeadData.getHoursUsed());
 
                     printerToUse.transmitDirectGCode("G0 B0", false);
                     printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);

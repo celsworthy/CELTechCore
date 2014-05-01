@@ -1,6 +1,7 @@
 package celtech.printerControl;
 
 import celtech.appManager.Project;
+import celtech.appManager.TaskController;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
@@ -1693,27 +1694,26 @@ public class Printer
         return response.getGCodeResponse();
     }
 
-    public void transmitStoredGCode(final String macroName, boolean addToTranscript) throws RoboxCommsException
+    public void transmitStoredGCode(final String macroName) throws RoboxCommsException
     {
         ArrayList<String> macroContents = GCodeMacros.getMacroContents(macroName);
 
-        transmitMacroData(macroContents, addToTranscript);
+        transmitMacroData(macroContents);
     }
 
-    private void transmitMacroData(ArrayList<String> macroData, boolean addToTranscript) throws RoboxCommsException
+    private void transmitMacroData(ArrayList<String> macroData) throws RoboxCommsException
     {
-        MacroPrintTask macroPrintTask = new MacroPrintTask(macroData, gcodeTranscript, this, printerCommsManager, portName, addToTranscript);
+        MacroPrintTask macroPrintTask = new MacroPrintTask(macroData, this, printerCommsManager, portName);
 
-        macroPrintTask.setOnFailed(new EventHandler<WorkerStateEvent>()
+        macroPrintTask.setOnFailed((WorkerStateEvent event) ->
         {
-            @Override
-            public void handle(WorkerStateEvent event)
-            {
-                steno.error("Failed to send macro data");
-            }
+            steno.error("Failed to send macro data");
         });
+        
+        TaskController.getInstance().manageTask(macroPrintTask);
 
         Thread macroPrintTaskThread = new Thread(macroPrintTask);
+        macroPrintTaskThread.setName("Macro Print");
         macroPrintTaskThread.start();
     }
 
