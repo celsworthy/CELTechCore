@@ -324,10 +324,10 @@ public class PrinterStatusPageController implements Initializable
 
         if (openTheLid)
         {
-                if (printerToUse.getPrintQueue().printInProgressProperty().get() == true)
-                {
-                    printerToUse.getPrintQueue().abortPrint();
-                }
+            if (printerToUse.getPrintQueue().printInProgressProperty().get() == true)
+            {
+                printerToUse.getPrintQueue().abortPrint();
+            }
             try
             {
                 printerToUse.transmitDirectGCode(GCodeConstants.goToOpenLidPosition, false);
@@ -467,7 +467,7 @@ public class PrinterStatusPageController implements Initializable
         dontOpenTheLid = new Dialogs.CommandLink(i18nBundle.getString("dialogs.openLidPrinterHotDontOpenHeading"), null);
         openLidPrinterTooHotTitle = i18nBundle.getString("dialogs.openLidPrinterHotTitle");
         openLidPrinterTooHotInfo = i18nBundle.getString("dialogs.openLidPrinterHotInfo");
-        
+
         reelDataChangeListener = new ChangeListener<Boolean>()
         {
             @Override
@@ -567,6 +567,7 @@ public class PrinterStatusPageController implements Initializable
                     progressGroup.visibleProperty().bind(selectedPrinter.getPrintQueue().printInProgressProperty());
                     progressBar.progressProperty().bind(selectedPrinter.getPrintQueue().progressProperty());
                     progressPercent.textProperty().bind(Bindings.multiply(selectedPrinter.getPrintQueue().progressProperty(), 100).asString("%.0f%%"));
+                    progressPercent.visibleProperty().bind(selectedPrinter.getPrintQueue().linesInPrintingFileProperty().greaterThan(0).and(selectedPrinter.getPrintQueue().progressProperty().greaterThanOrEqualTo(0)));
                     progressTitle.textProperty().bind(selectedPrinter.getPrintQueue().titleProperty());
                     progressMessage.textProperty().bind(selectedPrinter.getPrintQueue().messageProperty());
 

@@ -16,16 +16,15 @@ import celtech.printerControl.PrintJob;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.printerControl.comms.RoboxCommsManager;
-import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.services.ControllableService;
 import celtech.services.modelLoader.ModelLoaderService;
 import celtech.services.postProcessor.GCodePostProcessingResult;
 import celtech.services.postProcessor.PostProcessorService;
 import celtech.services.slicer.PrintQualityEnumeration;
+import celtech.services.slicer.RoboxProfile;
 import celtech.services.slicer.SliceResult;
 import celtech.services.slicer.SlicerService;
-import celtech.services.slicer.RoboxProfile;
 import celtech.utils.SystemUtils;
 import java.io.File;
 import java.io.IOException;
@@ -36,11 +35,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -67,7 +69,7 @@ public class PrintQueue implements ControllableService
     private SlicerService slicerService = new SlicerService();
     private PostProcessorService gcodePostProcessorService = new PostProcessorService();
     private GCodePrintService gcodePrintService = new GCodePrintService();
-    private int linesInCurrentGCodeFile = 0;
+    private IntegerProperty linesInPrintingFile = new SimpleIntegerProperty(0);
     /*
      * 
      */
@@ -218,7 +220,7 @@ public class PrintQueue implements ControllableService
 
                     File gcodeFromPrintJob = new File(result.getOutputFilename());
                     int numberOfLines = SystemUtils.countLinesInFile(gcodeFromPrintJob, ";");
-                    linesInCurrentGCodeFile = numberOfLines;
+                    linesInPrintingFile.set(numberOfLines);
                     Notifier.showInformationNotification(notificationTitle, gcodePostProcessSuccessfulNotification);
                     setPrintStatus(PrinterStatusEnumeration.SENDING_TO_PRINTER);
                 } else
@@ -294,11 +296,11 @@ public class PrintQueue implements ControllableService
 //Ignore this state...
                         break;
                     case PRINTING:
-                        double percentDone = newValue.doubleValue() / (double) linesInCurrentGCodeFile;
-                        printProgressPercent.set(percentDone);
-//                        steno.info("Printing " + newValue.intValue() + " of " + linesInCurrentGCodeFile);
-//                        printQueueStatusString.setValue(String.format("Printing %.1f%%", percentDone));
-//                        fxToJMEInterface.exposeGCodeModel(percentDone);
+                        if (linesInPrintingFile.get() > 0)
+                        {
+                            double percentDone = newValue.doubleValue() / linesInPrintingFile.doubleValue();
+                            printProgressPercent.set(percentDone);
+                        }
                         break;
                     default:
                         break;
@@ -355,8 +357,13 @@ public class PrintQueue implements ControllableService
 
                         File gcodeFromPrintJob = new File(ApplicationConfiguration.getPrintSpoolDirectory() + associatedPrinter.getPrintJobID() + File.separator + associatedPrinter.getPrintJobID() + ApplicationConfiguration.gcodeTempFileExtension);
                         int numberOfLines = SystemUtils.countLinesInFile(gcodeFromPrintJob, ";");
-                        linesInCurrentGCodeFile = numberOfLines;
-                        double percentDone = (double) associatedPrinter.getPrintJobLineNumber() / numberOfLines;
+                        linesInPrintingFile.set(numberOfLines);
+
+                        double percentDone = -1;
+                        if (linesInPrintingFile.get() > 0)
+                        {
+                            percentDone = (double) associatedPrinter.getPrintJobLineNumber() / numberOfLines;
+                        }
 
                         printProgressPercent.set(percentDone);
 //                            fxToJMEInterface.exposeGCodeModel(percentDone);
@@ -662,7 +669,7 @@ public class PrintQueue implements ControllableService
                 try
                 {
                     associatedPrinter.transmitAbortPrint();
-                    associatedPrinter.transmitStoredGCode(GCodeMacros.ABORT_PRINT, true);
+                    associatedPrinter.transmitStoredGCode("abort_print", true);
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Robox comms exception when sending abort print command " + ex);
@@ -693,5 +700,10 @@ public class PrintQueue implements ControllableService
     public void printerIsPrinting()
     {
         setPrintStatus(PrinterStatusEnumeration.PRINTING);
+    }
+
+    public ReadOnlyIntegerProperty linesInPrintingFileProperty()
+    {
+        return linesInPrintingFile;
     }
 }

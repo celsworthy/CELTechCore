@@ -7,6 +7,7 @@ package celtech.printerControl.comms;
 
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
+import celtech.appManager.Notifier;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
@@ -46,6 +47,9 @@ import libertysystems.configuration.ConfigNotLoadedException;
 import libertysystems.configuration.Configuration;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.controlsfx.control.action.Action;
+import org.controlsfx.dialog.Dialogs;
+import org.controlsfx.dialog.Dialogs.CommandLink;
 
 /**
  *
@@ -68,11 +72,8 @@ public class PrinterHandler extends Thread
     /*
      * 
      */
-    private ModalDialog firmwareUpgradeQuery = null;
-    private ModalDialog firmwareSuccessDialog = null;
-    private ModalDialog firmwareFailureDialog = null;
-    private int firmwareUpdateOK = -1;
-    private int firmwareUpdateCancel = -1;
+    private Dialogs.CommandLink firmwareUpdateOK = null;
+    private Dialogs.CommandLink firmwareUpdateNotOK = null;
     private ProgressDialog firmwareUpdateProgress = null;
     private final FirmwareLoadService firmwareLoadService = new FirmwareLoadService();
     private ResourceBundle languageBundle = null;
@@ -114,11 +115,6 @@ public class PrinterHandler extends Thread
             @Override
             public void run()
             {
-                firmwareUpgradeQuery = new ModalDialog();
-                firmwareUpgradeQuery.setTitle(languageBundle.getString("dialogs.firmwareUpgradeTitle"));
-                firmwareUpdateOK = firmwareUpgradeQuery.addButton(languageBundle.getString("dialogs.firmwareUpgradeOK"));
-                firmwareUpdateCancel = firmwareUpgradeQuery.addButton(languageBundle.getString("dialogs.firmwareUpgradeCancel"));
-
                 firmwareUpdateProgress = new ProgressDialog(firmwareLoadService);
 
                 printerIDDialog = new PrinterIDDialog();
@@ -128,106 +124,127 @@ public class PrinterHandler extends Thread
                 noSDDialog.setMessage(languageBundle.getString("dialogs.noSDCardMessage"));
                 noSDDialog.addButton(languageBundle.getString("dialogs.noSDCardOK"));
                 initialised = true;
-
-                firmwareSuccessDialog = new ModalDialog();
-                firmwareSuccessDialog.setTitle(languageBundle.getString("dialogs.firmwareUpgradeSuccessTitle"));
-                firmwareSuccessDialog.setMessage(languageBundle.getString("dialogs.firmwareUpgradeSuccessMessage"));
-                firmwareSuccessDialog.addButton(languageBundle.getString("dialogs.firmwareUpgradeSuccessOK"));
-
-                firmwareFailureDialog = new ModalDialog();
-                firmwareFailureDialog.setTitle(languageBundle.getString("dialogs.firmwareUpgradeFailedTitle"));
-                firmwareFailureDialog.setMessage(languageBundle.getString("dialogs.firmwareUpgradeFailedMessage"));
-                firmwareFailureDialog.addButton(languageBundle.getString("dialogs.firmwareUpgradeFailedOK"));
             }
         });
+
+        firmwareUpdateOK = new CommandLink(languageBundle.getString("dialogs.firmwareUpgradeOKTitle"), languageBundle.getString("dialogs.firmwareUpgradeOKMessage"));
+        firmwareUpdateNotOK = new CommandLink(languageBundle.getString("dialogs.firmwareUpgradeNotOKTitle"), languageBundle.getString("dialogs.firmwareUpgradeNotOKMessage"));
 
         firmwareLoadService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
         {
             @Override
             public void handle(WorkerStateEvent t)
             {
-                int firmwareUpgradeSuccess = (int) (t.getSource().getValue());
-                if (firmwareUpgradeSuccess == FirmwareLoadTask.SUCCESS)
+                int firmwareUpgradeState = (int) t.getSource().getValue();
+
+                switch (firmwareUpgradeState)
                 {
-                    steno.info("Successfully updated firmware");
-
-                    Platform.runLater(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            firmwareSuccessDialog.show();
-
-                            disconnectSerialPort();
-                        }
-                    });
-                } else
-                {
-                    if (firmwareUpgradeSuccess == FirmwareLoadTask.FILE_ERROR)
-                    {
-                        steno.error("File error when updating firmware");
-
-                        Platform.runLater(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                firmwareFailureDialog.show();
-                            }
-                        });
-                    } else if (firmwareUpgradeSuccess == FirmwareLoadTask.SDCARD_ERROR)
-                    {
-                        steno.error("SD card error when updating firmware");
-
-                        Platform.runLater(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-
-                                if (!noSDDialog.isShowing())
-                                {
-                                    Platform.runLater(new Runnable()
-                                    {
-                                        @Override
-                                        public void run()
-                                        {
-                                            noSDDialog.show();
-
-                                            disconnectSerialPort();
-                                        }
-                                    });
-                                }
-                            }
-                        });
-                    } else
-                    {
-                        steno.error("Other error when updating firmware");
-                        Platform.runLater(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                firmwareFailureDialog.show();
-                            }
-                        });
-                    }
+                    case FirmwareLoadTask.SDCARD_ERROR:
+                        Notifier.showErrorNotification(languageBundle.getString("dialogs.firmwareUpgradeFailedTitle"),
+                                languageBundle.getString("dialogs.sdCardError"));
+                        break;
+                    case FirmwareLoadTask.FILE_ERROR:
+                        Notifier.showErrorNotification(languageBundle.getString("dialogs.firmwareUpgradeFailedTitle"),
+                                languageBundle.getString("dialogs.firmwareFileError"));
+                        break;
+                    case FirmwareLoadTask.OTHER_ERROR:
+                        Notifier.showErrorNotification(languageBundle.getString("dialogs.firmwareUpgradeFailedTitle"),
+                                languageBundle.getString("dialogs.firmwareUpgradeFailedMessage"));
+                        break;
+                    case FirmwareLoadTask.SUCCESS:
+                        Notifier.showInformationNotification(languageBundle.getString("dialogs.firmwareUpgradeSuccessTitle"),
+                                languageBundle.getString("dialogs.firmwareUpgradeSuccessMessage"));
+                        break;
                 }
+                firmwareCheckInProgress = false;
             }
         });
 
+//        firmwareLoadService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
+//        {
+//            @Override
+//            public void handle(WorkerStateEvent t)
+//            {
+//                int firmwareUpgradeSuccess = (int) (t.getSource().getValue());
+//                if (firmwareUpgradeSuccess == FirmwareLoadTask.SUCCESS)
+//                {
+//                    steno.info("Successfully updated firmware");
+//
+//                    Platform.runLater(new Runnable()
+//                    {
+//                        @Override
+//                        public void run()
+//                        {
+//                            firmwareSuccessDialog.show();
+//
+//                            disconnectSerialPort();
+//                        }
+//                    });
+//                } else
+//                {
+//                    if (firmwareUpgradeSuccess == FirmwareLoadTask.FILE_ERROR)
+//                    {
+//                        steno.error("File error when updating firmware");
+//
+//                        Platform.runLater(new Runnable()
+//                        {
+//                            @Override
+//                            public void run()
+//                            {
+//                                firmwareFailureDialog.show();
+//                            }
+//                        });
+//                    } else if (firmwareUpgradeSuccess == FirmwareLoadTask.SDCARD_ERROR)
+//                    {
+//                        steno.error("SD card error when updating firmware");
+//
+//                        Platform.runLater(new Runnable()
+//                        {
+//                            @Override
+//                            public void run()
+//                            {
+//
+//                                if (!noSDDialog.isShowing())
+//                                {
+//                                    Platform.runLater(new Runnable()
+//                                    {
+//                                        @Override
+//                                        public void run()
+//                                        {
+//                                            noSDDialog.show();
+//
+//                                            disconnectSerialPort();
+//                                        }
+//                                    });
+//                                }
+//                            }
+//                        });
+//                    } else
+//                    {
+//                        steno.error("Other error when updating firmware");
+//                        Platform.runLater(new Runnable()
+//                        {
+//                            @Override
+//                            public void run()
+//                            {
+//                                firmwareFailureDialog.show();
+//                            }
+//                        });
+//                    }
+//                }
+//            }
+//        });
         firmwareLoadService.setOnFailed(new EventHandler<WorkerStateEvent>()
         {
             @Override
             public void handle(WorkerStateEvent t)
             {
-                firmwareFailureDialog.show();
 
-                steno.info("I'm here");
+                Notifier.showErrorNotification(DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedTitle"),
+                        DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedMessage"));
+                firmwareCheckInProgress = false;
             }
         });
-
-        // The printer ID starts as the port name and then is changed when it goes online 
     }
 
     @Override
@@ -310,56 +327,88 @@ public class PrinterHandler extends Thread
                                 FirmwareResponse fwResponse = (FirmwareResponse) response;
                                 steno.info("Firmware v " + fwResponse.getFirmwareRevision() + " returned");
 
-//                                if (fwResponse.getFirmwareRevisionInt() > requiredFirmwareVersion)
-//                                {
-//                                    //The firmware version is higher than that associated with AutoMaker
-//                                    // Tell the user to upgrade
-//
-//                                    firmwareCheckInProgress = true;
-//                                    Platform.runLater(new Runnable()
-//                                    {
-//                                        @Override
-//                                        public void run()
-//                                        {
-//                                            firmwareResetDialog.setTitle(languageBundle.getString("dialogs.firmwareVersionTooLowTitle"));
-//                                            firmwareResetDialog.setMessage(languageBundle.getString("dialogs.firmwareVersionTooLowMessage"));
-//                                            firmwareResetDialog.addButton(languageBundle.getString("dialogs.firmwareVersionTooLowOK"));
-//                                            firmwareResetDialog.show();
-//                                            Platform.exit();
-//                                        }
-//                                    });
-//                                } else 
-                                if (fwResponse.getFirmwareRevisionInt() < requiredFirmwareVersion)
+                                if (fwResponse.getFirmwareRevisionInt() > requiredFirmwareVersion)
                                 {
-                                    firmwareCheckInProgress = true;
-                                    steno.warning("Firmware version is " + fwResponse.getFirmwareRevisionInt() + " and should be " + requiredFirmwareVersion);
-                                    firmwareUpgradeQuery.setMessage(languageBundle.getString("dialogs.firmwareVersionError1") + fwResponse.getFirmwareRevisionInt() + languageBundle.getString("dialogs.firmwareVersionError2") + requiredFirmwareVersion + ".\n" + languageBundle.getString("dialogs.firmwareVersionError3"));
+                                    //The firmware version is higher than that associated with AutoMaker
+                                    // Tell the user to upgrade
 
+                                    steno.warning("Firmware version is " + fwResponse.getFirmwareRevisionInt() + " and should be " + requiredFirmwareVersion);
+
+                                    firmwareCheckInProgress = true;
                                     Platform.runLater(new Runnable()
                                     {
                                         @Override
                                         public void run()
                                         {
-                                            ApplicationStatus.getInstance().setMode(ApplicationMode.STATUS);
-                                            int choice = firmwareUpgradeQuery.show();
-                                            if (choice == firmwareUpdateOK)
+                                            Action upgradeApplicationResponse = Dialogs.create().title(languageBundle.getString("dialogs.firmwareVersionTooLowTitle"))
+                                                    .message(languageBundle.getString("dialogs.firmwareVersionError1")
+                                                            + fwResponse.getFirmwareRevisionInt()
+                                                            + languageBundle.getString("dialogs.firmwareVersionError2")
+                                                            + requiredFirmwareVersion + ".\n"
+                                                            + languageBundle.getString("dialogs.firmwareVersionError3"))
+                                                    .masthead(null)
+                                                    .showCommandLinks(firmwareUpdateOK, firmwareUpdateOK, firmwareUpdateNotOK);
+
+                                            if (upgradeApplicationResponse == firmwareUpdateOK)
                                             {
                                                 firmwareLoadService.reset();
                                                 firmwareLoadService.setPrinterToUse(printerToUse);
                                                 firmwareLoadService.setFirmwareFileToLoad(ApplicationConfiguration.getApplicationInstallDirectory(this.getClass()) + "robox_r" + requiredFirmwareVersion + ".bin");
                                                 firmwareLoadService.start();
-                                            } else if (choice == firmwareUpdateCancel)
+                                            } else if (upgradeApplicationResponse == firmwareUpdateNotOK)
                                             {
 //                                                //Proceed at risk
-//                                                controlInterface.printerConnected(portName);
-//                                                controlInterface.publishEvent(portName, new RoboxEvent(RoboxEventType.FIRMWARE_VERSION_INFO, response));
-//                                                if (suppressPrinterIDChecks == false)
-//                                                {
-//                                                    commsState = RoboxCommsState.CHECKING_ID;
-//                                                } else
-//                                                {
-//                                                    commsState = RoboxCommsState.CONNECTED;
-//                                                }
+                                                controlInterface.publishEvent(portName, new RoboxEvent(RoboxEventType.FIRMWARE_VERSION_INFO, response));
+                                                if (suppressPrinterIDChecks == false)
+                                                {
+                                                    commsState = RoboxCommsState.CHECKING_ID;
+                                                } else
+                                                {
+                                                    controlInterface.printerConnected(portName);
+                                                    commsState = RoboxCommsState.CONNECTED;
+                                                }
+                                                firmwareCheckInProgress = false;
+                                            }
+                                        }
+                                    });
+                                } else if (fwResponse.getFirmwareRevisionInt() < requiredFirmwareVersion)
+                                {
+                                    firmwareCheckInProgress = true;
+                                    steno.warning("Firmware version is " + fwResponse.getFirmwareRevisionInt() + " and should be " + requiredFirmwareVersion);
+
+                                    Platform.runLater(new Runnable()
+                                    {
+
+                                        @Override
+                                        public void run()
+                                        {
+                                            Action upgradeApplicationResponse = Dialogs.create().title(languageBundle.getString("dialogs.firmwareUpgradeTitle"))
+                                                    .message(languageBundle.getString("dialogs.firmwareVersionError1")
+                                                            + fwResponse.getFirmwareRevisionInt()
+                                                            + languageBundle.getString("dialogs.firmwareVersionError2")
+                                                            + requiredFirmwareVersion + ".\n"
+                                                            + languageBundle.getString("dialogs.firmwareVersionError3"))
+                                                    .masthead(null)
+                                                    .showCommandLinks(firmwareUpdateOK, firmwareUpdateOK, firmwareUpdateNotOK);
+
+                                            if (upgradeApplicationResponse == firmwareUpdateOK)
+                                            {
+                                                firmwareLoadService.reset();
+                                                firmwareLoadService.setPrinterToUse(printerToUse);
+                                                firmwareLoadService.setFirmwareFileToLoad(ApplicationConfiguration.getApplicationInstallDirectory(this.getClass()) + "robox_r" + requiredFirmwareVersion + ".bin");
+                                                firmwareLoadService.start();
+                                            } else if (upgradeApplicationResponse == firmwareUpdateNotOK)
+                                            {
+//                                                //Proceed at risk
+                                                controlInterface.publishEvent(portName, new RoboxEvent(RoboxEventType.FIRMWARE_VERSION_INFO, response));
+                                                if (suppressPrinterIDChecks == false)
+                                                {
+                                                    commsState = RoboxCommsState.CHECKING_ID;
+                                                } else
+                                                {
+                                                    controlInterface.printerConnected(portName);
+                                                    commsState = RoboxCommsState.CONNECTED;
+                                                }
                                                 firmwareCheckInProgress = false;
                                             }
                                         }
@@ -397,6 +446,7 @@ public class PrinterHandler extends Thread
                         }
                     }
                     break;
+
                 case CHECKING_ID:
 
                     String printerID = null;
@@ -485,7 +535,8 @@ public class PrinterHandler extends Thread
                     break;
             }
         }
-        steno.info("Handler for " + portName + " exiting");
+        steno.info(
+                "Handler for " + portName + " exiting");
     }
 
     private boolean connectToPrinter(String commsPortName)
@@ -538,54 +589,6 @@ public class PrinterHandler extends Thread
                     noSDDialog.close();
                 }
             });
-        }
-
-        if (firmwareSuccessDialog != null)
-        {
-            if (firmwareSuccessDialog.isShowing())
-            {
-                Platform.runLater(new Runnable()
-                {
-
-                    @Override
-                    public void run()
-                    {
-                        firmwareSuccessDialog.close();
-                    }
-                });
-            }
-        }
-
-        if (firmwareFailureDialog != null)
-        {
-            if (firmwareFailureDialog.isShowing())
-            {
-                Platform.runLater(new Runnable()
-                {
-
-                    @Override
-                    public void run()
-                    {
-                        firmwareFailureDialog.close();
-                    }
-                });
-            }
-        }
-
-        if (firmwareUpgradeQuery != null)
-        {
-            if (firmwareUpgradeQuery.isShowing())
-            {
-                Platform.runLater(new Runnable()
-                {
-
-                    @Override
-                    public void run()
-                    {
-                        firmwareUpgradeQuery.close();
-                    }
-                });
-            }
         }
 
         if (printerIDDialog != null)

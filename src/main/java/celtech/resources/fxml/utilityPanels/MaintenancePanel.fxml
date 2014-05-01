@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import celtech.coreUI.components.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" fx:id="container" styleClass="sidePanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.MaintenancePanelController">
+    <children>
+        <GridPane alignment="TOP_CENTER" hgap="10.0" layoutX="18.0" layoutY="24.0" vgap="8.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <Button fx:id="sendGCodeSDGCodeMacroButton" layoutX="10.0" layoutY="19.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#sendGCodeSD" text="%maintenancePanel.sendGCodeSD" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="0" />
+                <Button fx:id="sendGCodeStreamGCodeMacroButton" layoutX="23.0" layoutY="248.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#sendGCodeStream" text="%maintenancePanel.sendGCodeStream" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="1" />
+
+                <Separator prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="2">
+                    <padding>
+                        <Insets bottom="5.0" top="5.0" />
+                    </padding>
+                </Separator>
+                
+                <GCodeMacroButton layoutX="23.0" layoutY="152.0" macroName="T0 Nozzle Clean" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#macroButtonPress" text="%maintenancePanel.nozzle0Clean" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                <GCodeMacroButton layoutX="23.0" layoutY="152.0" macroName="T1 Nozzle Clean" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#macroButtonPress" text="%maintenancePanel.nozzle1Clean" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                <GCodeMacroButton layoutX="18.0" layoutY="48.0" macroName="level_gantry" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#macroButtonPress" text="%maintenancePanel.LevelGantry" GridPane.rowIndex="4" />
+                <GCodeMacroButton layoutX="23.0" layoutY="56.0" macroName="level_Y" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#macroButtonPress" text="%maintenancePanel.LevelY" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                <GCodeMacroButton layoutX="23.0" layoutY="120.0" macroName="x_test" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#macroButtonPress" text="%maintenancePanel.XTest" GridPane.rowIndex="5" />
+                <GCodeMacroButton layoutX="23.0" layoutY="88.0" macroName="y_test" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#macroButtonPress" text="%maintenancePanel.YTest" GridPane.rowIndex="6" />
+                <GCodeMacroButton layoutX="23.0" layoutY="24.0" macroName="z_test" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#macroButtonPress" text="%maintenancePanel.ZTest" GridPane.rowIndex="7" />               
+                <GCodeMacroButton layoutX="23.0" layoutY="152.0" macroName="speed_test" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#macroButtonPress" text="%maintenancePanel.SpeedTest" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                <GCodeMacroButton layoutX="23.0" layoutY="152.0" macroName="Purge Material" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#macroButtonPress" text="%maintenancePanel.purgeMaterial" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                <GCodeMacroButton layoutX="23.0" layoutY="152.0" macroName="eject_stuck_material" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#macroButtonPress" text="%maintenancePanel.ejectStuckMaterial" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+
+                <Separator prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="8">
+                    <padding>
+                        <Insets bottom="5.0" top="5.0" />
+                    </padding>
+                </Separator>
+
+                <Button layoutX="10.0" layoutY="19.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#calibrateB" text="%calibrationPanel.calibrateB" GridPane.columnSpan="2" GridPane.rowIndex="9" />
+                <Button layoutX="10.0" layoutY="10.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#calibrateZOffset" text="%calibrationPanel.calibrateZOffset" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="10" />
+
+                <Separator prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="11">
+                    <padding>
+                        <Insets bottom="5.0" top="5.0" />
+                    </padding>
+                </Separator>
+            
+                <Label text="Current firmware version" GridPane.halignment="RIGHT" GridPane.rowIndex="12" />
+                <TextField fx:id="currentFirmwareField" editable="false" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="12" />
+                <Button fx:id="loadFirmwareGCodeMacroButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#loadFirmware" text="Load firmware" GridPane.columnSpan="2" GridPane.rowIndex="13" />
+            </children>
+            <columnConstraints>
+                <ColumnConstraints percentWidth="50.0" />
+                <ColumnConstraints percentWidth="50.0" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+            </rowConstraints>
+        </GridPane>
+    </children>
+</AnchorPane>

@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 import javafx.application.Platform;
-import javafx.stage.Stage;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.controlsfx.control.action.Action;
@@ -34,15 +33,17 @@ public class AutoUpdate extends Thread
     private final int UPGRADE_NOT_REQUIRED = 0;
     private boolean keepRunning = true;
     private Class parentClass = null;
+    private AutoUpdateCompletionListener completionListener = null;
     private ResourceBundle i18nBundle = null;
     private Dialogs.CommandLink upgradeApplication = null;
     private Dialogs.CommandLink dontUpgradeApplication = null;
 
-    public AutoUpdate(String applicationName, Class parentClass)
+    public AutoUpdate(String applicationName, AutoUpdateCompletionListener completionListener)
     {
         this.applicationName = applicationName;
         this.setName("AutoUpdate");
-        this.parentClass = parentClass;
+        this.parentClass = completionListener.getClass();
+        this.completionListener = completionListener;
 
         this.i18nBundle = DisplayManager.getLanguageBundle();
         upgradeApplication = new Dialogs.CommandLink(i18nBundle.getString("misc.Yes"), i18nBundle.getString("dialogs.updateExplanation"));
@@ -53,6 +54,7 @@ public class AutoUpdate extends Thread
     public void run()
     {
         int strikes = 0;
+        boolean requiresShutdown = false;
 
         //Check for a new version 15 secs after startup
         try
@@ -106,11 +108,10 @@ public class AutoUpdate extends Thread
                             {
                                 //Run the autoupdater in the background in download mode
                                 startUpdate();
-                                //Exit
-                                Platform.exit();
                             }
                         }
                     });
+                    requiresShutdown = true;
                     keepRunning = false;
                     break;
                 case ERROR:
@@ -134,6 +135,7 @@ public class AutoUpdate extends Thread
                     break;
             }
         }
+        completionListener.autoUpdateComplete(requiresShutdown);
     }
 
     private int checkForUpdates()

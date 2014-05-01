@@ -10,8 +10,6 @@ import celtech.utils.SystemUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
-import java.io.LineNumberReader;
 import java.util.Scanner;
 import javafx.beans.property.IntegerProperty;
 import javafx.concurrent.Task;
@@ -84,7 +82,8 @@ public class GCodePrinterTask extends Task<Boolean>
                     if (printUsingSDCard)
                     {
                         printerToUse.sendDataFileChunk(line, lineCounter == numberOfLines - 1, true);
-                        if (printerToUse.getSequenceNumber() > 1 && printerToUse.isPrintInitiated() == false)
+                        if ((printerToUse.getSequenceNumber() > 1 && printerToUse.isPrintInitiated() == false)
+                                || (lineCounter == numberOfLines - 1 && printerToUse.getSequenceNumber() == 0 && printerToUse.isPrintInitiated() == false))
                         {
                             //Start printing!
                             printerToUse.initiatePrint(printJobID);

@@ -1693,13 +1693,6 @@ public class Printer
         transmitMacroData(macroContents, addToTranscript);
     }
 
-    public void transmitStoredGCode(final GCodeMacros macro, boolean addToTranscript) throws RoboxCommsException
-    {
-        ArrayList<String> macroContents = macro.getMacroContents();
-
-        transmitMacroData(macroContents, addToTranscript);
-    }
-
     private void transmitMacroData(ArrayList<String> macroData, boolean addToTranscript) throws RoboxCommsException
     {
         MacroPrintTask macroPrintTask = new MacroPrintTask(macroData, gcodeTranscript, this, printerCommsManager, portName, addToTranscript);
@@ -1950,10 +1943,10 @@ public class Printer
         return success;
     }
 
-    public void transmitReadFirmwareVersion() throws RoboxCommsException
+    public FirmwareResponse transmitReadFirmwareVersion() throws RoboxCommsException
     {
         QueryFirmwareVersion readFirmware = (QueryFirmwareVersion) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.QUERY_FIRMWARE_VERSION);
-        printerCommsManager.submitForWrite(portName, readFirmware);
+        return (FirmwareResponse)printerCommsManager.submitForWrite(portName, readFirmware);
     }
 
     public void transmitSetTemperatures(double nozzleFirstLayerTarget, double nozzleTarget, double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException
@@ -1991,14 +1984,8 @@ public class Printer
 
     public void initiatePrint(String hexDigits) throws DatafileSendNotInitialised, RoboxCommsException
     {
-        if (sendInProgress == false)
-        {
-            throw new DatafileSendNotInitialised();
-        } else
-        {
-            transmitInitiatePrint(fileID);
-            printInitiated = true;
-        }
+        transmitInitiatePrint(fileID);
+        printInitiated = true;
     }
 
     public void sendDataFileChunk(String hexDigits, boolean lastPacket, boolean appendCRLF) throws DatafileSendNotInitialised, RoboxCommsException

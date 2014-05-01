@@ -6,37 +6,37 @@
 
 <AnchorPane id="AnchorPane" fx:id="container" styleClass="sidePanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.GCodeMacroPanelController">
     <children>
-<GridPane hgap="15.0" layoutX="18.0" layoutY="24.0" vgap="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-<columnConstraints>
-<ColumnConstraints percentWidth="50.0" prefWidth="140.0" />
-<ColumnConstraints minWidth="10.0" percentWidth="50.0" />
-</columnConstraints>
-<rowConstraints>
-<RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
-<RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-<RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-<RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-<RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-<RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-<RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-<RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-<RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-</rowConstraints>
-<children>
-                        <Button layoutX="23.0" layoutY="184.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#preheat_ABS" text="%gcodeMacroPanel.PreheatABS" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                        <Button layoutX="23.0" layoutY="216.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#eject_ABS" text="%gcodeMacroPanel.EjectABS" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                        <Button layoutX="23.0" layoutY="24.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#z_test" text="%gcodeMacroPanel.ZTest" GridPane.rowIndex="3" />
-                        <Button fx:id="sendGCodeStreamButton" layoutX="23.0" layoutY="248.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#sendGCodeStream" text="%gcodeEditor.sendGCodeStream" GridPane.columnIndex="1" />
-                        <Button layoutX="23.0" layoutY="280.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#twelve_point_bed_check" text="%gcodeMacroPanel.12PointCheck" GridPane.hgrow="ALWAYS" GridPane.rowIndex="8" />
-                        <Button layoutX="18.0" layoutY="48.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#levelGantry" text="%gcodeMacroPanel.LevelGantry" GridPane.rowIndex="6" />
-                        <Button layoutX="23.0" layoutY="312.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#eject_PLA" text="%gcodeMacroPanel.EjectPLA" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                        <Button layoutX="23.0" layoutY="56.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#level_Y" text="%gcodeMacroPanel.LevelY" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                        <Button layoutX="23.0" layoutY="88.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#y_test" text="%gcodeMacroPanel.YTest" GridPane.rowIndex="2" />
-                        <Button layoutX="23.0" layoutY="120.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#x_test" text="%gcodeMacroPanel.XTest" GridPane.rowIndex="1" />
-                        <Button layoutX="23.0" layoutY="344.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#preheat_PLA" text="%gcodeMacroPanel.PreheatPLA" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                        <Button layoutX="23.0" layoutY="152.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#speed_test" text="%gcodeMacroPanel.SpeedTest" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-<Button fx:id="sendGCodeSDButton" layoutX="10.0" layoutY="19.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#sendGCodeSD" text="%gcodeEditor.sendGCodeSD" />
-</children>
-</GridPane>
+        <GridPane hgap="15.0" layoutX="18.0" layoutY="24.0" vgap="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="50.0" prefWidth="140.0" />
+                <ColumnConstraints minWidth="10.0" percentWidth="50.0" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+            </rowConstraints>
+            <children>
+                <Button layoutX="23.0" layoutY="184.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#preheat_ABS" text="%gcodeMacroPanel.PreheatABS" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                <Button layoutX="23.0" layoutY="216.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#eject_ABS" text="%gcodeMacroPanel.EjectABS" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                <Button layoutX="23.0" layoutY="24.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#z_test" text="%gcodeMacroPanel.ZTest" GridPane.rowIndex="3" />
+                <Button fx:id="sendGCodeStreamButton" layoutX="23.0" layoutY="248.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#sendGCodeStream" text="%gcodeEditor.sendGCodeStream" GridPane.columnIndex="1" />
+                <Button layoutX="23.0" layoutY="280.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#twelve_point_bed_check" text="%gcodeMacroPanel.12PointCheck" GridPane.hgrow="ALWAYS" GridPane.rowIndex="8" />
+                <Button layoutX="18.0" layoutY="48.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#levelGantry" text="%gcodeMacroPanel.LevelGantry" GridPane.rowIndex="6" />
+                <Button layoutX="23.0" layoutY="312.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#eject_PLA" text="%gcodeMacroPanel.EjectPLA" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <Button layoutX="23.0" layoutY="56.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#level_Y" text="%gcodeMacroPanel.LevelY" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                <Button layoutX="23.0" layoutY="88.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#y_test" text="%gcodeMacroPanel.YTest" GridPane.rowIndex="2" />
+                <Button layoutX="23.0" layoutY="120.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#x_test" text="%gcodeMacroPanel.XTest" GridPane.rowIndex="1" />
+                <Button layoutX="23.0" layoutY="344.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#preheat_PLA" text="%gcodeMacroPanel.PreheatPLA" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <Button layoutX="23.0" layoutY="152.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#speed_test" text="%gcodeMacroPanel.SpeedTest" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                <Button fx:id="sendGCodeSDButton" layoutX="10.0" layoutY="19.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#sendGCodeSD" text="%gcodeEditor.sendGCodeSD" />
+            </children>
+        </GridPane>
     </children>
 </AnchorPane>

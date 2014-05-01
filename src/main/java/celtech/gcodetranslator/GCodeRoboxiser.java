@@ -118,7 +118,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             fileWriter.write("; File post-processed by roboxiser\n");
 
             fileWriter.write(";\n; Pre print gcode\n");
-            for (String macroLine : GCodeMacros.PRE_PRINT.getMacroContents())
+            for (String macroLine : GCodeMacros.getMacroContents("before_print"))
             {
                 fileWriter.write(macroLine + "\n");
             }
@@ -408,7 +408,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 try
                 {
                     fileWriter.write(";\n; Post print gcode\n");
-                    for (String macroLine : GCodeMacros.POST_PRINT.getMacroContents())
+                    for (String macroLine : GCodeMacros.getMacroContents("after_print"))
                     {
                         fileWriter.write(macroLine + "\n");
                     }
