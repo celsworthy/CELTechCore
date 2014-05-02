@@ -1064,7 +1064,7 @@ table-view .column-header-background {
 }*/
 
 .slideout-and-project-holder{
-    -fx-background-color: mid_grey;
+    -fx-background-color: dark_grey;
 }
 
 .slideout-control-button{

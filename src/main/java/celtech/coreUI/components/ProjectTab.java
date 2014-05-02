@@ -435,6 +435,7 @@ public class ProjectTab extends Tab
                 || (project.getProjectMode() == ProjectMode.MESH && modelGroup.getModelContentsType() == ModelContentsEnumeration.MESH))
         {
             viewManager.addModel(modelGroup);
+            displayManager.selectModel(modelGroup);
         } else
         {
             steno.warning("Discarded load of " + modelGroup.getModelName() + " due to conflict with project type");
