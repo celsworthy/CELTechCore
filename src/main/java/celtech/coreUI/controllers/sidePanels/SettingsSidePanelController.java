@@ -477,10 +477,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         if (currentlyLoadedFilament != null)
         {
-            Filament loadedFilamentCandidate = FilamentContainer.getFilamentByID(currentlyLoadedFilament.getReelID());
-
-            availableFilaments.add(loadedFilamentCandidate);
-            materialChooser.getSelectionModel().select(loadedFilamentCandidate);
+            availableFilaments.add(currentlyLoadedFilament);
+            materialChooser.getSelectionModel().select(currentlyLoadedFilament);
         }
 
         availableFilaments.addAll(FilamentContainer.getUserFilamentList());

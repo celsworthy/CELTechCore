@@ -18,7 +18,6 @@ import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.services.ControllableService;
-import celtech.services.modelLoader.ModelLoaderService;
 import celtech.services.postProcessor.GCodePostProcessingResult;
 import celtech.services.postProcessor.PostProcessorService;
 import celtech.services.slicer.PrintQualityEnumeration;
@@ -100,6 +99,7 @@ public class PrintQueue implements ControllableService {
 
     private ResourceBundle i18nBundle = null;
     private String printTransferSuccessfulNotification = null;
+    private String printTransferSuccessfulNotificationEnd = null;
     private String printJobCancelledNotification = null;
     private String printJobCompletedNotification = null;
     private String printJobFailedNotification = null;
@@ -115,6 +115,7 @@ public class PrintQueue implements ControllableService {
 
         i18nBundle = DisplayManager.getLanguageBundle();
         printTransferSuccessfulNotification = i18nBundle.getString("notification.printTransferredSuccessfully");
+        printTransferSuccessfulNotificationEnd = i18nBundle.getString("notification.printTransferredSuccessfullyEnd");
         printJobCancelledNotification = i18nBundle.getString("notification.printJobCancelled");
         printJobCompletedNotification = i18nBundle.getString("notification.printJobCompleted");
         printJobFailedNotification = i18nBundle.getString("notification.printJobFailed");
@@ -227,7 +228,7 @@ public class PrintQueue implements ControllableService {
                 boolean succeeded = (boolean) (t.getSource().getValue());
                 if (succeeded) {
                     steno.info(t.getSource().getTitle() + " has succeeded");
-                    Notifier.showInformationNotification(notificationTitle, printTransferSuccessfulNotification + " " + associatedPrinter.getPrinterFriendlyName());
+                    Notifier.showInformationNotification(notificationTitle, printTransferSuccessfulNotification + " " + associatedPrinter.getPrinterFriendlyName() + "\n" + printTransferSuccessfulNotificationEnd);
                     setPrintStatus(PrinterStatusEnumeration.PRINTING);
                 } else {
                     Notifier.showErrorNotification(notificationTitle, printJobFailedNotification);
@@ -268,13 +269,13 @@ public class PrintQueue implements ControllableService {
             }
         };
 
-        slicerService.setOnCancelled(cancelSliceEventHandler);
+        slicerService.setOnCancelled(cancelPrintEventHandler);
 
         slicerService.setOnFailed(failedSliceEventHandler);
 
         slicerService.setOnSucceeded(succeededSliceEventHandler);
 
-        gcodePostProcessorService.setOnCancelled(cancelGCodePostProcessEventHandler);
+        gcodePostProcessorService.setOnCancelled(cancelPrintEventHandler);
 
         gcodePostProcessorService.setOnFailed(failedGCodePostProcessEventHandler);
 

@@ -10,7 +10,6 @@ import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
 import celtech.coreUI.DisplayManager;
 import javafx.beans.binding.Bindings;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -86,7 +85,8 @@ public class MaterialChoiceListCell extends ListCell<Filament>
             name.textProperty().bind(Bindings.format("%s %s", filament.getFriendlyFilamentNameProperty(), filament.getMaterialProperty()));
             if (filament.isMutable() == false)
             {
-                remainingFilament.textProperty().bind(filament.getRemainingFilamentProperty().asString("%.0fm"));
+                //Remaining filament is in mm - we want to display it in metres
+                remainingFilament.textProperty().bind(filament.getRemainingFilamentProperty().divide(1000).asString("%.1fm"));
             }
             setGraphic(grid);
         }

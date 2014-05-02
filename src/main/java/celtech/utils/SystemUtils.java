@@ -13,11 +13,9 @@ import java.awt.image.RenderedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
-import java.util.List;
 import java.util.UUID;
 import javax.imageio.ImageIO;
 import libertysystems.stenographer.Stenographer;
@@ -387,6 +385,11 @@ public class SystemUtils
         out.flush();
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
         return new javafx.scene.image.Image(in);
+    }
+    
+    public static String cleanGCodeForTransmission(String gcode)
+    {
+        return gcode.trim().replaceFirst(";.*$", "").replaceFirst("\\s+$", "");
     }
 
 }

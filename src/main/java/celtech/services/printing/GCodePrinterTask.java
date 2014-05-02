@@ -78,7 +78,7 @@ public class GCodePrinterTask extends Task<Boolean>
 
                 if (line.equals("") == false && line.startsWith(";") == false)
                 {
-                    line = line.replaceFirst(";.*", "");
+                    line = SystemUtils.cleanGCodeForTransmission(line);
                     if (printUsingSDCard)
                     {
                         printerToUse.sendDataFileChunk(line, lineCounter == numberOfLines - 1, true);

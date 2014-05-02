@@ -1664,7 +1664,7 @@ public class Printer
     {
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.EXECUTE_GCODE);
 
-        String gcodeToSendWithLF = gcodeToSend + "\n";
+        String gcodeToSendWithLF = SystemUtils.cleanGCodeForTransmission(gcodeToSend) + "\n";
 
         gcodePacket.setMessagePayload(gcodeToSendWithLF);
 

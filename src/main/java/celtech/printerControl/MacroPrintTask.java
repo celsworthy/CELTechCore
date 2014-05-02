@@ -11,6 +11,7 @@ import celtech.printerControl.comms.commands.rx.GCodeDataResponse;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacketFactory;
 import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
+import celtech.utils.SystemUtils;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
@@ -54,21 +55,24 @@ public class MacroPrintTask extends Task<String>
 
         for (String gcodeToSend : macroData)
         {
-            gcodeToSend += "\n";
-            gcodePacket.setMessagePayload(gcodeToSend);
+            if (gcodeToSend.equalsIgnoreCase(" ") == false)
+            {
+                gcodeToSend = SystemUtils.cleanGCodeForTransmission(gcodeToSend);
+                gcodeToSend += "\n";
+                gcodePacket.setMessagePayload(gcodeToSend);
 
 //            while (printer.getBusy() && !isCancelled())
 //            {
 //                Thread.sleep(250);
 //            }
+                if (isCancelled())
+                {
+                    break;
+                }
 
-            if (isCancelled())
-            {
-                break;
+                GCodeDataResponse response = (GCodeDataResponse) commsManager.submitForWrite(portName, gcodePacket);
+                finalResponse.append(response.getGCodeResponse() + "\n");
             }
-
-            GCodeDataResponse response = (GCodeDataResponse) commsManager.submitForWrite(portName, gcodePacket);
-            finalResponse.append(response.getGCodeResponse() + "\n");
         }
 
         steno.info("Macro print task ended");
