@@ -188,7 +188,7 @@ public class Printer
      * Reel data
      */
     private Filament temporaryFilament = new Filament(null, null, null,
-            0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, false);
+                                                      0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, false);
     private final BooleanProperty reelDataChangedToggle = new SimpleBooleanProperty(false);
     private IntegerProperty reelAmbientTemperature = new SimpleIntegerProperty(0);
     private IntegerProperty reelBedTemperature = new SimpleIntegerProperty(0);
@@ -1046,7 +1046,7 @@ public class Printer
     {
         return headHoursCounter;
     }
-    
+
     public FloatProperty getLastFilamentTemperature()
     {
         return lastFilamentTemperature;
@@ -1054,6 +1054,7 @@ public class Printer
     /*
      * Reel data
      */
+
     public ObjectProperty<Filament> loadedFilamentProperty()
     {
         return loadedFilament;
@@ -1284,7 +1285,6 @@ public class Printer
                 setUSBTxError(ackResponse.isUsbTXError());
                 setBadCommandError(ackResponse.isBadCommandError());
                 setEEPROMError(ackResponse.isHeadEepromError());
-                updatePrinterStatus();
                 break;
             case PRINTER_STATUS_UPDATE:
                 StatusResponse statusResponse = (StatusResponse) printerEvent.getPayload();
@@ -1350,7 +1350,17 @@ public class Printer
                 nozzleHeaterMode.set(statusResponse.getNozzleHeaterMode());
                 setHeadFanOn(statusResponse.isHeadFanOn());
                 setBusy(statusResponse.isBusyStatus());
+                
+                if (statusResponse.isPauseStatus() && paused.get() == false)
+                {
+                    printQueue.printerHasPaused();
+                }
+                else if (!statusResponse.isPauseStatus() && paused.get() == true)
+                {
+                    printQueue.printerHasResumed();
+                }
                 setPaused(statusResponse.isPauseStatus());
+                
                 setPrintJobLineNumber(statusResponse.getPrintJobLineNumber());
                 setPrintJobID(statusResponse.getRunningPrintJobID());
                 setXStopSwitch(statusResponse.isxSwitchStatus());
@@ -1449,13 +1459,14 @@ public class Printer
                 setHeadXPosition(statusResponse.getHeadXPosition());
                 setHeadYPosition(statusResponse.getHeadYPosition());
                 setHeadZPosition(statusResponse.getHeadZPosition());
-                updatePrinterStatus();
 
                 if (statusResponse.isPauseStatus())
                 {
                     errorHandler.checkForErrors(this);
                 }
+                setPrinterStatus(printQueue.getPrintStatus());
                 break;
+
             case PRINTER_INVALID_RESPONSE:
                 setPrinterStatus(PrinterStatusEnumeration.ERROR);
                 break;
@@ -1611,31 +1622,6 @@ public class Printer
         setErrorList(errors.toString());
     }
 
-    private void updatePrinterStatus()
-    {
-        if (getErrorsDetected())
-        {
-            setPrinterStatus(PrinterStatusEnumeration.ERROR);
-        } else if (paused.get() == true)
-        {
-            if (printQueue.getPrintStatus() != PrinterStatusEnumeration.PAUSED)
-            {
-                printQueue.printerHasPaused();
-            }
-            setPrinterStatus(PrinterStatusEnumeration.PAUSED);
-        } else if (printJobID.get().trim().matches("[0-9a-fA-F]+"))
-        {
-            if (printQueue.getPrintStatus() != PrinterStatusEnumeration.PRINTING)
-            {
-                printQueue.printerIsPrinting();
-            }
-            setPrinterStatus(printQueue.getPrintStatus());
-        } else
-        {
-            setPrinterStatus(printQueue.getPrintStatus());
-        }
-    }
-
     @Override
     public String toString()
     {
@@ -1709,7 +1695,7 @@ public class Printer
         {
             steno.error("Failed to send macro data");
         });
-        
+
         TaskController.getInstance().manageTask(macroPrintTask);
 
         Thread macroPrintTaskThread = new Thread(macroPrintTask);
@@ -1834,16 +1820,16 @@ public class Printer
     {
         WriteReelEEPROM writeReelEEPROM = (WriteReelEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_REEL_EEPROM);
         writeReelEEPROM.populateEEPROM(filament.getReelID(),
-                filament.getUniqueID(),
-                filament.getFirstLayerNozzleTemperature(),
-                filament.getNozzleTemperature(),
-                filament.getFirstLayerBedTemperature(),
-                filament.getBedTemperature(),
-                filament.getAmbientTemperature(),
-                filament.getDiameter(),
-                filament.getFilamentMultiplier(),
-                filament.getFeedRateMultiplier(),
-                filament.getRemainingFilament());
+                                       filament.getUniqueID(),
+                                       filament.getFirstLayerNozzleTemperature(),
+                                       filament.getNozzleTemperature(),
+                                       filament.getFirstLayerBedTemperature(),
+                                       filament.getBedTemperature(),
+                                       filament.getAmbientTemperature(),
+                                       filament.getDiameter(),
+                                       filament.getFilamentMultiplier(),
+                                       filament.getFeedRateMultiplier(),
+                                       filament.getRemainingFilament());
         return (AckResponse) printerCommsManager.submitForWrite(portName, writeReelEEPROM);
     }
 
@@ -1853,8 +1839,8 @@ public class Printer
     {
         WriteReelEEPROM writeReelEEPROM = (WriteReelEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_REEL_EEPROM);
         writeReelEEPROM.populateEEPROM(reelTypeCode, reelUniqueID, reelFirstLayerNozzleTemperature, reelNozzleTemperature,
-                reelFirstLayerBedTemperature, reelBedTemperature, reelAmbientTemperature, reelFilamentDiameter,
-                reelFilamentMultiplier, reelFeedRateMultiplier, reelRemainingFilament);
+                                       reelFirstLayerBedTemperature, reelBedTemperature, reelAmbientTemperature, reelFilamentDiameter,
+                                       reelFilamentMultiplier, reelFeedRateMultiplier, reelRemainingFilament);
         printerCommsManager.submitForWrite(portName, writeReelEEPROM);
     }
 
@@ -1862,20 +1848,20 @@ public class Printer
     {
         WriteHeadEEPROM writeHeadEEPROM = (WriteHeadEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_HEAD_EEPROM);
         writeHeadEEPROM.populateEEPROM(headToWrite.getTypeCode(),
-                headToWrite.getUniqueID(),
-                headToWrite.getMaximumTemperature(),
-                headToWrite.getBeta(),
-                headToWrite.getTcal(),
-                headToWrite.getNozzle1_X_offset(),
-                headToWrite.getNozzle1_Y_offset(),
-                headToWrite.getNozzle1_Z_offset(),
-                headToWrite.getNozzle1_B_offset(),
-                headToWrite.getNozzle2_X_offset(),
-                headToWrite.getNozzle2_Y_offset(),
-                headToWrite.getNozzle2_Z_offset(),
-                headToWrite.getNozzle2_B_offset(),
-                headToWrite.getLastFilamentTemperature(),
-                headToWrite.getHeadHours());
+                                       headToWrite.getUniqueID(),
+                                       headToWrite.getMaximumTemperature(),
+                                       headToWrite.getBeta(),
+                                       headToWrite.getTcal(),
+                                       headToWrite.getNozzle1_X_offset(),
+                                       headToWrite.getNozzle1_Y_offset(),
+                                       headToWrite.getNozzle1_Z_offset(),
+                                       headToWrite.getNozzle1_B_offset(),
+                                       headToWrite.getNozzle2_X_offset(),
+                                       headToWrite.getNozzle2_Y_offset(),
+                                       headToWrite.getNozzle2_Z_offset(),
+                                       headToWrite.getNozzle2_B_offset(),
+                                       headToWrite.getLastFilamentTemperature(),
+                                       headToWrite.getHeadHours());
         printerCommsManager.submitForWrite(portName, writeHeadEEPROM);
     }
 
@@ -1887,20 +1873,20 @@ public class Printer
     {
         WriteHeadEEPROM writeHeadEEPROM = (WriteHeadEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_HEAD_EEPROM);
         writeHeadEEPROM.populateEEPROM(headTypeCode,
-                headUniqueID,
-                maximumTemperature,
-                thermistorBeta,
-                thermistorTCal,
-                nozzle1XOffset,
-                nozzle1YOffset,
-                nozzle1ZOffset,
-                nozzle1BOffset,
-                nozzle2XOffset,
-                nozzle2YOffset,
-                nozzle2ZOffset,
-                nozzle2BOffset,
-                lastFilamentTemperature,
-                hourCounter);
+                                       headUniqueID,
+                                       maximumTemperature,
+                                       thermistorBeta,
+                                       thermistorTCal,
+                                       nozzle1XOffset,
+                                       nozzle1YOffset,
+                                       nozzle1ZOffset,
+                                       nozzle1BOffset,
+                                       nozzle2XOffset,
+                                       nozzle2YOffset,
+                                       nozzle2ZOffset,
+                                       nozzle2BOffset,
+                                       lastFilamentTemperature,
+                                       hourCounter);
         printerCommsManager.submitForWrite(portName, writeHeadEEPROM);
     }
 
@@ -1968,7 +1954,7 @@ public class Printer
     public FirmwareResponse transmitReadFirmwareVersion() throws RoboxCommsException
     {
         QueryFirmwareVersion readFirmware = (QueryFirmwareVersion) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.QUERY_FIRMWARE_VERSION);
-        return (FirmwareResponse)printerCommsManager.submitForWrite(portName, readFirmware);
+        return (FirmwareResponse) printerCommsManager.submitForWrite(portName, readFirmware);
     }
 
     public void transmitSetTemperatures(double nozzleFirstLayerTarget, double nozzleTarget, double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException
