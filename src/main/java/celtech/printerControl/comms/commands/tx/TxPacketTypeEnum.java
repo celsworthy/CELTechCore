@@ -37,7 +37,8 @@ public enum TxPacketTypeEnum
     SET_REEL_LED_COLOUR((byte) 0xc4, 7, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
     CONTROL_REEL_LED((byte) 0xc4, 7, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
     SET_TEMPERATURES((byte) 0xc3, 41, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
-    SET_FILAMENT_INFO((byte) 0xc5, 25, false, RxPacketTypeEnum.ACK_WITH_ERRORS);
+    SET_FILAMENT_INFO((byte) 0xc5, 25, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
+    LIST_FILES((byte) 0x96, 1, false, RxPacketTypeEnum.LIST_FILES_RESPONSE);
 
     private final byte commandByte;
     private final int packetSize;

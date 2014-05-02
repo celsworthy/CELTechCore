@@ -6,6 +6,7 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PrintBed;
+import celtech.coreUI.DisplayManager;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.controllers.GizmoOverlayController;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
@@ -18,16 +19,12 @@ import com.leapmotion.leap.Controller;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ListIterator;
-import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
 import javafx.animation.Timeline;
-import javafx.animation.Transition;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -39,7 +36,6 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.AmbientLight;
-import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -59,7 +55,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.MeshView;
-import javafx.util.Duration;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -928,6 +923,7 @@ public class ThreeDViewManager
             models.getChildren().add(modelGroup);
             steno.info("Done adding gcode");
         }
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
     public void deleteSelectedModels()
@@ -951,6 +947,7 @@ public class ThreeDViewManager
             models.getChildren().remove(chosenModel);
         }
         collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
     public void copySelectedModels()
@@ -981,7 +978,7 @@ public class ThreeDViewManager
     {
         models.getChildren().remove(modelGroup);
         loadedModels.remove(modelGroup);
-
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
     public void addGCodeParts(Group gCodeParts)
@@ -1128,6 +1125,7 @@ public class ThreeDViewManager
 
         recalculateSelectionBounds(false);
         collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
     public void translateSelectionX(double x)
@@ -1142,6 +1140,7 @@ public class ThreeDViewManager
 
         recalculateSelectionBounds(false);
         collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
     public void translateSelectionZ(double z)
@@ -1156,6 +1155,7 @@ public class ThreeDViewManager
 
         recalculateSelectionBounds(false);
         collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
     public void translateSelectionXTo(double x)
@@ -1170,6 +1170,7 @@ public class ThreeDViewManager
 
         recalculateSelectionBounds(false);
         collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
     public void translateSelectionZTo(double z)
@@ -1184,6 +1185,7 @@ public class ThreeDViewManager
 
         recalculateSelectionBounds(false);
         collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
     public void resizeSelectionWidth(double width)
@@ -1198,6 +1200,7 @@ public class ThreeDViewManager
 
         recalculateSelectionBounds(false);
         collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
     public void resizeSelectionHeight(double height)
@@ -1212,6 +1215,7 @@ public class ThreeDViewManager
 
         recalculateSelectionBounds(false);
         collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
     public void resizeSelectionDepth(double depth)
@@ -1226,6 +1230,7 @@ public class ThreeDViewManager
 
         recalculateSelectionBounds(false);
         collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
     public void scaleSelection(double newScale)
@@ -1248,6 +1253,7 @@ public class ThreeDViewManager
         recalculateSelectionBounds(false);
         recalculateCentre();
         collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
     public void rotateSelection(double rotation)
@@ -1272,6 +1278,7 @@ public class ThreeDViewManager
         }
         recalculateSelectionBounds(false);
         collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
     public void changeModelHeight(double newHeight)
@@ -1285,6 +1292,7 @@ public class ThreeDViewManager
         }
         recalculateSelectionBounds(false);
         collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
     public void deselectModel(ModelContainer pickedModel)
@@ -1348,6 +1356,7 @@ public class ThreeDViewManager
         }
         recalculateSelectionBounds(false);
         collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
     public void activateSnapToGround()

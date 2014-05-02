@@ -66,17 +66,17 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                 {
                     printerToUse.transmitDirectGCode("G90", false);
                     waitOnBusy();
-                    printerToUse.transmitDirectGCode("G0 B0", false);
+                    printerToUse.transmitDirectGCode("G28 X Y", false);
+                    waitOnBusy();
+                    printerToUse.transmitDirectGCode("G0 X116.5 Y75", false);
                     waitOnBusy();
                     printerToUse.transmitDirectGCode("G28 Z", false);
                     waitOnBusy();
                     printerToUse.transmitDirectGCode("G0 Z50", false);
                     waitOnBusy();
-                    printerToUse.transmitDirectGCode("G28 X Y", false);
+                    printerToUse.transmitDirectGCode("G0 B0", false);
                     waitOnBusy();
-                    printerToUse.transmitDirectGCode("G0 X116.5 Y75", false);
-                    waitOnBusy();
-                    
+                    printerToUse.transmitDirectGCode("M104", false);
                     success = true;
                 } catch (RoboxCommsException ex)
                 {
@@ -170,6 +170,7 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                 printerToUse.transmitResetErrors();
             }
 
+            // High speed until slip
             while (errors.isEFilamentSlipError() == false && isCancelled() == false)
             {
                 printerToUse.transmitDirectGCode("G0 E10", false);
@@ -180,7 +181,18 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
 
             printerToUse.transmitResetErrors();
 
-            printerToUse.transmitDirectGCode("M909 S70", false);
+            //Low speed, low torque
+            while (errors.isEFilamentSlipError() == false && isCancelled() == false)
+            {
+                printerToUse.transmitDirectGCode("G1 E10 F50", false);
+                waitOnBusy();
+
+                errors = printerToUse.transmitReportErrors();
+            }
+
+            printerToUse.transmitResetErrors();
+
+            printerToUse.transmitDirectGCode("M909 S100", false);
             waitOnBusy();
 
             success = true;

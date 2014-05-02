@@ -106,13 +106,20 @@ public class ProjectTab extends Tab
         initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
     }
 
-    public ProjectTab(DisplayManager dispManagerRef, String projectName, ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty)
+    public ProjectTab(DisplayManager dispManagerRef, String projectName, ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty) throws ProjectNotLoadedException
     {
         project = loadProject(projectName);
 
-        // No need to tell the PM that this is open - since the list came from the PM in the first place
-        displayManager = dispManagerRef;
-        initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
+        if (project != null)
+        {
+            // No need to tell the PM that this is open - since the list came from the PM in the first place
+            displayManager = dispManagerRef;
+            initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
+        }
+        else
+        {
+            throw new ProjectNotLoadedException(projectName);
+        }
     }
 
     public ProjectTab(DisplayManager dispManagerRef, Project inboundProject, ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty)
@@ -331,7 +338,6 @@ public class ProjectTab extends Tab
 //        {
 //            steno.error("Failed to load 3d Gizmo:" + ex);
 //        }
-
         viewManager.getSelectionContainer().screenXProperty().addListener(selectionContainerMoveListener);
         viewManager.getSelectionContainer().screenYProperty().addListener(selectionContainerMoveListener);
 

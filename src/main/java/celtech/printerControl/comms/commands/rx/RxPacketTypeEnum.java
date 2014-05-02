@@ -16,7 +16,8 @@ public enum RxPacketTypeEnum
     PRINTER_ID_RESPONSE((byte)0xE5, 257, false, 0),
     REEL_EEPROM_DATA((byte)0xE6, 193, false, 0),
     HEAD_EEPROM_DATA((byte)0xE2, 193, false, 0),
-    GCODE_RESPONSE((byte)0xE7, 5, true, 4);
+    GCODE_RESPONSE((byte)0xE7, 5, true, 4),
+    LIST_FILES_RESPONSE((byte)0xE0, 3, true, 4);
     
     private final byte commandByte;
     private final int packetSize;

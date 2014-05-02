@@ -275,12 +275,12 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
         return nozzle2BOffset;
     }
 
-    public float getHoursUsed()
+    public float getHeadHours()
     {
         return hoursUsed;
     }
 
-    public String getHeadTypeCode()
+    public String getTypeCode()
     {
         return headTypeCode;
     }
@@ -290,12 +290,12 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
         return uniqueID;
     }
 
-    public float getThermistorBeta()
+    public float getBeta()
     {
         return thermistorBeta;
     }
 
-    public float getThermistorTCal()
+    public float getTCal()
     {
         return thermistorTCal;
     }

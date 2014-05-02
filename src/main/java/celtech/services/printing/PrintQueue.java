@@ -17,6 +17,7 @@ import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.comms.commands.rx.ListFilesResponse;
 import celtech.services.ControllableService;
 import celtech.services.postProcessor.GCodePostProcessingResult;
 import celtech.services.postProcessor.PostProcessorService;
@@ -29,6 +30,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -49,6 +53,7 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -99,6 +104,7 @@ public class PrintQueue implements ControllableService
     private final int numberOfLinesInGCode = 0;
 
     private ResourceBundle i18nBundle = null;
+    private String printTransferInitiatedNotification = null;
     private String printTransferSuccessfulNotification = null;
     private String printTransferSuccessfulNotificationEnd = null;
     private String printJobCancelledNotification = null;
@@ -111,11 +117,14 @@ public class PrintQueue implements ControllableService
     private String detectedPrintInProgressNotification = null;
     private String notificationTitle = null;
 
+    private HashMap<String, Project> printJobsAgainstProjects = new HashMap<>();
+
     public PrintQueue(Printer associatedPrinter)
     {
         this.associatedPrinter = associatedPrinter;
 
         i18nBundle = DisplayManager.getLanguageBundle();
+        printTransferInitiatedNotification = i18nBundle.getString("notification.printTransferInitiated");
         printTransferSuccessfulNotification = i18nBundle.getString("notification.printTransferredSuccessfully");
         printTransferSuccessfulNotificationEnd = i18nBundle.getString("notification.printTransferredSuccessfullyEnd");
         printJobCancelledNotification = i18nBundle.getString("notification.printJobCancelled");
@@ -134,6 +143,7 @@ public class PrintQueue implements ControllableService
             public void handle(WorkerStateEvent t)
             {
                 steno.info(t.getSource().getTitle() + " has been cancelled");
+                abortPrint();
             }
         };
 
@@ -143,8 +153,8 @@ public class PrintQueue implements ControllableService
             public void handle(WorkerStateEvent t)
             {
                 steno.info(t.getSource().getTitle() + " has failed");
-                setPrintStatus(PrinterStatusEnumeration.IDLE);
                 Notifier.showErrorNotification(notificationTitle, sliceFailedNotification);
+                abortPrint();
             }
         };
 
@@ -169,7 +179,7 @@ public class PrintQueue implements ControllableService
                 } else
                 {
                     Notifier.showErrorNotification(notificationTitle, sliceFailedNotification);
-                    setPrintStatus(PrinterStatusEnumeration.IDLE);
+                abortPrint();
                 }
             }
         };
@@ -180,6 +190,7 @@ public class PrintQueue implements ControllableService
             public void handle(WorkerStateEvent t)
             {
                 steno.info(t.getSource().getTitle() + " has been cancelled");
+                abortPrint();
             }
         };
 
@@ -189,8 +200,8 @@ public class PrintQueue implements ControllableService
             public void handle(WorkerStateEvent t)
             {
                 steno.info(t.getSource().getTitle() + " has failed");
-                setPrintStatus(PrinterStatusEnumeration.IDLE);
                 Notifier.showErrorNotification(notificationTitle, gcodePostProcessFailedNotification);
+                abortPrint();
             }
         };
 
@@ -202,6 +213,9 @@ public class PrintQueue implements ControllableService
             {
                 steno.info(t.getSource().getTitle() + " has succeeded");
                 String jobUUID = result.getPrintJobUUID();
+
+                Project project = printJobsAgainstProjects.get(jobUUID);
+                project.addPrintJobID(jobUUID);
 
                 gcodePrintService.reset();
                 gcodePrintService.setCurrentPrintJobID(jobUUID);
@@ -217,7 +231,7 @@ public class PrintQueue implements ControllableService
             } else
             {
                 Notifier.showErrorNotification(notificationTitle, gcodePostProcessFailedNotification);
-                setPrintStatus(PrinterStatusEnumeration.IDLE);
+                abortPrint();
             }
         };
 
@@ -228,7 +242,7 @@ public class PrintQueue implements ControllableService
             {
                 steno.info(t.getSource().getTitle() + " has been cancelled");
                 Notifier.showInformationNotification(notificationTitle, printJobCancelledNotification);
-                setPrintStatus(PrinterStatusEnumeration.IDLE);
+                abortPrint();
             }
         };
 
@@ -239,7 +253,7 @@ public class PrintQueue implements ControllableService
             {
                 steno.error(t.getSource().getTitle() + " has failed");
                 Notifier.showErrorNotification(notificationTitle, printJobFailedNotification);
-                setPrintStatus(PrinterStatusEnumeration.IDLE);
+                abortPrint();
             }
         };
 
@@ -300,13 +314,13 @@ public class PrintQueue implements ControllableService
             }
         };
 
-        slicerService.setOnCancelled(cancelPrintEventHandler);
+        slicerService.setOnCancelled(cancelSliceEventHandler);
 
         slicerService.setOnFailed(failedSliceEventHandler);
 
         slicerService.setOnSucceeded(succeededSliceEventHandler);
 
-        gcodePostProcessorService.setOnCancelled(cancelPrintEventHandler);
+        gcodePostProcessorService.setOnCancelled(cancelGCodePostProcessEventHandler);
 
         gcodePostProcessorService.setOnFailed(failedGCodePostProcessEventHandler);
 
@@ -397,55 +411,134 @@ public class PrintQueue implements ControllableService
 
         if (printState == PrinterStatusEnumeration.IDLE)
         {
-            //Create the print job directory
-            String printUUID = SystemUtils.generate16DigitID();
+            boolean printFromScratchRequired = false;
 
-            String printJobDirectoryName = ApplicationConfiguration.getPrintSpoolDirectory() + printUUID;
-
-            //TODO PUT SOMETHING HERE TO GET RID OF OLD PRINT FILES
-            File printJobDirectory = new File(printJobDirectoryName);
-            printJobDirectory.mkdirs();
-
-            PrintJob printJob = new PrintJob(printUUID, printQuality, settings);
-
-            if (project.getProjectMode() == ProjectMode.MESH)
+//            if (project.getLastPrintJobID() != null)
+//            {
+//                String jobUUID = project.getLastPrintJobID();
+//
+//                //Reprint the last job
+//                //Is it still on the printer?
+//                try
+//                {
+//                    ListFilesResponse listFilesResponse = associatedPrinter.transmitListFiles();
+//                    if (listFilesResponse.getPrintJobIDs().contains(jobUUID))
+//                    {
+//                        //Reprint directly from printer
+//                        steno.info("Printing job " + jobUUID + " from printer store");
+//                        Notifier.showInformationNotification(notificationTitle, i18nBundle.getString("notification.reprintInitiated"));
+//                        associatedPrinter.initiatePrint(jobUUID);
+//                        setPrintStatus(PrinterStatusEnumeration.PRINTING);
+//                        acceptedPrintRequest = true;
+//                    } else
+//                    {
+//                        //Need to send the file to the printer
+//                        //Is it still on disk?
+//                        String printjobFilename = ApplicationConfiguration.getPrintSpoolDirectory() + jobUUID + File.separator + jobUUID + ApplicationConfiguration.gcodeTempFileExtension;
+//                        File printJobFile = new File(printjobFilename);
+//                        if (printJobFile.exists())
+//                        {
+//                            //Go ahead and spool it
+//                            steno.info("Respooling job " + jobUUID + " to printer");
+//                            gcodePrintService.reset();
+//                            gcodePrintService.setCurrentPrintJobID(jobUUID);
+//                            gcodePrintService.setModelFileToPrint(printjobFilename);
+//                            gcodePrintService.setPrinterToUse(associatedPrinter);
+//                            gcodePrintService.start();
+//
+//                            int numberOfLines = SystemUtils.countLinesInFile(printJobFile, ";");
+//                            linesInPrintingFile.set(numberOfLines);
+//                            Notifier.showInformationNotification(notificationTitle, printTransferInitiatedNotification);
+//                            setPrintStatus(PrinterStatusEnumeration.SENDING_TO_PRINTER);
+//                            acceptedPrintRequest = true;
+//                        } else
+//                        {
+//                            printFromScratchRequired = true;
+//                            steno.error("Print job " + jobUUID + " not found on printer or disk - going ahead with print from scratch");
+//                        }
+//                    }
+//                } catch (RoboxCommsException ex)
+//                {
+//                    printFromScratchRequired = true;
+//                    steno.error("Error whilst attempting to list files on printer - going ahead with print from scratch");
+//                }
+//            } else
             {
+                printFromScratchRequired = true;
+            }
 
-                //Write out the slicer config
-                settings.filament_diameterProperty().set((float) 1.1283791670955125738961589031215);
-                settings.writeToFile(printJobDirectoryName + File.separator + printUUID + ApplicationConfiguration.printProfileFileExtension);
+            if (printFromScratchRequired)
+            {
+                //Create the print job directory
+                String printUUID = SystemUtils.generate16DigitID();
 
-                setPrintStatus(PrinterStatusEnumeration.SLICING);
-                slicerService.reset();
-                slicerService.setProject(project);
-                slicerService.setSettings(settings);
-                slicerService.setPrintJobUUID(printUUID);
-                slicerService.setPrinterToUse(associatedPrinter);
-                slicerService.start();
+                String printJobDirectoryName = ApplicationConfiguration.getPrintSpoolDirectory() + printUUID;
+
+                File printJobDirectory = new File(printJobDirectoryName);
+                printJobDirectory.mkdirs();
+
+                //Erase old print job directories
+                File printSpoolDirectory = new File(ApplicationConfiguration.getPrintSpoolDirectory());
+                File[] filesOnDisk = printSpoolDirectory.listFiles();
+                if (filesOnDisk.length > ApplicationConfiguration.maxPrintSpoolFiles)
+                {
+                    int filesToDelete = filesOnDisk.length - ApplicationConfiguration.maxPrintSpoolFiles;
+                    Arrays.sort(filesOnDisk, (File f1, File f2) -> Long.valueOf(f1.lastModified()).compareTo(f2.lastModified()));
+                    for (int i = 0; i < filesToDelete; i++)
+                    {
+                        try
+                        {
+                            FileUtils.deleteDirectory(filesOnDisk[i]);
+                        } catch (IOException ex)
+                        {
+                            steno.error("Error whilst deleting " + filesOnDisk[i].toString());
+                        }
+                    }
+                }
+
+                PrintJob printJob = new PrintJob(printUUID, printQuality, settings);
+
+                if (project.getProjectMode() == ProjectMode.MESH)
+                {
+
+                    //Write out the slicer config
+                    settings.filament_diameterProperty().set(ApplicationConfiguration.filamentDiameterToYieldVolumetricExtrusion);
+                    settings.writeToFile(printJobDirectoryName + File.separator + printUUID + ApplicationConfiguration.printProfileFileExtension);
+
+                    setPrintStatus(PrinterStatusEnumeration.SLICING);
+                    slicerService.reset();
+                    slicerService.setProject(project);
+                    slicerService.setSettings(settings);
+                    slicerService.setPrintJobUUID(printUUID);
+                    slicerService.setPrinterToUse(associatedPrinter);
+                    slicerService.start();
+
+                    printJobsAgainstProjects.put(printUUID, project);
 
 //            fxToJMEInterface.clearGCodeDisplay();
-                // Do we need to slice?
-                acceptedPrintRequest = true;
-            } else if (project.getProjectMode() == ProjectMode.GCODE)
-            {
-                String printjobFilename = ApplicationConfiguration.getPrintSpoolDirectory() + printUUID + File.separator + printUUID + ApplicationConfiguration.gcodeTempFileExtension;
-                String fileToCopyname = project.getGCodeFilename();
-                File printjobFile = new File(printjobFilename);
-                File fileToCopy = new File(fileToCopyname);
-                try
-                {
-                    Files.copy(fileToCopy.toPath(), printjobFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-                    gcodePrintService.reset();
-                    gcodePrintService.setCurrentPrintJobID(printUUID);
-                    gcodePrintService.setModelFileToPrint(printjobFilename);
-                    gcodePrintService.setPrinterToUse(associatedPrinter);
-                    gcodePrintService.start();
-                    setPrintStatus(PrinterStatusEnumeration.SENDING_TO_PRINTER);
+                    // Do we need to slice?
                     acceptedPrintRequest = true;
-                } catch (IOException ex)
+                } else if (project.getProjectMode() == ProjectMode.GCODE)
                 {
-                    steno.error("Error whilt preparing for print. Can't copy " + fileToCopyname + " to " + printjobFilename);
+                    String printjobFilename = ApplicationConfiguration.getPrintSpoolDirectory() + printUUID + File.separator + printUUID + ApplicationConfiguration.gcodeTempFileExtension;
+                    String fileToCopyname = project.getGCodeFilename();
+                    File printjobFile = new File(printjobFilename);
+                    File fileToCopy = new File(fileToCopyname);
+                    try
+                    {
+                        Files.copy(fileToCopy.toPath(), printjobFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+                        gcodePrintService.reset();
+                        gcodePrintService.setCurrentPrintJobID(printUUID);
+                        gcodePrintService.setModelFileToPrint(printjobFilename);
+                        gcodePrintService.setPrinterToUse(associatedPrinter);
+                        gcodePrintService.start();
+                        setPrintStatus(PrinterStatusEnumeration.SENDING_TO_PRINTER);
+                        acceptedPrintRequest = true;
+                    } catch (IOException ex)
+                    {
+                        steno.error("Error whilt preparing for print. Can't copy " + fileToCopyname + " to " + printjobFilename);
+                    }
                 }
             }
         }

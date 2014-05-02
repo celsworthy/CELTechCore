@@ -1,7 +1,9 @@
 package celtech.printerControl;
 
+import celtech.appManager.Notifier;
 import celtech.appManager.Project;
 import celtech.appManager.TaskController;
+import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
@@ -21,11 +23,13 @@ import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.printerControl.comms.commands.rx.GCodeDataResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
+import celtech.printerControl.comms.commands.rx.ListFilesResponse;
 import celtech.printerControl.comms.commands.rx.PrinterIDResponse;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.comms.commands.tx.FormatHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.FormatReelEEPROM;
+import celtech.printerControl.comms.commands.tx.ListFiles;
 import celtech.printerControl.comms.commands.tx.PausePrint;
 import celtech.printerControl.comms.commands.tx.QueryFirmwareVersion;
 import celtech.printerControl.comms.commands.tx.ReadHeadEEPROM;
@@ -37,6 +41,7 @@ import celtech.printerControl.comms.commands.tx.SetAmbientLEDColour;
 import celtech.printerControl.comms.commands.tx.SetFilamentInfo;
 import celtech.printerControl.comms.commands.tx.SetReelLEDColour;
 import celtech.printerControl.comms.commands.tx.SetTemperatures;
+import celtech.printerControl.comms.commands.tx.StatusRequest;
 import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
 import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.WritePrinterID;
@@ -1350,17 +1355,16 @@ public class Printer
                 nozzleHeaterMode.set(statusResponse.getNozzleHeaterMode());
                 setHeadFanOn(statusResponse.isHeadFanOn());
                 setBusy(statusResponse.isBusyStatus());
-                
+
                 if (statusResponse.isPauseStatus() && paused.get() == false)
                 {
                     printQueue.printerHasPaused();
-                }
-                else if (!statusResponse.isPauseStatus() && paused.get() == true)
+                } else if (!statusResponse.isPauseStatus() && paused.get() == true)
                 {
                     printQueue.printerHasResumed();
                 }
                 setPaused(statusResponse.isPauseStatus());
-                
+
                 setPrintJobLineNumber(statusResponse.getPrintJobLineNumber());
                 setPrintJobID(statusResponse.getRunningPrintJobID());
                 setXStopSwitch(statusResponse.isxSwitchStatus());
@@ -1414,7 +1418,53 @@ public class Printer
                 {
                     try
                     {
-                        transmitReadHeadEEPROM();
+                        HeadEEPROMDataResponse response = transmitReadHeadEEPROM();
+                        // Check to see if the maximum temperature of the head matches our view
+                        // If not, change the max value and prompt to calibrate
+                        if (response != null)
+                        {
+                            if (response.getTypeCode() != null)
+                            {
+                                Head referenceHead = HeadContainer.getHeadByID(response.getTypeCode());
+                                if (referenceHead != null)
+                                {
+                                    if (response.getMaximumTemperature() - referenceHead.getMaximumTemperature() > 2)
+                                    {
+                                        steno.info("Head " + response.getTypeCode()
+                                                + " id " + response.getUniqueID()
+                                                + " has incorrect max temperature settings ("
+                                                + response.getMaximumTemperature()
+                                                + ") resetting to " + referenceHead.getMaximumTemperature());
+                                        //zap the temperature
+                                        transmitWriteHeadEEPROM(
+                                                response.getTypeCode(),
+                                                response.getUniqueID(),
+                                                referenceHead.getMaximumTemperature(),
+                                                response.getBeta(),
+                                                response.getTCal(),
+                                                response.getNozzle1XOffset(),
+                                                response.getNozzle1YOffset(),
+                                                response.getNozzle1ZOffset(),
+                                                response.getNozzle1BOffset(),
+                                                response.getNozzle2XOffset(),
+                                                response.getNozzle2YOffset(),
+                                                response.getNozzle2ZOffset(),
+                                                response.getNozzle2BOffset(),
+                                                response.getLastFilamentTemperature(),
+                                                response.getHeadHours());
+
+                                        Platform.runLater(new Runnable()
+                                        {
+                                            @Override
+                                            public void run()
+                                            {
+                                                Notifier.showInformationNotification(DisplayManager.getLanguageBundle().getString("notification.headSettingsUpdatedTitle"), DisplayManager.getLanguageBundle().getString("notification.noActionRequired"));
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                        }
                     } catch (RoboxCommsException ex)
                     {
                         steno.error("Error from triggered read of Head EEPROM");
@@ -1546,7 +1596,7 @@ public class Printer
                 break;
             case HEAD_EEPROM_DATA:
                 HeadEEPROMDataResponse headResponse = (HeadEEPROMDataResponse) printerEvent.getPayload();
-                String headTypeCodeString = headResponse.getHeadTypeCode();
+                String headTypeCodeString = headResponse.getTypeCode();
                 headTypeCode.set(headTypeCodeString);
                 try
                 {
@@ -1555,7 +1605,7 @@ public class Printer
                     {
                         headType.set(PrintHead.getPrintHeadForType(headTypeCodeString).getShortName());
                         temporaryHead.setUniqueID(headResponse.getUniqueID());
-                        temporaryHead.setHeadHours(headResponse.getHoursUsed());
+                        temporaryHead.setHeadHours(headResponse.getHeadHours());
                         temporaryHead.setLastFilamentTemperature(headResponse.getLastFilamentTemperature());
                         temporaryHead.setMaximumTemperature(headResponse.getMaximumTemperature());
                         temporaryHead.setNozzle1_B_offset(headResponse.getNozzle1BOffset());
@@ -1566,8 +1616,8 @@ public class Printer
                         temporaryHead.setNozzle2_X_offset(headResponse.getNozzle2XOffset());
                         temporaryHead.setNozzle2_Y_offset(headResponse.getNozzle2YOffset());
                         temporaryHead.setNozzle2_Z_offset(headResponse.getNozzle2ZOffset());
-                        temporaryHead.setBeta(headResponse.getThermistorBeta());
-                        temporaryHead.setTcal(headResponse.getThermistorTCal());
+                        temporaryHead.setBeta(headResponse.getBeta());
+                        temporaryHead.setTcal(headResponse.getTCal());
                         attachedHead.set(temporaryHead);
                     } else
                     {
@@ -1581,7 +1631,7 @@ public class Printer
 
                 headUniqueID.set(headResponse.getUniqueID());
                 lastFilamentTemperature.set(headResponse.getLastFilamentTemperature());
-                headHoursCounter.set(headResponse.getHoursUsed());
+                headHoursCounter.set(headResponse.getHeadHours());
                 headMaximumTemperature.set(headResponse.getMaximumTemperature());
                 headNozzle1BOffset.set(headResponse.getNozzle1BOffset());
                 headNozzle1XOffset.set(headResponse.getNozzle1XOffset());
@@ -1591,8 +1641,8 @@ public class Printer
                 headNozzle2XOffset.set(headResponse.getNozzle2XOffset());
                 headNozzle2YOffset.set(headResponse.getNozzle2YOffset());
                 headNozzle2ZOffset.set(headResponse.getNozzle2ZOffset());
-                headThermistorBeta.set(headResponse.getThermistorBeta());
-                headThermistorTCal.set(headResponse.getThermistorTCal());
+                headThermistorBeta.set(headResponse.getBeta());
+                headThermistorTCal.set(headResponse.getTCal());
 
                 headDataChangedToggle.set(!headDataChangedToggle.get());
                 break;
@@ -1851,15 +1901,15 @@ public class Printer
                                        headToWrite.getUniqueID(),
                                        headToWrite.getMaximumTemperature(),
                                        headToWrite.getBeta(),
-                                       headToWrite.getTcal(),
-                                       headToWrite.getNozzle1_X_offset(),
-                                       headToWrite.getNozzle1_Y_offset(),
-                                       headToWrite.getNozzle1_Z_offset(),
-                                       headToWrite.getNozzle1_B_offset(),
-                                       headToWrite.getNozzle2_X_offset(),
-                                       headToWrite.getNozzle2_Y_offset(),
-                                       headToWrite.getNozzle2_Z_offset(),
-                                       headToWrite.getNozzle2_B_offset(),
+                                       headToWrite.getTCal(),
+                                       headToWrite.getNozzle1XOffset(),
+                                       headToWrite.getNozzle1YOffset(),
+                                       headToWrite.getNozzle1ZOffset(),
+                                       headToWrite.getNozzle1BOffset(),
+                                       headToWrite.getNozzle2XOffset(),
+                                       headToWrite.getNozzle2YOffset(),
+                                       headToWrite.getNozzle2ZOffset(),
+                                       headToWrite.getNozzle2BOffset(),
                                        headToWrite.getLastFilamentTemperature(),
                                        headToWrite.getHeadHours());
         printerCommsManager.submitForWrite(portName, writeHeadEEPROM);
@@ -1971,6 +2021,18 @@ public class Printer
         printerCommsManager.submitForWrite(portName, setFilamentInfo);
     }
 
+    public ListFilesResponse transmitListFiles() throws RoboxCommsException
+    {
+        ListFiles listFiles = (ListFiles) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.LIST_FILES);
+        return (ListFilesResponse) printerCommsManager.submitForWrite(portName, listFiles);
+    }
+
+    public StatusResponse transmitStatusRequest() throws RoboxCommsException
+    {
+        StatusRequest statusRequest = (StatusRequest) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.STATUS_REQUEST);
+        return (StatusResponse)printerCommsManager.submitForWrite(portName, statusRequest);
+    }
+
     public boolean initialiseDataFileSend(String fileID) throws DatafileSendAlreadyInProgress, RoboxCommsException
     {
         boolean success = false;
@@ -1990,9 +2052,9 @@ public class Printer
         return success;
     }
 
-    public void initiatePrint(String hexDigits) throws DatafileSendNotInitialised, RoboxCommsException
+    public void initiatePrint(String jobUUID) throws RoboxCommsException
     {
-        transmitInitiatePrint(fileID);
+        transmitInitiatePrint(jobUUID);
         printInitiated = true;
     }
 
@@ -2074,11 +2136,22 @@ public class Printer
             {
                 transmitSetTemperatures(filament.getNozzleTemperature(), filament.getNozzleTemperature(), filament.getFirstLayerBedTemperature(), filament.getBedTemperature(), filament.getAmbientTemperature());
                 transmitSetFilamentInfo(filament.getDiameter(), filament.getFilamentMultiplier(), filament.getFeedRateMultiplier());
+
             } catch (RoboxCommsException ex)
             {
                 steno.error("Failure to set temperatures prior to print");
             }
         }
+
+        try
+        {
+            transmitDirectGCode(GCodeConstants.goToTargetFirstLayerNozzleTemperature, true);
+            transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperature, true);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error whilst sending preheat commands");
+        }
+
         printQueue.printProject(project, printQuality, settings);
     }
 
@@ -2107,5 +2180,4 @@ public class Printer
     {
         return printInitiated;
     }
-
 }

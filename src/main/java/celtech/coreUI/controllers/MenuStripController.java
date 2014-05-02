@@ -101,14 +101,6 @@ public class MenuStripController
     {
         Project currentProject = DisplayManager.getInstance().getCurrentlyVisibleProject();
         settingsScreenState.getSelectedPrinter().printProject(currentProject, settingsScreenState.getFilament(), settingsScreenState.getPrintQuality(), settingsScreenState.getSettings());
-        try
-        {
-            settingsScreenState.getSelectedPrinter().transmitDirectGCode(GCodeConstants.goToTargetFirstLayerNozzleTemperature, true);
-            settingsScreenState.getSelectedPrinter().transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperature, true);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error whilst sending preheat commands");
-        }
         applicationStatus.setMode(ApplicationMode.STATUS);
     }
 

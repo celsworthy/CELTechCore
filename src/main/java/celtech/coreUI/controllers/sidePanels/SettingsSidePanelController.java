@@ -1,7 +1,7 @@
-
 package celtech.coreUI.controllers.sidePanels;
 
 import celtech.appManager.ApplicationStatus;
+import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
@@ -144,7 +144,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             createMaterialPage = createMaterialPageLoader.load();
             materialDetailsController = createMaterialPageLoader.getController();
             materialDetailsController.updateMaterialData(new Filament("", MaterialType.ABS, null,
-                    0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, true));
+                                                                      0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, true));
             materialDetailsController.showButtons(false);
 
             createMaterialDialogue = new ModalDialog(DisplayManager.getLanguageBundle().getString("sidePanel_settings.createMaterialDialogueTitle"));
@@ -214,6 +214,11 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             @Override
             public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
             {
+                if (t1 != t)
+                {
+                    DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+                }
+
                 PrintQualityEnumeration quality = PrintQualityEnumeration.fromEnumPosition(t1.intValue());
                 settingsScreenState.setPrintQuality(quality);
 
@@ -451,6 +456,11 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             @Override
             public void changed(ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue)
             {
+                if (newValue != oldValue)
+                {
+                    DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+                }
+
                 if (newValue == noSupportRadioButton)
                 {
                     settingsScreenState.getSettings().setSupport_material(false);
@@ -460,7 +470,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 }
             }
         });
-        
+
         updateFilamentList();
     }
 

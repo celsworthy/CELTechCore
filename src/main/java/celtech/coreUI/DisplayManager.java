@@ -17,6 +17,7 @@ import celtech.appManager.ProjectManager;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
+import celtech.coreUI.components.ProjectNotLoadedException;
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.components.SlideoutAndProjectHolder;
 import celtech.coreUI.controllers.InfoScreenIndicatorController;
@@ -203,8 +204,14 @@ public class DisplayManager implements EventHandler<KeyEvent>
         ArrayList<String> preloadedModelNames = pm.getOpenModelNames();
         for (String fileName : preloadedModelNames)
         {
-            ProjectTab newProjectTab = new ProjectTab(instance, fileName + ApplicationConfiguration.projectFileExtension, tabDisplay.widthProperty(), tabDisplay.heightProperty());
-            tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
+            try
+            {
+                ProjectTab newProjectTab = new ProjectTab(instance, fileName + ApplicationConfiguration.projectFileExtension, tabDisplay.widthProperty(), tabDisplay.heightProperty());
+                tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
+            } catch (ProjectNotLoadedException ex)
+            {
+                steno.error("Couldn't load project - " + ex.getMessage());
+            }
         }
     }
 

@@ -147,12 +147,12 @@ public class Head implements Cloneable
         tcal.set(value);
     }
 
-    public float getTcal()
+    public float getTCal()
     {
         return tcal.get();
     }
 
-    public FloatProperty getNozzle1_X_offsetProperty()
+    public FloatProperty getNozzle1XOffsetProperty()
     {
         return nozzle1_X_offset;
     }
@@ -162,7 +162,7 @@ public class Head implements Cloneable
         nozzle1_X_offset.set(value);
     }
 
-    public float getNozzle1_X_offset()
+    public float getNozzle1XOffset()
     {
         return nozzle1_X_offset.get();
     }
@@ -177,7 +177,7 @@ public class Head implements Cloneable
         nozzle1_Y_offset.set(value);
     }
 
-    public float getNozzle1_Y_offset()
+    public float getNozzle1YOffset()
     {
         return nozzle1_Y_offset.get();
     }
@@ -192,7 +192,7 @@ public class Head implements Cloneable
         nozzle1_Z_offset.set(value);
     }
 
-    public float getNozzle1_Z_offset()
+    public float getNozzle1ZOffset()
     {
         return nozzle1_Z_offset.get();
     }
@@ -207,7 +207,7 @@ public class Head implements Cloneable
         nozzle1_B_offset.set(value);
     }
 
-    public float getNozzle1_B_offset()
+    public float getNozzle1BOffset()
     {
         return nozzle1_B_offset.get();
     }
@@ -222,7 +222,7 @@ public class Head implements Cloneable
         nozzle2_X_offset.set(value);
     }
 
-    public float getNozzle2_X_offset()
+    public float getNozzle2XOffset()
     {
         return nozzle2_X_offset.get();
     }
@@ -237,7 +237,7 @@ public class Head implements Cloneable
         nozzle2_Y_offset.set(value);
     }
 
-    public float getNozzle2_Y_offset()
+    public float getNozzle2YOffset()
     {
         return nozzle2_Y_offset.get();
     }
@@ -252,7 +252,7 @@ public class Head implements Cloneable
         nozzle2_Z_offset.set(value);
     }
 
-    public float getNozzle2_Z_offset()
+    public float getNozzle2ZOffset()
     {
         return nozzle2_Z_offset.get();
     }
@@ -267,7 +267,7 @@ public class Head implements Cloneable
         nozzle2_B_offset.set(value);
     }
 
-    public float getNozzle2_B_offset()
+    public float getNozzle2BOffset()
     {
         return nozzle2_B_offset.get();
     }
@@ -311,15 +311,15 @@ public class Head implements Cloneable
                 this.getFriendlyName(),
                 this.getMaximumTemperature(),
                 this.getBeta(),
-                this.getTcal(),
-                this.getNozzle1_X_offset(),
-                this.getNozzle1_Y_offset(),
-                this.getNozzle1_Z_offset(),
-                this.getNozzle1_B_offset(),
-                this.getNozzle2_X_offset(),
-                this.getNozzle2_Y_offset(),
-                this.getNozzle2_Z_offset(),
-                this.getNozzle2_B_offset()
+                this.getTCal(),
+                this.getNozzle1XOffset(),
+                this.getNozzle1YOffset(),
+                this.getNozzle1ZOffset(),
+                this.getNozzle1BOffset(),
+                this.getNozzle2XOffset(),
+                this.getNozzle2YOffset(),
+                this.getNozzle2ZOffset(),
+                this.getNozzle2BOffset()
         );
 
         return clone;

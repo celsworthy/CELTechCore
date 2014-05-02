@@ -10,6 +10,7 @@ import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
+import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.services.ControllableService;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
@@ -62,15 +63,16 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
                 {
                     printerToUse.transmitDirectGCode("G90", false);
                     waitOnBusy();
-                    printerToUse.transmitDirectGCode("G0 B0", false);
-                    waitOnBusy();
-                    printerToUse.transmitDirectGCode("G28 Z", false);
-                    waitOnBusy();
-                    printerToUse.transmitDirectGCode("G0 Z25", false);
-                    waitOnBusy();
                     printerToUse.transmitDirectGCode("G28 X Y", false);
                     waitOnBusy();
                     printerToUse.transmitDirectGCode("G0 X116.5 Y75", false);
+                    waitOnBusy();
+                    printerToUse.transmitDirectGCode("G28 Z", false);
+                    waitOnBusy();
+                    printerToUse.transmitDirectGCode("G0 Z50", false);
+                    waitOnBusy();
+                    printerToUse.transmitDirectGCode("G0 B0", false);
+                    waitOnBusy();
                     printerToUse.transmitDirectGCode("M104", false);
                     if (printerToUse.getNozzleHeaterMode() == HeaterMode.FIRST_LAYER)
                     {
@@ -80,8 +82,7 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
                         waitUntilNozzleReaches(printerToUse.getNozzleTargetTemperature(), 5);
                     }
                     waitOnBusy();
-//                    printerToUse.transmitDirectGCode("G38", false);
-//                    waitOnBusy();
+
                     success = true;
                 } catch (RoboxCommsException ex)
                 {
@@ -110,15 +111,17 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
                         printerToUse.transmitDirectGCode("T1", false);
                         waitOnBusy();
                         printerToUse.transmitDirectGCode("G28 Z?", false);
+                        StatusResponse statusResponse = printerToUse.transmitStatusRequest();
                         waitOnBusy();
                         String measurementString = printerToUse.transmitDirectGCode("M113", false);
-                        zDeltaMatcher = zDeltaPattern.matcher(measurementString);
-                        if (zDeltaMatcher.matches() && zDeltaMatcher.groupCount() == 1)
+                        measurementString = measurementString.replaceFirst("Zdelta:", "").replaceFirst("\nok", "");
+                        steno.info("Assessing measurement:" + measurementString);
+                        try
                         {
                             zDifferenceMeasurement[i] = Float.valueOf(zDeltaMatcher.group("offset"));
                             sumOfZDifferences += zDifferenceMeasurement[i];
                             steno.info("Z Offset measurement " + i + " was " + zDifferenceMeasurement[i]);
-                        } else
+                        } catch (NumberFormatException ex)
                         {
                             steno.error("Failed to convert z offset measurement from Robox - " + measurementString);
                             failed = true;

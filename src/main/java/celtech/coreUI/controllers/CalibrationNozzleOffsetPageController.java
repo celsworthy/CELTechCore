@@ -187,11 +187,11 @@ public class CalibrationNozzleOffsetPageController implements Initializable
         {
             if (savedHeadData != null && state != NozzleOffsetCalibrationState.FINISHED)
             {
-                printerToUse.transmitWriteHeadEEPROM(savedHeadData.getHeadTypeCode(),
+                printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                                                      savedHeadData.getUniqueID(),
                                                      savedHeadData.getMaximumTemperature(),
-                                                     savedHeadData.getThermistorBeta(),
-                                                     savedHeadData.getThermistorTCal(),
+                                                     savedHeadData.getBeta(),
+                                                     savedHeadData.getTCal(),
                                                      savedHeadData.getNozzle1XOffset(),
                                                      savedHeadData.getNozzle1YOffset(),
                                                      savedHeadData.getNozzle1ZOffset(),
@@ -201,7 +201,7 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                                                      savedHeadData.getNozzle2ZOffset(),
                                                      savedHeadData.getNozzle2BOffset(),
                                                      savedHeadData.getLastFilamentTemperature(),
-                                                     savedHeadData.getHoursUsed());
+                                                     savedHeadData.getHeadHours());
             }
 
             printerToUse.transmitDirectGCode("G0 Z25", false);
@@ -295,21 +295,21 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                     zDifference = savedHeadData.getNozzle2ZOffset() - savedHeadData.getNozzle1ZOffset();
 
                     Head defaultHead = HeadContainer.getCompleteHeadList().get(0);
-                    printerToUse.transmitWriteHeadEEPROM(savedHeadData.getHeadTypeCode(),
+                    printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                                                          savedHeadData.getUniqueID(),
                                                          savedHeadData.getMaximumTemperature(),
-                                                         savedHeadData.getThermistorBeta(),
-                                                         savedHeadData.getThermistorTCal(),
-                                                         defaultHead.getNozzle1_X_offset(),
-                                                         defaultHead.getNozzle1_Y_offset(),
+                                                         savedHeadData.getBeta(),
+                                                         savedHeadData.getTCal(),
+                                                         defaultHead.getNozzle1XOffset(),
+                                                         defaultHead.getNozzle1YOffset(),
                                                          0,
                                                          savedHeadData.getNozzle1ZOffset(),
-                                                         defaultHead.getNozzle2_X_offset(),
-                                                         defaultHead.getNozzle2_Y_offset(),
+                                                         defaultHead.getNozzle2XOffset(),
+                                                         defaultHead.getNozzle2YOffset(),
                                                          0,
                                                          savedHeadData.getNozzle2ZOffset(),
                                                          savedHeadData.getLastFilamentTemperature(),
-                                                         savedHeadData.getHoursUsed());
+                                                         savedHeadData.getHeadHours());
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in nozzle offset calibration - mode=" + state.name());
@@ -379,11 +379,11 @@ public class CalibrationNozzleOffsetPageController implements Initializable
 
                 try
                 {
-                    printerToUse.transmitWriteHeadEEPROM(savedHeadData.getHeadTypeCode(),
+                    printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                                                          savedHeadData.getUniqueID(),
                                                          savedHeadData.getMaximumTemperature(),
-                                                         savedHeadData.getThermistorBeta(),
-                                                         savedHeadData.getThermistorTCal(),
+                                                         savedHeadData.getBeta(),
+                                                         savedHeadData.getTCal(),
                                                          savedHeadData.getNozzle1XOffset(),
                                                          savedHeadData.getNozzle1YOffset(),
                                                          savedHeadData.getNozzle1ZOffset(),
@@ -393,7 +393,7 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                                                          savedHeadData.getNozzle2ZOffset(),
                                                          (float) (zco + (0.5 * zDifference)),
                                                          savedHeadData.getLastFilamentTemperature(),
-                                                         savedHeadData.getHoursUsed());
+                                                         savedHeadData.getHeadHours());
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in nozzle offset calibration - mode=" + state.name());

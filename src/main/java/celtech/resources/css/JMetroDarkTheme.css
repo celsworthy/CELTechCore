@@ -845,6 +845,9 @@
     -fx-tick-label-fill: white;
 }
 
+.invisible-graph-node{
+    -fx-fill: blue;
+}
 /*
  * Tab pane settings
  */

@@ -50,6 +50,9 @@ public class RoboxRxPacketFactory
                 case GCODE_RESPONSE:
                     returnVal = new GCodeDataResponse();
                     break;
+                case LIST_FILES_RESPONSE:
+                    returnVal = new ListFilesResponse();
+                    break;
                 default:
                     break;
             }

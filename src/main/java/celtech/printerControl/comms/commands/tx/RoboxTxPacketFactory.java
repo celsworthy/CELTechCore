@@ -104,6 +104,9 @@ public class RoboxTxPacketFactory
                 case SET_FILAMENT_INFO:
                     returnVal = new SetFilamentInfo();
                     break;
+                case LIST_FILES:
+                    returnVal = new ListFiles();
+                    break;
                 default:
                     break;
             }

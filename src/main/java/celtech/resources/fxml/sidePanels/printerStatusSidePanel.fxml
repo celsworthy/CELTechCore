@@ -115,7 +115,7 @@
                                 <NumberAxis fx:id="timeAxis" animated="false" autoRanging="false" lowerBound="0.0" side="BOTTOM" tickLabelsVisible="false" tickUnit="30.0" upperBound="190.0" />
                             </xAxis>
                             <yAxis>
-                                <NumberAxis id="temperatureGraphTempAxis" fx:id="temperatureAxis" animated="false" autoRanging="false" label="%misc.degreesC" minorTickCount="3" side="LEFT" tickUnit="50.0" upperBound="350.0" />
+                                <NumberAxis id="temperatureGraphTempAxis" fx:id="temperatureAxis" animated="false" autoRanging="false" label="%misc.degreesC" minorTickCount="3" side="LEFT" tickUnit="50.0" upperBound="300.0" />
                             </yAxis>
                             <padding>
                                 <Insets left="5.0" right="5.0" />

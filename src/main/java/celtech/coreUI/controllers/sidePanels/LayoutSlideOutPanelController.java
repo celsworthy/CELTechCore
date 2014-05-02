@@ -45,18 +45,10 @@ public class LayoutSlideOutPanelController implements Initializable
 
     public void bindLoadedModels(final Project currentProject)
     {
-        if (this.currentProject != null)
-        {
-            this.currentProject.getPrintJobs().removeListener(printJobChangeListener);
-        }
-
         this.currentProject = currentProject;
         lastModifiedDate.textProperty().unbind();
         lastModifiedDate.textProperty().bind(currentProject.getProjectHeader().getLastModifiedDateProperty().asString());
 
         printHistory.getItems().clear();
-
-        currentProject.getPrintJobs().addListener(printJobChangeListener);
-
     }
 }

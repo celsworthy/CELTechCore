@@ -85,6 +85,8 @@ public class ApplicationConfiguration
     public static final String filamentDirectoryPath = "Filaments";
     public static final String filamentFileExtension = ".roboxfilament";
     public static final int mmOfFilamentOnAReel = 240000;
+    
+    public static final float filamentDiameterToYieldVolumetricExtrusion = 1.1283791670955125738961589031215f;
 
     private static String headFileDirectory = null;
     public static final String headDirectoryPath = "Heads";
@@ -121,6 +123,8 @@ public class ApplicationConfiguration
 
     public static final Duration notificationDisplayDelay = Duration.seconds(5);
     public static final Pos notificationPosition = Pos.BOTTOM_RIGHT;
+    
+    public static final int maxPrintSpoolFiles = 20;
 
     public static MachineType getMachineType()
     {
