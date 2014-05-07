@@ -223,7 +223,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             MCodeEvent subsequentLayerBedTemp = new MCodeEvent();
             subsequentLayerBedTemp.setMNumber(140);
             subsequentLayerBedTemp.setComment("take post layer 1 bed temperature from loaded reel - don't wait");
-            extrusionBuffer.add(subsequentLayerNozzleTemp);
+            extrusionBuffer.add(subsequentLayerBedTemp);
 
             subsequentLayersTemperaturesWritten = true;
         }
@@ -363,7 +363,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                     extrusionBuffer.add(nozzleChangeEvent);
                     nozzleInUse = 1;
                     forcedNozzle = true;
-                } else if (layer == 0)
+                } else if (layer == 1)
                 {
                     tempNozzleMemory = nozzleChangeEvent.getNozzleNumber();
                 } else if (layer > 1)
