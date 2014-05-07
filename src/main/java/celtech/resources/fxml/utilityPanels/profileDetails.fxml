@@ -58,10 +58,8 @@
                                 <Label minWidth="-1.0" text="%extrusion.solidLayers" textAlignment="RIGHT" wrapText="true" GridPane.rowIndex="4" />
                                 <Label minWidth="-1.0" text="%sidePanel_settings.numberOfPerimeters" GridPane.rowIndex="5" />
                                 <TextField id="unretractLength" fx:id="numberOfPerimeters" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                                <CheckBox id="autoUnretract" fx:id="spiralVase" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="%extrusion.spiralVase" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                                <Label minWidth="-1.0" text="%extrusion.brimWidth" GridPane.rowIndex="7" />
-                                <TextField id="unretractLength" fx:id="brimWidth" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-                                <Label layoutX="10.0" layoutY="230.0" minWidth="-1.0" text="%extrusion.spiralVase" GridPane.rowIndex="6" />
+                                <Label minWidth="-1.0" text="%extrusion.brimWidth" GridPane.rowIndex="6" />
+                                <TextField id="unretractLength" fx:id="brimWidth" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
                                 <ComboBox fx:id="fillPatternChoice" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                             </children>
                         </GridPane>

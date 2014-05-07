@@ -134,9 +134,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private GridPane coolingGrid;
 
     @FXML
-    private CheckBox spiralVase;
-
-    @FXML
     private GridPane speedGrid;
 
     @FXML
@@ -451,7 +448,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         numberOfPerimeters.textProperty().addListener(dirtyStringListener);
         topSolidInfillSpeed.textProperty().addListener(dirtyStringListener);
         perimeterSpeed.textProperty().addListener(dirtyStringListener);
-        spiralVase.textProperty().addListener(dirtyStringListener);
         gapFillSpeed.textProperty().addListener(dirtyStringListener);
         retractLength.textProperty().addListener(dirtyStringListener);
         fillPatternChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
@@ -562,8 +558,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
             Bindings.unbindBidirectional(solidLayers.textProperty(), lastSettings.top_solid_layersProperty());
             lastSettings.bottom_solid_layersProperty().unbind();
 
-            Bindings.unbindBidirectional(spiralVase.selectedProperty(), lastSettings.spiral_vaseProperty());
-
             Bindings.unbindBidirectional(brimWidth.textProperty(), lastSettings.getBrim_width());
 
             Bindings.unbindBidirectional(enableAutoCooling.textProperty(), lastSettings.getCooling());
@@ -633,8 +627,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
         Bindings.bindBidirectional(solidLayers.textProperty(), newSettings.top_solid_layersProperty(), intConverter);
         newSettings.bottom_solid_layersProperty().bind(newSettings.top_solid_layersProperty());
-
-        Bindings.bindBidirectional(spiralVase.selectedProperty(), newSettings.spiral_vaseProperty());
 
         Bindings.bindBidirectional(brimWidth.textProperty(), newSettings.getBrim_width(), intConverter);
 
