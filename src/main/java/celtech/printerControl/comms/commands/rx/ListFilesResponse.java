@@ -16,7 +16,7 @@ public class ListFilesResponse extends RoboxRxPacket
 
     private final String charsetToUse = "US-ASCII";
 
-    private final int lengthFieldBytes = 4;
+    private final int lengthFieldBytes = 2;
 
     private ArrayList<String> printJobIDs = new ArrayList<String>();
 

@@ -60,13 +60,13 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
     private boolean suppressPrinterIDChecks = false;
     private int sleepBetweenStatusChecks = 1000;
 
-    private RoboxCommsManager(String installDirectory, boolean suppressPrinterIDChecks)
+    private RoboxCommsManager(String pathToBinaries, boolean suppressPrinterIDChecks)
     {
         this.suppressPrinterIDChecks = suppressPrinterIDChecks;
 
-        roboxDetectorMac = installDirectory + "bin/RoboxDetector.mac.sh";
-        roboxDetectorLinux = installDirectory + "bin/RoboxDetector.linux.sh";
-        roboxDetectorWindows = installDirectory + "bin\\RoboxDetector.exe";
+        roboxDetectorMac = pathToBinaries + "RoboxDetector.mac.sh";
+        roboxDetectorLinux = pathToBinaries + "RoboxDetector.linux.sh";
+        roboxDetectorWindows = pathToBinaries + "RoboxDetector.exe";
 
         this.setName("Robox Comms Manager");
         steno = StenographerFactory.getStenographer(this.getClass().getName());
@@ -98,21 +98,21 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
         return instance;
     }
 
-    public static RoboxCommsManager getInstance(String installDirectory)
+    public static RoboxCommsManager getInstance(String pathToBinaries)
     {
         if (instance == null)
         {
-            instance = new RoboxCommsManager(installDirectory, false);
+            instance = new RoboxCommsManager(pathToBinaries, false);
         }
 
         return instance;
     }
 
-    public static RoboxCommsManager getInstance(String installDirectory, boolean suppressPrinterIDCheck)
+    public static RoboxCommsManager getInstance(String pathToBinaries, boolean suppressPrinterIDCheck)
     {
         if (instance == null)
         {
-            instance = new RoboxCommsManager(installDirectory, true);
+            instance = new RoboxCommsManager(pathToBinaries, true);
         }
 
         return instance;

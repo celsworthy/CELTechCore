@@ -29,9 +29,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map.Entry;
 import java.util.Scanner;
-import java.util.Set;
 import javafx.beans.property.DoubleProperty;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Point3D;
@@ -40,7 +38,6 @@ import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
  *

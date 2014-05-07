@@ -61,17 +61,7 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
             case INITIALISING:
                 try
                 {
-                    printerToUse.transmitDirectGCode("G90", false);
-                    waitOnBusy();
-                    printerToUse.transmitDirectGCode("G28 X Y", false);
-                    waitOnBusy();
-                    printerToUse.transmitDirectGCode("G0 X116.5 Y75", false);
-                    waitOnBusy();
-                    printerToUse.transmitDirectGCode("G28 Z", false);
-                    waitOnBusy();
-                    printerToUse.transmitDirectGCode("G0 Z50", false);
-                    waitOnBusy();
-                    printerToUse.transmitDirectGCode("G0 B0", false);
+                    printerToUse.transmitStoredGCode("Home_all");
                     waitOnBusy();
                     printerToUse.transmitDirectGCode("M104", false);
                     if (printerToUse.getNozzleHeaterMode() == HeaterMode.FIRST_LAYER)
@@ -101,42 +91,70 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
                 {
                     float sumOfZDifferences = 0;
                     boolean failed = false;
+                    int testCounter = 0;
+                    boolean testFinished = false;
 
-                    for (int i = 0; i < 3; i++)
+                    while (testCounter < 3 && !testFinished && isCancelled() == false)
                     {
-                        printerToUse.transmitDirectGCode("T0", false);
-                        waitOnBusy();
-                        printerToUse.transmitDirectGCode("G28 Z", false);
-                        waitOnBusy();
-                        printerToUse.transmitDirectGCode("T1", false);
-                        waitOnBusy();
-                        printerToUse.transmitDirectGCode("G28 Z?", false);
-                        StatusResponse statusResponse = printerToUse.transmitStatusRequest();
-                        waitOnBusy();
-                        String measurementString = printerToUse.transmitDirectGCode("M113", false);
-                        measurementString = measurementString.replaceFirst("Zdelta:", "").replaceFirst("\nok", "");
-                        steno.info("Assessing measurement:" + measurementString);
-                        try
+                        for (int i = 0; i < 3; i++)
                         {
-                            zDifferenceMeasurement[i] = Float.valueOf(zDeltaMatcher.group("offset"));
-                            sumOfZDifferences += zDifferenceMeasurement[i];
-                            steno.info("Z Offset measurement " + i + " was " + zDifferenceMeasurement[i]);
-                        } catch (NumberFormatException ex)
-                        {
-                            steno.error("Failed to convert z offset measurement from Robox - " + measurementString);
-                            failed = true;
-                            break;
+                            printerToUse.transmitDirectGCode("T0", false);
+                            waitOnBusy();
+                            printerToUse.transmitDirectGCode("G28 Z", false);
+                            waitOnBusy();
+                            printerToUse.transmitDirectGCode("G0 Z5", false);
+                            waitOnBusy();
+                            printerToUse.transmitDirectGCode("T1", false);
+                            waitOnBusy();
+                            printerToUse.transmitDirectGCode("G28 Z?", false);
+                            waitOnBusy();
+                            printerToUse.transmitDirectGCode("G0 Z5", false);
+                            waitOnBusy();
+                            String measurementString = printerToUse.transmitDirectGCode("M113", false);
+                            measurementString = measurementString.replaceFirst("Zdelta:", "").replaceFirst("\nok", "");
+                            try
+                            {
+                                zDifferenceMeasurement[i] = Float.valueOf(measurementString);
+
+                                if (i > 0)
+                                {
+                                    if (Math.abs(zDifferenceMeasurement[i] - zDifferenceMeasurement[i - 1]) > 0.02)
+                                    {
+                                        failed = true;
+                                        break;
+                                    }
+                                }
+                                sumOfZDifferences += zDifferenceMeasurement[i];
+                                steno.info("Z Offset measurement " + i + " was " + zDifferenceMeasurement[i]);
+                            } catch (NumberFormatException ex)
+                            {
+                                steno.error("Failed to convert z offset measurement from Robox - " + measurementString);
+                                failed = true;
+                                break;
+                            }
                         }
+
+                        if (failed == false)
+                        {
+                            returnFloat = sumOfZDifferences / 3;
+
+                            steno.info("Average Z Offset was " + returnFloat);
+
+                            success = true;
+                            testFinished = true;
+                        } else
+                        {
+                            sumOfZDifferences = 0;
+                            zDifferenceMeasurement = new float[3];
+                            failed = false;
+                        }
+
+                        testCounter++;
                     }
 
-                    if (failed == false)
-                    {
-                        returnFloat = sumOfZDifferences / 3;
+                    printerToUse.transmitDirectGCode("T0", false);
+                    waitOnBusy();
 
-                        steno.info("Average Z Offset was " + returnFloat);
-
-                        success = true;
-                    }
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in nozzle offset calibration - mode=" + desiredState.name());
@@ -192,10 +210,18 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
 
     private void waitOnBusy() throws InterruptedException
     {
-        Thread.sleep(100);
-        while (printerToUse.busyProperty().get() == true && isCancelled() == false)
+        try
         {
-            Thread.sleep(100);
+            StatusResponse response = printerToUse.transmitStatusRequest();
+
+            while (response.isBusyStatus() == true && isCancelled() == false)
+            {
+                Thread.sleep(100);
+                response = printerToUse.transmitStatusRequest();
+            }
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error requesting status");
         }
     }
 

@@ -27,7 +27,7 @@ public class GCodeMacros
     {
         ArrayList<String> contents = new ArrayList<>();
 
-        String macrofile = ApplicationConfiguration.getApplicationInstallDirectory(null) + ApplicationConfiguration.macroFileSubpath + macroFile + ApplicationConfiguration.macroFileExtension;
+        String macrofile = ApplicationConfiguration.getCommonApplicationDirectory() + ApplicationConfiguration.macroFileSubpath + macroFile + ApplicationConfiguration.macroFileExtension;
 
         try
         {

@@ -61,6 +61,8 @@ public class ApplicationConfiguration
     private static String applicationStorageDirectory = null;
     public static final String applicationStorageDirectoryComponent = "ApplicationDataStorageDirectory";
 
+    private static String commonApplicationDirectory = null;
+
     private static String projectFileStorageDirectory = null;
     private static String projectFileDirectoryPath = "Projects";
     public static final String projectFileExtension = ".robox";
@@ -85,8 +87,10 @@ public class ApplicationConfiguration
     public static final String filamentDirectoryPath = "Filaments";
     public static final String filamentFileExtension = ".roboxfilament";
     public static final int mmOfFilamentOnAReel = 240000;
-    
+
     public static final float filamentDiameterToYieldVolumetricExtrusion = 1.1283791670955125738961589031215f;
+
+    private static final String commonFileDirectoryPath = "CEL Robox/";
 
     private static String headFileDirectory = null;
     public static final String headDirectoryPath = "Heads";
@@ -104,8 +108,10 @@ public class ApplicationConfiguration
     public static final String stlTempFileExtension = ".stl";
     public static final String gcodeTempFileExtension = ".gcode";
     public static final String gcodePostProcessedFileHandle = "_robox";
-    
+
     public static final float bedHotAboveDegrees = 60.0f;
+    public static final float maxTempToDisplayOnGraph = 300;
+    public static final float minTempToDisplayOnGraph = 35;
 
     private static Properties projectProperties = null;
 
@@ -123,7 +129,7 @@ public class ApplicationConfiguration
 
     public static final Duration notificationDisplayDelay = Duration.seconds(5);
     public static final Pos notificationPosition = Pos.BOTTOM_RIGHT;
-    
+
     public static final int maxPrintSpoolFiles = 20;
 
     public static MachineType getMachineType()
@@ -218,6 +224,21 @@ public class ApplicationConfiguration
         return applicationInstallDirectory;
     }
 
+    public static String getCommonApplicationDirectory()
+    {
+        if (commonApplicationDirectory == null)
+        {
+            commonApplicationDirectory = applicationInstallDirectory + "../Common/";
+        }
+
+        return commonApplicationDirectory;
+    }
+
+    public static String getBinariesDirectory()
+    {
+        return getCommonApplicationDirectory() + "bin/";
+    }
+
     public static String getUserStorageDirectory()
     {
         if (configuration == null)
@@ -244,7 +265,7 @@ public class ApplicationConfiguration
                     if (regKey.hasValue(regValueToUse))
                     {
                         RegistryValue value = regKey.getValue(regValueToUse);
-                        userStorageDirectory = value.getStringValue() + "\\" + getApplicationName() + "\\";
+                        userStorageDirectory = value.getStringValue() + "\\" + commonFileDirectoryPath + "\\";
                     }
                 }
             }
@@ -255,7 +276,7 @@ public class ApplicationConfiguration
             {
                 try
                 {
-                    userStorageDirectory = configuration.getFilenameString(applicationConfigComponent, userStorageDirectoryComponent, null);
+                    userStorageDirectory = configuration.getFilenameString(applicationConfigComponent, userStorageDirectoryComponent, null) + commonFileDirectoryPath;
                     steno.info("User storage directory = " + userStorageDirectory);
                 } catch (ConfigNotLoadedException ex)
                 {
@@ -283,7 +304,7 @@ public class ApplicationConfiguration
         {
             try
             {
-                applicationStorageDirectory = configuration.getFilenameString(applicationConfigComponent, applicationStorageDirectoryComponent, null);
+                applicationStorageDirectory = configuration.getFilenameString(applicationConfigComponent, applicationStorageDirectoryComponent, null) + commonFileDirectoryPath;
                 steno.info("Application storage directory = " + applicationStorageDirectory);
             } catch (ConfigNotLoadedException ex)
             {
@@ -348,7 +369,7 @@ public class ApplicationConfiguration
     {
         if (filamentFileDirectory == null)
         {
-            filamentFileDirectory = applicationInstallDirectory + filamentDirectoryPath + '/';
+            filamentFileDirectory = getCommonApplicationDirectory() + filamentDirectoryPath + '/';
         }
 
         return filamentFileDirectory;
@@ -358,7 +379,7 @@ public class ApplicationConfiguration
     {
         if (headFileDirectory == null)
         {
-            headFileDirectory = applicationInstallDirectory + headDirectoryPath + '/';
+            headFileDirectory = getCommonApplicationDirectory() + headDirectoryPath + '/';
         }
 
         return headFileDirectory;
@@ -385,7 +406,7 @@ public class ApplicationConfiguration
     {
         if (printProfileFileDirectory == null)
         {
-            printProfileFileDirectory = applicationInstallDirectory + printProfileDirectoryPath + '/';
+            printProfileFileDirectory = getCommonApplicationDirectory() + printProfileDirectoryPath + '/';
         }
 
         return printProfileFileDirectory;

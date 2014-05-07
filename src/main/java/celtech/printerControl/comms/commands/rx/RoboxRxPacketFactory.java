@@ -111,6 +111,11 @@ public class RoboxRxPacketFactory
                     gcodeDataResponse.populatePacket(inputBytes);
                     returnVal = gcodeDataResponse;
                     break;
+                case LIST_FILES_RESPONSE:
+                    ListFilesResponse listFilesResponse = new ListFilesResponse();
+                    listFilesResponse.populatePacket(inputBytes);
+                    returnVal = listFilesResponse;
+                    break;
                 default:
                     throw new UnknownPacketTypeException();
             }

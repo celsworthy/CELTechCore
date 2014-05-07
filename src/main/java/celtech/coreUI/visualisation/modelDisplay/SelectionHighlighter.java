@@ -5,11 +5,18 @@
  */
 package celtech.coreUI.visualisation.modelDisplay;
 
+import celtech.CoreTest;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
+import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.visualisation.SelectionContainer;
 import celtech.coreUI.visualisation.Xform;
+import celtech.coreUI.visualisation.importers.FloatArrayList;
+import celtech.coreUI.visualisation.importers.ModelLoadResult;
+import celtech.coreUI.visualisation.importers.obj.ObjImporter;
+import celtech.modelcontrol.ModelContainer;
 import celtech.utils.Math.MathUtils;
+import com.sun.javafx.fxml.builder.TriangleMeshBuilder;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.value.ChangeListener;
@@ -22,6 +29,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.DrawMode;
+import javafx.scene.shape.MeshView;
+import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -56,34 +65,49 @@ public class SelectionHighlighter extends Group
     private final double cornerBoxSize = 2;
     private final double halfCornerBoxSize = cornerBoxSize / 2;
     private boolean scaleActive = false;
+    private Group scalingBoxes = new Group();
+
+    private FloatArrayList texCoords = new FloatArrayList();
+
+    private EventHandler<MouseEvent> scaleHighlight = new EventHandler<MouseEvent>()
+    {
+        @Override
+        public void handle(MouseEvent event)
+        {
+            scaleActive = true;
+            greenMaterial.setDiffuseColor(Color.PURPLE);
+        }
+    };
+
+    private EventHandler<MouseEvent> scaleUnhighlight = new EventHandler<MouseEvent>()
+    {
+        @Override
+        public void handle(MouseEvent event)
+        {
+            scaleActive = false;
+            greenMaterial.setDiffuseColor(Color.LIMEGREEN);
+        }
+    };
+
+    private ModelLoadResult scaleHandleLoadResult = null;
 
     public SelectionHighlighter(final SelectionContainer selectionContainer, final DoubleProperty cameraDistance)
     {
+        texCoords.add(0f);
+        texCoords.add(0f);
+
+        String scaleHandleURL = CoreTest.class
+                .getResource(ApplicationConfiguration.modelResourcePath + "scaleHandle.obj").toExternalForm();
+
+        ObjImporter scaleHandleImporter = new ObjImporter();
+        scaleHandleLoadResult = scaleHandleImporter.loadFile(null, scaleHandleURL, null);
+
         applicationStatus = ApplicationStatus.getInstance();
 
         this.setId(idString);
 
-        this.setOnMouseEntered(new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent event)
-            {
-                scaleActive = true;
-                greenMaterial.setDiffuseColor(Color.PURPLE);
-            }
-        });
-
-        this.setOnMouseExited(new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent event)
-            {
-                scaleActive = false;
-                greenMaterial.setDiffuseColor(Color.LIMEGREEN);
-            }
-        });
-
         buildSelectionBox();
+
         getChildren().add(selectionBox);
 
         selectionContainer.widthProperty().addListener(new ChangeListener<Number>()
@@ -224,7 +248,7 @@ public class SelectionHighlighter extends Group
         selectionBoxFrontRightTop = generateSelectionCornerGroup(0, 0, 180, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize, true);
 
         selectionBox.getChildren().addAll(selectionBoxBackLeftBottom, selectionBoxBackRightBottom, selectionBoxBackLeftTop, selectionBoxBackRightTop,
-                selectionBoxFrontLeftBottom, selectionBoxFrontRightBottom, selectionBoxFrontLeftTop, selectionBoxFrontRightTop);
+                                          selectionBoxFrontLeftBottom, selectionBoxFrontRightBottom, selectionBoxFrontLeftTop, selectionBoxFrontRightTop);
 
     }
 
@@ -262,13 +286,28 @@ public class SelectionHighlighter extends Group
 
         if (generateCornerBox)
         {
-            Box part4 = new Box(cornerBoxSize, cornerBoxSize, cornerBoxSize);
-            part4.setMaterial(greenMaterial);
-            part4.setId(scaleHandleString);
-            part4.setTranslateX(cornerBoxXOffset);
-            part4.setTranslateY(cornerBoxYOffset);
-            part4.setTranslateZ(cornerBoxZOffset);
-            selectionCorner.getChildren().add(part4);
+
+//            Box part4 = new Box(cornerBoxSize, cornerBoxSize, cornerBoxSize);
+//            part4.setMaterial(greenMaterial);
+//            part4.setId(scaleHandleString);
+//            part4.setOnMouseDragged(new EventHandler<MouseEvent>()
+//            {
+//
+//                @Override
+//                public void handle(MouseEvent event)
+//                {
+//                    steno.info("Got " + event.toString());
+//                }
+//            });
+//            ModelContainer box = scaleHandleLoadResult.getModelContainer().clone();
+//            box.setTranslateX(cornerBoxXOffset);
+//            box.setTranslateY(cornerBoxYOffset);
+//            box.setTranslateZ(cornerBoxZOffset);
+//            box.setOnMouseEntered(scaleHighlight);
+//            box.setOnMouseExited(scaleUnhighlight);
+//            box.setId("scaleHandle");
+//            selectionCorner.getChildren().add(box);
+
         }
 
         selectionCornerTransform.setRotateX(xRotate);
@@ -318,7 +357,7 @@ public class SelectionHighlighter extends Group
 
         selectionBox.setPivot(selectionContainer.getCentreX(), 0, selectionContainer.getCentreZ());
     }
-    
+
     public boolean isScaleActive()
     {
         return scaleActive;

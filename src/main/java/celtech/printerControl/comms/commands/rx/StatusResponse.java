@@ -2,6 +2,7 @@ package celtech.printerControl.comms.commands.rx;
 
 import celtech.configuration.EEPROMState;
 import celtech.configuration.HeaterMode;
+import celtech.configuration.WhyAreWeWaitingState;
 import java.io.UnsupportedEncodingException;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -12,10 +13,10 @@ import java.text.ParseException;
  */
 public class StatusResponse extends RoboxRxPacket
 {
-    /* Current spec of status response as of v543 firmware */
+    /* Current spec of status response as of v657 firmware */
 
     /*
-     status: <0xe1> iiiiiiiiiiiiiiii llllllll p b x y z e d b g h i j a k mmmmmmmm nnnnnnnn cccccccc o pppppppp qqqqqqqq aaaaaaaa r ssssssss tttttttt u v w s xxxxxxxx yyyyyyyy zzzzzzzz bbbbbbbb eeeeeeee gggggggg ffffffff
+     status: <0xe1> iiiiiiiiiiiiiiii llllllll p b x y z e d b g h i j a k mmmmmmmm nnnnnnnn cccccccc o pppppppp qqqqqqqq aaaaaaaa r ssssssss tttttttt u c v w s xxxxxxxx yyyyyyyy zzzzzzzz bbbbbbbb eeeeeeee gggggggg ffffffff
      iiiiiiiiiiiiiiii = id of running job
      llllllll = line # of running job in hex
      p = pause
@@ -43,8 +44,9 @@ public class StatusResponse extends RoboxRxPacket
      ssssssss = ambient temperature (decimal float format)
      tttttttt = ambient target (decimal float format)
      u = head fan on
-     v = head EEPROM present
-     w = reel EEPROM present
+     c = why are we waiting ('0'->not waiting, '1'->waiting for bed to cool, '2'->waiting for bed to reach target, '3'->waiting for extruder to reach target
+     v = head EEPROM state ('0'->none, '1'->not valid, '2'->valid)
+     w = reel EEPROM state ('0'->none, '1'->not valid, '2'->valid
      s = SD card present
      xxxxxxxx = X position (decimal float format)
      yyyyyyyy = Y position (decimal float format)
@@ -53,7 +55,7 @@ public class StatusResponse extends RoboxRxPacket
      eeeeeeee = E filament diameter (decimal float format)
      gggggggg = E filament multiplier (decimal float format)
      ffffffff = Feed rate multiplier (decimal float format)
-     total length = 165
+     total length = 166
      */
     private final String charsetToUse = "US-ASCII";
     private String runningPrintJobID = null;
@@ -107,6 +109,7 @@ public class StatusResponse extends RoboxRxPacket
     private float filamentDiameter = 0;
     private float filamentMultiplier = 0;
     private float feedRateMultiplier = 0;
+    private WhyAreWeWaitingState whyAreWeWaitingState = WhyAreWeWaitingState.NOT_WAITING;
 
     private NumberFormat numberFormatter = NumberFormat.getNumberInstance();
 
@@ -290,6 +293,11 @@ public class StatusResponse extends RoboxRxPacket
         return feedRateMultiplier;
     }
 
+    public WhyAreWeWaitingState getWhyAreWeWaitingState()
+    {
+        return whyAreWeWaitingState;
+    }
+
     /*
      * Errors...
      */
@@ -455,6 +463,10 @@ public class StatusResponse extends RoboxRxPacket
 
             this.headFanOn = (byteData[byteOffset] & 1) > 0 ? true : false;
             byteOffset += 1;
+
+            String whyAreWeWaitingStateString = new String(byteData, byteOffset, 1, charsetToUse);
+            byteOffset += 1;
+            this.whyAreWeWaitingState = WhyAreWeWaitingState.modeFromValue(Integer.valueOf(whyAreWeWaitingStateString, 16));
 
             String headEEPROMStateString = new String(byteData, byteOffset, 1, charsetToUse);
             byteOffset += 1;

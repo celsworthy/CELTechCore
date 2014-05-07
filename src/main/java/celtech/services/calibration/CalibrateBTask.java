@@ -10,6 +10,7 @@ import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
+import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.services.ControllableService;
 import java.util.ResourceBundle;
 import javafx.concurrent.Task;
@@ -64,19 +65,11 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
             case INITIALISING:
                 try
                 {
-                    printerToUse.transmitDirectGCode("G90", false);
-                    waitOnBusy();
-                    printerToUse.transmitDirectGCode("G28 X Y", false);
-                    waitOnBusy();
-                    printerToUse.transmitDirectGCode("G0 X116.5 Y75", false);
-                    waitOnBusy();
-                    printerToUse.transmitDirectGCode("G28 Z", false);
+                    printerToUse.transmitDirectGCode("M104", false);
+                    printerToUse.transmitStoredGCode("Home_all");
                     waitOnBusy();
                     printerToUse.transmitDirectGCode("G0 Z50", false);
                     waitOnBusy();
-                    printerToUse.transmitDirectGCode("G0 B0", false);
-                    waitOnBusy();
-                    printerToUse.transmitDirectGCode("M104", false);
                     success = true;
                 } catch (RoboxCommsException ex)
                 {
@@ -129,6 +122,9 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                 }
                 break;
             case PRE_CALIBRATION_PRIMING:
+                success = extrudeUntilStall();
+                break;
+            case POST_CALIBRATION_PRIMING:
                 success = extrudeUntilStall();
                 break;
             case CONFIRM_MATERIAL_EXTRUDING:
@@ -219,10 +215,18 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
 
     private void waitOnBusy() throws InterruptedException
     {
-        Thread.sleep(100);
-        while (printerToUse.busyProperty().get() == true && isCancelled() == false)
+        try
         {
-            Thread.sleep(100);
+            StatusResponse response = printerToUse.transmitStatusRequest();
+
+            while (response.isBusyStatus() == true && isCancelled() == false)
+            {
+                Thread.sleep(100);
+                response = printerToUse.transmitStatusRequest();
+            }
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error requesting status");
         }
     }
 

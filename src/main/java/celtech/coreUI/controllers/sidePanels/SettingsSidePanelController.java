@@ -54,76 +54,76 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class SettingsSidePanelController implements Initializable, SidePanelManager, PopupCommandReceiver
 {
-
+    
     private Stenographer steno = StenographerFactory.getStenographer(SettingsSidePanelController.class.getName());
     private ObservableList<Printer> printerStatusList = null;
     private SettingsScreenState settingsScreenState = null;
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
-
+    
     @FXML
     private ComboBox<Printer> printerChooser;
-
+    
     @FXML
     private ComboBox<Filament> materialChooser;
-
+    
     @FXML
     private ComboBox<RoboxProfile> customProfileChooser;
-
+    
     @FXML
     private Label customSettingsLabel;
-
+    
     @FXML
     private Slider qualityChooser;
-
+    
     @FXML
     private VBox supportVBox;
-
+    
     @FXML
     private VBox customProfileVBox;
-
+    
     @FXML
     private ToggleGroup supportMaterialGroup;
-
+    
     @FXML
     private RadioButton noSupportRadioButton;
-
+    
     @FXML
     private RadioButton autoSupportRadioButton;
-
+    
     @FXML
     void go(MouseEvent event)
     {
         settingsScreenState.getSettings().writeToFile("/tmp/settings.dat");
     }
-
+    
     private RoboxProfile draftSettings = PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
     private RoboxProfile normalSettings = PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.normalSettingsProfileName);
     private RoboxProfile fineSettings = PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.fineSettingsProfileName);
     private RoboxProfile customSettings = null;
     private RoboxProfile lastSettings = null;
-
+    
     private ChangeListener<Toggle> nozzleSelectionListener = null;
     private ChangeListener<Boolean> reelDataChangedListener = null;
-
+    
     private ObservableList<Filament> availableFilaments = FXCollections.observableArrayList();
     private ObservableList<RoboxProfile> availableProfiles = FXCollections.observableArrayList();
-
+    
     private Printer currentPrinter = null;
     private Filament currentlyLoadedFilament = null;
-
+    
     private VBox createMaterialPage = null;
     private ModalDialog createMaterialDialogue = null;
     private int saveMaterialAction = 0;
     private int cancelMaterialSaveAction = 0;
-
+    
     private VBox createProfilePage = null;
     private ModalDialog createProfileDialogue = null;
     private int saveProfileAction = 0;
     private int cancelProfileSaveAction = 0;
-
+    
     private SettingsSlideOutPanelController slideOutController = null;
-
+    
     private MaterialDetailsController materialDetailsController = null;
     private ProfileDetailsController profileDetailsController = null;
 
@@ -137,7 +137,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         displayManager = DisplayManager.getInstance();
         settingsScreenState = SettingsScreenState.getInstance();
         printerStatusList = RoboxCommsManager.getInstance().getPrintStatusList();
-
+        
         try
         {
             FXMLLoader createMaterialPageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlUtilityPanelResourcePath + "materialDetails.fxml"), DisplayManager.getLanguageBundle());
@@ -146,17 +146,17 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             materialDetailsController.updateMaterialData(new Filament("", MaterialType.ABS, null,
                                                                       0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, true));
             materialDetailsController.showButtons(false);
-
+            
             createMaterialDialogue = new ModalDialog(DisplayManager.getLanguageBundle().getString("sidePanel_settings.createMaterialDialogueTitle"));
             createMaterialDialogue.setContent(createMaterialPage);
             saveMaterialAction = createMaterialDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Save"), materialDetailsController.getProfileNameInvalidProperty());
             cancelMaterialSaveAction = createMaterialDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Cancel"));
-
+            
         } catch (Exception ex)
         {
             steno.error("Failed to load material creation page");
         }
-
+        
         FilamentContainer.getUserFilamentList().addListener(new ListChangeListener<Filament>()
         {
             @Override
@@ -165,14 +165,14 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 updateFilamentList();
             }
         });
-
+        
         try
         {
             FXMLLoader createProfilePageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetails.fxml"), DisplayManager.getLanguageBundle());
             createProfilePage = createProfilePageLoader.load();
             profileDetailsController = createProfilePageLoader.getController();
             profileDetailsController.showButtons(false);
-
+            
             createProfileDialogue = new ModalDialog(DisplayManager.getLanguageBundle().getString("sidePanel_settings.createProfileDialogueTitle"));
             createProfileDialogue.setContent(createProfilePage);
             saveProfileAction = createProfileDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Save"), profileDetailsController.getProfileNameInvalidProperty());
@@ -181,7 +181,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         {
             steno.error("Failed to load profile creation page");
         }
-
+        
         qualityChooser.setLabelFormatter(new StringConverter<Double>()
         {
             @Override
@@ -190,7 +190,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 PrintQualityEnumeration selectedQuality = PrintQualityEnumeration.fromEnumPosition(n.intValue());
                 return selectedQuality.getFriendlyName();
             }
-
+            
             @Override
             public Double fromString(String s)
             {
@@ -198,7 +198,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 return (double) selectedQuality.getEnumPosition();
             }
         });
-
+        
         settingsScreenState.setPrintQuality(PrintQualityEnumeration.DRAFT);
         settingsScreenState.setSettings(draftSettings);
         if (draftSettings.support_materialProperty().get() == true)
@@ -208,7 +208,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         {
             noSupportRadioButton.selectedProperty().set(true);
         }
-
+        
         qualityChooser.valueProperty().addListener(new ChangeListener<Number>()
         {
             @Override
@@ -218,12 +218,12 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 {
                     DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
                 }
-
+                
                 PrintQualityEnumeration quality = PrintQualityEnumeration.fromEnumPosition(t1.intValue());
                 settingsScreenState.setPrintQuality(quality);
-
+                
                 RoboxProfile settings = null;
-
+                
                 switch (quality)
                 {
                     case DRAFT:
@@ -237,11 +237,12 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         break;
                     case CUSTOM:
                         settings = customSettings;
+                        customProfileChooser.getSelectionModel().selectFirst();
                         break;
                     default:
                         break;
                 }
-
+                
                 if (settings != null)
                 {
                     if (settings.support_materialProperty().get() == true)
@@ -252,16 +253,16 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         noSupportRadioButton.selectedProperty().set(true);
                     }
                 }
-
+                
                 slideOutController.updateProfileData(settings);
                 settingsScreenState.setSettings(settings);
             }
         });
-
+        
         qualityChooser.setValue(PrintQualityEnumeration.DRAFT.getEnumPosition());
-
+        
         customProfileVBox.visibleProperty().bind(qualityChooser.valueProperty().isEqualTo(PrintQualityEnumeration.CUSTOM.getEnumPosition()));
-
+        
         Callback<ListView<RoboxProfile>, ListCell<RoboxProfile>> profileChooserCellFactory
                 = new Callback<ListView<RoboxProfile>, ListCell<RoboxProfile>>()
                 {
@@ -271,13 +272,13 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         return new ProfileChoiceListCell();
                     }
                 };
-
+        
         customProfileChooser.setCellFactory(profileChooserCellFactory);
         customProfileChooser.setButtonCell(profileChooserCellFactory.call(null));
         customProfileChooser.setItems(availableProfiles);
-
+        
         updateProfileList();
-
+        
         customProfileChooser.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<RoboxProfile>()
         {
             @Override
@@ -285,7 +286,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             {
                 if (newValue == PrintProfileContainer.createNewProfile)
                 {
-                    showCreateProfileDialogue();
+                    showCreateProfileDialogue(draftSettings.clone());
                 } else if (newValue != null)
                 {
                     slideOutController.updateProfileData(newValue);
@@ -300,7 +301,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 }
             }
         });
-
+        
         PrintProfileContainer.getUserProfileList().addListener(new ListChangeListener<RoboxProfile>()
         {
             @Override
@@ -310,10 +311,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             }
         });
         printerChooser.setItems(printerStatusList);
-
+        
         printerChooser.getSelectionModel()
                 .clearSelection();
-
+        
         printerChooser.getItems().addListener(new ListChangeListener<Printer>()
         {
             @Override
@@ -328,7 +329,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         {
                             Platform.runLater(new Runnable()
                             {
-
+                                
                                 @Override
                                 public void run()
                                 {
@@ -368,13 +369,13 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     } else if (change.wasUpdated())
                     {
                         steno.info("Update");
-
+                        
                     }
                 }
             }
         }
         );
-
+        
         printerChooser.getSelectionModel()
                 .selectedItemProperty().addListener(new ChangeListener<Printer>()
                         {
@@ -391,18 +392,18 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                                     currentPrinter = selectedPrinter;
                                     selectedPrinter.reelDataChangedProperty().addListener(reelDataChangedListener);
                                 }
-
+                                
                                 if (selectedPrinter == null)
                                 {
                                     currentPrinter = null;
                                 }
-
+                                
                                 settingsScreenState.setSelectedPrinter(selectedPrinter);
-
+                                
                             }
                 }
                 );
-
+        
         Callback<ListView<Filament>, ListCell<Filament>> materialChooserCellFactory
                 = new Callback<ListView<Filament>, ListCell<Filament>>()
                 {
@@ -412,11 +413,11 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         return new MaterialChoiceListCell();
                     }
                 };
-
+        
         materialChooser.setCellFactory(materialChooserCellFactory);
         materialChooser.setButtonCell(materialChooserCellFactory.call(null));
         materialChooser.setItems(availableFilaments);
-
+        
         materialChooser.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Filament>()
         {
             @Override
@@ -438,7 +439,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 }
             }
         });
-
+        
         reelDataChangedListener = new ChangeListener<Boolean>()
         {
             @Override
@@ -448,9 +449,9 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 updateFilamentList();
             }
         };
-
+        
         supportVBox.visibleProperty().bind(qualityChooser.valueProperty().isNotEqualTo(PrintQualityEnumeration.CUSTOM.getEnumPosition()));
-
+        
         supportMaterialGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>()
         {
             @Override
@@ -460,7 +461,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 {
                     DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
                 }
-
+                
                 if (newValue == noSupportRadioButton)
                 {
                     settingsScreenState.getSettings().setSupport_material(false);
@@ -470,31 +471,38 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 }
             }
         });
-
+        
         updateFilamentList();
     }
-
+    
     private void updateProfileList()
     {
+        RoboxProfile selectedProfile = customProfileChooser.getSelectionModel().getSelectedItem();
+        
         availableProfiles.clear();
         availableProfiles.addAll(PrintProfileContainer.getUserProfileList());
         availableProfiles.add(PrintProfileContainer.createNewProfile);
+        
+        if (selectedProfile != null)
+        {
+            customProfileChooser.getSelectionModel().select(selectedProfile);
+        }
     }
-
+    
     private void updateFilamentList()
     {
         availableFilaments.clear();
-
+        
         if (currentlyLoadedFilament != null)
         {
             availableFilaments.add(currentlyLoadedFilament);
             materialChooser.getSelectionModel().select(currentlyLoadedFilament);
         }
-
+        
         availableFilaments.addAll(FilamentContainer.getUserFilamentList());
         availableFilaments.add(FilamentContainer.createNewFilament);
     }
-
+    
     private void populatePrinterChooser()
     {
         for (Printer printer : printerStatusList)
@@ -502,18 +510,18 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             printerChooser.getItems().add(printer);
         }
     }
-
+    
     @Override
     public void configure(Initializable slideOutController)
     {
         this.slideOutController = (SettingsSlideOutPanelController) slideOutController;
         this.slideOutController.provideReceiver(this);
-        this.slideOutController.updateProfileData(settingsScreenState.getSettings());
+        this.slideOutController.updateProfileData(draftSettings);
         this.slideOutController.updateFilamentData(settingsScreenState.getFilament());
         updateFilamentList();
         updateProfileList();
     }
-
+    
     @Override
     public void triggerSaveAs(Object source)
     {
@@ -534,10 +542,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             settings.getProfileNameProperty().set(filename);
             settings.setMutable(true);
             profileDetailsController.updateProfileData(settings);
-            showCreateProfileDialogue();
+            showCreateProfileDialogue(settings);
         }
     }
-
+    
     private int showCreateMaterialDialogue()
     {
         int response = createMaterialDialogue.show();
@@ -561,13 +569,12 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 //            }
 //            qualityChooser.adjustValue(PrintQualityEnumeration.CUSTOM.getEnumPosition());
         }
-
+        
         return response;
     }
-
-    private int showCreateProfileDialogue()
+    
+    private int showCreateProfileDialogue(RoboxProfile dataToUse)
     {
-        RoboxProfile dataToUse = draftSettings.clone();
         dataToUse.setMutable(true);
         profileDetailsController.updateProfileData(dataToUse);
         int response = createProfileDialogue.show();
@@ -588,7 +595,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             }
             qualityChooser.adjustValue(PrintQualityEnumeration.CUSTOM.getEnumPosition());
         }
-
+        
         return response;
     }
 }

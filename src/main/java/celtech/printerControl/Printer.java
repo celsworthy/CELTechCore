@@ -229,7 +229,6 @@ public class Printer
     /*
      * From printer utils
      */
-    private boolean sendInProgress = false;
     private String fileID = null;
     private int sequenceNumber = 0;
     private static final int bufferSize = 512;
@@ -1315,9 +1314,18 @@ public class Printer
                         bedTemperatureDataPoints.get(pointCounter).setYValue(bedTemperatureDataPoints.get(pointCounter + 1).getYValue());
                         nozzleTemperatureDataPoints.get(pointCounter).setYValue(nozzleTemperatureDataPoints.get(pointCounter + 1).getYValue());
                     }
+
                     ambientTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(statusResponse.getAmbientTemperature());
-                    bedTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(statusResponse.getBedTemperature());
-                    nozzleTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(statusResponse.getNozzleTemperature());
+
+                    if (statusResponse.getBedTemperature() < ApplicationConfiguration.maxTempToDisplayOnGraph && statusResponse.getBedTemperature() > ApplicationConfiguration.minTempToDisplayOnGraph)
+                    {
+                        bedTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(statusResponse.getBedTemperature());
+                    }
+
+                    if (statusResponse.getNozzleTemperature() < ApplicationConfiguration.maxTempToDisplayOnGraph && statusResponse.getNozzleTemperature() > ApplicationConfiguration.minTempToDisplayOnGraph)
+                    {
+                        nozzleTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(statusResponse.getNozzleTemperature());
+                    }
                 }
 
                 ambientTargetPoint.setYValue(statusResponse.getAmbientTargetTemperature());
@@ -2030,24 +2038,17 @@ public class Printer
     public StatusResponse transmitStatusRequest() throws RoboxCommsException
     {
         StatusRequest statusRequest = (StatusRequest) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.STATUS_REQUEST);
-        return (StatusResponse)printerCommsManager.submitForWrite(portName, statusRequest);
+        return (StatusResponse) printerCommsManager.submitForWrite(portName, statusRequest);
     }
 
     public boolean initialiseDataFileSend(String fileID) throws DatafileSendAlreadyInProgress, RoboxCommsException
     {
         boolean success = false;
-        if (sendInProgress)
-        {
-            throw new DatafileSendAlreadyInProgress();
-        } else
-        {
-            this.fileID = fileID;
-            success = transmitDataFileStart(fileID);
-            sendInProgress = true;
-            outputBuffer.delete(0, outputBuffer.length());
-            sequenceNumber = 0;
-            printInitiated = false;
-        }
+        this.fileID = fileID;
+        success = transmitDataFileStart(fileID);
+        outputBuffer.delete(0, outputBuffer.length());
+        sequenceNumber = 0;
+        printInitiated = false;
 
         return success;
     }
@@ -2072,11 +2073,6 @@ public class Printer
         }
 
         int remainingCharacters = hexDigits.length();
-
-        if (sendInProgress == false)
-        {
-            throw new DatafileSendNotInitialised();
-        }
 
         while (remainingCharacters > 0)
         {
@@ -2110,7 +2106,6 @@ public class Printer
                 {
                     steno.error("Error sending final data file chunk - seq " + sequenceNumber);
                 }
-                sendInProgress = false;
             } else if ((outputBuffer.capacity() - outputBuffer.length()) == 0)
             {
                 /*
@@ -2158,7 +2153,6 @@ public class Printer
     public void abortPrint()
     {
         printQueue.abortPrint();
-        sendInProgress = false;
     }
 
     public void pausePrint()

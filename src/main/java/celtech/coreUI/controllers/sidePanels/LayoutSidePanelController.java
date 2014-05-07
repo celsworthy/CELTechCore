@@ -230,7 +230,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         });
 
         modelDataTableView.getColumns().addAll(modelNameColumn, scaleColumn, rotationColumn);
-        modelDataTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        modelDataTableView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         modelDataTableView.setEditable(true);
         modelDataTableView.getSortOrder().add(modelNameColumn);
 

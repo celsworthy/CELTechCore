@@ -145,19 +145,19 @@ public class PrinterHandler extends Thread
                 {
                     case FirmwareLoadTask.SDCARD_ERROR:
                         Notifier.showErrorNotification(languageBundle.getString("dialogs.firmwareUpgradeFailedTitle"),
-                                languageBundle.getString("dialogs.sdCardError"));
+                                                       languageBundle.getString("dialogs.sdCardError"));
                         break;
                     case FirmwareLoadTask.FILE_ERROR:
                         Notifier.showErrorNotification(languageBundle.getString("dialogs.firmwareUpgradeFailedTitle"),
-                                languageBundle.getString("dialogs.firmwareFileError"));
+                                                       languageBundle.getString("dialogs.firmwareFileError"));
                         break;
                     case FirmwareLoadTask.OTHER_ERROR:
                         Notifier.showErrorNotification(languageBundle.getString("dialogs.firmwareUpgradeFailedTitle"),
-                                languageBundle.getString("dialogs.firmwareUpgradeFailedMessage"));
+                                                       languageBundle.getString("dialogs.firmwareUpgradeFailedMessage"));
                         break;
                     case FirmwareLoadTask.SUCCESS:
                         Notifier.showInformationNotification(languageBundle.getString("dialogs.firmwareUpgradeSuccessTitle"),
-                                languageBundle.getString("dialogs.firmwareUpgradeSuccessMessage"));
+                                                             languageBundle.getString("dialogs.firmwareUpgradeSuccessMessage"));
                         break;
                 }
                 firmwareCheckInProgress = false;
@@ -171,7 +171,7 @@ public class PrinterHandler extends Thread
             {
 
                 Notifier.showErrorNotification(DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedTitle"),
-                        DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedMessage"));
+                                               DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedMessage"));
                 firmwareCheckInProgress = false;
             }
         });
@@ -283,7 +283,7 @@ public class PrinterHandler extends Thread
                                             {
                                                 firmwareLoadService.reset();
                                                 firmwareLoadService.setPrinterToUse(printerToUse);
-                                                firmwareLoadService.setFirmwareFileToLoad(ApplicationConfiguration.getApplicationInstallDirectory(this.getClass()) + "robox_r" + requiredFirmwareVersion + ".bin");
+                                                firmwareLoadService.setFirmwareFileToLoad(ApplicationConfiguration.getCommonApplicationDirectory() + "robox_r" + requiredFirmwareVersion + ".bin");
                                                 firmwareLoadService.start();
                                             } else if (upgradeApplicationResponse == firmwareDowngradeNotOK)
                                             {
@@ -325,7 +325,7 @@ public class PrinterHandler extends Thread
                                             {
                                                 firmwareLoadService.reset();
                                                 firmwareLoadService.setPrinterToUse(printerToUse);
-                                                firmwareLoadService.setFirmwareFileToLoad(ApplicationConfiguration.getApplicationInstallDirectory(this.getClass()) + "robox_r" + requiredFirmwareVersion + ".bin");
+                                                firmwareLoadService.setFirmwareFileToLoad(ApplicationConfiguration.getCommonApplicationDirectory() + "robox_r" + requiredFirmwareVersion + ".bin");
                                                 firmwareLoadService.start();
                                             } else if (upgradeApplicationResponse == firmwareUpgradeNotOK)
                                             {
@@ -589,7 +589,13 @@ public class PrinterHandler extends Thread
                     if (packetType.containsLengthField())
                     {
                         byte[] lengthData = serialPort.readBytes(packetType.getLengthFieldSize());
+
                         int payloadSize = Integer.valueOf(new String(lengthData), 16);
+                        if (packetType == RxPacketTypeEnum.LIST_FILES_RESPONSE)
+                        {
+                            payloadSize = payloadSize * 16; 
+                        }
+
                         inputBuffer = new byte[1 + packetType.getLengthFieldSize() + payloadSize];
                         for (int i = 0; i < packetType.getLengthFieldSize(); i++)
                         {

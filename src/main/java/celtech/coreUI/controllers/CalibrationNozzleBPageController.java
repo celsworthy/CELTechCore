@@ -49,9 +49,6 @@ public class CalibrationNozzleBPageController implements Initializable
     private String ensureHeadIsCleanInstruction = null;
     private String calibrationCommencedMessage = null;
     private String calibrationSucceededMessage = null;
-    private String pressAKeyMessage = null;
-    private String pressAKeyToContinueMessage = null;
-    private String preparingExtruderMessage = null;
     private ResourceBundle i18nBundle = null;
     private Printer printerToUse = null;
     private final float bOffsetStartingValue = 0.8f;
@@ -176,7 +173,7 @@ public class CalibrationNozzleBPageController implements Initializable
                 break;
             case HEAD_CLEAN_CHECK_POST_CALIBRATION:
                 currentNozzleNumber = 0;
-                setState(NozzleBCalibrationState.CONFIRM_NO_MATERIAL);
+                setState(NozzleBCalibrationState.POST_CALIBRATION_PRIMING);
                 break;
             case CONFIRM_NO_MATERIAL:
                 setState(NozzleBCalibrationState.FAILED);
@@ -271,6 +268,7 @@ public class CalibrationNozzleBPageController implements Initializable
 
             printerToUse.transmitDirectGCode("G0 B0", false);
             printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+            printerToUse.transmitStoredGCode("Park");
         } catch (RoboxCommsException ex)
         {
             steno.error("Error in needle valve calibration - mode=" + state.name());
@@ -293,9 +291,6 @@ public class CalibrationNozzleBPageController implements Initializable
 
         initialisingMessage = i18nBundle.getString("calibrationPanel.BCalibrationInitialising");
         heatingMessage = i18nBundle.getString("calibrationPanel.BCalibrationHeating");
-        pressAKeyMessage = i18nBundle.getString("calibrationPanel.pressAKey");
-        preparingExtruderMessage = i18nBundle.getString("calibrationPanel.preparingExtruder");
-        pressAKeyToContinueMessage = i18nBundle.getString("calibrationPanel.pressAKeyToContinue");
         readyToBeginMessage = i18nBundle.getString("calibrationPanel.readyToBeginTest");
         primingNozzleMessage = i18nBundle.getString("calibrationPanel.primingNozzle");
         isMaterialExtrudingInstructionNozzle0 = i18nBundle.getString("calibrationPanel.isMaterialExtrudingNozzle0");
@@ -531,6 +526,24 @@ public class CalibrationNozzleBPageController implements Initializable
                 calibrationStatus.setText(ensureHeadIsCleanMessage);
                 calibrationInstruction.setText(ensureHeadIsCleanInstruction);
                 break;
+            case POST_CALIBRATION_PRIMING:
+                startCalibrationButton.setVisible(false);
+                cancelCalibrationButton.setVisible(true);
+                yesButton.setVisible(false);
+                noButton.setVisible(false);
+                calibrationStatus.setText(primingNozzleMessage);
+                calibrationInstruction.setText("");
+
+                nozzlePosition = 0;
+                calibrationTask = new CalibrateBTask(state);
+                calibrationTask.setOnSucceeded(succeededTaskHandler);
+                calibrationTask.setOnFailed(failedTaskHandler);
+                TaskController.getInstance().manageTask(calibrationTask);
+
+                Thread postCalibrationPrimingTaskThread = new Thread(calibrationTask);
+                postCalibrationPrimingTaskThread.setName("Calibration - post calibration priming");
+                postCalibrationPrimingTaskThread.start();
+                break;
             case CONFIRM_NO_MATERIAL:
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
@@ -588,6 +601,7 @@ public class CalibrationNozzleBPageController implements Initializable
 
                     printerToUse.transmitDirectGCode("G0 B0", false);
                     printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+                    printerToUse.transmitStoredGCode("Park");
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in needle valve calibration - mode=" + state.name());
@@ -600,8 +614,18 @@ public class CalibrationNozzleBPageController implements Initializable
                 noButton.setVisible(false);
                 calibrationStatus.setText(nozzleCalibrationFailedMessage);
                 calibrationInstruction.setText("");
+
+                try
+                {
+                    printerToUse.transmitDirectGCode("G0 B0", false);
+                    printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+                    printerToUse.transmitStoredGCode("Park");
+
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error clearing up after failed calibration");
+                }
                 break;
         }
     }
-
 }

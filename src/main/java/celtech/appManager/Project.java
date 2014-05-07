@@ -30,7 +30,7 @@ public class Project implements Serializable
     private ObjectProperty<ProjectMode> projectMode = new SimpleObjectProperty<>(ProjectMode.NONE);
     private RoboxProfile customSettings = null;
     private BooleanProperty isDirty = new SimpleBooleanProperty(false);
-    private String lastPrintJobID = null;
+    private String lastPrintJobID = "";
 
     public Project()
     {
@@ -155,7 +155,7 @@ public class Project implements Serializable
 
     public void projectModified()
     {
-        lastPrintJobID = null;
+        lastPrintJobID = "";
     }
 
     public String getLastPrintJobID()

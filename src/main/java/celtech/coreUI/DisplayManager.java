@@ -312,6 +312,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 sidePanelControllers.put(mode, sidePanelController);
             } catch (Exception ex)
             {
+                ex.printStackTrace();
                 sidePanels.put(mode, null);
                 sidePanelControllers.put(mode, null);
                 steno.error("Couldn't load side panel for mode:" + mode + ". " + ex);

@@ -17,13 +17,14 @@ public class SlicerManager
 {
 
     private Stenographer steno = null;
-    private static final String applicationDirectory = ApplicationConfiguration.getApplicationInstallDirectory(SlicerManager.class);
+    private static String applicationDirectory = null;
 
     public SlicerManager()
     {
 //        this.application = application;
         steno = StenographerFactory.getStenographer(this.getClass().getName());
         steno.changeLogLevel(LogLevel.DEBUG);
+        applicationDirectory = ApplicationConfiguration.getCommonApplicationDirectory();
     }
 
     public void sliceModel(String stlFilename, String gcodeFilename, String configFilename)

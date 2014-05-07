@@ -6,6 +6,7 @@
 package celtech.coreUI.controllers.sidePanels;
 
 import celtech.appManager.ApplicationStatus;
+import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.HeaterMode;
 import celtech.coreUI.DisplayManager;
@@ -114,7 +115,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     @FXML
     private HBox printerStatusHBox;
-    
+
     @FXML
     private VBox temperatureVBox;
 
@@ -181,9 +182,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private Printer lastSelectedPrinter = null;
 
     private DisplayManager displayManager = null;
-
-    private final float maxTempToDisplay = 300;
-    private final float minTempToDisplay = 35;
 
     private final int MAX_DATA_POINTS = 180;
 
@@ -378,9 +376,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                         try
                         {
                             printerToEdit.transmitWritePrinterID(printerToEdit.getPrintermodel().get(), printerToEdit.getPrinteredition().get(),
-                                    printerToEdit.getPrinterweekOfManufacture().get(), printerToEdit.getPrinteryearOfManufacture().get(),
-                                    printerToEdit.getPrinterpoNumber().get(), printerIDDialog.getChosenPrinterID(),
-                                    "0", printerIDDialog.getChosenPrinterName(), printerIDDialog.getColour());
+                                                                 printerToEdit.getPrinterweekOfManufacture().get(), printerToEdit.getPrinteryearOfManufacture().get(),
+                                                                 printerToEdit.getPrinterpoNumber().get(), printerIDDialog.getChosenPrinterID(),
+                                                                 "0", printerIDDialog.getChosenPrinterName(), printerIDDialog.getColour());
                             printerToEdit.transmitReadPrinterID();
                         } catch (RoboxCommsException ex)
                         {
@@ -732,8 +730,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         if (selectedPrinter != null)
         {
             // Temperatures / Heaters / Fans
-            nozzleTemperatureLabel.textProperty().bind(Bindings.when(selectedPrinter.printerConnectedProperty().not()).then("-").otherwise(Bindings.when(selectedPrinter.extruderTemperatureProperty().greaterThan(maxTempToDisplay)).then(tempOutOfRangeHighString)
-                    .otherwise(Bindings.when(selectedPrinter.extruderTemperatureProperty().lessThan(minTempToDisplay)).then(tempOutOfRangeLowString).otherwise(selectedPrinter.extruderTemperatureProperty().asString("%d°C")))));
+            nozzleTemperatureLabel.textProperty().bind(Bindings.when(selectedPrinter.printerConnectedProperty().not()).then("-").otherwise(Bindings.when(selectedPrinter.extruderTemperatureProperty().greaterThan(ApplicationConfiguration.maxTempToDisplayOnGraph)).then(tempOutOfRangeHighString)
+                    .otherwise(Bindings.when(selectedPrinter.extruderTemperatureProperty().lessThan(ApplicationConfiguration.minTempToDisplayOnGraph)).then(tempOutOfRangeLowString).otherwise(selectedPrinter.extruderTemperatureProperty().asString("%d°C")))));
             nozzleFirstLayerTargetTemperature.setText(String.format("%d", selectedPrinter.getNozzleFirstLayerTargetTemperature()));
             selectedPrinter.nozzleFirstLayerTargetTemperatureProperty().addListener(targetNozzleFirstLayerTempListener);
             nozzleTargetTemperature.setText(String.format("%d", selectedPrinter.getNozzleTargetTemperature()));
@@ -742,8 +740,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             nozzleTargetTemperature.visibleProperty().bind(selectedPrinter.getNozzleHeaterModeProperty().isEqualTo(HeaterMode.NORMAL));
             nozzleTemperaturePlaceholder.visibleProperty().bind(selectedPrinter.getNozzleHeaterModeProperty().isEqualTo(HeaterMode.OFF));
 
-            bedTemperatureLabel.textProperty().bind(Bindings.when(selectedPrinter.printerConnectedProperty().not()).then("-").otherwise(Bindings.when(selectedPrinter.bedTemperatureProperty().greaterThan(maxTempToDisplay)).then(tempOutOfRangeHighString)
-                    .otherwise(Bindings.when(selectedPrinter.bedTemperatureProperty().lessThan(minTempToDisplay)).then(tempOutOfRangeLowString).otherwise(selectedPrinter.bedTemperatureProperty().asString("%d°C")))));
+            bedTemperatureLabel.textProperty().bind(Bindings.when(selectedPrinter.printerConnectedProperty().not()).then("-").otherwise(Bindings.when(selectedPrinter.bedTemperatureProperty().greaterThan(ApplicationConfiguration.maxTempToDisplayOnGraph)).then(tempOutOfRangeHighString)
+                    .otherwise(Bindings.when(selectedPrinter.bedTemperatureProperty().lessThan(ApplicationConfiguration.minTempToDisplayOnGraph)).then(tempOutOfRangeLowString).otherwise(selectedPrinter.bedTemperatureProperty().asString("%d°C")))));
             bedFirstLayerTargetTemperature.setText(String.format("%d", selectedPrinter.getBedFirstLayerTargetTemperature()));
             selectedPrinter.bedFirstLayerTargetTemperatureProperty().addListener(targetBedFirstLayerTempListener);
             bedTargetTemperature.setText(String.format("%d", selectedPrinter.getBedTargetTemperature()));
@@ -752,7 +750,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             bedTargetTemperature.visibleProperty().bind(selectedPrinter.getBedHeaterModeProperty().isEqualTo(HeaterMode.NORMAL));
             bedTemperaturePlaceholder.visibleProperty().bind(selectedPrinter.getBedHeaterModeProperty().isEqualTo(HeaterMode.OFF));
 
-            ambientTemperatureLabel.textProperty().bind(Bindings.when(selectedPrinter.printerConnectedProperty().not()).then("-").otherwise(Bindings.when(selectedPrinter.ambientTemperatureProperty().greaterThan(maxTempToDisplay)).then(tempOutOfRangeHighString).otherwise(selectedPrinter.ambientTemperatureProperty().asString("%d°C"))));
+            ambientTemperatureLabel.textProperty().bind(Bindings.when(selectedPrinter.printerConnectedProperty().not()).then("-").otherwise(Bindings.when(selectedPrinter.ambientTemperatureProperty().greaterThan(ApplicationConfiguration.maxTempToDisplayOnGraph)).then(tempOutOfRangeHighString).otherwise(selectedPrinter.ambientTemperatureProperty().asString("%d°C"))));
             ambientTargetTemperature.setText(String.format("%d", selectedPrinter.getAmbientTargetTemperature()));
             selectedPrinter.ambientTargetTemperatureProperty().addListener(targetAmbientTempListener);
             /*

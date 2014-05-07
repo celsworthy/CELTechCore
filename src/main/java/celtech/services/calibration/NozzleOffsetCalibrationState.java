@@ -8,7 +8,7 @@ package celtech.services.calibration;
 public enum NozzleOffsetCalibrationState
 {
 
-    IDLE, INITIALISING, MEASURE_Z_DIFFERENCE, INSERT_PAPER, PROBING, FINISHED, FAILED;
+    IDLE, INITIALISING, HEAD_CLEAN_CHECK, MEASURE_Z_DIFFERENCE, INSERT_PAPER, PROBING, FINISHED, FAILED;
 
     public NozzleOffsetCalibrationState getNextState()
     {

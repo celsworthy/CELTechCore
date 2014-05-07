@@ -39,7 +39,11 @@ public class CalibrationNozzleOffsetPageController implements Initializable
     private NozzleOffsetCalibrationState state = NozzleOffsetCalibrationState.IDLE;
 
     private String readyToBeginMessage = null;
+    private String peiBedRemovedInstruction = null;
+    private String reinstallPEIBedInstruction = null;
     private String initialisingMessage = null;
+    private String ensureHeadIsCleanMessage = null;
+    private String ensureHeadIsCleanInstruction = null;
     private String insertPieceOfPaperMessage = null;
     private String isThePaperInPlaceInstruction = null;
     private String moveThePieceOfPaperMessage = null;
@@ -134,6 +138,9 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                 }
                 setState(NozzleOffsetCalibrationState.PROBING);
                 break;
+            case HEAD_CLEAN_CHECK:
+                setState(NozzleOffsetCalibrationState.MEASURE_Z_DIFFERENCE);
+                break;
         }
     }
 
@@ -145,13 +152,38 @@ public class CalibrationNozzleOffsetPageController implements Initializable
     @FXML
     void tooLooseAction(ActionEvent event)
     {
-        zco += 0.1;
+        zco -= 0.05;
+
+        try
+        {
+            printerToUse.transmitDirectGCode("G0 Z" + zco, false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error changing Z height");
+        }
     }
 
     @FXML
     void tooTightAction(ActionEvent event)
     {
-        zco -= 0.1;
+        zco += 0.05;
+
+        if (zco <= 0)
+        {
+            zco = 0;
+            tooLooseButton.setVisible(false);
+        } else
+        {
+            tooLooseButton.setVisible(true);
+        }
+
+        try
+        {
+            printerToUse.transmitDirectGCode("G0 Z" + zco, false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error changing Z height");
+        }
     }
 
     @FXML
@@ -204,8 +236,9 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                                                      savedHeadData.getHeadHours());
             }
 
-            printerToUse.transmitDirectGCode("G0 Z25", false);
             printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+            printerToUse.transmitDirectGCode("G90", false);
+            printerToUse.transmitDirectGCode("G0 Z25", false);
         } catch (RoboxCommsException ex)
         {
             steno.error("Error in nozzle offset calibration - mode=" + state.name());
@@ -227,7 +260,10 @@ public class CalibrationNozzleOffsetPageController implements Initializable
         i18nBundle = DisplayManager.getLanguageBundle();
 
         readyToBeginMessage = i18nBundle.getString("calibrationPanel.readyToBeginTest");
+        peiBedRemovedInstruction = i18nBundle.getString("calibrationPanel.peiBedRemoved");
         initialisingMessage = i18nBundle.getString("calibrationPanel.BCalibrationInitialising");
+        ensureHeadIsCleanMessage = i18nBundle.getString("calibrationPanel.ensureHeadIsCleanMessage");
+        ensureHeadIsCleanInstruction = i18nBundle.getString("calibrationPanel.ensureHeadIsCleanInstruction");
         insertPieceOfPaperMessage = i18nBundle.getString("calibrationPanel.insertPieceOfPaper");
         isThePaperInPlaceInstruction = i18nBundle.getString("calibrationPanel.isThePaperInPlace");
         moveThePieceOfPaperMessage = i18nBundle.getString("calibrationPanel.moveThePaperMessage");
@@ -235,6 +271,7 @@ public class CalibrationNozzleOffsetPageController implements Initializable
         calibrationSucceededMessage = i18nBundle.getString("calibrationPanel.calibrationSucceededMessage");
         nozzleCalibrationFailedMessage = i18nBundle.getString("calibrationPanel.nozzleCalibrationFailed");
         measuringZOffsetMessage = i18nBundle.getString("calibrationPanel.measuringZOffset");
+        reinstallPEIBedInstruction = i18nBundle.getString("calibrationPanel.reinsertPEIBed");
 
         StatusScreenState statusScreenState = StatusScreenState.getInstance();
         statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
@@ -273,7 +310,7 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                 tooLooseButton.setVisible(false);
                 tooTightButton.setVisible(false);
                 justRightButton.setVisible(false);
-                calibrationInstruction.setText("");
+                calibrationInstruction.setText(peiBedRemovedInstruction);
                 calibrationStatus.setText(readyToBeginMessage);
                 break;
             case INITIALISING:
@@ -303,11 +340,11 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                                                          defaultHead.getNozzle1XOffset(),
                                                          defaultHead.getNozzle1YOffset(),
                                                          0,
-                                                         savedHeadData.getNozzle1ZOffset(),
+                                                         savedHeadData.getNozzle1BOffset(),
                                                          defaultHead.getNozzle2XOffset(),
                                                          defaultHead.getNozzle2YOffset(),
                                                          0,
-                                                         savedHeadData.getNozzle2ZOffset(),
+                                                         savedHeadData.getNozzle2BOffset(),
                                                          savedHeadData.getLastFilamentTemperature(),
                                                          savedHeadData.getHeadHours());
                 } catch (RoboxCommsException ex)
@@ -323,6 +360,14 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                 Thread initialiseTaskThread = new Thread(calibrationTask);
                 initialiseTaskThread.setName("Calibration N - initialising");
                 initialiseTaskThread.start();
+                break;
+            case HEAD_CLEAN_CHECK:
+                startCalibrationButton.setVisible(false);
+                cancelCalibrationButton.setVisible(true);
+                yesButton.setVisible(true);
+                noButton.setVisible(false);
+                calibrationStatus.setText(ensureHeadIsCleanMessage);
+                calibrationInstruction.setText(ensureHeadIsCleanInstruction);
                 break;
             case MEASURE_Z_DIFFERENCE:
                 startCalibrationButton.setVisible(false);
@@ -360,7 +405,7 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(false);
                 noButton.setVisible(false);
-                tooLooseButton.setVisible(true);
+                tooLooseButton.setVisible(false);
                 tooTightButton.setVisible(true);
                 justRightButton.setVisible(true);
                 calibrationStatus.setText(moveThePieceOfPaperMessage);
@@ -375,7 +420,7 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                 tooTightButton.setVisible(false);
                 justRightButton.setVisible(false);
                 calibrationStatus.setText(calibrationSucceededMessage);
-                calibrationInstruction.setText("");
+                calibrationInstruction.setText(reinstallPEIBedInstruction);
 
                 try
                 {
@@ -386,14 +431,18 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                                                          savedHeadData.getTCal(),
                                                          savedHeadData.getNozzle1XOffset(),
                                                          savedHeadData.getNozzle1YOffset(),
-                                                         savedHeadData.getNozzle1ZOffset(),
-                                                         (float) (zco - (0.5 * zDifference)),
+                                                         (float) (-zco - (0.5 * zDifference)),
+                                                         savedHeadData.getNozzle1BOffset(),
                                                          savedHeadData.getNozzle2XOffset(),
                                                          savedHeadData.getNozzle2YOffset(),
-                                                         savedHeadData.getNozzle2ZOffset(),
-                                                         (float) (zco + (0.5 * zDifference)),
+                                                         (float) (-zco + (0.5 * zDifference)),
+                                                         savedHeadData.getNozzle2BOffset(),
                                                          savedHeadData.getLastFilamentTemperature(),
                                                          savedHeadData.getHeadHours());
+
+                    printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+                    printerToUse.transmitDirectGCode("G90", false);
+                    printerToUse.transmitDirectGCode("G0 Z25", false);
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in nozzle offset calibration - mode=" + state.name());
@@ -409,6 +458,16 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                 justRightButton.setVisible(false);
                 calibrationStatus.setText(nozzleCalibrationFailedMessage);
                 calibrationInstruction.setText("");
+
+                try
+                {
+                    printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+                    printerToUse.transmitDirectGCode("G90", false);
+                    printerToUse.transmitDirectGCode("G0 Z25", false);
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error clearing up after failed calibration");
+                }
                 break;
         }
     }

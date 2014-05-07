@@ -303,8 +303,6 @@ public class ProjectTab extends Tab
 //            gizmoOverlay = (AnchorPane) gizmoOverlayLoader.load();
 //            GizmoOverlayController gizmoOverlayController = gizmoOverlayLoader.getController();
 //            gizmoOverlayController.configure(viewManager);
-//            gizmoOverlayController.setXform(gizmoXform);
-//            gizmoOverlayController.setBase(basePane);
 //            viewManager.associateGizmoOverlayController(gizmoOverlayController);
 //
 //            gizmoOverlay.setRotationAxis(MathUtils.xAxis);
@@ -509,7 +507,7 @@ public class ProjectTab extends Tab
 
     public void selectModel(ModelContainer selectedModel)
     {
-        viewManager.selectModel(selectedModel);
+        viewManager.selectModel(selectedModel, false);
     }
 
     public void saveProject()

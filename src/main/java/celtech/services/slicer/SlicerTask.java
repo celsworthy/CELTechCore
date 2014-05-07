@@ -68,16 +68,16 @@ public class SlicerTask extends Task<SliceResult>
             commands.add("command.com");
             commands.add("/S");
             commands.add("/C");
-            commands.add("\"\"" + ApplicationConfiguration.getApplicationInstallDirectory(CoreTest.class) + "Slic3r\\slic3r-console.exe\" --load \"" + configFile + "\" -o \"" + tempGcodeFilenameWithPath + "\" \"" + tempModelFilenameWithPath + "\"\"");
+            commands.add("\"\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r-console.exe\" --load \"" + configFile + "\" -o \"" + tempGcodeFilenameWithPath + "\" \"" + tempModelFilenameWithPath + "\"\"");
         } else if (osName.startsWith("Windows"))
         {
             commands.add("cmd.exe");
             commands.add("/S");
             commands.add("/C");
-            commands.add("\"\"" + ApplicationConfiguration.getApplicationInstallDirectory(CoreTest.class) + "Slic3r\\slic3r-console.exe\" --load \"" + configFile + "\" -o \"" + tempGcodeFilenameWithPath + "\" \"" + tempModelFilenameWithPath + "\"\"");
+            commands.add("\"\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r-console.exe\" --load \"" + configFile + "\" -o \"" + tempGcodeFilenameWithPath + "\" \"" + tempModelFilenameWithPath + "\"\"");
         } else if (osName.equals("Mac OS X"))
         {
-            commands.add(ApplicationConfiguration.getApplicationInstallDirectory(CoreTest.class) + "Slic3r/slic3r-console");
+            commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r/slic3r-console");
             commands.add("--load");
             commands.add(configFile);
             commands.add("-o");

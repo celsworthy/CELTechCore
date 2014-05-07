@@ -196,6 +196,10 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         this.s.setPivotY(originalModelBounds.getMaxY());
         this.s.setPivotZ(centreZOffset);
 
+        this.ry.setPivotX(centreXOffset);
+        this.ry.setPivotY(originalModelBounds.getMaxY());
+        this.ry.setPivotZ(centreZOffset);
+
 //        steno.info("Bounds are " + originalModelBounds);
     }
 
@@ -679,22 +683,21 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         centreYOffset = offsetY;
         centreZOffset = offsetZ;
 
-        setRotationX(xrot);
-        setRotationY(yrot);
-        setRotationZ(zrot);
-
         configureModelOnLoad();
-        
+
         double loadedPositionX = translationX;
         double loadedPositionZ = translationZ - offsetZ;
-        
+
         translateTo(xCentre, zCentre);
 
 //        centreX = xCentre;
 //        centreY = yCentre;
 //        centreZ = zCentre;
-        
         scale(storedscale);
+        
+        setRotateX(xrot);
+        setRotateY(yrot);
+        setRotateZ(zrot);
     }
 
     private void readObjectNoData()

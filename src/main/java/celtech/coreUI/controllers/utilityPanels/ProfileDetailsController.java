@@ -35,6 +35,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -233,7 +234,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
     @FXML
     private TextField retractSpeed;
-    
+
     @FXML
     private HBox retractSpeedHBox;
 
@@ -297,7 +298,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         }
     }
 
-    private BooleanProperty profileNameInvalid = new SimpleBooleanProperty(true);
+    private BooleanProperty profileNameInvalid = new SimpleBooleanProperty(false);
 
     private final Image redcrossImage = new Image(CoreTest.class.getResource(ApplicationConfiguration.imageResourcePath + "redcross.png").toExternalForm());
     private final ImageView redcrossHolder = new ImageView(redcrossImage);
@@ -339,15 +340,15 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         profileNameField.setRight(redcrossHolder);
         profileNameField.getRight().visibleProperty().bind(profileNameInvalid.and(isDirty));
 
-        profileNameField.textProperty().addListener(new ChangeListener<String>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue)
-            {
-                validateProfileName();
-            }
-        });
-
+//        profileNameField.addEventHandler(KeyEvent.KEY_TYPED, new EventHandler<KeyEvent>() {
+//
+//            @Override
+//            public void handle(KeyEvent event)
+//            {
+//                    validateProfileName();
+//            }
+//        });
+                                                                                
         editingOptions.visibleProperty().bind(isDirty.and(showButtons).and(isMutable));
         notEditingOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable));
         immutableOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable.not()));
@@ -399,27 +400,27 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         };
 
         nozzle1Button.addEventFilter(MouseEvent.MOUSE_RELEASED, new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent mouseEvent)
-            {
-                if (nozzle1Button.equals(nozzleChoiceGroup.getSelectedToggle()))
-                {
-                    mouseEvent.consume();
-                }
-            }
+                             {
+                                 @Override
+                                 public void handle(MouseEvent mouseEvent)
+                                 {
+                                     if (nozzle1Button.equals(nozzleChoiceGroup.getSelectedToggle()))
+                                     {
+                                         mouseEvent.consume();
+                                     }
+                                 }
         });
 
         nozzle2Button.addEventFilter(MouseEvent.MOUSE_RELEASED, new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent mouseEvent)
-            {
-                if (nozzle2Button.equals(nozzleChoiceGroup.getSelectedToggle()))
-                {
-                    mouseEvent.consume();
-                }
-            }
+                             {
+                                 @Override
+                                 public void handle(MouseEvent mouseEvent)
+                                 {
+                                     if (nozzle2Button.equals(nozzleChoiceGroup.getSelectedToggle()))
+                                     {
+                                         mouseEvent.consume();
+                                     }
+                                 }
         });
 
         nozzleChoiceGroup.selectedToggleProperty().addListener(nozzleSelectionListener);
@@ -514,7 +515,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     {
         if (lastSettings != null)
         {
-            profileNameField.setText(newSettings.getProfileName());
             //Nozzle independent custom settings
             Bindings.unbindBidirectional(layerHeight.textProperty(), lastSettings.getLayer_height());
 
@@ -578,6 +578,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
             unbindNozzleParameters();
         }
 
+        profileNameField.setText(newSettings.getProfileName());
+
         Bindings.bindBidirectional(layerHeight.textProperty(), newSettings.getLayer_height(), floatConverter);
 
         perimeterNozzleChoice.getSelectionModel().select(newSettings.perimeter_nozzleProperty().get() - 1);
@@ -595,8 +597,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 //        ...);
 //            newSettings.getSupport_material_extrusion_width().bind(
 //        ...);
-
-        
         supportNozzleChoice.getSelectionModel().select(newSettings.support_material_nozzleProperty().get() - 1);
         newSettings.support_material_nozzleProperty().bind(supportNozzleChoice.getSelectionModel().selectedIndexProperty().add(1));
 

@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
@@ -413,56 +412,56 @@ public class PrintQueue implements ControllableService
         {
             boolean printFromScratchRequired = false;
 
-//            if (project.getLastPrintJobID() != null)
-//            {
-//                String jobUUID = project.getLastPrintJobID();
-//
-//                //Reprint the last job
-//                //Is it still on the printer?
-//                try
-//                {
-//                    ListFilesResponse listFilesResponse = associatedPrinter.transmitListFiles();
-//                    if (listFilesResponse.getPrintJobIDs().contains(jobUUID))
-//                    {
-//                        //Reprint directly from printer
-//                        steno.info("Printing job " + jobUUID + " from printer store");
-//                        Notifier.showInformationNotification(notificationTitle, i18nBundle.getString("notification.reprintInitiated"));
-//                        associatedPrinter.initiatePrint(jobUUID);
-//                        setPrintStatus(PrinterStatusEnumeration.PRINTING);
-//                        acceptedPrintRequest = true;
-//                    } else
-//                    {
-//                        //Need to send the file to the printer
-//                        //Is it still on disk?
-//                        String printjobFilename = ApplicationConfiguration.getPrintSpoolDirectory() + jobUUID + File.separator + jobUUID + ApplicationConfiguration.gcodeTempFileExtension;
-//                        File printJobFile = new File(printjobFilename);
-//                        if (printJobFile.exists())
-//                        {
-//                            //Go ahead and spool it
-//                            steno.info("Respooling job " + jobUUID + " to printer");
-//                            gcodePrintService.reset();
-//                            gcodePrintService.setCurrentPrintJobID(jobUUID);
-//                            gcodePrintService.setModelFileToPrint(printjobFilename);
-//                            gcodePrintService.setPrinterToUse(associatedPrinter);
-//                            gcodePrintService.start();
-//
-//                            int numberOfLines = SystemUtils.countLinesInFile(printJobFile, ";");
-//                            linesInPrintingFile.set(numberOfLines);
-//                            Notifier.showInformationNotification(notificationTitle, printTransferInitiatedNotification);
-//                            setPrintStatus(PrinterStatusEnumeration.SENDING_TO_PRINTER);
-//                            acceptedPrintRequest = true;
-//                        } else
-//                        {
-//                            printFromScratchRequired = true;
-//                            steno.error("Print job " + jobUUID + " not found on printer or disk - going ahead with print from scratch");
-//                        }
-//                    }
-//                } catch (RoboxCommsException ex)
-//                {
-//                    printFromScratchRequired = true;
-//                    steno.error("Error whilst attempting to list files on printer - going ahead with print from scratch");
-//                }
-//            } else
+            if (project.getLastPrintJobID() != null)
+            {
+                String jobUUID = project.getLastPrintJobID();
+
+                //Reprint the last job
+                //Is it still on the printer?
+                try
+                {
+                    ListFilesResponse listFilesResponse = associatedPrinter.transmitListFiles();
+                    if (listFilesResponse.getPrintJobIDs().contains(jobUUID))
+                    {
+                        //Reprint directly from printer
+                        steno.info("Printing job " + jobUUID + " from printer store");
+                        Notifier.showInformationNotification(notificationTitle, i18nBundle.getString("notification.reprintInitiated"));
+                        associatedPrinter.initiatePrint(jobUUID);
+                        setPrintStatus(PrinterStatusEnumeration.PRINTING);
+                        acceptedPrintRequest = true;
+                    } else
+                    {
+                        //Need to send the file to the printer
+                        //Is it still on disk?
+                        String printjobFilename = ApplicationConfiguration.getPrintSpoolDirectory() + jobUUID + File.separator + jobUUID + ApplicationConfiguration.gcodePostProcessedFileHandle + ApplicationConfiguration.gcodeTempFileExtension;
+                        File printJobFile = new File(printjobFilename);
+                        if (printJobFile.exists())
+                        {
+                            //Go ahead and spool it
+                            steno.info("Respooling job " + jobUUID + " to printer");
+                            gcodePrintService.reset();
+                            gcodePrintService.setCurrentPrintJobID(jobUUID);
+                            gcodePrintService.setModelFileToPrint(printjobFilename);
+                            gcodePrintService.setPrinterToUse(associatedPrinter);
+                            gcodePrintService.start();
+
+                            int numberOfLines = SystemUtils.countLinesInFile(printJobFile, ";");
+                            linesInPrintingFile.set(numberOfLines);
+                            Notifier.showInformationNotification(notificationTitle, printTransferInitiatedNotification);
+                            setPrintStatus(PrinterStatusEnumeration.SENDING_TO_PRINTER);
+                            acceptedPrintRequest = true;
+                        } else
+                        {
+                            printFromScratchRequired = true;
+                            steno.error("Print job " + jobUUID + " not found on printer or disk - going ahead with print from scratch");
+                        }
+                    }
+                } catch (RoboxCommsException ex)
+                {
+                    printFromScratchRequired = true;
+                    steno.error("Error whilst attempting to list files on printer - going ahead with print from scratch");
+                }
+            } else
             {
                 printFromScratchRequired = true;
             }

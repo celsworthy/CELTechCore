@@ -73,10 +73,14 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     private boolean triggerCloseFromTravel = false;
     private boolean triggerCloseFromRetract = true;
 
-    private Nozzle tempNozzleMemory = null;
+    private int tempNozzleMemory = -1;
+    private int nozzleInUse = -1;
+    private boolean forcedNozzle = false;
 
     private int ejectionVolumeIndex = -1;
     private int wipeVolumeIndex = -1;
+
+    private boolean pastFirstLayer = false;
 
     public GCodeRoboxiser()
     {
@@ -99,13 +103,13 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         currentZHeight = 0;
 
         Nozzle point3mmNozzle = new Nozzle(0,
-                settings.getNozzle_ejection_volume().get(0).doubleValue(),
-                settings.getNozzle_wipe_volume().get(0).doubleValue(),
-                settings.getNozzle_partial_b_minimum().get(0).doubleValue());
+                                           settings.getNozzle_ejection_volume().get(0).doubleValue(),
+                                           settings.getNozzle_wipe_volume().get(0).doubleValue(),
+                                           settings.getNozzle_partial_b_minimum().get(0).doubleValue());
         Nozzle point8mmNozzle = new Nozzle(1,
-                settings.getNozzle_ejection_volume().get(1).doubleValue(),
-                settings.getNozzle_wipe_volume().get(1).doubleValue(),
-                settings.getNozzle_partial_b_minimum().get(1).doubleValue());
+                                           settings.getNozzle_ejection_volume().get(1).doubleValue(),
+                                           settings.getNozzle_wipe_volume().get(1).doubleValue(),
+                                           settings.getNozzle_partial_b_minimum().get(1).doubleValue());
         nozzles.add(point3mmNozzle);
         nozzles.add(point8mmNozzle);
 
@@ -323,7 +327,13 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
                 if (layer == 1)
                 {
+                    writeEventsWithNozzleClose(lastPoint, "closing nozzle after forced nozzle select on layer 0");
                     insertSubsequentLayerTemperatures();
+                    NozzleChangeEvent nozzleChangeEvent = new NozzleChangeEvent();
+                    nozzleChangeEvent.setNozzleNumber(tempNozzleMemory);
+                    nozzleChangeEvent.setComment("return to intended nozzle");
+                    extrusionBuffer.add(nozzleChangeEvent);
+                    pastFirstLayer = true;
                 }
 
                 layer++;
@@ -344,7 +354,24 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             {
                 NozzleChangeEvent nozzleChangeEvent = (NozzleChangeEvent) event;
 
-                extrusionBuffer.add(event);
+                if (layer == 0 && forcedNozzle == false)
+                {
+                    tempNozzleMemory = nozzleChangeEvent.getNozzleNumber();
+//Force to nozzle 1
+                    nozzleChangeEvent.setNozzleNumber(1);
+                    nozzleChangeEvent.setComment(nozzleChangeEvent.getComment() + " - force to nozzle 1 on first layer");
+                    extrusionBuffer.add(nozzleChangeEvent);
+                    nozzleInUse = 1;
+                    forcedNozzle = true;
+                } else if (layer == 0)
+                {
+                    tempNozzleMemory = nozzleChangeEvent.getNozzleNumber();
+                } else if (layer > 1)
+                {
+                    extrusionBuffer.add(nozzleChangeEvent);
+                    nozzleInUse = nozzleChangeEvent.getNozzleNumber();
+                }
+
 //                Nozzle newNozzle = nozzles.get()
 //                tempNozzleMemory = currentNozzle;
 //                if (currentNozzle == null)
@@ -382,6 +409,14 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 UnretractEvent unretractEvent = (UnretractEvent) event;
 
                 totalExtrudedVolume += unretractEvent.getE();
+
+                if (currentNozzle.getState() != NozzleState.OPEN)
+                {
+                    NozzleOpenFullyEvent openNozzle = new NozzleOpenFullyEvent();
+                    openNozzle.setComment("unretract trigger");
+                    extrusionBuffer.add(openNozzle);
+                    currentNozzle.openNozzleFully();
+                }
 
                 resetMeasuringThing();
                 extrusionBuffer.add(event);
@@ -592,7 +627,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                         int foundRetractDuringExtrusion = -1;
                         int foundNozzleChange = -1;
                         double currentNozzlePosition = nozzleStartPosition;
-                        
+
                         for (int tSearchIndex = extrusionBuffer.size() - 1; tSearchIndex > wipeVolumeIndex; tSearchIndex--)
                         {
 
