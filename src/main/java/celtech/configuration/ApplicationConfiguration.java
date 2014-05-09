@@ -9,13 +9,16 @@ import ca.beq.util.win32.registry.RegistryKey;
 import ca.beq.util.win32.registry.RegistryValue;
 import ca.beq.util.win32.registry.RootKey;
 import celtech.appManager.ProjectMode;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Properties;
 import javafx.geometry.Pos;
 import javafx.scene.paint.Color;
@@ -138,12 +141,46 @@ public class ApplicationConfiguration
         {
             String osName = System.getProperty("os.name");
 
-            if (osName.startsWith("Windows"))
+            if (osName.startsWith("Windows 95"))
+            {
+                machineType = MachineType.WINDOWS_95;
+            } else if (osName.startsWith("Windows"))
             {
                 machineType = MachineType.WINDOWS;
             } else if (osName.startsWith("Mac"))
             {
                 machineType = MachineType.MAC;
+            } else if (osName.startsWith("Linux"))
+            {
+                steno.debug("We have a linux variant");
+                ProcessBuilder builder = new ProcessBuilder("uname -m");
+
+                Process process = null;
+
+                try
+                {
+                    process = builder.start();
+                    InputStream is = process.getInputStream();
+                    InputStreamReader isr = new InputStreamReader(is);
+                    BufferedReader br = new BufferedReader(isr);
+                    String line;
+
+                    machineType = MachineType.LINUX_X86;
+
+                    while ((line = br.readLine()) != null)
+                    {
+                        if (line.equalsIgnoreCase("x86_64") == true)
+                        {
+                            machineType = MachineType.LINUX_X64;
+                            steno.debug("Linux 64 bit detected");
+                            break;
+                        }
+                    }
+                } catch (IOException ex)
+                {
+                    steno.error("Error whilst determining linux machine type " + ex);
+                }
+
             }
         }
 

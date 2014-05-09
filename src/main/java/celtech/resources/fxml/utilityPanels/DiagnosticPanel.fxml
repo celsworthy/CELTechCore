@@ -25,8 +25,10 @@
                 <RowConstraints />
                 <RowConstraints />
                 <RowConstraints />
-<RowConstraints />
-<RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
 <RowConstraints />
             </rowConstraints>
             <children>
@@ -44,15 +46,19 @@
                 <Label fx:id="reelButtonSwitch" text="?" GridPane.columnIndex="2" GridPane.columnSpan="2147483647" GridPane.rowIndex="9" />
                 <Label style="-fx-font-size:14px;" text="Extruder 1" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="11" />
                 <Label text="Loaded" GridPane.columnIndex="0" GridPane.rowIndex="12" />
-                <Label text="Index" GridPane.columnIndex="0" GridPane.rowIndex="13" />
+                <Label text="Index" GridPane.rowIndex="14" />
                 <Label fx:id="extruder1Loaded" text="?" GridPane.columnIndex="1" GridPane.rowIndex="12" />
-                <Label fx:id="extruder1Index" text="?" GridPane.columnIndex="1" GridPane.rowIndex="13" />
+                <Label fx:id="extruder1Index" text="?" GridPane.columnIndex="1" GridPane.rowIndex="14" />
                 <Label style="-fx-font-size:14px;" text="Extruder 2" GridPane.columnIndex="2" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="11" />
                 <Label text="Loaded" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="12" />
-                <Label text="Index" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="13" />
+                <Label text="Index" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="14" />
                 <Label fx:id="extruder2Loaded" text="?" GridPane.columnIndex="3" GridPane.rowIndex="12" />
-                <Label fx:id="extruder2Index" text="?" GridPane.columnIndex="3" GridPane.rowIndex="13" /><Label text="%misc.printerID" GridPane.columnSpan="2" />
-<Label layoutX="27.0" layoutY="10.0" text="%misc.headID" GridPane.columnSpan="2" GridPane.rowIndex="1" /><Label fx:id="printerID" text="Label" GridPane.columnIndex="2" GridPane.columnSpan="2147483647" /><Label fx:id="headID" text="Label" GridPane.columnIndex="2" GridPane.columnSpan="2147483647" GridPane.rowIndex="1" />
+                <Label fx:id="extruder2Index" text="?" GridPane.columnIndex="3" GridPane.rowIndex="14" />
+                <Label text="%misc.printerID" GridPane.columnSpan="2" />
+                <Label layoutX="27.0" layoutY="10.0" text="%misc.headID" GridPane.columnSpan="2" GridPane.rowIndex="1" />
+                <Label fx:id="printerID" text="Label" GridPane.columnIndex="2" GridPane.columnSpan="2147483647" />
+                <Label fx:id="headID" text="Label" GridPane.columnIndex="2" GridPane.columnSpan="2147483647" GridPane.rowIndex="1" />
+                <CheckBox fx:id="nullPrinterCheckBox" mnemonicParsing="false" onAction="#enableNullPrinter" text="%diagnosticPanel.enableNullPrinter" textAlignment="CENTER" GridPane.columnSpan="2" GridPane.rowIndex="15" />
             </children>
         </GridPane>
     </children>

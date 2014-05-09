@@ -8,6 +8,7 @@ import celtech.CoreTest;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.FilamentContainer;
+import celtech.configuration.MachineType;
 import celtech.coreUI.visualisation.exporters.STLOutputConverter;
 import celtech.printerControl.Printer;
 import java.io.File;
@@ -60,32 +61,42 @@ public class SlicerTask extends Task<SliceResult>
         STLOutputConverter outputConverter = new STLOutputConverter(project, printJobUUID);
         outputConverter.outputSTLFile();
 
-        String osName = System.getProperty("os.name");
+        MachineType machineType = ApplicationConfiguration.getMachineType();
         ArrayList<String> commands = new ArrayList<>();
 
-        if (osName.equals("Windows 95"))
+        switch (machineType)
         {
-            commands.add("command.com");
-            commands.add("/S");
-            commands.add("/C");
-            commands.add("\"\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r-console.exe\" --load \"" + configFile + "\" -o \"" + tempGcodeFilenameWithPath + "\" \"" + tempModelFilenameWithPath + "\"\"");
-        } else if (osName.startsWith("Windows"))
-        {
-            commands.add("cmd.exe");
-            commands.add("/S");
-            commands.add("/C");
-            commands.add("\"\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r-console.exe\" --load \"" + configFile + "\" -o \"" + tempGcodeFilenameWithPath + "\" \"" + tempModelFilenameWithPath + "\"\"");
-        } else if (osName.equals("Mac OS X"))
-        {
-            commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r/slic3r-console");
-            commands.add("--load");
-            commands.add(configFile);
-            commands.add("-o");
-            commands.add(tempGcodeFilenameWithPath);
-            commands.add(tempModelFilenameWithPath);
-        } else
-        {
-            steno.error("Couldn't determine how to run slicer on " + osName);
+            case WINDOWS_95:
+                commands.add("command.com");
+                commands.add("/S");
+                commands.add("/C");
+                commands.add("\"\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r-console.exe\" --load \"" + configFile + "\" -o \"" + tempGcodeFilenameWithPath + "\" \"" + tempModelFilenameWithPath + "\"\"");
+                break;
+            case WINDOWS:
+                commands.add("cmd.exe");
+                commands.add("/S");
+                commands.add("/C");
+                commands.add("\"\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r-console.exe\" --load \"" + configFile + "\" -o \"" + tempGcodeFilenameWithPath + "\" \"" + tempModelFilenameWithPath + "\"\"");
+                break;
+            case MAC:
+                commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r/slic3r-console");
+                commands.add("--load");
+                commands.add(configFile);
+                commands.add("-o");
+                commands.add(tempGcodeFilenameWithPath);
+                commands.add(tempModelFilenameWithPath);
+                break;
+            case LINUX_X86:
+            case LINUX_X64:
+                commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r/bin/slic3r");
+                commands.add("--load");
+                commands.add(configFile);
+                commands.add("-o");
+                commands.add(tempGcodeFilenameWithPath);
+                commands.add(tempModelFilenameWithPath);
+                break;
+            default:
+                steno.error("Couldn't determine how to run slicer");
         }
 
         if (commands.size() > 0)
@@ -130,7 +141,7 @@ public class SlicerTask extends Task<SliceResult>
             }
         } else
         {
-            steno.error("Couldn't run autoupdate - no commands for OS " + osName);
+            steno.error("Couldn't run autoupdate - no commands for OS ");
         }
 
         return new SliceResult(printJobUUID, project, filament, printQuality, settings, printerToUse, succeeded);

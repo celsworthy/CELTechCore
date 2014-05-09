@@ -10,8 +10,8 @@ import celtech.configuration.FilamentContainer;
 import celtech.configuration.Head;
 import celtech.configuration.HeadContainer;
 import celtech.configuration.HeaterMode;
-import celtech.configuration.MaterialType;
 import celtech.configuration.PrintHead;
+import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.ErrorHandler;
 import celtech.coreUI.components.ModalDialog;
@@ -69,7 +69,6 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.WorkerStateEvent;
-import javafx.event.EventHandler;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.paint.Color;
@@ -85,6 +84,10 @@ public class Printer
 {
 
     private String portName = null;
+    
+    private String whyAreWeWaiting_cooling = null;
+    private String whyAreWeWaiting_heatingBed = null;
+    private String whyAreWeWaiting_heatingNozzle = null;
 
     private BooleanProperty printerIDDataChangedToggle = new SimpleBooleanProperty(false);
     private StringProperty printermodel = new SimpleStringProperty("");
@@ -141,6 +144,8 @@ public class Printer
     private StringProperty printJobID = new SimpleStringProperty();
     private BooleanProperty busy = new SimpleBooleanProperty(false);
     private BooleanProperty paused = new SimpleBooleanProperty(false);
+    private ObjectProperty<WhyAreWeWaitingState> whyAreWeWaitingState = new SimpleObjectProperty(WhyAreWeWaitingState.NOT_WAITING);
+    private StringProperty whyAreWeWaitingString = new SimpleStringProperty("");
 
     private BooleanProperty SDCardError = new SimpleBooleanProperty(false);
     private BooleanProperty ChunkSequenceError = new SimpleBooleanProperty(false);
@@ -289,6 +294,11 @@ public class Printer
         ambientTargetTemperatureSeries.getData().add(ambientTargetPoint);
         bedTargetTemperatureSeries.getData().add(bedTargetPoint);
         nozzleTargetTemperatureSeries.getData().add(nozzleTargetPoint);
+        
+        ResourceBundle i18nBundle = DisplayManager.getLanguageBundle();
+        whyAreWeWaiting_cooling = i18nBundle.getString("printerStatus.printerCooling");
+        whyAreWeWaiting_heatingBed = i18nBundle.getString("printerStatus.printerBedHeating");
+        whyAreWeWaiting_heatingNozzle = i18nBundle.getString("printerStatus.printerNozzleHeating");
     }
 
     public String getPrinterPort()
@@ -675,6 +685,26 @@ public class Printer
     public final BooleanProperty pausedProperty()
     {
         return paused;
+    }
+
+    public final void setWhyAreWeWaiting(WhyAreWeWaitingState value)
+    {
+        whyAreWeWaitingState.set(value);
+    }
+
+    public final WhyAreWeWaitingState getWhyAreWeWaiting()
+    {
+        return whyAreWeWaitingState.get();
+    }
+
+    public final StringProperty getWhyAreWeWaitingStringProperty()
+    {
+        return whyAreWeWaitingString;
+    }
+
+    public final ObjectProperty<WhyAreWeWaitingState> whyAreWeWaitingProperty()
+    {
+        return whyAreWeWaitingState;
     }
 
     /*
@@ -1522,6 +1552,27 @@ public class Printer
                 {
                     errorHandler.checkForErrors(this);
                 }
+
+                setWhyAreWeWaiting(statusResponse.getWhyAreWeWaitingState());
+                switch (statusResponse.getWhyAreWeWaitingState())
+                {
+                    case NOT_WAITING:
+                        whyAreWeWaitingString.set("");
+                        break;
+                    case BED_HEATING:
+                        whyAreWeWaitingString.set(whyAreWeWaiting_heatingBed);
+                        break;
+                    case NOZZLE_HEATING:
+                        whyAreWeWaitingString.set(whyAreWeWaiting_heatingNozzle);
+                        break;
+                    case COOLING:
+                        whyAreWeWaitingString.set(whyAreWeWaiting_cooling);
+                        break;
+                    default:
+                        whyAreWeWaitingString.set("");
+                        break;
+                }
+
                 setPrinterStatus(printQueue.getPrintStatus());
                 break;
 

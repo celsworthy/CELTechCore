@@ -19,7 +19,7 @@ public class GCodeDataResponse extends RoboxRxPacket
 
     private final int lengthFieldBytes = 4;
 
-    private String gCodeResponse;
+    private String gCodeResponse = "";
 
     public GCodeDataResponse()
     {

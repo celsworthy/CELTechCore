@@ -9,6 +9,7 @@ import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.HeaterMode;
+import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.PrinterStatusListCell;
@@ -44,6 +45,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.util.Callback;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -297,6 +299,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         }
     }
 
+    private PrinterColourMap colourMap = PrinterColourMap.getInstance();
+
     /**
      * Initializes the controller class.
      */
@@ -368,21 +372,23 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                     if (printerToEdit != null)
                     {
                         printerIDDialog.setPrinterToUse(printerToEdit);
-                        printerIDDialog.setChosenColour(printerToEdit.getPrinterColour());
-                        printerIDDialog.setChosenPrinterID(printerToEdit.getPrinterserialNumber().get());
+                        printerIDDialog.setChosenDisplayColour(colourMap.printerToDisplayColour(printerToEdit.getPrinterColour()));
                         printerIDDialog.setChosenPrinterName(printerToEdit.getPrinterFriendlyName());
-                        printerIDDialog.show();
+                        boolean okPressed = printerIDDialog.show();
 
-                        try
+                        if (okPressed)
                         {
-                            printerToEdit.transmitWritePrinterID(printerToEdit.getPrintermodel().get(), printerToEdit.getPrinteredition().get(),
-                                                                 printerToEdit.getPrinterweekOfManufacture().get(), printerToEdit.getPrinteryearOfManufacture().get(),
-                                                                 printerToEdit.getPrinterpoNumber().get(), printerIDDialog.getChosenPrinterID(),
-                                                                 "0", printerIDDialog.getChosenPrinterName(), printerIDDialog.getColour());
-                            printerToEdit.transmitReadPrinterID();
-                        } catch (RoboxCommsException ex)
-                        {
-                            steno.error("Error writing printer ID");
+                            try
+                            {
+                                printerToEdit.transmitWritePrinterID(printerToEdit.getPrintermodel().get(), printerToEdit.getPrinteredition().get(),
+                                                                     printerToEdit.getPrinterweekOfManufacture().get(), printerToEdit.getPrinteryearOfManufacture().get(),
+                                                                     printerToEdit.getPrinterpoNumber().get(), printerToEdit.getPrinterUniqueID(),
+                                                                     printerToEdit.getPrintercheckByte().get(), printerIDDialog.getChosenPrinterName(), colourMap.displayToPrinterColour(printerIDDialog.getChosenDisplayColour()));
+                                printerToEdit.transmitReadPrinterID();
+                            } catch (RoboxCommsException ex)
+                            {
+                                steno.error("Error writing printer ID");
+                            }
                         }
                     }
                 }

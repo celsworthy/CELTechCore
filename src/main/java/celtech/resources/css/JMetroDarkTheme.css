@@ -1156,12 +1156,12 @@ table-view .column-header-background {
 
 .bob
 {
--fx-fill: purple;
+    -fx-fill: purple;
 }
 
 .bob:focus
 {
--fx-fill: green;
+    -fx-fill: green;
 }
 /*.status-tab-graphic, .status-tab-graphi{
     -fx-background-color: green;
@@ -1250,4 +1250,24 @@ table-view .column-header-background {
 .project-menu-button{
     -fx-content-display: graphic-only;
     -fx-pref-width: 10px;
+}
+
+.printer-colour-button{
+    -fx-padding: 0 0 0 0;
+    -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
+    /*-fx-background-radius: 50;*/
+    -fx-content-display: graphic-only;
+    -fx-border-color: transparent;
+}
+
+.printer-colour-button:hover{
+    -fx-background-color: hover_colour;
+}
+
+.printer-colour-button:selected{
+    -fx-border-color: white, white;
+    -fx-border-width: 1, 1;
+    -fx-border-style: solid, segments(1, 1);
+    -fx-border-radius: 0, 0;
+    -fx-border-insets: 1 1 1 1, 0;
 }

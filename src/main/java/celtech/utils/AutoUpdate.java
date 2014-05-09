@@ -7,6 +7,7 @@ package celtech.utils;
 
 import celtech.appManager.Notifier;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.MachineType;
 import celtech.coreUI.DisplayManager;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -147,48 +148,72 @@ public class AutoUpdate extends Thread
     {
         int upgradeStatus = ERROR;
 
-        String osName = System.getProperty("os.name");
+        MachineType machineType = ApplicationConfiguration.getMachineType();
 
         ArrayList<String> commands = new ArrayList<>();
 
-        if (osName.equals("Windows 95"))
+        switch (machineType)
         {
-            commands.add("command.com");
-            commands.add("/S");
-            commands.add("/W");
-            commands.add("/C");
-            commands.add("\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"");
-            commands.add("--mode");
-            commands.add("unattended");
-            commands.add("--unattendedmodebehavior");
-            commands.add("onlycheck");
-            commands.add("--unattendedmodeui");
-            commands.add("minimalWithDialogs");
+            case WINDOWS_95:
+                commands.add("command.com");
+                commands.add("/S");
+                commands.add("/W");
+                commands.add("/C");
+                commands.add("\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"");
+                commands.add("--mode");
+                commands.add("unattended");
+                commands.add("--unattendedmodebehavior");
+                commands.add("onlycheck");
+                commands.add("--unattendedmodeui");
+                commands.add("minimalWithDialogs");
+                break;
+            case WINDOWS:
+                commands.add("cmd.exe");
+                commands.add("/S");
+                commands.add("/W");
+                commands.add("/C");
+                commands.add("\"\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
 
-        } else if (osName.startsWith("Windows"))
-        {
-            commands.add("cmd.exe");
-            commands.add("/S");
-            commands.add("/W");
-            commands.add("/C");
-            commands.add("\"\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
+                commands.add("--mode");
+                commands.add("unattended");
+                commands.add("--unattendedmodebehavior");
+                commands.add("onlycheck");
+                commands.add("--unattendedmodeui");
+                commands.add("minimalWithDialogs");
+                break;
+            case MAC:
+                commands.add(ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-osx.app/Contents/MacOS/installbuilder.sh");
 
-            commands.add("--mode");
-            commands.add("unattended");
-            commands.add("--unattendedmodebehavior");
-            commands.add("onlycheck");
-            commands.add("--unattendedmodeui");
-            commands.add("minimalWithDialogs");
-        } else if (osName.equals("Mac OS X"))
-        {
-            commands.add(ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-osx.app/Contents/MacOS/installbuilder.sh");
+                commands.add("--mode");
+                commands.add("unattended");
+                commands.add("--unattendedmodebehavior");
+                commands.add("onlycheck");
+                commands.add("--unattendedmodeui");
+                commands.add("minimalWithDialogs");
+                break;
+            case LINUX_X86:
+                commands.add(ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-linux.run");
 
-            commands.add("--mode");
-            commands.add("unattended");
-            commands.add("--unattendedmodebehavior");
-            commands.add("onlycheck");
-            commands.add("--unattendedmodeui");
-            commands.add("minimalWithDialogs");
+                commands.add("--mode");
+                commands.add("unattended");
+                commands.add("--unattendedmodebehavior");
+                commands.add("onlycheck");
+                commands.add("--unattendedmodeui");
+                commands.add("minimalWithDialogs");
+                break;
+            case LINUX_X64:
+                commands.add(ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-linux-x64.run");
+
+                commands.add("--mode");
+                commands.add("unattended");
+                commands.add("--unattendedmodebehavior");
+                commands.add("onlycheck");
+                commands.add("--unattendedmodeui");
+                commands.add("minimalWithDialogs");
+                break;
+            default:
+                steno.error("Cannot find autoupdater for this OS " + machineType.name());
+                break;
         }
         /*
          * Return codes from the (BitRock) autoupdater
@@ -255,7 +280,7 @@ public class AutoUpdate extends Thread
             }
         } else
         {
-            steno.error("Couldn't run autoupdate - no commands for OS " + osName);
+            steno.error("Couldn't run autoupdate - no commands for OS " + machineType.name());
         }
 
         return upgradeStatus;
@@ -265,24 +290,33 @@ public class AutoUpdate extends Thread
     {
         String osName = System.getProperty("os.name");
 
+        MachineType machineType = ApplicationConfiguration.getMachineType();
+
         ArrayList<String> commands = new ArrayList<>();
 
-        if (osName.equals("Windows 95"))
+        switch (machineType)
         {
-            commands.add("command.com");
-            commands.add("/S");
-            commands.add("/C");
-            commands.add("\"\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
-
-        } else if (osName.startsWith("Windows"))
-        {
-            commands.add("cmd.exe");
-            commands.add("/S");
-            commands.add("/C");
-            commands.add("\"\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
-        } else if (osName.equals("Mac OS X"))
-        {
-            commands.add(ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-osx.app/Contents/MacOS/installbuilder.sh");
+            case WINDOWS_95:
+                commands.add("command.com");
+                commands.add("/S");
+                commands.add("/C");
+                commands.add("\"\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
+                break;
+            case WINDOWS:
+                commands.add("cmd.exe");
+                commands.add("/S");
+                commands.add("/C");
+                commands.add("\"\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
+                break;
+            case MAC:
+                commands.add(ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-osx.app/Contents/MacOS/installbuilder.sh");
+                break;
+            case LINUX_X86:
+                commands.add(ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-linux.run");
+                break;
+            case LINUX_X64:
+                commands.add(ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-linux-x64.run");
+                break;
         }
         /*
          * Return codes from the (BitRock) autoupdater

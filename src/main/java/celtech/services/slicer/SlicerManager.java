@@ -5,6 +5,7 @@
 package celtech.services.slicer;
 
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.MachineType;
 import libertysystems.stenographer.LogLevel;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -33,47 +34,46 @@ public class SlicerManager
         {
             configFilename = "robox_default.ini";
         }
-        
+
         try
         {
             String[] command = new String[6];
 
-            String osName = System.getProperty("os.name");
-            if (osName.equals("Windows 95"))
-            {
-                String[] longCommand = new String[3];
-                longCommand[0] = "command.com";
-                longCommand[1] = "/C";
-                longCommand[2] = applicationDirectory + "\\RoboxPerl\\slic3r-console.exe --load " + configFilename + " -o " + gcodeFilename + " " + stlFilename;
+            MachineType machineType = ApplicationConfiguration.getMachineType();
 
-                command = longCommand;
-                
-            } else if (osName.startsWith("Windows"))
+            switch (machineType)
             {
-                String[] longCommand = new String[3];
-                longCommand[0] = "cmd.exe";
-                longCommand[1] = "/C";
-                longCommand[2] = applicationDirectory +
-                    "\\RoboxPerl\\slic3r-console.exe --load " + configFilename + " -o " + gcodeFilename + " " + stlFilename;
-
-                command = longCommand;
-
-            } else if (osName.equals("Mac OS X"))
-            {
-                command[0] = "/Applications/Slic3r.app/Contents/MacOS/slic3r";
-                command[1] = "--load";
-                command[2] = configFilename;
-                command[3] = "-o";
-                command[4] = gcodeFilename;
-                command[5] = stlFilename;
-            } else
-            {
-                String[] longCommand = new String[3];
-                longCommand[0] = "cmd.exe";
-                longCommand[1] = "/C";
-                longCommand[2] = "Slic3r\\slic3r-console.exe --load " + configFilename + " -o " + gcodeFilename + " " + stlFilename;
-
-                command = longCommand;
+                case WINDOWS_95:
+                    String[] longWin95Command = new String[3];
+                    longWin95Command[0] = "command.com";
+                    longWin95Command[1] = "/C";
+                    longWin95Command[2] = applicationDirectory + "\\Slic3r\\slic3r-console.exe --load " + configFilename + " -o " + gcodeFilename + " " + stlFilename;
+                    command = longWin95Command;
+                    break;
+                case WINDOWS:
+                    String[] longWindowsCommand = new String[3];
+                    longWindowsCommand[0] = "cmd.exe";
+                    longWindowsCommand[1] = "/C";
+                    longWindowsCommand[2] = applicationDirectory + "Slic3r\\slic3r-console.exe --load " + configFilename + " -o " + gcodeFilename + " " + stlFilename;
+                    command = longWindowsCommand;
+                    break;
+                case MAC:
+                    command[0] = "/Applications/Slic3r.app/Contents/MacOS/slic3r";
+                    command[1] = "--load";
+                    command[2] = configFilename;
+                    command[3] = "-o";
+                    command[4] = gcodeFilename;
+                    command[5] = stlFilename;
+                    break;
+                case LINUX_X86:
+                case LINUX_X64:
+                    command[0] = applicationDirectory + "/Slic3r/bin/slic3r";
+                    command[1] = "--load";
+                    command[2] = configFilename;
+                    command[3] = "-o";
+                    command[4] = gcodeFilename;
+                    command[5] = stlFilename;
+                    break;
             }
 
             StringBuilder comString = new StringBuilder();
@@ -83,7 +83,7 @@ public class SlicerManager
                 comString.append(' ');
             }
             steno.debug("Using command " + comString.toString());
-            
+
             Runtime rt = Runtime.getRuntime();
             Process proc = rt.exec(command);
             // any error message?
@@ -91,7 +91,6 @@ public class SlicerManager
 
             // any output?
 //            SlicerOutputGobbler outputGobbler = new SlicerOutputGobbler(application, proc.getInputStream(), "OUTPUT");
-
             // kick them off
             errorGobbler.start();
 //            outputGobbler.start();

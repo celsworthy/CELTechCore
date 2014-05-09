@@ -4,10 +4,14 @@
  */
 package celtech.printerControl.comms;
 
-import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
+import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.MachineType;
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
+import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
+import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
+import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.events.RoboxEvent;
 import celtech.printerControl.comms.events.RoboxEventProducer;
 import celtech.printerControl.comms.events.RoboxEventType;
@@ -60,6 +64,9 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
     private boolean suppressPrinterIDChecks = false;
     private int sleepBetweenStatusChecks = 1000;
 
+    private final String nullPrinterString = "NullPrinter";
+    private Printer nullPrinter = null;
+
     private RoboxCommsManager(String pathToBinaries, boolean suppressPrinterIDChecks)
     {
         this.suppressPrinterIDChecks = suppressPrinterIDChecks;
@@ -71,25 +78,24 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
         this.setName("Robox Comms Manager");
         steno = StenographerFactory.getStenographer(this.getClass().getName());
 
-        String osName = System.getProperty("os.name");
+        MachineType machineType = ApplicationConfiguration.getMachineType();
 
-        if (osName.startsWith("Windows"))
+        switch (machineType)
         {
-            roboxDetectorCommand = roboxDetectorWindows + " " + printerToSearchFor;
-            steno.info("Got OS of " + osName + ". Using " + roboxDetectorCommand);
-
-        } else if (osName.equalsIgnoreCase("Mac OS X"))
-        {
-            roboxDetectorCommand = roboxDetectorMac + " " + printerToSearchFor;
-            steno.debug("Got OS of " + osName + ". Using " + roboxDetectorCommand);
-        } else if (osName.equalsIgnoreCase("Linux"))
-        {
-            roboxDetectorCommand = roboxDetectorLinux + " " + roboxVendorID + ":" + roboxProductID;
-            steno.debug("Got OS of " + osName + ". Using " + roboxDetectorCommand);
-        } else
-        {
-            steno.error("Got OS of " + osName + ". Unsupported OS - cannot establish comms.");
-            keepRunning = false;
+            case WINDOWS:
+                roboxDetectorCommand = roboxDetectorWindows + " " + printerToSearchFor;
+                break;
+            case MAC:
+                roboxDetectorCommand = roboxDetectorMac + " " + printerToSearchFor;
+                break;
+            case LINUX_X86:
+            case LINUX_X64:
+                roboxDetectorCommand = roboxDetectorLinux + " " + roboxVendorID + ":" + roboxProductID;
+                break;
+            default:
+                steno.error("Unsupported OS - cannot establish comms.");
+                keepRunning = false;
+                break;
         }
     }
 
@@ -121,6 +127,8 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
     @Override
     public void run()
     {
+//        enableNullPrinter(true);
+
         while (keepRunning)
         {
 //            steno.info("Looking for printers");
@@ -256,7 +264,13 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
             response = (RoboxRxPacket) handler.writeToPrinter(gcodePacket);
         } else
         {
-            steno.error("Rejected request to send packet of type " + gcodePacket.getPacketType().name());
+            if (printerName.equals(nullPrinterString))
+            {
+                response = RoboxRxPacketFactory.createPacket(gcodePacket.getPacketType().getExpectedResponse());
+            } else
+            {
+                steno.error("Rejected request to send packet of type " + gcodePacket.getPacketType().name());
+            }
         }
 
         return response;
@@ -383,6 +397,43 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
                     handler.setSleepBetweenStatusChecks(sleepMillis);
                 }
             }
+        }
+    }
+
+    public void enableNullPrinter(boolean enable)
+    {
+
+        if (nullPrinter == null)
+        {
+            nullPrinter = new Printer(nullPrinterString, this);
+        }
+
+        if (enable)
+        {
+            if (activePrinterStatuses.containsKey(nullPrinterString) == false)
+            {
+                activePrinterStatuses.put(nullPrinterString, nullPrinter);
+                Platform.runLater(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        printerStatus.add(nullPrinter);
+                        nullPrinter.setPrinterConnected(true);
+                    }
+                });
+            }
+        } else
+        {
+            activePrinterStatuses.remove(nullPrinterString);
+            Platform.runLater(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    printerStatus.remove(nullPrinter);
+                }
+            });
         }
     }
 }

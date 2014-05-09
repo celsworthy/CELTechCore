@@ -4,8 +4,8 @@
  */
 package celtech.coreUI.controllers;
 
+import celtech.coreUI.components.ColourChooserButton;
 import celtech.printerControl.Printer;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
@@ -14,9 +14,10 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
-import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -35,6 +36,8 @@ public class PrinterIDDialogController implements Initializable
 
     private Stenographer steno = StenographerFactory.getStenographer(PrinterIDDialogController.class.getName());
 
+    private boolean okPressed = false;
+
     @FXML
     private Label dialogMessage;
 
@@ -45,23 +48,22 @@ public class PrinterIDDialogController implements Initializable
     private Button okButton;
 
     @FXML
-    private ColorPicker roboxColourChooser;
+    private TextField roboxNameField;
 
     @FXML
-    private TextField roboxNameField;
-    @FXML
-    private TextField roboxSerialNumber;
+    private ToggleGroup colourButtonGroup;
 
     @FXML
     void okButtonPressed(MouseEvent event)
     {
-        try
-        {
-            printerToUse.transmitWritePrinterID("", "", "", "", "", "", "", getChosenPrinterID(), getChosenColour());
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error whilst setting ID and colour");
-        }
+        okPressed = true;
+        myStage.close();
+    }
+
+    @FXML
+    void cancelButtonPressed(MouseEvent event)
+    {
+        okPressed = false;
         myStage.close();
     }
 
@@ -73,13 +75,14 @@ public class PrinterIDDialogController implements Initializable
     private EventHandler<KeyEvent> textInputHandler = null;
 
     private Printer printerToUse = null;
-
+    
     /**
      * Initializes the controller class.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+
         textInputHandler = new EventHandler<KeyEvent>()
         {
             @Override
@@ -103,16 +106,11 @@ public class PrinterIDDialogController implements Initializable
         myStage = dialogStage;
     }
 
-    public Color getChosenColour()
+    public Color getChosenDisplayColour()
     {
-        return roboxColourChooser.getValue();
+        return ((ColourChooserButton) colourButtonGroup.getSelectedToggle()).getDisplayColour();
     }
 
-    public String getChosenPrinterID()
-    {
-        return roboxSerialNumber.getText();
-    }
-    
     public String getChosenPrinterName()
     {
         return roboxNameField.getText();
@@ -125,16 +123,24 @@ public class PrinterIDDialogController implements Initializable
 
     public void setChosenColour(Color colour)
     {
-        roboxColourChooser.setValue(colour);
+        for (Toggle toggle : colourButtonGroup.getToggles())
+        {
+            ColourChooserButton button = (ColourChooserButton) toggle;
+
+            if (button.getDisplayColour().equals(colour))
+            {
+                colourButtonGroup.selectToggle(button);
+            }
+        }
     }
 
-    public void setChosenPrinterID(String printerID)
-    {
-        roboxSerialNumber.setText(printerID);
-    }
-    
     public void setChosenPrinterName(String printerName)
     {
         roboxNameField.setText(printerName);
+    }
+
+    public boolean okPressed()
+    {
+        return okPressed;
     }
 }

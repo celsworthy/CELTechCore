@@ -53,9 +53,10 @@ public class PrinterIDDialog
         }
     }
 
-    public void show()
+    public boolean show()
     {
         dialogStage.showAndWait();
+        return dialogController.okPressed();
     }
 
     public void close()
@@ -68,19 +69,9 @@ public class PrinterIDDialog
         return dialogStage.isShowing();
     }
 
-    public String getChosenPrinterID()
-    {
-        return dialogController.getChosenPrinterID();
-    }
-
     public String getChosenPrinterName()
     {
         return dialogController.getChosenPrinterName();
-    }
-
-    public Color getColour()
-    {
-        return dialogController.getChosenColour();
     }
 
     public void setPrinterToUse(Printer printerToUse)
@@ -88,14 +79,14 @@ public class PrinterIDDialog
         dialogController.setPrinterToUse(printerToUse);
     }
 
-    public void setChosenColour(Color colour)
+    public void setChosenDisplayColour(Color colour)
     {
         dialogController.setChosenColour(colour);
     }
 
-    public void setChosenPrinterID(String printerID)
+    public Color getChosenDisplayColour()
     {
-        dialogController.setChosenPrinterID(printerID);
+        return dialogController.getChosenDisplayColour();
     }
 
     public void setChosenPrinterName(String printerName)
