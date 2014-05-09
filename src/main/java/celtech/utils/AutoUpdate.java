@@ -9,10 +9,16 @@ import celtech.appManager.Notifier;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.MachineType;
 import celtech.coreUI.DisplayManager;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javafx.application.Platform;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -38,10 +44,14 @@ public class AutoUpdate extends Thread
     private ResourceBundle i18nBundle = null;
     private Dialogs.CommandLink upgradeApplication = null;
     private Dialogs.CommandLink dontUpgradeApplication = null;
+    private String appDirectory = null;
 
-    public AutoUpdate(String applicationName, AutoUpdateCompletionListener completionListener)
+    private final Pattern versionMatcherPattern = Pattern.compile(".*version>(.*)</version.*");
+
+    public AutoUpdate(String applicationName, String appDirectory, AutoUpdateCompletionListener completionListener)
     {
         this.applicationName = applicationName;
+        this.appDirectory = appDirectory;
         this.setName("AutoUpdate");
         this.parentClass = completionListener.getClass();
         this.completionListener = completionListener;
@@ -59,15 +69,7 @@ public class AutoUpdate extends Thread
         //Check for a new version 15 secs after startup
         try
         {
-            Platform.runLater(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    Notifier.showInformationNotification(i18nBundle.getString("dialogs.updateAboutToUpdate"), null);
-                }
-            });
-            this.sleep(2000);
+            this.sleep(1000);
         } catch (InterruptedException ex)
         {
             steno.warning("AutoUpdate sleep was interrupted");
@@ -148,139 +150,56 @@ public class AutoUpdate extends Thread
     {
         int upgradeStatus = ERROR;
 
-        MachineType machineType = ApplicationConfiguration.getMachineType();
+        String url = "http://downloads.cel-robox.com:8001/" + appDirectory + "/" + applicationName + "-update.xml";
 
-        ArrayList<String> commands = new ArrayList<>();
-
-        switch (machineType)
+        try
         {
-            case WINDOWS_95:
-                commands.add("command.com");
-                commands.add("/S");
-                commands.add("/W");
-                commands.add("/C");
-                commands.add("\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"");
-                commands.add("--mode");
-                commands.add("unattended");
-                commands.add("--unattendedmodebehavior");
-                commands.add("onlycheck");
-                commands.add("--unattendedmodeui");
-                commands.add("minimalWithDialogs");
-                break;
-            case WINDOWS:
-                commands.add("cmd.exe");
-                commands.add("/S");
-                commands.add("/W");
-                commands.add("/C");
-                commands.add("\"\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
+            URL obj = new URL(url);
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-                commands.add("--mode");
-                commands.add("unattended");
-                commands.add("--unattendedmodebehavior");
-                commands.add("onlycheck");
-                commands.add("--unattendedmodeui");
-                commands.add("minimalWithDialogs");
-                break;
-            case MAC:
-                commands.add(ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-osx.app/Contents/MacOS/installbuilder.sh");
+            // optional default is GET
+            con.setRequestMethod("GET");
 
-                commands.add("--mode");
-                commands.add("unattended");
-                commands.add("--unattendedmodebehavior");
-                commands.add("onlycheck");
-                commands.add("--unattendedmodeui");
-                commands.add("minimalWithDialogs");
-                break;
-            case LINUX_X86:
-                commands.add(ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-linux.run");
+            //add request header
+            con.setRequestProperty("User-Agent", ApplicationConfiguration.getApplicationName());
 
-                commands.add("--mode");
-                commands.add("unattended");
-                commands.add("--unattendedmodebehavior");
-                commands.add("onlycheck");
-                commands.add("--unattendedmodeui");
-                commands.add("minimalWithDialogs");
-                break;
-            case LINUX_X64:
-                commands.add(ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-linux-x64.run");
+            int responseCode = con.getResponseCode();
 
-                commands.add("--mode");
-                commands.add("unattended");
-                commands.add("--unattendedmodebehavior");
-                commands.add("onlycheck");
-                commands.add("--unattendedmodeui");
-                commands.add("minimalWithDialogs");
-                break;
-            default:
-                steno.error("Cannot find autoupdater for this OS " + machineType.name());
-                break;
-        }
-        /*
-         * Return codes from the (BitRock) autoupdater
-         * 
-         * 0: Successfully downloaded and executed the installer.
-         * 1: No updates available
-         * 2: Error connecting to remote server or invalid XML file
-         * 3: An error occurred downloading the file
-         * 4: An error occurred executing the downloaded update or evaluating its <postUpdateDownloadActionList>
-         * 5: Update check disabled through check_for_updates setting
-         */
-
-        if (commands.size() > 0)
-        {
-            ProcessBuilder autoupdateProcess = new ProcessBuilder(commands);
-            autoupdateProcess.inheritIO();
-            try
+            if (responseCode == 200)
             {
-                final Process updateProc = autoupdateProcess.start();
-                boolean checkFinished = updateProc.waitFor(10, TimeUnit.SECONDS);
+                BufferedReader in = new BufferedReader(
+                        new InputStreamReader(con.getInputStream()));
+                String inputLine;
+                StringBuffer response = new StringBuffer();
 
-                if (checkFinished == false)
+                while ((inputLine = in.readLine()) != null)
                 {
-                    //The autoupdater is still waiting. Kill it and try again.
-                    steno.info("Couldn't get a response from autoupdate - killing it...");
-                    updateProc.destroyForcibly();
-                    sleep(15000);
-                    upgradeStatus = ERROR;
-                } else
+                    response.append(inputLine);
+                }
+                in.close();
+
+                Matcher versionMatcher = versionMatcherPattern.matcher(response);
+
+                if (versionMatcher.find())
                 {
-                    switch (updateProc.exitValue())
+                    String concatenatedServerVersionField = versionMatcher.group(1).replaceAll("\\.", "");
+                    String concatenatedAppVersionField = ApplicationConfiguration.getApplicationVersion().replaceAll("\\.", "");
+
+                    int serverVersionNumber = Integer.valueOf(concatenatedServerVersionField);
+                    int appVersionNumber = Integer.valueOf(concatenatedAppVersionField);
+
+                    if (serverVersionNumber > appVersionNumber)
                     {
-                        case 0:
-                            upgradeStatus = UPGRADE_REQUIRED;
-                            steno.info("Upgrade required");
-                            break;
-                        case 1:
-                            upgradeStatus = UPGRADE_NOT_REQUIRED;
-                            steno.info("No upgrade required");
-                            break;
-                        case 2:
-                            steno.info("Error connecting to remote upgrade server");
-                            break;
-                        case 3:
-                            steno.info("Error during upgrade download");
-                            break;
-                        case 4:
-                            steno.info("Failure during upgrade installation");
-                            break;
-                        case 5:
-                            steno.info("Update check disabled through update.ini settings");
-                            break;
-                        default:
-                            steno.info("Unknown code returned from autoupdater");
-                            break;
+                        upgradeStatus = UPGRADE_REQUIRED;
+                    } else
+                    {
+                        upgradeStatus = UPGRADE_NOT_REQUIRED;
                     }
                 }
-            } catch (IOException ex)
-            {
-                steno.error("Exception whilst running autoupdate: " + ex);
-            } catch (InterruptedException ex)
-            {
-                steno.error("Interrupted whilst waiting for autoupdate to complete");
             }
-        } else
+        } catch (IOException ex)
         {
-            steno.error("Couldn't run autoupdate - no commands for OS " + machineType.name());
+            steno.error("Exception whilst attempting to contact update server");
         }
 
         return upgradeStatus;
