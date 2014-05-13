@@ -49,6 +49,7 @@ import celtech.printerControl.comms.commands.tx.WriteReelEEPROM;
 import celtech.printerControl.comms.events.RoboxEvent;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
+import celtech.services.printing.GCodePrintService;
 import celtech.services.printing.PrintQueue;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
@@ -84,7 +85,7 @@ public class Printer
 {
 
     private String portName = null;
-    
+
     private String whyAreWeWaiting_cooling = null;
     private String whyAreWeWaiting_heatingBed = null;
     private String whyAreWeWaiting_heatingNozzle = null;
@@ -266,7 +267,7 @@ public class Printer
             @Override
             public void run()
             {
-                errorHandler = new ErrorHandler();
+                errorHandler = ErrorHandler.getInstance();
                 noSDDialog = new ModalDialog();
                 noSDDialog.setTitle(languageBundle.getString("dialogs.noSDCardTitle"));
                 noSDDialog.setMessage(languageBundle.getString("dialogs.noSDCardMessage"));
@@ -294,7 +295,7 @@ public class Printer
         ambientTargetTemperatureSeries.getData().add(ambientTargetPoint);
         bedTargetTemperatureSeries.getData().add(bedTargetPoint);
         nozzleTargetTemperatureSeries.getData().add(nozzleTargetPoint);
-        
+
         ResourceBundle i18nBundle = DisplayManager.getLanguageBundle();
         whyAreWeWaiting_cooling = i18nBundle.getString("printerStatus.printerCooling");
         whyAreWeWaiting_heatingBed = i18nBundle.getString("printerStatus.printerBedHeating");
@@ -1791,25 +1792,10 @@ public class Printer
 
     public void transmitStoredGCode(final String macroName) throws RoboxCommsException
     {
-        ArrayList<String> macroContents = GCodeMacros.getMacroContents(macroName);
-
-        transmitMacroData(macroContents);
-    }
-
-    private void transmitMacroData(ArrayList<String> macroData) throws RoboxCommsException
-    {
-        MacroPrintTask macroPrintTask = new MacroPrintTask(macroData, this, printerCommsManager, portName);
-
-        macroPrintTask.setOnFailed((WorkerStateEvent event) ->
+        if (printQueue.getPrintStatus() == PrinterStatusEnumeration.IDLE)
         {
-            steno.error("Failed to send macro data");
-        });
-
-        TaskController.getInstance().manageTask(macroPrintTask);
-
-        Thread macroPrintTaskThread = new Thread(macroPrintTask);
-        macroPrintTaskThread.setName("Macro Print");
-        macroPrintTaskThread.start();
+            printQueue.printGCodeFile(GCodeMacros.getFilename(macroName));
+        }
     }
 
     private boolean transmitDataFileStart(final String fileID) throws RoboxCommsException
@@ -2224,5 +2210,10 @@ public class Printer
     public boolean isPrintInitiated()
     {
         return printInitiated;
+    }
+
+    public void transmitWriteMaterialTemperatureToHeadEEPROM(int reelNozzleTemperature)
+    {
+
     }
 }

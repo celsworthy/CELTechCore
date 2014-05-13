@@ -12,6 +12,7 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.services.ControllableService;
+import celtech.utils.PrinterUtils;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -62,9 +63,12 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
                 try
                 {
                     printerToUse.transmitStoredGCode("Home_all");
-                    waitOnBusy();
+                    steno.info("Status " + printerToUse.getPrintQueue().getPrintStatus());
+                    PrinterUtils.waitOnMacroFinished(printerToUse, this);
+                    StatusResponse response = printerToUse.transmitStatusRequest();
+                    steno.info("Init pt 1");
                     printerToUse.transmitDirectGCode("M104", false);
-                    if (printerToUse.getNozzleHeaterMode() == HeaterMode.FIRST_LAYER)
+                    if (response.getNozzleHeaterMode() == HeaterMode.FIRST_LAYER)
                     {
                         waitUntilNozzleReaches(printerToUse.getNozzleFirstLayerTargetTemperature(), 5);
                     } else
@@ -72,6 +76,7 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
                         waitUntilNozzleReaches(printerToUse.getNozzleTargetTemperature(), 5);
                     }
                     waitOnBusy();
+                    steno.info("Heated ok");
 
                     success = true;
                 } catch (RoboxCommsException ex)
@@ -232,7 +237,7 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
 
         while ((printerToUse.extruderTemperatureProperty().get() < minTemp || printerToUse.extruderTemperatureProperty().get() > maxTemp) && isCancelled() == false)
         {
-            Thread.sleep(100);
+            Thread.sleep(250);
         }
     }
 

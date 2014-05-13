@@ -11,6 +11,8 @@ import celtech.coreUI.controllers.popups.GenericErrorPopupController;
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
+import celtech.utils.PrinterUtils;
+import java.util.ResourceBundle;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
@@ -28,9 +30,15 @@ public class ErrorHandler
     private VBox genericErrorPopup = null;
     private GenericErrorPopupController genericErrorPopupController = null;
     private int errorsAcknowledged = 0;
+    private ResourceBundle i18nBundle = null;
+    private static ErrorHandler instance = null;
+    private PrinterUtils printerUtils = null;
 
-    public ErrorHandler()
+    private ErrorHandler()
     {
+        i18nBundle = DisplayManager.getLanguageBundle();
+        printerUtils = PrinterUtils.getInstance();
+
         try
         {
             FXMLLoader genericErrorPageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlUtilityPanelResourcePath + "genericErrorPopup.fxml"), DisplayManager.getLanguageBundle());
@@ -46,6 +54,16 @@ public class ErrorHandler
         }
     }
 
+    public static ErrorHandler getInstance()
+    {
+        if (instance == null)
+        {
+            instance = new ErrorHandler();
+        }
+
+        return instance;
+    }
+
     public void checkForErrors(Printer printer)
     {
         //Check for errors and open a Dialog if there are any present
@@ -54,7 +72,11 @@ public class ErrorHandler
             steno.trace("Requesting errors from printer");
             AckResponse errors = printer.transmitReportErrors();
             steno.trace("Errors are:\n" + errors.toString());
-            if (errors.isError())
+            if (errors.isNozzleFlushNeededError())
+            {
+                printer.transmitResetErrors();
+                printer.resumePrint();
+            } else if (errors.isError())
             {
                 if (errorDialog.isShowing() == false)
                 {
@@ -62,6 +84,10 @@ public class ErrorHandler
                     errorDialog.show();
                     steno.trace("Resetting errors");
                     printer.transmitResetErrors();
+                    if (printer.getPaused() == true)
+                    {
+                        printer.resumePrint();
+                    }
                 }
             }
         } catch (RoboxCommsException ex)

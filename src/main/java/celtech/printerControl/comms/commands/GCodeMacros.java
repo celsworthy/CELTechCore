@@ -21,6 +21,7 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class GCodeMacros
 {
+
     private static final Stenographer steno = StenographerFactory.getStenographer(GCodeMacros.class.getName());
 
     public static ArrayList<String> getMacroContents(String macroFile)
@@ -47,6 +48,12 @@ public class GCodeMacros
         }
 
         return contents;
+    }
+
+    public static String getFilename(String macroName)
+    {
+        String macrofile = ApplicationConfiguration.getCommonApplicationDirectory() + ApplicationConfiguration.macroFileSubpath + macroName + ApplicationConfiguration.macroFileExtension;
+        return macrofile;
     }
 
 //    public String getMacroContentsInOneLine()

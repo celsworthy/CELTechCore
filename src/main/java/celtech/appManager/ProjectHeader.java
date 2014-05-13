@@ -5,6 +5,7 @@
  */
 package celtech.appManager;
 
+import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
 import celtech.printerControl.PrintJob;
 import celtech.utils.SystemUtils;
@@ -32,6 +33,7 @@ public class ProjectHeader implements Serializable
     private final transient SimpleDateFormat formatter = new SimpleDateFormat("-hhmmss-ddMMYY");
     private String projectUUID = null;
     private StringProperty projectNameProperty = null;
+    private String projectPath = null;
     private ObjectProperty<Date> lastSavedDate = new SimpleObjectProperty<>();
     private ObjectProperty<Date> lastModifiedDate = new SimpleObjectProperty<>();
     private ObservableList<PrintJob> print = FXCollections.observableArrayList();
@@ -41,6 +43,7 @@ public class ProjectHeader implements Serializable
         projectUUID = SystemUtils.generate16DigitID();
         Date now = new Date();
         projectNameProperty = new SimpleStringProperty(DisplayManager.getLanguageBundle().getString("projectLoader.untitled") + formatter.format(now));
+        projectPath = ApplicationConfiguration.getProjectDirectory() + projectNameProperty.get() + ApplicationConfiguration.projectFileExtension;
         lastModifiedDate.set(now);
     }
 
@@ -57,6 +60,16 @@ public class ProjectHeader implements Serializable
     public final StringProperty projectNameProperty()
     {
         return projectNameProperty;
+    }
+    
+    public final String getProjectPath()
+    {
+        return projectPath;
+    }
+
+    public void setProjectPath(String value)
+    {
+        projectPath = value;
     }
 
     public final String getUUID()

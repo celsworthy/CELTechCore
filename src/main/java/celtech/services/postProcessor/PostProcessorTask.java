@@ -11,8 +11,8 @@ package celtech.services.postProcessor;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.gcodetranslator.GCodeRoboxiser;
+import celtech.gcodetranslator.RoboxiserResult;
 import celtech.printerControl.Printer;
-import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
 import java.io.File;
 import javafx.beans.property.DoubleProperty;
@@ -54,10 +54,11 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult> {
             }
         });
         
-        boolean success = roboxiser.roboxiseFile(gcodeFileToProcess, gcodeOutputFile, settings, taskProgress);
+        RoboxiserResult roboxiserResult = roboxiser.roboxiseFile(gcodeFileToProcess, gcodeOutputFile, settings, taskProgress);
 
-        GCodePostProcessingResult result = new GCodePostProcessingResult(printJobUUID, gcodeOutputFile, printerToUse, success);
-        return result;
+        GCodePostProcessingResult postProcessingResult = new GCodePostProcessingResult(printJobUUID, gcodeOutputFile, printerToUse, roboxiserResult);
+        
+        return postProcessingResult;
     }
 
 }

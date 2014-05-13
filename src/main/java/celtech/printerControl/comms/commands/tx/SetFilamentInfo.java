@@ -12,7 +12,7 @@ public class SetFilamentInfo extends RoboxTxPacket
 {
     public SetFilamentInfo()
     {
-        super(TxPacketTypeEnum.SET_TEMPERATURES, false, false);
+        super(TxPacketTypeEnum.SET_FILAMENT_INFO, false, false);
     }
 
     @Override

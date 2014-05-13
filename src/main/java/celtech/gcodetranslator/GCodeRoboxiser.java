@@ -82,14 +82,20 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
     private boolean pastFirstLayer = false;
 
+    private double predictedDuration = 0.0;
+    private double volumeUsed = 0.0;
+
     public GCodeRoboxiser()
     {
         gcodeParser.addListener(this);
     }
 
-    public boolean roboxiseFile(String inputFilename, String outputFilename, RoboxProfile settings, DoubleProperty percentProgress)
+    public RoboxiserResult roboxiseFile(String inputFilename, String outputFilename, RoboxProfile settings, DoubleProperty percentProgress)
     {
+        RoboxiserResult result = new RoboxiserResult();
         boolean success = false;
+
+        predictedDuration = 0.0;
 
         lastPoint = new Vector2D(0, 0);
 
@@ -145,7 +151,12 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             steno.error("Error roboxising file " + inputFilename);
         }
 
-        return success;
+        result.setSuccess(success);
+        result.setPredictedDuration(predictedDuration);
+        result.setVolumeUsed(volumeUsed);
+        
+        steno.info("Estimated print time " + result.getPredictedDuration());
+        return result;
     }
 
     @Override
@@ -627,6 +638,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                         int foundRetractDuringExtrusion = -1;
                         int foundNozzleChange = -1;
                         double currentNozzlePosition = nozzleStartPosition;
+                        double currentFeedrate = 0;
 
                         for (int tSearchIndex = extrusionBuffer.size() - 1; tSearchIndex > wipeVolumeIndex; tSearchIndex--)
                         {
@@ -654,6 +666,28 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                         for (int eventWriteIndex = 0; eventWriteIndex < extrusionBuffer.size(); eventWriteIndex++)
                         {
                             GCodeParseEvent candidateevent = extrusionBuffer.get(eventWriteIndex);
+
+                            if (candidateevent.getFeedRate() > 0)
+                            {
+                                currentFeedrate = candidateevent.getFeedRate();
+                            }
+                                
+                            if (candidateevent.getLength() > 0 && currentFeedrate > 0)
+                            {
+                                double timePerEvent = currentFeedrate / candidateevent.getLength();
+                                predictedDuration += timePerEvent;
+                            }
+
+                            if (candidateevent instanceof RetractEvent)
+                            {
+                                volumeUsed += ((RetractEvent) candidateevent).getE();
+                            } else if (candidateevent instanceof UnretractEvent)
+                            {
+                                volumeUsed += ((UnretractEvent) candidateevent).getE();
+                            } else if (candidateevent instanceof RetractDuringExtrusionEvent)
+                            {
+                                volumeUsed += ((RetractDuringExtrusionEvent) candidateevent).getE();
+                            }
 
                             if (candidateevent instanceof ExtrusionEvent)
                             {
@@ -705,6 +739,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                 } else
                                 {
                                     writeEventToFile(event);
+                                    volumeUsed += event.getE();
                                 }
                             } else
                             {

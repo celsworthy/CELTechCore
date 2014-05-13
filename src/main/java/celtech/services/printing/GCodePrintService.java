@@ -19,7 +19,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author ianhudson
  */
-public class GCodePrintService extends Service<Boolean> implements ControllableService
+public class GCodePrintService extends Service<GCodePrintResult> implements ControllableService
 {
 
     private Printer printerToUse = null;
@@ -28,6 +28,7 @@ public class GCodePrintService extends Service<Boolean> implements ControllableS
     private final IntegerProperty linesInGCodeFile = new SimpleIntegerProperty(1);
     private final Stenographer steno = StenographerFactory.getStenographer(this.getClass().getName());
     private boolean printUsingSDCard = true;
+    private boolean isMacro = false;
     
     public void setPrinterToUse(Printer printerToUse)
     {
@@ -90,9 +91,9 @@ public class GCodePrintService extends Service<Boolean> implements ControllableS
     }
 
     @Override
-    protected Task<Boolean> createTask()
+    protected Task<GCodePrintResult> createTask()
     {
-        return new GCodePrinterTask(getPrinterToUse(), getModelFileToPrint(), getCurrentPrintJobID(), linesInGCodeFileProperty(), printUsingSDCard);
+        return new GCodePrinterTask(getPrinterToUse(), getModelFileToPrint(), getCurrentPrintJobID(), linesInGCodeFileProperty(), printUsingSDCard, isMacro);
     }
 
     @Override
@@ -100,5 +101,10 @@ public class GCodePrintService extends Service<Boolean> implements ControllableS
     {
         steno.info("Print service cancelled - job " + getCurrentPrintJobID());
         return cancel();
+    }
+
+    void setIsMacro(boolean isMacro)
+    {
+        this.isMacro = isMacro;
     }
 }

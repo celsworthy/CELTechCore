@@ -12,9 +12,11 @@ import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
+import celtech.coreUI.ErrorHandler;
 import celtech.coreUI.visualisation.SelectionContainer;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
+import celtech.utils.PrinterUtils;
 import java.io.File;
 import java.net.URL;
 import java.util.ListIterator;
@@ -39,7 +41,7 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class MenuStripController
 {
-    
+
     private Stenographer steno = StenographerFactory.getStenographer(MenuStripController.class.getName());
     private SettingsScreenState settingsScreenState = null;
     private ApplicationStatus applicationStatus = null;
@@ -48,37 +50,40 @@ public class MenuStripController
     private Project boundProject = null;
     private ResourceBundle i18nBundle = null;
     private File lastModelDirectory = null;
-    
+    private PrinterUtils printerUtils = null;
+
+    private ErrorHandler errorHandler = ErrorHandler.getInstance();
+
     @FXML
     private ResourceBundle resources;
-    
+
     @FXML
     private URL location;
-    
+
     @FXML
     private Button backwardButton;
-    
+
     @FXML
     private Button forwardButton;
-    
+
     @FXML
     private Button printButton;
-    
+
     @FXML
     private HBox layoutButtonHBox;
-    
+
     @FXML
     private Button addModelButton;
-    
+
     @FXML
     private Button deleteModelButton;
-    
+
     @FXML
     private Button duplicateModelButton;
-    
+
     @FXML
     private Button distributeModelsButton;
-    
+
     @FXML
     void forwardPressed(ActionEvent event)
     {
@@ -94,15 +99,24 @@ public class MenuStripController
                 break;
         }
     }
-    
+
     @FXML
     void printPressed(ActionEvent event)
     {
-        Project currentProject = DisplayManager.getInstance().getCurrentlyVisibleProject();
-        settingsScreenState.getSelectedPrinter().printProject(currentProject, settingsScreenState.getFilament(), settingsScreenState.getPrintQuality(), settingsScreenState.getSettings());
-        applicationStatus.setMode(ApplicationMode.STATUS);
+        Printer printer = settingsScreenState.getSelectedPrinter();
+
+        if (printerUtils.isPurgeNecessary(printer))
+        {
+            printerUtils.offerPurgeIfNecessary(printer);
+        } else
+        {
+
+            Project currentProject = DisplayManager.getInstance().getCurrentlyVisibleProject();
+            printer.printProject(currentProject, settingsScreenState.getFilament(), settingsScreenState.getPrintQuality(), settingsScreenState.getSettings());
+            applicationStatus.setMode(ApplicationMode.STATUS);
+        }
     }
-    
+
     @FXML
     void backwardPressed(ActionEvent event)
     {
@@ -118,29 +132,29 @@ public class MenuStripController
                 break;
         }
     }
-    
+
     @FXML
     void addModel(ActionEvent event)
     {
         Platform.runLater(() ->
         {
             ListIterator iterator = modelFileChooser.getExtensionFilters().listIterator();
-            
+
             while (iterator.hasNext())
             {
                 iterator.next();
                 iterator.remove();
             }
-            
+
             ProjectMode projectMode = ProjectMode.NONE;
-            
+
             if (displayManager.getCurrentlyVisibleProject() != null)
             {
                 projectMode = displayManager.getCurrentlyVisibleProject().getProjectMode();
             }
-            
+
             String descriptionOfFile = null;
-            
+
             switch (projectMode)
             {
                 case NONE:
@@ -158,11 +172,11 @@ public class MenuStripController
             modelFileChooser.getExtensionFilters().addAll(
                     new FileChooser.ExtensionFilter(descriptionOfFile,
                                                     ApplicationConfiguration.getSupportedFileExtensionWildcards(projectMode)));
-            
+
             modelFileChooser.setInitialDirectory(lastModelDirectory);
-            
+
             final File file = modelFileChooser.showOpenDialog(displayManager.getMainStage());
-            
+
             if (file != null)
             {
                 lastModelDirectory = file.getParentFile();
@@ -170,34 +184,34 @@ public class MenuStripController
             }
         });
     }
-    
+
     @FXML
     void deleteModel(ActionEvent event)
     {
         displayManager.deleteSelectedModels();
     }
-    
+
     @FXML
     void copyModel(ActionEvent event)
     {
         displayManager.copySelectedModels();
     }
-    
+
     @FXML
     void autoLayoutModels(ActionEvent event)
     {
         displayManager.autoLayout();
     }
-    
+
     @FXML
     void snapToGround(ActionEvent event)
     {
         displayManager.activateSnapToGround();
     }
-    
+
     private Printer currentPrinter = null;
     private BooleanProperty printerOKToPrint = new SimpleBooleanProperty(false);
-    
+
     @FXML
     void initialize()
     {
@@ -205,13 +219,14 @@ public class MenuStripController
         i18nBundle = DisplayManager.getLanguageBundle();
         applicationStatus = ApplicationStatus.getInstance();
         settingsScreenState = SettingsScreenState.getInstance();
-        
+        printerUtils = PrinterUtils.getInstance();
+
         lastModelDirectory = new File(ApplicationConfiguration.getProjectDirectory());
-        
+
         backwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.STATUS));
 //        forwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS).and(printerOKToPrint));
         printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(printerOKToPrint));
-        
+
         settingsScreenState.selectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
             @Override
@@ -229,22 +244,22 @@ public class MenuStripController
                 }
             }
         });
-        
+
         layoutButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LAYOUT));
-        
+
         modelFileChooser.setTitle(i18nBundle.getString("dialogs.modelFileChooser"));
         modelFileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter(i18nBundle.getString("dialogs.modelFileChooserDescription"), ApplicationConfiguration.getSupportedFileExtensionWildcards(ProjectMode.NONE)));
-        
+
     }
-    
+
     public void bindSelectedModels(SelectionContainer selectionContainer)
     {
         deleteModelButton.disableProperty().unbind();
         duplicateModelButton.disableProperty().unbind();
 //        snapToGroundButton.disableProperty().unbind();
         distributeModelsButton.disableProperty().unbind();
-        
+
         deleteModelButton.disableProperty().bind(Bindings.isEmpty(selectionContainer.selectedModelsProperty()));
         duplicateModelButton.disableProperty().bind(Bindings.isEmpty(selectionContainer.selectedModelsProperty()));
 //        snapToGroundButton.setDisable(true);
@@ -262,12 +277,12 @@ public class MenuStripController
         {
             addModelButton.disableProperty().unbind();
         }
-        
+
         boundProject = displayManager.getCurrentlyVisibleProject();
         addModelButton.disableProperty().bind(Bindings.isNotEmpty(boundProject.getLoadedModels()).and(boundProject.projectModeProperty().isEqualTo(ProjectMode.GCODE)));
-        
+
         distributeModelsButton.disableProperty().bind(Bindings.isEmpty(boundProject.getLoadedModels()));
-        
+
         forwardButton.visibleProperty().unbind();
         forwardButton.visibleProperty().bind((applicationStatus.modeProperty().isEqualTo(ApplicationMode.LAYOUT).and(Bindings.isNotEmpty(boundProject.getLoadedModels())).or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.STATUS))));
     }

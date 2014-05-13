@@ -20,7 +20,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author ianhudson
  */
-public class GCodePrinterTask extends Task<Boolean>
+public class GCodePrinterTask extends Task<GCodePrintResult>
 {
 
     private Printer printerToUse = null;
@@ -29,19 +29,23 @@ public class GCodePrinterTask extends Task<Boolean>
     private final Stenographer steno = StenographerFactory.getStenographer(this.getClass().getName());
     private IntegerProperty linesInFile = null;
     private boolean printUsingSDCard = true;
+    private boolean isMacro = false;
 
-    public GCodePrinterTask(Printer printerToUse, String modelFileToPrint, String printJobID, IntegerProperty linesInFile, boolean printUsingSDCard)
+    public GCodePrinterTask(Printer printerToUse, String modelFileToPrint, String printJobID, IntegerProperty linesInFile, boolean printUsingSDCard, boolean isMacro)
     {
         this.printerToUse = printerToUse;
         this.gcodeFileToPrint = modelFileToPrint;
         this.printJobID = printJobID;
         this.linesInFile = linesInFile;
         this.printUsingSDCard = printUsingSDCard;
+        this.isMacro = isMacro;
     }
 
     @Override
-    protected Boolean call() throws Exception
+    protected GCodePrintResult call() throws Exception
     {
+        GCodePrintResult result = new GCodePrintResult();
+
         boolean gotToEndOK = false;
 
         updateTitle("GCode Print ID:" + printJobID);
@@ -81,9 +85,10 @@ public class GCodePrinterTask extends Task<Boolean>
                     line = SystemUtils.cleanGCodeForTransmission(line);
                     if (printUsingSDCard)
                     {
+//                        steno.info("Sending line " + lineCounter);
                         printerToUse.sendDataFileChunk(line, lineCounter == numberOfLines - 1, true);
                         if ((printerToUse.getSequenceNumber() > 1 && printerToUse.isPrintInitiated() == false)
-                                || (lineCounter == numberOfLines - 1 && printerToUse.getSequenceNumber() == 0 && printerToUse.isPrintInitiated() == false))
+                                || (lineCounter == numberOfLines - 1 && printerToUse.isPrintInitiated() == false))
                         {
                             //Start printing!
                             printerToUse.initiatePrint(printJobID);
@@ -113,7 +118,9 @@ public class GCodePrinterTask extends Task<Boolean>
             updateMessage("Printing error");
         }
 
-        return gotToEndOK;
+        result.setSuccess(gotToEndOK);
+        result.setIsMacro(isMacro);
+        return result;
     }
 
 }

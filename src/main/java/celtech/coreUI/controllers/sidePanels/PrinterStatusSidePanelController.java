@@ -18,6 +18,7 @@ import celtech.printerControl.Printer;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.utils.PrinterUtils;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
@@ -60,6 +61,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private final Stenographer steno = StenographerFactory.getStenographer(PrinterStatusSidePanelController.class.getName());
     private ApplicationStatus applicationStatus = null;
+    private PrinterUtils printerUtils = null;
 
     @FXML
     private HBox myContainer;
@@ -312,6 +314,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         RoboxCommsManager commsManager = RoboxCommsManager.getInstance();
         printerStatusList = commsManager.getPrintStatusList();
         statusScreenState = StatusScreenState.getInstance();
+        printerUtils = PrinterUtils.getInstance();
 
         timeAxis = new NumberAxis(0, MAX_DATA_POINTS, 30);
         timeAxis.setForceZeroInRange(false);
@@ -605,6 +608,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                         {
                             if (lastSelectedPrinter.getNozzleHeaterMode() == HeaterMode.OFF)
                             {
+                                printerUtils.offerPurgeIfNecessary(lastSelectedPrinter);
                                 lastSelectedPrinter.transmitDirectGCode(GCodeConstants.goToTargetNozzleTemperature, false);
                             }
                         }

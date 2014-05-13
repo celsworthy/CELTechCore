@@ -15,9 +15,9 @@
             <center>
                 <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
                     <children>
-                        <Text fx:id="calibrationStatus" fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" BorderPane.alignment="CENTER">
+                        <Text fx:id="calibrationStatus" fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="%calibrationPanel.readyToBeginNozzleOpeningCalibration" textAlignment="CENTER" wrappingWidth="500.0" BorderPane.alignment="CENTER">
                             <font>
-                                <Font name="Segoe UI" size="24.0" />
+                                <Font name="Segoe UI" size="18.0" />
                             </font>
                         </Text>
                     </children>

@@ -12,6 +12,7 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.services.ControllableService;
+import celtech.utils.PrinterUtils;
 import java.util.ResourceBundle;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
@@ -66,8 +67,9 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                 try
                 {
                     printerToUse.transmitDirectGCode("M104", false);
-                    printerToUse.transmitStoredGCode("Home_all");
                     waitOnBusy();
+                    printerToUse.transmitStoredGCode("Home_all");
+                    PrinterUtils.waitOnMacroFinished(printerToUse, this);
                     printerToUse.transmitDirectGCode("G0 Z50", false);
                     waitOnBusy();
                     success = true;

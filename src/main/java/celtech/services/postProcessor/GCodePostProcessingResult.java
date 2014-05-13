@@ -4,9 +4,7 @@
  */
 package celtech.services.postProcessor;
 
-import celtech.services.slicer.*;
-import celtech.appManager.Project;
-import celtech.configuration.FilamentContainer;
+import celtech.gcodetranslator.RoboxiserResult;
 import celtech.printerControl.Printer;
 
 /**
@@ -18,14 +16,14 @@ public class GCodePostProcessingResult
     private String printJobUUID = null;
     private String outputFilename = null;
     private Printer printerToUse = null;
-    private boolean success = false;
+    private RoboxiserResult result = null;
 
-    public GCodePostProcessingResult(String printJobUUID, String outputFilename, Printer printerToUse, boolean success)
+    public GCodePostProcessingResult(String printJobUUID, String outputFilename, Printer printerToUse, RoboxiserResult result)
     {
         this.printJobUUID = printJobUUID;
         this.outputFilename = outputFilename;
         this.printerToUse = printerToUse;
-        this.success = success;
+        this.result = result;
     }
 
     public String getPrintJobUUID()
@@ -43,13 +41,13 @@ public class GCodePostProcessingResult
         return printerToUse;
     }
 
-    public boolean isSuccess()
+    public RoboxiserResult getRoboxiserResult()
     {
-        return success;
+        return result;
     }
 
-    public void setSuccess(boolean success)
+    public void setRoboxiserResult(RoboxiserResult result)
     {
-        this.success = success;
+        this.result = result;
     }
 }

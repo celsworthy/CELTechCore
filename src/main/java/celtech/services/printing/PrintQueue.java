@@ -31,11 +31,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
@@ -43,6 +46,7 @@ import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -71,6 +75,8 @@ public class PrintQueue implements ControllableService
     private PostProcessorService gcodePostProcessorService = new PostProcessorService();
     private GCodePrintService gcodePrintService = new GCodePrintService();
     private IntegerProperty linesInPrintingFile = new SimpleIntegerProperty(0);
+    private IntegerProperty estimatedPrintTimeSeconds = new SimpleIntegerProperty(0);
+    private IntegerProperty estimatedMaterialVolume = new SimpleIntegerProperty(0);
     /*
      * 
      */
@@ -94,6 +100,7 @@ public class PrintQueue implements ControllableService
     private final DoubleProperty primaryProgressPercent = new SimpleDoubleProperty(0);
     private final DoubleProperty secondaryProgressPercent = new SimpleDoubleProperty(0);
     private final BooleanProperty sendingDataToPrinter = new SimpleBooleanProperty(false);
+    private final ObjectProperty<Date> printJobStartTime = new SimpleObjectProperty<>();
     /*
      * 
      */
@@ -117,6 +124,8 @@ public class PrintQueue implements ControllableService
     private String notificationTitle = null;
 
     private HashMap<String, Project> printJobsAgainstProjects = new HashMap<>();
+
+    private boolean consideringPrintRequest = false;
 
     public PrintQueue(Printer associatedPrinter)
     {
@@ -178,7 +187,7 @@ public class PrintQueue implements ControllableService
                 } else
                 {
                     Notifier.showErrorNotification(notificationTitle, sliceFailedNotification);
-                abortPrint();
+                    abortPrint();
                 }
             }
         };
@@ -208,7 +217,7 @@ public class PrintQueue implements ControllableService
         {
             GCodePostProcessingResult result = (GCodePostProcessingResult) (t.getSource().getValue());
 
-            if (result.isSuccess())
+            if (result.getRoboxiserResult().isSuccess())
             {
                 steno.info(t.getSource().getTitle() + " has succeeded");
                 String jobUUID = result.getPrintJobUUID();
@@ -216,11 +225,16 @@ public class PrintQueue implements ControllableService
                 Project project = printJobsAgainstProjects.get(jobUUID);
                 project.addPrintJobID(jobUUID);
 
+                estimatedMaterialVolume.set((int) result.getRoboxiserResult().getVolumeUsed());
+                estimatedPrintTimeSeconds.set((int) result.getRoboxiserResult().getPredictedDuration());
+
                 gcodePrintService.reset();
                 gcodePrintService.setCurrentPrintJobID(jobUUID);
                 gcodePrintService.setModelFileToPrint(result.getOutputFilename());
                 gcodePrintService.setPrinterToUse(result.getPrinterToUse());
                 gcodePrintService.start();
+
+                printJobStartTime.set(new Date());
 
                 File gcodeFromPrintJob = new File(result.getOutputFilename());
                 int numberOfLines = SystemUtils.countLinesInFile(gcodeFromPrintJob, ";");
@@ -261,12 +275,18 @@ public class PrintQueue implements ControllableService
             @Override
             public void handle(WorkerStateEvent t)
             {
-                boolean succeeded = (boolean) (t.getSource().getValue());
-                if (succeeded)
+                GCodePrintResult result = (GCodePrintResult) (t.getSource().getValue());
+                if (result.isSuccess())
                 {
                     steno.info(t.getSource().getTitle() + " has succeeded");
-                    Notifier.showInformationNotification(notificationTitle, printTransferSuccessfulNotification + " " + associatedPrinter.getPrinterFriendlyName() + "\n" + printTransferSuccessfulNotificationEnd);
-                    setPrintStatus(PrinterStatusEnumeration.PRINTING);
+                    if (result.isIsMacro())
+                    {
+                        setPrintStatus(PrinterStatusEnumeration.EXECUTING_MACRO);
+                    } else
+                    {
+                        Notifier.showInformationNotification(notificationTitle, printTransferSuccessfulNotification + " " + associatedPrinter.getPrinterFriendlyName() + "\n" + printTransferSuccessfulNotificationEnd);
+                        setPrintStatus(PrinterStatusEnumeration.PRINTING);
+                    }
                 } else
                 {
                     Notifier.showErrorNotification(notificationTitle, printJobFailedNotification);
@@ -301,6 +321,7 @@ public class PrintQueue implements ControllableService
                         break;
                     case SENDING_TO_PRINTER:
                     case PRINTING:
+                    case EXECUTING_MACRO:
                         if (linesInPrintingFile.get() > 0)
                         {
                             double percentDone = newValue.doubleValue() / linesInPrintingFile.doubleValue();
@@ -355,7 +376,6 @@ public class PrintQueue implements ControllableService
             switch (printState)
             {
                 case IDLE:
-                case SENDING_TO_PRINTER:
                     if (roboxIsPrinting)
                     {
                         //We've detected a print job when we're idle...
@@ -384,7 +404,9 @@ public class PrintQueue implements ControllableService
                         }
                     }
                     break;
+                case SENDING_TO_PRINTER:
                 case PRINTING:
+                case EXECUTING_MACRO:
                     if (roboxIsPrinting == false)
                     {
 //                            fxToJMEInterface.exposeGCodeModel(0);
@@ -426,6 +448,16 @@ public class PrintQueue implements ControllableService
                         //Reprint directly from printer
                         steno.info("Printing job " + jobUUID + " from printer store");
                         Notifier.showInformationNotification(notificationTitle, i18nBundle.getString("notification.reprintInitiated"));
+
+                        //Try to get the number of lines in the file
+                        String printjobFilename = ApplicationConfiguration.getPrintSpoolDirectory() + jobUUID + File.separator + jobUUID + ApplicationConfiguration.gcodePostProcessedFileHandle + ApplicationConfiguration.gcodeTempFileExtension;
+                        File printJobFile = new File(printjobFilename);
+                        if (printJobFile.exists())
+                        {
+                            int numberOfLines = SystemUtils.countLinesInFile(printJobFile, ";");
+                            linesInPrintingFile.set(numberOfLines);
+                        }
+
                         associatedPrinter.initiatePrint(jobUUID);
                         setPrintStatus(PrinterStatusEnumeration.PRINTING);
                         acceptedPrintRequest = true;
@@ -611,6 +643,7 @@ public class PrintQueue implements ControllableService
                 setDialogRequired(false);
                 break;
             case PRINTING:
+            case EXECUTING_MACRO:
                 printProgressMessage.unbind();
                 primaryProgressPercent.unbind();
                 if (printState != PrinterStatusEnumeration.PAUSED)
@@ -626,6 +659,7 @@ public class PrintQueue implements ControllableService
         }
         setPrintProgressTitle(newState.getDescription());
         printState = newState;
+        consideringPrintRequest = false;
     }
 
     private void setDialogRequired(boolean value)
@@ -805,6 +839,7 @@ public class PrintQueue implements ControllableService
         {
             case IDLE:
             case PRINTING:
+            case EXECUTING_MACRO:
                 lastStateBeforePause = printState;
                 setPrintStatus(PrinterStatusEnumeration.PAUSED);
                 break;
@@ -828,5 +863,99 @@ public class PrintQueue implements ControllableService
     public ReadOnlyIntegerProperty linesInPrintingFileProperty()
     {
         return linesInPrintingFile;
+    }
+
+    public boolean printGCodeFile(String filename)
+    {
+        boolean acceptedPrintRequest = false;
+        consideringPrintRequest = true;
+
+        if (printState == PrinterStatusEnumeration.IDLE)
+        {
+            if (Platform.isFxApplicationThread() == false)
+            {
+                Platform.runLater(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        runMacroPrintJob(filename);
+                    }
+                });
+            } else
+            {
+                runMacroPrintJob(filename);
+            }
+            acceptedPrintRequest = true;
+        }
+
+        return acceptedPrintRequest;
+    }
+
+    private void runMacroPrintJob(String filename)
+    {
+        //Create the print job directory
+        String printUUID = SystemUtils.generate16DigitID();
+
+        String printJobDirectoryName = ApplicationConfiguration.getPrintSpoolDirectory() + printUUID;
+
+        File printJobDirectory = new File(printJobDirectoryName);
+        printJobDirectory.mkdirs();
+
+        //Erase old print job directories
+        File printSpoolDirectory = new File(ApplicationConfiguration.getPrintSpoolDirectory());
+        File[] filesOnDisk = printSpoolDirectory.listFiles();
+        if (filesOnDisk.length > ApplicationConfiguration.maxPrintSpoolFiles)
+        {
+            int filesToDelete = filesOnDisk.length - ApplicationConfiguration.maxPrintSpoolFiles;
+            Arrays.sort(filesOnDisk, (File f1, File f2) -> Long.valueOf(f1.lastModified()).compareTo(f2.lastModified()));
+            for (int i = 0; i < filesToDelete; i++)
+            {
+                try
+                {
+                    FileUtils.deleteDirectory(filesOnDisk[i]);
+                } catch (IOException ex)
+                {
+                    steno.error("Error whilst deleting " + filesOnDisk[i].toString());
+                }
+            }
+        }
+
+        String printjobFilename = ApplicationConfiguration.getPrintSpoolDirectory() + printUUID + File.separator + printUUID + ApplicationConfiguration.gcodeTempFileExtension;
+        File printjobFile = new File(printjobFilename);
+        File fileToCopy = new File(filename);
+
+        setPrintStatus(PrinterStatusEnumeration.EXECUTING_MACRO);
+        try
+        {
+            Files.copy(fileToCopy.toPath(), printjobFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex)
+        {
+            steno.error("Error whilst preparing for gcode print. Can't copy " + filename + " to " + printjobFilename);
+        }
+
+        try
+        {
+            Files.copy(fileToCopy.toPath(), printjobFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+            gcodePrintService.reset();
+            gcodePrintService.setCurrentPrintJobID(printUUID);
+            gcodePrintService.setModelFileToPrint(printjobFilename);
+            gcodePrintService.setPrinterToUse(associatedPrinter);
+            gcodePrintService.setIsMacro(true);
+            int numberOfLines = SystemUtils.countLinesInFile(printjobFile, ";");
+            linesInPrintingFile.set(numberOfLines);
+            gcodePrintService.start();
+        } catch (IOException ex)
+        {
+            consideringPrintRequest = false;
+            steno.error("Error whilst preparing for gcode print. Can't copy " + filename + " to " + printjobFilename);
+        }
+
+    }
+
+    public boolean isConsideringPrintRequest()
+    {
+        return consideringPrintRequest;
     }
 }

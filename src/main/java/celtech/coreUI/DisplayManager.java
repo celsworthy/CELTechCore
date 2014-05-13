@@ -550,7 +550,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             if (modelNameToLoad.endsWith(ApplicationConfiguration.projectFileExtension))
             {
                 ProjectTab currentProjectTab = ((ProjectTab) (tabDisplaySelectionModel.selectedItemProperty().get()));
-                currentProjectTab.addProjectContainer(modelNameToLoad);
+                currentProjectTab.addProjectContainer(modelToLoad.getAbsolutePath());
                 tabDisplaySelectionModel.select(currentProjectTab);
             } else
             {

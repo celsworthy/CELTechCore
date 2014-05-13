@@ -35,20 +35,6 @@ public class CalibrationNozzleBPageController implements Initializable
 
     private NozzleBCalibrationState state = NozzleBCalibrationState.IDLE;
 
-    private String initialisingMessage = null;
-    private String heatingMessage = null;
-    private String readyToBeginMessage = null;
-    private String primingNozzleMessage = null;
-    private String noMaterialShouldBePresentMessage = null;
-    private String materialShouldBePresentMessage = null;
-    private String isMaterialExtrudingInstructionNozzle0 = null;
-    private String isMaterialExtrudingInstructionNozzle1 = null;
-    private String isMaterialExtrudingEitherNozzle = null;
-    private String nozzleCalibrationFailedMessage = null;
-    private String ensureHeadIsCleanMessage = null;
-    private String ensureHeadIsCleanInstruction = null;
-    private String calibrationCommencedMessage = null;
-    private String calibrationSucceededMessage = null;
     private ResourceBundle i18nBundle = null;
     private Printer printerToUse = null;
     private final float bOffsetStartingValue = 0.8f;
@@ -56,6 +42,8 @@ public class CalibrationNozzleBPageController implements Initializable
     private float nozzlePosition = 0;
     private float nozzle0BOffset = 0;
     private float nozzle1BOffset = 0;
+
+    private boolean parkRequired = false;
 
     private HeadEEPROMDataResponse savedHeadData = null;
 
@@ -268,7 +256,12 @@ public class CalibrationNozzleBPageController implements Initializable
 
             printerToUse.transmitDirectGCode("G0 B0", false);
             printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-            printerToUse.transmitStoredGCode("Park");
+
+            if (parkRequired)
+            {
+                parkRequired = false;
+                printerToUse.transmitStoredGCode("Park");
+            }
         } catch (RoboxCommsException ex)
         {
             steno.error("Error in needle valve calibration - mode=" + state.name());
@@ -288,21 +281,6 @@ public class CalibrationNozzleBPageController implements Initializable
     public void initialize(URL location, ResourceBundle resources)
     {
         i18nBundle = DisplayManager.getLanguageBundle();
-
-        initialisingMessage = i18nBundle.getString("calibrationPanel.BCalibrationInitialising");
-        heatingMessage = i18nBundle.getString("calibrationPanel.BCalibrationHeating");
-        readyToBeginMessage = i18nBundle.getString("calibrationPanel.readyToBeginTest");
-        primingNozzleMessage = i18nBundle.getString("calibrationPanel.primingNozzle");
-        isMaterialExtrudingInstructionNozzle0 = i18nBundle.getString("calibrationPanel.isMaterialExtrudingNozzle0");
-        isMaterialExtrudingInstructionNozzle1 = i18nBundle.getString("calibrationPanel.isMaterialExtrudingNozzle1");
-        noMaterialShouldBePresentMessage = i18nBundle.getString("calibrationPanel.valvesClosedNoMaterial");
-        materialShouldBePresentMessage = i18nBundle.getString("calibrationPanel.valvesOpenMaterialExtruding");
-        nozzleCalibrationFailedMessage = i18nBundle.getString("calibrationPanel.nozzleCalibrationFailed");
-        ensureHeadIsCleanMessage = i18nBundle.getString("calibrationPanel.ensureHeadIsCleanMessage");
-        ensureHeadIsCleanInstruction = i18nBundle.getString("calibrationPanel.ensureHeadIsCleanInstruction");
-        calibrationCommencedMessage = i18nBundle.getString("calibrationPanel.calibrationCommencedMessage");
-        calibrationSucceededMessage = i18nBundle.getString("calibrationPanel.calibrationSucceededMessage");
-        isMaterialExtrudingEitherNozzle = i18nBundle.getString("calibrationPanel.isMaterialExtrudingEitherNozzle");
 
         StatusScreenState statusScreenState = StatusScreenState.getInstance();
         statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
@@ -338,8 +316,8 @@ public class CalibrationNozzleBPageController implements Initializable
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(false);
                 noButton.setVisible(false);
-                calibrationInstruction.setText("");
-                calibrationStatus.setText(readyToBeginMessage);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
                 break;
             case INITIALISING:
                 currentNozzleNumber = 0;
@@ -347,8 +325,8 @@ public class CalibrationNozzleBPageController implements Initializable
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(false);
                 noButton.setVisible(false);
-                calibrationStatus.setText(initialisingMessage);
-                calibrationInstruction.setText("");
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
 
                 try
                 {
@@ -388,8 +366,8 @@ public class CalibrationNozzleBPageController implements Initializable
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(false);
                 noButton.setVisible(false);
-                calibrationStatus.setText(heatingMessage);
-                calibrationInstruction.setText("");
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
 
                 calibrationTask = new CalibrateBTask(state);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
@@ -407,8 +385,8 @@ public class CalibrationNozzleBPageController implements Initializable
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(false);
                 noButton.setVisible(false);
-                calibrationStatus.setText(primingNozzleMessage);
-                calibrationInstruction.setText("");
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
 
                 calibrationTask = new CalibrateBTask(state);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
@@ -418,28 +396,25 @@ public class CalibrationNozzleBPageController implements Initializable
                 Thread primingTaskThread = new Thread(calibrationTask);
                 primingTaskThread.setName("Calibration - priming");
                 primingTaskThread.start();
+
+                parkRequired = true;
                 break;
             case NO_MATERIAL_CHECK:
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(true);
                 noButton.setVisible(true);
-                calibrationStatus.setText(noMaterialShouldBePresentMessage);
-                calibrationInstruction.setText(isMaterialExtrudingEitherNozzle);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
                 break;
             case MATERIAL_EXTRUDING_CHECK:
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(true);
                 noButton.setVisible(true);
-                calibrationStatus.setText(materialShouldBePresentMessage);
-                if (currentNozzleNumber == 0)
-                {
-                    calibrationInstruction.setText(isMaterialExtrudingInstructionNozzle0);
-                } else
-                {
-                    calibrationInstruction.setText(isMaterialExtrudingInstructionNozzle1);
-                }
+                calibrationStatus.setText(state.getStepTitle(String.valueOf(currentNozzleNumber)));
+                calibrationInstruction.setText(state.getStepInstruction(String.valueOf(currentNozzleNumber)));
+
                 calibrationTask = new CalibrateBTask(state, currentNozzleNumber);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
@@ -453,16 +428,16 @@ public class CalibrationNozzleBPageController implements Initializable
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(true);
                 noButton.setVisible(false);
-                calibrationStatus.setText(ensureHeadIsCleanMessage);
-                calibrationInstruction.setText(ensureHeadIsCleanInstruction);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
                 break;
             case PRE_CALIBRATION_PRIMING:
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(false);
                 noButton.setVisible(false);
-                calibrationStatus.setText(primingNozzleMessage);
-                calibrationInstruction.setText("");
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
 
                 nozzlePosition = 0;
 
@@ -502,14 +477,8 @@ public class CalibrationNozzleBPageController implements Initializable
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(true);
                 noButton.setVisible(true);
-                calibrationStatus.setText(calibrationCommencedMessage + " " + currentNozzleNumber);
-                if (currentNozzleNumber == 0)
-                {
-                    calibrationInstruction.setText(isMaterialExtrudingInstructionNozzle0);
-                } else
-                {
-                    calibrationInstruction.setText(isMaterialExtrudingInstructionNozzle1);
-                }
+                calibrationStatus.setText(state.getStepTitle(String.valueOf(currentNozzleNumber)));
+                calibrationInstruction.setText(state.getStepInstruction(String.valueOf(currentNozzleNumber)));
                 try
                 {
                     printerToUse.transmitDirectGCode("G0 B" + nozzlePosition, false);
@@ -523,16 +492,16 @@ public class CalibrationNozzleBPageController implements Initializable
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(true);
                 noButton.setVisible(false);
-                calibrationStatus.setText(ensureHeadIsCleanMessage);
-                calibrationInstruction.setText(ensureHeadIsCleanInstruction);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
                 break;
             case POST_CALIBRATION_PRIMING:
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(false);
                 noButton.setVisible(false);
-                calibrationStatus.setText(primingNozzleMessage);
-                calibrationInstruction.setText("");
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
 
                 nozzlePosition = 0;
                 calibrationTask = new CalibrateBTask(state);
@@ -549,22 +518,17 @@ public class CalibrationNozzleBPageController implements Initializable
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(true);
                 noButton.setVisible(true);
-                calibrationStatus.setText(noMaterialShouldBePresentMessage);
-                calibrationInstruction.setText(isMaterialExtrudingEitherNozzle);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
                 break;
             case CONFIRM_MATERIAL_EXTRUDING:
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(true);
                 noButton.setVisible(true);
-                calibrationStatus.setText(materialShouldBePresentMessage);
-                if (currentNozzleNumber == 0)
-                {
-                    calibrationInstruction.setText(isMaterialExtrudingInstructionNozzle0);
-                } else
-                {
-                    calibrationInstruction.setText(isMaterialExtrudingInstructionNozzle1);
-                }
+                calibrationStatus.setText(state.getStepTitle(String.valueOf(currentNozzleNumber)));
+                calibrationInstruction.setText(state.getStepInstruction(String.valueOf(currentNozzleNumber)));
+
                 calibrationTask = new CalibrateBTask(state, currentNozzleNumber);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
@@ -578,8 +542,8 @@ public class CalibrationNozzleBPageController implements Initializable
                 cancelCalibrationButton.setVisible(false);
                 yesButton.setVisible(false);
                 noButton.setVisible(false);
-                calibrationStatus.setText(calibrationSucceededMessage);
-                calibrationInstruction.setText("");
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
 
                 try
                 {
@@ -602,6 +566,7 @@ public class CalibrationNozzleBPageController implements Initializable
                     printerToUse.transmitDirectGCode("G0 B0", false);
                     printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
                     printerToUse.transmitStoredGCode("Park");
+                    parkRequired = false;
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in needle valve calibration - mode=" + state.name());
@@ -612,15 +577,18 @@ public class CalibrationNozzleBPageController implements Initializable
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(false);
                 noButton.setVisible(false);
-                calibrationStatus.setText(nozzleCalibrationFailedMessage);
-                calibrationInstruction.setText("");
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
 
                 try
                 {
                     printerToUse.transmitDirectGCode("G0 B0", false);
                     printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                    printerToUse.transmitStoredGCode("Park");
-
+                    if (parkRequired)
+                    {
+                        printerToUse.transmitStoredGCode("Park");
+                        parkRequired = false;
+                    }
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error clearing up after failed calibration");

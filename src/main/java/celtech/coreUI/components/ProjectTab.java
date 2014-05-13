@@ -129,22 +129,22 @@ public class ProjectTab extends Tab
         initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
     }
 
-    private Project loadProject(String projectName)
+    private Project loadProject(String projectNameWithPath)
     {
         Project loadedProject = null;
 
         try
         {
-            FileInputStream projectFile = new FileInputStream(ApplicationConfiguration.getProjectDirectory() + projectName);
+            FileInputStream projectFile = new FileInputStream(projectNameWithPath);
             ObjectInputStream reader = new ObjectInputStream(projectFile);
             loadedProject = (Project) reader.readObject();
             reader.close();
         } catch (IOException ex)
         {
-            steno.error("Failed to load project " + projectName);
+            steno.error("Failed to load project " + projectNameWithPath);
         } catch (ClassNotFoundException ex)
         {
-            steno.error("Couldn't locate class while loading project " + projectName);
+            steno.error("Couldn't locate class while loading project " + projectNameWithPath);
         }
 
         return loadedProject;
@@ -162,7 +162,7 @@ public class ProjectTab extends Tab
         {
             steno.info("Beginning save");
             saveProject();
-            projectManager.projectClosed(project.getProjectName());
+            projectManager.projectClosed(project.getProjectHeader().getProjectName() + project.getProjectName());
             steno.info("Completed save");
         });
 
@@ -395,9 +395,9 @@ public class ProjectTab extends Tab
     {
         if (titleBeingEdited == true)
         {
-            projectManager.projectClosed(project.getProjectName());
+            projectManager.projectClosed(project.getProjectHeader().getProjectPath() + project.getProjectHeader().getProjectName());
             project.setProjectName(editableProjectNameField.getText());
-            projectManager.projectOpened(project.getProjectName());
+            projectManager.projectOpened(project.getProjectHeader().getProjectPath() + project.getProjectHeader().getProjectName());
             setGraphic(nonEditableProjectNameField);
             titleBeingEdited = false;
         }
@@ -406,7 +406,7 @@ public class ProjectTab extends Tab
     public void addProjectContainer(String projectName)
     {
         project = loadProject(projectName);
-        projectManager.projectOpened(project.getProjectName());
+            projectManager.projectOpened(project.getProjectHeader().getProjectPath() + project.getProjectHeader().getProjectName());
         for (ModelContainer model : project.getLoadedModels())
         {
             viewManager.addModel(model);
@@ -428,7 +428,7 @@ public class ProjectTab extends Tab
                     break;
                 case MESH:
                     project.setProjectMode(ProjectMode.MESH);
-                    projectManager.projectOpened(project.getProjectName());
+                    projectManager.projectOpened(fullFilename);
                     break;
                 default:
                     break;

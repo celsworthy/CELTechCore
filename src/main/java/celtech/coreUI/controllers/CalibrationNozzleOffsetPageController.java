@@ -38,19 +38,6 @@ public class CalibrationNozzleOffsetPageController implements Initializable
 
     private NozzleOffsetCalibrationState state = NozzleOffsetCalibrationState.IDLE;
 
-    private String readyToBeginMessage = null;
-    private String peiBedRemovedInstruction = null;
-    private String reinstallPEIBedInstruction = null;
-    private String initialisingMessage = null;
-    private String ensureHeadIsCleanMessage = null;
-    private String ensureHeadIsCleanInstruction = null;
-    private String insertPieceOfPaperMessage = null;
-    private String isThePaperInPlaceInstruction = null;
-    private String moveThePieceOfPaperMessage = null;
-    private String moveThePieceOfPaperInstruction = null;
-    private String calibrationSucceededMessage = null;
-    private String nozzleCalibrationFailedMessage = null;
-    private String measuringZOffsetMessage = null;
     private ResourceBundle i18nBundle = null;
     private Printer printerToUse = null;
 
@@ -259,20 +246,6 @@ public class CalibrationNozzleOffsetPageController implements Initializable
     {
         i18nBundle = DisplayManager.getLanguageBundle();
 
-        readyToBeginMessage = i18nBundle.getString("calibrationPanel.readyToBeginTest");
-        peiBedRemovedInstruction = i18nBundle.getString("calibrationPanel.peiBedRemoved");
-        initialisingMessage = i18nBundle.getString("calibrationPanel.BCalibrationInitialising");
-        ensureHeadIsCleanMessage = i18nBundle.getString("calibrationPanel.ensureHeadIsCleanMessage");
-        ensureHeadIsCleanInstruction = i18nBundle.getString("calibrationPanel.ensureHeadIsCleanInstruction");
-        insertPieceOfPaperMessage = i18nBundle.getString("calibrationPanel.insertPieceOfPaper");
-        isThePaperInPlaceInstruction = i18nBundle.getString("calibrationPanel.isThePaperInPlace");
-        moveThePieceOfPaperMessage = i18nBundle.getString("calibrationPanel.moveThePaperMessage");
-        moveThePieceOfPaperInstruction = i18nBundle.getString("calibrationPanel.moveThePaperInstruction");
-        calibrationSucceededMessage = i18nBundle.getString("calibrationPanel.calibrationSucceededMessage");
-        nozzleCalibrationFailedMessage = i18nBundle.getString("calibrationPanel.nozzleCalibrationFailed");
-        measuringZOffsetMessage = i18nBundle.getString("calibrationPanel.measuringZOffset");
-        reinstallPEIBedInstruction = i18nBundle.getString("calibrationPanel.reinsertPEIBed");
-
         StatusScreenState statusScreenState = StatusScreenState.getInstance();
         statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
@@ -310,8 +283,8 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                 tooLooseButton.setVisible(false);
                 tooTightButton.setVisible(false);
                 justRightButton.setVisible(false);
-                calibrationInstruction.setText(peiBedRemovedInstruction);
-                calibrationStatus.setText(readyToBeginMessage);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
                 break;
             case INITIALISING:
                 startCalibrationButton.setVisible(false);
@@ -321,8 +294,8 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                 tooLooseButton.setVisible(false);
                 tooTightButton.setVisible(false);
                 justRightButton.setVisible(false);
-                calibrationStatus.setText(initialisingMessage);
-                calibrationInstruction.setText("");
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
 
                 try
                 {
@@ -366,8 +339,8 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(true);
                 noButton.setVisible(false);
-                calibrationStatus.setText(ensureHeadIsCleanMessage);
-                calibrationInstruction.setText(ensureHeadIsCleanInstruction);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
                 break;
             case MEASURE_Z_DIFFERENCE:
                 startCalibrationButton.setVisible(false);
@@ -377,8 +350,8 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                 tooLooseButton.setVisible(false);
                 tooTightButton.setVisible(false);
                 justRightButton.setVisible(false);
-                calibrationStatus.setText(measuringZOffsetMessage);
-                calibrationInstruction.setText("");
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
 
                 calibrationTask = new CalibrateNozzleOffsetTask(state);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
@@ -397,8 +370,8 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                 tooLooseButton.setVisible(false);
                 tooTightButton.setVisible(false);
                 justRightButton.setVisible(false);
-                calibrationStatus.setText(insertPieceOfPaperMessage);
-                calibrationInstruction.setText(isThePaperInPlaceInstruction);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
                 break;
             case PROBING:
                 startCalibrationButton.setVisible(false);
@@ -408,8 +381,8 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                 tooLooseButton.setVisible(false);
                 tooTightButton.setVisible(true);
                 justRightButton.setVisible(true);
-                calibrationStatus.setText(moveThePieceOfPaperMessage);
-                calibrationInstruction.setText(moveThePieceOfPaperInstruction);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
                 break;
             case FINISHED:
                 startCalibrationButton.setVisible(false);
@@ -419,8 +392,8 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                 tooLooseButton.setVisible(false);
                 tooTightButton.setVisible(false);
                 justRightButton.setVisible(false);
-                calibrationStatus.setText(calibrationSucceededMessage);
-                calibrationInstruction.setText(reinstallPEIBedInstruction);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
 
                 try
                 {
@@ -456,8 +429,8 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                 tooLooseButton.setVisible(false);
                 tooTightButton.setVisible(false);
                 justRightButton.setVisible(false);
-                calibrationStatus.setText(nozzleCalibrationFailedMessage);
-                calibrationInstruction.setText("");
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
 
                 try
                 {
