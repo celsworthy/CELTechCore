@@ -72,11 +72,7 @@ public class ErrorHandler
             steno.trace("Requesting errors from printer");
             AckResponse errors = printer.transmitReportErrors();
             steno.trace("Errors are:\n" + errors.toString());
-            if (errors.isNozzleFlushNeededError())
-            {
-                printer.transmitResetErrors();
-                printer.resumePrint();
-            } else if (errors.isError())
+            if (errors.isError() && !errors.isNozzleFlushNeededError())
             {
                 if (errorDialog.isShowing() == false)
                 {

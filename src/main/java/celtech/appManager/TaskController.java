@@ -6,9 +6,6 @@
 package celtech.appManager;
 
 import java.util.ArrayList;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
@@ -26,6 +23,7 @@ public class TaskController
     private static Stenographer steno = StenographerFactory.getStenographer(TaskController.class.getName());
     private static TaskController instance = null;
     private static ArrayList<Task> taskList = new ArrayList<>();
+    private static boolean isShuttingDown = false;
 
     private TaskController()
     {
@@ -71,6 +69,7 @@ public class TaskController
 
     public void shutdownAllManagedTasks()
     {
+        isShuttingDown = true;
         ArrayList<Task> tasksToCancel = new ArrayList<Task>(taskList);
 
         for (Task task : tasksToCancel)
@@ -83,5 +82,10 @@ public class TaskController
     public int getNumberOfManagedTasks()
     {
         return taskList.size();
+    }
+    
+    public static boolean isShuttingDown()
+    {
+        return isShuttingDown;
     }
 }

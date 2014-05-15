@@ -105,14 +105,18 @@ public class MenuStripController
     {
         Printer printer = settingsScreenState.getSelectedPrinter();
 
-        if (printerUtils.isPurgeNecessary(printer))
-        {
-            printerUtils.offerPurgeIfNecessary(printer);
-        }
-
         Project currentProject = DisplayManager.getInstance().getCurrentlyVisibleProject();
-        printer.printProject(currentProject, settingsScreenState.getFilament(), settingsScreenState.getPrintQuality(), settingsScreenState.getSettings());
+
+        boolean purgeConsent = printerUtils.offerPurgeIfNecessary(printer);
         applicationStatus.setMode(ApplicationMode.STATUS);
+
+        if (purgeConsent)
+        {
+            PrinterUtils.runPurge(currentProject, settingsScreenState.getFilament(), settingsScreenState.getPrintQuality(), settingsScreenState.getSettings(), printer);
+        } else
+        {
+            printer.printProject(currentProject, settingsScreenState.getFilament(), settingsScreenState.getPrintQuality(), settingsScreenState.getSettings());
+        }
     }
 
     @FXML

@@ -5,11 +5,17 @@
  */
 package celtech.utils;
 
+import celtech.appManager.Project;
+import celtech.appManager.TaskController;
+import celtech.configuration.Filament;
 import celtech.coreUI.DisplayManager;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
+import celtech.printerControl.comms.commands.rx.StatusResponse;
+import celtech.services.purge.PurgeTask;
+import celtech.services.slicer.PrintQualityEnumeration;
+import celtech.services.slicer.RoboxProfile;
 import java.util.ResourceBundle;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
@@ -52,7 +58,7 @@ public class PrinterUtils
     {
         if (task != null)
         {
-            while ((printerToCheck.getPrintQueue().isConsideringPrintRequest() == true || printerToCheck.getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.IDLE) && task.isCancelled() == false)
+            while ((printerToCheck.getPrintQueue().isConsideringPrintRequest() == true || printerToCheck.getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.IDLE) && task.isCancelled() == false && !TaskController.isShuttingDown())
             {
                 try
                 {
@@ -64,7 +70,7 @@ public class PrinterUtils
             }
         } else
         {
-            while ((printerToCheck.getPrintQueue().isConsideringPrintRequest() == true || printerToCheck.getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.IDLE))
+            while ((printerToCheck.getPrintQueue().isConsideringPrintRequest() == true || printerToCheck.getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.IDLE) && !TaskController.isShuttingDown())
             {
                 try
                 {
@@ -76,14 +82,57 @@ public class PrinterUtils
             }
         }
     }
-    
+
+    public static void waitOnBusy(Printer printerToCheck, Task task)
+    {
+        if (task != null)
+        {
+            try
+            {
+                StatusResponse response = printerToCheck.transmitStatusRequest();
+
+                while (response.isBusyStatus() == true && !task.isCancelled() && !TaskController.isShuttingDown())
+                {
+                    Thread.sleep(100);
+                    response = printerToCheck.transmitStatusRequest();
+                }
+            } catch (RoboxCommsException ex)
+            {
+                steno.error("Error requesting status");
+            } catch (InterruptedException ex)
+            {
+                steno.error("Interrupted during busy check");
+            }
+        } else
+        {
+            try
+            {
+                StatusResponse response = printerToCheck.transmitStatusRequest();
+
+                while (response.isBusyStatus() == true && !TaskController.isShuttingDown())
+                {
+                    Thread.sleep(100);
+                    response = printerToCheck.transmitStatusRequest();
+                }
+            } catch (RoboxCommsException ex)
+            {
+                steno.error("Error requesting status");
+            } catch (InterruptedException ex)
+            {
+                steno.error("Interrupted during busy check");
+            }
+        }
+
+    }
+
     public boolean isPurgeNecessary(Printer printer)
     {
         return Math.abs(printer.getReelNozzleTemperature().get() - printer.getLastFilamentTemperature().get()) > 5;
     }
 
-    public void offerPurgeIfNecessary(Printer printer)
+    public boolean offerPurgeIfNecessary(Printer printer)
     {
+        boolean purgeConsent = false;
         if (isPurgeNecessary(printer) && purgeDialogVisible == false)
         {
             purgeDialogVisible = true;
@@ -92,34 +141,32 @@ public class PrinterUtils
                     .message(i18nBundle.getString("dialogs.purgeRequiredInstruction"))
                     .masthead(null)
                     .showCommandLinks(goForPurge, goForPurge, dontGoForPurge);
-            try
+
+            if (nozzleFlushResponse == goForPurge)
             {
-                if (nozzleFlushResponse == goForPurge)
-                {
-                    printer.transmitStoredGCode("Purge Material");
-                    HeadEEPROMDataResponse savedHeadData = printer.transmitReadHeadEEPROM();
-                    printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                                    savedHeadData.getUniqueID(),
-                                                    savedHeadData.getMaximumTemperature(),
-                                                    savedHeadData.getBeta(),
-                                                    savedHeadData.getTCal(),
-                                                    savedHeadData.getNozzle1XOffset(),
-                                                    savedHeadData.getNozzle1YOffset(),
-                                                    savedHeadData.getNozzle1ZOffset(),
-                                                    savedHeadData.getNozzle1BOffset(),
-                                                    savedHeadData.getNozzle2XOffset(),
-                                                    savedHeadData.getNozzle2YOffset(),
-                                                    savedHeadData.getNozzle2ZOffset(),
-                                                    savedHeadData.getNozzle2BOffset(),
-                                                    (float) (printer.getReelNozzleTemperature().get()),
-                                                    savedHeadData.getHeadHours());
-                }
-                purgeDialogVisible = false;
-            } catch (RoboxCommsException ex)
-            {
-                purgeDialogVisible = false;
-                steno.error("Error running purge routine");
+                purgeConsent = true;
             }
+            purgeDialogVisible = false;
         }
+
+        return purgeConsent;
+    }
+
+    public static void runPurge(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings, Printer printerToUse)
+    {
+        PurgeTask purgeTask = new PurgeTask(project, filament, printQuality, settings, printerToUse);
+        TaskController.getInstance().manageTask(purgeTask);
+        Thread purgeThread = new Thread(purgeTask);
+        purgeThread.setName("Purge and Print Task");
+        purgeThread.start();
+    }
+
+    public static void runPurge(Printer printerToUse)
+    {
+        PurgeTask purgeTask = new PurgeTask(printerToUse);
+        TaskController.getInstance().manageTask(purgeTask);
+        Thread purgeThread = new Thread(purgeTask);
+        purgeThread.setName("Purge Task");
+        purgeThread.start();
     }
 }

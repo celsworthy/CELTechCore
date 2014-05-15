@@ -5,6 +5,7 @@
  */
 package celtech.coreUI.controllers.sidePanels;
 
+import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
@@ -608,7 +609,12 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                         {
                             if (lastSelectedPrinter.getNozzleHeaterMode() == HeaterMode.OFF)
                             {
-                                printerUtils.offerPurgeIfNecessary(lastSelectedPrinter);
+                                boolean purgeConsent = printerUtils.offerPurgeIfNecessary(lastSelectedPrinter);
+                                if (purgeConsent)
+                                {
+                                    applicationStatus.setMode(ApplicationMode.STATUS);
+                                    PrinterUtils.runPurge(lastSelectedPrinter);
+                                }
                                 lastSelectedPrinter.transmitDirectGCode(GCodeConstants.goToTargetNozzleTemperature, false);
                             }
                         }
