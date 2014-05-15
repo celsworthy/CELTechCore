@@ -241,7 +241,7 @@ public class MenuStripController
                         printerOKToPrint.unbind();
                         printerOKToPrint.set(false);
                     }
-                    printerOKToPrint.bind(newValue.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.IDLE).and(newValue.whyAreWeWaitingProperty().isEqualTo(WhyAreWeWaitingState.NOT_WAITING)));
+                    printerOKToPrint.bind(newValue.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.IDLE).and(newValue.whyAreWeWaitingProperty().isEqualTo(WhyAreWeWaitingState.NOT_WAITING)).and((newValue.Filament1LoadedProperty().or(newValue.Filament2LoadedProperty()))));
                     currentPrinter = newValue;
                 }
             }
