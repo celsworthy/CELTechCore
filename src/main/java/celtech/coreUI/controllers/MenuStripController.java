@@ -108,13 +108,11 @@ public class MenuStripController
         if (printerUtils.isPurgeNecessary(printer))
         {
             printerUtils.offerPurgeIfNecessary(printer);
-        } else
-        {
-
-            Project currentProject = DisplayManager.getInstance().getCurrentlyVisibleProject();
-            printer.printProject(currentProject, settingsScreenState.getFilament(), settingsScreenState.getPrintQuality(), settingsScreenState.getSettings());
-            applicationStatus.setMode(ApplicationMode.STATUS);
         }
+
+        Project currentProject = DisplayManager.getInstance().getCurrentlyVisibleProject();
+        printer.printProject(currentProject, settingsScreenState.getFilament(), settingsScreenState.getPrintQuality(), settingsScreenState.getSettings());
+        applicationStatus.setMode(ApplicationMode.STATUS);
     }
 
     @FXML

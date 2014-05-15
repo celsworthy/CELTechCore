@@ -13,22 +13,18 @@ import celtech.appManager.UndoBuffer;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.GCodeEditorPanelController;
-import celtech.coreUI.controllers.GizmoOverlayController;
 import celtech.coreUI.visualisation.CameraPositionPreset;
 import celtech.coreUI.visualisation.SelectionContainer;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.coreUI.visualisation.Xform;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelContentsEnumeration;
-import celtech.utils.Math.MathUtils;
 import celtech.utils.Math.Packing.Block;
 import celtech.utils.Math.Packing.PackingThing;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -108,15 +104,14 @@ public class ProjectTab extends Tab
 
     public ProjectTab(DisplayManager dispManagerRef, String projectName, ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty) throws ProjectNotLoadedException
     {
-        project = loadProject(projectName);
+        project = ProjectManager.loadProject(projectName);
 
         if (project != null)
         {
             // No need to tell the PM that this is open - since the list came from the PM in the first place
             displayManager = dispManagerRef;
             initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
-        }
-        else
+        } else
         {
             throw new ProjectNotLoadedException(projectName);
         }
@@ -127,27 +122,6 @@ public class ProjectTab extends Tab
         project = inboundProject;
         displayManager = dispManagerRef;
         initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
-    }
-
-    private Project loadProject(String projectNameWithPath)
-    {
-        Project loadedProject = null;
-
-        try
-        {
-            FileInputStream projectFile = new FileInputStream(projectNameWithPath);
-            ObjectInputStream reader = new ObjectInputStream(projectFile);
-            loadedProject = (Project) reader.readObject();
-            reader.close();
-        } catch (IOException ex)
-        {
-            steno.error("Failed to load project " + projectNameWithPath);
-        } catch (ClassNotFoundException ex)
-        {
-            steno.error("Couldn't locate class while loading project " + projectNameWithPath);
-        }
-
-        return loadedProject;
     }
 
     private void initialise(ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty)
@@ -162,11 +136,11 @@ public class ProjectTab extends Tab
         {
             steno.info("Beginning save");
             saveProject();
-            projectManager.projectClosed(project.getProjectHeader().getProjectName() + project.getProjectName());
+            projectManager.projectClosed(project);
             steno.info("Completed save");
         });
 
-        viewManager = new ThreeDViewManager(project, tabDisplayWidthProperty, tabDisplayHeightProperty);
+        viewManager = new ThreeDViewManager(project.getLoadedModels(), tabDisplayWidthProperty, tabDisplayHeightProperty);
 //        camera = viewManager.getCamera();
 
         basePane = new AnchorPane();
@@ -395,22 +369,24 @@ public class ProjectTab extends Tab
     {
         if (titleBeingEdited == true)
         {
-            projectManager.projectClosed(project.getProjectHeader().getProjectPath() + project.getProjectHeader().getProjectName());
+            projectManager.projectClosed(project);
             project.setProjectName(editableProjectNameField.getText());
-            projectManager.projectOpened(project.getProjectHeader().getProjectPath() + project.getProjectHeader().getProjectName());
+            projectManager.projectOpened(project);
             setGraphic(nonEditableProjectNameField);
             titleBeingEdited = false;
         }
     }
 
-    public void addProjectContainer(String projectName)
+    public void addProjectContainer(File projectToLoad)
     {
-        project = loadProject(projectName);
-            projectManager.projectOpened(project.getProjectHeader().getProjectPath() + project.getProjectHeader().getProjectName());
-        for (ModelContainer model : project.getLoadedModels())
-        {
-            viewManager.addModel(model);
-        }
+        nonEditableProjectNameField.textProperty().unbind();
+        nonEditableProjectNameField.setText("");
+
+        project = ProjectManager.loadProject(projectToLoad);
+        nonEditableProjectNameField.textProperty().bind(project.projectNameProperty());
+        viewManager.setLoadedModels(project.getLoadedModels());
+
+        projectManager.projectOpened(project);
     }
 
     public void addModelContainer(String fullFilename, ModelContainer modelGroup)
@@ -428,7 +404,7 @@ public class ProjectTab extends Tab
                     break;
                 case MESH:
                     project.setProjectMode(ProjectMode.MESH);
-                    projectManager.projectOpened(fullFilename);
+                    projectManager.projectOpened(project);
                     break;
                 default:
                     break;
@@ -520,7 +496,7 @@ public class ProjectTab extends Tab
             {
                 try
                 {
-                    ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(ApplicationConfiguration.getProjectDirectory() + project.getProjectName() + ApplicationConfiguration.projectFileExtension));
+                    ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(project.getProjectHeader().getProjectPath() + File.separator + project.getProjectName() + ApplicationConfiguration.projectFileExtension));
                     out.writeObject(project);
                     out.close();
                 } catch (FileNotFoundException ex)

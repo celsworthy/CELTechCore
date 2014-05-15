@@ -201,17 +201,11 @@ public class DisplayManager implements EventHandler<KeyEvent>
     {
         // Load up any projects that were open last time we shut down....
         ProjectManager pm = ProjectManager.getInstance();
-        ArrayList<String> preloadedModelNames = pm.getOpenModelNames();
-        for (String fileName : preloadedModelNames)
+        ArrayList<Project> preloadedProjects = pm.getLoadedModels();
+        for (Project project : preloadedProjects)
         {
-            try
-            {
-                ProjectTab newProjectTab = new ProjectTab(instance, fileName + ApplicationConfiguration.projectFileExtension, tabDisplay.widthProperty(), tabDisplay.heightProperty());
-                tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
-            } catch (ProjectNotLoadedException ex)
-            {
-                steno.error("Couldn't load project - " + ex.getMessage());
-            }
+            ProjectTab newProjectTab = new ProjectTab(instance, project, tabDisplay.widthProperty(), tabDisplay.heightProperty());
+            tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
         }
     }
 
@@ -550,7 +544,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             if (modelNameToLoad.endsWith(ApplicationConfiguration.projectFileExtension))
             {
                 ProjectTab currentProjectTab = ((ProjectTab) (tabDisplaySelectionModel.selectedItemProperty().get()));
-                currentProjectTab.addProjectContainer(modelToLoad.getAbsolutePath());
+                currentProjectTab.addProjectContainer(modelToLoad);
                 tabDisplaySelectionModel.select(currentProjectTab);
             } else
             {

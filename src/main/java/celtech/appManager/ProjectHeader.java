@@ -43,7 +43,7 @@ public class ProjectHeader implements Serializable
         projectUUID = SystemUtils.generate16DigitID();
         Date now = new Date();
         projectNameProperty = new SimpleStringProperty(DisplayManager.getLanguageBundle().getString("projectLoader.untitled") + formatter.format(now));
-        projectPath = ApplicationConfiguration.getProjectDirectory() + projectNameProperty.get() + ApplicationConfiguration.projectFileExtension;
+        projectPath = ApplicationConfiguration.getProjectDirectory();
         lastModifiedDate.set(now);
     }
 
@@ -97,6 +97,7 @@ public class ProjectHeader implements Serializable
     {
         out.writeUTF(projectUUID);
         out.writeUTF(projectNameProperty.get());
+        out.writeUTF(projectPath);
         out.writeObject(lastModifiedDate.get());
         out.writeObject(new Date());
     }
@@ -106,6 +107,7 @@ public class ProjectHeader implements Serializable
     {
         projectUUID = in.readUTF();
         projectNameProperty = new SimpleStringProperty(in.readUTF());
+        projectPath = in.readUTF();
         lastModifiedDate = new SimpleObjectProperty<>((Date)(in.readObject()));
         lastSavedDate = new SimpleObjectProperty<>((Date)(in.readObject()));
     }
