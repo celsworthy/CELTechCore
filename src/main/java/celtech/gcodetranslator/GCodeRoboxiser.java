@@ -154,7 +154,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         result.setSuccess(success);
         result.setPredictedDuration(predictedDuration);
         result.setVolumeUsed(volumeUsed);
-        
+
         steno.info("Estimated print time " + result.getPredictedDuration());
         return result;
     }
@@ -335,6 +335,18 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 LayerChangeEvent layerChangeEvent = (LayerChangeEvent) event;
 
                 currentZHeight = layerChangeEvent.getZ();
+
+                if (layer == 0 && forcedNozzle == false)
+                {
+                    NozzleChangeEvent nozzleChangeEvent = new NozzleChangeEvent();
+//Force to nozzle 1
+                    nozzleChangeEvent.setNozzleNumber(1);
+                    nozzleChangeEvent.setComment(nozzleChangeEvent.getComment() + " - force to nozzle 1 on first layer");
+                    tempNozzleMemory = 0;
+                    extrusionBuffer.add(nozzleChangeEvent);
+                    nozzleInUse = 1;
+                    forcedNozzle = true;
+                }
 
                 if (layer == 1)
                 {
@@ -671,7 +683,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                             {
                                 currentFeedrate = candidateevent.getFeedRate();
                             }
-                                
+
                             if (candidateevent.getLength() > 0 && currentFeedrate > 0)
                             {
                                 double timePerEvent = currentFeedrate / candidateevent.getLength();
