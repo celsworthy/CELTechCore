@@ -1794,7 +1794,7 @@ public class Printer
     {
         if (printQueue.getPrintStatus() == PrinterStatusEnumeration.IDLE)
         {
-            printQueue.printGCodeFile(GCodeMacros.getFilename(macroName));
+            printQueue.printGCodeFile(GCodeMacros.getFilename(macroName), true);
         }
     }
 
@@ -1982,7 +1982,7 @@ public class Printer
                                        nozzle2BOffset,
                                        lastFilamentTemperature,
                                        hourCounter);
-        return (AckResponse)printerCommsManager.submitForWrite(portName, writeHeadEEPROM);
+        return (AckResponse) printerCommsManager.submitForWrite(portName, writeHeadEEPROM);
     }
 
     /*

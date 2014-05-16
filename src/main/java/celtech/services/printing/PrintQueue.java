@@ -868,7 +868,7 @@ public class PrintQueue implements ControllableService
         return linesInPrintingFile;
     }
 
-    public boolean printGCodeFile(String filename)
+    public boolean printGCodeFile(final String filename, final boolean useSDCard)
     {
         boolean acceptedPrintRequest = false;
         consideringPrintRequest = true;
@@ -882,12 +882,12 @@ public class PrintQueue implements ControllableService
                     @Override
                     public void run()
                     {
-                        runMacroPrintJob(filename);
+                        runMacroPrintJob(filename, useSDCard);
                     }
                 });
             } else
             {
-                runMacroPrintJob(filename);
+                runMacroPrintJob(filename, useSDCard);
             }
             acceptedPrintRequest = true;
         }
@@ -895,7 +895,7 @@ public class PrintQueue implements ControllableService
         return acceptedPrintRequest;
     }
 
-    private void runMacroPrintJob(String filename)
+    private void runMacroPrintJob(String filename, boolean useSDCard)
     {
         //Create the print job directory
         String printUUID = SystemUtils.generate16DigitID();
@@ -940,6 +940,7 @@ public class PrintQueue implements ControllableService
         int numberOfLines = SystemUtils.countLinesInFile(printjobFile, ";");
         linesInPrintingFile.set(numberOfLines);
         gcodePrintService.reset();
+        gcodePrintService.setPrintUsingSDCard(useSDCard);
         gcodePrintService.setCurrentPrintJobID(printUUID);
         gcodePrintService.setModelFileToPrint(printjobFilename);
         gcodePrintService.setPrinterToUse(associatedPrinter);

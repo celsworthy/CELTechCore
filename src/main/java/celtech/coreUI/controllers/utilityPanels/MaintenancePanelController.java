@@ -15,10 +15,13 @@ import celtech.coreUI.controllers.CalibrationNozzleBPageController;
 import celtech.coreUI.controllers.CalibrationNozzleOffsetPageController;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterStatusEnumeration;
+import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.services.firmware.FirmwareLoadService;
 import celtech.services.firmware.FirmwareLoadTask;
+import celtech.services.printing.GCodePrintResult;
 import celtech.services.printing.GCodePrintService;
 import celtech.utils.SystemUtils;
 import java.io.File;
@@ -214,11 +217,14 @@ public class MaintenancePanelController implements Initializable
         final File file = gcodeFileChooser.showOpenDialog(container.getScene().getWindow());
         if (file != null)
         {
-            gcodePrintService.reset();
-            gcodePrintService.setPrintUsingSDCard(false);
-            gcodePrintService.setPrinterToUse(connectedPrinter);
-            gcodePrintService.setModelFileToPrint(file.getAbsolutePath());
-            gcodePrintService.start();
+            if (connectedPrinter.getPrintQueue().getPrintStatus() == PrinterStatusEnumeration.IDLE)
+            {
+                gcodePrintService.reset();
+                gcodePrintService.setPrintUsingSDCard(false);
+                gcodePrintService.setPrinterToUse(connectedPrinter);
+                gcodePrintService.setModelFileToPrint(file.getAbsolutePath());
+                gcodePrintService.start();
+            }
             lastGCodeDirectory = file.getParentFile();
         }
     }
@@ -234,12 +240,10 @@ public class MaintenancePanelController implements Initializable
 
         if (file != null)
         {
-            gcodePrintService.reset();
-            gcodePrintService.setPrintUsingSDCard(true);
-            gcodePrintService.setPrinterToUse(connectedPrinter);
-            gcodePrintService.setCurrentPrintJobID(SystemUtils.generate16DigitID());
-            gcodePrintService.setModelFileToPrint(file.getAbsolutePath());
-            gcodePrintService.start();
+            if (connectedPrinter.getPrintQueue().getPrintStatus() == PrinterStatusEnumeration.IDLE)
+            {
+                connectedPrinter.getPrintQueue().printGCodeFile(file.getAbsolutePath(), true);
+            }
             lastGCodeDirectory = file.getParentFile();
         }
     }
@@ -274,15 +278,15 @@ public class MaintenancePanelController implements Initializable
             @Override
             public void handle(WorkerStateEvent t)
             {
-                boolean success = (boolean) (t.getSource().getValue());
-                if (success)
+                GCodePrintResult result = (GCodePrintResult) (t.getSource().getValue());
+                if (result.isSuccess())
                 {
                     Notifier.showInformationNotification(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodePrintSuccessTitle"),
-                            DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodePrintSuccessMessage"));
+                                                         DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodePrintSuccessMessage"));
                 } else
                 {
                     Notifier.showErrorNotification(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodePrintFailedTitle"),
-                            DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodePrintFailedMessage"));
+                                                   DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodePrintFailedMessage"));
 
                     steno.warning("In gcode print succeeded but with failure flag");
                 }
@@ -295,7 +299,7 @@ public class MaintenancePanelController implements Initializable
             public void handle(WorkerStateEvent t)
             {
                 Notifier.showErrorNotification(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodePrintFailedTitle"),
-                        DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodePrintFailedMessage"));
+                                               DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodePrintFailedMessage"));
             }
         });
 
@@ -317,19 +321,19 @@ public class MaintenancePanelController implements Initializable
                 {
                     case FirmwareLoadTask.SDCARD_ERROR:
                         Notifier.showErrorNotification(DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedTitle"),
-                                DisplayManager.getLanguageBundle().getString("dialogs.sdCardError"));
+                                                       DisplayManager.getLanguageBundle().getString("dialogs.sdCardError"));
                         break;
                     case FirmwareLoadTask.FILE_ERROR:
                         Notifier.showErrorNotification(DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedTitle"),
-                                DisplayManager.getLanguageBundle().getString("dialogs.firmwareFileError"));
+                                                       DisplayManager.getLanguageBundle().getString("dialogs.firmwareFileError"));
                         break;
                     case FirmwareLoadTask.OTHER_ERROR:
                         Notifier.showErrorNotification(DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedTitle"),
-                                DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedMessage"));
+                                                       DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedMessage"));
                         break;
                     case FirmwareLoadTask.SUCCESS:
                         Notifier.showInformationNotification(DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeSuccessTitle"),
-                                DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeSuccessMessage"));
+                                                             DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeSuccessMessage"));
                         break;
                 }
             }
@@ -342,7 +346,7 @@ public class MaintenancePanelController implements Initializable
             {
 
                 Notifier.showErrorNotification(DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedTitle"),
-                        DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedMessage"));
+                                               DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedMessage"));
             }
         });
 
