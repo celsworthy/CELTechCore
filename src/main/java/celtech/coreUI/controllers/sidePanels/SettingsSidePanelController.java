@@ -1,7 +1,6 @@
 package celtech.coreUI.controllers.sidePanels;
 
 import celtech.appManager.ApplicationStatus;
-import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
@@ -479,6 +478,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             showCreateMaterialDialogue();
         } else if (newValue == null || newValue == currentPrinter.loadedFilamentProperty().get())
         {
+            slideOutController.updateFilamentData(newValue);
             settingsScreenState.setFilament(null);
         } else
         {
