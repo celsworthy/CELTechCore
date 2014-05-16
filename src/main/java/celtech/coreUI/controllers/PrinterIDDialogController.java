@@ -5,6 +5,7 @@
 package celtech.coreUI.controllers;
 
 import celtech.coreUI.components.ColourChooserButton;
+import celtech.coreUI.components.RestrictedTextField;
 import celtech.printerControl.Printer;
 import java.net.URL;
 import java.util.ArrayList;
@@ -48,7 +49,7 @@ public class PrinterIDDialogController implements Initializable
     private Button okButton;
 
     @FXML
-    private TextField roboxNameField;
+    private RestrictedTextField roboxNameField;
 
     @FXML
     private ToggleGroup colourButtonGroup;
@@ -75,7 +76,7 @@ public class PrinterIDDialogController implements Initializable
     private EventHandler<KeyEvent> textInputHandler = null;
 
     private Printer printerToUse = null;
-    
+
     /**
      * Initializes the controller class.
      */
@@ -108,7 +109,13 @@ public class PrinterIDDialogController implements Initializable
 
     public Color getChosenDisplayColour()
     {
-        return ((ColourChooserButton) colourButtonGroup.getSelectedToggle()).getDisplayColour();
+        if (colourButtonGroup.getSelectedToggle() != null)
+        {
+            return ((ColourChooserButton) colourButtonGroup.getSelectedToggle()).getDisplayColour();
+        } else
+        {
+            return null;
+        }
     }
 
     public String getChosenPrinterName()

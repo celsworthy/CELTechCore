@@ -384,10 +384,19 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                         {
                             try
                             {
+                                Color chosenColour = printerIDDialog.getChosenDisplayColour();
+                                if (chosenColour != null)
+                                {
+                                    chosenColour = colourMap.displayToPrinterColour(chosenColour);
+                                } else
+                                {
+                                    chosenColour = printerToEdit.getPrinterColour();
+                                }
+
                                 printerToEdit.transmitWritePrinterID(printerToEdit.getPrintermodel().get(), printerToEdit.getPrinteredition().get(),
                                                                      printerToEdit.getPrinterweekOfManufacture().get(), printerToEdit.getPrinteryearOfManufacture().get(),
-                                                                     printerToEdit.getPrinterpoNumber().get(), printerToEdit.getPrinterUniqueID(),
-                                                                     printerToEdit.getPrintercheckByte().get(), printerIDDialog.getChosenPrinterName(), colourMap.displayToPrinterColour(printerIDDialog.getChosenDisplayColour()));
+                                                                     printerToEdit.getPrinterpoNumber().get(), printerToEdit.getPrinterserialNumber().get(),
+                                                                     printerToEdit.getPrintercheckByte().get(), printerIDDialog.getChosenPrinterName(), chosenColour);
                                 printerToEdit.transmitReadPrinterID();
                             } catch (RoboxCommsException ex)
                             {
