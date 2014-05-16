@@ -842,6 +842,7 @@ public class PrintQueue implements ControllableService
             case IDLE:
             case PRINTING:
             case EXECUTING_MACRO:
+            case SENDING_TO_PRINTER:
                 lastStateBeforePause = printState;
                 setPrintStatus(PrinterStatusEnumeration.PAUSED);
                 break;
