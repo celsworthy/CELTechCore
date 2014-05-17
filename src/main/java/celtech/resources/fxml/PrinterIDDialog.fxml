@@ -12,7 +12,7 @@
     <children>
         <Label fx:id="dialogTitle" alignment="CENTER" style="-fx-font-size: 24;" text="%printerIDDialog.title" />
         <Label id="dialogMessage" alignment="CENTER" prefHeight="17.0" prefWidth="349.0" styleClass="labelText" text="%printerIDDialog.NameMessage" textAlignment="CENTER" wrapText="true" />
-        <RestrictedTextField fx:id="roboxNameField" forceUpperCase="false" maxLength="24" prefWidth="-1.0" restrict="-_0-9a-zA-Z" VBox.vgrow="NEVER">
+        <RestrictedTextField fx:id="roboxNameField" forceUpperCase="false" maxLength="24" prefWidth="-1.0" restrict="-_' 0-9a-zA-Z" VBox.vgrow="NEVER">
             <VBox.margin>
                 <Insets left="10.0" right="10.0" />
             </VBox.margin>
