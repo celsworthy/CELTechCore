@@ -12,13 +12,14 @@ import celtech.appManager.ProjectMode;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Properties;
 import javafx.geometry.Pos;
 import javafx.scene.paint.Color;
@@ -116,7 +117,9 @@ public class ApplicationConfiguration
     public static final float maxTempToDisplayOnGraph = 300;
     public static final float minTempToDisplayOnGraph = 35;
 
-    private static Properties projectProperties = null;
+    private static Properties installationProperties = null;
+    private static Properties applicationMemoryProperties = null;
+    private static final String fileMemoryItem = "FileMemory";
 
     private static String applicationVersion = null;
     private static String applicationLanguageRaw = null;
@@ -458,8 +461,8 @@ public class ApplicationConfiguration
             input = new FileInputStream(applicationInstallDirectory + "application.properties");
 
             // load a properties file
-            projectProperties = new Properties();
-            projectProperties.load(input);
+            installationProperties = new Properties();
+            installationProperties.load(input);
         } catch (IOException ex)
         {
             ex.printStackTrace();
@@ -480,13 +483,13 @@ public class ApplicationConfiguration
 
     public static String getApplicationVersion()
     {
-        if (projectProperties == null)
+        if (installationProperties == null)
         {
             loadProjectProperties();
         }
         if (applicationVersion == null)
         {
-            applicationVersion = projectProperties.getProperty("version");
+            applicationVersion = installationProperties.getProperty("version");
         }
 
         return applicationVersion;
@@ -494,14 +497,14 @@ public class ApplicationConfiguration
 
     public static String getApplicationLanguage()
     {
-        if (projectProperties == null)
+        if (installationProperties == null)
         {
             loadProjectProperties();
         }
 
         if (applicationLanguageRaw == null)
         {
-            applicationLanguageRaw = projectProperties.getProperty("language").replaceAll("_", "-");
+            applicationLanguageRaw = installationProperties.getProperty("language").replaceAll("_", "-");
         }
 
         return applicationLanguageRaw;
@@ -587,5 +590,88 @@ public class ApplicationConfiguration
         }
 
         return returnVal;
+    }
+
+    private static void loadApplicationMemoryProperties()
+    {
+        InputStream input = null;
+
+        try
+        {
+            input = new FileInputStream(getApplicationStorageDirectory() + getApplicationName() + ".properties");
+
+            // load a properties file
+            applicationMemoryProperties = new Properties();
+            applicationMemoryProperties.load(input);
+        } catch (IOException ex)
+        {
+            ex.printStackTrace();
+        } finally
+        {
+            if (input != null)
+            {
+                try
+                {
+                    input.close();
+                } catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static String getLastDirectory(DirectoryMemoryProperty whichProperty)
+    {
+        if (applicationMemoryProperties == null)
+        {
+            loadApplicationMemoryProperties();
+        }
+
+        String directory = applicationMemoryProperties.getProperty(fileMemoryItem + whichProperty.name());
+
+        return directory;
+    }
+
+    public static void setLastDirectory(DirectoryMemoryProperty whichProperty, String directoryName)
+    {
+        if (applicationMemoryProperties == null)
+        {
+            loadApplicationMemoryProperties();
+        }
+
+        applicationMemoryProperties.setProperty(fileMemoryItem + whichProperty.name(), directoryName);
+    }
+
+    public static void writeApplicationMemory()
+    {
+        if (applicationMemoryProperties == null)
+        {
+            loadApplicationMemoryProperties();
+        }
+
+        OutputStream output = null;
+
+        try
+        {
+            output = new FileOutputStream(getApplicationStorageDirectory() + getApplicationName() + ".properties");
+
+            applicationMemoryProperties.save(output, getApplicationName() + " runtime properties");
+        } catch (IOException ex)
+        {
+            ex.printStackTrace();
+        } finally
+        {
+            if (output != null)
+            {
+                try
+                {
+                    output.close();
+                } catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }
