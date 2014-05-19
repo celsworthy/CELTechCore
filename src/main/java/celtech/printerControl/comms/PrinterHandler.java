@@ -485,7 +485,7 @@ public class PrinterHandler extends Thread
             steno.trace("Finished opening serial port");
         } catch (SerialPortException ex)
         {
-            steno.error("Error setting up serial port");
+            steno.error("Error setting up serial port " + ex.getMessage());
         }
 
         return portSetupOK;

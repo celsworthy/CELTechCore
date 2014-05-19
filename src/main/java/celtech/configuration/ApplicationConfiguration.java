@@ -18,7 +18,6 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Properties;
 import javafx.geometry.Pos;
 import javafx.scene.paint.Color;
@@ -153,7 +152,7 @@ public class ApplicationConfiguration
             } else if (osName.startsWith("Linux"))
             {
                 steno.debug("We have a linux variant");
-                ProcessBuilder builder = new ProcessBuilder("uname -m");
+                ProcessBuilder builder = new ProcessBuilder("uname",  "-m");
 
                 Process process = null;
 
@@ -178,10 +177,11 @@ public class ApplicationConfiguration
                     }
                 } catch (IOException ex)
                 {
+                    machineType = MachineType.UNKNOWN;
                     steno.error("Error whilst determining linux machine type " + ex);
                 }
 
-            }
+            } 
         }
 
         return machineType;
