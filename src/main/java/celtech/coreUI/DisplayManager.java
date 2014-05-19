@@ -650,6 +650,12 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
+    /**
+     * Key handler for whole application
+     * Delete - deletes selected model
+     * 
+     * @param event 
+     */
     @Override
     public void handle(KeyEvent event)
     {
@@ -661,11 +667,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 ProjectTab projectTab = (ProjectTab) currentTab;
                 switch (event.getCode())
                 {
-                    case BACK_SPACE:
+                    case DELETE:
                         projectTab.deleteSelectedModels();
-                        break;
-                    case Z:
-                        projectTab.switchToPresetCameraView(CameraPositionPreset.FRONT);
                         break;
                     default:
                         break;
