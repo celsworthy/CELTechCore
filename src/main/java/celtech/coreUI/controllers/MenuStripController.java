@@ -10,6 +10,7 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.EEPROMState;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.ErrorHandler;
@@ -241,7 +242,9 @@ public class MenuStripController
                         printerOKToPrint.unbind();
                         printerOKToPrint.set(false);
                     }
-                    printerOKToPrint.bind(newValue.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.IDLE).and(newValue.whyAreWeWaitingProperty().isEqualTo(WhyAreWeWaitingState.NOT_WAITING)).and((newValue.Filament1LoadedProperty().or(newValue.Filament2LoadedProperty()))));
+                    printerOKToPrint.bind(newValue.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.IDLE).and(newValue.whyAreWeWaitingProperty().isEqualTo(WhyAreWeWaitingState.NOT_WAITING))
+                            .and(newValue.headEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED))
+                            .and((newValue.Filament1LoadedProperty().or(newValue.Filament2LoadedProperty()))));
                     currentPrinter = newValue;
                 }
             }
