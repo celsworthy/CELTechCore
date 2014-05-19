@@ -215,6 +215,9 @@ public class MenuStripController
     private Printer currentPrinter = null;
     private BooleanProperty printerOKToPrint = new SimpleBooleanProperty(false);
 
+    /*
+     * JavaFX initialisation method
+     */
     @FXML
     void initialize()
     {
@@ -258,6 +261,12 @@ public class MenuStripController
 
     }
 
+    /**
+     * Binds button disabled properties to the selection container
+     * This disables and enables buttons depending on whether a model is selected
+     * 
+     * @param selectionContainer    The selection container associated with the currently displayed project.
+     */
     public void bindSelectedModels(SelectionContainer selectionContainer)
     {
         deleteModelButton.disableProperty().unbind();
