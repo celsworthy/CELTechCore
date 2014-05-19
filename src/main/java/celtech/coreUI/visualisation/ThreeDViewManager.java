@@ -93,7 +93,7 @@ public class ThreeDViewManager
      */
     private Point3D lastDragPosition = null;
     private final int dragPlaneHalfSize = 500;
-    private final Box translationDragPlane = new Box(210, 0.1, 150);
+    private final Box translationDragPlane = new Box(dragPlaneHalfSize * 2, 0.1, dragPlaneHalfSize * 2);
     private final Box scaleDragPlane = new Box(dragPlaneHalfSize * 2, dragPlaneHalfSize * 2, 0.1);
     private SelectionHighlighter threeDControl = null;
     private GizmoOverlayController gizmoOverlayController = null;

@@ -78,7 +78,7 @@ public class ErrorHandler
                 {
                     genericErrorPopupController.populateErrorList(errors);
                     errorDialog.show();
-                    steno.trace("Resetting errors");
+                    steno.info("Resetting errors");
                     printer.transmitResetErrors();
                     if (printer.getPaused() == true)
                     {
