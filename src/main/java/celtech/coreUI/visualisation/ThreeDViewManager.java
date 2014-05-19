@@ -93,7 +93,7 @@ public class ThreeDViewManager
      */
     private Point3D lastDragPosition = null;
     private final int dragPlaneHalfSize = 500;
-    private final Box translationDragPlane = new Box(210, 0.1, 150);
+    private final Box translationDragPlane = new Box(dragPlaneHalfSize * 2, 0.1, dragPlaneHalfSize * 2);
     private final Box scaleDragPlane = new Box(dragPlaneHalfSize * 2, dragPlaneHalfSize * 2, 0.1);
     private SelectionHighlighter threeDControl = null;
     private GizmoOverlayController gizmoOverlayController = null;
@@ -616,11 +616,8 @@ public class ThreeDViewManager
      */
     private ObjectProperty<LayoutSubmode> layoutSubmode = new SimpleObjectProperty<>(LayoutSubmode.SELECT);
 
-    private Project associatedProject = null;
-
     private ChangeListener<Number> sceneSizeChangeListener = new ChangeListener<Number>()
     {
-
         @Override
         public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
         {
@@ -658,10 +655,9 @@ public class ThreeDViewManager
         }
     };
 
-    public ThreeDViewManager(Project project, ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
+    public ThreeDViewManager(ObservableList<ModelContainer> loadedModels, ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
     {
-        this.associatedProject = project;
-        this.loadedModels = project.getLoadedModels();
+        this.loadedModels = loadedModels;
         threeDControl = new SelectionHighlighter(selectionContainer, cameraDistance);
 
         this.widthPropertyToFollow = widthProperty;
@@ -1609,5 +1605,17 @@ public class ThreeDViewManager
     {
         dragMode.set(DragMode.IDLE);
         gizmoRotationStarted = false;
+    }
+
+    public void setLoadedModels(ObservableList<ModelContainer> loadedModels)
+    {
+        this.loadedModels = loadedModels;
+        if (loadedModels.isEmpty() == false)
+        {
+            for (ModelContainer model : loadedModels)
+            {
+                models.getChildren().add(model);
+            }
+        }
     }
 }

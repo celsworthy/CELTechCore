@@ -107,4 +107,11 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
     {
         this.isMacro = isMacro;
     }
+
+    @Override
+    public void reset()
+    {
+        super.reset();
+        isMacro = false;
+    }
 }

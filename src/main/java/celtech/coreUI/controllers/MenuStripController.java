@@ -105,15 +105,17 @@ public class MenuStripController
     {
         Printer printer = settingsScreenState.getSelectedPrinter();
 
-        if (printerUtils.isPurgeNecessary(printer))
+        Project currentProject = DisplayManager.getInstance().getCurrentlyVisibleProject();
+
+        boolean purgeConsent = printerUtils.offerPurgeIfNecessary(printer);
+        applicationStatus.setMode(ApplicationMode.STATUS);
+
+        if (purgeConsent)
         {
-            printerUtils.offerPurgeIfNecessary(printer);
+            PrinterUtils.runPurge(currentProject, settingsScreenState.getFilament(), settingsScreenState.getPrintQuality(), settingsScreenState.getSettings(), printer);
         } else
         {
-
-            Project currentProject = DisplayManager.getInstance().getCurrentlyVisibleProject();
             printer.printProject(currentProject, settingsScreenState.getFilament(), settingsScreenState.getPrintQuality(), settingsScreenState.getSettings());
-            applicationStatus.setMode(ApplicationMode.STATUS);
         }
     }
 
@@ -239,7 +241,7 @@ public class MenuStripController
                         printerOKToPrint.unbind();
                         printerOKToPrint.set(false);
                     }
-                    printerOKToPrint.bind(newValue.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.IDLE).and(newValue.whyAreWeWaitingProperty().isEqualTo(WhyAreWeWaitingState.NOT_WAITING)));
+                    printerOKToPrint.bind(newValue.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.IDLE).and(newValue.whyAreWeWaitingProperty().isEqualTo(WhyAreWeWaitingState.NOT_WAITING)).and((newValue.Filament1LoadedProperty().or(newValue.Filament2LoadedProperty()))));
                     currentPrinter = newValue;
                 }
             }

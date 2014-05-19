@@ -25,6 +25,7 @@ import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
 import celtech.services.slicer.SliceResult;
 import celtech.services.slicer.SlicerService;
+import celtech.utils.PrinterUtils;
 import celtech.utils.SystemUtils;
 import java.io.File;
 import java.io.IOException;
@@ -255,7 +256,6 @@ public class PrintQueue implements ControllableService
             {
                 steno.info(t.getSource().getTitle() + " has been cancelled");
                 Notifier.showInformationNotification(notificationTitle, printJobCancelledNotification);
-                abortPrint();
             }
         };
 
@@ -470,6 +470,10 @@ public class PrintQueue implements ControllableService
                         if (printJobFile.exists())
                         {
                             //Go ahead and spool it
+                            int numberOfLines = SystemUtils.countLinesInFile(printJobFile, ";");
+                            linesInPrintingFile.set(numberOfLines);
+                            setPrintStatus(PrinterStatusEnumeration.SENDING_TO_PRINTER);
+
                             steno.info("Respooling job " + jobUUID + " to printer");
                             gcodePrintService.reset();
                             gcodePrintService.setCurrentPrintJobID(jobUUID);
@@ -477,10 +481,7 @@ public class PrintQueue implements ControllableService
                             gcodePrintService.setPrinterToUse(associatedPrinter);
                             gcodePrintService.start();
 
-                            int numberOfLines = SystemUtils.countLinesInFile(printJobFile, ";");
-                            linesInPrintingFile.set(numberOfLines);
                             Notifier.showInformationNotification(notificationTitle, printTransferInitiatedNotification);
-                            setPrintStatus(PrinterStatusEnumeration.SENDING_TO_PRINTER);
                             acceptedPrintRequest = true;
                         } else
                         {
@@ -558,13 +559,13 @@ public class PrintQueue implements ControllableService
                     try
                     {
                         Files.copy(fileToCopy.toPath(), printjobFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                        setPrintStatus(PrinterStatusEnumeration.SENDING_TO_PRINTER);
 
                         gcodePrintService.reset();
                         gcodePrintService.setCurrentPrintJobID(printUUID);
                         gcodePrintService.setModelFileToPrint(printjobFilename);
                         gcodePrintService.setPrinterToUse(associatedPrinter);
                         gcodePrintService.start();
-                        setPrintStatus(PrinterStatusEnumeration.SENDING_TO_PRINTER);
                         acceptedPrintRequest = true;
                     } catch (IOException ex)
                     {
@@ -801,6 +802,7 @@ public class PrintQueue implements ControllableService
                 try
                 {
                     associatedPrinter.transmitAbortPrint();
+                    PrinterUtils.waitOnBusy(associatedPrinter, null);
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Robox comms exception when sending abort print command " + ex);
@@ -840,6 +842,7 @@ public class PrintQueue implements ControllableService
             case IDLE:
             case PRINTING:
             case EXECUTING_MACRO:
+            case SENDING_TO_PRINTER:
                 lastStateBeforePause = printState;
                 setPrintStatus(PrinterStatusEnumeration.PAUSED);
                 break;
@@ -865,7 +868,7 @@ public class PrintQueue implements ControllableService
         return linesInPrintingFile;
     }
 
-    public boolean printGCodeFile(String filename)
+    public boolean printGCodeFile(final String filename, final boolean useSDCard)
     {
         boolean acceptedPrintRequest = false;
         consideringPrintRequest = true;
@@ -879,12 +882,12 @@ public class PrintQueue implements ControllableService
                     @Override
                     public void run()
                     {
-                        runMacroPrintJob(filename);
+                        runMacroPrintJob(filename, useSDCard);
                     }
                 });
             } else
             {
-                runMacroPrintJob(filename);
+                runMacroPrintJob(filename, useSDCard);
             }
             acceptedPrintRequest = true;
         }
@@ -892,7 +895,7 @@ public class PrintQueue implements ControllableService
         return acceptedPrintRequest;
     }
 
-    private void runMacroPrintJob(String filename)
+    private void runMacroPrintJob(String filename, boolean useSDCard)
     {
         //Create the print job directory
         String printUUID = SystemUtils.generate16DigitID();
@@ -934,23 +937,16 @@ public class PrintQueue implements ControllableService
             steno.error("Error whilst preparing for gcode print. Can't copy " + filename + " to " + printjobFilename);
         }
 
-        try
-        {
-            Files.copy(fileToCopy.toPath(), printjobFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-            gcodePrintService.reset();
-            gcodePrintService.setCurrentPrintJobID(printUUID);
-            gcodePrintService.setModelFileToPrint(printjobFilename);
-            gcodePrintService.setPrinterToUse(associatedPrinter);
-            gcodePrintService.setIsMacro(true);
-            int numberOfLines = SystemUtils.countLinesInFile(printjobFile, ";");
-            linesInPrintingFile.set(numberOfLines);
-            gcodePrintService.start();
-        } catch (IOException ex)
-        {
-            consideringPrintRequest = false;
-            steno.error("Error whilst preparing for gcode print. Can't copy " + filename + " to " + printjobFilename);
-        }
+        int numberOfLines = SystemUtils.countLinesInFile(printjobFile, ";");
+        linesInPrintingFile.set(numberOfLines);
+        gcodePrintService.reset();
+        gcodePrintService.setPrintUsingSDCard(useSDCard);
+        gcodePrintService.setCurrentPrintJobID(printUUID);
+        gcodePrintService.setModelFileToPrint(printjobFilename);
+        gcodePrintService.setPrinterToUse(associatedPrinter);
+        gcodePrintService.setIsMacro(true);
+        gcodePrintService.start();
+        consideringPrintRequest = false;
 
     }
 

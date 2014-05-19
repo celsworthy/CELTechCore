@@ -6,9 +6,11 @@
 package celtech.coreUI.components;
 
 import celtech.utils.AxisSpecifier;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -23,6 +25,8 @@ public class JogButton extends Button
 
     private final ObjectProperty<AxisSpecifier> axis = new SimpleObjectProperty<>();
     private final FloatProperty distance = new SimpleFloatProperty();
+    private final BooleanProperty useG1 = new SimpleBooleanProperty(false);
+    private final IntegerProperty feedRate = new SimpleIntegerProperty(0);
 
     public void setAxis(AxisSpecifier value)
     {
@@ -52,6 +56,36 @@ public class JogButton extends Button
     public FloatProperty getDistanceProperty()
     {
         return distance;
+    }
+
+    public void setUseG1(boolean value)
+    {
+        useG1.set(value);
+    }
+
+    public boolean getUseG1()
+    {
+        return useG1.get();
+    }
+
+    public BooleanProperty getUseG1Property()
+    {
+        return useG1;
+    }
+
+    public void setFeedRate(int value)
+    {
+        feedRate.set(value);
+    }
+
+    public int getFeedRate()
+    {
+        return feedRate.get();
+    }
+
+    public IntegerProperty getFeedRateProperty()
+    {
+        return feedRate;
     }
 
     public JogButton()

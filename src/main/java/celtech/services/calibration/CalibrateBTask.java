@@ -67,20 +67,16 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                 try
                 {
                     printerToUse.transmitDirectGCode("M104", false);
-                    waitOnBusy();
+                    PrinterUtils.waitOnBusy(printerToUse, this);
                     printerToUse.transmitStoredGCode("Home_all");
                     PrinterUtils.waitOnMacroFinished(printerToUse, this);
                     printerToUse.transmitDirectGCode("G0 Z50", false);
-                    waitOnBusy();
+                    PrinterUtils.waitOnBusy(printerToUse, this);
                     success = true;
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in needle valve calibration - mode=" + desiredState.name());
-                } catch (InterruptedException ex)
-                {
-                    steno.error("Interrrupted during needle valve calibration - mode=" + desiredState.name());
                 }
-
                 break;
             case HEATING:
                 try
@@ -117,7 +113,7 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                     {
                         printerToUse.transmitDirectGCode("G1 E10 F100", false);
                     }
-                    waitOnBusy();
+                    PrinterUtils.waitOnBusy(printerToUse, this);
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in needle valve calibration - mode=" + desiredState.name());
@@ -141,7 +137,7 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                     {
                         printerToUse.transmitDirectGCode("G1 E10 F100", false);
                     }
-                    waitOnBusy();
+                    PrinterUtils.waitOnBusy(printerToUse, this);
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in needle valve calibration - mode=" + desiredState.name());
@@ -158,7 +154,7 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
         try
         {
             printerToUse.transmitDirectGCode("M909 S4", false);
-            waitOnBusy();
+            PrinterUtils.waitOnBusy(printerToUse, this);
 
             printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
 
@@ -172,7 +168,7 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
             while (errors.isEFilamentSlipError() == false && isCancelled() == false)
             {
                 printerToUse.transmitDirectGCode("G0 E10", false);
-                waitOnBusy();
+                PrinterUtils.waitOnBusy(printerToUse, this);
 
                 errors = printerToUse.transmitReportErrors();
             }
@@ -183,7 +179,7 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
             while (errors.isEFilamentSlipError() == false && isCancelled() == false)
             {
                 printerToUse.transmitDirectGCode("G1 E10 F50", false);
-                waitOnBusy();
+                PrinterUtils.waitOnBusy(printerToUse, this);
 
                 errors = printerToUse.transmitReportErrors();
             }
@@ -191,15 +187,12 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
             printerToUse.transmitResetErrors();
 
             printerToUse.transmitDirectGCode("M909 S100", false);
-            waitOnBusy();
+            PrinterUtils.waitOnBusy(printerToUse, this);
 
             success = true;
         } catch (RoboxCommsException ex)
         {
             steno.error("Error in needle valve priming - mode=" + desiredState.name());
-        } catch (InterruptedException ex)
-        {
-            steno.error("Interrrupted during needle valve priming - mode=" + desiredState.name());
         }
         return success;
     }
@@ -215,22 +208,6 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
         lookingForKeyPress = false;
     }
 
-    private void waitOnBusy() throws InterruptedException
-    {
-        try
-        {
-            StatusResponse response = printerToUse.transmitStatusRequest();
-
-            while (response.isBusyStatus() == true && isCancelled() == false)
-            {
-                Thread.sleep(100);
-                response = printerToUse.transmitStatusRequest();
-            }
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error requesting status");
-        }
-    }
 
     private void waitUntilNozzleReaches(int temperature, int tolerance) throws InterruptedException
     {

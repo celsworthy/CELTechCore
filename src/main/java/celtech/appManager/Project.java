@@ -4,6 +4,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PrintProfileContainer;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.slicer.RoboxProfile;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -58,6 +59,11 @@ public class Project implements Serializable
     public final StringProperty projectNameProperty()
     {
         return projectHeader.projectNameProperty();
+    }
+    
+    public final String getAbsolutePath()
+    {
+        return projectHeader.getProjectPath() + File.separator + projectHeader.getProjectName() + ApplicationConfiguration.projectFileExtension;
     }
 
     public final String getUUID()

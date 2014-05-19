@@ -61,7 +61,7 @@
                         </ImageView>
                     </graphic>
                 </Button>
-                <JogButton fx:id="extruder_minus100" axis="E" distance="-240.0" onAction="#jogButton" translateX="-301.0">
+                <JogButton fx:id="extruder_minus100" axis="E" distance="-240.0" useG1="true" feedRate="100" onAction="#jogButton" translateX="-301.0">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -70,7 +70,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="extruder_minus20" axis="E" distance="-48.0" onAction="#jogButton" translateX="-256.0">
+                <JogButton fx:id="extruder_minus20" axis="E" distance="-48.0" useG1="true" feedRate="100" onAction="#jogButton" translateX="-256.0">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -79,7 +79,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="extruder_minus5" axis="E" distance="-12.0" onAction="#jogButton" translateX="-229.0">
+                <JogButton fx:id="extruder_minus5" axis="E" distance="-12.0" useG1="true" feedRate="100" onAction="#jogButton" translateX="-229.0">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -88,7 +88,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="extruder_plus100" axis="E" distance="240.0" onAction="#jogButton" translateX="-200.0" translateY="100.0">
+                <JogButton fx:id="extruder_plus100" axis="E" distance="240.0" useG1="true" feedRate="100" onAction="#jogButton" translateX="-200.0" translateY="100.0">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -97,7 +97,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="extruder_plus20" axis="E" distance="48.0" onAction="#jogButton" translateX="-245.0" translateY="100.0">
+                <JogButton fx:id="extruder_plus20" axis="E" distance="48.0" useG1="true" feedRate="100" onAction="#jogButton" translateX="-245.0" translateY="100.0">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -106,7 +106,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="extruder_plus5" axis="E" distance="12.0" onAction="#jogButton" translateX="-271.0" translateY="100.0">
+                <JogButton fx:id="extruder_plus5" axis="E" distance="12.0" useG1="true" feedRate="100" onAction="#jogButton" translateX="-271.0" translateY="100.0">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>

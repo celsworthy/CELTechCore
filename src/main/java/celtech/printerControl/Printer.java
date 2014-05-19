@@ -1794,7 +1794,7 @@ public class Printer
     {
         if (printQueue.getPrintStatus() == PrinterStatusEnumeration.IDLE)
         {
-            printQueue.printGCodeFile(GCodeMacros.getFilename(macroName));
+            printQueue.printGCodeFile(GCodeMacros.getFilename(macroName), true);
         }
     }
 
@@ -1960,7 +1960,7 @@ public class Printer
         printerCommsManager.submitForWrite(portName, writeHeadEEPROM);
     }
 
-    public void transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature,
+    public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature,
             float thermistorBeta, float thermistorTCal,
             float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset,
             float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
@@ -1982,7 +1982,7 @@ public class Printer
                                        nozzle2BOffset,
                                        lastFilamentTemperature,
                                        hourCounter);
-        printerCommsManager.submitForWrite(portName, writeHeadEEPROM);
+        return (AckResponse) printerCommsManager.submitForWrite(portName, writeHeadEEPROM);
     }
 
     /*
