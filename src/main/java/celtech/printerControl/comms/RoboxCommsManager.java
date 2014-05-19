@@ -90,7 +90,7 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
                 break;
             case LINUX_X86:
             case LINUX_X64:
-                roboxDetectorCommand = roboxDetectorLinux + " " + roboxVendorID + ":" + roboxProductID;
+                roboxDetectorCommand = roboxDetectorLinux + " " + printerToSearchFor + " " + roboxVendorID;
                 break;
             default:
                 steno.error("Unsupported OS - cannot establish comms.");
@@ -201,6 +201,10 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
         keepRunning = false;
     }
 
+    /**
+     * Detect any attached Robox printers and return an array of port names
+     * @return an array of com or dev (e.g. /dev/ttyACM0) names
+     */
     private String[] searchForPrinter()
     {
         StringBuilder outputBuffer = new StringBuilder();
