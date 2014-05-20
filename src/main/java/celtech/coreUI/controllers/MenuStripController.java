@@ -10,6 +10,7 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.DirectoryMemoryProperty;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
@@ -50,7 +51,6 @@ public class MenuStripController
     private final FileChooser modelFileChooser = new FileChooser();
     private Project boundProject = null;
     private ResourceBundle i18nBundle = null;
-    private File lastModelDirectory = null;
     private PrinterUtils printerUtils = null;
 
     private ErrorHandler errorHandler = ErrorHandler.getInstance();
@@ -176,13 +176,13 @@ public class MenuStripController
                     new FileChooser.ExtensionFilter(descriptionOfFile,
                                                     ApplicationConfiguration.getSupportedFileExtensionWildcards(projectMode)));
 
-            modelFileChooser.setInitialDirectory(lastModelDirectory);
+            modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(DirectoryMemoryProperty.MODEL)));
 
             final File file = modelFileChooser.showOpenDialog(displayManager.getMainStage());
 
             if (file != null)
             {
-                lastModelDirectory = file.getParentFile();
+                ApplicationConfiguration.setLastDirectory(DirectoryMemoryProperty.MODEL, file.getParentFile().getAbsolutePath());
                 displayManager.loadExternalModel(file);
             }
         });
@@ -226,8 +226,6 @@ public class MenuStripController
         applicationStatus = ApplicationStatus.getInstance();
         settingsScreenState = SettingsScreenState.getInstance();
         printerUtils = PrinterUtils.getInstance();
-
-        lastModelDirectory = new File(ApplicationConfiguration.getProjectDirectory());
 
         backwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.STATUS));
 //        forwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS).and(printerOKToPrint));

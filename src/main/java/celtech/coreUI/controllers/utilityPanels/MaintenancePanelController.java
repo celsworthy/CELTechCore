@@ -7,6 +7,7 @@ package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.appManager.Notifier;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.DirectoryMemoryProperty;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.GCodeMacroButton;
 import celtech.coreUI.components.ModalDialog;
@@ -56,26 +57,24 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class MaintenancePanelController implements Initializable
 {
-    
+
     private final Stenographer steno = StenographerFactory.getStenographer(MaintenancePanelController.class.getName());
     private Printer connectedPrinter = null;
     private ResourceBundle i18nBundle = null;
-    
+
     private ProgressDialog firmwareUpdateProgress = null;
     private final FirmwareLoadService firmwareLoadService = new FirmwareLoadService();
     private FileChooser firmwareFileChooser = new FileChooser();
-    private File lastFirmwareDirectory = null;
-    
+
     private Stage needleValvecalibrationStage = null;
     private CalibrationNozzleBPageController needleValveCalibrationController = null;
     private Stage offsetCalibrationStage = null;
     private CalibrationNozzleOffsetPageController nozzleOffsetCalibrationController = null;
-    
+
     private ProgressDialog gcodeUpdateProgress = null;
     private FileChooser gcodeFileChooser = new FileChooser();
-    private File lastGCodeDirectory = null;
     private final GCodePrintService gcodePrintService = new GCodePrintService();
-    
+
     private ChangeListener<PrinterStatusEnumeration> printerStatusListener = new ChangeListener<PrinterStatusEnumeration>()
     {
         @Override
@@ -84,58 +83,58 @@ public class MaintenancePanelController implements Initializable
             setPrintSensitiveButtonVisibility(newValue);
         }
     };
-    
+
     @FXML
     private AnchorPane container;
-    
+
     @FXML
     private GCodeMacroButton YTestButton;
-    
+
     @FXML
     private GCodeMacroButton PurgeMaterialButton;
-    
+
     @FXML
     private Button loadFirmwareGCodeMacroButton;
-    
+
     @FXML
     private GCodeMacroButton T1CleanButton;
-    
+
     @FXML
     private GCodeMacroButton EjectStuckMaterialButton;
-    
+
     @FXML
     private GCodeMacroButton SpeedTestButton;
-    
+
     @FXML
     private Button CalibrateOffsetButton;
-    
+
     @FXML
     private Button sendGCodeStreamGCodeMacroButton;
-    
+
     @FXML
     private Button CalibrateBButton;
-    
+
     @FXML
     private GCodeMacroButton XTestButton;
-    
+
     @FXML
     private GCodeMacroButton Level_YButton;
-    
+
     @FXML
     private GCodeMacroButton T0CleanButton;
-    
+
     @FXML
     private TextField currentFirmwareField;
-    
+
     @FXML
     private GCodeMacroButton LevelGantryButton;
-    
+
     @FXML
     private Button sendGCodeSDGCodeMacroButton;
-    
+
     @FXML
     private GCodeMacroButton ZTestButton;
-    
+
     @FXML
     void macroButtonPress(ActionEvent event)
     {
@@ -143,7 +142,7 @@ public class MaintenancePanelController implements Initializable
         {
             GCodeMacroButton button = (GCodeMacroButton) event.getSource();
             String macroName = button.getMacroName();
-            
+
             if (macroName != null)
             {
                 try
@@ -156,14 +155,14 @@ public class MaintenancePanelController implements Initializable
             }
         }
     }
-    
+
     @FXML
     void loadFirmware(ActionEvent event)
     {
         firmwareFileChooser.setInitialFileName("Untitled");
-        
-        firmwareFileChooser.setInitialDirectory(lastFirmwareDirectory);
-        
+
+        firmwareFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(DirectoryMemoryProperty.FIRMWARE)));
+
         final File file = firmwareFileChooser.showOpenDialog(DisplayManager.getMainStage());
         if (file != null)
         {
@@ -171,10 +170,10 @@ public class MaintenancePanelController implements Initializable
             firmwareLoadService.setPrinterToUse(connectedPrinter);
             firmwareLoadService.setFirmwareFileToLoad(file.getAbsolutePath());
             firmwareLoadService.start();
-            lastFirmwareDirectory = file.getParentFile();
+            ApplicationConfiguration.setLastDirectory(DirectoryMemoryProperty.FIRMWARE, file.getParentFile().getAbsolutePath());
         }
     }
-    
+
     void readFirmwareVersion()
     {
         try
@@ -189,11 +188,11 @@ public class MaintenancePanelController implements Initializable
             steno.error("Error reading firmware version");
         }
     }
-    
+
     @FXML
     void calibrateB(ActionEvent event)
     {
-        
+
         if (needleValvecalibrationStage == null)
         {
             needleValvecalibrationStage = new Stage(StageStyle.UTILITY);
@@ -221,14 +220,14 @@ public class MaintenancePanelController implements Initializable
                 steno.error("Couldn't load needle valve calibration FXML");
             }
         }
-        
+
         needleValvecalibrationStage.showAndWait();
     }
-    
+
     @FXML
     void calibrateZOffset(ActionEvent event)
     {
-        
+
         if (offsetCalibrationStage == null)
         {
             offsetCalibrationStage = new Stage(StageStyle.UTILITY);
@@ -256,17 +255,17 @@ public class MaintenancePanelController implements Initializable
                 steno.error("Couldn't load nozzle offset calibration FXML");
             }
         }
-        
+
         offsetCalibrationStage.showAndWait();
     }
-    
+
     @FXML
     void sendGCodeStream(ActionEvent event)
     {
         gcodeFileChooser.setInitialFileName("Untitled");
-        
-        gcodeFileChooser.setInitialDirectory(lastGCodeDirectory);
-        
+
+        gcodeFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(DirectoryMemoryProperty.MACRO)));
+
         final File file = gcodeFileChooser.showOpenDialog(container.getScene().getWindow());
         if (file != null)
         {
@@ -278,26 +277,26 @@ public class MaintenancePanelController implements Initializable
                 gcodePrintService.setModelFileToPrint(file.getAbsolutePath());
                 gcodePrintService.start();
             }
-            lastGCodeDirectory = file.getParentFile();
+            ApplicationConfiguration.setLastDirectory(DirectoryMemoryProperty.MACRO, file.getParentFile().getAbsolutePath());
         }
     }
-    
+
     @FXML
     void sendGCodeSD(ActionEvent event)
     {
         gcodeFileChooser.setInitialFileName("Untitled");
-        
-        gcodeFileChooser.setInitialDirectory(lastGCodeDirectory);
-        
+
+        gcodeFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(DirectoryMemoryProperty.MACRO)));
+
         final File file = gcodeFileChooser.showOpenDialog(container.getScene().getWindow());
-        
+
         if (file != null)
         {
             if (connectedPrinter.getPrintQueue().getPrintStatus() == PrinterStatusEnumeration.IDLE)
             {
                 connectedPrinter.getPrintQueue().printGCodeFile(file.getAbsolutePath(), true);
             }
-            lastGCodeDirectory = file.getParentFile();
+            ApplicationConfiguration.setLastDirectory(DirectoryMemoryProperty.MACRO, file.getParentFile().getAbsolutePath());
         }
     }
 
@@ -308,7 +307,7 @@ public class MaintenancePanelController implements Initializable
     public void initialize(URL url, ResourceBundle rb)
     {
         i18nBundle = DisplayManager.getLanguageBundle();
-        
+
         Platform.runLater(new Runnable()
         {
             @Override
@@ -318,14 +317,12 @@ public class MaintenancePanelController implements Initializable
                 firmwareUpdateProgress = new ProgressDialog(firmwareLoadService);
             }
         });
-        
+
         gcodeFileChooser.setTitle(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodeFileChooserTitle"));
         gcodeFileChooser.getExtensionFilters()
                 .addAll(
                         new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodeFileDescription"), "*.gcode"));
-        
-        lastGCodeDirectory = new File(ApplicationConfiguration.getProjectDirectory());
-        
+
         gcodePrintService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
         {
             @Override
@@ -340,12 +337,12 @@ public class MaintenancePanelController implements Initializable
                 {
                     Notifier.showErrorNotification(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodePrintFailedTitle"),
                                                    DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodePrintFailedMessage"));
-                    
+
                     steno.warning("In gcode print succeeded but with failure flag");
                 }
             }
         });
-        
+
         gcodePrintService.setOnFailed(new EventHandler<WorkerStateEvent>()
         {
             @Override
@@ -355,21 +352,19 @@ public class MaintenancePanelController implements Initializable
                                                DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodePrintFailedMessage"));
             }
         });
-        
+
         firmwareFileChooser.setTitle(DisplayManager.getLanguageBundle().getString("maintenancePanel.firmwareFileChooserTitle"));
         firmwareFileChooser.getExtensionFilters()
                 .addAll(
                         new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString("maintenancePanel.firmwareFileDescription"), "*.bin"));
-        firmwareFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getProjectDirectory()));
-        lastFirmwareDirectory = new File(ApplicationConfiguration.getProjectDirectory());
-        
+
         firmwareLoadService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
         {
             @Override
             public void handle(WorkerStateEvent t)
             {
                 int firmwareUpgradeState = (int) t.getSource().getValue();
-                
+
                 switch (firmwareUpgradeState)
                 {
                     case FirmwareLoadTask.SDCARD_ERROR:
@@ -391,18 +386,18 @@ public class MaintenancePanelController implements Initializable
                 }
             }
         });
-        
+
         firmwareLoadService.setOnFailed(new EventHandler<WorkerStateEvent>()
         {
             @Override
             public void handle(WorkerStateEvent t)
             {
-                
+
                 Notifier.showErrorNotification(DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedTitle"),
                                                DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedMessage"));
             }
         });
-        
+
         StatusScreenState statusScreenState = StatusScreenState.getInstance();
         statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
@@ -413,9 +408,9 @@ public class MaintenancePanelController implements Initializable
                 {
                     connectedPrinter.printerStatusProperty().unbind();
                 }
-                
+
                 connectedPrinter = newValue;
-                    
+
                 if (connectedPrinter != null)
                 {
                     readFirmwareVersion();
@@ -425,37 +420,37 @@ public class MaintenancePanelController implements Initializable
             }
         });
     }
-    
+
     private void setPrintSensitiveButtonVisibility(PrinterStatusEnumeration status)
     {
         boolean visible = status != PrinterStatusEnumeration.IDLE;
-        
+
         YTestButton.setDisable(visible);
-        
+
         PurgeMaterialButton.setDisable(visible);
-        
+
         T1CleanButton.setDisable(visible);
-        
+
         EjectStuckMaterialButton.setDisable(visible);
-        
+
         SpeedTestButton.setDisable(visible);
-        
+
         CalibrateOffsetButton.setDisable(visible);
-        
+
         sendGCodeStreamGCodeMacroButton.setDisable(visible);
-        
+
         CalibrateBButton.setDisable(visible);
-        
+
         XTestButton.setDisable(visible);
-        
+
         Level_YButton.setDisable(visible);
-        
+
         T0CleanButton.setDisable(visible);
-        
+
         LevelGantryButton.setDisable(visible);
-        
+
         sendGCodeSDGCodeMacroButton.setDisable(visible);
-        
+
         ZTestButton.setDisable(visible);
     }
 }

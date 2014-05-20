@@ -37,6 +37,7 @@ public class ApplicationConfiguration
 {
 
     private static String applicationName = null;
+    private static String applicationShortName = null;
     public static final String resourcePath = "/celtech/resources/";
     public static final String modelResourcePath = resourcePath + "models/";
     public static final String imageResourcePath = resourcePath + "images/";
@@ -156,7 +157,7 @@ public class ApplicationConfiguration
             } else if (osName.startsWith("Linux"))
             {
                 steno.debug("We have a linux variant");
-                ProcessBuilder builder = new ProcessBuilder("uname",  "-m");
+                ProcessBuilder builder = new ProcessBuilder("uname", "-m");
 
                 Process process = null;
 
@@ -185,7 +186,7 @@ public class ApplicationConfiguration
                     steno.error("Error whilst determining linux machine type " + ex);
                 }
 
-            } 
+            }
         }
 
         return machineType;
@@ -216,6 +217,37 @@ public class ApplicationConfiguration
             }
         }
         return applicationName;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public static String getApplicationShortName()
+    {
+        if (configuration == null)
+        {
+            try
+            {
+                configuration = Configuration.getInstance();
+            } catch (ConfigNotLoadedException ex)
+            {
+                steno.error("Couldn't load configuration - the application cannot derive the install directory");
+            }
+        }
+
+        if (configuration != null && applicationShortName == null)
+        {
+            try
+            {
+                applicationShortName = configuration.getFilenameString(applicationConfigComponent, "ApplicationShortName", null);
+                steno.info("Application short name = " + applicationShortName);
+            } catch (ConfigNotLoadedException ex)
+            {
+                steno.error("Couldn't determine application short name - the application will not run correctly");
+            }
+        }
+        return applicationShortName;
     }
 
     public static String getApplicationInstallDirectory(Class classToCheck)
@@ -345,7 +377,7 @@ public class ApplicationConfiguration
         {
             try
             {
-                applicationStorageDirectory = configuration.getFilenameString(applicationConfigComponent, applicationStorageDirectoryComponent, null) + commonFileDirectoryPath;
+                applicationStorageDirectory = configuration.getFilenameString(applicationConfigComponent, applicationStorageDirectoryComponent, null);
                 steno.info("Application storage directory = " + applicationStorageDirectory);
             } catch (ConfigNotLoadedException ex)
             {
@@ -597,13 +629,37 @@ public class ApplicationConfiguration
     {
         InputStream input = null;
 
+        if (applicationMemoryProperties == null)
+        {
+            applicationMemoryProperties = new Properties();
+            for (DirectoryMemoryProperty directoryMemory : DirectoryMemoryProperty.values())
+            {
+                setLastDirectory(directoryMemory, getUserStorageDirectory());
+            }
+        }
+
         try
         {
-            input = new FileInputStream(getApplicationStorageDirectory() + getApplicationName() + ".properties");
+            File inputFile = new File(getApplicationStorageDirectory() + getApplicationName() + ".properties");
+            if (inputFile.exists())
+            {
+                input = new FileInputStream(inputFile);
 
-            // load a properties file
-            applicationMemoryProperties = new Properties();
-            applicationMemoryProperties.load(input);
+                // load a properties file
+                applicationMemoryProperties.load(input);
+
+                for (DirectoryMemoryProperty directoryMemory : DirectoryMemoryProperty.values())
+                {
+                    String directory = getLastDirectory(directoryMemory);
+
+                    File directoryFile = new File(directory);
+                    if (directoryFile.exists() == false)
+                    {
+                        setLastDirectory(directoryMemory, getUserStorageDirectory());
+                    }
+                }
+
+            }
         } catch (IOException ex)
         {
             ex.printStackTrace();
@@ -673,6 +729,27 @@ public class ApplicationConfiguration
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    /**
+     * This method supplies the application-specific download directory
+     * component for updates It is a hack and should be removed...
+     *
+     * @param applicationName
+     * @return
+     */
+    public static String getDownloadModifier(String applicationName)
+    {
+        if (applicationName.equals("CEL AutoMaker"))
+        {
+            return "0abc523fc24";
+        } else if (applicationName.equals("CEL Configurator"))
+        {
+            return "14f690bc22c";
+        } else
+        {
+            return null;
         }
     }
 }
