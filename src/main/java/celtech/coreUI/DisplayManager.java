@@ -640,21 +640,24 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     public Project getCurrentlyVisibleProject()
     {
-        Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
-        if (currentTab instanceof ProjectTab)
+        Project projectToReturn = null;
+
+        if (tabDisplaySelectionModel != null)
         {
-            return ((ProjectTab) currentTab).getProject();
-        } else
-        {
-            return null;
+            Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
+            if (currentTab instanceof ProjectTab)
+            {
+                projectToReturn = ((ProjectTab) currentTab).getProject();
+            }
         }
+        
+        return projectToReturn;
     }
 
     /**
-     * Key handler for whole application
-     * Delete - deletes selected model
-     * 
-     * @param event 
+     * Key handler for whole application Delete - deletes selected model
+     *
+     * @param event
      */
     @Override
     public void handle(KeyEvent event)

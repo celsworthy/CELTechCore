@@ -2,6 +2,7 @@ package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.CoreTest;
 import celtech.appManager.ApplicationStatus;
+import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PrintProfileContainer;
 import celtech.coreUI.DisplayManager;
@@ -345,7 +346,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 //                    validateProfileName();
 //            }
 //        });
-                                                                                
         editingOptions.visibleProperty().bind(isDirty.and(showButtons).and(isMutable));
         notEditingOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable));
         immutableOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable.not()));
@@ -468,6 +468,23 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         layerHeight.textProperty().addListener(dirtyStringListener);
         externalPerimeterSpeed.textProperty().addListener(dirtyStringListener);
         supportPatternAngle.textProperty().addListener(dirtyStringListener);
+
+        isDirty.addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        {
+            if (newValue == true)
+            {
+                DisplayManager displayManager = DisplayManager.getInstance();
+                if (displayManager != null)
+                {
+                    Project currentProject = displayManager.getCurrentlyVisibleProject();
+
+                    if (currentProject != null)
+                    {
+                        currentProject.projectModified();
+                    }
+                }
+            }
+        });
     }
 
     private void bindNozzleParameters(int nozzleNumber)
