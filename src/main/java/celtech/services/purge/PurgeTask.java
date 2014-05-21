@@ -58,8 +58,7 @@ public class PurgeTask extends Task<Void> implements ControllableService
     @Override
     protected Void call() throws Exception
     {
-        printerToUse.transmitStoredGCode("Purge Material");
-        PrinterUtils.waitOnMacroFinished(printerToUse, this);
+        // put the write after the purge routine once the firmware no longer raises an error whilst connected to the host computer
         HeadEEPROMDataResponse savedHeadData = printerToUse.transmitReadHeadEEPROM();
         AckResponse ackResponse = printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                                                                        savedHeadData.getUniqueID(),
@@ -80,6 +79,9 @@ public class PurgeTask extends Task<Void> implements ControllableService
         {
             printerToUse.transmitResetErrors();
         }
+
+        printerToUse.transmitStoredGCode("Purge Material");
+        PrinterUtils.waitOnMacroFinished(printerToUse, this);
 
         if (project != null)
         {
