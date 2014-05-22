@@ -650,7 +650,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 projectToReturn = ((ProjectTab) currentTab).getProject();
             }
         }
-        
+
         return projectToReturn;
     }
 
@@ -695,5 +695,13 @@ public class DisplayManager implements EventHandler<KeyEvent>
             }
         }
         return container;
+    }
+
+    public void slideOutAdvancedPanel()
+    {
+        if (rhPanel.isSlidIn() && rhPanel.isSliding() == false)
+        {
+            rhPanel.startSlidingOut();
+        }
     }
 }

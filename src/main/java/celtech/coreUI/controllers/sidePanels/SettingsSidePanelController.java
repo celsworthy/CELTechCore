@@ -237,6 +237,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         settings = fineSettings;
                         break;
                     case CUSTOM:
+                        if (newQualityValue != lastQualityValue)
+                        {
+                            displayManager.slideOutAdvancedPanel();
+                        }
                         settings = customSettings;
                         customProfileChooser.getSelectionModel().selectFirst();
                         break;
@@ -287,9 +291,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             {
                 if (oldValue != newValue)
                 {
+                    displayManager.slideOutAdvancedPanel();
                     slideOutController.showProfileTab();
                 }
-                
+
                 if (newValue == PrintProfileContainer.createNewProfile)
                 {
                     showCreateProfileDialogue(draftSettings.clone());

@@ -101,7 +101,7 @@ public class SlideoutAndProjectHolder extends HBox
             }
         });
         slideButton.disableProperty().bind(panelToSlide.isNull());
-        
+
         getChildren().addAll(slideOutHolder, slideButton, projectTabPaneHolder);
     }
 
@@ -156,6 +156,11 @@ public class SlideoutAndProjectHolder extends HBox
     public boolean isSlidIn()
     {
         return slidIn.get();
+    }
+
+    public boolean isSliding()
+    {
+        return showSidebar.statusProperty().get() != Animation.Status.STOPPED || hideSidebar.statusProperty().get() != Animation.Status.STOPPED;
     }
 
     public void switchInSlideout(HBox slideout)
