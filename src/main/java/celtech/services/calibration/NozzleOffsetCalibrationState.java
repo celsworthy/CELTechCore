@@ -9,7 +9,7 @@ import celtech.coreUI.DisplayManager;
 public enum NozzleOffsetCalibrationState
 {
 
-    IDLE("calibrationPanel.readyToBeginNozzleOpeningCalibration", null),
+    IDLE("calibrationPanel.readyToBeginNozzleOffsetCalibration", null),
     INITIALISING("calibrationPanel.heating", null),
     HEAD_CLEAN_CHECK("calibrationPanel.ensureHeadIsCleanOffsetMessage", null),
     MEASURE_Z_DIFFERENCE("calibrationPanel.measuringZOffset", null),
