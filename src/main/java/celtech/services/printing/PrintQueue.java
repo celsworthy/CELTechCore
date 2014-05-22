@@ -738,6 +738,7 @@ public class PrintQueue implements ControllableService
         {
             case SENDING_TO_PRINTER:
             case PRINTING:
+            case EXECUTING_MACRO:
                 lastStateBeforePause = printState;
                 try
                 {
@@ -795,6 +796,7 @@ public class PrintQueue implements ControllableService
             case PAUSED:
             case SENDING_TO_PRINTER:
             case PRINTING:
+            case EXECUTING_MACRO:
                 if (gcodePrintService.isRunning())
                 {
                     gcodePrintService.cancelRun();
