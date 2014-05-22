@@ -256,6 +256,7 @@ public class CalibrationNozzleBPageController implements Initializable
 
             printerToUse.transmitDirectGCode("G0 B0", false);
             printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+            printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
 
             if (parkRequired)
             {
@@ -565,6 +566,7 @@ public class CalibrationNozzleBPageController implements Initializable
 
                     printerToUse.transmitDirectGCode("G0 B0", false);
                     printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+                    printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
                     printerToUse.transmitStoredGCode("Park");
                     parkRequired = false;
                 } catch (RoboxCommsException ex)
@@ -584,6 +586,8 @@ public class CalibrationNozzleBPageController implements Initializable
                 {
                     printerToUse.transmitDirectGCode("G0 B0", false);
                     printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+                    printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
+
                     if (parkRequired)
                     {
                         printerToUse.transmitStoredGCode("Park");

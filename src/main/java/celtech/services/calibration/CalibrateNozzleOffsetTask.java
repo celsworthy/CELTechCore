@@ -8,6 +8,7 @@ package celtech.services.calibration;
 import celtech.configuration.HeaterMode;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
+import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
@@ -66,7 +67,6 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
                     steno.info("Status " + printerToUse.getPrintQueue().getPrintStatus());
                     PrinterUtils.waitOnMacroFinished(printerToUse, this);
                     StatusResponse response = printerToUse.transmitStatusRequest();
-                    steno.info("Init pt 1");
                     printerToUse.transmitDirectGCode("M104", false);
                     if (response.getNozzleHeaterMode() == HeaterMode.FIRST_LAYER)
                     {
@@ -76,7 +76,7 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
                         waitUntilNozzleReaches(printerToUse.getNozzleTargetTemperature(), 5);
                     }
                     waitOnBusy();
-                    steno.info("Heated ok");
+                    printerToUse.transmitDirectGCode(GCodeConstants.switchOnHeadLEDs, false);
 
                     success = true;
                 } catch (RoboxCommsException ex)

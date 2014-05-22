@@ -8,6 +8,7 @@ package celtech.services.calibration;
 import celtech.configuration.HeaterMode;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
+import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
@@ -89,6 +90,7 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                     {
                         waitUntilNozzleReaches(printerToUse.getNozzleTargetTemperature(), 5);
                     }
+                    printerToUse.transmitDirectGCode(GCodeConstants.switchOnHeadLEDs, false);
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in needle valve calibration - mode=" + desiredState.name());
@@ -207,7 +209,6 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
         keyPressed = false;
         lookingForKeyPress = false;
     }
-
 
     private void waitUntilNozzleReaches(int temperature, int tolerance) throws InterruptedException
     {

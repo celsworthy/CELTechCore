@@ -224,6 +224,7 @@ public class CalibrationNozzleOffsetPageController implements Initializable
             }
 
             printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+            printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
             printerToUse.transmitDirectGCode("G90", false);
             printerToUse.transmitDirectGCode("G0 Z25", false);
         } catch (RoboxCommsException ex)
@@ -414,6 +415,7 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                                                          savedHeadData.getHeadHours());
 
                     printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+                    printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
                     printerToUse.transmitDirectGCode("G90", false);
                     printerToUse.transmitDirectGCode("G0 Z25", false);
                 } catch (RoboxCommsException ex)
@@ -435,6 +437,7 @@ public class CalibrationNozzleOffsetPageController implements Initializable
                 try
                 {
                     printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+                    printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
                     printerToUse.transmitDirectGCode("G90", false);
                     printerToUse.transmitDirectGCode("G0 Z25", false);
                 } catch (RoboxCommsException ex)
