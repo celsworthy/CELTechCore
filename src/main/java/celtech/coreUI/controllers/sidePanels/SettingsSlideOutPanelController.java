@@ -22,6 +22,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.Toggle;
 import javafx.util.StringConverter;
 import libertysystems.stenographer.Stenographer;
@@ -39,6 +41,15 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
     private SettingsScreenState settingsScreenState = null;
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
+
+    @FXML
+    private TabPane detailedSettingsTabPane;
+
+    @FXML
+    private Tab materialTab;
+
+    @FXML
+    private Tab profileTab;
 
     @FXML
     private MaterialDetailsController materialDetailsController;
@@ -70,7 +81,7 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
     private int boundToNozzle = -1;
 
     private BooleanProperty showProfileData = new SimpleBooleanProperty(false);
-    
+
     /**
      * Initializes the controller class.
      */
@@ -81,7 +92,7 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
         displayManager = DisplayManager.getInstance();
 
         settingsScreenState = SettingsScreenState.getInstance();
-        
+
 //        profileData.visibleProperty().bind(showProfileData);
     }
 
@@ -109,4 +120,13 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
         materialDetailsController.provideReceiver(receiver);
     }
 
+    public void showMaterialTab()
+    {
+        detailedSettingsTabPane.getSelectionModel().select(materialTab);
+    }
+
+    public void showProfileTab()
+    {
+        detailedSettingsTabPane.getSelectionModel().select(profileTab);
+    }
 }

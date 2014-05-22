@@ -212,14 +212,15 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         qualityChooser.valueProperty().addListener(new ChangeListener<Number>()
         {
             @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            public void changed(ObservableValue<? extends Number> ov, Number lastQualityValue, Number newQualityValue)
             {
-                if (t1 != t)
+                if (newQualityValue != lastQualityValue)
                 {
                     DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+                    slideOutController.showProfileTab();
                 }
 
-                PrintQualityEnumeration quality = PrintQualityEnumeration.fromEnumPosition(t1.intValue());
+                PrintQualityEnumeration quality = PrintQualityEnumeration.fromEnumPosition(newQualityValue.intValue());
                 settingsScreenState.setPrintQuality(quality);
 
                 RoboxProfile settings = null;
@@ -284,6 +285,11 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             @Override
             public void changed(ObservableValue<? extends RoboxProfile> observable, RoboxProfile oldValue, RoboxProfile newValue)
             {
+                if (oldValue != newValue)
+                {
+                    slideOutController.showProfileTab();
+                }
+                
                 if (newValue == PrintProfileContainer.createNewProfile)
                 {
                     showCreateProfileDialogue(draftSettings.clone());
@@ -423,6 +429,11 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             @Override
             public void changed(ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue)
             {
+                if (oldValue != newValue)
+                {
+                    slideOutController.showMaterialTab();
+                }
+
                 if (!inhibitMaterialSelection)
                 {
                     updateSelectedFilament(newValue);

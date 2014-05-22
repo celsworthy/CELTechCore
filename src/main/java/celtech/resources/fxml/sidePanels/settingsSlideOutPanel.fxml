@@ -6,9 +6,9 @@
 
 <HBox fx:id="slideout" maxHeight="1.7976931348623157E308" maxWidth="380.0" minWidth="-Infinity" styleClass="slideOutPanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.sidePanels.SettingsSlideOutPanelController">
     <children>
-        <TabPane maxHeight="1.7976931348623157E308" tabClosingPolicy="UNAVAILABLE" tabMinWidth="170.0">
+        <TabPane fx:id="detailedSettingsTabPane" maxHeight="1.7976931348623157E308" tabClosingPolicy="UNAVAILABLE" tabMinWidth="170.0">
             <tabs>
-                <Tab text="%genericFirstLetterCapitalised.Material">
+                <Tab fx:id="materialTab" text="%genericFirstLetterCapitalised.Material">
                     <content>
                         <VBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308">
                             <children>
@@ -17,7 +17,7 @@
                         </VBox>
                     </content>
                 </Tab>
-                <Tab text="%genericFirstLetterCapitalised.Profile">
+                <Tab fx:id="profileTab" text="%genericFirstLetterCapitalised.Profile">
                     <content>
                         <VBox fx:id="profileData" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308">
                             <children>
