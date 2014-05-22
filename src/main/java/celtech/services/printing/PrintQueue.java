@@ -57,6 +57,7 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.io.FileDeleteStrategy;
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -282,6 +283,16 @@ public class PrintQueue implements ControllableService
                     if (result.isIsMacro())
                     {
                         setPrintStatus(PrinterStatusEnumeration.EXECUTING_MACRO);
+                        //Remove the print job from disk
+                        String printjobFilename = ApplicationConfiguration.getPrintSpoolDirectory() + result.getPrintJobID();
+                        File directoryToDelete = new File(printjobFilename);
+                        try
+                        {
+                            FileDeleteStrategy.FORCE.delete(directoryToDelete);
+                        } catch (IOException ex)
+                        {
+                            steno.error("Error whilst deleting macro print directory " + printjobFilename + " exception - " + ex.getMessage());
+                        }
                     } else
                     {
                         Notifier.showInformationNotification(notificationTitle, printTransferSuccessfulNotification + " " + associatedPrinter.getPrinterFriendlyName() + "\n" + printTransferSuccessfulNotificationEnd);

@@ -45,6 +45,7 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
     protected GCodePrintResult call() throws Exception
     {
         GCodePrintResult result = new GCodePrintResult();
+        result.setPrintJobID(printJobID);
 
         boolean gotToEndOK = false;
 
@@ -52,6 +53,8 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
         int sequenceNumber = 0;
         boolean successfulWrite = false;
         File gcodeFile = new File(gcodeFileToPrint);
+        FileReader gcodeReader = null;
+        Scanner scanner = null;
         int numberOfLines = SystemUtils.countLinesInFile(gcodeFile, ";");
         linesInFile.setValue(numberOfLines);
 
@@ -60,13 +63,15 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
         //Note that FileReader is used, not File, since File is not Closeable
         try
         {
+            gcodeReader = new FileReader(gcodeFile);
+            scanner = new Scanner(gcodeReader);
+
             if (printUsingSDCard)
             {
                 printerToUse.initialiseDataFileSend(printJobID);
             }
             updateMessage("Transferring data");
 
-            Scanner scanner = new Scanner(new FileReader(gcodeFile));
             int lineCounter = 0;
 
             final int bufferSize = 512;
@@ -116,6 +121,17 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
                 printerToUse.abortPrint();
             }
             updateMessage("Printing error");
+        } finally
+        {
+            if (scanner != null)
+            {
+                scanner.close();
+            }
+            
+            if (gcodeReader != null)
+            {
+                gcodeReader.close();
+            }
         }
 
         result.setSuccess(gotToEndOK);

@@ -11,9 +11,9 @@ package celtech.services.printing;
  */
 public class GCodePrintResult
 {
-
     private boolean success = false;
     private boolean isMacro = false;
+    private String printJobID = null;
 
     public boolean isSuccess()
     {
@@ -35,4 +35,13 @@ public class GCodePrintResult
         this.isMacro = isMacro;
     }
 
+    public String getPrintJobID()
+    {
+        return printJobID;
+    }
+
+    public void setPrintJobID(String printJobID)
+    {
+        this.printJobID = printJobID;
+    }
 }
