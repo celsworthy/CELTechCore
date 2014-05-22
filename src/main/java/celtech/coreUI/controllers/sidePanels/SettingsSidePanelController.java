@@ -241,8 +241,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         {
                             displayManager.slideOutAdvancedPanel();
                         }
-                        settings = customSettings;
                         customProfileChooser.getSelectionModel().selectFirst();
+                        settings = customSettings;
                         break;
                     default:
                         break;
@@ -302,10 +302,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 {
                     slideOutController.updateProfileData(newValue);
                     customSettings = newValue;
-                    if (PrintQualityEnumeration.fromEnumPosition((int) qualityChooser.getValue()) == PrintQualityEnumeration.CUSTOM)
-                    {
+//                    if (PrintQualityEnumeration.fromEnumPosition((int) qualityChooser.getValue()) == PrintQualityEnumeration.CUSTOM)
+//                    {
                         settingsScreenState.setSettings(newValue);
-                    }
+//                    }
                 } else if (newValue == null)
                 {
                     customProfileChooser.getSelectionModel().selectFirst();

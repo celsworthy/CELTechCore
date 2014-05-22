@@ -627,7 +627,9 @@ public class PrinterStatusPageController implements Initializable
                     selectedPrinter.printerColourProperty().addListener(printerColourChangeListener);
 
 //                    steno.info("Status " + selectedPrinter.getPrinterStatus() + " in progress=" + selectedPrinter.getPrintQueue().printInProgressProperty().getValue());
-                    pausePrintButton.visibleProperty().bind(selectedPrinter.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.PRINTING).or(selectedPrinter.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.SENDING_TO_PRINTER)));
+                    pausePrintButton.visibleProperty().bind(selectedPrinter.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.PRINTING)
+                            .or(selectedPrinter.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.SENDING_TO_PRINTER))
+                            .or(selectedPrinter.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.EXECUTING_MACRO)));
                     resumePrintButton.visibleProperty().bind(selectedPrinter.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.PAUSED));
                     cancelPrintButton.visibleProperty().bind(selectedPrinter.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.PAUSED).or(selectedPrinter.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.SLICING)));
 
