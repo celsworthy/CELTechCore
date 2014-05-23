@@ -84,6 +84,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
     private double predictedDuration = 0.0;
     private double volumeUsed = 0.0;
+    private double autoUnretractValue = 0.0;
 
     public GCodeRoboxiser()
     {
@@ -386,6 +387,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                     extrusionBuffer.add(nozzleChangeEvent);
                     nozzleInUse = 1;
                     forcedNozzle = true;
+                    currentNozzle = nozzles.get(nozzleInUse);
                 } else if (layer == 1)
                 {
                     tempNozzleMemory = nozzleChangeEvent.getNozzleNumber();
@@ -427,6 +429,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 extrusionBuffer.add(event);
 
                 resetMeasuringThing();
+                autoUnretractValue += -retractEvent.getE();
             } else if (event instanceof UnretractEvent)
             {
                 UnretractEvent unretractEvent = (UnretractEvent) event;
@@ -442,7 +445,9 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 }
 
                 resetMeasuringThing();
-                extrusionBuffer.add(event);
+                unretractEvent.setE(autoUnretractValue);
+                autoUnretractValue = 0;
+                extrusionBuffer.add(unretractEvent);
             } else if (event instanceof MCodeEvent)
             {
                 MCodeEvent mCodeEvent = (MCodeEvent) event;
@@ -719,6 +724,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                     nozzleEvent.setB(0);
                                     nozzleEvent.setNoExtrusionFlag(true);
                                     writeEventToFile(nozzleEvent);
+                                    autoUnretractValue += event.getE();
                                 } else if (eventWriteIndex >= wipeVolumeIndex)
                                 {
                                     // No extrusion
@@ -730,6 +736,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                     noBNoETravel.setFeedRate(event.getFeedRate());
                                     noBNoETravel.setComment(event.getComment() + " after finish of close");
                                     writeEventToFile(noBNoETravel);
+                                    autoUnretractValue += event.getE();
                                 } else if (eventWriteIndex >= ejectionVolumeIndex)
                                 {
                                     // No extrusion
@@ -748,6 +755,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                     nozzleEvent.setB(currentNozzlePosition);
                                     nozzleEvent.setNoExtrusionFlag(true);
                                     writeEventToFile(nozzleEvent);
+                                    autoUnretractValue += event.getE();
                                 } else
                                 {
                                     writeEventToFile(event);
