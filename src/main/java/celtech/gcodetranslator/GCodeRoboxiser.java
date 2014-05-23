@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.beans.property.DoubleProperty;
@@ -84,7 +85,21 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
     private double predictedDuration = 0.0;
     private double volumeUsed = 0.0;
-    private double autoUnretractValue = 0.0;
+    private double autoUnretractEValue = 0.0;
+    private double autoUnretractDValue = 0.0;
+
+    private boolean mixExtruderOutputs = false;
+    private ArrayList<ExtruderMix> extruderMixPoints = new ArrayList<>();
+    private double currentEMixValue = 1;
+    private double currentDMixValue = 0;
+    private double startingEMixValue = 1;
+    private double startingDMixValue = 0;
+    private double endEMixValue = 1;
+    private double endDMixValue = 0;
+    private int mixFromLayer = 0;
+    private int mixToLayer = 0;
+    private int currentMixPoint = 0;
+    private boolean mixing = false;
 
     public GCodeRoboxiser()
     {
@@ -95,6 +110,31 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     {
         RoboxiserResult result = new RoboxiserResult();
         boolean success = false;
+
+        extruderMixPoints.clear();
+
+        extruderMixPoints.add(new ExtruderMix(1, 0, 5));
+        extruderMixPoints.add(new ExtruderMix(0, 1, 30));
+        extruderMixPoints.add(new ExtruderMix(0.5, 0.5, 31));
+        extruderMixPoints.add(new ExtruderMix(0.5, 0.5, 40));
+        extruderMixPoints.add(new ExtruderMix(1, 0, 46));
+
+        mixing = false;
+        if (mixExtruderOutputs && extruderMixPoints.size() >= 2)
+        {
+            ExtruderMix firstMixPoint = extruderMixPoints.get(0);
+            startingEMixValue = firstMixPoint.getEFactor();
+            startingDMixValue = firstMixPoint.getDFactor();
+            mixFromLayer = firstMixPoint.getLayerNumber();
+
+            ExtruderMix secondMixPoint = extruderMixPoints.get(1);
+            endEMixValue = secondMixPoint.getEFactor();
+            endDMixValue = secondMixPoint.getDFactor();
+            mixToLayer = secondMixPoint.getLayerNumber();
+        } else
+        {
+            mixExtruderOutputs = false;
+        }
 
         predictedDuration = 0.0;
 
@@ -426,10 +466,21 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 {
                     writeEventsWithNozzleClose(lastPoint, "retract trigger");
                 }
-                extrusionBuffer.add(event);
 
                 resetMeasuringThing();
-                autoUnretractValue += -retractEvent.getE();
+                if (mixExtruderOutputs)
+                {
+                    double eValue = retractEvent.getE() * currentEMixValue;
+                    double dValue = retractEvent.getE() * currentDMixValue;
+                    retractEvent.setE(eValue);
+                    retractEvent.setD(dValue);
+                    autoUnretractEValue += -eValue;
+                    autoUnretractDValue += -dValue;
+                } else
+                {
+                    autoUnretractEValue += -retractEvent.getE();
+                }
+                extrusionBuffer.add(retractEvent);
             } else if (event instanceof UnretractEvent)
             {
                 UnretractEvent unretractEvent = (UnretractEvent) event;
@@ -445,8 +496,10 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 }
 
                 resetMeasuringThing();
-                unretractEvent.setE(autoUnretractValue);
-                autoUnretractValue = 0;
+                unretractEvent.setE(autoUnretractEValue);
+                unretractEvent.setD(autoUnretractDValue);
+                autoUnretractEValue = 0;
+                autoUnretractDValue = 0;
                 extrusionBuffer.add(unretractEvent);
             } else if (event instanceof MCodeEvent)
             {
@@ -706,6 +759,45 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                 volumeUsed += ((RetractDuringExtrusionEvent) candidateevent).getE();
                             }
 
+                            if (candidateevent instanceof LayerChangeEvent)
+                            {
+                                if (mixExtruderOutputs)
+                                {
+                                    if (layer == mixFromLayer)
+                                    {
+                                        mixing = true;
+                                        currentEMixValue = startingEMixValue;
+                                    } else if (layer == mixToLayer)
+                                    {
+                                        currentEMixValue = endEMixValue;
+
+                                        if (currentMixPoint < extruderMixPoints.size() - 1)
+                                        {
+                                            ExtruderMix firstMixPoint = extruderMixPoints.get(currentMixPoint);
+                                            startingEMixValue = firstMixPoint.getEFactor();
+                                            startingDMixValue = firstMixPoint.getDFactor();
+                                            mixFromLayer = firstMixPoint.getLayerNumber();
+
+                                            currentMixPoint++;
+                                            ExtruderMix secondMixPoint = extruderMixPoints.get(currentMixPoint);
+                                            endEMixValue = secondMixPoint.getEFactor();
+                                            endDMixValue = secondMixPoint.getDFactor();
+                                            mixToLayer = secondMixPoint.getLayerNumber();
+                                        }
+                                    } else if (layer > mixFromLayer && layer < mixToLayer)
+                                    {
+                                        // Mix the values
+                                        int layerSpan = mixToLayer - mixFromLayer;
+                                        double layerRatio = (layer - mixFromLayer) / (double) layerSpan;
+                                        double eSpan = endEMixValue - startingEMixValue;
+                                        double dSpan = endDMixValue - startingDMixValue;
+                                        currentEMixValue = startingEMixValue + (layerRatio * eSpan);
+                                    }
+                                    currentDMixValue = 1 - currentEMixValue;
+                                }
+
+                            }
+
                             if (candidateevent instanceof ExtrusionEvent)
                             {
                                 ExtrusionEvent event = (ExtrusionEvent) candidateevent;
@@ -724,7 +816,14 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                     nozzleEvent.setB(0);
                                     nozzleEvent.setNoExtrusionFlag(true);
                                     writeEventToFile(nozzleEvent);
-                                    autoUnretractValue += event.getE();
+                                    if (mixExtruderOutputs)
+                                    {
+                                        autoUnretractEValue += event.getE() * currentEMixValue;
+                                        autoUnretractDValue += event.getE() * currentDMixValue;
+                                    } else
+                                    {
+                                        autoUnretractEValue += event.getE();
+                                    }
                                 } else if (eventWriteIndex >= wipeVolumeIndex)
                                 {
                                     // No extrusion
@@ -736,7 +835,14 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                     noBNoETravel.setFeedRate(event.getFeedRate());
                                     noBNoETravel.setComment(event.getComment() + " after finish of close");
                                     writeEventToFile(noBNoETravel);
-                                    autoUnretractValue += event.getE();
+                                    if (mixExtruderOutputs)
+                                    {
+                                        autoUnretractEValue += event.getE() * currentEMixValue;
+                                        autoUnretractDValue += event.getE() * currentDMixValue;
+                                    } else
+                                    {
+                                        autoUnretractEValue += event.getE();
+                                    }
                                 } else if (eventWriteIndex >= ejectionVolumeIndex)
                                 {
                                     // No extrusion
@@ -755,11 +861,20 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                     nozzleEvent.setB(currentNozzlePosition);
                                     nozzleEvent.setNoExtrusionFlag(true);
                                     writeEventToFile(nozzleEvent);
-                                    autoUnretractValue += event.getE();
+                                    if (mixExtruderOutputs)
+                                    {
+                                        autoUnretractEValue += event.getE() * currentEMixValue;
+                                        autoUnretractDValue += event.getE() * currentDMixValue;
+                                    } else
+                                    {
+                                        autoUnretractEValue += event.getE();
+                                    }
                                 } else
                                 {
-                                    writeEventToFile(event);
                                     volumeUsed += event.getE();
+                                    event.setD(event.getE() * currentDMixValue);
+                                    event.setE(event.getE() * currentEMixValue);
+                                    writeEventToFile(event);
                                 }
                             } else
                             {

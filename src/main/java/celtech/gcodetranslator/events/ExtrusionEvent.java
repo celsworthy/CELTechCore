@@ -13,6 +13,7 @@ package celtech.gcodetranslator.events;
 public class ExtrusionEvent extends TravelEvent
 {
     private double e;
+    private double d;
 
     public double getE()
     {
@@ -24,17 +25,27 @@ public class ExtrusionEvent extends TravelEvent
         this.e = e;
     }
 
+    public double getD()
+    {
+        return d;
+    }
+
+    public void setD(double d)
+    {
+        this.d = d;
+    }
+
     @Override
     public String renderForOutput()
     {
-        String stringToReturn = "G1 X" + String.format("%.3f", getX()) + " Y" + String.format("%.3f", getY()) + " E" + String.format("%.5f", e);
+        String stringToReturn = "G1 X" + String.format("%.3f", getX()) + " Y" + String.format("%.3f", getY()) + " E" + String.format("%.5f", e) + " D" + String.format("%.5f", d);
         
         if (getFeedRate() > 0)
         {
             stringToReturn += " F" + String.format("%.3f", getFeedRate());
         }
         
-        stringToReturn += " ; ->L" + getLength() + " ->E" + getE();
+        stringToReturn += " ; ->L" + getLength() + " ->E" + getE() + " ->D" + getD();
         
         if (getComment() != null)
         {

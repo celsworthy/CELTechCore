@@ -7,7 +7,8 @@ package celtech.gcodetranslator.events;
 public class RetractEvent extends GCodeParseEvent
 {
 
-    private double e;
+    private double e = 0;
+    private double d = 0;
 
     public double getE()
     {
@@ -19,10 +20,20 @@ public class RetractEvent extends GCodeParseEvent
         this.e = value;
     }
 
+    public double getD()
+    {
+        return d;
+    }
+
+    public void setD(double value)
+    {
+        this.d = value;
+    }
+    
     @Override
     public String renderForOutput()
     {
-        String stringToReturn = "G1 E" + String.format("%.5f", e);
+        String stringToReturn = "G1 " + String.format("E%.5f", e) + String.format(" D%.5f", d);
 
         if (getFeedRate() > 0)
         {
