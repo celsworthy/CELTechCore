@@ -75,7 +75,14 @@ public class ProjectManager implements Savable, Serializable
             {
                 String projectName = reader.readUTF();
                 Project project = loadProject(projectName);
-                pm.projectOpened(project);
+                if (project != null)
+                {
+                    pm.projectOpened(project);
+                }
+                else
+                {
+                    steno.warning("Project Manager tried to load " + projectName + " but it couldn't be opened");
+                }
             }
             reader.close();
         } catch (IOException ex)
