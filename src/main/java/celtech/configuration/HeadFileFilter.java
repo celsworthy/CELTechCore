@@ -15,6 +15,11 @@ import java.io.FileFilter;
 public class HeadFileFilter implements FileFilter
 {
 
+    /**
+     *
+     * @param pathname
+     * @return
+     */
     @Override
     public boolean accept(File pathname)
     {

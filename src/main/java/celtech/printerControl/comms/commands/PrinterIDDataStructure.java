@@ -11,13 +11,49 @@ package celtech.printerControl.comms.commands;
  */
 public class PrinterIDDataStructure
 {
+
+    /**
+     *
+     */
     public static final int modelBytes = 5;
+
+    /**
+     *
+     */
     public static final int editionBytes = 2;
+
+    /**
+     *
+     */
     public static final int weekOfManufactureBytes = 2;
+
+    /**
+     *
+     */
     public static final int yearOfManufactureBytes = 2;
+
+    /**
+     *
+     */
     public static final int poNumberBytes = 7;
+
+    /**
+     *
+     */
     public static final int serialNumberBytes = 4;
+
+    /**
+     *
+     */
     public static final int checkByteBytes = 1;
+
+    /**
+     *
+     */
     public static final int printerFriendlyNameBytes = 24;
+
+    /**
+     *
+     */
     public static final int colourBytes = 2;
 }

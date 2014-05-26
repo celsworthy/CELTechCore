@@ -112,6 +112,8 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     /**
      * Initializes the controller class.
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
@@ -682,6 +684,10 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         };
     }
 
+    /**
+     *
+     * @param viewManager
+     */
     public void bindLoadedModels(final ThreeDViewManager viewManager)
     {
         ObservableList<ModelContainer> loadedModels = viewManager.getLoadedModels();
@@ -755,6 +761,10 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         boundProject.getLoadedModels().addListener(modelChangeListener);
     }
 
+    /**
+     *
+     * @param slideOutController
+     */
     @Override
     public void configure(Initializable slideOutController)
     {

@@ -17,26 +17,46 @@ public class Layer
     private ArrayList<CompoundMovement> movements = new ArrayList<>();
     private int layerNumber = 0;
 
+    /**
+     *
+     * @param movement
+     */
     public void addMovement(CompoundMovement movement)
     {
         movements.add(movement);
     }
 
+    /**
+     *
+     * @return
+     */
     public ArrayList<CompoundMovement> getMovements()
     {
         return movements;
     }
 
+    /**
+     *
+     * @param layerNumber
+     */
     public void setLayerNumber(int layerNumber)
     {
         this.layerNumber = layerNumber;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getLayerNumber()
     {
         return layerNumber;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString()
     {

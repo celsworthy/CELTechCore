@@ -19,17 +19,30 @@ public class NozzleBCalibrationStepResult
     private NozzleBCalibrationState completedState = null;
     private boolean success = false;
 
+    /**
+     *
+     * @param completedState
+     * @param success
+     */
     public NozzleBCalibrationStepResult(NozzleBCalibrationState completedState, boolean success)
     {
         this.completedState = completedState;
         this.success = success;
     }
     
+    /**
+     *
+     * @return
+     */
     public NozzleBCalibrationState getCompletedState()
     {
         return completedState;
     }
     
+    /**
+     *
+     * @return
+     */
     public boolean isSuccess()
     {
         return success;

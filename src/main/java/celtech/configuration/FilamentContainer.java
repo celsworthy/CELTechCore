@@ -33,6 +33,10 @@ public class FilamentContainer
     private static final ObservableList<Filament> userFilamentList = FXCollections.observableArrayList();
     private static final ObservableList<Filament> completeFilamentList = FXCollections.observableArrayList();
     private static final ObservableMap<String, Filament> completeFilamentMap = FXCollections.observableHashMap();
+
+    /**
+     *
+     */
     public static final Filament createNewFilament = new Filament(null, null, null,
             0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, false);
 
@@ -57,6 +61,11 @@ public class FilamentContainer
         loadFilamentData();
     }
 
+    /**
+     *
+     * @param filament
+     * @return
+     */
     public static String constructFilePath(Filament filament)
     {
         return ApplicationConfiguration.getUserFilamentDirectory() + filament.getFriendlyFilamentName() + "-" + filament.getMaterial().getFriendlyName() + ApplicationConfiguration.filamentFileExtension;
@@ -165,6 +174,11 @@ public class FilamentContainer
         return filamentList;
     }
 
+    /**
+     *
+     * @param filament
+     * @return
+     */
     public static boolean saveFilament(Filament filament)
     {
         boolean success = false;
@@ -209,6 +223,10 @@ public class FilamentContainer
         return success;
     }
 
+    /**
+     *
+     * @param filamentToSave
+     */
     public static void deleteFilament(Filament filamentToSave)
     {
         File filamentToDelete = new File(constructFilePath(filamentToSave));
@@ -216,6 +234,10 @@ public class FilamentContainer
         loadFilamentData();
     }
 
+    /**
+     *
+     * @return
+     */
     public static FilamentContainer getInstance()
     {
         if (instance == null)
@@ -226,6 +248,11 @@ public class FilamentContainer
         return instance;
     }
 
+    /**
+     *
+     * @param filamentID
+     * @return
+     */
     public static Filament getFilamentByID(String filamentID)
     {
         Filament returnedFilament = null;
@@ -247,6 +274,10 @@ public class FilamentContainer
         return returnedFilament;
     }
 
+    /**
+     *
+     * @return
+     */
     public static ObservableList<Filament> getCompleteFilamentList()
     {
         if (instance == null)
@@ -257,6 +288,10 @@ public class FilamentContainer
         return completeFilamentList;
     }
 
+    /**
+     *
+     * @return
+     */
     public static ObservableList<Filament> getUserFilamentList()
     {
         if (instance == null)
@@ -267,6 +302,10 @@ public class FilamentContainer
         return userFilamentList;
     }
 
+    /**
+     *
+     * @return
+     */
     public static ObservableList<Filament> getAppFilamentList()
     {
         if (instance == null)

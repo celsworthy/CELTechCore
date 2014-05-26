@@ -27,11 +27,19 @@ public class PrinterIDResponse extends RoboxRxPacket
     private String printerFriendlyName;
     private Color printerColour;
 
+    /**
+     *
+     */
     public PrinterIDResponse()
     {
         super(RxPacketTypeEnum.PRINTER_ID_RESPONSE, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {
@@ -111,6 +119,10 @@ public class PrinterIDResponse extends RoboxRxPacket
         return success;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString()
     {
@@ -127,46 +139,82 @@ public class PrinterIDResponse extends RoboxRxPacket
         return outputString.toString();
     }
 
+    /**
+     *
+     * @return
+     */
     public Color getPrinterColour()
     {
         return printerColour;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getModel()
     {
         return model;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getEdition()
     {
         return edition;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getWeekOfManufacture()
     {
         return weekOfManufacture;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getYearOfManufacture()
     {
         return yearOfManufacture;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getPoNumber()
     {
         return poNumber;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getSerialNumber()
     {
         return serialNumber;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getCheckByte()
     {
         return checkByte;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getPrinterFriendlyName()
     {
         return printerFriendlyName;

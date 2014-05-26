@@ -42,6 +42,10 @@ public class PrinterColourMap
         colourMap.put(Color.web("#FFC800"), Color.web("#FFFF00"));
     }
 
+    /**
+     *
+     * @return
+     */
     public static PrinterColourMap getInstance()
     {
         if (instance == null)
@@ -52,11 +56,21 @@ public class PrinterColourMap
         return instance;
     }
 
+    /**
+     *
+     * @param colour
+     * @return
+     */
     public Color printerToDisplayColour(Color colour)
     {
         return colourMap.get(colour);
     }
 
+    /**
+     *
+     * @param colour
+     * @return
+     */
     public Color displayToPrinterColour(Color colour)
     {
         Color printerColour = null;

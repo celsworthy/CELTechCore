@@ -84,6 +84,8 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
 
     /**
      * Initializes the controller class.
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
@@ -96,11 +98,19 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
 //        profileData.visibleProperty().bind(showProfileData);
     }
 
+    /**
+     *
+     * @param filament
+     */
     public void updateFilamentData(Filament filament)
     {
         materialDetailsController.updateMaterialData(filament);
     }
 
+    /**
+     *
+     * @param settings
+     */
     public void updateProfileData(RoboxProfile settings)
     {
         if (settings == null)
@@ -113,6 +123,10 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
         }
     }
 
+    /**
+     *
+     * @param receiver
+     */
     @Override
     public void provideReceiver(PopupCommandReceiver receiver)
     {
@@ -120,11 +134,17 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
         materialDetailsController.provideReceiver(receiver);
     }
 
+    /**
+     *
+     */
     public void showMaterialTab()
     {
         detailedSettingsTabPane.getSelectionModel().select(materialTab);
     }
 
+    /**
+     *
+     */
     public void showProfileTab()
     {
         detailedSettingsTabPane.getSelectionModel().select(profileTab);

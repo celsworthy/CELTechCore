@@ -13,17 +13,29 @@ import javafx.scene.paint.Color;
 public class SetReelLEDColour extends RoboxTxPacket
 {
 
+    /**
+     *
+     */
     public SetReelLEDColour()
     {
         super(TxPacketTypeEnum.SET_REEL_LED_COLOUR, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {
         return false;
     }
 
+    /**
+     *
+     * @param colour
+     */
     public void setLEDColour(Color colour)
     {
         StringBuffer payload = new StringBuffer();

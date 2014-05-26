@@ -11,11 +11,19 @@ package celtech.printerControl.comms.commands.tx;
 public class FormatHeadEEPROM extends RoboxTxPacket
 {
 
+    /**
+     *
+     */
     public FormatHeadEEPROM()
     {
         super(TxPacketTypeEnum.FORMAT_HEAD_EEPROM, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {

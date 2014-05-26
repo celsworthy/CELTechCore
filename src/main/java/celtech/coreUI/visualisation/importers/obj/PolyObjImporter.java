@@ -87,6 +87,10 @@ public class PolyObjImporter {
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public Set<String> getMeshes() {
         return meshes.keySet();
     }
@@ -96,32 +100,66 @@ public class PolyObjImporter {
     private List<Map<String, Material>> materialLibrary = new ArrayList<>();
     private String objFilename;
 
+    /**
+     *
+     * @param filename
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
     public PolyObjImporter(String filename) throws FileNotFoundException, IOException {
         this.objFilename = filename;
         log("Reading filename = " + filename);;
         read(new URL(filename).openStream());
     }
 
+    /**
+     *
+     * @param inputStream
+     * @throws IOException
+     */
     public PolyObjImporter(InputStream inputStream) throws IOException {
         read(inputStream);
     }
     
+    /**
+     *
+     * @return
+     */
     public PolygonMesh getMesh() {
         return meshes.values().iterator().next();
     }
     
+    /**
+     *
+     * @return
+     */
     public Material getMaterial() {
         return materials.values().iterator().next();
     }
     
+    /**
+     *
+     * @param key
+     * @return
+     */
     public PolygonMesh getMesh(String key) {
         return meshes.get(key);
     }
 
+    /**
+     *
+     * @param key
+     * @return
+     */
     public Material getMaterial(String key) {
         return materials.get(key);
     }
     
+    /**
+     *
+     * @param key
+     * @return
+     */
     public PolygonMeshView buildPolygonMeshView(String key) {
         PolygonMeshView polygonMeshView = new PolygonMeshView();
         polygonMeshView.setId(key);
@@ -131,10 +169,18 @@ public class PolyObjImporter {
         return polygonMeshView;
     }
     
+    /**
+     *
+     * @param debug
+     */
     public static void setDebug(boolean debug) {
         PolyObjImporter.debug = debug;
     }
 
+    /**
+     *
+     * @param scale
+     */
     public static void setScale(float scale) {
         PolyObjImporter.scale = scale;
     }
@@ -361,6 +407,10 @@ public class PolyObjImporter {
         smoothingGroupsStart = smoothingGroups.size();
     }
 
+    /**
+     *
+     * @param flatXZ
+     */
     public static void setFlatXZ(boolean flatXZ) {
         PolyObjImporter.flatXZ = flatXZ;
     }

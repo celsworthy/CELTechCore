@@ -34,17 +34,29 @@ public class LeapMotionListener extends Listener
     private double lastRoll = 0;
     private double lastYaw = 0;
 
+    /**
+     *
+     * @param viewmanager
+     */
     public LeapMotionListener(ThreeDViewManager viewmanager)
     {
         this.viewmanager = viewmanager;
     }
 
+    /**
+     *
+     * @param controller
+     */
     @Override
     public void onInit(Controller controller)
     {
         steno.info("Initialized");
     }
 
+    /**
+     *
+     * @param controller
+     */
     @Override
     public void onConnect(Controller controller)
     {
@@ -55,6 +67,10 @@ public class LeapMotionListener extends Listener
         controller.enableGesture(Gesture.Type.TYPE_KEY_TAP);
     }
 
+    /**
+     *
+     * @param controller
+     */
     @Override
     public void onDisconnect(Controller controller)
     {
@@ -62,12 +78,20 @@ public class LeapMotionListener extends Listener
         steno.info("Disconnected");
     }
 
+    /**
+     *
+     * @param controller
+     */
     @Override
     public void onExit(Controller controller)
     {
         steno.info("Exited");
     }
 
+    /**
+     *
+     * @param controller
+     */
     @Override
     public void onFrame(Controller controller)
     {

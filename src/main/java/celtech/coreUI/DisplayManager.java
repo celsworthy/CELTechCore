@@ -265,6 +265,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public static DisplayManager getInstance()
     {
         if (instance == null)
@@ -275,6 +279,11 @@ public class DisplayManager implements EventHandler<KeyEvent>
         return instance;
     }
 
+    /**
+     *
+     * @param mainStage
+     * @param applicationName
+     */
     public void configureDisplayManager(Stage mainStage, String applicationName)
     {
         this.mainStage = mainStage;
@@ -464,11 +473,19 @@ public class DisplayManager implements EventHandler<KeyEvent>
         root.layout();
     }
 
+    /**
+     *
+     * @return
+     */
     public static Stage getMainStage()
     {
         return mainStage;
     }
 
+    /**
+     *
+     * @return
+     */
     public static ResourceBundle getLanguageBundle()
     {
         return i18nBundle;
@@ -482,21 +499,40 @@ public class DisplayManager implements EventHandler<KeyEvent>
     /* 
      * GCode display controls
      */
+
+    /**
+     *
+     * @param equalsIgnoreCase
+     */
+    
     public void showGCodeTravel(boolean equalsIgnoreCase)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    /**
+     *
+     * @param equalsIgnoreCase
+     */
     public void showGCodeRetracts(boolean equalsIgnoreCase)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    /**
+     *
+     * @param equalsIgnoreCase
+     */
     public void showGCodeSupport(boolean equalsIgnoreCase)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    /**
+     *
+     * @param intValue
+     * @param i
+     */
     public void changeVisibleGCodeLayers(int intValue, int i)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -505,37 +541,67 @@ public class DisplayManager implements EventHandler<KeyEvent>
     /*
     
      */
+
+    /**
+     *
+     * @return
+     */
+    
     public ObservableList<String> gcodeFileLinesProperty()
     {
         return gcodeFileLines;
     }
 
+    /**
+     *
+     * @param value
+     */
     public final void setLayersInGCode(int value)
     {
         layersInGCode.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public final int getLayersInGCode()
     {
         return layersInGCode.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public final IntegerProperty layersInGCodeProperty()
     {
         return layersInGCode;
     }
 
+    /**
+     *
+     * @return
+     */
     public final BooleanProperty noGCodeLoadedProperty()
     {
         return noGCodeLoaded;
     }
 
+    /**
+     *
+     * @param modelsToLoad
+     */
     public void loadExternalModels(List<File> modelsToLoad)
     {
         //Load the first one for the moment - we should deal with multiple loads in all cases
         loadExternalModel(modelsToLoad.get(0));
     }
 
+    /**
+     *
+     * @param modelToLoad
+     */
     public void loadExternalModel(File modelToLoad)
     {
         if (!modelLoaderService.isRunning() && tabDisplaySelectionModel.selectedItemProperty().get() instanceof ProjectTab)
@@ -557,11 +623,18 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public ReadOnlyBooleanProperty modelLoadingProperty()
     {
         return modelLoaderService.runningProperty();
     }
 
+    /**
+     *
+     */
     public void shutdown()
     {
         projectManager.saveState();
@@ -572,6 +645,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
         });
     }
 
+    /**
+     *
+     */
     public void deleteSelectedModels()
     {
         Tab currentTab = tabDisplaySelectionModel.selectedItemProperty().get();
@@ -581,6 +657,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
+    /**
+     *
+     */
     public void copySelectedModels()
     {
         Tab currentTab = tabDisplaySelectionModel.selectedItemProperty().get();
@@ -590,6 +669,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
+    /**
+     *
+     */
     public void autoLayout()
     {
         Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
@@ -599,6 +681,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
+    /**
+     *
+     */
     public void activateSnapToGround()
     {
         Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
@@ -608,6 +693,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
+    /**
+     *
+     * @param selectedModel
+     */
     public void selectModel(ModelContainer selectedModel)
     {
         Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
@@ -617,6 +706,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
+    /**
+     *
+     * @param selectedModel
+     */
     public void deselectModel(ModelContainer selectedModel)
     {
         Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
@@ -626,6 +719,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public ThreeDViewManager getCurrentlyVisibleViewManager()
     {
         Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
@@ -638,6 +735,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public Project getCurrentlyVisibleProject()
     {
         Project projectToReturn = null;
@@ -680,6 +781,11 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
+    /**
+     *
+     * @param mode
+     * @return
+     */
     public VBox getSidePanelSlideOutHandle(ApplicationMode mode)
     {
         HBox slideOut = slideOutPanels.get(mode);
@@ -697,6 +803,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
         return container;
     }
 
+    /**
+     *
+     */
     public void slideOutAdvancedPanel()
     {
         if (rhPanel.isSlidIn() && rhPanel.isSliding() == false)

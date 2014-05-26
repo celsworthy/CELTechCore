@@ -129,6 +129,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     /**
      * Initializes the controller class.
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
@@ -540,6 +542,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         }
     }
 
+    /**
+     *
+     * @param slideOutController
+     */
     @Override
     public void configure(Initializable slideOutController)
     {
@@ -555,6 +561,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         updateProfileList();
     }
 
+    /**
+     *
+     * @param source
+     */
     @Override
     public void triggerSaveAs(Object source)
     {

@@ -18,6 +18,13 @@ public class GCodePostProcessingResult
     private Printer printerToUse = null;
     private RoboxiserResult result = null;
 
+    /**
+     *
+     * @param printJobUUID
+     * @param outputFilename
+     * @param printerToUse
+     * @param result
+     */
     public GCodePostProcessingResult(String printJobUUID, String outputFilename, Printer printerToUse, RoboxiserResult result)
     {
         this.printJobUUID = printJobUUID;
@@ -26,26 +33,46 @@ public class GCodePostProcessingResult
         this.result = result;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getPrintJobUUID()
     {
         return printJobUUID;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getOutputFilename()
     {
         return outputFilename;
     }
 
+    /**
+     *
+     * @return
+     */
     public Printer getPrinterToUse()
     {
         return printerToUse;
     }
 
+    /**
+     *
+     * @return
+     */
     public RoboxiserResult getRoboxiserResult()
     {
         return result;
     }
 
+    /**
+     *
+     * @param result
+     */
     public void setRoboxiserResult(RoboxiserResult result)
     {
         this.result = result;

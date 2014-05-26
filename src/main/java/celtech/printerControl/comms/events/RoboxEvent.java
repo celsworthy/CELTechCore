@@ -9,8 +9,7 @@ import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
 
 /**
  *
- * @author Ian Hudson
- * @ Liberty Systems Limited
+ * @author Ian Hudson @ Liberty Systems Limited
  */
 public class RoboxEvent
 {
@@ -18,12 +17,21 @@ public class RoboxEvent
     private RoboxEventType eventType = null;
     private RoboxRxPacket payload = null;
 
+    /**
+     *
+     * @param eventType
+     */
     public RoboxEvent(RoboxEventType eventType)
     {
 //        this.sourceOrDestination = sourceOrDestination;
         this.eventType = eventType;
     }
     
+    /**
+     *
+     * @param eventType
+     * @param payload
+     */
     public RoboxEvent(RoboxEventType eventType, RoboxRxPacket payload)
     {
 //        this.sourceOrDestination = sourceOrDestination;
@@ -31,22 +39,38 @@ public class RoboxEvent
         this.payload = payload;
     } 
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString()
     {
         return "Source/Dest=" + sourceOrDestination.toString() + ":" + eventType.name();
     }
     
+    /**
+     *
+     * @return
+     */
     public RoboxEventType getEventType()
     {
         return eventType;
     }
     
+    /**
+     *
+     * @return
+     */
     public RoboxRxPacket getPayload()
     {
         return payload;
     }
     
+    /**
+     *
+     * @return
+     */
     public PrinterID getSourceOrDestination()
     {
         return sourceOrDestination;

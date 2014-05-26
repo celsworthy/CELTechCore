@@ -14,12 +14,30 @@ import celtech.printerControl.comms.events.RoboxEvent;
  */
 public interface PrinterControlInterface
 {
+
+    /**
+     *
+     * @param portName
+     * @param event
+     */
     public void publishEvent(String portName, RoboxEvent event);
 
+    /**
+     *
+     * @param portName
+     */
     public void printerConnected(String portName);
 
+    /**
+     *
+     * @param portName
+     */
     public void failedToConnect(String portName);
 
+    /**
+     *
+     * @param portName
+     */
     public void disconnected(String portName);
     
 }

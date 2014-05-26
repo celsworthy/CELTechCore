@@ -12,8 +12,20 @@ import celtech.configuration.ApplicationConfiguration;
  */
 public enum ApplicationMode
 {
+
+    /**
+     *
+     */
     STATUS("printerStatus"),
+
+    /**
+     *
+     */
     LAYOUT("layout"),
+
+    /**
+     *
+     */
     SETTINGS("settings");
     
     private final String contentFXMLPrefix;
@@ -23,11 +35,19 @@ public enum ApplicationMode
         this.contentFXMLPrefix = contentFXMLPrefix;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getSidePanelFXMLName()
     {
         return ApplicationConfiguration.fxmlSidePanelResourcePath + contentFXMLPrefix + "SidePanel" + ".fxml";
     }
 
+    /**
+     *
+     * @return
+     */
     public String getSlideOutFXMLName()
     {
         return ApplicationConfiguration.fxmlSidePanelResourcePath + contentFXMLPrefix + "SlideOutPanel" + ".fxml";

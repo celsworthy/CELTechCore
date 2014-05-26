@@ -51,6 +51,9 @@ public class ModalDialogController implements Initializable
      */
     private ArrayList<Button> buttons = new ArrayList<>();
 
+    /**
+     *
+     */
     public ModalDialogController()
     {
         buttonHandler = new EventHandler<ActionEvent>()
@@ -67,6 +70,8 @@ public class ModalDialogController implements Initializable
 
     /**
      * Initializes the controller class.
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
@@ -74,21 +79,40 @@ public class ModalDialogController implements Initializable
         dialogTitle.setText("");
     }
 
+    /**
+     *
+     * @param title
+     */
     public void setDialogTitle(String title)
     {
         dialogTitle.setText(title);
     }
 
+    /**
+     *
+     * @param message
+     */
     public void setDialogMessage(String message)
     {
         dialogMessage.setText(message);
     }
 
+    /**
+     *
+     * @param text
+     * @return
+     */
     public int addButton(String text)
     {
         return addButton(text, null);
     }
 
+    /**
+     *
+     * @param text
+     * @param disabler
+     * @return
+     */
     public int addButton(String text, ReadOnlyBooleanProperty disabler)
     {
         Button newButton = new Button(text);
@@ -104,16 +128,28 @@ public class ModalDialogController implements Initializable
         return buttons.indexOf(newButton);
     }
 
+    /**
+     *
+     * @return
+     */
     public int getButtonValue()
     {
         return buttonValue;
     }
 
+    /**
+     *
+     * @param dialogStage
+     */
     public void configure(Stage dialogStage)
     {
         myStage = dialogStage;
     }
 
+    /**
+     *
+     * @param content
+     */
     public void setContent(Node content)
     {
         defaultContent.setVisible(false);

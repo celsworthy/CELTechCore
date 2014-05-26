@@ -6,11 +6,30 @@ package celtech.printerControl.comms;
 
 /**
  *
- * @author Ian Hudson
- * @ Liberty Systems Limited
+ * @author Ian Hudson @ Liberty Systems Limited
  */
 public enum RoboxCommsState
 {
-    FOUND, POST, CHECKING_FIRMWARE, CHECKING_ID, CONNECTED
-    
+
+    /**
+     *
+     */
+    FOUND,
+    /**
+     *
+     */
+    POST,
+    /**
+     *
+     */
+    CHECKING_FIRMWARE,
+    /**
+     *
+     */
+    CHECKING_ID,
+    /**
+     *
+     */
+    CONNECTED
+
 }

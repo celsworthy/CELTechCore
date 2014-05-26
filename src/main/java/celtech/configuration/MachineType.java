@@ -12,5 +12,34 @@ package celtech.configuration;
  */
 public enum MachineType
 {
-    WINDOWS_95, WINDOWS, MAC, LINUX_X86, LINUX_X64, UNKNOWN
+
+    /**
+     *
+     */
+    WINDOWS_95,
+
+    /**
+     *
+     */
+    WINDOWS,
+
+    /**
+     *
+     */
+    MAC,
+
+    /**
+     *
+     */
+    LINUX_X86,
+
+    /**
+     *
+     */
+    LINUX_X64,
+
+    /**
+     *
+     */
+    UNKNOWN
 }

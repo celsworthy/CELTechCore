@@ -55,6 +55,12 @@ public class SmoothingGroups {
     
     private Edge[][] faceEdges;
 
+    /**
+     *
+     * @param faces
+     * @param faceNormals
+     * @param normals
+     */
     public SmoothingGroups(int faces[][], int[][] faceNormals, float[] normals) {
         this.faces = faces;
         this.faceNormals = faceNormals;

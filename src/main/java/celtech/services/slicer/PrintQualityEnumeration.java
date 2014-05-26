@@ -17,9 +17,24 @@ import celtech.configuration.PrintProfileContainer;
 public enum PrintQualityEnumeration
 {
 
+    /**
+     *
+     */
     DRAFT("Draft", PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName), 0),
+
+    /**
+     *
+     */
     NORMAL("Normal", PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.normalSettingsProfileName), 1),
+
+    /**
+     *
+     */
     FINE("Fine", PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.fineSettingsProfileName), 2),
+
+    /**
+     *
+     */
     CUSTOM("Custom", PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.customSettingsProfileName), 3);
 
     private final String friendlyName;
@@ -33,21 +48,38 @@ public enum PrintQualityEnumeration
         this.enumPosition = enumPosition;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getFriendlyName()
     {
         return friendlyName;
     }
 
+    /**
+     *
+     * @return
+     */
     public RoboxProfile getSettings()
     {
         return settings;
     }
     
+    /**
+     *
+     * @return
+     */
     public int getEnumPosition()
     {
         return enumPosition;
     }
 
+    /**
+     *
+     * @param enumPosition
+     * @return
+     */
     public static PrintQualityEnumeration fromEnumPosition(int enumPosition)
     {
         PrintQualityEnumeration returnVal = null;
@@ -64,6 +96,10 @@ public enum PrintQualityEnumeration
         return returnVal;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString()
     {

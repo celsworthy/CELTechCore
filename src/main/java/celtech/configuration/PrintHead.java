@@ -12,7 +12,14 @@ package celtech.configuration;
 public enum PrintHead
 {
 
+    /**
+     *
+     */
     UNRECOGNISED("Unrecognised type", "Unrecognised"),
+
+    /**
+     *
+     */
     RBX01_SM("Dual nozzle single melt chamber head with 0.3/0.8mm nozzles", "Dual 0.3/0.8mm");
 
     private String friendlyHeadName;
@@ -24,16 +31,29 @@ public enum PrintHead
         this.shortHeadName = shortHeadName;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getFriendlyHeadName()
     {
         return friendlyHeadName;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getShortName()
     {
         return shortHeadName;
     }
 
+    /**
+     *
+     * @param headTypeCode
+     * @return
+     */
     public static PrintHead getPrintHeadForType(final String headTypeCode)
     {
         PrintHead printHead = null;

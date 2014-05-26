@@ -16,14 +16,46 @@ import javafx.scene.Node;
 public class MathUtils
 {
 
+    /**
+     *
+     */
     public static Point3D xAxis = new Point3D(1, 0, 0);
+
+    /**
+     *
+     */
     public static Point3D yAxis = new Point3D(0, -1, 0);
+
+    /**
+     *
+     */
     public static Point3D zAxis = new Point3D(0, 0, 1);
+
+    /**
+     *
+     */
     public static final double HALF_PI = Math.PI / 2;
+
+    /**
+     *
+     */
     public static final double TWO_PI = Math.PI * 2;
+
+    /**
+     *
+     */
     public static final double RAD_TO_DEG = 180 / Math.PI;
+
+    /**
+     *
+     */
     public static final double DEG_TO_RAD = Math.PI / 180;
 
+    /**
+     *
+     * @param x
+     * @return
+     */
     public static double invSqrt(double x)
     {
         double xhalf = 0.5d * x;
@@ -34,6 +66,13 @@ public class MathUtils
         return x;
     }
 
+    /**
+     *
+     * @param n
+     * @param alf
+     * @param bet
+     * @param gam
+     */
     public static void matrixRotateNode(Node n, double alf, double bet, double gam)
     {
         double A11 = Math.cos(alf) * Math.cos(gam);
@@ -56,6 +95,11 @@ public class MathUtils
         }
     }
 
+    /**
+     *
+     * @param polarCoordinate
+     * @return
+     */
     public static Point3D sphericalToCartesianLocalSpaceAdjusted(PolarCoordinate polarCoordinate)
     {
         // This method converts from spherical to cartesian coords with the following special assumptions
@@ -85,6 +129,11 @@ public class MathUtils
         return new Point3D(newX, newY, newZ);
     }
 
+    /**
+     *
+     * @param cartesianCoordinate
+     * @return
+     */
     public static PolarCoordinate cartesianToSphericalLocalSpaceAdjusted(Point3D cartesianCoordinate)
     {
         // Convert from cartesian to spherical
@@ -111,6 +160,11 @@ public class MathUtils
         return new PolarCoordinate(theta, phi, r);
     }
 
+    /**
+     *
+     * @param polarCoordinate
+     * @return
+     */
     public static Point3D sphericalToCartesianLocalSpaceUnadjusted(PolarCoordinate polarCoordinate)
     {
         // This method converts from spherical to cartesian coords with the following special assumptions
@@ -139,6 +193,11 @@ public class MathUtils
         return new Point3D(newX, newY, newZ);
     }
 
+    /**
+     *
+     * @param cartesianCoordinate
+     * @return
+     */
     public static PolarCoordinate cartesianToSphericalLocalSpaceUnadjusted(Point3D cartesianCoordinate)
     {
         // Convert from cartesian to spherical
@@ -168,6 +227,12 @@ public class MathUtils
         return new PolarCoordinate(theta, phi, r);
     }
 
+    /**
+     *
+     * @param xPos
+     * @param yPos
+     * @return
+     */
     public static double cartesianToAngleDegreesCWFromTop(double xPos, double yPos)
     {
         // Returns an angle assuming the input is relative to a zero centre point
@@ -177,6 +242,12 @@ public class MathUtils
         return angle * RAD_TO_DEG;
     }
 
+    /**
+     *
+     * @param angle
+     * @param radius
+     * @return
+     */
     public static Point2D angleDegreesToCartesianCWFromTop(double angle, double radius)
     {
         // Returns an angle assuming the input is relative to a zero centre point
@@ -189,6 +260,12 @@ public class MathUtils
         return new Point2D(xPos, yPos);
     }
 
+    /**
+     *
+     * @param xPos
+     * @param yPos
+     * @return
+     */
     public static double cartesianToAngleDegreesCCWFromRight(double xPos, double yPos)
     {
         // Returns an angle assuming the input is relative to a zero centre point
@@ -199,6 +276,11 @@ public class MathUtils
         return angle * RAD_TO_DEG;
     }
 
+    /**
+     *
+     * @param azimuth
+     * @return
+     */
     public static double boundAzimuthRadians(double azimuth)
     {
         double outputAzimuth = 0;
@@ -216,7 +298,12 @@ public class MathUtils
         return outputAzimuth;
     }
     
-        public static double boundAzimuthDegrees(double azimuth)
+    /**
+     *
+     * @param azimuth
+     * @return
+     */
+    public static double boundAzimuthDegrees(double azimuth)
     {
         double outputAzimuth = 0;
         if (azimuth > 360)

@@ -17,17 +17,37 @@ public class WritePrinterID extends RoboxTxPacket
     private char[] firstPad = new char[41];
     private char[] secondPad = new char[162];
 
+    /**
+     *
+     */
     public WritePrinterID()
     {
         super(TxPacketTypeEnum.WRITE_PRINTER_ID, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {
         return false;
     }
 
+    /**
+     *
+     * @param model
+     * @param edition
+     * @param weekOfManufacture
+     * @param yearOfManufacture
+     * @param poNumber
+     * @param serialNumber
+     * @param checkByte
+     * @param printerFriendlyName
+     * @param colour
+     */
     public void setIDAndColour(String model, String edition, String weekOfManufacture, String yearOfManufacture, String poNumber, String serialNumber, String checkByte, String printerFriendlyName, Color colour)
     {
         //The ID is in the first 200 characters

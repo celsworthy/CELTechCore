@@ -48,11 +48,20 @@ public class ProgressDialogController implements Initializable
     private ControllableService serviceBeingMonitored = null;
     private ChangeListener<Boolean> registeredListener = null;
     
+    /**
+     *
+     * @param event
+     */
     public void cancelOperation(MouseEvent event)
     {
         serviceBeingMonitored.cancelRun();
     }
     
+    /**
+     *
+     * @param service
+     * @param stage
+     */
     public void configure(ControllableService service, final Stage stage)
     {
         serviceBeingMonitored = service;
@@ -113,6 +122,8 @@ public class ProgressDialogController implements Initializable
 
     /**
      * Initializes the controller class.
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)

@@ -11,11 +11,19 @@ package celtech.printerControl.comms.commands.tx;
 public class UpdateFirmware extends RoboxTxPacket
 {
 
+    /**
+     *
+     */
     public UpdateFirmware()
     {
         super(TxPacketTypeEnum.UPDATE_FIRMWARE, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {

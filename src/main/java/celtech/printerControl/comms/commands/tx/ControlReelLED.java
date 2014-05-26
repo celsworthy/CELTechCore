@@ -11,17 +11,29 @@ package celtech.printerControl.comms.commands.tx;
 public class ControlReelLED extends RoboxTxPacket
 {
 
+    /**
+     *
+     */
     public ControlReelLED()
     {
         super(TxPacketTypeEnum.CONTROL_REEL_LED, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {
         return false;
     }
 
+    /**
+     *
+     * @param on
+     */
     public void setLEDStatus(boolean on)
     {
         StringBuffer payload = new StringBuffer();

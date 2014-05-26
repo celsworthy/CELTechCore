@@ -12,6 +12,11 @@ package celtech.coreUI.controllers.popups;
  */
 public interface PopupCommandTransmitter
 {
+
+    /**
+     *
+     * @param receiver
+     */
     public void provideReceiver(PopupCommandReceiver receiver);
             
 }

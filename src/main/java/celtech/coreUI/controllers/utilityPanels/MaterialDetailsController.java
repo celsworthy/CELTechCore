@@ -185,6 +185,8 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
 
     /**
      * Initializes the controller class.
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
@@ -234,6 +236,10 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
         ambientTemperature.textProperty().addListener(dirtyStringListener);
     }
 
+    /**
+     *
+     * @param filament
+     */
     public void updateMaterialData(Filament filament)
     {
         if (filament != null)
@@ -255,6 +261,10 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
         lastFilamentUpdate = filament;
     }
 
+    /**
+     *
+     * @return
+     */
     public Filament getMaterialData()
     {
         return new Filament(
@@ -297,16 +307,28 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
         materialNameInvalid.set(invalid);
     }
 
+    /**
+     *
+     * @param show
+     */
     public void showButtons(boolean show)
     {
         showButtons.set(show);
     }
 
+    /**
+     *
+     * @return
+     */
     public ReadOnlyBooleanProperty getProfileNameInvalidProperty()
     {
         return materialNameInvalid;
     }
 
+    /**
+     *
+     * @param receiver
+     */
     @Override
     public void provideReceiver(PopupCommandReceiver receiver)
     {

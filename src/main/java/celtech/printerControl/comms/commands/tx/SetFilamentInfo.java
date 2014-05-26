@@ -10,17 +10,32 @@ package celtech.printerControl.comms.commands.tx;
  */
 public class SetFilamentInfo extends RoboxTxPacket
 {
+
+    /**
+     *
+     */
     public SetFilamentInfo()
     {
         super(TxPacketTypeEnum.SET_FILAMENT_INFO, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {
         return false;
     }
 
+    /**
+     *
+     * @param filamentDiameter
+     * @param filamentMultiplier
+     * @param feedRateMultiplier
+     */
     public void setFilamentInfo(double filamentDiameter, double filamentMultiplier, double feedRateMultiplier)
     {
         StringBuilder payload = new StringBuilder();

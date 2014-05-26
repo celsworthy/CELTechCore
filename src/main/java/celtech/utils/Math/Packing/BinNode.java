@@ -27,71 +27,127 @@ public class BinNode
         this.h = h;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isUsed()
     {
         return used;
     }
 
+    /**
+     *
+     * @param used
+     */
     public void setUsed(boolean used)
     {
         this.used = used;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getX()
     {
         return x;
     }
 
+    /**
+     *
+     * @param x
+     */
     public void setX(int x)
     {
         this.x = x;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getY()
     {
         return y;
     }
 
+    /**
+     *
+     * @param y
+     */
     public void setY(int y)
     {
         this.y = y;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getW()
     {
         return w;
     }
 
+    /**
+     *
+     * @param w
+     */
     public void setW(int w)
     {
         this.w = w;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getH()
     {
         return h;
     }
 
+    /**
+     *
+     * @param h
+     */
     public void setH(int h)
     {
         this.h = h;
     }
 
+    /**
+     *
+     * @return
+     */
     public BinNode getRight()
     {
         return right;
     }
 
+    /**
+     *
+     * @param right
+     */
     public void setRight(BinNode right)
     {
         this.right = right;
     }
 
+    /**
+     *
+     * @return
+     */
     public BinNode getDown()
     {
         return down;
     }
 
+    /**
+     *
+     * @param down
+     */
     public void setDown(BinNode down)
     {
         this.down = down;

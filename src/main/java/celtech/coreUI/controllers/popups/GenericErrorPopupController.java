@@ -33,6 +33,10 @@ public class GenericErrorPopupController implements Initializable
     {
     }
 
+    /**
+     *
+     * @param errors
+     */
     public void populateErrorList(AckResponse errors)
     {
         errorDisplay.setText(errors.getErrorsAsString());

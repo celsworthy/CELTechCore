@@ -15,26 +15,46 @@ public class ExtrusionEvent extends TravelEvent
     private double e;
     private double d;
 
+    /**
+     *
+     * @return
+     */
     public double getE()
     {
         return e;
     }
 
+    /**
+     *
+     * @param e
+     */
     public void setE(double e)
     {
         this.e = e;
     }
 
+    /**
+     *
+     * @return
+     */
     public double getD()
     {
         return d;
     }
 
+    /**
+     *
+     * @param d
+     */
     public void setD(double d)
     {
         this.d = d;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String renderForOutput()
     {

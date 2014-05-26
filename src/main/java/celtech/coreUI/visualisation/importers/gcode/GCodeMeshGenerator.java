@@ -36,8 +36,18 @@ public class GCodeMeshGenerator
 {
 
     private static Stenographer steno = StenographerFactory.getStenographer(GCodeMeshGenerator.class.getName());
+
+    /**
+     *
+     */
     public static final String layerPrefix = "Layer";
 
+    /**
+     *
+     * @param gcodeMetaFile
+     * @param progressProperty
+     * @return
+     */
     public static GCodeMeshData generateMesh(GCodeFile gcodeMetaFile, DoubleProperty progressProperty)
     {
         Group gcodeParts = new Group();

@@ -10,5 +10,24 @@ package celtech.services.gcodeLoader;
  */
 public enum GCodeEventType
 {
-    TRAVEL, RETRACT, UNRETRACT, EXTRUDE
+
+    /**
+     *
+     */
+    TRAVEL,
+
+    /**
+     *
+     */
+    RETRACT,
+
+    /**
+     *
+     */
+    UNRETRACT,
+
+    /**
+     *
+     */
+    EXTRUDE
 }

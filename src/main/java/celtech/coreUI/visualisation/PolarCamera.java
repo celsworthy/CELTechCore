@@ -41,6 +41,9 @@ public class PolarCamera extends PerspectiveCamera
     private FloatProperty cameraPitchRadiansProperty = new SimpleFloatProperty();
     private FloatProperty cameraAzimuthRadiansProperty = new SimpleFloatProperty();
 
+    /**
+     *
+     */
     public PolarCamera()
     {
         super(true);
@@ -54,6 +57,11 @@ public class PolarCamera extends PerspectiveCamera
 //                cameraLookXRotate, cameraLookZRotate, cameraPosition);
     }
 
+    /**
+     *
+     * @param newAzimuth
+     * @param newElevation
+     */
     public void rotateAndElevateCameraTo(double newAzimuth, double newElevation)
     {
         cameraDollyPitch = newElevation;
@@ -80,6 +88,11 @@ public class PolarCamera extends PerspectiveCamera
         updateCameraLocation();
     }
 
+    /**
+     *
+     * @param azimuthChange
+     * @param elevationChange
+     */
     public void rotateAndElevateCamera(double azimuthChange, double elevationChange)
     {
         cameraDollyPitch += elevationChange;
@@ -106,6 +119,10 @@ public class PolarCamera extends PerspectiveCamera
         updateCameraLocation();
     }
 
+    /**
+     *
+     * @param zoomFactor
+     */
     public void zoomCamera(double zoomFactor)
     {
         cameraDistance.set(cameraDistance.get()*zoomFactor);
@@ -121,6 +138,10 @@ public class PolarCamera extends PerspectiveCamera
         updateCameraLocation();
     }
 
+    /**
+     *
+     * @param distance
+     */
     public void zoomCameraTo(double distance)
     {
         cameraDistance.set(distance);
@@ -136,6 +157,10 @@ public class PolarCamera extends PerspectiveCamera
         updateCameraLocation();
     }
 
+    /**
+     *
+     * @param distanceDifference
+     */
     public void alterZoom(double distanceDifference)
     {
         cameraDistance.set(cameraDistance.get() + distanceDifference);
@@ -151,6 +176,9 @@ public class PolarCamera extends PerspectiveCamera
         updateCameraLocation();
     }
 
+    /**
+     *
+     */
     public void updateCameraLocation()
     {
 //        steno.info("Reposition camera to A:" + cameraDollyAzimuth + " E:" + cameraDollyPitch + " D:" + cameraDistance);
@@ -183,36 +211,64 @@ public class PolarCamera extends PerspectiveCamera
         updateCameraLocation();
     }
 
+    /**
+     *
+     * @return
+     */
     public FloatProperty cameraAzimuthRadiansProperty()
     {
         return cameraAzimuthRadiansProperty;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setCameraAzimuthRadians(float value)
     {
         cameraAzimuthRadiansProperty.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public float getCameraAzimuthRadians()
     {
         return cameraAzimuthRadiansProperty.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public FloatProperty cameraPitchRadiansProperty()
     {
         return cameraPitchRadiansProperty;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setCameraPitchRadians(float value)
     {
         cameraPitchRadiansProperty.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public float getCameraPitchRadians()
     {
         return cameraPitchRadiansProperty.get();
     }
 
+    /**
+     *
+     * @param cameraPositionPreset
+     */
     public void gotoPreset(CameraPositionPreset cameraPositionPreset)
     {
         setCentreOfRotation(new Point3D(PrintBed.getPrintVolumeCentre().getX(), PrintBed.getPrintVolumeCentre().getY(), PrintBed.getPrintVolumeCentre().getZ()));
@@ -220,6 +276,10 @@ public class PolarCamera extends PerspectiveCamera
         zoomCameraTo(cameraPositionPreset.getDistance());
     }
     
+    /**
+     *
+     * @return
+     */
     public DoubleProperty cameraDistanceProperty()
     {
         return cameraDistance;

@@ -12,11 +12,19 @@ package celtech.printerControl.comms.commands.tx;
 public class InitiatePrint extends RoboxTxPacket
 {
 
+    /**
+     *
+     */
     public InitiatePrint()
     {
         super(TxPacketTypeEnum.INITIATE_PRINT, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {

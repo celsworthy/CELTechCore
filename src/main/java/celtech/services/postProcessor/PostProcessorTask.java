@@ -32,6 +32,12 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult> {
     private Printer printerToUse = null;
     private DoubleProperty taskProgress = new SimpleDoubleProperty(0);
 
+    /**
+     *
+     * @param printJobUUID
+     * @param settings
+     * @param printerToUse
+     */
     public PostProcessorTask(String printJobUUID, RoboxProfile settings, Printer printerToUse) {
         this.printJobUUID = printJobUUID;
         this.settings = settings;

@@ -43,6 +43,10 @@ public class LayoutSlideOutPanelController implements Initializable
     {
     }
 
+    /**
+     *
+     * @param currentProject
+     */
     public void bindLoadedModels(final Project currentProject)
     {
         this.currentProject = currentProject;

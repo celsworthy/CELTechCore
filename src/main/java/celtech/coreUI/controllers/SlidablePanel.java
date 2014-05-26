@@ -12,5 +12,9 @@ package celtech.coreUI.controllers;
  */
 public interface SlidablePanel
 {
+
+    /**
+     *
+     */
     public void slideIn();
 }

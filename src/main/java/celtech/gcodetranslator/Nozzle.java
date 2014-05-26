@@ -18,6 +18,13 @@ public class Nozzle
     private double wipeVolume = 0;    
     private double partialBMinimum = 0;
 
+    /**
+     *
+     * @param nozzleReferenceNumber
+     * @param ejectionVolume
+     * @param wipeVolume
+     * @param partialBMinimum
+     */
     public Nozzle(int nozzleReferenceNumber, double ejectionVolume, double wipeVolume, double partialBMinimum)
     {
         this.nozzleReferenceNumber = nozzleReferenceNumber;
@@ -26,31 +33,55 @@ public class Nozzle
         this.partialBMinimum = partialBMinimum;
     }
 
+    /**
+     *
+     * @return
+     */
     public NozzleState getState()
     {
         return state;
     }
     
+    /**
+     *
+     * @return
+     */
     public int getReferenceNumber()
     {
         return nozzleReferenceNumber;
     }
     
+    /**
+     *
+     * @return
+     */
     public double getEjectionVolume()
     {
         return ejectionVolume;
     }
     
+    /**
+     *
+     * @return
+     */
     public double getWipeVolume()
     {
         return wipeVolume;
     }
         
+    /**
+     *
+     * @return
+     */
     public double getPartialBMinimum()
     {
         return partialBMinimum;
     }
 
+    /**
+     *
+     * @return
+     */
     public double closeNozzleFully()
     {
         currentPosition = closedPosition;
@@ -58,6 +89,10 @@ public class Nozzle
         return currentPosition;
     }
     
+    /**
+     *
+     * @return
+     */
     public double openNozzleFully()
     {
         currentPosition = openPosition;
@@ -65,6 +100,10 @@ public class Nozzle
         return currentPosition;
     }
     
+    /**
+     *
+     * @return
+     */
     public double getAllowedTravelBeforeClose()
     {
         return allowedTravelBeforeClose;

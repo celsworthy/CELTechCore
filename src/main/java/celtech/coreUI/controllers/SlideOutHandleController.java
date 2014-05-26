@@ -47,6 +47,9 @@ public class SlideOutHandleController implements Initializable
     private double panelWidth = 0;
     private int delayTime = 250;
 
+    /**
+     *
+     */
     public SlideOutHandleController()
     {
         hideSidebar = new Transition()
@@ -107,6 +110,9 @@ public class SlideOutHandleController implements Initializable
         }
     }
 
+    /**
+     *
+     */
     public void toggleSlide()
     {
         setup();
@@ -119,6 +125,9 @@ public class SlideOutHandleController implements Initializable
         }
     }
 
+    /**
+     *
+     */
     public void slideIn()
     {
         setup();
@@ -126,6 +135,10 @@ public class SlideOutHandleController implements Initializable
         slidIn = true;
     }
 
+    /**
+     *
+     * @param amountToShow
+     */
     public void slideMenuPanel(double amountToShow)
     {
         double adjustedWidth = (panelWidth * amountToShow) + handleWidth;
@@ -133,6 +146,10 @@ public class SlideOutHandleController implements Initializable
         paneToSlide.setPrefWidth(adjustedWidth);
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean startSlidingOut()
     {
         if (hideSidebar.statusProperty().get() == Animation.Status.STOPPED)
@@ -146,6 +163,10 @@ public class SlideOutHandleController implements Initializable
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean startSlidingIn()
     {
         if (showSidebar.statusProperty().get() == Animation.Status.STOPPED)
@@ -161,6 +182,10 @@ public class SlideOutHandleController implements Initializable
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isSlidIn()
     {
         return slidIn;

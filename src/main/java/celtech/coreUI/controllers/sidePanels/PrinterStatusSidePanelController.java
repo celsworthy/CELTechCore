@@ -306,6 +306,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     /**
      * Initializes the controller class.
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
@@ -825,6 +827,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         printerStatusHBox.setVisible(visible);
     }
 
+    /**
+     *
+     * @param slideOutController
+     */
     @Override
     public void configure(Initializable slideOutController)
     {

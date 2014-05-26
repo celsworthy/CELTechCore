@@ -13,11 +13,32 @@ import java.io.UnsupportedEncodingException;
 public class WriteHeadEEPROM extends RoboxTxPacket
 {
 
+    /**
+     *
+     */
     public WriteHeadEEPROM()
     {
         super(TxPacketTypeEnum.WRITE_HEAD_EEPROM, false, false);
     }
 
+    /**
+     *
+     * @param headTypeCode
+     * @param headUniqueID
+     * @param maximumTemperature
+     * @param thermistorBeta
+     * @param thermistorTCal
+     * @param nozzle1XOffset
+     * @param nozzle1YOffset
+     * @param nozzle1ZOffset
+     * @param nozzle1BOffset
+     * @param nozzle2XOffset
+     * @param nozzle2YOffset
+     * @param nozzle2ZOffset
+     * @param nozzle2BOffset
+     * @param lastFilamentTemperature
+     * @param hourCounter
+     */
     public void populateEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature,
             float thermistorBeta, float thermistorTCal,
             float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset,
@@ -47,6 +68,10 @@ public class WriteHeadEEPROM extends RoboxTxPacket
         this.setMessagePayload(payload.toString());
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public byte[] toByteArray()
     {
@@ -95,6 +120,11 @@ public class WriteHeadEEPROM extends RoboxTxPacket
         return outputArray;
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {

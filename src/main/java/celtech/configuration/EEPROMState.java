@@ -12,8 +12,27 @@ package celtech.configuration;
  */
 public enum EEPROMState
 {
-    NOT_PRESENT(0), NOT_PROGRAMMED(1), PROGRAMMED(2);
 
+    /**
+     *
+     */
+    NOT_PRESENT(0),
+
+    /**
+     *
+     */
+    NOT_PROGRAMMED(1),
+
+    /**
+     *
+     */
+    PROGRAMMED(2);
+
+    /**
+     *
+     * @param valueOf
+     * @return
+     */
     public static EEPROMState modeFromValue(Integer valueOf)
     {
         EEPROMState returnedMode = null;
@@ -37,6 +56,10 @@ public enum EEPROMState
         this.value = value;
     }
     
+    /**
+     *
+     * @return
+     */
     public int getValue()
     {
         return value;

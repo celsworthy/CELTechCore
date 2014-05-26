@@ -43,6 +43,10 @@ public class PrintBed
         steno.debug("Print volume bounds " + printVolumeBoundingBox);
     }
 
+    /**
+     *
+     * @return
+     */
     public static PrintBed getInstance()
     {
         if (instance == null)
@@ -53,46 +57,83 @@ public class PrintBed
         return instance;
     }
 
+    /**
+     *
+     * @return
+     */
     public Point3D getPrintVolumeMinimums()
     {
         return printVolumeMinimums;
     }
 
+    /**
+     *
+     * @return
+     */
     public Point3D getPrintVolumeMaximums()
     {
         return printVolumeMaximums;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getBedOuterModelName()
     {
         return bedOuterModelName;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getBedInnerModelName()
     {
         return bedInnerModelName;
     }
 
+    /**
+     *
+     * @return
+     */
     public static Point3D getPrintVolumeCentre()
     {
         return centre;
     }
     
+    /**
+     *
+     * @return
+     */
     public static Point3D getPrintVolumeCentreZeroHeight()
     {
         return centreZeroHeight;
     }
 
+    /**
+     *
+     * @return
+     */
     public BoundingBox getPrintVolumeBounds()
     {
         return printVolumeBoundingBox;
     }
 
+    /**
+     *
+     * @return
+     */
     public BoundingBox getBedBounds()
     {
         return printBedBounds;
     }
     
+    /**
+     *
+     * @param bounds
+     * @return
+     */
     public static boolean isBiggerThanPrintVolume(ModelBounds bounds)
     {
         boolean biggerThanPrintArea = false;

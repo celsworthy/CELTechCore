@@ -38,11 +38,20 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
     private Pattern zDeltaPattern = Pattern.compile(".*(?<offset>[\\-0-9.]+).*");
     private Matcher zDeltaMatcher = null;
 
+    /**
+     *
+     * @param desiredState
+     */
     public CalibrateNozzleOffsetTask(NozzleOffsetCalibrationState desiredState)
     {
         this.desiredState = desiredState;
     }
 
+    /**
+     *
+     * @param desiredState
+     * @param nozzleNumber
+     */
     public CalibrateNozzleOffsetTask(NozzleOffsetCalibrationState desiredState, int nozzleNumber)
     {
         this.desiredState = desiredState;
@@ -241,6 +250,10 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
         }
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public boolean cancelRun()
     {

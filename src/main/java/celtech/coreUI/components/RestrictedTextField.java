@@ -25,6 +25,10 @@ public class RestrictedTextField extends TextField
 
     private String standardAllowedCharacters = "\u0008";
 
+    /**
+     *
+     * @return
+     */
     public int getMaxLength()
     {
         return maxLength.get();
@@ -40,21 +44,37 @@ public class RestrictedTextField extends TextField
         this.maxLength.set(maxLength);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty maxLengthProperty()
     {
         return maxLength;
     }
 
+    /**
+     *
+     * @param forceUpperCase
+     */
     public void setForceUpperCase(boolean forceUpperCase)
     {
         this.forceUpperCase.set(forceUpperCase);
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean getForceUpperCase()
     {
         return this.forceUpperCase.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty forceUpperCaseProperty()
     {
         return forceUpperCase;
@@ -62,7 +82,7 @@ public class RestrictedTextField extends TextField
 
     /**
      * Sets a regular expression character class which restricts the user
-     * input.<br/>
+     * input.
      * E.g. 0-9 only allows numeric values.
      *
      * @param restrict The regular expression.
@@ -72,16 +92,27 @@ public class RestrictedTextField extends TextField
         this.restrict.set("[" + restrict + standardAllowedCharacters + "]+");
     }
 
+    /**
+     *
+     * @return
+     */
     public String getRestrict()
     {
         return restrict.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public StringProperty restrictProperty()
     {
         return restrict;
     }
 
+    /**
+     *
+     */
     public RestrictedTextField()
     {
         this.getStyleClass().add(this.getClass().getSimpleName());

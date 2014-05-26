@@ -11,11 +11,19 @@ package celtech.printerControl.comms.commands.tx;
 public class ReportErrors extends RoboxTxPacket
 {
 
+    /**
+     *
+     */
     public ReportErrors()
     {
         super(TxPacketTypeEnum.REPORT_ERRORS, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {

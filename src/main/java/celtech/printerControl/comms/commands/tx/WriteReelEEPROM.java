@@ -17,11 +17,28 @@ public class WriteReelEEPROM extends RoboxTxPacket
 
     private Stenographer steno = StenographerFactory.getStenographer(WriteReelEEPROM.class.getName());
 
+    /**
+     *
+     */
     public WriteReelEEPROM()
     {
         super(TxPacketTypeEnum.WRITE_REEL_EEPROM, false, false);
     }
 
+    /**
+     *
+     * @param reelTypeCode
+     * @param reelUniqueID
+     * @param reelFirstLayerNozzleTemperature
+     * @param reelNozzleTemperature
+     * @param reelFirstLayerBedTemperature
+     * @param reelBedTemperature
+     * @param reelAmbientTemperature
+     * @param reelFilamentDiameter
+     * @param reelFilamentMultiplier
+     * @param reelFeedRateMultiplier
+     * @param reelRemainingFilament
+     */
     public void populateEEPROM(String reelTypeCode, String reelUniqueID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
             float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter,
             float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament)
@@ -51,6 +68,10 @@ public class WriteReelEEPROM extends RoboxTxPacket
         this.setMessagePayload(payload.toString());
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public byte[] toByteArray()
     {
@@ -99,6 +120,11 @@ public class WriteReelEEPROM extends RoboxTxPacket
         return outputArray;
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {

@@ -192,6 +192,9 @@ public class CalibrationNozzleOffsetPageController implements Initializable
         cancelCalibrationAction();
     }
 
+    /**
+     *
+     */
     public void cancelCalibrationAction()
     {
         if (calibrationTask != null)

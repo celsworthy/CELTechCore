@@ -3,6 +3,10 @@ package celtech.coreUI.visualisation.shapes;
 import celtech.coreUI.visualisation.ReplacementConstants;
 import java.util.Arrays;
 
+/**
+ *
+ * @author Ian
+ */
 public class SubdividedPointArray extends SymbolicPointArray {
     private final float[] controlPoints; // points of the previous subdivision level
     private final int[][] controlInds; // indices corresponding to controlPoints
@@ -14,6 +18,12 @@ public class SubdividedPointArray extends SymbolicPointArray {
     
     private int currPoint = 0;
     
+    /**
+     *
+     * @param controlPointArray
+     * @param numPoints
+     * @param boundaryMode
+     */
     public SubdividedPointArray(SymbolicPointArray controlPointArray, int numPoints, SubdivisionMesh.BoundaryMode boundaryMode) {
         super(new float[ReplacementConstants.NUM_COMPONENTS_PER_POINT*numPoints]);
         
@@ -26,7 +36,11 @@ public class SubdividedPointArray extends SymbolicPointArray {
         this.boundaryMode = boundaryMode;
     }
     
-    
+    /**
+     *
+     * @param vertices
+     * @return
+     */
     public int addFacePoint(int[] vertices) {
         controlInds[currPoint] = vertices;
         controlFactors[currPoint] = new float[vertices.length];
@@ -38,6 +52,14 @@ public class SubdividedPointArray extends SymbolicPointArray {
         return currPoint++;
     }
     
+    /**
+     *
+     * @param facePoints
+     * @param fromPoint
+     * @param toPoint
+     * @param isBoundary
+     * @return
+     */
     public int addEdgePoint(int[] facePoints, int fromPoint, int toPoint, boolean isBoundary) {
         if (isBoundary) {
             controlInds[currPoint] = new int[] {fromPoint, toPoint};
@@ -57,6 +79,18 @@ public class SubdividedPointArray extends SymbolicPointArray {
         return currPoint++;
     }
 
+    /**
+     *
+     * @param facePoints
+     * @param edgePoints
+     * @param fromEdgePoints
+     * @param toEdgePoints
+     * @param isEdgeBoundary
+     * @param origPoint
+     * @param isBoundary
+     * @param hasInternalEdge
+     * @return
+     */
     public int addControlPoint(int[] facePoints, int[] edgePoints, int[] fromEdgePoints, int[] toEdgePoints, boolean[] isEdgeBoundary, int origPoint, boolean isBoundary, boolean hasInternalEdge) {
         if (isBoundary) {
             if ((boundaryMode == SubdivisionMesh.BoundaryMode.CREASE_EDGES) || hasInternalEdge) {

@@ -12,5 +12,14 @@ package celtech.coreUI.controllers;
  */
 public enum StatusScreenMode
 {
-    NORMAL, ADVANCED
+
+    /**
+     *
+     */
+    NORMAL,
+
+    /**
+     *
+     */
+    ADVANCED
 }

@@ -12,5 +12,14 @@ package celtech.modelcontrol;
  */
 public enum ModelContentsEnumeration
 {
-    GCODE, MESH
+
+    /**
+     *
+     */
+    GCODE,
+
+    /**
+     *
+     */
+    MESH
 }

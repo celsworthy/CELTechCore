@@ -47,6 +47,14 @@ public class GCodeImporterLines
     private final int FACE_INDICES_PER_VERTEX = 2;
     private final int FACE_INDICES_PER_TRIANGLE = FACE_INDICES_PER_VERTEX * POINTS_PER_VERTEX;
 
+    /**
+     *
+     * @param parentTask
+     * @param modelFileToLoad
+     * @param targetProjectTab
+     * @param percentProgressProperty
+     * @return
+     */
     public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, ProjectTab targetProjectTab, DoubleProperty percentProgressProperty)
     {
 //        G result = new Node();

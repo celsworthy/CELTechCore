@@ -12,8 +12,7 @@ import javafx.application.Platform;
 
 /**
  *
- * @author Ian Hudson
- * @ Liberty Systems Limited
+ * @author Ian Hudson @ Liberty Systems Limited
  */
 public class RoboxEventProducer implements RoboxEventProducerInterface
 {
@@ -21,18 +20,32 @@ public class RoboxEventProducer implements RoboxEventProducerInterface
     private ExecutorService es = Executors.newSingleThreadExecutor();
     private ArrayList<RoboxEventListener> eventListeners = new ArrayList<RoboxEventListener>();
 
+    /**
+     *
+     * @param eventListener
+     * @return
+     */
     @Override
     public boolean addRoboxEventListener(RoboxEventListener eventListener)
     {
         return eventListeners.add(eventListener);
     }
 
+    /**
+     *
+     * @param eventListener
+     * @return
+     */
     @Override
     public boolean removeRoboxEventListener(RoboxEventListener eventListener)
     {
         return eventListeners.remove(eventListener);
     }
 
+    /**
+     *
+     * @param event
+     */
     public void publishEvent(final RoboxEvent event)
     {
         for (final RoboxEventListener listener : eventListeners)

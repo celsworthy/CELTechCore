@@ -6,10 +6,14 @@ package celtech.printerControl.comms.events;
 
 /**
  *
- * @author Ian Hudson
- * @ Liberty Systems Limited
+ * @author Ian Hudson @ Liberty Systems Limited
  */
 public interface RoboxEventListener
 {
+
+    /**
+     *
+     * @param event
+     */
     public void eventFired(RoboxEvent event);
 }

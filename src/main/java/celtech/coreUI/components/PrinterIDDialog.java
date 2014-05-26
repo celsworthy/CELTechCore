@@ -31,6 +31,9 @@ public class PrinterIDDialog
     private Stage dialogStage = null;
     private PrinterIDDialogController dialogController = null;
 
+    /**
+     *
+     */
     public PrinterIDDialog()
     {
         dialogStage = new Stage(StageStyle.TRANSPARENT);
@@ -53,42 +56,73 @@ public class PrinterIDDialog
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean show()
     {
         dialogStage.showAndWait();
         return dialogController.okPressed();
     }
 
+    /**
+     *
+     */
     public void close()
     {
         dialogStage.hide();
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isShowing()
     {
         return dialogStage.isShowing();
     }
 
+    /**
+     *
+     * @return
+     */
     public String getChosenPrinterName()
     {
         return dialogController.getChosenPrinterName();
     }
 
+    /**
+     *
+     * @param printerToUse
+     */
     public void setPrinterToUse(Printer printerToUse)
     {
         dialogController.setPrinterToUse(printerToUse);
     }
 
+    /**
+     *
+     * @param colour
+     */
     public void setChosenDisplayColour(Color colour)
     {
         dialogController.setChosenColour(colour);
     }
 
+    /**
+     *
+     * @return
+     */
     public Color getChosenDisplayColour()
     {
         return dialogController.getChosenDisplayColour();
     }
 
+    /**
+     *
+     * @param printerName
+     */
     public void setChosenPrinterName(String printerName)
     {
         dialogController.setChosenPrinterName(printerName);

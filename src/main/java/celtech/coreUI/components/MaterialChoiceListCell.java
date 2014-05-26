@@ -34,6 +34,9 @@ public class MaterialChoiceListCell extends ListCell<Filament>
     private final ImageView padlock = new ImageView();
     private final Label createNewFilamentLabel = new Label();
 
+    /**
+     *
+     */
     public MaterialChoiceListCell()
     {
         if (padlockImage == null)

@@ -12,5 +12,19 @@ package celtech.coreUI;
  */
 public enum LayoutSubmode
 {
-    SELECT, SNAP_TO_GROUND, GCODE_VISUALISATION
+
+    /**
+     *
+     */
+    SELECT,
+
+    /**
+     *
+     */
+    SNAP_TO_GROUND,
+
+    /**
+     *
+     */
+    GCODE_VISUALISATION
 }

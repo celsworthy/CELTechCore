@@ -60,6 +60,11 @@ public class CRC16
         0x8201, 0x42C0, 0x4380, 0x8341, 0x4100, 0x81C1, 0x8081, 0x4040,
     };
 
+    /**
+     *
+     * @param input
+     * @return
+     */
     public static String calculateCRC16(byte[] input)
     {
         int crc = 0x0000;

@@ -18,46 +18,82 @@ public class CompoundMovement
     private int startingGCodeLine = 0;
     private int endingGCodeLine = 0;
 
+    /**
+     *
+     * @param type
+     */
     public CompoundMovement(MovementType type)
     {
         this.type = type;
     }
 
+    /**
+     *
+     * @return
+     */
     public MovementType getMovementType()
     {
         return type;
     }
 
+    /**
+     *
+     * @param segment
+     */
     public void addMove(Movement segment)
     {
         segments.add(segment);
     }
 
+    /**
+     *
+     * @return
+     */
     public ArrayList<Movement> getSegments()
     {
         return segments;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getStartingGCodeLine()
     {
         return startingGCodeLine;
     }
 
+    /**
+     *
+     * @param startingGCodeLine
+     */
     public void setStartingGCodeLine(int startingGCodeLine)
     {
         this.startingGCodeLine = startingGCodeLine;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getEndingGCodeLine()
     {
         return endingGCodeLine;
     }
 
+    /**
+     *
+     * @param endingGCodeLine
+     */
     public void setEndingGCodeLine(int endingGCodeLine)
     {
         this.endingGCodeLine = endingGCodeLine;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString()
     {

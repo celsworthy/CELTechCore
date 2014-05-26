@@ -41,11 +41,19 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
     private float lastFilamentTemperature = 0;
     private float hoursUsed = 0;
 
+    /**
+     *
+     */
     public HeadEEPROMDataResponse()
     {
         super(RxPacketTypeEnum.HEAD_EEPROM_DATA, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {
@@ -214,6 +222,10 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
         return success;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString()
     {
@@ -230,76 +242,136 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
         return outputString.toString();
     }
 
+    /**
+     *
+     * @return
+     */
     public float getMaximumTemperature()
     {
         return maximumTemperature;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getNozzle1XOffset()
     {
         return nozzle1XOffset;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getNozzle1YOffset()
     {
         return nozzle1YOffset;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getNozzle1ZOffset()
     {
         return nozzle1ZOffset;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getNozzle1BOffset()
     {
         return nozzle1BOffset;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getNozzle2XOffset()
     {
         return nozzle2XOffset;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getNozzle2YOffset()
     {
         return nozzle2YOffset;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getNozzle2ZOffset()
     {
         return nozzle2ZOffset;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getNozzle2BOffset()
     {
         return nozzle2BOffset;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getHeadHours()
     {
         return hoursUsed;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getTypeCode()
     {
         return headTypeCode;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getUniqueID()
     {
         return uniqueID;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getBeta()
     {
         return thermistorBeta;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getTCal()
     {
         return thermistorTCal;
     }
     
+    /**
+     *
+     * @return
+     */
     public float getLastFilamentTemperature()
     {
         return lastFilamentTemperature;

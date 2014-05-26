@@ -16,31 +16,55 @@ public class RoboxiserResult
     private double predictedDuration = 0.0;
     private double volumeUsed = 0.0;
 
+    /**
+     *
+     * @return
+     */
     public boolean isSuccess()
     {
         return success;
     }
 
+    /**
+     *
+     * @param success
+     */
     public void setSuccess(boolean success)
     {
         this.success = success;
     }
 
+    /**
+     *
+     * @return
+     */
     public double getPredictedDuration()
     {
         return predictedDuration;
     }
 
+    /**
+     *
+     * @param predictedDuration
+     */
     public void setPredictedDuration(double predictedDuration)
     {
         this.predictedDuration = predictedDuration;
     }
 
+    /**
+     *
+     * @return
+     */
     public double getVolumeUsed()
     {
         return volumeUsed;
     }
 
+    /**
+     *
+     * @param volumeUsed
+     */
     public void setVolumeUsed(double volumeUsed)
     {
         this.volumeUsed = volumeUsed;

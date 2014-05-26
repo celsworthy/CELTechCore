@@ -39,6 +39,10 @@ public class PrintProfileContainer
     private static final ObservableList<RoboxProfile> userProfileList = FXCollections.observableArrayList();
     private static final ObservableList<RoboxProfile> completeProfileList = FXCollections.observableArrayList();
     private static final ObservableMap<String, RoboxProfile> profileMap = FXCollections.observableHashMap();
+
+    /**
+     *
+     */
     public static final RoboxProfile createNewProfile = new RoboxProfile();
 
     private PrintProfileContainer()
@@ -46,6 +50,11 @@ public class PrintProfileContainer
         loadProfileData();
     }
 
+    /**
+     *
+     * @param profileName
+     * @return
+     */
     public static String constructFilePath(String profileName)
     {
         return ApplicationConfiguration.getUserPrintProfileDirectory() + profileName + ApplicationConfiguration.printProfileFileExtension;
@@ -87,12 +96,20 @@ public class PrintProfileContainer
         return profileList;
     }
 
+    /**
+     *
+     * @param settingsToSave
+     */
     public static void saveProfile(RoboxProfile settingsToSave)
     {
         settingsToSave.writeToFile(constructFilePath(settingsToSave.getProfileName()));
         loadProfileData();
     }
 
+    /**
+     *
+     * @param profileName
+     */
     public static void deleteProfile(String profileName)
     {
         File profileToDelete = new File(constructFilePath(profileName));
@@ -100,6 +117,10 @@ public class PrintProfileContainer
         loadProfileData();
     }
 
+    /**
+     *
+     * @return
+     */
     public static PrintProfileContainer getInstance()
     {
         if (instance == null)
@@ -110,6 +131,11 @@ public class PrintProfileContainer
         return instance;
     }
 
+    /**
+     *
+     * @param profileName
+     * @return
+     */
     public static RoboxProfile getSettingsByProfileName(String profileName)
     {
         if (instance == null)
@@ -120,6 +146,10 @@ public class PrintProfileContainer
         return profileMap.get(profileName);
     }
 
+    /**
+     *
+     * @return
+     */
     public static ObservableList<RoboxProfile> getCompleteProfileList()
     {
         if (instance == null)
@@ -130,6 +160,10 @@ public class PrintProfileContainer
         return completeProfileList;
     }
 
+    /**
+     *
+     * @return
+     */
     public static ObservableList<RoboxProfile> getUserProfileList()
     {
         if (instance == null)

@@ -63,6 +63,8 @@ public class GizmoOverlayController implements Initializable
 
     /**
      * Initializes the controller class.
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
@@ -156,6 +158,10 @@ public class GizmoOverlayController implements Initializable
         });
     }
 
+    /**
+     *
+     * @param viewManager
+     */
     public void configure(ThreeDViewManager viewManager)
     {
         this.viewManager = viewManager;

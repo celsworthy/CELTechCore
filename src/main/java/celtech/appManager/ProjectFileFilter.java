@@ -17,6 +17,12 @@ import java.io.FilenameFilter;
 public class ProjectFileFilter implements FilenameFilter
 {
 
+    /**
+     *
+     * @param dir
+     * @param name
+     * @return
+     */
     @Override
     public boolean accept(File dir, String name)
     {

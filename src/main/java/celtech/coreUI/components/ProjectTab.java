@@ -95,6 +95,12 @@ public class ProjectTab extends Tab
         }
     };
 
+    /**
+     *
+     * @param dispManagerRef
+     * @param tabDisplayWidthProperty
+     * @param tabDisplayHeightProperty
+     */
     public ProjectTab(DisplayManager dispManagerRef, ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
         displayManager = dispManagerRef;
@@ -102,6 +108,14 @@ public class ProjectTab extends Tab
         initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
     }
 
+    /**
+     *
+     * @param dispManagerRef
+     * @param projectName
+     * @param tabDisplayWidthProperty
+     * @param tabDisplayHeightProperty
+     * @throws ProjectNotLoadedException
+     */
     public ProjectTab(DisplayManager dispManagerRef, String projectName, ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty) throws ProjectNotLoadedException
     {
         project = ProjectManager.loadProject(projectName);
@@ -117,6 +131,13 @@ public class ProjectTab extends Tab
         }
     }
 
+    /**
+     *
+     * @param dispManagerRef
+     * @param inboundProject
+     * @param tabDisplayWidthProperty
+     * @param tabDisplayHeightProperty
+     */
     public ProjectTab(DisplayManager dispManagerRef, Project inboundProject, ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
         project = inboundProject;
@@ -377,6 +398,10 @@ public class ProjectTab extends Tab
         }
     }
 
+    /**
+     *
+     * @param projectToLoad
+     */
     public void addProjectContainer(File projectToLoad)
     {
         nonEditableProjectNameField.textProperty().unbind();
@@ -389,6 +414,11 @@ public class ProjectTab extends Tab
         projectManager.projectOpened(project);
     }
 
+    /**
+     *
+     * @param fullFilename
+     * @param modelGroup
+     */
     public void addModelContainer(String fullFilename, ModelContainer modelGroup)
     {
         steno.info("I am loading " + fullFilename);
@@ -422,31 +452,52 @@ public class ProjectTab extends Tab
         }
     }
 
+    /**
+     *
+     * @param modelMesh
+     */
     public void removeModel(ModelContainer modelMesh)
     {
         viewManager.removeModel(modelMesh);
     }
 
+    /**
+     *
+     */
     public void deleteSelectedModels()
     {
         viewManager.deleteSelectedModels();
     }
 
+    /**
+     *
+     */
     public void copySelectedModels()
     {
         viewManager.copySelectedModels();
     }
 
+    /**
+     *
+     * @return
+     */
     public SelectionContainer getSelectionContainer()
     {
         return viewManager.getSelectionContainer();
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<ModelContainer> getLoadedModels()
     {
         return viewManager.getLoadedModels();
     }
 
+    /**
+     *
+     */
     public void autoLayout()
     {
         Collections.sort(viewManager.getLoadedModels());
@@ -481,11 +532,18 @@ public class ProjectTab extends Tab
 //        }
     }
 
+    /**
+     *
+     * @param selectedModel
+     */
     public void selectModel(ModelContainer selectedModel)
     {
         viewManager.selectModel(selectedModel, false);
     }
 
+    /**
+     *
+     */
     public void saveProject()
     {
         //Only save if there are some models and we aren't showing a GCODE project ...
@@ -512,21 +570,37 @@ public class ProjectTab extends Tab
         viewManager.shutdown();
     }
 
+    /**
+     *
+     * @return
+     */
     public ThreeDViewManager getThreeDViewManager()
     {
         return viewManager;
     }
 
+    /**
+     *
+     * @return
+     */
     public Project getProject()
     {
         return project;
     }
 
+    /**
+     *
+     * @param cameraPositionPreset
+     */
     public void switchToPresetCameraView(CameraPositionPreset cameraPositionPreset)
     {
 //        viewManager.getCamera().gotoPreset(cameraPositionPreset);
     }
 
+    /**
+     *
+     * @param selectedModel
+     */
     public void deselectModel(ModelContainer selectedModel)
     {
         viewManager.deselectModel(selectedModel);
@@ -546,6 +620,10 @@ public class ProjectTab extends Tab
         steno.info("New Y pos " + newPosition.getY() + " for " + screenY);
     }
 
+    /**
+     *
+     * @param newMode
+     */
     public void setMode(ApplicationMode newMode)
     {
         switch (newMode)

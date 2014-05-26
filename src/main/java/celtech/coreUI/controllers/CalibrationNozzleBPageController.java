@@ -223,6 +223,9 @@ public class CalibrationNozzleBPageController implements Initializable
         cancelCalibrationAction();
     }
 
+    /**
+     *
+     */
     public void cancelCalibrationAction()
     {
         if (calibrationTask != null)

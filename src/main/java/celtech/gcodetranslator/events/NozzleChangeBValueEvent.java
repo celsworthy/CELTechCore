@@ -9,16 +9,28 @@ public class NozzleChangeBValueEvent extends GCodeParseEvent
 
     private double b;
 
+    /**
+     *
+     * @return
+     */
     public double getB()
     {
         return b;
     }
 
+    /**
+     *
+     * @param b
+     */
     public void setB(double b)
     {
         this.b = b;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String renderForOutput()
     {

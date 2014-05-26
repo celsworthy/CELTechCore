@@ -23,6 +23,12 @@ public class PrintJob
     private PrintQualityEnumeration printQuality = null;
     private RoboxProfile settings = null;
 
+    /**
+     *
+     * @param printUUID
+     * @param printQuality
+     * @param settings
+     */
     public PrintJob(String printUUID, PrintQualityEnumeration printQuality, RoboxProfile settings)
     {
         this.printUUID = printUUID;

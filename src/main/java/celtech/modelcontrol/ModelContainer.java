@@ -94,11 +94,18 @@ public class ModelContainer extends Xform implements Serializable, Comparable
 
     private DoubleProperty height = new SimpleDoubleProperty(0);
 
+    /**
+     *
+     */
     public ModelContainer()
     {
         super(RotateOrder.XYZ);
     }
 
+    /**
+     *
+     * @param name
+     */
     public ModelContainer(String name)
     {
         super(RotateOrder.XYZ);
@@ -106,6 +113,12 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         configureModelOnLoad();
     }
 
+    /**
+     *
+     * @param name
+     * @param gcodeMeshData
+     * @param fileLines
+     */
     public ModelContainer(String name, GCodeMeshData gcodeMeshData, ArrayList<String> fileLines)
     {
         super(RotateOrder.XYZ);
@@ -157,6 +170,11 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         numberOfLayers.set(gcodeMeshData.getReferencedArrays().size());
     }
 
+    /**
+     *
+     * @param name
+     * @param meshToAdd
+     */
     public ModelContainer(String name, MeshView meshToAdd)
     {
         super(RotateOrder.XYZ);
@@ -168,6 +186,11 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         numberOfMeshes = 1;
     }
 
+    /**
+     *
+     * @param name
+     * @param meshes
+     */
     public ModelContainer(String name, ArrayList<MeshView> meshes)
     {
         super(RotateOrder.XYZ);
@@ -226,6 +249,10 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         this.setId(name);
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public ModelContainer clone()
     {
@@ -244,16 +271,29 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         return copy;
     }
 
+    /**
+     *
+     * @param xMove
+     */
     public void translateX(double xMove)
     {
         translateBy(xMove, 0);
     }
 
+    /**
+     *
+     * @param zMove
+     */
     public void translateZ(double zMove)
     {
         translateBy(0, zMove);
     }
 
+    /**
+     *
+     * @param xMove
+     * @param zMove
+     */
     public void translateBy(double xMove, double zMove)
     {
         Bounds bounds = this.getBoundsInParent();
@@ -301,12 +341,22 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         checkOffBed();
     }
 
+    /**
+     *
+     * @param xPosition
+     * @param zPosition
+     */
     public void translateFrontLeftTo(double xPosition, double zPosition)
     {
         Bounds bounds = this.getBoundsInParent();
         translateTo(xPosition + bounds.getWidth() / 2, zPosition + bounds.getDepth() / 2);
     }
 
+    /**
+     *
+     * @param xPosition
+     * @param zPosition
+     */
     public void translateTo(double xPosition, double zPosition)
     {
         //Move the CENTRE of the object to the desired point
@@ -353,12 +403,18 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         checkOffBed();
     }
 
+    /**
+     *
+     */
     public void centreObjectOnBed()
     {
         translateTo(PrintBed.getPrintVolumeCentre().getX(), PrintBed.getPrintVolumeCentre().getZ());
         dropModelOnBed();
     }
 
+    /**
+     *
+     */
     public void shrinkToFitBed()
     {
         BoundingBox printableBoundingBox = (BoundingBox) getBoundsInLocal();
@@ -410,6 +466,10 @@ public class ModelContainer extends Xform implements Serializable, Comparable
 //        setTy(getTy() + (-yOffset));
     }
 
+    /**
+     *
+     * @param hasCollided
+     */
     public void setCollision(boolean hasCollided)
     {
         this.isCollided = hasCollided;
@@ -452,21 +512,37 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isCollided()
     {
         return isCollided;
     }
 
+    /**
+     *
+     * @param modelName
+     */
     public void setModelName(String modelName)
     {
         this.modelName.set(modelName);
     }
 
+    /**
+     *
+     * @return
+     */
     public String getModelName()
     {
         return modelName.get();
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setScale(double value)
     {
         steno.info(this.toString());
@@ -477,16 +553,28 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         checkOffBed();
     }
 
+    /**
+     *
+     * @return
+     */
     public double getScale()
     {
         return scale.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public DoubleProperty scaleProperty()
     {
         return scale;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setRotationX(double value)
     {
         setRotateX(value);
@@ -494,16 +582,28 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         checkOffBed();
     }
 
+    /**
+     *
+     * @return
+     */
     public double getRotationX()
     {
         return rotationX.doubleValue();
     }
 
+    /**
+     *
+     * @return
+     */
     public DoubleProperty rotationXProperty()
     {
         return rotationX;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setRotationY(double value)
     {
         setRotateY(value);
@@ -512,16 +612,28 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         checkOffBed();
     }
 
+    /**
+     *
+     * @return
+     */
     public double getRotationY()
     {
         return rotationY.doubleValue();
     }
 
+    /**
+     *
+     * @return
+     */
     public DoubleProperty rotationYProperty()
     {
         return rotationY;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setRotationZ(double value)
     {
         setRotateZ(value);
@@ -529,26 +641,46 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         checkOffBed();
     }
 
+    /**
+     *
+     * @return
+     */
     public double getRotationZ()
     {
         return rotationZ.doubleValue();
     }
 
+    /**
+     *
+     * @return
+     */
     public DoubleProperty rotationZProperty()
     {
         return rotationZ;
     }
 
+    /**
+     *
+     * @param selected
+     */
     public void setSelected(boolean selected)
     {
         isSelected.set(selected);
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isSelected()
     {
         return isSelected.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty isSelectedProperty()
     {
         return isSelected;
@@ -706,12 +838,20 @@ public class ModelContainer extends Xform implements Serializable, Comparable
 
     }
 
+    /**
+     *
+     * @param newScale
+     */
     public void scale(double newScale)
     {
 //        steno.info("About to scale to " + newScale + "\n" + this.toString());
         setScale(newScale);
     }
 
+    /**
+     *
+     * @return
+     */
     public MeshView getMeshView()
     {
         if (getChildrenUnmodifiable().get(0) instanceof MeshView)
@@ -723,6 +863,10 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<Node> getMeshes()
     {
         if (modelContentsType == ModelContentsEnumeration.MESH)
@@ -734,11 +878,19 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public ModelContentsEnumeration getModelContentsType()
     {
         return modelContentsType;
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<String> getGCodeLines()
     {
         return fileLines;
@@ -765,52 +917,92 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         }
     }
 
+    /**
+     *
+     * @param lineNumber
+     */
     public void selectGCodeLine(int lineNumber)
     {
         highlightGCodeLine(lineNumber);
         setSelectedGCodeLine(lineNumber);
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setSelectedGCodeLine(int value)
     {
         selectedGCodeLine.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public int getSelectedGCodeLine()
     {
         return selectedGCodeLine.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty selectedGCodeLineProperty()
     {
         return selectedGCodeLine;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty linesOfGCodeProperty()
     {
         return linesOfGCode;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty minLayerVisibleProperty()
     {
         return minLayerVisible;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty maxLayerVisibleProperty()
     {
         return maxLayerVisible;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty currentLayerProperty()
     {
         return currentLayer;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty numberOfLayersProperty()
     {
         return numberOfLayers;
     }
 
+    /**
+     *
+     * @param visible
+     */
     public void showTravel(boolean visible)
     {
         for (GCodeElement element : gcodeMeshData.getReferencedElements().values())
@@ -822,6 +1014,10 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         }
     }
 
+    /**
+     *
+     * @param visible
+     */
     public void showSupport(boolean visible)
     {
         for (GCodeElement element : gcodeMeshData.getReferencedElements().values())
@@ -859,6 +1055,10 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         }
     }
 
+    /**
+     *
+     * @param width
+     */
     public void resizeWidth(double width)
     {
         Bounds bounds = getBoundsInLocal();
@@ -871,6 +1071,10 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         dropModelOnBed();
     }
 
+    /**
+     *
+     * @param height
+     */
     public void resizeHeight(double height)
     {
         Bounds bounds = getBoundsInLocal();
@@ -883,6 +1087,10 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         dropModelOnBed();
     }
 
+    /**
+     *
+     * @param depth
+     */
     public void resizeDepth(double depth)
     {
         Bounds bounds = getBoundsInLocal();
@@ -895,26 +1103,46 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         dropModelOnBed();
     }
 
+    /**
+     *
+     * @param x
+     */
     public void translateXTo(double x)
     {
         translateTo(x, centreZ);
     }
 
+    /**
+     *
+     * @param z
+     */
     public void translateZTo(double z)
     {
         translateTo(centreX, z);
     }
 
+    /**
+     *
+     * @return
+     */
     public ModelBounds getOriginalModelBounds()
     {
         return originalModelBounds;
     }
 
+    /**
+     *
+     * @return
+     */
     public double getCentreX()
     {
         return centreX;
     }
 
+    /**
+     *
+     * @return
+     */
     public double getCentreZ()
     {
         return centreZ;
@@ -937,11 +1165,22 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         updateMaterial();
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty isOffBedProperty()
     {
         return isOffBed;
     }
 
+    /**
+     *
+     * @param rotationCentreX
+     * @param rotationCentreY
+     * @param rotationCentreZ
+     * @param newValue
+     */
     public void deltaRotateAroundY(double rotationCentreX, double rotationCentreY, double rotationCentreZ, double newValue)
     {
         double xDiff = rotationCentreX - centreX;
@@ -975,6 +1214,10 @@ public class ModelContainer extends Xform implements Serializable, Comparable
 
     }
 
+    /**
+     *
+     * @param newRotation
+     */
     public void rotateDegrees(Rotation newRotation)
     {
         double angles[] = currentRotation.getAngles(RotationOrder.XYZ);
@@ -1004,6 +1247,10 @@ public class ModelContainer extends Xform implements Serializable, Comparable
 
     }
 
+    /**
+     *
+     * @param newRotation
+     */
     public void rotateRadians(Rotation newRotation)
     {
         double angles[] = currentRotation.getAngles(RotationOrder.XYZ);
@@ -1076,6 +1323,10 @@ public class ModelContainer extends Xform implements Serializable, Comparable
 
     }
 
+    /**
+     *
+     * @return
+     */
     public ArrayList<ModelContainer> cutToSize()
     {
         TriangleMesh mesh = (TriangleMesh) getMeshView().getMesh();
@@ -1172,6 +1423,12 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         return outputMeshes;
     }
 
+    /**
+     *
+     * @param o
+     * @return
+     * @throws ClassCastException
+     */
     @Override
     public int compareTo(Object o) throws ClassCastException
     {
@@ -1189,18 +1446,30 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         return returnVal;
     }
 
+    /**
+     *
+     * @return
+     */
     public double getTotalWidth()
     {
         double totalwidth = originalModelBounds.getWidth() * getScale();
         return totalwidth;
     }
 
+    /**
+     *
+     * @return
+     */
     public double getTotalDepth()
     {
         double totaldepth = originalModelBounds.getDepth() * getScale();
         return totaldepth;
     }
 
+    /**
+     *
+     * @return
+     */
     public double getTotalSize()
     {
         return getTotalWidth() + getTotalDepth();

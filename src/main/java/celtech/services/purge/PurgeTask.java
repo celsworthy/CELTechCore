@@ -41,11 +41,23 @@ public class PurgeTask extends Task<Void> implements ControllableService
     private RoboxProfile settings = null;
     private Printer printerToUse = null;
 
+    /**
+     *
+     * @param printerToUse
+     */
     public PurgeTask(Printer printerToUse)
     {
         this.printerToUse = printerToUse;
     }
 
+    /**
+     *
+     * @param project
+     * @param filament
+     * @param printQuality
+     * @param settings
+     * @param printerToUse
+     */
     public PurgeTask(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings, Printer printerToUse)
     {
         this.project = project;
@@ -98,6 +110,10 @@ public class PurgeTask extends Task<Void> implements ControllableService
         return null;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public boolean cancelRun()
     {
