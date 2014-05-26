@@ -31,6 +31,15 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
     private boolean printUsingSDCard = true;
     private boolean isMacro = false;
 
+    /**
+     *
+     * @param printerToUse
+     * @param modelFileToPrint
+     * @param printJobID
+     * @param linesInFile
+     * @param printUsingSDCard
+     * @param isMacro
+     */
     public GCodePrinterTask(Printer printerToUse, String modelFileToPrint, String printJobID, IntegerProperty linesInFile, boolean printUsingSDCard, boolean isMacro)
     {
         this.printerToUse = printerToUse;

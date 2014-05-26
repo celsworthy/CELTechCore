@@ -121,6 +121,10 @@ public class HeadContainer
         return headList;
     }
 
+    /**
+     *
+     * @return
+     */
     public static HeadContainer getInstance()
     {
         if (instance == null)
@@ -131,6 +135,11 @@ public class HeadContainer
         return instance;
     }
 
+    /**
+     *
+     * @param filamentID
+     * @return
+     */
     public static Head getHeadByID(String filamentID)
     {
         if (instance == null)
@@ -143,6 +152,10 @@ public class HeadContainer
 
     }
 
+    /**
+     *
+     * @return
+     */
     public static ObservableList<Head> getCompleteHeadList()
     {
         if (instance == null)

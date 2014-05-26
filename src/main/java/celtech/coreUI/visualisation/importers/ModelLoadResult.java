@@ -29,6 +29,14 @@ public class ModelLoadResult
     private final ArrayList<String> fileLines = new ArrayList<>();
     private String fullFilename = null;
 
+    /**
+     *
+     * @param modelIsTooLarge
+     * @param fullFilename
+     * @param filename
+     * @param targetProjectTab
+     * @param modelContainer
+     */
     public ModelLoadResult(boolean modelIsTooLarge, String fullFilename, String filename, ProjectTab targetProjectTab, ModelContainer modelContainer)
     {
         this.modelTooLargeForPrintbed = modelIsTooLarge;
@@ -38,58 +46,102 @@ public class ModelLoadResult
         this.modelContainer = modelContainer;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isModelTooLarge()
     {
         return modelTooLargeForPrintbed;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getModelFilename()
     {
         return filename;
     }
     
+    /**
+     *
+     * @return
+     */
     public String getFullFilename()
     {
         return fullFilename;
     }
     
+    /**
+     *
+     * @param modelGroup
+     */
     public void setModelContainer(ModelContainer modelGroup)
     {
         this.modelContainer = modelGroup;
         resultType = ModelLoadResultType.Mesh;
     }
 
+    /**
+     *
+     * @return
+     */
     public ModelContainer getModelContainer()
     {
         return modelContainer;
     }
     
+    /**
+     *
+     * @param groupedParts
+     */
     public void setGroupedParts(Group groupedParts)
     {
         this.groupedParts = groupedParts;
         resultType = ModelLoadResultType.GroupedParts;
     }
     
+    /**
+     *
+     * @return
+     */
     public Group getGroupedParts()
     {
         return groupedParts;
     }
 
+    /**
+     *
+     * @return
+     */
     public ProjectTab getTargetProjectTab()
     {
         return targetProjectTab;
     }
     
+    /**
+     *
+     * @param fileData
+     */
     public void setFileLines(ArrayList<String> fileData)
     {
         this.fileLines.addAll(0, fileData);
     }
 
+    /**
+     *
+     * @return
+     */
     public ArrayList<String> getFileLines()
     {
         return fileLines;
     }
     
+    /**
+     *
+     * @return
+     */
     public ModelLoadResultType getResultType()
     {
         return resultType;

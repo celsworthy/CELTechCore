@@ -16,5 +16,19 @@ package celtech.gcodetranslator;
  */
 public enum Tool
 {
-    Unknown, Extruder_E, Extruder_D
+
+    /**
+     *
+     */
+    Unknown,
+
+    /**
+     *
+     */
+    Extruder_E,
+
+    /**
+     *
+     */
+    Extruder_D
 }

@@ -114,6 +114,10 @@ public class ObjImporter
     private static float scale = 1;
     private static boolean flatXZ = false;
 
+    /**
+     *
+     * @return
+     */
     public Set<String> getMeshes()
     {
         return meshes.keySet();
@@ -144,7 +148,15 @@ public class ObjImporter
 //    {
 //        read(inputStream);
 //    }
-    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, ProjectTab targetProjectTab)
+
+    /**
+     *
+     * @param parentTask
+     * @param modelFileToLoad
+     * @param targetProjectTab
+     * @return
+     */
+        public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, ProjectTab targetProjectTab)
     {
         this.parentTask = parentTask;
         this.objFileUrl = modelFileToLoad;
@@ -181,26 +193,49 @@ public class ObjImporter
         return modelLoadResult;
     }
 
+    /**
+     *
+     * @return
+     */
     public TriangleMesh getMesh()
     {
         return meshes.values().iterator().next();
     }
 
+    /**
+     *
+     * @return
+     */
     public Material getMaterial()
     {
         return materials.values().iterator().next();
     }
 
+    /**
+     *
+     * @param key
+     * @return
+     */
     public TriangleMesh getMesh(String key)
     {
         return meshes.get(key);
     }
 
+    /**
+     *
+     * @param key
+     * @return
+     */
     public Material getMaterial(String key)
     {
         return materials.get(key);
     }
 
+    /**
+     *
+     * @param key
+     * @return
+     */
     public MeshView buildMeshView(String key)
     {
         MeshView meshView = new MeshView();
@@ -216,11 +251,19 @@ public class ObjImporter
         return meshView;
     }
 
+    /**
+     *
+     * @param debug
+     */
     public static void setDebug(boolean debug)
     {
         ObjImporter.debug = debug;
     }
 
+    /**
+     *
+     * @param scale
+     */
     public static void setScale(float scale)
     {
         ObjImporter.scale = scale;
@@ -546,6 +589,10 @@ public class ObjImporter
         smoothingGroupsStart = smoothingGroups.length;
     }
 
+    /**
+     *
+     * @param flatXZ
+     */
     public static void setFlatXZ(boolean flatXZ)
     {
         ObjImporter.flatXZ = flatXZ;

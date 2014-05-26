@@ -12,8 +12,27 @@ package celtech.configuration;
  */
 public enum HeaterMode
 {
-    OFF(0), NORMAL(1), FIRST_LAYER(2);
 
+    /**
+     *
+     */
+    OFF(0),
+
+    /**
+     *
+     */
+    NORMAL(1),
+
+    /**
+     *
+     */
+    FIRST_LAYER(2);
+
+    /**
+     *
+     * @param valueOf
+     * @return
+     */
     public static HeaterMode modeFromValue(Integer valueOf)
     {
         HeaterMode returnedMode = null;
@@ -37,6 +56,10 @@ public enum HeaterMode
         this.value = value;
     }
     
+    /**
+     *
+     * @return
+     */
     public int getValue()
     {
         return value;

@@ -11,16 +11,28 @@ public class NozzlePositionChangeEvent extends ExtrusionEvent
     private double b;
     private boolean noExtrusion = false;
 
+    /**
+     *
+     * @return
+     */
     public double getB()
     {
         return b;
     }
 
+    /**
+     *
+     * @param b
+     */
     public void setB(double b)
     {
         this.b = b;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean getNoExtrusionFlag()
     {
         return noExtrusion;
@@ -29,11 +41,21 @@ public class NozzlePositionChangeEvent extends ExtrusionEvent
     /*
      * This method indicates whether E values should be output or not
      */
+
+    /**
+     *
+     * @param value
+     */
+    
     public void setNoExtrusionFlag(boolean value)
     {
         this.noExtrusion = value;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String renderForOutput()
     {

@@ -84,6 +84,14 @@ public class GCodeImporter
 
     private ArrayList<Xform> partHolder = new ArrayList<Xform>();
 
+    /**
+     *
+     * @param parentTask
+     * @param modelFileToLoad
+     * @param targetProjectTab
+     * @param progressProperty
+     * @return
+     */
     public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, ProjectTab targetProjectTab, DoubleProperty progressProperty)
     {
         this.parentTask = parentTask;
@@ -191,6 +199,12 @@ public class GCodeImporter
         }
     }
 
+    /**
+     *
+     * @param aLine
+     * @param currentLineNumber
+     * @throws GCodeParseException
+     */
     protected void processLine(String aLine, int currentLineNumber) throws GCodeParseException
     {
         GCodeLoadState loadState = GCodeLoadState.IDLE;

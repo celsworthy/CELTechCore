@@ -16,5 +16,10 @@ package celtech.coreUI.controllers.popups;
  */
 public interface PopupCommandReceiver
 {
+
+    /**
+     *
+     * @param source
+     */
     public void triggerSaveAs(Object source);     
 }

@@ -113,186 +113,334 @@ public class StatusResponse extends RoboxRxPacket
 
     private NumberFormat numberFormatter = NumberFormat.getNumberInstance();
 
+    /**
+     *
+     * @return
+     */
     public String getRunningPrintJobID()
     {
         return runningPrintJobID;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getPrintJobLineNumber()
     {
         return printJobLineNumber;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isxSwitchStatus()
     {
         return xSwitchStatus;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isySwitchStatus()
     {
         return ySwitchStatus;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean iszSwitchStatus()
     {
         return zSwitchStatus;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isPauseStatus()
     {
         return pauseStatus;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isBusyStatus()
     {
         return busyStatus;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isFilament1SwitchStatus()
     {
         return filament1SwitchStatus;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isFilament2SwitchStatus()
     {
         return filament2SwitchStatus;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isNozzleSwitchStatus()
     {
         return nozzleSwitchStatus;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isLidSwitchStatus()
     {
         return lidSwitchStatus;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isReelButtonStatus()
     {
         return reelButtonStatus;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isEIndexStatus()
     {
         return EIndexStatus;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isDIndexStatus()
     {
         return DIndexStatus;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isTopZSwitchStatus()
     {
         return topZSwitchStatus;
     }
 
+    /**
+     *
+     * @return
+     */
     public HeaterMode getNozzleHeaterMode()
     {
         return nozzleHeaterMode;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getNozzleTemperature()
     {
         return nozzleTemperature;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getNozzleTargetTemperature()
     {
         return nozzleTargetTemperature;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getNozzleFirstLayerTargetTemperature()
     {
         return nozzleFirstLayerTargetTemperature;
     }
 
+    /**
+     *
+     * @return
+     */
     public HeaterMode getBedHeaterMode()
     {
         return bedHeaterMode;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getBedTemperature()
     {
         return bedTemperature;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getBedTargetTemperature()
     {
         return bedTargetTemperature;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getBedFirstLayerTargetTemperature()
     {
         return bedFirstLayerTargetTemperature;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isAmbientFanOn()
     {
         return ambientFanOn;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getAmbientTemperature()
     {
         return ambientTemperature;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getAmbientTargetTemperature()
     {
         return ambientTargetTemperature;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isHeadFanOn()
     {
         return headFanOn;
     }
 
+    /**
+     *
+     * @return
+     */
     public EEPROMState getHeadEEPROMState()
     {
         return headEEPROMState;
     }
 
+    /**
+     *
+     * @return
+     */
     public EEPROMState getReelEEPROMState()
     {
         return reelEEPROMState;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isSDCardPresent()
     {
         return sdCardPresent;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getHeadXPosition()
     {
         return headXPosition;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getHeadYPosition()
     {
         return headYPosition;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getHeadZPosition()
     {
         return headZPosition;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getFilamentDiameter()
     {
         return filamentDiameter;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getFilamentMultiplier()
     {
         return filamentMultiplier;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getFeedRateMultiplier()
     {
         return feedRateMultiplier;
     }
 
+    /**
+     *
+     * @return
+     */
     public WhyAreWeWaitingState getWhyAreWeWaitingState()
     {
         return whyAreWeWaitingState;
@@ -301,11 +449,21 @@ public class StatusResponse extends RoboxRxPacket
     /*
      * Errors...
      */
+
+    /**
+     *
+     */
+    
     public StatusResponse()
     {
         super(RxPacketTypeEnum.STATUS_RESPONSE, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {
@@ -558,6 +716,10 @@ public class StatusResponse extends RoboxRxPacket
         return success;
     }
 
+    /**
+     *
+     * @return
+     */
     public String toString()
     {
         StringBuilder outputString = new StringBuilder();

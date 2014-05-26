@@ -54,6 +54,10 @@ public class ErrorHandler
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public static ErrorHandler getInstance()
     {
         if (instance == null)
@@ -64,6 +68,10 @@ public class ErrorHandler
         return instance;
     }
 
+    /**
+     *
+     * @param printer
+     */
     public void checkForErrors(Printer printer)
     {
         //Check for errors and open a Dialog if there are any present

@@ -27,12 +27,22 @@ public class SymbolicSubdivisionBuilder {
     private BoundaryMode boundaryMode;
     private MapBorderMode mapBorderMode;
 
+    /**
+     *
+     * @param oldMesh
+     * @param boundaryMode
+     * @param mapBorderMode
+     */
     public SymbolicSubdivisionBuilder(SymbolicPolygonMesh oldMesh, BoundaryMode boundaryMode, MapBorderMode mapBorderMode) {
         this.oldMesh = oldMesh;
         this.boundaryMode = boundaryMode;
         this.mapBorderMode = mapBorderMode;
     }
     
+    /**
+     *
+     * @return
+     */
     public SymbolicPolygonMesh subdivide() {
         collectInfo();
         
@@ -83,6 +93,13 @@ public class SymbolicSubdivisionBuilder {
         return newMesh;
     }
     
+    /**
+     *
+     * @param oldMesh
+     * @param boundaryMode
+     * @param mapBorderMode
+     * @return
+     */
     public static SymbolicPolygonMesh subdivide(SymbolicPolygonMesh oldMesh, BoundaryMode boundaryMode, MapBorderMode mapBorderMode) {
         SymbolicSubdivisionBuilder subdivision = new SymbolicSubdivisionBuilder(oldMesh, boundaryMode, mapBorderMode);
         return subdivision.subdivide();

@@ -44,6 +44,10 @@ public class PrinterUtils
         dontGoForPurge = new Dialogs.CommandLink(i18nBundle.getString("dialogs.dontGoForPurgeTitle"), i18nBundle.getString("dialogs.dontGoForPurgeInstruction"));
     }
 
+    /**
+     *
+     * @return
+     */
     public static PrinterUtils getInstance()
     {
         if (instance == null)
@@ -54,6 +58,11 @@ public class PrinterUtils
         return instance;
     }
 
+    /**
+     *
+     * @param printerToCheck
+     * @param task
+     */
     public static void waitOnMacroFinished(Printer printerToCheck, Task task)
     {
         if (task != null)
@@ -83,6 +92,11 @@ public class PrinterUtils
         }
     }
 
+    /**
+     *
+     * @param printerToCheck
+     * @param task
+     */
     public static void waitOnBusy(Printer printerToCheck, Task task)
     {
         if (task != null)
@@ -125,11 +139,21 @@ public class PrinterUtils
 
     }
 
+    /**
+     *
+     * @param printer
+     * @return
+     */
     public boolean isPurgeNecessary(Printer printer)
     {
         return Math.abs(printer.getReelNozzleTemperature().get() - printer.getLastFilamentTemperature().get()) > 5;
     }
 
+    /**
+     *
+     * @param printer
+     * @return
+     */
     public boolean offerPurgeIfNecessary(Printer printer)
     {
         boolean purgeConsent = false;
@@ -152,6 +176,14 @@ public class PrinterUtils
         return purgeConsent;
     }
 
+    /**
+     *
+     * @param project
+     * @param filament
+     * @param printQuality
+     * @param settings
+     * @param printerToUse
+     */
     public static void runPurge(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings, Printer printerToUse)
     {
         PurgeTask purgeTask = new PurgeTask(project, filament, printQuality, settings, printerToUse);
@@ -161,6 +193,10 @@ public class PrinterUtils
         purgeThread.start();
     }
 
+    /**
+     *
+     * @param printerToUse
+     */
     public static void runPurge(Printer printerToUse)
     {
         PurgeTask purgeTask = new PurgeTask(printerToUse);

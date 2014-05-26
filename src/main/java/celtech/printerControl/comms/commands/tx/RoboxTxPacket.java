@@ -16,14 +16,28 @@ public abstract class RoboxTxPacket
 {
 
     private TxPacketTypeEnum packetType = null;
+
+    /**
+     *
+     */
     protected String messagePayload = null;
     private int sequenceNumber = -1;
     private boolean includeSequenceNumber = false;
     private final int sequenceNumberLength = 8;
     private boolean includeCharsOfDataInOutput = false;
     private final int charsOfDataLength = 4;
+
+    /**
+     *
+     */
     protected static Stenographer steno = StenographerFactory.getStenographer(RoboxTxPacket.class.getName());
 
+    /**
+     *
+     * @param packetType
+     * @param includeSequenceNumber
+     * @param includeCharsOfDataInOutput
+     */
     public RoboxTxPacket(TxPacketTypeEnum packetType, boolean includeSequenceNumber, boolean includeCharsOfDataInOutput)
     {
         this.packetType = packetType;
@@ -31,26 +45,46 @@ public abstract class RoboxTxPacket
         this.includeCharsOfDataInOutput = includeCharsOfDataInOutput;
     }
 
+    /**
+     *
+     * @return
+     */
     public TxPacketTypeEnum getPacketType()
     {
         return packetType;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getMessageData()
     {
         return messagePayload;
     }
 
+    /**
+     *
+     * @param messagePayload
+     */
     public void setMessagePayload(String messagePayload)
     {
         this.messagePayload = messagePayload;
     }
     
+    /**
+     *
+     * @param sequenceNumber
+     */
     public void setSequenceNumber(int sequenceNumber)
     {
         this.sequenceNumber = sequenceNumber;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString()
     {
@@ -67,6 +101,10 @@ public abstract class RoboxTxPacket
         return output.toString();
     }
 
+    /**
+     *
+     * @return
+     */
     public byte[] toByteArray()
     {
         byte[] outputArray = null;
@@ -128,5 +166,10 @@ public abstract class RoboxTxPacket
         return outputArray;
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     public abstract boolean populatePacket(byte[] byteData);
 }

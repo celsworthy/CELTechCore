@@ -11,11 +11,19 @@ package celtech.printerControl.comms.commands.tx;
 public class StatusRequest extends RoboxTxPacket
 {
 
+    /**
+     *
+     */
     public StatusRequest()
     {
         super(TxPacketTypeEnum.STATUS_REQUEST, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {

@@ -13,6 +13,10 @@ package celtech.utils;
 public class InvalidChecksumException extends Exception
 {
 
+    /**
+     *
+     * @param string
+     */
     public InvalidChecksumException(String string)
     {
     }

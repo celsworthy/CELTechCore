@@ -35,6 +35,12 @@ public class ModelLoaderTask extends Task<ModelLoadResult>
     private ResourceBundle languageBundle = null;
     private DoubleProperty percentProgress = new SimpleDoubleProperty();
 
+    /**
+     *
+     * @param modelFileToLoad
+     * @param shortModelName
+     * @param targetProjectTab
+     */
     public ModelLoaderTask(String modelFileToLoad, String shortModelName, ProjectTab targetProjectTab)
     {
         this.modelFileToLoad = modelFileToLoad;
@@ -80,6 +86,10 @@ public class ModelLoaderTask extends Task<ModelLoadResult>
         return modelLoadResult;
     }
     
+    /**
+     *
+     * @param message
+     */
     public void updateMessageText(String message)
     {
         updateMessage(message);

@@ -16,5 +16,24 @@ package celtech.gcodetranslator;
  */
 public enum NozzleState
 {
-    CLOSED, CLOSING, OPEN, OPENING
+
+    /**
+     *
+     */
+    CLOSED,
+
+    /**
+     *
+     */
+    CLOSING,
+
+    /**
+     *
+     */
+    OPEN,
+
+    /**
+     *
+     */
+    OPENING
 }

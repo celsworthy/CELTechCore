@@ -12,8 +12,31 @@ package celtech.configuration;
 public enum WhyAreWeWaitingState
 {
 
-    NOT_WAITING(0), COOLING(1), BED_HEATING(2), NOZZLE_HEATING(3);
+    /**
+     *
+     */
+    NOT_WAITING(0),
 
+    /**
+     *
+     */
+    COOLING(1),
+
+    /**
+     *
+     */
+    BED_HEATING(2),
+
+    /**
+     *
+     */
+    NOZZLE_HEATING(3);
+
+    /**
+     *
+     * @param valueOf
+     * @return
+     */
     public static WhyAreWeWaitingState modeFromValue(Integer valueOf)
     {
         WhyAreWeWaitingState returnedMode = null;
@@ -37,6 +60,10 @@ public enum WhyAreWeWaitingState
         this.value = value;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getValue()
     {
         return value;

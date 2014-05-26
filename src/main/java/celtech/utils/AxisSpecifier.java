@@ -12,5 +12,29 @@ package celtech.utils;
  */
 public enum AxisSpecifier
 {
-    X, Y, Z, E, D
+
+    /**
+     *
+     */
+    X,
+
+    /**
+     *
+     */
+    Y,
+
+    /**
+     *
+     */
+    Z,
+
+    /**
+     *
+     */
+    E,
+
+    /**
+     *
+     */
+    D
 }

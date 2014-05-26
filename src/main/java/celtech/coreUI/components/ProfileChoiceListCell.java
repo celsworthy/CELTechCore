@@ -36,6 +36,9 @@ public class ProfileChoiceListCell extends ListCell<RoboxProfile>
     private ImageView padlock = new ImageView();
     private final Label createNewProfileLabel = new Label();
     
+    /**
+     *
+     */
     public ProfileChoiceListCell()
     {
         if (padlockImage == null)

@@ -94,6 +94,13 @@ public class PrinterHandler extends Thread
 
     private ModalDialog noSDDialog = null;
 
+    /**
+     *
+     * @param controlInterface
+     * @param portName
+     * @param suppressPrinterIDChecks
+     * @param sleepBetweenStatusChecks
+     */
     public PrinterHandler(PrinterControlInterface controlInterface, String portName, boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
         this.controlInterface = controlInterface;
@@ -177,6 +184,9 @@ public class PrinterHandler extends Thread
         });
     }
 
+    /**
+     *
+     */
     @Override
 
     public void run()
@@ -540,6 +550,12 @@ public class PrinterHandler extends Thread
         controlInterface.disconnected(portName);
     }
 
+    /**
+     *
+     * @param messageToWrite
+     * @return
+     * @throws RoboxCommsException
+     */
     public synchronized RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite) throws RoboxCommsException
     {
         RoboxRxPacket receivedPacket = null;
@@ -724,6 +740,10 @@ public class PrinterHandler extends Thread
         this.printerToUse = newPrinter;
     }
 
+    /**
+     *
+     * @param sleepMillis
+     */
     public void setSleepBetweenStatusChecks(int sleepMillis)
     {
         sleepBetweenStatusChecks = sleepMillis;

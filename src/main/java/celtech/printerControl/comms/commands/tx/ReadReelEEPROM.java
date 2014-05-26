@@ -11,11 +11,19 @@ package celtech.printerControl.comms.commands.tx;
 public class ReadReelEEPROM extends RoboxTxPacket
 {
 
+    /**
+     *
+     */
     public ReadReelEEPROM()
     {
         super(TxPacketTypeEnum.READ_REEL_EEPROM, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {

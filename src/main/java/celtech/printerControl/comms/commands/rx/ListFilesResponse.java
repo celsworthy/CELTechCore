@@ -20,11 +20,19 @@ public class ListFilesResponse extends RoboxRxPacket
 
     private ArrayList<String> printJobIDs = new ArrayList<String>();
 
+    /**
+     *
+     */
     public ListFilesResponse()
     {
         super(RxPacketTypeEnum.LIST_FILES_RESPONSE, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {
@@ -57,6 +65,10 @@ public class ListFilesResponse extends RoboxRxPacket
         return success;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString()
     {
@@ -73,6 +85,10 @@ public class ListFilesResponse extends RoboxRxPacket
         return outputString.toString();
     }
 
+    /**
+     *
+     * @return
+     */
     public ArrayList<String> getPrintJobIDs()
     {
         return printJobIDs;

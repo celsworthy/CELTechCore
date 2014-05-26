@@ -12,5 +12,33 @@ package celtech.coreUI.visualisation.modelDisplay;
 public enum GizmoMode
 {
 
-    IDLE, ROTATE, XTRANSLATE, ZTRANSLATE, XZTRANSLATE, SCALE
+    /**
+     *
+     */
+    IDLE,
+
+    /**
+     *
+     */
+    ROTATE,
+
+    /**
+     *
+     */
+    XTRANSLATE,
+
+    /**
+     *
+     */
+    ZTRANSLATE,
+
+    /**
+     *
+     */
+    XZTRANSLATE,
+
+    /**
+     *
+     */
+    SCALE
 }

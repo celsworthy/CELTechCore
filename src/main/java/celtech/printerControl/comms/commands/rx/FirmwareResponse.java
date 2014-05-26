@@ -21,21 +21,37 @@ public class FirmwareResponse extends RoboxRxPacket
 
     private NumberFormat numberFormatter = NumberFormat.getNumberInstance();
 
+    /**
+     *
+     * @return
+     */
     public String getFirmwareRevision()
     {
         return firmwareRevision;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getFirmwareRevisionInt()
     {
         return firmwareRevisionInt;
     }
 
+    /**
+     *
+     */
     public FirmwareResponse()
     {
         super(RxPacketTypeEnum.FIRMWARE_RESPONSE, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {
@@ -59,6 +75,10 @@ public class FirmwareResponse extends RoboxRxPacket
         return success;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString()
     {

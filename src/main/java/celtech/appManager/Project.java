@@ -33,11 +33,20 @@ public class Project implements Serializable
     private BooleanProperty isDirty = new SimpleBooleanProperty(false);
     private String lastPrintJobID = "";
 
+    /**
+     *
+     */
     public Project()
     {
         this.customSettings = PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.customSettingsProfileName);
     }
 
+    /**
+     *
+     * @param preloadedProjectUUID
+     * @param projectName
+     * @param loadedModels
+     */
     public Project(String preloadedProjectUUID, String projectName, ObservableList<ModelContainer> loadedModels)
     {
         projectHeader.setProjectUUID(preloadedProjectUUID);
@@ -46,36 +55,64 @@ public class Project implements Serializable
         this.customSettings = PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.customSettingsProfileName);
     }
 
+    /**
+     *
+     * @param value
+     */
     public final void setProjectName(String value)
     {
         projectHeader.setProjectName(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public final String getProjectName()
     {
         return projectHeader.getProjectName();
     }
 
+    /**
+     *
+     * @return
+     */
     public final StringProperty projectNameProperty()
     {
         return projectHeader.projectNameProperty();
     }
     
+    /**
+     *
+     * @return
+     */
     public final String getAbsolutePath()
     {
         return projectHeader.getProjectPath() + File.separator + projectHeader.getProjectName() + ApplicationConfiguration.projectFileExtension;
     }
 
+    /**
+     *
+     * @return
+     */
     public final String getUUID()
     {
         return projectHeader.getUUID();
     }
 
+    /**
+     *
+     * @return
+     */
     public final String getGCodeFilename()
     {
         return gcodeFileName;
     }
 
+    /**
+     *
+     * @param gcodeFilename
+     */
     public final void setGCodeFilename(String gcodeFilename)
     {
         this.gcodeFileName = gcodeFilename;
@@ -123,47 +160,82 @@ public class Project implements Serializable
 
     }
 
+    /**
+     *
+     * @return
+     */
     public ProjectHeader getProjectHeader()
     {
         return projectHeader;
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<ModelContainer> getLoadedModels()
     {
         return loadedModels;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString()
     {
         return projectHeader.getProjectName();
     }
 
+    /**
+     *
+     * @return
+     */
     public ProjectMode getProjectMode()
     {
         return projectMode.get();
     }
 
+    /**
+     *
+     * @param mode
+     */
     public void setProjectMode(ProjectMode mode)
     {
         projectMode.set(mode);
     }
 
+    /**
+     *
+     * @return
+     */
     public ObjectProperty<ProjectMode> projectModeProperty()
     {
         return projectMode;
     }
 
+    /**
+     *
+     * @param printJobID
+     */
     public void addPrintJobID(String printJobID)
     {
         lastPrintJobID = printJobID;
     }
 
+    /**
+     *
+     */
     public void projectModified()
     {
         lastPrintJobID = "";
     }
 
+    /**
+     *
+     * @return
+     */
     public String getLastPrintJobID()
     {
         return lastPrintJobID;

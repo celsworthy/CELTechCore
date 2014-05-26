@@ -24,6 +24,10 @@ public class StatusScreenState
     {
     }
 
+    /**
+     *
+     * @return
+     */
     public static StatusScreenState getInstance()
     {
         if (instance == null)
@@ -33,31 +37,55 @@ public class StatusScreenState
         return instance;
     }
 
+    /**
+     *
+     * @return
+     */
     public Printer getCurrentlySelectedPrinter()
     {
         return currentlySelectedPrinter.get();
     }
 
+    /**
+     *
+     * @param currentlySelectedPrinter
+     */
     public void setCurrentlySelectedPrinter(Printer currentlySelectedPrinter)
     {
         StatusScreenState.currentlySelectedPrinter.set(currentlySelectedPrinter);
     }
 
+    /**
+     *
+     * @return
+     */
     public ObjectProperty<Printer> currentlySelectedPrinterProperty()
     {
         return currentlySelectedPrinter;
     }
 
+    /**
+     *
+     * @return
+     */
     public StatusScreenMode getMode()
     {
         return currentMode.get();
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setMode(StatusScreenMode value)
     {
         currentMode.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public ObjectProperty<StatusScreenMode> modeProperty()
     {
         return currentMode;

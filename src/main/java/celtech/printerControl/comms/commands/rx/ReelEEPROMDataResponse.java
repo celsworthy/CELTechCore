@@ -30,11 +30,19 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
     private float reelFeedRateMultiplier;
     private float reelRemainingFilament;
 
+    /**
+     *
+     */
     public ReelEEPROMDataResponse()
     {
         super(RxPacketTypeEnum.REEL_EEPROM_DATA, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {
@@ -160,6 +168,10 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
         return success;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString()
     {
@@ -176,56 +188,100 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
         return outputString.toString();
     }
 
+    /**
+     *
+     * @return
+     */
     public String getReelTypeCode()
     {
         return reelTypeCode;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getReelUniqueID()
     {
         return reelUniqueID;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getReelFirstLayerNozzleTemperature()
     {
         return reelFirstLayerNozzleTemperature;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getReelNozzleTemperature()
     {
         return reelNozzleTemperature;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getReelFirstLayerBedTemperature()
     {
         return reelFirstLayerBedTemperature;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getReelBedTemperature()
     {
         return reelBedTemperature;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getReelAmbientTemperature()
     {
         return reelAmbientTemperature;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getReelFilamentDiameter()
     {
         return reelFilamentDiameter;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getReelFilamentMultiplier()
     {
         return reelFilamentMultiplier;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getReelFeedRateMultiplier()
     {
         return reelFeedRateMultiplier;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getReelRemainingFilament()
     {
         return reelRemainingFilament;

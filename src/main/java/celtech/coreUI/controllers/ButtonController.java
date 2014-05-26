@@ -18,13 +18,39 @@ import javafx.scene.effect.Lighting;
 public class ButtonController
 {
 
+    /**
+     *
+     */
     protected Effect notAvailable = null;
+
+    /**
+     *
+     */
     protected Effect availableOnly = null;
+
+    /**
+     *
+     */
     protected DropShadow availableAndHover = null;
+
+    /**
+     *
+     */
     protected InnerShadow pressed = null;
+
+    /**
+     *
+     */
     protected Lighting selectedOnly = null;
+
+    /**
+     *
+     */
     protected final double dimmedOpacity = .3;
 
+    /**
+     *
+     */
     public ButtonController()
     {
         availableAndHover = new DropShadow();
@@ -44,6 +70,10 @@ public class ButtonController
         selectedOnly.setSurfaceScale(3.6);
     }
 
+    /**
+     *
+     * @param button
+     */
     protected void makeButtonNotAvailable(Node button)
     {
 //        button.setMouseTransparent(true);
@@ -52,6 +82,10 @@ public class ButtonController
         button.setEffect(notAvailable);
     }
 
+    /**
+     *
+     * @param button
+     */
     protected void makeButtonAvailable(Node button)
     {
 //        button.setDisable(false);
@@ -60,6 +94,10 @@ public class ButtonController
         button.setEffect(availableOnly);
     }
 
+    /**
+     *
+     * @param button
+     */
     protected void makeButtonSelected(Node button)
     {
 //        button.setMouseTransparent(true);

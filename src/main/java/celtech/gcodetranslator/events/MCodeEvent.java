@@ -20,27 +20,47 @@ public class MCodeEvent extends GCodeParseEvent
     private boolean sNumberPresent = false;
     private int sNumber;
 
+    /**
+     *
+     * @return
+     */
     public int getMNumber()
     {
         return mNumber;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setMNumber(int value)
     {
         this.mNumber = value;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getSNumber()
     {
         return sNumber;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setSNumber(int value)
     {
         sNumberPresent = true;
         this.sNumber = value;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String renderForOutput()
     {

@@ -12,5 +12,14 @@ package celtech.utils.gcode.representation;
  */
 public enum ExtrusionMode
 {
-    ABSOLUTE, RELATIVE
+
+    /**
+     *
+     */
+    ABSOLUTE,
+
+    /**
+     *
+     */
+    RELATIVE
 }

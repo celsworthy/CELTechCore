@@ -41,7 +41,14 @@ import libertysystems.stenographer.StenographerFactory;
 public class SelectionHighlighter extends Group
 {
 
+    /**
+     *
+     */
     public static final String idString = "selectionHighlighter";
+
+    /**
+     *
+     */
     public static final String scaleHandleString = "scaleHandle";
     private final Stenographer steno = StenographerFactory.getStenographer(SelectionHighlighter.class.getName());
     private ApplicationStatus applicationStatus = null;
@@ -91,6 +98,11 @@ public class SelectionHighlighter extends Group
 
     private ModelLoadResult scaleHandleLoadResult = null;
 
+    /**
+     *
+     * @param selectionContainer
+     * @param cameraDistance
+     */
     public SelectionHighlighter(final SelectionContainer selectionContainer, final DoubleProperty cameraDistance)
     {
         texCoords.add(0f);
@@ -358,6 +370,10 @@ public class SelectionHighlighter extends Group
         selectionBox.setPivot(selectionContainer.getCentreX(), 0, selectionContainer.getCentreZ());
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isScaleActive()
     {
         return scaleActive;

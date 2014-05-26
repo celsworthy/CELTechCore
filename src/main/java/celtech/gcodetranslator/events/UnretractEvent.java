@@ -10,26 +10,46 @@ public class UnretractEvent extends GCodeParseEvent
     private double e = 0;
     private double d = 0;
 
+    /**
+     *
+     * @return
+     */
     public double getE()
     {
         return e;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setE(double value)
     {
         this.e = value;
     }
 
+    /**
+     *
+     * @return
+     */
     public double getD()
     {
         return d;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setD(double value)
     {
         this.d = value;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String renderForOutput()
     {

@@ -12,8 +12,25 @@ package celtech.coreUI;
 public enum AmbientLEDState
 {
 
-    OFF, WHITE, COLOUR;
+    /**
+     *
+     */
+    OFF,
 
+    /**
+     *
+     */
+    WHITE,
+
+    /**
+     *
+     */
+    COLOUR;
+
+    /**
+     *
+     * @return
+     */
     public AmbientLEDState getNextState()
     {
         AmbientLEDState returnState = null;

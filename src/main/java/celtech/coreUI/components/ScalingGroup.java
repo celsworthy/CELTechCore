@@ -26,6 +26,9 @@ public class ScalingGroup extends Group
     private Scale scale = new Scale(1, 1, 1, 0, 0, 0);
     private double twoSize = 2;
 
+    /**
+     *
+     */
     public ScalingGroup()
     {
         steno.info("Creating a scaling group");

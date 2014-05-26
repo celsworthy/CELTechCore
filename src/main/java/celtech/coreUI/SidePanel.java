@@ -26,26 +26,46 @@ public class SidePanel
         this.sidePanelController = sidePanelController;
     }
 
+    /**
+     *
+     * @return
+     */
     public HBox getSidePanelNode()
     {
         return sidePanelNode;
     }
 
+    /**
+     *
+     * @param sidePanelNode
+     */
     public void setSidePanelNode(HBox sidePanelNode)
     {
         this.sidePanelNode = sidePanelNode;
     }
 
+    /**
+     *
+     * @return
+     */
     public Object getSidePanelController()
     {
         return sidePanelController;
     }
 
+    /**
+     *
+     * @param sidePanelController
+     */
     public void setSidePanelController(Object sidePanelController)
     {
         this.sidePanelController = sidePanelController;
     }
 
+    /**
+     *
+     * @return
+     */
     public VBox getSlideOutContainer()
     {
         VBox returnValue = null;

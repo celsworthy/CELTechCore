@@ -175,6 +175,11 @@ public class ThreeDViewManager
         }
     };
 
+    /**
+     *
+     * @param xangle
+     * @param yangle
+     */
     public void rotateCameraAroundAxes(double xangle, double yangle)
     {
         double yAxisRotation = demandedCameraRotationY.get() - yangle;
@@ -203,6 +208,11 @@ public class ThreeDViewManager
 
     }
 
+    /**
+     *
+     * @param xangle
+     * @param yangle
+     */
     public void rotateCameraAroundAxesTo(double xangle, double yangle)
     {
         double yAxisRotation = yangle;
@@ -655,6 +665,12 @@ public class ThreeDViewManager
         }
     };
 
+    /**
+     *
+     * @param loadedModels
+     * @param widthProperty
+     * @param heightProperty
+     */
     public ThreeDViewManager(ObservableList<ModelContainer> loadedModels, ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
     {
         this.loadedModels = loadedModels;
@@ -765,16 +781,28 @@ public class ThreeDViewManager
 //        camera.zoomCameraTo(preset.getDistance());
     }
 
+    /**
+     *
+     * @param timeline
+     */
     public void setTimeline(Timeline timeline)
     {
         this.timeline.setValue(timeline);
     }
 
+    /**
+     *
+     * @return
+     */
     public Timeline getTimeline()
     {
         return this.timeline.getValue();
     }
 
+    /**
+     *
+     * @return
+     */
     public SimpleObjectProperty timelineProperty()
     {
         return timeline;
@@ -915,6 +943,10 @@ public class ThreeDViewManager
 //        autoScalingGroup.getChildren().addAll(axisGroup);
     }
 
+    /**
+     *
+     * @param modelGroup
+     */
     public void addModel(ModelContainer modelGroup)
     {
         if (modelGroup.getModelContentsType() == ModelContentsEnumeration.MESH)
@@ -932,6 +964,9 @@ public class ThreeDViewManager
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
+    /**
+     *
+     */
     public void deleteSelectedModels()
     {
         ListIterator<ModelContainer> modelIterator = loadedModels.listIterator();
@@ -956,6 +991,9 @@ public class ThreeDViewManager
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
+    /**
+     *
+     */
     public void copySelectedModels()
     {
         ArrayList<ModelContainer> modelsToAdd = new ArrayList<>();
@@ -980,6 +1018,10 @@ public class ThreeDViewManager
         collideModels();
     }
 
+    /**
+     *
+     * @param modelGroup
+     */
     public void removeModel(ModelContainer modelGroup)
     {
         models.getChildren().remove(modelGroup);
@@ -987,6 +1029,10 @@ public class ThreeDViewManager
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
+    /**
+     *
+     * @param gCodeParts
+     */
     public void addGCodeParts(Group gCodeParts)
     {
         if (this.gcodeParts != null)
@@ -997,6 +1043,9 @@ public class ThreeDViewManager
         models.getChildren().add(gCodeParts);
     }
 
+    /**
+     *
+     */
     public void shutdown()
     {
         subScene.widthProperty().removeListener(sceneSizeChangeListener);
@@ -1010,7 +1059,12 @@ public class ThreeDViewManager
 //    {
 //        return camera;
 //    }
-    public void recalculateSelectionBounds(boolean addedOrRemoved)
+
+    /**
+     *
+     * @param addedOrRemoved
+     */
+        public void recalculateSelectionBounds(boolean addedOrRemoved)
     {
 
         if (selectionContainer.selectedModelsProperty().size() == 1)
@@ -1094,6 +1148,11 @@ public class ThreeDViewManager
         recalculateCentre();
     }
 
+    /**
+     *
+     * @param selectedNode
+     * @param multiSelect
+     */
     public void selectModel(ModelContainer selectedNode, boolean multiSelect)
     {
         if (selectedNode == null)
@@ -1111,6 +1170,9 @@ public class ThreeDViewManager
         }
     }
 
+    /**
+     *
+     */
     public void deselectAllModels()
     {
         Iterator<ModelContainer> loadedModelIterator = loadedModels.iterator();
@@ -1123,6 +1185,11 @@ public class ThreeDViewManager
         recalculateSelectionBounds(true);
     }
 
+    /**
+     *
+     * @param x
+     * @param z
+     */
     public void translateSelection(double x, double z)
     {
         for (ModelContainer model : loadedModels)
@@ -1138,6 +1205,10 @@ public class ThreeDViewManager
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
+    /**
+     *
+     * @param x
+     */
     public void translateSelectionX(double x)
     {
         for (ModelContainer model : loadedModels)
@@ -1153,6 +1224,10 @@ public class ThreeDViewManager
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
+    /**
+     *
+     * @param z
+     */
     public void translateSelectionZ(double z)
     {
         for (ModelContainer model : loadedModels)
@@ -1168,6 +1243,10 @@ public class ThreeDViewManager
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
+    /**
+     *
+     * @param x
+     */
     public void translateSelectionXTo(double x)
     {
         for (ModelContainer model : loadedModels)
@@ -1183,6 +1262,10 @@ public class ThreeDViewManager
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
+    /**
+     *
+     * @param z
+     */
     public void translateSelectionZTo(double z)
     {
         for (ModelContainer model : loadedModels)
@@ -1198,6 +1281,10 @@ public class ThreeDViewManager
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
+    /**
+     *
+     * @param width
+     */
     public void resizeSelectionWidth(double width)
     {
         for (ModelContainer model : loadedModels)
@@ -1213,6 +1300,10 @@ public class ThreeDViewManager
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
+    /**
+     *
+     * @param height
+     */
     public void resizeSelectionHeight(double height)
     {
         for (ModelContainer model : loadedModels)
@@ -1228,6 +1319,10 @@ public class ThreeDViewManager
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
+    /**
+     *
+     * @param depth
+     */
     public void resizeSelectionDepth(double depth)
     {
         for (ModelContainer model : loadedModels)
@@ -1243,6 +1338,10 @@ public class ThreeDViewManager
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
+    /**
+     *
+     * @param newScale
+     */
     public void scaleSelection(double newScale)
     {
         if (selectionContainer.selectedModelsProperty().size() == 1)
@@ -1266,6 +1365,10 @@ public class ThreeDViewManager
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
+    /**
+     *
+     * @param rotation
+     */
     public void rotateSelection(double rotation)
     {
         if (selectionContainer.selectedModelsProperty().size() == 1)
@@ -1291,6 +1394,10 @@ public class ThreeDViewManager
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
+    /**
+     *
+     * @param newHeight
+     */
     public void changeModelHeight(double newHeight)
     {
         for (ModelContainer model : loadedModels)
@@ -1305,6 +1412,10 @@ public class ThreeDViewManager
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
+    /**
+     *
+     * @param pickedModel
+     */
     public void deselectModel(ModelContainer pickedModel)
     {
         if (pickedModel.isSelected())
@@ -1315,11 +1426,19 @@ public class ThreeDViewManager
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<ModelContainer> getLoadedModels()
     {
         return loadedModels;
     }
 
+    /**
+     *
+     * @return
+     */
     public SelectionContainer getSelectionContainer()
     {
         return selectionContainer;
@@ -1355,6 +1474,10 @@ public class ThreeDViewManager
         }
     }
 
+    /**
+     *
+     * @param d
+     */
     public void deltaScaleSelection(double d)
     {
         for (ModelContainer model : loadedModels)
@@ -1369,76 +1492,135 @@ public class ThreeDViewManager
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
+    /**
+     *
+     */
     public void activateSnapToGround()
     {
         layoutSubmode.set(LayoutSubmode.SNAP_TO_GROUND);
     }
 
+    /**
+     *
+     * @return
+     */
     public ObjectProperty<LayoutSubmode> layoutSubmodeProperty()
     {
         return layoutSubmode;
     }
 
+    /**
+     *
+     */
     public void activateGCodeVisualisationMode()
     {
         layoutSubmode.set(LayoutSubmode.GCODE_VISUALISATION);
     }
 
+    /**
+     *
+     * @return
+     */
     public SelectionHighlighter getSelectionHighlighter()
     {
         return threeDControl;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty screenCentreOfSelectionXProperty()
     {
         return screenCentreOfSelectionX;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty screenCentreOfSelectionYProperty()
     {
         return screenCentreOfSelectionY;
     }
 
+    /**
+     *
+     * @return
+     */
     public SubScene getSubScene()
     {
         return subScene;
     }
 
+    /**
+     *
+     * @return
+     */
     public Group getRoot()
     {
         return root3D;
     }
 
+    /**
+     *
+     * @return
+     */
     public DoubleProperty demandedCameraRotationYProperty()
     {
         return demandedCameraRotationY;
     }
 
+    /**
+     *
+     * @return
+     */
     public DoubleProperty demandedCameraRotationXProperty()
     {
         return demandedCameraRotationX;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setDragMode(DragMode value)
     {
         dragMode.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public DragMode getDragMode()
     {
         return dragMode.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public ObjectProperty<DragMode> dragModeProperty()
     {
         return dragMode;
     }
 
+    /**
+     *
+     * @param controller
+     */
     public void associateGizmoOverlayController(GizmoOverlayController controller)
     {
         this.gizmoOverlayController = controller;
     }
 
+    /**
+     *
+     * @param screenX
+     * @param screenY
+     */
     public void checkit(double screenX, double screenY)
     {
         Point2D screenToLocal = camera.screenToLocal(screenX, screenY);
@@ -1454,6 +1636,11 @@ public class ThreeDViewManager
 //        Point3D testPoint = new Point3D(selectionContainer.getCentreX(), selectionContainer.getCentreY(), selectionContainer.getCentreZ());
     }
 
+    /**
+     *
+     * @param translateStartPoint
+     * @param screenCoords
+     */
     public void translateSelectionFromScreenCoords(Point2D translateStartPoint, Point2D screenCoords)
     {
         Point2D screenToLocal = camera.screenToLocal(translateStartPoint);
@@ -1515,6 +1702,9 @@ public class ThreeDViewManager
     private double preAnimationCameraYAngle = 0;
     private boolean needToRevertCameraPosition = false;
 
+    /**
+     *
+     */
     public void startSettingsAnimation()
     {
         preAnimationCameraXAngle = demandedCameraRotationX.get();
@@ -1524,6 +1714,9 @@ public class ThreeDViewManager
         settingsScreenAnimationTimer.start();
     }
 
+    /**
+     *
+     */
     public void stopSettingsAnimation()
     {
         settingsScreenAnimationTimer.stop();
@@ -1534,6 +1727,11 @@ public class ThreeDViewManager
         }
     }
 
+    /**
+     *
+     * @param requiredDragMode
+     * @param event
+     */
     public void enterDragFromGizmo(DragMode requiredDragMode, MouseEvent event)
     {
         Point3D currentDragPosition = event.getPickResult().getIntersectedPoint();
@@ -1541,6 +1739,10 @@ public class ThreeDViewManager
         dragMode.set(requiredDragMode);
     }
 
+    /**
+     *
+     * @param event
+     */
     public void dragFromGizmo(MouseEvent event)
     {
         if (dragMode.get() == DragMode.X_CONSTRAINED_TRANSLATE)
@@ -1566,17 +1768,29 @@ public class ThreeDViewManager
         }
     }
 
+    /**
+     *
+     */
     public void exitDragFromGizmo()
     {
         dragMode.set(DragMode.IDLE);
     }
 
+    /**
+     *
+     * @param event
+     */
     public void enterRotateFromGizmo(MouseEvent event)
     {
         translationDragPlane.setTranslateY(0);
         dragMode.set(DragMode.ROTATE);
     }
 
+    /**
+     *
+     * @param event
+     * @return
+     */
     public double rotateFromGizmo(MouseEvent event)
     {
         Point3D currentDragPosition = event.getPickResult().getIntersectedPoint();
@@ -1601,12 +1815,19 @@ public class ThreeDViewManager
         }
     }
 
+    /**
+     *
+     */
     public void exitRotateFromGizmo()
     {
         dragMode.set(DragMode.IDLE);
         gizmoRotationStarted = false;
     }
 
+    /**
+     *
+     * @param loadedModels
+     */
     public void setLoadedModels(ObservableList<ModelContainer> loadedModels)
     {
         this.loadedModels = loadedModels;

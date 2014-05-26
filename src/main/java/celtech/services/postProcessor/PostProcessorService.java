@@ -25,16 +25,28 @@ public class PostProcessorService extends Service<GCodePostProcessingResult> imp
     private RoboxProfile settings = null;
     private Printer printerToUse = null;
 
+    /**
+     *
+     * @param printJobUUID
+     */
     public void setPrintJobUUID(String printJobUUID)
     {
         this.printJobUUID = printJobUUID;
     }
 
+    /**
+     *
+     * @param settings
+     */
     public void setSettings(RoboxProfile settings)
     {
         this.settings = settings;
     }
 
+    /**
+     *
+     * @param printerToUse
+     */
     public void setPrinterToUse(Printer printerToUse)
     {
         this.printerToUse = printerToUse;
@@ -46,6 +58,10 @@ public class PostProcessorService extends Service<GCodePostProcessingResult> imp
         return new PostProcessorTask(printJobUUID, settings, printerToUse);
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public boolean cancelRun()
     {

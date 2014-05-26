@@ -79,6 +79,8 @@ public class PrinterIDDialogController implements Initializable
 
     /**
      * Initializes the controller class.
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
@@ -102,11 +104,19 @@ public class PrinterIDDialogController implements Initializable
         okButton.disableProperty().bind(Bindings.length(roboxNameField.textProperty()).isEqualTo(0));
     }
 
+    /**
+     *
+     * @param dialogStage
+     */
     public void configure(Stage dialogStage)
     {
         myStage = dialogStage;
     }
 
+    /**
+     *
+     * @return
+     */
     public Color getChosenDisplayColour()
     {
         if (colourButtonGroup.getSelectedToggle() != null)
@@ -118,16 +128,28 @@ public class PrinterIDDialogController implements Initializable
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public String getChosenPrinterName()
     {
         return roboxNameField.getText();
     }
 
+    /**
+     *
+     * @param printerToUse
+     */
     public void setPrinterToUse(Printer printerToUse)
     {
         this.printerToUse = printerToUse;
     }
 
+    /**
+     *
+     * @param colour
+     */
     public void setChosenColour(Color colour)
     {
         for (Toggle toggle : colourButtonGroup.getToggles())
@@ -141,11 +163,19 @@ public class PrinterIDDialogController implements Initializable
         }
     }
 
+    /**
+     *
+     * @param printerName
+     */
     public void setChosenPrinterName(String printerName)
     {
         roboxNameField.setText(printerName);
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean okPressed()
     {
         return okPressed;

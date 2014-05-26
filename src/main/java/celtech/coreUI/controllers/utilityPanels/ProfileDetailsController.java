@@ -327,6 +327,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
     /**
      * Initializes the controller class.
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
@@ -664,6 +666,10 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         bindNozzleParameters(0);
     }
 
+    /**
+     *
+     * @param settings
+     */
     public void updateProfileData(RoboxProfile settings)
     {
         bindToNewSettings(settings);
@@ -671,16 +677,28 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         isDirty.set(false);
     }
 
+    /**
+     *
+     * @return
+     */
     public RoboxProfile getProfileData()
     {
         return lastSettings;
     }
 
+    /**
+     *
+     * @param show
+     */
     public void showButtons(boolean show)
     {
         showButtons.set(show);
     }
 
+    /**
+     *
+     * @param receiver
+     */
     @Override
     public void provideReceiver(PopupCommandReceiver receiver)
     {
@@ -710,11 +728,19 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         profileNameInvalid.set(invalid);
     }
 
+    /**
+     *
+     * @return
+     */
     public ReadOnlyBooleanProperty getProfileNameInvalidProperty()
     {
         return profileNameInvalid;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getProfileName()
     {
         return profileNameField.getText();

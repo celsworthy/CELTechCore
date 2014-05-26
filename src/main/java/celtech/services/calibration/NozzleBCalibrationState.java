@@ -9,20 +9,79 @@ import celtech.coreUI.DisplayManager;
 public enum NozzleBCalibrationState
 {
 
+    /**
+     *
+     */
     IDLE("calibrationPanel.readyToBeginNozzleOpeningCalibration", null),
+
+    /**
+     *
+     */
     INITIALISING("calibrationPanel.calibrationInitialising", null),
+
+    /**
+     *
+     */
     HEATING("calibrationPanel.heating", null),
+
+    /**
+     *
+     */
     PRIMING("calibrationPanel.primingNozzle", null),
+
+    /**
+     *
+     */
     NO_MATERIAL_CHECK("calibrationPanel.valvesClosedNoMaterial", "calibrationPanel.isMaterialExtrudingEitherNozzle"),
+
+    /**
+     *
+     */
     MATERIAL_EXTRUDING_CHECK("calibrationPanel.valvesOpenMaterialExtruding", "calibrationPanel.isMaterialExtrudingNozzle"),
+
+    /**
+     *
+     */
     HEAD_CLEAN_CHECK("calibrationPanel.ensureHeadIsCleanBMessage", "calibrationPanel.ensureHeadIsCleanInstruction"),
+
+    /**
+     *
+     */
     PRE_CALIBRATION_PRIMING("calibrationPanel.primingNozzle", null),
+
+    /**
+     *
+     */
     CALIBRATE_NOZZLE("calibrationPanel.calibrationCommencedMessage", null),
+
+    /**
+     *
+     */
     HEAD_CLEAN_CHECK_POST_CALIBRATION("calibrationPanel.ensureHeadIsCleanMessage", null),
+
+    /**
+     *
+     */
     POST_CALIBRATION_PRIMING("calibrationPanel.primingNozzle", null),
+
+    /**
+     *
+     */
     CONFIRM_NO_MATERIAL("calibrationPanel.valvesClosedNoMaterial", "calibrationPanel.isMaterialExtrudingEitherNozzle"),
+
+    /**
+     *
+     */
     CONFIRM_MATERIAL_EXTRUDING("calibrationPanel.valvesOpenMaterialExtruding", "calibrationPanel.isMaterialExtrudingNozzle"),
+
+    /**
+     *
+     */
     FINISHED("calibrationPanel.calibrationSucceededBMessage", null),
+
+    /**
+     *
+     */
     FAILED("calibrationPanel.nozzleCalibrationFailed", null);
 
     private String stepTitleResource = null;
@@ -34,6 +93,10 @@ public enum NozzleBCalibrationState
         this.stepInstructionResource = stepInstructionResource;
     }
 
+    /**
+     *
+     * @return
+     */
     public NozzleBCalibrationState getNextState()
     {
         NozzleBCalibrationState returnState = null;
@@ -54,6 +117,10 @@ public enum NozzleBCalibrationState
         return returnState;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getStepTitle()
     {
         if (stepTitleResource == null)
@@ -65,6 +132,11 @@ public enum NozzleBCalibrationState
         }
     }
 
+    /**
+     *
+     * @param suffix
+     * @return
+     */
     public String getStepTitle(String suffix)
     {
         if (stepTitleResource == null)
@@ -76,6 +148,10 @@ public enum NozzleBCalibrationState
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public String getStepInstruction()
     {
         if (stepInstructionResource == null)
@@ -87,6 +163,11 @@ public enum NozzleBCalibrationState
         }
     }
 
+    /**
+     *
+     * @param suffix
+     * @return
+     */
     public String getStepInstruction(String suffix)
     {
         if (stepInstructionResource == null)

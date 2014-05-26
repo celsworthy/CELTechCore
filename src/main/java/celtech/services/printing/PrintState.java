@@ -10,5 +10,24 @@ package celtech.services.printing;
  */
 public enum PrintState
 {
-    IDLE, SLICING, SENDING_TO_PRINTER, PRINTING
+
+    /**
+     *
+     */
+    IDLE,
+
+    /**
+     *
+     */
+    SLICING,
+
+    /**
+     *
+     */
+    SENDING_TO_PRINTER,
+
+    /**
+     *
+     */
+    PRINTING
 }

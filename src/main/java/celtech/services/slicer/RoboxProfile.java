@@ -42,165 +42,653 @@ public class RoboxProfile implements Serializable, Cloneable
     private boolean LOCAL_mutable = false;
 
     //Immutable
-    protected StringProperty print_center = new SimpleStringProperty("105,75");
+
+    /**
+     *
+     */
+        protected StringProperty print_center = new SimpleStringProperty("105,75");
+
+    /**
+     *
+     */
     protected ObservableList<IntegerProperty> bed_size = FXCollections.observableArrayList(new SimpleIntegerProperty(226), new SimpleIntegerProperty(160));
+
+    /**
+     *
+     */
     protected StringProperty duplicate_grid = new SimpleStringProperty("1,1");
+
+    /**
+     *
+     */
     protected FloatProperty z_offset = new SimpleFloatProperty(0.0f);
+
+    /**
+     *
+     */
     protected StringProperty gcode_flavor = new SimpleStringProperty("reprap");
+
+    /**
+     *
+     */
     protected BooleanProperty use_relative_e_distances = new SimpleBooleanProperty(true);
+
+    /**
+     *
+     */
     protected BooleanProperty output_nozzle_control = new SimpleBooleanProperty(true);
+
+    /**
+     *
+     */
     protected IntegerProperty vibration_limit = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
     protected StringProperty end_gcode = new SimpleStringProperty("");
+
+    /**
+     *
+     */
     protected StringProperty layer_gcode = new SimpleStringProperty("");
+
+    /**
+     *
+     */
     protected StringProperty toolchange_gcode = new SimpleStringProperty("");
+
+    /**
+     *
+     */
     protected ObservableList<FloatProperty> retract_before_travel = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0));
+
+    /**
+     *
+     */
     protected ObservableList<FloatProperty> retract_length = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0));
+
+    /**
+     *
+     */
     protected ObservableList<FloatProperty> retract_length_toolchange = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0));
+
+    /**
+     *
+     */
     protected ObservableList<FloatProperty> retract_lift = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0));
+
+    /**
+     *
+     */
     protected ObservableList<FloatProperty> retract_restart_extra = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0));
+
+    /**
+     *
+     */
     protected ObservableList<FloatProperty> retract_restart_extra_toolchange = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0));
+
+    /**
+     *
+     */
     protected ObservableList<IntegerProperty> retract_speed = FXCollections.observableArrayList(new SimpleIntegerProperty(0), new SimpleIntegerProperty(0));
+
+    /**
+     *
+     */
     protected BooleanProperty retract_layer_change = new SimpleBooleanProperty(false);
+
+    /**
+     *
+     */
     protected ObservableList<IntegerProperty> wipe = FXCollections.observableArrayList(new SimpleIntegerProperty(0), new SimpleIntegerProperty(0));
+
+    /**
+     *
+     */
     protected ObservableList<FloatProperty> nozzle_diameter = FXCollections.observableArrayList(new SimpleFloatProperty(0.3f), new SimpleFloatProperty(0.8f));
+
+    /**
+     *
+     */
     protected BooleanProperty ooze_prevention = new SimpleBooleanProperty(false);
+
+    /**
+     *
+     */
     protected BooleanProperty thin_walls = new SimpleBooleanProperty(false);
+
+    /**
+     *
+     */
     protected BooleanProperty use_firmware_retraction = new SimpleBooleanProperty(false);
 
+    /**
+     *
+     */
     protected IntegerProperty perimeter_acceleration = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
     protected IntegerProperty infill_acceleration = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
     protected IntegerProperty bridge_acceleration = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
     protected IntegerProperty default_acceleration = new SimpleIntegerProperty(0);
 
+    /**
+     *
+     */
     protected BooleanProperty infill_only_where_needed = new SimpleBooleanProperty(true);
+
+    /**
+     *
+     */
     protected IntegerProperty solid_infill_every_layers = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
     protected IntegerProperty fill_angle = new SimpleIntegerProperty(45);
+
+    /**
+     *
+     */
     protected IntegerProperty solid_infill_below_area = new SimpleIntegerProperty(70);
+
+    /**
+     *
+     */
     protected BooleanProperty only_retract_when_crossing_perimeters = new SimpleBooleanProperty(false);
+
+    /**
+     *
+     */
     protected BooleanProperty infill_first = new SimpleBooleanProperty(false);
 
+    /**
+     *
+     */
     protected BooleanProperty cooling = new SimpleBooleanProperty(true);
+
+    /**
+     *
+     */
     protected BooleanProperty fan_always_on = new SimpleBooleanProperty(true);
+
+    /**
+     *
+     */
     protected IntegerProperty max_fan_speed = new SimpleIntegerProperty(30);
+
+    /**
+     *
+     */
     protected IntegerProperty min_fan_speed = new SimpleIntegerProperty(100);
+
+    /**
+     *
+     */
     protected IntegerProperty bridge_fan_speed = new SimpleIntegerProperty(100);
+
+    /**
+     *
+     */
     protected IntegerProperty disable_fan_first_layers = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
     protected IntegerProperty fan_below_layer_time = new SimpleIntegerProperty(60);
+
+    /**
+     *
+     */
     protected IntegerProperty slowdown_below_layer_time = new SimpleIntegerProperty(15);
+
+    /**
+     *
+     */
     protected IntegerProperty min_print_speed = new SimpleIntegerProperty(15);
 
+    /**
+     *
+     */
     protected BooleanProperty avoid_crossing_perimeters = new SimpleBooleanProperty(false);
+
+    /**
+     *
+     */
     protected IntegerProperty bridge_flow_ratio = new SimpleIntegerProperty(1);
+
+    /**
+     *
+     */
     protected IntegerProperty brim_width = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
     protected BooleanProperty complete_objects = new SimpleBooleanProperty(false);
+
+    /**
+     *
+     */
     protected IntegerProperty duplicate = new SimpleIntegerProperty(1);
+
+    /**
+     *
+     */
     protected IntegerProperty duplicate_distance = new SimpleIntegerProperty(6);
+
+    /**
+     *
+     */
     protected BooleanProperty external_perimeters_first = new SimpleBooleanProperty(false);
+
+    /**
+     *
+     */
     protected BooleanProperty extra_perimeters = new SimpleBooleanProperty(true);
+
+    /**
+     *
+     */
     protected IntegerProperty extruder_clearance_height = new SimpleIntegerProperty(20);
+
+    /**
+     *
+     */
     protected IntegerProperty extruder_clearance_radius = new SimpleIntegerProperty(20);
+
+    /**
+     *
+     */
     protected StringProperty extrusion_axis = new SimpleStringProperty("E");
+
+    /**
+     *
+     */
     protected StringProperty first_layer_extrusion_width = new SimpleStringProperty("150%"); // needs to be :0
+
+    /**
+     *
+     */
     protected FloatProperty first_layer_height = new SimpleFloatProperty(0.2f);
+
+    /**
+     *
+     */
     protected IntegerProperty g0 = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
     protected IntegerProperty gcode_arcs = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
     protected BooleanProperty gcode_comments = new SimpleBooleanProperty(true);
+
+    /**
+     *
+     */
     protected IntegerProperty infill_extruder = new SimpleIntegerProperty(1);
+
+    /**
+     *
+     */
     protected IntegerProperty min_skirt_length = new SimpleIntegerProperty(5);
+
+    /**
+     *
+     */
     protected StringProperty notes = new SimpleStringProperty("");
+
+    /**
+     *
+     */
     protected StringProperty output_filename_format = new SimpleStringProperty("[input_filename_base].gcode");
+
+    /**
+     *
+     */
     protected IntegerProperty perimeter_extruder = new SimpleIntegerProperty(1);
+
+    /**
+     *
+     */
     protected StringProperty post_process = new SimpleStringProperty("");
+
+    /**
+     *
+     */
     protected BooleanProperty randomize_start = new SimpleBooleanProperty(false);
+
+    /**
+     *
+     */
     protected IntegerProperty resolution = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
     protected IntegerProperty rotate = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
     protected IntegerProperty scale = new SimpleIntegerProperty(1);
+
+    /**
+     *
+     */
     protected IntegerProperty skirt_distance = new SimpleIntegerProperty(6);
+
+    /**
+     *
+     */
     protected IntegerProperty skirt_height = new SimpleIntegerProperty(1);
+
+    /**
+     *
+     */
     protected IntegerProperty skirts = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
     protected StringProperty solid_fill_pattern = new SimpleStringProperty("rectilinear");
+
+    /**
+     *
+     */
     protected IntegerProperty threads = new SimpleIntegerProperty(8);
+
+    /**
+     *
+     */
     protected FloatProperty un_retract_ratio = new SimpleFloatProperty(1.2f);
+
+    /**
+     *
+     */
     protected IntegerProperty support_material_interface_layers = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
     protected IntegerProperty support_material_interface_spacing = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
     protected IntegerProperty raft_layers = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
     protected IntegerProperty travel_speed = new SimpleIntegerProperty(400);
 
+    /**
+     *
+     */
     protected FloatProperty filament_diameter = new SimpleFloatProperty(1.75f);
 
     //END of firmware overridden
     //Advanced controls
-    protected StringProperty start_gcode = new SimpleStringProperty("");
 
+    /**
+     *
+     */
+        protected StringProperty start_gcode = new SimpleStringProperty("");
+
+    /**
+     *
+     */
     protected ObservableList<FloatProperty> nozzle_partial_b_minimum = FXCollections.observableArrayList(new SimpleFloatProperty(0.5f), new SimpleFloatProperty(0.5f));
+
+    /**
+     *
+     */
     protected ObservableList<FloatProperty> nozzle_ejection_volume = FXCollections.observableArrayList(new SimpleFloatProperty(0.5f), new SimpleFloatProperty(0.5f));
+
+    /**
+     *
+     */
     protected ObservableList<FloatProperty> nozzle_wipe_volume = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0));
 
+    /**
+     *
+     */
     protected FloatProperty fill_density = new SimpleFloatProperty(0.4f); //DONE
+
+    /**
+     *
+     */
     protected StringProperty fill_pattern = new SimpleStringProperty("rectilinear"); //DONE
+
+    /**
+     *
+     */
     protected IntegerProperty infill_every_layers = new SimpleIntegerProperty(1);
+
+    /**
+     *
+     */
     protected IntegerProperty bottom_solid_layers = new SimpleIntegerProperty(3);
+
+    /**
+     *
+     */
     protected IntegerProperty top_solid_layers = new SimpleIntegerProperty(0);
 
+    /**
+     *
+     */
     protected BooleanProperty support_material = new SimpleBooleanProperty(false); // DONE
+
+    /**
+     *
+     */
     protected IntegerProperty support_material_threshold = new SimpleIntegerProperty(48);
+
+    /**
+     *
+     */
     protected IntegerProperty support_material_enforce_layers = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
     protected StringProperty support_material_pattern = new SimpleStringProperty("rectilinear");
+
+    /**
+     *
+     */
     protected FloatProperty support_material_spacing = new SimpleFloatProperty(2.5f);
+
+    /**
+     *
+     */
     protected IntegerProperty support_material_angle = new SimpleIntegerProperty(0);
 
+    /**
+     *
+     */
     protected FloatProperty layer_height = new SimpleFloatProperty(0.2f); //DONE
 
+    /**
+     *
+     */
     protected IntegerProperty perimeter_speed = new SimpleIntegerProperty(25);
+
+    /**
+     *
+     */
     protected IntegerProperty small_perimeter_speed = new SimpleIntegerProperty(20);
+
+    /**
+     *
+     */
     protected IntegerProperty external_perimeter_speed = new SimpleIntegerProperty(30);
+
+    /**
+     *
+     */
     protected IntegerProperty infill_speed = new SimpleIntegerProperty(30);
+
+    /**
+     *
+     */
     protected IntegerProperty solid_infill_speed = new SimpleIntegerProperty(30);
+
+    /**
+     *
+     */
     protected IntegerProperty top_solid_infill_speed = new SimpleIntegerProperty(30);
+
+    /**
+     *
+     */
     protected IntegerProperty support_material_speed = new SimpleIntegerProperty(30);
+
+    /**
+     *
+     */
     protected IntegerProperty bridge_speed = new SimpleIntegerProperty(20);
+
+    /**
+     *
+     */
     protected IntegerProperty gap_fill_speed = new SimpleIntegerProperty(20);
+
+    /**
+     *
+     */
     protected IntegerProperty first_layer_speed = new SimpleIntegerProperty(18);
 
+    /**
+     *
+     */
     protected BooleanProperty spiral_vase = new SimpleBooleanProperty(false);
 
+    /**
+     *
+     */
     protected FloatProperty extrusion_width = new SimpleFloatProperty(0.8f);
+
+    /**
+     *
+     */
     protected FloatProperty perimeter_extrusion_width = new SimpleFloatProperty(0.3f);
+
+    /**
+     *
+     */
     protected FloatProperty infill_extrusion_width = new SimpleFloatProperty(0.3f);
+
+    /**
+     *
+     */
     protected FloatProperty solid_infill_extrusion_width = new SimpleFloatProperty(0.3f);
+
+    /**
+     *
+     */
     protected FloatProperty top_infill_extrusion_width = new SimpleFloatProperty(0.3f);
+
+    /**
+     *
+     */
     protected FloatProperty support_material_extrusion_width = new SimpleFloatProperty(0.3f);
 
+    /**
+     *
+     */
     protected IntegerProperty perimeters = new SimpleIntegerProperty(3);
 
+    /**
+     *
+     */
     protected BooleanProperty overhangs = new SimpleBooleanProperty(false);
+
+    /**
+     *
+     */
     protected BooleanProperty start_perimeters_at_concave_points = new SimpleBooleanProperty(false);
+
+    /**
+     *
+     */
     protected BooleanProperty start_perimeters_at_non_overhang = new SimpleBooleanProperty(false);
+
+    /**
+     *
+     */
     protected IntegerProperty support_material_extruder = new SimpleIntegerProperty(1);
+
+    /**
+     *
+     */
     protected IntegerProperty support_material_interface_extruder = new SimpleIntegerProperty(1);
+
+    /**
+     *
+     */
     protected IntegerProperty first_layer_acceleration = new SimpleIntegerProperty(0);
 
+    /**
+     *
+     */
     protected BooleanProperty autowipe = new SimpleBooleanProperty(false);
 
+    /**
+     *
+     */
     public RoboxProfile()
     {
     }
 
+    /**
+     *
+     * @param mutable
+     */
     public RoboxProfile(boolean mutable)
     {
         this.LOCAL_mutable = mutable;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setFilament_diameter(float value)
     {
         filament_diameter.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public float getFilament_diameter()
     {
         return filament_diameter.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public FloatProperty filament_diameterProperty()
     {
         return filament_diameter;
@@ -210,1111 +698,2002 @@ public class RoboxProfile implements Serializable, Cloneable
     //Common options
     //END Common options
     //Other stuff
-    public StringProperty getPrint_center()
+
+    /**
+     *
+     * @return
+     */
+        public StringProperty getPrint_center()
     {
         return print_center;
     }
 
+    /**
+     *
+     * @param print_center
+     */
     public void setPrint_center(StringProperty print_center)
     {
         this.print_center = print_center;
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<FloatProperty> getRetract_restart_extra_toolchange()
     {
         return retract_restart_extra_toolchange;
     }
 
+    /**
+     *
+     * @param retract_restart_extra_toolchange
+     */
     public void setRetract_restart_extra_toolchange(ObservableList<FloatProperty> retract_restart_extra_toolchange)
     {
         this.retract_restart_extra_toolchange = retract_restart_extra_toolchange;
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<IntegerProperty> getBed_size()
     {
         return bed_size;
     }
 
+    /**
+     *
+     * @param bed_size
+     */
     public void setBed_size(ObservableList<IntegerProperty> bed_size)
     {
         this.bed_size = bed_size;
     }
 
+    /**
+     *
+     * @return
+     */
     public StringProperty getDuplicate_grid()
     {
         return duplicate_grid;
     }
 
+    /**
+     *
+     * @param duplicate_grid
+     */
     public void setDuplicate_grid(StringProperty duplicate_grid)
     {
         this.duplicate_grid = duplicate_grid;
     }
 
+    /**
+     *
+     * @return
+     */
     public FloatProperty getZ_offset()
     {
         return z_offset;
     }
 
+    /**
+     *
+     * @param z_offset
+     */
     public void setZ_offset(FloatProperty z_offset)
     {
         this.z_offset = z_offset;
     }
 
+    /**
+     *
+     * @return
+     */
     public StringProperty getGcode_flavor()
     {
         return gcode_flavor;
     }
 
+    /**
+     *
+     * @param gcode_flavor
+     */
     public void setGcode_flavor(StringProperty gcode_flavor)
     {
         this.gcode_flavor = gcode_flavor;
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty getUse_relative_e_distances()
     {
         return use_relative_e_distances;
     }
 
+    /**
+     *
+     * @param use_relative_e_distances
+     */
     public void setUse_relative_e_distances(boolean use_relative_e_distances)
     {
         this.use_relative_e_distances.set(use_relative_e_distances);
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty getOutput_nozzle_control()
     {
         return output_nozzle_control;
     }
 
+    /**
+     *
+     * @param output_nozzle_control
+     */
     public void setOutput_nozzle_control(boolean output_nozzle_control)
     {
         this.output_nozzle_control.set(output_nozzle_control);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getVibration_limit()
     {
         return vibration_limit;
     }
 
+    /**
+     *
+     * @param vibration_limit
+     */
     public void setVibration_limit(IntegerProperty vibration_limit)
     {
         this.vibration_limit = vibration_limit;
     }
 
+    /**
+     *
+     * @return
+     */
     public StringProperty getStart_gcode()
     {
         return start_gcode;
     }
 
+    /**
+     *
+     * @param start_gcode
+     */
     public void setStart_gcode(String start_gcode)
     {
         this.start_gcode.set(start_gcode);
     }
 
+    /**
+     *
+     * @return
+     */
     public StringProperty getEnd_gcode()
     {
         return end_gcode;
     }
 
+    /**
+     *
+     * @param end_gcode
+     */
     public void setEnd_gcode(String end_gcode)
     {
         this.end_gcode.set(end_gcode);
     }
 
+    /**
+     *
+     * @return
+     */
     public StringProperty getLayer_gcode()
     {
         return layer_gcode;
     }
 
+    /**
+     *
+     * @param layer_gcode
+     */
     public void setLayer_gcode(StringProperty layer_gcode)
     {
         this.layer_gcode = layer_gcode;
     }
 
+    /**
+     *
+     * @return
+     */
     public StringProperty getToolchange_gcode()
     {
         return toolchange_gcode;
     }
 
+    /**
+     *
+     * @param toolchange_gcode
+     */
     public void setToolchange_gcode(StringProperty toolchange_gcode)
     {
         this.toolchange_gcode = toolchange_gcode;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty perimeter_nozzleProperty()
     {
         return perimeter_extruder;
     }
 
+    /**
+     *
+     * @param perimeter_nozzle
+     */
     public void setPerimeter_nozzle(int perimeter_nozzle)
     {
         this.perimeter_extruder.set(perimeter_nozzle);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty infill_nozzleProperty()
     {
         return infill_extruder;
     }
 
+    /**
+     *
+     * @param infill_nozzle
+     */
     public void setInfill_nozzle(int infill_nozzle)
     {
         this.infill_extruder.set(infill_nozzle);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty support_material_nozzleProperty()
     {
         return support_material_extruder;
     }
 
+    /**
+     *
+     * @param support_material_nozzle
+     */
     public void setSupport_material_nozzle(int support_material_nozzle)
     {
         this.support_material_extruder.set(support_material_nozzle);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty support_material_interface_nozzleProperty()
     {
         return support_material_interface_extruder;
     }
 
+    /**
+     *
+     * @param support_material_interface_nozzle
+     */
     public void setSupport_material_interface_nozzle(int support_material_interface_nozzle)
     {
         this.support_material_interface_extruder.set(support_material_interface_nozzle);
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<FloatProperty> getRetract_lift()
     {
         return retract_lift;
     }
 
+    /**
+     *
+     * @param retract_lift
+     */
     public void setRetract_lift(ObservableList<FloatProperty> retract_lift)
     {
         this.retract_lift = retract_lift;
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<FloatProperty> getRetract_restart_extra()
     {
         return retract_restart_extra;
     }
 
+    /**
+     *
+     * @param retract_restart_extra
+     */
     public void setRetract_restart_extra(ObservableList<FloatProperty> retract_restart_extra)
     {
         this.retract_restart_extra = retract_restart_extra;
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<FloatProperty> getRetract_before_travel()
     {
         return retract_before_travel;
     }
 
+    /**
+     *
+     * @param retract_before_travel
+     */
     public void setRetract_before_travel(ObservableList<FloatProperty> retract_before_travel)
     {
         this.retract_before_travel = retract_before_travel;
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty getRetract_layer_change()
     {
         return retract_layer_change;
     }
 
+    /**
+     *
+     * @param retract_layer_change
+     */
     public void setRetract_layer_change(boolean retract_layer_change)
     {
         this.retract_layer_change.set(retract_layer_change);
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<IntegerProperty> getWipe()
     {
         return wipe;
     }
 
+    /**
+     *
+     * @param wipe
+     */
     public void setWipe(ObservableList<IntegerProperty> wipe)
     {
         this.wipe = wipe;
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<FloatProperty> getNozzle_diameter()
     {
         return nozzle_diameter;
     }
 
+    /**
+     *
+     * @param nozzle_diameter
+     */
     public void setNozzle_diameter(ObservableList<FloatProperty> nozzle_diameter)
     {
         this.nozzle_diameter = nozzle_diameter;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getPerimeter_acceleration()
     {
         return perimeter_acceleration;
     }
 
+    /**
+     *
+     * @param perimeter_acceleration
+     */
     public void setPerimeter_acceleration(IntegerProperty perimeter_acceleration)
     {
         this.perimeter_acceleration = perimeter_acceleration;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getInfill_acceleration()
     {
         return infill_acceleration;
     }
 
+    /**
+     *
+     * @param infill_acceleration
+     */
     public void setInfill_acceleration(IntegerProperty infill_acceleration)
     {
         this.infill_acceleration = infill_acceleration;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getBridge_acceleration()
     {
         return bridge_acceleration;
     }
 
+    /**
+     *
+     * @param bridge_acceleration
+     */
     public void setBridge_acceleration(IntegerProperty bridge_acceleration)
     {
         this.bridge_acceleration = bridge_acceleration;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getDefault_acceleration()
     {
         return default_acceleration;
     }
 
+    /**
+     *
+     * @param default_acceleration
+     */
     public void setDefault_acceleration(IntegerProperty default_acceleration)
     {
         this.default_acceleration = default_acceleration;
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<FloatProperty> retract_lengthProperty()
     {
         return retract_length;
     }
 
+    /**
+     *
+     * @param retract_length
+     */
     public void setRetract_length(ObservableList<FloatProperty> retract_length)
     {
         this.retract_length = retract_length;
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<IntegerProperty> retract_speedProperty()
     {
         return retract_speed;
     }
 
+    /**
+     *
+     * @param retract_speed
+     */
     public void setRetract_speed(ObservableList<IntegerProperty> retract_speed)
     {
         this.retract_speed = retract_speed;
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<FloatProperty> getNozzle_ejection_volume()
     {
         return nozzle_ejection_volume;
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<FloatProperty> getNozzle_partial_b_minimum()
     {
         return nozzle_partial_b_minimum;
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<FloatProperty> getNozzle_wipe_volume()
     {
         return nozzle_wipe_volume;
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty getFan_always_on()
     {
         return fan_always_on;
     }
 
+    /**
+     *
+     * @param fan_always_on
+     */
     public void setFan_always_on(BooleanProperty fan_always_on)
     {
         this.fan_always_on = fan_always_on;
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty getCooling()
     {
         return cooling;
     }
 
+    /**
+     *
+     * @param cooling
+     */
     public void setCooling(BooleanProperty cooling)
     {
         this.cooling = cooling;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getMax_fan_speed()
     {
         return max_fan_speed;
     }
 
+    /**
+     *
+     * @param max_fan_speed
+     */
     public void setMax_fan_speed(IntegerProperty max_fan_speed)
     {
         this.max_fan_speed = max_fan_speed;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getMin_fan_speed()
     {
         return min_fan_speed;
     }
 
+    /**
+     *
+     * @param min_fan_speed
+     */
     public void setMin_fan_speed(IntegerProperty min_fan_speed)
     {
         this.min_fan_speed = min_fan_speed;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getBridge_fan_speed()
     {
         return bridge_fan_speed;
     }
 
+    /**
+     *
+     * @param bridge_fan_speed
+     */
     public void setBridge_fan_speed(IntegerProperty bridge_fan_speed)
     {
         this.bridge_fan_speed = bridge_fan_speed;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getDisable_fan_first_layers()
     {
         return disable_fan_first_layers;
     }
 
+    /**
+     *
+     * @param disable_fan_first_layers
+     */
     public void setDisable_fan_first_layers(IntegerProperty disable_fan_first_layers)
     {
         this.disable_fan_first_layers = disable_fan_first_layers;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getFan_below_layer_time()
     {
         return fan_below_layer_time;
     }
 
+    /**
+     *
+     * @param fan_below_layer_time
+     */
     public void setFan_below_layer_time(IntegerProperty fan_below_layer_time)
     {
         this.fan_below_layer_time = fan_below_layer_time;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getSlowdown_below_layer_time()
     {
         return slowdown_below_layer_time;
     }
 
+    /**
+     *
+     * @param slowdown_below_layer_time
+     */
     public void setSlowdown_below_layer_time(IntegerProperty slowdown_below_layer_time)
     {
         this.slowdown_below_layer_time = slowdown_below_layer_time;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getMin_print_speed()
     {
         return min_print_speed;
     }
 
+    /**
+     *
+     * @param min_print_speed
+     */
     public void setMin_print_speed(IntegerProperty min_print_speed)
     {
         this.min_print_speed = min_print_speed;
     }
 
+    /**
+     *
+     * @return
+     */
     public FloatProperty fill_densityProperty()
     {
         return fill_density;
     }
 
+    /**
+     *
+     * @param fill_density
+     */
     public void setFill_density(float fill_density)
     {
         this.fill_density.set(fill_density);
     }
 
+    /**
+     *
+     * @return
+     */
     public StringProperty fill_patternProperty()
     {
         return fill_pattern;
     }
 
+    /**
+     *
+     * @param fill_pattern
+     */
     public void setFill_pattern(String fill_pattern)
     {
         this.fill_pattern.set(fill_pattern);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty infill_every_layersProperty()
     {
         return infill_every_layers;
     }
 
+    /**
+     *
+     * @param infill_every_layers
+     */
     public void setInfill_every_layers(int infill_every_layers)
     {
         this.infill_every_layers.set(infill_every_layers);
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty getInfill_only_where_needed()
     {
         return infill_only_where_needed;
     }
 
+    /**
+     *
+     * @param infill_only_where_needed
+     */
     public void setInfill_only_where_needed(boolean infill_only_where_needed)
     {
         this.infill_only_where_needed.set(infill_only_where_needed);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getSolid_infill_every_layers()
     {
         return solid_infill_every_layers;
     }
 
+    /**
+     *
+     * @param solid_infill_every_layers
+     */
     public void setSolid_infill_every_layers(int solid_infill_every_layers)
     {
         this.solid_infill_every_layers.set(solid_infill_every_layers);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getFill_angle()
     {
         return fill_angle;
     }
 
+    /**
+     *
+     * @param fill_angle
+     */
     public void setFill_angle(IntegerProperty fill_angle)
     {
         this.fill_angle = fill_angle;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getSolid_infill_below_area()
     {
         return solid_infill_below_area;
     }
 
+    /**
+     *
+     * @param solid_infill_below_area
+     */
     public void setSolid_infill_below_area(IntegerProperty solid_infill_below_area)
     {
         this.solid_infill_below_area = solid_infill_below_area;
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty getOnly_retract_when_crossing_perimeters()
     {
         return only_retract_when_crossing_perimeters;
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty getInfill_first()
     {
         return infill_first;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty perimeter_speedProperty()
     {
         return perimeter_speed;
     }
 
+    /**
+     *
+     * @param perimeter_speed
+     */
     public void setPerimeter_speed(int perimeter_speed)
     {
         this.perimeter_speed.set(perimeter_speed);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty small_perimeter_speedProperty()
     {
         return small_perimeter_speed;
     }
 
+    /**
+     *
+     * @param small_perimeter_speed
+     */
     public void setSmall_perimeter_speed(int small_perimeter_speed)
     {
         this.small_perimeter_speed.set(small_perimeter_speed);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty external_perimeter_speedProperty()
     {
         return external_perimeter_speed;
     }
 
+    /**
+     *
+     * @param external_perimeter_speed
+     */
     public void setExternal_perimeter_speed(int external_perimeter_speed)
     {
         this.external_perimeter_speed.set(external_perimeter_speed);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty infill_speedProperty()
     {
         return infill_speed;
     }
 
+    /**
+     *
+     * @param infill_speed
+     */
     public void setInfill_speed(int infill_speed)
     {
         this.infill_speed.set(infill_speed);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty solid_infill_speedProperty()
     {
         return solid_infill_speed;
     }
 
+    /**
+     *
+     * @param solid_infill_speed
+     */
     public void setSolid_infill_speed(int solid_infill_speed)
     {
         this.solid_infill_speed.set(solid_infill_speed);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty top_solid_infill_speedProperty()
     {
         return top_solid_infill_speed;
     }
 
+    /**
+     *
+     * @param top_solid_infill_speed
+     */
     public void setTop_solid_infill_speed(int top_solid_infill_speed)
     {
         this.top_solid_infill_speed.set(top_solid_infill_speed);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty support_material_speedProperty()
     {
         return support_material_speed;
     }
 
+    /**
+     *
+     * @param support_material_speed
+     */
     public void setSupport_material_speed(int support_material_speed)
     {
         this.support_material_speed.set(support_material_speed);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty bridge_speedProperty()
     {
         return bridge_speed;
     }
 
+    /**
+     *
+     * @param bridge_speed
+     */
     public void setBridge_speed(int bridge_speed)
     {
         this.bridge_speed.set(bridge_speed);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty gap_fill_speedProperty()
     {
         return gap_fill_speed;
     }
 
+    /**
+     *
+     * @param gap_fill_speed
+     */
     public void setGap_fill_speed(int gap_fill_speed)
     {
         this.gap_fill_speed.set(gap_fill_speed);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty travel_speedProperty()
     {
         return travel_speed;
     }
 
+    /**
+     *
+     * @param travel_speed
+     */
     public void setTravel_speed(int travel_speed)
     {
         this.travel_speed.set(travel_speed);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty first_layer_speedProperty()
     {
         return first_layer_speed;
     }
 
+    /**
+     *
+     * @param first_layer_speed
+     */
     public void setFirst_layer_speed(int first_layer_speed)
     {
         this.first_layer_speed.set(first_layer_speed);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty support_material_thresholdProperty()
     {
         return support_material_threshold;
     }
 
+    /**
+     *
+     * @param support_material_threshold
+     */
     public void setSupport_material_threshold(int support_material_threshold)
     {
         this.support_material_threshold.set(support_material_threshold);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty support_material_enforce_layersProperty()
     {
         return support_material_enforce_layers;
     }
 
+    /**
+     *
+     * @param support_material_enforce_layers
+     */
     public void setSupport_material_enforce_layers(int support_material_enforce_layers)
     {
         this.support_material_enforce_layers.set(support_material_enforce_layers);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getRaft_layers()
     {
         return raft_layers;
     }
 
+    /**
+     *
+     * @param raft_layers
+     */
     public void setRaft_layers(IntegerProperty raft_layers)
     {
         this.raft_layers = raft_layers;
     }
 
+    /**
+     *
+     * @return
+     */
     public StringProperty support_material_patternProperty()
     {
         return support_material_pattern;
     }
 
+    /**
+     *
+     * @param support_material_pattern
+     */
     public void setSupport_material_pattern(String support_material_pattern)
     {
         this.support_material_pattern.set(support_material_pattern);
     }
 
+    /**
+     *
+     * @return
+     */
     public FloatProperty support_material_spacingProperty()
     {
         return support_material_spacing;
     }
 
+    /**
+     *
+     * @param support_material_spacing
+     */
     public void setSupport_material_spacing(float support_material_spacing)
     {
         this.support_material_spacing.set(support_material_spacing);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty support_material_angleProperty()
     {
         return support_material_angle;
     }
 
+    /**
+     *
+     * @param support_material_angle
+     */
     public void setSupport_material_angle(int support_material_angle)
     {
         this.support_material_angle.set(support_material_angle);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getSupport_material_interface_layers()
     {
         return support_material_interface_layers;
     }
 
+    /**
+     *
+     * @param support_material_interface_layers
+     */
     public void setSupport_material_interface_layers(IntegerProperty support_material_interface_layers)
     {
         this.support_material_interface_layers = support_material_interface_layers;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getSupport_material_interface_spacing()
     {
         return support_material_interface_spacing;
     }
 
+    /**
+     *
+     * @param support_material_interface_spacing
+     */
     public void setSupport_material_interface_spacing(IntegerProperty support_material_interface_spacing)
     {
         this.support_material_interface_spacing = support_material_interface_spacing;
     }
 
+    /**
+     *
+     * @return
+     */
     public FloatProperty getLayer_height()
     {
         return layer_height;
     }
 
+    /**
+     *
+     * @param layer_height
+     */
     public void setLayer_height(FloatProperty layer_height)
     {
         this.layer_height = layer_height;
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty support_materialProperty()
     {
         return support_material;
     }
 
+    /**
+     *
+     * @param support_material
+     */
     public void setSupport_material(boolean support_material)
     {
         this.support_material.set(support_material);
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty getAvoid_crossing_perimeters()
     {
         return avoid_crossing_perimeters;
     }
 
+    /**
+     *
+     * @param avoid_crossing_perimeters
+     */
     public void setAvoid_crossing_perimeters(boolean avoid_crossing_perimeters)
     {
         this.avoid_crossing_perimeters.set(avoid_crossing_perimeters);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty bottom_solid_layersProperty()
     {
         return bottom_solid_layers;
     }
 
+    /**
+     *
+     * @param bottom_solid_layers
+     */
     public void setBottom_solid_layers(int bottom_solid_layers)
     {
         this.bottom_solid_layers.set(bottom_solid_layers);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getBridge_flow_ratio()
     {
         return bridge_flow_ratio;
     }
 
+    /**
+     *
+     * @param bridge_flow_ratio
+     */
     public void setBridge_flow_ratio(IntegerProperty bridge_flow_ratio)
     {
         this.bridge_flow_ratio = bridge_flow_ratio;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getBrim_width()
     {
         return brim_width;
     }
 
+    /**
+     *
+     * @param brim_width
+     */
     public void setBrim_width(IntegerProperty brim_width)
     {
         this.brim_width = brim_width;
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty getComplete_objects()
     {
         return complete_objects;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getDuplicate()
     {
         return duplicate;
     }
 
+    /**
+     *
+     * @param duplicate
+     */
     public void setDuplicate(IntegerProperty duplicate)
     {
         this.duplicate = duplicate;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getDuplicate_distance()
     {
         return duplicate_distance;
     }
 
+    /**
+     *
+     * @param duplicate_distance
+     */
     public void setDuplicate_distance(IntegerProperty duplicate_distance)
     {
         this.duplicate_distance = duplicate_distance;
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty getExternal_perimeters_first()
     {
         return external_perimeters_first;
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty getExtra_perimeters()
     {
         return extra_perimeters;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getExtruder_clearance_height()
     {
         return extruder_clearance_height;
     }
 
+    /**
+     *
+     * @param extruder_clearance_height
+     */
     public void setExtruder_clearance_height(IntegerProperty extruder_clearance_height)
     {
         this.extruder_clearance_height = extruder_clearance_height;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getExtruder_clearance_radius()
     {
         return extruder_clearance_radius;
     }
 
+    /**
+     *
+     * @param extruder_clearance_radius
+     */
     public void setExtruder_clearance_radius(IntegerProperty extruder_clearance_radius)
     {
         this.extruder_clearance_radius = extruder_clearance_radius;
     }
 
+    /**
+     *
+     * @return
+     */
     public StringProperty getExtrusion_axis()
     {
         return extrusion_axis;
     }
 
+    /**
+     *
+     * @param extrusion_axis
+     */
     public void setExtrusion_axis(StringProperty extrusion_axis)
     {
         this.extrusion_axis = extrusion_axis;
     }
 
+    /**
+     *
+     * @return
+     */
     public FloatProperty getExtrusion_width()
     {
         return extrusion_width;
     }
     
+    /**
+     *
+     * @return
+     */
     public FloatProperty getSupport_material_extrusion_width()
     {
         return support_material_extrusion_width;
     }
     
+    /**
+     *
+     * @return
+     */
     public StringProperty getFirst_layer_extrusion_width()
     {
         return first_layer_extrusion_width;
     }
 
+    /**
+     *
+     * @param first_layer_extrusion_width
+     */
     public void setFirst_layer_extrusion_width(StringProperty first_layer_extrusion_width)
     {
         this.first_layer_extrusion_width = first_layer_extrusion_width;
     }
 
+    /**
+     *
+     * @return
+     */
     public FloatProperty getFirst_layer_height()
     {
         return first_layer_height;
     }
 
+    /**
+     *
+     * @param first_layer_height
+     */
     public void setFirst_layer_height(FloatProperty first_layer_height)
     {
         this.first_layer_height = first_layer_height;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getG0()
     {
         return g0;
     }
 
+    /**
+     *
+     * @param g0
+     */
     public void setG0(IntegerProperty g0)
     {
         this.g0 = g0;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getGcode_arcs()
     {
         return gcode_arcs;
     }
 
+    /**
+     *
+     * @param gcode_arcs
+     */
     public void setGcode_arcs(IntegerProperty gcode_arcs)
     {
         this.gcode_arcs = gcode_arcs;
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty getGcode_comments()
     {
         return gcode_comments;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getInfill_extruder()
     {
         return infill_extruder;
     }
 
+    /**
+     *
+     * @param infill_extruder
+     */
     public void setInfill_extruder(IntegerProperty infill_extruder)
     {
         this.infill_extruder = infill_extruder;
     }
 
+    /**
+     *
+     * @return
+     */
     public FloatProperty getInfill_extrusion_width()
     {
         return infill_extrusion_width;
     }
 
+    /**
+     *
+     * @param infill_extrusion_width
+     */
     public void setInfill_extrusion_width(float infill_extrusion_width)
     {
         this.infill_extrusion_width.set(infill_extrusion_width);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getMin_skirt_length()
     {
         return min_skirt_length;
     }
 
+    /**
+     *
+     * @param min_skirt_length
+     */
     public void setMin_skirt_length(IntegerProperty min_skirt_length)
     {
         this.min_skirt_length = min_skirt_length;
     }
 
+    /**
+     *
+     * @return
+     */
     public StringProperty getNotes()
     {
         return notes;
     }
 
+    /**
+     *
+     * @param notes
+     */
     public void setNotes(StringProperty notes)
     {
         this.notes = notes;
     }
 
+    /**
+     *
+     * @return
+     */
     public StringProperty getOutput_filename_format()
     {
         return output_filename_format;
     }
 
+    /**
+     *
+     * @param output_filename_format
+     */
     public void setOutput_filename_format(StringProperty output_filename_format)
     {
         this.output_filename_format = output_filename_format;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getPerimeter_extruder()
     {
         return perimeter_extruder;
     }
 
+    /**
+     *
+     * @param perimeter_extruder
+     */
     public void setPerimeter_extruder(IntegerProperty perimeter_extruder)
     {
         this.perimeter_extruder = perimeter_extruder;
     }
 
+    /**
+     *
+     * @return
+     */
     public FloatProperty getPerimeter_extrusion_width()
     {
         return perimeter_extrusion_width;
     }
 
+    /**
+     *
+     * @param perimeter_extrusion_width
+     */
     public void setPerimeter_extrusion_width(float perimeter_extrusion_width)
     {
         this.perimeter_extrusion_width.set(perimeter_extrusion_width);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty perimetersProperty()
     {
         return perimeters;
     }
 
+    /**
+     *
+     * @param perimeters
+     */
     public void setPerimeters(int perimeters)
     {
         this.perimeters.set(perimeters);
     }
 
+    /**
+     *
+     * @return
+     */
     public StringProperty getPost_process()
     {
         return post_process;
     }
 
+    /**
+     *
+     * @param post_process
+     */
     public void setPost_process(StringProperty post_process)
     {
         this.post_process = post_process;
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty getRandomize_start()
     {
         return randomize_start;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getResolution()
     {
         return resolution;
     }
 
+    /**
+     *
+     * @param resolution
+     */
     public void setResolution(IntegerProperty resolution)
     {
         this.resolution = resolution;
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<FloatProperty> getRetract_length_toolchange()
     {
         return retract_length_toolchange;
     }
 
+    /**
+     *
+     * @param retract_length_toolchange
+     */
     public void setRetract_length_toolchange(ObservableList<FloatProperty> retract_length_toolchange)
     {
         this.retract_length_toolchange = retract_length_toolchange;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getRotate()
     {
         return rotate;
     }
 
+    /**
+     *
+     * @param rotate
+     */
     public void setRotate(IntegerProperty rotate)
     {
         this.rotate = rotate;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getScale()
     {
         return scale;
     }
 
+    /**
+     *
+     * @param scale
+     */
     public void setScale(IntegerProperty scale)
     {
         this.scale = scale;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getSkirt_distance()
     {
         return skirt_distance;
     }
 
+    /**
+     *
+     * @param skirt_distance
+     */
     public void setSkirt_distance(IntegerProperty skirt_distance)
     {
         this.skirt_distance = skirt_distance;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getSkirt_height()
     {
         return skirt_height;
     }
 
+    /**
+     *
+     * @param skirt_height
+     */
     public void setSkirt_height(IntegerProperty skirt_height)
     {
         this.skirt_height = skirt_height;
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getSkirts()
     {
         return skirts;
     }
 
+    /**
+     *
+     * @param skirts
+     */
     public void setSkirts(IntegerProperty skirts)
     {
         this.skirts = skirts;
     }
 
+    /**
+     *
+     * @return
+     */
     public StringProperty getSolid_fill_pattern()
     {
         return solid_fill_pattern;
     }
 
+    /**
+     *
+     * @param solid_fill_pattern
+     */
     public void setSolid_fill_pattern(StringProperty solid_fill_pattern)
     {
         this.solid_fill_pattern = solid_fill_pattern;
     }
 
+    /**
+     *
+     * @return
+     */
     public FloatProperty getSolid_infill_extrusion_width()
     {
         return solid_infill_extrusion_width;
     }
 
+    /**
+     *
+     * @param solid_infill_extrusion_width
+     */
     public void setSolid_infill_extrusion_width(float solid_infill_extrusion_width)
     {
         this.solid_infill_extrusion_width.set(solid_infill_extrusion_width);
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty spiral_vaseProperty()
     {
         return spiral_vase;
     }
 
+    /**
+     *
+     * @param spiral_vase
+     */
     public void setSpiral_vase(boolean spiral_vase)
     {
         this.spiral_vase.set(spiral_vase);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getThreads()
     {
         return threads;
     }
 
+    /**
+     *
+     * @param threads
+     */
     public void setThreads(IntegerProperty threads)
     {
         this.threads = threads;
     }
 
+    /**
+     *
+     * @return
+     */
     public FloatProperty getTop_infill_extrusion_width()
     {
         return top_infill_extrusion_width;
     }
 
+    /**
+     *
+     * @param top_infill_extrusion_width
+     */
     public void setTop_infill_extrusion_width(float top_infill_extrusion_width)
     {
         this.top_infill_extrusion_width.set(top_infill_extrusion_width);
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty top_solid_layersProperty()
     {
         return top_solid_layers;
     }
 
+    /**
+     *
+     * @param top_solid_layers
+     */
     public void setTop_solid_layers(int top_solid_layers)
     {
         this.top_solid_layers.set(top_solid_layers);
     }
 
+    /**
+     *
+     * @return
+     */
     public FloatProperty getUn_retract_ratio()
     {
         return un_retract_ratio;
     }
 
+    /**
+     *
+     * @param un_retract_ratio
+     */
     public void setUn_retract_ratio(FloatProperty un_retract_ratio)
     {
         this.un_retract_ratio = un_retract_ratio;
     }
     
+    /**
+     *
+     * @return
+     */
     public boolean getAutowipe()
     {
         return autowipe.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isMutable()
     {
         return LOCAL_mutable;
     }
 
+    /**
+     *
+     * @param mutable
+     */
     public void setMutable(boolean mutable)
     {
         LOCAL_mutable = mutable;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getProfileName()
     {
         return LOCAL_profileName.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public StringProperty getProfileNameProperty()
     {
         return LOCAL_profileName;
     }
 
+    /**
+     *
+     * @param profileName
+     * @param mutable
+     * @param filename
+     */
     public void readFromFile(String profileName, boolean mutable, String filename)
     {
         LOCAL_profileName.set(profileName);
@@ -1453,6 +2832,10 @@ public class RoboxProfile implements Serializable, Cloneable
         }
     }
 
+    /**
+     *
+     * @param filename
+     */
     public void writeToFile(String filename)
     {
         File outputFile = new File(filename);
@@ -1947,6 +3330,10 @@ public class RoboxProfile implements Serializable, Cloneable
 
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public RoboxProfile clone()
     {
@@ -2154,6 +3541,10 @@ public class RoboxProfile implements Serializable, Cloneable
         return clone;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString()
     {

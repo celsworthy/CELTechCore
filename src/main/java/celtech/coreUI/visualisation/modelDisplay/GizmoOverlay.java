@@ -86,6 +86,11 @@ public class GizmoOverlay extends Group
     private double rotationStartAngle = 0.0;
     private double currentRotationAngle = 0.0;
     
+    /**
+     *
+     * @param selectionContainer
+     * @param camera
+     */
     public GizmoOverlay(SelectionContainer selectionContainer, PolarCamera camera)
     {
         applicationStatus = ApplicationStatus.getInstance();
@@ -529,12 +534,20 @@ public class GizmoOverlay extends Group
         MathUtils.matrixRotateNode(rotationDisc, 0, latestCameraPitch - Math.PI, latestCameraAzimuth);
     }
     
+    /**
+     *
+     * @param cameraPitch
+     */
     public void compensateForCameraPitch(float cameraPitch)
     {
         latestCameraPitch = cameraPitch;
         compensateForCameraPosition();
     }
     
+    /**
+     *
+     * @param cameraAzimuth
+     */
     public void compensateForCameraAzimuth(float cameraAzimuth)
     {
         latestCameraAzimuth = cameraAzimuth;

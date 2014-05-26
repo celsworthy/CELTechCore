@@ -56,6 +56,11 @@ public class MtlReader {
 
     private String baseUrl;
 
+    /**
+     *
+     * @param filename
+     * @param parentUrl
+     */
     public MtlReader(String filename, String parentUrl) {
         baseUrl = parentUrl.substring(0,parentUrl.lastIndexOf('/')+1);
         String fileUrl = baseUrl + filename;
@@ -155,6 +160,10 @@ public class MtlReader {
         return new Image(filename);
     }
 
+    /**
+     *
+     * @return
+     */
     public Map<String, Material> getMaterials() {
         return Collections.unmodifiableMap(materials);
     }

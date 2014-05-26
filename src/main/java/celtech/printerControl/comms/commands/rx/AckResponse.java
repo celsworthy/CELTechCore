@@ -57,96 +57,172 @@ public class AckResponse extends RoboxRxPacket
     private boolean nozzleFlushNeededError = false;
     private boolean unknown_error_code = false;
 
+    /**
+     *
+     * @return
+     */
     public boolean isSdCardError()
     {
         return sdCardError;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isChunkSequenceError()
     {
         return chunkSequenceError;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isFileTooLargeError()
     {
         return fileTooLargeError;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isGcodeLineTooLongError()
     {
         return gcodeLineTooLongError;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isUsbRXError()
     {
         return usbRXError;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isUsbTXError()
     {
         return usbTXError;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isBadCommandError()
     {
         return badCommandError;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isHeadEepromError()
     {
         return headEEPROMError;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isBadFirmwareFileError()
     {
         return badFirmwareFileError;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isFlashChecksumError()
     {
         return flashChecksumError;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isGCodeBufferOverrunError()
     {
         return gcodeBufferOverrunError;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isFileReadClobbered()
     {
         return fileReadClobbered;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isMaxGantryAdjustment()
     {
         return maxGantryAdjustment;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isReelEEPROMError()
     {
         return reelEEPROMError;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isEFilamentSlipError()
     {
         return eFilamentSlipError;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isDFilamentSlipError()
     {
         return dFilamentSlipError;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isNozzleFlushNeededError()
     {
         return nozzleFlushNeededError;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isUnknown_Error_Code()
     {
         return unknown_error_code;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isError()
     {
         return sdCardError
@@ -172,11 +248,21 @@ public class AckResponse extends RoboxRxPacket
     /*
      * Errors...
      */
+
+    /**
+     *
+     */
+    
     public AckResponse()
     {
         super(RxPacketTypeEnum.ACK_WITH_ERRORS, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {
@@ -247,6 +333,10 @@ public class AckResponse extends RoboxRxPacket
         return !isError();
     }
 
+    /**
+     *
+     * @return
+     */
     public String getErrorsAsString()
     {
         StringBuilder outputString = new StringBuilder();
@@ -362,6 +452,10 @@ public class AckResponse extends RoboxRxPacket
         return outputString.toString();
     }
 
+    /**
+     *
+     * @return
+     */
     public String toString()
     {
         StringBuilder outputString = new StringBuilder();

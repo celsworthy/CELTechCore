@@ -98,27 +98,47 @@ public class CreateNewProfileController implements Initializable
         profileNameInvalid.set(invalid);
     }
 
+    /**
+     *
+     * @param slicerSettings
+     */
     public void updateProfileData(RoboxProfile slicerSettings)
     {
         profileNameField.setText(slicerSettings.getProfileName());
         profileDetailsController.updateProfileData(slicerSettings);
     }
 
+    /**
+     *
+     * @param b
+     */
     public void showButtons(boolean b)
     {
         profileDetailsController.showButtons(b);
     }
 
+    /**
+     *
+     * @return
+     */
     public RoboxProfile getProfileData()
     {
         return profileDetailsController.getProfileData();
     }
     
+    /**
+     *
+     * @return
+     */
     public ReadOnlyBooleanProperty getProfileNameInvalidProperty()
     {
         return profileNameInvalid;
     }
     
+    /**
+     *
+     * @return
+     */
     public String getProfileName()
     {
         return profileNameField.getText();

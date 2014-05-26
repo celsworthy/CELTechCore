@@ -19,6 +19,12 @@ public class GCodeMeshData
     private HashMap<Integer, GCodeElement> referencedElements = null;
     private HashMap<Integer, Group> referencedLayers = null;
 
+    /**
+     *
+     * @param allParts
+     * @param referencedElements
+     * @param referencedLayers
+     */
     public GCodeMeshData(Group allParts, HashMap<Integer, GCodeElement> referencedElements, HashMap<Integer, Group> referencedLayers)
     {
         this.allParts = allParts;
@@ -26,16 +32,28 @@ public class GCodeMeshData
         this.referencedLayers = referencedLayers;
     }
 
+    /**
+     *
+     * @return
+     */
     public Group getAllParts()
     {
         return allParts;
     }
 
+    /**
+     *
+     * @return
+     */
     public HashMap<Integer, GCodeElement> getReferencedElements()
     {
         return referencedElements;
     }
     
+    /**
+     *
+     * @return
+     */
     public HashMap<Integer, Group> getReferencedArrays()
     {
         return referencedLayers;

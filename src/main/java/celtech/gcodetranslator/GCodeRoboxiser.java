@@ -101,11 +101,22 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     private int currentMixPoint = 0;
     private boolean mixing = false;
 
+    /**
+     *
+     */
     public GCodeRoboxiser()
     {
         gcodeParser.addListener(this);
     }
 
+    /**
+     *
+     * @param inputFilename
+     * @param outputFilename
+     * @param settings
+     * @param percentProgress
+     * @return
+     */
     public RoboxiserResult roboxiseFile(String inputFilename, String outputFilename, RoboxProfile settings, DoubleProperty percentProgress)
     {
         RoboxiserResult result = new RoboxiserResult();
@@ -200,6 +211,10 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         return result;
     }
 
+    /**
+     *
+     * @param line
+     */
     @Override
     public void unableToParse(String line)
     {

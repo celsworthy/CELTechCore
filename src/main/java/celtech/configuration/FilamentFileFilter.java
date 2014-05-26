@@ -15,6 +15,12 @@ import java.io.FileFilter;
  */
 public class FilamentFileFilter implements FileFilter
 {
+
+    /**
+     *
+     * @param pathname
+     * @return
+     */
     @Override
     public boolean accept(File pathname)
     {

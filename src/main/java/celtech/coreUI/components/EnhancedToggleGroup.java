@@ -21,11 +21,18 @@ public class EnhancedToggleGroup extends ToggleGroup
 
     private ObjectProperty<Toggle> selectedToggle = new SimpleObjectProperty<Toggle>();
 
+    /**
+     *
+     * @return
+     */
     public ObjectProperty<Toggle> writableSelectedToggleProperty()
     {
         return selectedToggle;
     }
 
+    /**
+     *
+     */
     public EnhancedToggleGroup()
     {
         selectedToggleProperty().addListener(new ChangeListener<Toggle>()

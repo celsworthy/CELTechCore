@@ -43,11 +43,20 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
     private int progressPercent = 0;
     private boolean lookingForKeyPress = false;
 
+    /**
+     *
+     * @param desiredState
+     */
     public CalibrateBTask(NozzleBCalibrationState desiredState)
     {
         this.desiredState = desiredState;
     }
 
+    /**
+     *
+     * @param desiredState
+     * @param nozzleNumber
+     */
     public CalibrateBTask(NozzleBCalibrationState desiredState, int nozzleNumber)
     {
         this.desiredState = desiredState;
@@ -221,12 +230,19 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
         }
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public boolean cancelRun()
     {
         return cancel();
     }
 
+    /**
+     *
+     */
     public void keyPressed()
     {
         if (lookingForKeyPress)

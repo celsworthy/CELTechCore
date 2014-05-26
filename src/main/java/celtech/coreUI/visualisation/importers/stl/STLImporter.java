@@ -60,6 +60,14 @@ public class STLImporter
     private final int FACE_INDICES_PER_TRIANGLE = FACE_INDICES_PER_VERTEX * POINTS_PER_VERTEX;
     private final String spacePattern = "[ ]+";
 
+    /**
+     *
+     * @param parentTask
+     * @param modelFileToLoad
+     * @param targetProjectTab
+     * @param percentProgressProperty
+     * @return
+     */
     public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, ProjectTab targetProjectTab, DoubleProperty percentProgressProperty)
     {
         this.parentTask = parentTask;
@@ -227,6 +235,12 @@ public class STLImporter
         return fileIsBinary;
     }
 
+    /**
+     *
+     * @param stlFile
+     * @return
+     * @throws STLFileParsingException
+     */
     protected TriangleMesh processBinarySTLData(File stlFile) throws STLFileParsingException
     {
         DataInputStream inputFileStream;
@@ -345,6 +359,14 @@ public class STLImporter
         return triangleMesh;
     }
 
+    /**
+     *
+     * @param aLine
+     * @param inputTriangles
+     * @param hashedVertices
+     * @param facetVertices
+     * @throws STLFileParsingException
+     */
     protected void processASCIILine(String aLine, ArrayList<MetaTriangle> inputTriangles, HashMap<Long, Point3D> hashedVertices, Point3D[] facetVertices) throws STLFileParsingException
     {
         int vertexCounter = 0;

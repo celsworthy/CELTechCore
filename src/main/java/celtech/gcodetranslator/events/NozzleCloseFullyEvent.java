@@ -9,6 +9,11 @@ import java.io.IOException;
  */
 public class NozzleCloseFullyEvent extends GCodeParseEvent
 {
+
+    /**
+     *
+     * @return
+     */
     @Override
     public String renderForOutput()
     {

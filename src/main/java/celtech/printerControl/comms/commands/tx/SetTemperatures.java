@@ -16,17 +16,33 @@ public class SetTemperatures extends RoboxTxPacket
     private char[] firstPad = new char[41];
     private char[] secondPad = new char[162];
 
+    /**
+     *
+     */
     public SetTemperatures()
     {
         super(TxPacketTypeEnum.SET_TEMPERATURES, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {
         return false;
     }
 
+    /**
+     *
+     * @param nozzleFirstLayerTarget
+     * @param nozzleTarget
+     * @param bedFirstLayerTarget
+     * @param bedTarget
+     * @param ambientTarget
+     */
     public void setTemperatures(double nozzleFirstLayerTarget, double nozzleTarget, double bedFirstLayerTarget, double bedTarget, double ambientTarget)
     {
         StringBuilder payload = new StringBuilder();

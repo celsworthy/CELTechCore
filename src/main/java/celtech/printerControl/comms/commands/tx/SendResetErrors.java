@@ -11,11 +11,19 @@ package celtech.printerControl.comms.commands.tx;
 public class SendResetErrors extends RoboxTxPacket
 {
 
+    /**
+     *
+     */
     public SendResetErrors()
     {
         super(TxPacketTypeEnum.RESET_ERRORS, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {

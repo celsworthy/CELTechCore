@@ -16,36 +16,64 @@ public class GCodeFile
     private ExtrusionMode extrusionMode = ExtrusionMode.RELATIVE;
     private MovementMode movementMode = MovementMode.ABSOLUTE;
     
+    /**
+     *
+     * @param layer
+     */
     public void addLayer(Layer layer)
     {
         layers.add(layer);
     }
     
+    /**
+     *
+     * @return
+     */
     public ArrayList<Layer> getLayers()
     {
         return layers;
     }
 
+    /**
+     *
+     * @return
+     */
     public ExtrusionMode getExtrusionMode()
     {
         return extrusionMode;
     }
 
+    /**
+     *
+     * @param extrusionMode
+     */
     public void setExtrusionMode(ExtrusionMode extrusionMode)
     {
         this.extrusionMode = extrusionMode;
     }
 
+    /**
+     *
+     * @return
+     */
     public MovementMode getMovementMode()
     {
         return movementMode;
     }
 
+    /**
+     *
+     * @param movementMode
+     */
     public void setMovementMode(MovementMode movementMode)
     {
         this.movementMode = movementMode;
     }
     
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString()
     {

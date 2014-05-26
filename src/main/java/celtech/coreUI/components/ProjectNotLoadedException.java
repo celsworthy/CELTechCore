@@ -13,11 +13,19 @@ public class ProjectNotLoadedException extends Exception
 {
     private String projectName = null;
 
+    /**
+     *
+     * @param projectName
+     */
     public ProjectNotLoadedException(String projectName)
     {
         this.projectName = projectName;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String getMessage()
     {

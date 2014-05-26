@@ -12,7 +12,18 @@ package celtech.coreUI.visualisation;
 public class ReplacementConstants
 {
 
+    /**
+     *
+     */
     public static final int NUM_COMPONENTS_PER_POINT = 3;
+
+    /**
+     *
+     */
     public static final int NUM_COMPONENTS_PER_TEXCOORD = 2;
+
+    /**
+     *
+     */
     public static final int NUM_COMPONENTS_PER_FACE = 6;
 }

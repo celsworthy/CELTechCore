@@ -73,6 +73,8 @@ public class ProjectLoaderController implements Initializable
 
     /**
      * Initializes the controller class.
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
@@ -85,21 +87,36 @@ public class ProjectLoaderController implements Initializable
         openButton.disableProperty().bind(projectTitleList.getSelectionModel().selectedItemProperty().isNull());
     }
 
+    /**
+     *
+     * @param dialogStage
+     */
     public void configure(Stage dialogStage)
     {
         myStage = dialogStage;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getButtonValue()
     {
         return buttonValue;
     }
 
+    /**
+     *
+     * @return
+     */
     public Project getSelectedProject()
     {
         return selectedProject;
     }
 
+    /**
+     *
+     */
     public void repopulateProjects()
     {
         ObservableList<Project> projects = FXCollections.observableArrayList(projectManager.getAvailableProjects());

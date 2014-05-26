@@ -24,11 +24,19 @@ public class BoundTextField extends TextField
     private String gcodePrefix = null;
     private final Pattern wholeNumberPattern = Pattern.compile("\\d*");
 
+    /**
+     *
+     */
     public BoundTextField()
     {
         this.getStyleClass().add("boundTextField");
     }
     
+    /**
+     *
+     * @param displayValue
+     * @param gcodePrefix
+     */
     public void bindToDataSource(DoubleProperty displayValue, String gcodePrefix)
     {
         this.propertyToDisplay = displayValue;

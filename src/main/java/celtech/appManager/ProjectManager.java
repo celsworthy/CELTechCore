@@ -38,6 +38,10 @@ public class ProjectManager implements Savable, Serializable
 
     }
 
+    /**
+     *
+     * @return
+     */
     public static ProjectManager getInstance()
     {
         if (instance == null)
@@ -92,12 +96,22 @@ public class ProjectManager implements Savable, Serializable
         return pm;
     }
 
+    /**
+     *
+     * @param projectName
+     * @return
+     */
     public static Project loadProject(String projectName)
     {
         File projectFile = new File(projectName);
         return loadProject(projectFile);
     }
 
+    /**
+     *
+     * @param projectFile
+     * @return
+     */
     public static Project loadProject(File projectFile)
     {
         Project loadedProject = null;
@@ -121,6 +135,10 @@ public class ProjectManager implements Savable, Serializable
         return loadedProject;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public boolean saveState()
     {
@@ -146,21 +164,37 @@ public class ProjectManager implements Savable, Serializable
         return savedSuccessfully;
     }
 
+    /**
+     *
+     * @param project
+     */
     public void projectOpened(Project project)
     {
         openProjects.add(project);
     }
 
+    /**
+     *
+     * @param project
+     */
     public void projectClosed(Project project)
     {
         openProjects.remove(project);
     }
 
+    /**
+     *
+     * @return
+     */
     public ArrayList<Project> getLoadedModels()
     {
         return openProjects;
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<Project> getAvailableProjects()
     {
         ObservableList<Project> availableProjects = FXCollections.observableArrayList();

@@ -24,6 +24,11 @@ public class GCodeMacros
 
     private static final Stenographer steno = StenographerFactory.getStenographer(GCodeMacros.class.getName());
 
+    /**
+     *
+     * @param macroFile
+     * @return
+     */
     public static ArrayList<String> getMacroContents(String macroFile)
     {
         ArrayList<String> contents = new ArrayList<>();
@@ -50,6 +55,11 @@ public class GCodeMacros
         return contents;
     }
 
+    /**
+     *
+     * @param macroName
+     * @return
+     */
     public static String getFilename(String macroName)
     {
         String macrofile = ApplicationConfiguration.getCommonApplicationDirectory() + ApplicationConfiguration.macroFileSubpath + macroName + ApplicationConfiguration.macroFileExtension;

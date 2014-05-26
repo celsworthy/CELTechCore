@@ -47,6 +47,12 @@ public class AutoUpdate extends Thread
     
     private final Pattern versionMatcherPattern = Pattern.compile(".*version>(.*)</version.*");
     
+    /**
+     *
+     * @param applicationName
+     * @param appDirectory
+     * @param completionListener
+     */
     public AutoUpdate(String applicationName, String appDirectory, AutoUpdateCompletionListener completionListener)
     {
         this.applicationName = applicationName;
@@ -60,6 +66,9 @@ public class AutoUpdate extends Thread
         dontUpgradeApplication = new Dialogs.CommandLink(i18nBundle.getString("misc.No"), i18nBundle.getString("dialogs.updateContinueWithCurrent"));
     }
     
+    /**
+     *
+     */
     @Override
     public void run()
     {
@@ -268,6 +277,9 @@ public class AutoUpdate extends Thread
         }
     }
     
+    /**
+     *
+     */
     public void shutdown()
     {
         keepRunning = false;

@@ -38,6 +38,9 @@ public class ProjectHeader implements Serializable
     private ObjectProperty<Date> lastModifiedDate = new SimpleObjectProperty<>();
     private ObservableList<PrintJob> print = FXCollections.observableArrayList();
 
+    /**
+     *
+     */
     public ProjectHeader()
     {
         projectUUID = SystemUtils.generate16DigitID();
@@ -47,46 +50,82 @@ public class ProjectHeader implements Serializable
         lastModifiedDate.set(now);
     }
 
+    /**
+     *
+     * @param value
+     */
     public final void setProjectName(String value)
     {
         projectNameProperty.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public final String getProjectName()
     {
         return projectNameProperty.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public final StringProperty projectNameProperty()
     {
         return projectNameProperty;
     }
     
+    /**
+     *
+     * @return
+     */
     public final String getProjectPath()
     {
         return projectPath;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setProjectPath(String value)
     {
         projectPath = value;
     }
 
+    /**
+     *
+     * @return
+     */
     public final String getUUID()
     {
         return projectUUID;
     }
 
+    /**
+     *
+     * @param value
+     */
     public final void setProjectUUID(String value)
     {
         projectUUID = value;
     }
 
+    /**
+     *
+     * @return
+     */
     public final Date getLastModifiedDate()
     {
         return lastModifiedDate.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public final ObjectProperty<Date> getLastModifiedDateProperty()
     {
         return lastModifiedDate;

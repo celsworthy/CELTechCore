@@ -98,27 +98,47 @@ public class CreateNewMaterialController implements Initializable
         materialNameInvalid.set(invalid);
     }
 
+    /**
+     *
+     * @param material
+     */
     public void updateMaterialData(Filament material)
     {
         materialNameField.setText(material.getFriendlyFilamentName());
         materialDetailsController.updateMaterialData(material);
     }
 
+    /**
+     *
+     * @param b
+     */
     public void showButtons(boolean b)
     {
         materialDetailsController.showButtons(b);
     }
 
+    /**
+     *
+     * @return
+     */
     public Filament getMaterialData()
     {
         return materialDetailsController.getMaterialData();
     }
     
+    /**
+     *
+     * @return
+     */
     public ReadOnlyBooleanProperty getProfileNameInvalidProperty()
     {
         return materialNameInvalid;
     }
     
+    /**
+     *
+     * @return
+     */
     public String getProfileName()
     {
         return materialNameField.getText();

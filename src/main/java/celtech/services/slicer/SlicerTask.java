@@ -35,6 +35,14 @@ public class SlicerTask extends Task<SliceResult>
     private String tempModelFilenameWithPath = null;
     private String tempGcodeFilenameWithPath = null;
 
+    /**
+     *
+     * @param printJobUUID
+     * @param project
+     * @param printQuality
+     * @param settings
+     * @param printerToUse
+     */
     public SlicerTask(String printJobUUID, Project project, PrintQualityEnumeration printQuality, RoboxProfile settings, Printer printerToUse)
     {
         this.printJobUUID = printJobUUID;
@@ -147,6 +155,11 @@ public class SlicerTask extends Task<SliceResult>
         return new SliceResult(printJobUUID, project, filament, printQuality, settings, printerToUse, succeeded);
     }
 
+    /**
+     *
+     * @param message
+     * @param workDone
+     */
     protected void progressUpdateFromSlicer(String message, int workDone)
     {
         updateMessage(message);

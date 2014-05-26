@@ -12,5 +12,14 @@ package celtech.utils.gcode.representation;
  */
 public enum MovementMode
 {
-    ABSOLUTE, RELATIVE
+
+    /**
+     *
+     */
+    ABSOLUTE,
+
+    /**
+     *
+     */
+    RELATIVE
 }

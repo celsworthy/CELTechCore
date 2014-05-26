@@ -32,6 +32,10 @@ public class InfoScreenIndicatorController implements Initializable
     {
     }
 
+    /**
+     *
+     * @param selected
+     */
     public void setSelected(boolean selected)
     {
         if (selected)

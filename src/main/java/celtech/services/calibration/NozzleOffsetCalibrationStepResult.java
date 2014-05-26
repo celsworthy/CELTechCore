@@ -20,6 +20,12 @@ public class NozzleOffsetCalibrationStepResult
     private boolean success = false;
     private float floatValue = 0;
 
+    /**
+     *
+     * @param completedState
+     * @param floatValue
+     * @param success
+     */
     public NozzleOffsetCalibrationStepResult(NozzleOffsetCalibrationState completedState, float floatValue, boolean success)
     {
         this.completedState = completedState;
@@ -27,16 +33,28 @@ public class NozzleOffsetCalibrationStepResult
         this.success = success;
     }
     
+    /**
+     *
+     * @return
+     */
     public NozzleOffsetCalibrationState getCompletedState()
     {
         return completedState;
     }
     
+    /**
+     *
+     * @return
+     */
     public boolean isSuccess()
     {
         return success;
     }
     
+    /**
+     *
+     * @return
+     */
     public float getFloatValue()
     {
         return floatValue;

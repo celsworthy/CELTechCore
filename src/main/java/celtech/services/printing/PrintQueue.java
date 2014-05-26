@@ -129,6 +129,10 @@ public class PrintQueue implements ControllableService
 
     private boolean consideringPrintRequest = false;
 
+    /**
+     *
+     * @param associatedPrinter
+     */
     public PrintQueue(Printer associatedPrinter)
     {
         this.associatedPrinter = associatedPrinter;
@@ -430,6 +434,9 @@ public class PrintQueue implements ControllableService
         }
     }
 
+    /**
+     *
+     */
     public void shutdown()
     {
     }
@@ -437,6 +444,15 @@ public class PrintQueue implements ControllableService
     /*
      * Properties
      */
+
+    /**
+     *
+     * @param project
+     * @param printQuality
+     * @param settings
+     * @return
+     */
+    
     public synchronized boolean printProject(Project project, PrintQualityEnumeration printQuality, RoboxProfile settings)
     {
         boolean acceptedPrintRequest = false;
@@ -589,6 +605,10 @@ public class PrintQueue implements ControllableService
         return acceptedPrintRequest;
     }
 
+    /**
+     *
+     * @return
+     */
     public PrinterStatusEnumeration getPrintStatus()
     {
         return printState;
@@ -684,6 +704,10 @@ public class PrintQueue implements ControllableService
         printInProgress.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty printInProgressProperty()
     {
         return printInProgress;
@@ -709,40 +733,67 @@ public class PrintQueue implements ControllableService
         secondaryProgressPercent.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public ReadOnlyDoubleProperty secondaryProgressProperty()
     {
         return secondaryProgressPercent;
     }
 
+    /**
+     *
+     * @return
+     */
     public ReadOnlyBooleanProperty sendingDataToPrinterProperty()
     {
         return sendingDataToPrinter;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public ReadOnlyBooleanProperty runningProperty()
     {
         return dialogRequired;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public ReadOnlyStringProperty messageProperty()
     {
         return printProgressMessage;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public ReadOnlyDoubleProperty progressProperty()
     {
         return primaryProgressPercent;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public ReadOnlyStringProperty titleProperty()
     {
         return printProgressTitle;
     }
 
+    /**
+     *
+     */
     public void pausePrint()
     {
         switch (printState)
@@ -766,6 +817,9 @@ public class PrintQueue implements ControllableService
         }
     }
 
+    /**
+     *
+     */
     public void resumePrint()
     {
         if (associatedPrinter.pausedProperty().get() == true)
@@ -782,6 +836,10 @@ public class PrintQueue implements ControllableService
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean abortPrint()
     {
         boolean cancelledRun = false;
@@ -842,12 +900,19 @@ public class PrintQueue implements ControllableService
         return cancelledRun;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public boolean cancelRun()
     {
         return false;
     }
 
+    /**
+     *
+     */
     public void printerHasPaused()
     {
         switch (printState)
@@ -864,6 +929,9 @@ public class PrintQueue implements ControllableService
         }
     }
 
+    /**
+     *
+     */
     public void printerHasResumed()
     {
         switch (printState)
@@ -876,11 +944,21 @@ public class PrintQueue implements ControllableService
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public ReadOnlyIntegerProperty linesInPrintingFileProperty()
     {
         return linesInPrintingFile;
     }
 
+    /**
+     *
+     * @param filename
+     * @param useSDCard
+     * @return
+     */
     public boolean printGCodeFile(final String filename, final boolean useSDCard)
     {
         boolean acceptedPrintRequest = false;
@@ -963,6 +1041,10 @@ public class PrintQueue implements ControllableService
 
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isConsideringPrintRequest()
     {
         return consideringPrintRequest;

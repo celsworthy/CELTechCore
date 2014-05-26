@@ -36,14 +36,27 @@ public class GCodeFileParser {
     private final Stenographer steno = StenographerFactory.getStenographer(GCodeFileParser.class.getName());
     private final ArrayList<GCodeTranslationEventHandler> listeners = new ArrayList<>();
 
+    /**
+     *
+     * @param eventHandler
+     */
     public void addListener(GCodeTranslationEventHandler eventHandler) {
         listeners.add(eventHandler);
     }
 
+    /**
+     *
+     * @param eventHandler
+     */
     public void removeListener(GCodeTranslationEventHandler eventHandler) {
         listeners.remove(eventHandler);
     }
 
+    /**
+     *
+     * @param inputfilename
+     * @param percentProgress
+     */
     public void parse(String inputfilename, DoubleProperty percentProgress) {
         File inputFile = new File(inputfilename);
 

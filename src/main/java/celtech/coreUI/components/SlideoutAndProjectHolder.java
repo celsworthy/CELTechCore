@@ -58,6 +58,9 @@ public class SlideoutAndProjectHolder extends HBox
         }
     };
 
+    /**
+     *
+     */
     public SlideoutAndProjectHolder()
     {
         hideSidebar.onFinishedProperty().set(new EventHandler<ActionEvent>()
@@ -105,6 +108,9 @@ public class SlideoutAndProjectHolder extends HBox
         getChildren().addAll(slideOutHolder, slideButton, projectTabPaneHolder);
     }
 
+    /**
+     *
+     */
     public void toggleSlide()
     {
         if (slidIn.get())
@@ -116,12 +122,19 @@ public class SlideoutAndProjectHolder extends HBox
         }
     }
 
+    /**
+     *
+     */
     public void slideIn()
     {
         slideMenuPanel(0.0);
         slidIn.set(true);
     }
 
+    /**
+     *
+     * @param amountToShow
+     */
     public void slideMenuPanel(double amountToShow)
     {
         double adjustedWidth = (panelToSlide.get().getMaxWidth() * amountToShow);
@@ -129,6 +142,10 @@ public class SlideoutAndProjectHolder extends HBox
         panelToSlide.get().setPrefWidth(adjustedWidth);
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean startSlidingOut()
     {
         if (hideSidebar.statusProperty().get() == Animation.Status.STOPPED)
@@ -141,6 +158,10 @@ public class SlideoutAndProjectHolder extends HBox
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean startSlidingIn()
     {
         if (showSidebar.statusProperty().get() == Animation.Status.STOPPED)
@@ -153,16 +174,28 @@ public class SlideoutAndProjectHolder extends HBox
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isSlidIn()
     {
         return slidIn.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isSliding()
     {
         return showSidebar.statusProperty().get() != Animation.Status.STOPPED || hideSidebar.statusProperty().get() != Animation.Status.STOPPED;
     }
 
+    /**
+     *
+     * @param slideout
+     */
     public void switchInSlideout(HBox slideout)
     {
         if (slideOutHolder.getChildren().isEmpty() == false)
@@ -179,11 +212,19 @@ public class SlideoutAndProjectHolder extends HBox
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public VBox getProjectTabPaneHolder()
     {
         return projectTabPaneHolder;
     }
 
+    /**
+     *
+     * @param node
+     */
     public void populateProjectDisplay(Node node)
     {
         projectTabPaneHolder.getChildren().add(node);

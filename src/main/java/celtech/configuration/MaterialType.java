@@ -12,7 +12,21 @@ package celtech.configuration;
  */
 public enum MaterialType
 {
-    ABS("ABS"), PLA("PLA"), Nylon("Nylon");
+
+    /**
+     *
+     */
+    ABS("ABS"),
+
+    /**
+     *
+     */
+    PLA("PLA"),
+
+    /**
+     *
+     */
+    Nylon("Nylon");
     
     private String friendlyName;
 
@@ -21,11 +35,19 @@ public enum MaterialType
         this.friendlyName = friendlyName;
     }
     
+    /**
+     *
+     * @return
+     */
     public String getFriendlyName()
     {
         return friendlyName;
     }
     
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString()
     {

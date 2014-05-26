@@ -14,5 +14,10 @@ import javafx.fxml.Initializable;
  */
 public interface SidePanelManager
 {
+
+    /**
+     *
+     * @param slideOutController
+     */
     public void configure(Initializable slideOutController);
 }
