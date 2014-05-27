@@ -110,6 +110,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     private Printer currentPrinter = null;
     private Filament currentlyLoadedFilament = null;
+    private Filament lastFilamentSelected = null;
 
     private VBox createMaterialPage = null;
     private ModalDialog createMaterialDialogue = null;
@@ -129,6 +130,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     /**
      * Initializes the controller class.
+     *
      * @param url
      * @param rb
      */
@@ -306,7 +308,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     customSettings = newValue;
 //                    if (PrintQualityEnumeration.fromEnumPosition((int) qualityChooser.getValue()) == PrintQualityEnumeration.CUSTOM)
 //                    {
-                        settingsScreenState.setSettings(newValue);
+                    settingsScreenState.setSettings(newValue);
 //                    }
                 } else if (newValue == null)
                 {
@@ -428,7 +430,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 };
 
         materialChooser.setCellFactory(materialChooserCellFactory);
-        materialChooser.setButtonCell(materialChooserCellFactory.call(null));
+        materialChooser.setButtonCell(new MaterialChoiceListCell());
         materialChooser.setItems(availableFilaments);
 
         materialChooser.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Filament>()
@@ -438,12 +440,30 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             {
                 if (oldValue != newValue)
                 {
-                    slideOutController.showMaterialTab();
+                    if (slideOutController != null)
+                    {
+                        slideOutController.showMaterialTab();
+                    }
+                    lastFilamentSelected = newValue;
                 }
 
-                if (!inhibitMaterialSelection)
+                if (newValue == FilamentContainer.createNewFilament)
                 {
-                    updateSelectedFilament(newValue);
+                    showCreateMaterialDialogue();
+                } else if (newValue == null || currentPrinter == null || newValue == currentPrinter.loadedFilamentProperty().get())
+                {
+                    if (slideOutController != null)
+                    {
+                        slideOutController.updateFilamentData(newValue);
+                    }
+                    settingsScreenState.setFilament(null);
+                } else
+                {
+                    if (slideOutController != null)
+                    {
+                        slideOutController.updateFilamentData(newValue);
+                    }
+                    settingsScreenState.setFilament(newValue);
                 }
             }
         }
@@ -489,22 +509,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         updateFilamentList();
     }
 
-    private void updateSelectedFilament(Filament newValue)
-    {
-        if (newValue == FilamentContainer.createNewFilament)
-        {
-            showCreateMaterialDialogue();
-        } else if (newValue == null || currentPrinter == null || newValue == currentPrinter.loadedFilamentProperty().get())
-        {
-            slideOutController.updateFilamentData(newValue);
-            settingsScreenState.setFilament(null);
-        } else
-        {
-            slideOutController.updateFilamentData(newValue);
-            settingsScreenState.setFilament(newValue);
-        }
-    }
-
     private void updateProfileList()
     {
         RoboxProfile selectedProfile = customProfileChooser.getSelectionModel().getSelectedItem();
@@ -521,7 +525,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     private void updateFilamentList()
     {
-        boolean selectCurrentFilament = false;
+        Filament currentSelection = materialChooser.getSelectionModel().getSelectedItem();
 
         availableFilaments.clear();
 
@@ -532,6 +536,14 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         availableFilaments.addAll(FilamentContainer.getUserFilamentList());
         availableFilaments.add(FilamentContainer.createNewFilament);
+
+        if (currentSelection != null && availableFilaments.contains(currentSelection))
+        {
+            materialChooser.getSelectionModel().select(currentSelection);
+        } else
+        {
+            materialChooser.getSelectionModel().selectFirst();
+        }
     }
 
     private void populatePrinterChooser()
@@ -570,7 +582,15 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     {
         if (source instanceof MaterialDetailsController)
         {
-            Filament clonedFilament = settingsScreenState.getFilament().clone();
+            Filament clonedFilament = null;
+            if (settingsScreenState.getFilament() != null)
+            {
+                clonedFilament = settingsScreenState.getFilament().clone();
+            } else
+            {
+                // We must be trying to save the loaded filament...
+                clonedFilament = currentlyLoadedFilament.clone();
+            }
             String originalFilamentName = clonedFilament.getFriendlyFilamentName();
             String filename = SystemUtils.getIncrementalFilenameOnly(ApplicationConfiguration.getUserFilamentDirectory(), originalFilamentName, ApplicationConfiguration.filamentFileExtension);
             clonedFilament.setFriendlyFilamentName(filename);
@@ -597,6 +617,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             Filament filamentToSave = materialDetailsController.getMaterialData();
             FilamentContainer.saveFilament(filamentToSave);
 
+            materialChooser.getSelectionModel().select(filamentToSave);
+
 //            String profileNameToSave = profileDetailsController.getProfileName();
 //            SlicerSettings settingsToSave = profileDetailsController.getProfileData();
 //            settingsToSave.getProfileNameProperty().set(profileNameToSave);
@@ -611,6 +633,20 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 //                }
 //            }
 //            qualityChooser.adjustValue(PrintQualityEnumeration.CUSTOM.getEnumPosition());
+        } else
+        {
+            if (lastFilamentSelected != null)
+            {
+                if (lastFilamentSelected == FilamentContainer.createNewFilament)
+                {
+                    inhibitMaterialSelection = true;
+                    materialChooser.getSelectionModel().select(lastFilamentSelected);
+                    inhibitMaterialSelection = true;
+                } else
+                {
+                    materialChooser.getSelectionModel().select(lastFilamentSelected);
+                }
+            }
         }
 
         return response;
@@ -618,6 +654,12 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     private int showCreateProfileDialogue(RoboxProfile dataToUse)
     {
+        RoboxProfile profileToRevertTo = null;
+        if (settingsScreenState.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
+        {
+            profileToRevertTo = settingsScreenState.getSettings();
+        }
+
         dataToUse.setMutable(true);
         profileDetailsController.updateProfileData(dataToUse);
         int response = createProfileDialogue.show();
@@ -637,6 +679,12 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 }
             }
             qualityChooser.adjustValue(PrintQualityEnumeration.CUSTOM.getEnumPosition());
+        } else
+        {
+            if (profileToRevertTo != null)
+            {
+                customProfileChooser.getSelectionModel().select(profileToRevertTo);
+            }
         }
 
         return response;
