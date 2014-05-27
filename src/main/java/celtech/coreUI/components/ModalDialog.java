@@ -71,7 +71,7 @@ public class ModalDialog
             dialogController.configure(dialogStage);
         } catch (IOException ex)
         {
-            steno.error("Couldn't load dialog box FXML");
+            steno.error("Couldn't load dialog box FXML: " + ex.getMessage());
         }
     }
 

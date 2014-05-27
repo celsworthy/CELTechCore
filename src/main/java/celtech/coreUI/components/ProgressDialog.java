@@ -68,7 +68,8 @@ public class ProgressDialog
             dialogStage.initModality(Modality.WINDOW_MODAL);
         } catch (IOException ex)
         {
-            steno.error("Couldn't load dialog box FXML");
+            steno.error("Couldn't load dialog box FXML: " + ex.getMessage());
+            ex.printStackTrace();
         }
     }
 

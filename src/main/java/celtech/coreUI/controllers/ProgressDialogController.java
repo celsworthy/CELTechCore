@@ -48,6 +48,7 @@ public class ProgressDialogController implements Initializable
     private ControllableService serviceBeingMonitored = null;
     private ChangeListener<Boolean> registeredListener = null;
     
+    @FXML
     public void cancelOperation(MouseEvent event)
     {
         serviceBeingMonitored.cancelRun();
