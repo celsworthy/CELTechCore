@@ -306,6 +306,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     /**
      * Initializes the controller class.
+     *
      * @param url
      * @param rb
      */
@@ -380,26 +381,19 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                         printerIDDialog.setPrinterToUse(printerToEdit);
                         printerIDDialog.setChosenDisplayColour(colourMap.printerToDisplayColour(printerToEdit.getPrinterColour()));
                         printerIDDialog.setChosenPrinterName(printerToEdit.getPrinterFriendlyName());
+
+                        Color currentColour = printerToEdit.getPrinterColour();
+
                         boolean okPressed = printerIDDialog.show();
 
-                        if (okPressed)
+                        if (!okPressed)
                         {
                             try
                             {
-                                Color chosenColour = printerIDDialog.getChosenDisplayColour();
-                                if (chosenColour != null)
-                                {
-                                    chosenColour = colourMap.displayToPrinterColour(chosenColour);
-                                } else
-                                {
-                                    chosenColour = printerToEdit.getPrinterColour();
-                                }
-
                                 printerToEdit.transmitWritePrinterID(printerToEdit.getPrintermodel().get(), printerToEdit.getPrinteredition().get(),
                                                                      printerToEdit.getPrinterweekOfManufacture().get(), printerToEdit.getPrinteryearOfManufacture().get(),
                                                                      printerToEdit.getPrinterpoNumber().get(), printerToEdit.getPrinterserialNumber().get(),
-                                                                     printerToEdit.getPrintercheckByte().get(), printerIDDialog.getChosenPrinterName(), chosenColour);
-                                printerToEdit.transmitReadPrinterID();
+                                                                     printerToEdit.getPrintercheckByte().get(), printerIDDialog.getChosenPrinterName(), currentColour);
                             } catch (RoboxCommsException ex)
                             {
                                 steno.error("Error writing printer ID");
