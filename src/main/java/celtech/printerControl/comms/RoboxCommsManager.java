@@ -46,8 +46,8 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
     private String roboxDetectorCommand = null;
     private final String printerToSearchFor = "Robox";
 
-    private final String roboxVendorID = "16d0";
-    private final String roboxProductID = "081b";
+    private final String roboxVendorID = "16D0";
+    private final String roboxProductID = "081B";
 
     private final String notConnectedString = "NOT_CONNECTED";
     private InputStream inputStream = null;
@@ -82,7 +82,7 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
         switch (machineType)
         {
             case WINDOWS:
-                roboxDetectorCommand = roboxDetectorWindows + " " + printerToSearchFor;
+                roboxDetectorCommand = roboxDetectorWindows + " " + roboxVendorID + " " + roboxProductID;
                 break;
             case MAC:
                 roboxDetectorCommand = roboxDetectorMac + " " + printerToSearchFor;
