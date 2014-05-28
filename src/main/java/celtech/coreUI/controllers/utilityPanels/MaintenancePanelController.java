@@ -23,6 +23,7 @@ import celtech.services.firmware.FirmwareLoadService;
 import celtech.services.firmware.FirmwareLoadTask;
 import celtech.services.printing.GCodePrintResult;
 import celtech.services.printing.GCodePrintService;
+import celtech.utils.PrinterUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -91,7 +92,7 @@ public class MaintenancePanelController implements Initializable
     private GCodeMacroButton YTestButton;
 
     @FXML
-    private GCodeMacroButton PurgeMaterialButton;
+    private Button PurgeMaterialButton;
 
     @FXML
     private Button loadFirmwareGCodeMacroButton;
@@ -300,8 +301,18 @@ public class MaintenancePanelController implements Initializable
         }
     }
 
+    @FXML
+    void purge(ActionEvent event)
+    {
+        if (connectedPrinter != null)
+        {
+            PrinterUtils.runPurge(connectedPrinter);
+        }
+    }
+
     /**
      * Initializes the controller class.
+     *
      * @param url
      * @param rb
      */
