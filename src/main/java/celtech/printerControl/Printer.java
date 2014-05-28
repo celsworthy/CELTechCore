@@ -2981,24 +2981,9 @@ public class Printer
 
         AckResponse response = (AckResponse) printerCommsManager.submitForWrite(portName, writeIDCmd);
 
-        boolean success = false;
+        transmitReadPrinterID();
 
-        if (response.isError() == false)
-        {
-            success = true;
-            // Special case - we don't get this information back in a status request so update it as we set the new value
-            printermodel.set(model);
-            printeredition.set(edition);
-            printerweekOfManufacture.set(weekOfManufacture);
-            printeryearOfManufacture.set(yearOfManufacture);
-            printerpoNumber.set(poNumber);
-            printerserialNumber.set(serialNumber);
-            printercheckByte.set(checkByte);
-            this.printerFriendlyName.set(printerFriendlyName);
-            setPrinterColour(colour);
-        }
-
-        return success;
+        return !response.isError();
     }
 
     /**

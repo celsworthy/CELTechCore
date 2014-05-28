@@ -27,7 +27,7 @@
                 <GCodeMacroButton fx:id="YTestButton" layoutX="23.0" layoutY="88.0" macroName="y_test" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#macroButtonPress" text="%maintenancePanel.YTest" GridPane.rowIndex="6" />
                 <GCodeMacroButton fx:id="ZTestButton" layoutX="23.0" layoutY="24.0" macroName="z_test" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#macroButtonPress" text="%maintenancePanel.ZTest" GridPane.rowIndex="7" />               
                 <GCodeMacroButton fx:id="SpeedTestButton" layoutX="23.0" layoutY="152.0" macroName="speed_test" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#macroButtonPress" text="%maintenancePanel.SpeedTest" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                <GCodeMacroButton fx:id="PurgeMaterialButton" layoutX="23.0" layoutY="152.0" macroName="Purge Material" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#macroButtonPress" text="%maintenancePanel.purgeMaterial" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                <Button fx:id="PurgeMaterialButton" layoutX="23.0" layoutY="152.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#purge" text="%maintenancePanel.purgeMaterial" GridPane.columnIndex="1" GridPane.rowIndex="6" />
                 <GCodeMacroButton fx:id="EjectStuckMaterialButton" layoutX="23.0" layoutY="152.0" macroName="eject_stuck_material" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#macroButtonPress" text="%maintenancePanel.ejectStuckMaterial" GridPane.columnIndex="1" GridPane.rowIndex="7" />
 
                 <Separator prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="8">

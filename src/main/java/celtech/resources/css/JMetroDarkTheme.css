@@ -1154,6 +1154,10 @@ table-view .column-header-background {
     -fx-hgap:10;
 }
 
+.profile-choice-list-cell{
+    -fx-padding: 0;
+    -fx-hgap:10;
+}
 .bob
 {
     -fx-fill: purple;

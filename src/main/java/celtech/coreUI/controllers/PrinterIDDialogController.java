@@ -4,13 +4,17 @@
  */
 package celtech.coreUI.controllers;
 
+import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.ColourChooserButton;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.printerControl.Printer;
+import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -77,8 +81,11 @@ public class PrinterIDDialogController implements Initializable
 
     private Printer printerToUse = null;
 
+    private PrinterColourMap colourMap = PrinterColourMap.getInstance();
+
     /**
      * Initializes the controller class.
+     *
      * @param url
      * @param rb
      */
@@ -102,6 +109,32 @@ public class PrinterIDDialogController implements Initializable
         roboxNameField.addEventFilter(KeyEvent.KEY_TYPED, textInputHandler);
 
         okButton.disableProperty().bind(Bindings.length(roboxNameField.textProperty()).isEqualTo(0));
+
+        colourButtonGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue)
+            {
+                //The first time this gets set it will be to match the picked colour against the printer, so don't send anything through...
+                if (oldValue != null && newValue != null)
+                {
+                    try
+                    {
+                        Color oldColour = ((ColourChooserButton) oldValue).getDisplayColour();
+                        Color newColour = ((ColourChooserButton) newValue).getDisplayColour();
+
+                        steno.info("Colours " + oldColour + " - " + newColour);
+                        printerToUse.transmitWritePrinterID(printerToUse.getPrintermodel().get(), printerToUse.getPrinteredition().get(),
+                                                            printerToUse.getPrinterweekOfManufacture().get(), printerToUse.getPrinteryearOfManufacture().get(),
+                                                            printerToUse.getPrinterpoNumber().get(), printerToUse.getPrinterserialNumber().get(),
+                                                            printerToUse.getPrintercheckByte().get(), printerToUse.getPrinterFriendlyName(), colourMap.displayToPrinterColour(((ColourChooserButton) newValue).getDisplayColour()));
+                    } catch (RoboxCommsException ex)
+                    {
+                        steno.error("Error writing printer ID");
+                    }
+                }
+            }
+        });
     }
 
     /**
