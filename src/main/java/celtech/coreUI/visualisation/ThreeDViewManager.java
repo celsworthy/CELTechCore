@@ -3,7 +3,6 @@ package celtech.coreUI.visualisation;
 import celtech.CoreTest;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
-import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PrintBed;
 import celtech.coreUI.DisplayManager;
@@ -16,7 +15,6 @@ import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelContentsEnumeration;
 import celtech.utils.Math.MathUtils;
-import com.leapmotion.leap.Controller;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -111,14 +109,6 @@ public class ThreeDViewManager
     private ObjectProperty<DragMode> dragMode = new SimpleObjectProperty(DragMode.IDLE);
 
 
-    /*
-     * Leap Motion
-     */
-    private Controller leapController = null;
-    private LeapMotionListener leapMotionListener = null;
-    /*
-    
-     */
     private ReadOnlyDoubleProperty widthPropertyToFollow = null;
     private ReadOnlyDoubleProperty heightPropertyToFollow = null;
 
@@ -728,9 +718,6 @@ public class ThreeDViewManager
         subScene.widthProperty().addListener(sceneSizeChangeListener);
         subScene.heightProperty().addListener(sceneSizeChangeListener);
 
-        leapController = new Controller();
-        leapMotionListener = new LeapMotionListener(this);
-        leapController.addListener(leapMotionListener);
         if (loadedModels.isEmpty() == false)
         {
             for (ModelContainer model : loadedModels)
@@ -1050,8 +1037,7 @@ public class ThreeDViewManager
     {
         subScene.widthProperty().removeListener(sceneSizeChangeListener);
         subScene.heightProperty().removeListener(sceneSizeChangeListener);
-        leapController.removeListener(leapMotionListener);
-        applicationStatus.modeProperty().removeListener(applicationModeListener);
+       applicationStatus.modeProperty().removeListener(applicationModeListener);
         dragMode.removeListener(dragModeListener);
     }
 
