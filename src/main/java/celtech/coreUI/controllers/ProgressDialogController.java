@@ -52,6 +52,7 @@ public class ProgressDialogController implements Initializable
      *
      * @param event
      */
+    @FXML
     public void cancelOperation(MouseEvent event)
     {
         serviceBeingMonitored.cancelRun();

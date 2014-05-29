@@ -30,13 +30,15 @@ import org.controlsfx.dialog.Dialogs;
  */
 public class AutoUpdate extends Thread
 {
-    
+
     private static final Stenographer steno = StenographerFactory.getStenographer(AutoUpdate.class.getName());
-    
+
     private String applicationName = null;
     private final int ERROR = -1;
-    private final int UPGRADE_REQUIRED = 1;
     private final int UPGRADE_NOT_REQUIRED = 0;
+    private final int UPGRADE_REQUIRED = 1;
+    private final int UPGRADE_NOT_AVAILABLE_FOR_THIS_RELEASE = 2;
+
     private boolean keepRunning = true;
     private Class parentClass = null;
     private AutoUpdateCompletionListener completionListener = null;
@@ -44,9 +46,9 @@ public class AutoUpdate extends Thread
     private Dialogs.CommandLink upgradeApplication = null;
     private Dialogs.CommandLink dontUpgradeApplication = null;
     private String appDirectory = null;
-    
+
     private final Pattern versionMatcherPattern = Pattern.compile(".*version>(.*)</version.*");
-    
+
     /**
      *
      * @param applicationName
@@ -60,12 +62,12 @@ public class AutoUpdate extends Thread
         this.setName("AutoUpdate");
         this.parentClass = completionListener.getClass();
         this.completionListener = completionListener;
-        
+
         this.i18nBundle = DisplayManager.getLanguageBundle();
         upgradeApplication = new Dialogs.CommandLink(i18nBundle.getString("misc.Yes"), i18nBundle.getString("dialogs.updateExplanation"));
         dontUpgradeApplication = new Dialogs.CommandLink(i18nBundle.getString("misc.No"), i18nBundle.getString("dialogs.updateContinueWithCurrent"));
     }
-    
+
     /**
      *
      */
@@ -82,11 +84,11 @@ public class AutoUpdate extends Thread
         {
             steno.warning("AutoUpdate sleep was interrupted");
         }
-        
+
         while (strikes < 1 && keepRunning)
         {
             int status = checkForUpdates();
-            
+
             switch (status)
             {
                 case UPGRADE_NOT_REQUIRED:
@@ -101,6 +103,18 @@ public class AutoUpdate extends Thread
                     keepRunning = false;
                     completionListener.autoUpdateComplete(false);
                     break;
+                case UPGRADE_NOT_AVAILABLE_FOR_THIS_RELEASE:
+                    Platform.runLater(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            Notifier.showInformationNotification(i18nBundle.getString("dialogs.updateApplicationTitle"), i18nBundle.getString("dialogs.updateApplicationNotAvailableForThisRelease") + applicationName);
+                        }
+                    });
+                    keepRunning = false;
+                    completionListener.autoUpdateComplete(false);
+                    break;                    
                 case UPGRADE_REQUIRED:
                     Platform.runLater(new Runnable()
                     {
@@ -113,7 +127,7 @@ public class AutoUpdate extends Thread
                                             + i18nBundle.getString("dialogs.updateApplicationMessagePart2"))
                                     .masthead(null)
                                     .showCommandLinks(upgradeApplication, upgradeApplication, dontUpgradeApplication);
-                            
+
                             if (upgradeApplicationResponse == upgradeApplication)
                             {
                                 //Run the autoupdater in the background in download mode
@@ -143,12 +157,12 @@ public class AutoUpdate extends Thread
                     {
                         steno.warning("AutoUpdate sleep was interrupted");
                     }
-                    
+
                     strikes++;
                     break;
             }
         }
-        
+
         if (keepRunning)
         {
             //We must have struck out
@@ -156,13 +170,13 @@ public class AutoUpdate extends Thread
             completionListener.autoUpdateComplete(false);
         }
     }
-    
+
     private int checkForUpdates()
     {
         int upgradeStatus = ERROR;
-        
+
         String url = "http://downloads.cel-robox.com:8001/" + appDirectory + "/" + applicationName + "-update.xml";
-        
+
         try
         {
             URL obj = new URL(url);
@@ -173,57 +187,63 @@ public class AutoUpdate extends Thread
 
             //add request header
             con.setRequestProperty("User-Agent", ApplicationConfiguration.getApplicationName());
-            
+
             int responseCode = con.getResponseCode();
-            
+
             if (responseCode == 200)
             {
                 BufferedReader in = new BufferedReader(
                         new InputStreamReader(con.getInputStream()));
                 String inputLine;
                 StringBuffer response = new StringBuffer();
-                
+
                 while ((inputLine = in.readLine()) != null)
                 {
                     response.append(inputLine);
                 }
                 in.close();
-                
+
                 Matcher versionMatcher = versionMatcherPattern.matcher(response);
-                
+
                 if (versionMatcher.find())
                 {
                     String concatenatedServerVersionField = versionMatcher.group(1).replaceAll("\\.", "");
                     String concatenatedAppVersionField = ApplicationConfiguration.getApplicationVersion().replaceAll("\\.", "");
-                    
+
                     int serverVersionNumber = Integer.valueOf(concatenatedServerVersionField);
-                    int appVersionNumber = Integer.valueOf(concatenatedAppVersionField);
-                    
-                    if (serverVersionNumber > appVersionNumber)
+                    try
                     {
-                        upgradeStatus = UPGRADE_REQUIRED;
-                    } else
+                        int appVersionNumber = Integer.valueOf(concatenatedAppVersionField);
+                        if (serverVersionNumber > appVersionNumber)
+                        {
+                            upgradeStatus = UPGRADE_REQUIRED;
+                        } else
+                        {
+                            upgradeStatus = UPGRADE_NOT_REQUIRED;
+                        }
+                    } catch (NumberFormatException ex)
                     {
-                        upgradeStatus = UPGRADE_NOT_REQUIRED;
+                        upgradeStatus = UPGRADE_NOT_AVAILABLE_FOR_THIS_RELEASE;
                     }
+
                 }
             }
         } catch (IOException ex)
         {
             steno.error("Exception whilst attempting to contact update server");
         }
-        
+
         return upgradeStatus;
     }
-    
+
     private void startUpdate()
     {
         String osName = System.getProperty("os.name");
-        
+
         MachineType machineType = ApplicationConfiguration.getMachineType();
-        
+
         ArrayList<String> commands = new ArrayList<>();
-        
+
         switch (machineType)
         {
             case WINDOWS_95:
@@ -258,7 +278,7 @@ public class AutoUpdate extends Thread
          * 4: An error occurred executing the downloaded update or evaluating its <postUpdateDownloadActionList>
          * 5: Update check disabled through check_for_updates setting
          */
-        
+
         if (commands.size() > 0)
         {
             ProcessBuilder autoupdateProcess = new ProcessBuilder(commands);
@@ -276,7 +296,7 @@ public class AutoUpdate extends Thread
             steno.error("Couldn't run autoupdate - no commands for OS " + osName);
         }
     }
-    
+
     /**
      *
      */
