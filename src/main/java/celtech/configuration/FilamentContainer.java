@@ -19,6 +19,7 @@ import javafx.scene.paint.Color;
 import javafx.util.StringConverter;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -230,7 +231,7 @@ public class FilamentContainer
     public static void deleteFilament(Filament filamentToSave)
     {
         File filamentToDelete = new File(constructFilePath(filamentToSave));
-        filamentToDelete.delete();
+        FileUtils.deleteQuietly(filamentToDelete);
         loadFilamentData();
     }
 

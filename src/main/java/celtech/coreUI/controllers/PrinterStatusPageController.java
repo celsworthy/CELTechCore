@@ -488,6 +488,7 @@ public class PrinterStatusPageController implements Initializable
 
     /**
      * Initializes the controller class.
+     *
      * @param url
      * @param rb
      */
@@ -626,6 +627,7 @@ public class PrinterStatusPageController implements Initializable
                     progressMessage.textProperty().bind(selectedPrinter.getPrintQueue().messageProperty());
 
                     printerColourRectangle.setVisible(true);
+                    printerColourRectangle.setFill(colourMap.printerToDisplayColour(selectedPrinter.getPrinterColour()));
                     selectedPrinter.printerColourProperty().addListener(printerColourChangeListener);
 
 //                    steno.info("Status " + selectedPrinter.getPrinterStatus() + " in progress=" + selectedPrinter.getPrintQueue().printInProgressProperty().getValue());
