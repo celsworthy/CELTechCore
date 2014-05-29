@@ -447,23 +447,26 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     lastFilamentSelected = newValue;
                 }
 
-                if (newValue == FilamentContainer.createNewFilament)
+                if (inhibitMaterialSelection == false)
                 {
-                    showCreateMaterialDialogue();
-                } else if (newValue == null || currentPrinter == null || newValue == currentPrinter.loadedFilamentProperty().get())
-                {
-                    if (slideOutController != null)
+                    if (newValue == FilamentContainer.createNewFilament)
                     {
-                        slideOutController.updateFilamentData(newValue);
-                    }
-                    settingsScreenState.setFilament(null);
-                } else
-                {
-                    if (slideOutController != null)
+                        showCreateMaterialDialogue();
+                    } else if (newValue == null || currentPrinter == null || newValue == currentPrinter.loadedFilamentProperty().get())
                     {
-                        slideOutController.updateFilamentData(newValue);
+                        if (slideOutController != null)
+                        {
+                            slideOutController.updateFilamentData(newValue);
+                        }
+                        settingsScreenState.setFilament(null);
+                    } else
+                    {
+                        if (slideOutController != null)
+                        {
+                            slideOutController.updateFilamentData(newValue);
+                        }
+                        settingsScreenState.setFilament(newValue);
                     }
-                    settingsScreenState.setFilament(newValue);
                 }
             }
         }
@@ -540,8 +543,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         if (currentSelection != null && availableFilaments.contains(currentSelection))
         {
             materialChooser.getSelectionModel().select(currentSelection);
-        } else
+        } else if (materialChooser.getItems().size() > 1)
         {
+            // Only pick the first element if there is something to select
+            // If size == 1 then we only have the Create new filament entry
             materialChooser.getSelectionModel().selectFirst();
         }
     }
