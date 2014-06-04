@@ -32,8 +32,8 @@ public class SlicerTask extends Task<SliceResult>
     private PrintQualityEnumeration printQuality = null;
     private RoboxProfile settings = null;
     private Printer printerToUse = null;
-    private String tempModelFilenameWithPath = null;
-    private String tempGcodeFilenameWithPath = null;
+    private String tempModelFilename = null;
+    private String tempGcodeFilename = null;
 
     /**
      *
@@ -51,8 +51,8 @@ public class SlicerTask extends Task<SliceResult>
         this.settings = settings;
         this.printerToUse = printerToUse;
 
-        tempModelFilenameWithPath = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID + File.separator + printJobUUID + ApplicationConfiguration.stlTempFileExtension;
-        tempGcodeFilenameWithPath = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID + File.separator + printJobUUID + ApplicationConfiguration.gcodeTempFileExtension;
+        tempModelFilename = printJobUUID + ApplicationConfiguration.stlTempFileExtension;
+        tempGcodeFilename = printJobUUID + ApplicationConfiguration.gcodeTempFileExtension;
     }
 
     @Override
@@ -60,7 +60,8 @@ public class SlicerTask extends Task<SliceResult>
     {
         boolean succeeded = false;
 
-        String configFile = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID + File.separator + printJobUUID + ApplicationConfiguration.printProfileFileExtension;
+        String workingDirectory = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID + File.separator;
+        String configFile = printJobUUID + ApplicationConfiguration.printProfileFileExtension;
 
         updateTitle("Slicer");
         updateMessage("Preparing model for conversion");
@@ -78,21 +79,21 @@ public class SlicerTask extends Task<SliceResult>
                 commands.add("command.com");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r-console.exe\" --load \"" + configFile + "\" -o \"" + tempGcodeFilenameWithPath + "\" \"" + tempModelFilenameWithPath + "\"\"");
+                commands.add("\"\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r-console.exe\" --load " + configFile + " -o " + tempGcodeFilename + " " + tempModelFilename + "\"");
                 break;
             case WINDOWS:
                 commands.add("cmd.exe");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r-console.exe\" --load \"" + configFile + "\" -o \"" + tempGcodeFilenameWithPath + "\" \"" + tempModelFilenameWithPath + "\"\"");
+                commands.add("\"\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r-console.exe\" --load " + configFile + " -o " + tempGcodeFilename + " " + tempModelFilename + "\"");
                 break;
             case MAC:
-                commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r/slic3r-console");
+                commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r.app/Contents/MacOS/slic3r");
                 commands.add("--load");
                 commands.add(configFile);
                 commands.add("-o");
-                commands.add(tempGcodeFilenameWithPath);
-                commands.add(tempModelFilenameWithPath);
+                commands.add(tempGcodeFilename);
+                commands.add(tempModelFilename);
                 break;
             case LINUX_X86:
             case LINUX_X64:
@@ -100,8 +101,8 @@ public class SlicerTask extends Task<SliceResult>
                 commands.add("--load");
                 commands.add(configFile);
                 commands.add("-o");
-                commands.add(tempGcodeFilenameWithPath);
-                commands.add(tempModelFilenameWithPath);
+                commands.add(tempGcodeFilename);
+                commands.add(tempModelFilename);
                 break;
             default:
                 steno.error("Couldn't determine how to run slicer");
@@ -110,6 +111,8 @@ public class SlicerTask extends Task<SliceResult>
         if (commands.size() > 0)
         {
             ProcessBuilder slicerProcessBuilder = new ProcessBuilder(commands);
+            slicerProcessBuilder.directory(new File(workingDirectory));
+            
             Process slicerProcess = null;
 
             try
