@@ -205,4 +205,18 @@ public class PrinterUtils
         purgeThread.setName("Purge Task");
         purgeThread.start();
     }
+
+    /**
+     *
+     * @param printerToUse
+     * @param macroName
+     */
+    public static void runPurge(Printer printerToUse, String macroName)
+    {
+        PurgeTask purgeTask = new PurgeTask(printerToUse, macroName);
+        TaskController.getInstance().manageTask(purgeTask);
+        Thread purgeThread = new Thread(purgeTask);
+        purgeThread.setName("Purge Task");
+        purgeThread.start();
+    }
 }

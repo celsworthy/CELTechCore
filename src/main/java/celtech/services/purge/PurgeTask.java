@@ -9,6 +9,7 @@ import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.coreUI.DisplayManager;
 import celtech.printerControl.Printer;
+import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.services.ControllableService;
@@ -34,6 +35,7 @@ public class PurgeTask extends Task<Void> implements ControllableService
     private PrintQualityEnumeration printQuality = null;
     private RoboxProfile settings = null;
     private Printer printerToUse = null;
+    private String macroName = null;
 
     /**
      *
@@ -42,6 +44,12 @@ public class PurgeTask extends Task<Void> implements ControllableService
     public PurgeTask(Printer printerToUse)
     {
         this.printerToUse = printerToUse;
+    }
+
+    public PurgeTask(Printer printerToUse, String macroName)
+    {
+        this.printerToUse = printerToUse;
+        this.macroName = macroName;
     }
 
     /**
@@ -86,7 +94,7 @@ public class PurgeTask extends Task<Void> implements ControllableService
             printerToUse.transmitResetErrors();
         }
 
-        printerToUse.transmitStoredGCode("Purge Material");
+        printerToUse.transmitStoredGCode("Purge Material", false);
         PrinterUtils.waitOnMacroFinished(printerToUse, this);
 
         if (project != null)
@@ -103,6 +111,22 @@ public class PurgeTask extends Task<Void> implements ControllableService
                             .message(DisplayManager.getLanguageBundle().getString("dialogs.clearBedInstruction"))
                             .showWarning();
                     printerToUse.printProject(project, filament, printQuality, settings);
+                }
+            });
+        } else if (macroName != null)
+        {
+            Platform.runLater(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    Dialogs.create()
+                            .owner(null)
+                            .title(DisplayManager.getLanguageBundle().getString("dialogs.clearBedTitle"))
+                            .masthead(null)
+                            .message(DisplayManager.getLanguageBundle().getString("dialogs.clearBedInstruction"))
+                            .showWarning();
+                    printerToUse.getPrintQueue().printGCodeFile(GCodeMacros.getFilename(macroName), true);
                 }
             });
         }

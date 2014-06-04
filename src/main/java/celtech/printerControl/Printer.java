@@ -53,6 +53,7 @@ import celtech.services.printing.GCodePrintService;
 import celtech.services.printing.PrintQueue;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
+import celtech.utils.PrinterUtils;
 import celtech.utils.SystemUtils;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
@@ -1036,12 +1037,10 @@ public class Printer
     /*
      * Errors
      */
-
     /**
      *
      * @param value
      */
-    
     public final void setErrorsDetected(boolean value)
     {
         errorsDetected.set(value);
@@ -1284,12 +1283,10 @@ public class Printer
     /*
      * Switches
      */
-
     /**
      *
      * @return
      */
-    
     public final BooleanProperty XStopSwitchProperty()
     {
         return XStopSwitch;
@@ -1532,12 +1529,10 @@ public class Printer
     /*
      * Head data
      */
-
     /**
      *
      * @return
      */
-    
     public ObjectProperty<Head> attachedHeadProperty()
     {
         return attachedHead;
@@ -1873,12 +1868,10 @@ public class Printer
     /*
      *
      */
-
     /**
      *
      * @return
      */
-    
     public final BooleanProperty NozzleHomedProperty()
     {
         return NozzleHomed;
@@ -1950,12 +1943,10 @@ public class Printer
     /*
      * Firmware
      */
-
     /**
      *
      * @param value
      */
-    
     public final void setFirmwareVersion(String value)
     {
         firmwareVersion.set(value);
@@ -2063,12 +2054,10 @@ public class Printer
     /*
      * Error lists for tooltips
      */
-
     /**
      *
      * @param value
      */
-    
     public final void setErrorList(String value)
     {
         errorList.set(value);
@@ -2569,7 +2558,6 @@ public class Printer
     /*
      * Data transmission commands
      */
-
     /**
      *
      * @param gcodeToSend
@@ -2577,7 +2565,6 @@ public class Printer
      * @return
      * @throws RoboxCommsException
      */
-    
     public String transmitDirectGCode(final String gcodeToSend, boolean addToTranscript) throws RoboxCommsException
     {
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.EXECUTE_GCODE);
@@ -2619,9 +2606,34 @@ public class Printer
      */
     public void transmitStoredGCode(final String macroName) throws RoboxCommsException
     {
+        transmitStoredGCode(macroName, true);
+    }
+
+    /**
+     *
+     * @param macroName
+     * @param checkForPurge
+     * @throws RoboxCommsException
+     */
+    public void transmitStoredGCode(final String macroName, boolean checkForPurge) throws RoboxCommsException
+    {
         if (printQueue.getPrintStatus() == PrinterStatusEnumeration.IDLE)
         {
-            printQueue.printGCodeFile(GCodeMacros.getFilename(macroName), true);
+            if (checkForPurge)
+            {
+                boolean purgeConsent = PrinterUtils.getInstance().offerPurgeIfNecessary(this);
+
+                if (purgeConsent)
+                {
+                    PrinterUtils.runPurge(this, macroName);
+                } else
+                {
+                    printQueue.printGCodeFile(GCodeMacros.getFilename(macroName), true);
+                }
+            } else
+            {
+                printQueue.printGCodeFile(GCodeMacros.getFilename(macroName), true);
+            }
         }
     }
 
@@ -2661,8 +2673,7 @@ public class Printer
 
     /**
      *
-     * @return
-     * @throws RoboxCommsException
+     * @return @throws RoboxCommsException
      */
     public AckResponse transmitReportErrors() throws RoboxCommsException
     {
@@ -2743,8 +2754,7 @@ public class Printer
 
     /**
      *
-     * @return
-     * @throws RoboxCommsException
+     * @return @throws RoboxCommsException
      */
     public AckResponse transmitFormatHeadEEPROM() throws RoboxCommsException
     {
@@ -2754,8 +2764,7 @@ public class Printer
 
     /**
      *
-     * @return
-     * @throws RoboxCommsException
+     * @return @throws RoboxCommsException
      */
     public AckResponse transmitFormatReelEEPROM() throws RoboxCommsException
     {
@@ -2765,8 +2774,7 @@ public class Printer
 
     /**
      *
-     * @return
-     * @throws RoboxCommsException
+     * @return @throws RoboxCommsException
      */
     public ReelEEPROMDataResponse transmitReadReelEEPROM() throws RoboxCommsException
     {
@@ -2776,8 +2784,7 @@ public class Printer
 
     /**
      *
-     * @return
-     * @throws RoboxCommsException
+     * @return @throws RoboxCommsException
      */
     public HeadEEPROMDataResponse transmitReadHeadEEPROM() throws RoboxCommsException
     {
@@ -2908,13 +2915,11 @@ public class Printer
     /*
      * Higher level controls
      */
-
     /**
      *
      * @param on
      * @throws RoboxCommsException
      */
-    
     public void switchOnHeadLEDs(boolean on) throws RoboxCommsException
     {
         if (on)
@@ -2988,8 +2993,7 @@ public class Printer
 
     /**
      *
-     * @return
-     * @throws RoboxCommsException
+     * @return @throws RoboxCommsException
      */
     public FirmwareResponse transmitReadFirmwareVersion() throws RoboxCommsException
     {
@@ -3029,8 +3033,7 @@ public class Printer
 
     /**
      *
-     * @return
-     * @throws RoboxCommsException
+     * @return @throws RoboxCommsException
      */
     public ListFilesResponse transmitListFiles() throws RoboxCommsException
     {
@@ -3040,8 +3043,7 @@ public class Printer
 
     /**
      *
-     * @return
-     * @throws RoboxCommsException
+     * @return @throws RoboxCommsException
      */
     public StatusResponse transmitStatusRequest() throws RoboxCommsException
     {
