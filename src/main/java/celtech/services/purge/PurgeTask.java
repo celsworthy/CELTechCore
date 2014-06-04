@@ -5,27 +5,21 @@
  */
 package celtech.services.purge;
 
-import celtech.appManager.ApplicationMode;
-import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
-import celtech.configuration.HeaterMode;
-import celtech.coreUI.controllers.StatusScreenState;
+import celtech.coreUI.DisplayManager;
 import celtech.printerControl.Printer;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
-import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.services.ControllableService;
-import celtech.services.calibration.*;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
 import celtech.utils.PrinterUtils;
-import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.controlsfx.dialog.Dialogs;
 
 /**
  *
@@ -102,6 +96,12 @@ public class PurgeTask extends Task<Void> implements ControllableService
                 @Override
                 public void run()
                 {
+                    Dialogs.create()
+                            .owner(null)
+                            .title(DisplayManager.getLanguageBundle().getString("dialogs.clearBedTitle"))
+                            .masthead(null)
+                            .message(DisplayManager.getLanguageBundle().getString("dialogs.clearBedInstruction"))
+                            .showWarning();
                     printerToUse.printProject(project, filament, printQuality, settings);
                 }
             });
