@@ -1140,7 +1140,7 @@ table-view .column-header-background {
 .RestrictedTextField{
     -fx-font-size: 10pt;
     -fx-padding: 2 2 2 2;
-    -fx-alignment: CENTER_RIGHT;
+    -fx-alignment: CENTER_LEFT;
 }
 
 .custom-text-field{

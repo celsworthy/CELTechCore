@@ -2986,8 +2986,6 @@ public class Printer
 
         AckResponse response = (AckResponse) printerCommsManager.submitForWrite(portName, writeIDCmd);
 
-        transmitReadPrinterID();
-
         return !response.isError();
     }
 
