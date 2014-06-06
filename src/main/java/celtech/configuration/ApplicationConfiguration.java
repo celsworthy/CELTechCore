@@ -274,6 +274,8 @@ public class ApplicationConfiguration
      *
      */
     public static final float minTempToDisplayOnGraph = 35;
+    
+    public static final int maxPermittedTempDifferenceForPurge = 5;
 
     private static Properties installationProperties = null;
     private static Properties applicationMemoryProperties = null;
