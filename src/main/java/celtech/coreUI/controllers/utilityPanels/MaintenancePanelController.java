@@ -59,7 +59,7 @@ import libertysystems.stenographer.StenographerFactory;
 public class MaintenancePanelController implements Initializable
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(MaintenancePanelController.class.getName());
+    private static final Stenographer steno = StenographerFactory.getStenographer(MaintenancePanelController.class.getName());
     private Printer connectedPrinter = null;
     private ResourceBundle i18nBundle = null;
 
@@ -67,10 +67,10 @@ public class MaintenancePanelController implements Initializable
     private final FirmwareLoadService firmwareLoadService = new FirmwareLoadService();
     private FileChooser firmwareFileChooser = new FileChooser();
 
-    private Stage needleValvecalibrationStage = null;
-    private CalibrationNozzleBPageController needleValveCalibrationController = null;
-    private Stage offsetCalibrationStage = null;
-    private CalibrationNozzleOffsetPageController nozzleOffsetCalibrationController = null;
+    private static Stage needleValvecalibrationStage = null;
+    private static CalibrationNozzleBPageController needleValveCalibrationController = null;
+    private static Stage offsetCalibrationStage = null;
+    private static CalibrationNozzleOffsetPageController nozzleOffsetCalibrationController = null;
 
     private ProgressDialog gcodeUpdateProgress = null;
     private FileChooser gcodeFileChooser = new FileChooser();
@@ -193,12 +193,16 @@ public class MaintenancePanelController implements Initializable
     @FXML
     void calibrateB(ActionEvent event)
     {
+        calibrateBAction();
+    }
 
+    public static void calibrateBAction()
+    {
         if (needleValvecalibrationStage == null)
         {
             needleValvecalibrationStage = new Stage(StageStyle.UTILITY);
             URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "CalibrationNozzleBPage.fxml");
-            FXMLLoader needleValveCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, i18nBundle);
+            FXMLLoader needleValveCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, DisplayManager.getLanguageBundle());
             try
             {
                 Parent dialogBoxScreen = (Parent) needleValveCalibrationLoader.load();
@@ -229,11 +233,16 @@ public class MaintenancePanelController implements Initializable
     void calibrateZOffset(ActionEvent event)
     {
 
+        calibrateZOffsetAction();
+    }
+
+    public static void calibrateZOffsetAction()
+    {
         if (offsetCalibrationStage == null)
         {
             offsetCalibrationStage = new Stage(StageStyle.UTILITY);
             URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "CalibrationNozzleOffsetPage.fxml");
-            FXMLLoader nozzleOffsetCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, i18nBundle);
+            FXMLLoader nozzleOffsetCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, DisplayManager.getLanguageBundle());
             try
             {
                 Parent dialogBoxScreen = (Parent) nozzleOffsetCalibrationLoader.load();

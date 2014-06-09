@@ -246,7 +246,7 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
         {
             name.setText(filament.getFriendlyFilamentName());
             material.getSelectionModel().select(filament.getMaterial());
-            filamentDiameter.setText(floatConverter.toString(filament.getDiameter()));
+            filamentDiameter.setText(floatConverter.toString(filament.getFilamentDiameter()));
             filamentMultiplier.setText(floatConverter.toString(filament.getFilamentMultiplier()));
             feedRateMultiplier.setText(floatConverter.toString(filament.getFeedRateMultiplier()));
             ambientTemperature.setText(intConverter.toString(filament.getAmbientTemperature()));

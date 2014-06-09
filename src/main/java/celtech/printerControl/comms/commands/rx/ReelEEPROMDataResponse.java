@@ -210,7 +210,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
      *
      * @return
      */
-    public int getReelFirstLayerNozzleTemperature()
+    public int getFirstLayerNozzleTemperature()
     {
         return reelFirstLayerNozzleTemperature;
     }
@@ -219,7 +219,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
      *
      * @return
      */
-    public int getReelNozzleTemperature()
+    public int getNozzleTemperature()
     {
         return reelNozzleTemperature;
     }
@@ -228,7 +228,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
      *
      * @return
      */
-    public int getReelFirstLayerBedTemperature()
+    public int getFirstLayerBedTemperature()
     {
         return reelFirstLayerBedTemperature;
     }
@@ -237,7 +237,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
      *
      * @return
      */
-    public int getReelBedTemperature()
+    public int getBedTemperature()
     {
         return reelBedTemperature;
     }
@@ -246,7 +246,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
      *
      * @return
      */
-    public int getReelAmbientTemperature()
+    public int getAmbientTemperature()
     {
         return reelAmbientTemperature;
     }
@@ -255,7 +255,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
      *
      * @return
      */
-    public float getReelFilamentDiameter()
+    public float getFilamentDiameter()
     {
         return reelFilamentDiameter;
     }
@@ -264,7 +264,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
      *
      * @return
      */
-    public float getReelFilamentMultiplier()
+    public float getFilamentMultiplier()
     {
         return reelFilamentMultiplier;
     }
@@ -273,7 +273,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
      *
      * @return
      */
-    public float getReelFeedRateMultiplier()
+    public float getFeedRateMultiplier()
     {
         return reelFeedRateMultiplier;
     }
