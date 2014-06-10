@@ -154,21 +154,10 @@ public class PrinterUtils
     {
         boolean purgeIsNecessary = false;
 
-        if (printer.reelEEPROMStatusProperty().get() != EEPROMState.NOT_PRESENT && settingsScreenState.getFilament() == null)
+        // A reel is attached - check to see if the temperature is different from that stored on the head
+        if (Math.abs(printer.getNozzleTargetTemperature() - printer.getLastFilamentTemperature().get()) > ApplicationConfiguration.maxPermittedTempDifferenceForPurge)
         {
-            // A reel is attached - check to see if the temperature is different from that stored on the head
-            if (Math.abs(printer.getReelNozzleTemperature().get() - printer.getLastFilamentTemperature().get()) > ApplicationConfiguration.maxPermittedTempDifferenceForPurge)
-            {
-                purgeIsNecessary = true;
-            }
-        } else if (printer.reelEEPROMStatusProperty().get() == EEPROMState.NOT_PRESENT && settingsScreenState.getFilament() != null)
-        {
-            // No reel is attached but a specific filament has been selected. If a filament has been chosen then check to see if it differs from the temperature stored in the head
-            Filament currentFilament = settingsScreenState.getFilament();
-            if (Math.abs(currentFilament.getNozzleTemperature() - printer.getLastFilamentTemperature().get()) > ApplicationConfiguration.maxPermittedTempDifferenceForPurge)
-            {
-                purgeIsNecessary = true;
-            }
+            purgeIsNecessary = true;
         }
 
         return purgeIsNecessary;
