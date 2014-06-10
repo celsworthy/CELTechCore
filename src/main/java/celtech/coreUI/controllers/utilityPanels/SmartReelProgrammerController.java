@@ -114,7 +114,7 @@ public class SmartReelProgrammerController implements Initializable
                     selectedFilament.getFirstLayerBedTemperature(),
                     selectedFilament.getBedTemperature(),
                     selectedFilament.getAmbientTemperature(),
-                    selectedFilament.getDiameter(),
+                    selectedFilament.getFilamentDiameter(),
                     selectedFilament.getFilamentMultiplier(),
                     selectedFilament.getFeedRateMultiplier(),
                     remainingFilament);

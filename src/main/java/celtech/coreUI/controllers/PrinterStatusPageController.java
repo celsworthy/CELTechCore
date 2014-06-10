@@ -84,7 +84,7 @@ public class PrinterStatusPageController implements Initializable
     private Button ambientLEDButton;
 
     @FXML
-    private Button xHomeButton;
+    private Button homeButton;
 
     @FXML
     private JogButton x_minus1;
@@ -115,12 +115,6 @@ public class PrinterStatusPageController implements Initializable
 
     @FXML
     private JogButton y_minus1;
-
-    @FXML
-    private Button yHomeButton;
-
-    @FXML
-    private Button zHomeButton;
 
     @FXML
     private JogButton x_plus10;
@@ -248,38 +242,14 @@ public class PrinterStatusPageController implements Initializable
     private Printer lastSelectedPrinter = null;
 
     @FXML
-    void homeX(ActionEvent event)
+    void home(ActionEvent event)
     {
         try
         {
-            printerToUse.transmitDirectGCode(GCodeConstants.homeXAxis, true);
+            printerToUse.transmitStoredGCode("Home_all", false);
         } catch (RoboxCommsException ex)
         {
-            steno.error("Couldn't send x home instruction");
-        }
-    }
-
-    @FXML
-    void homeY(ActionEvent event)
-    {
-        try
-        {
-            printerToUse.transmitDirectGCode(GCodeConstants.homeYAxis, true);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Couldn't send y home instruction");
-        }
-    }
-
-    @FXML
-    void homeZ(ActionEvent event)
-    {
-        try
-        {
-            printerToUse.transmitDirectGCode(GCodeConstants.homeZAxis, true);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Couldn't send z home instruction");
+            steno.error("Couldn't run home macro");
         }
     }
 
@@ -663,9 +633,9 @@ public class PrinterStatusPageController implements Initializable
         advancedControls = new Node[]
         {
             extruder_minus100, extruder_minus20, extruder_minus5, extruder_plus100, extruder_plus20, extruder_plus5,
-            xHomeButton, x_minus1, x_minus10, x_minus100, x_plus1, x_plus10, x_plus100,
-            yHomeButton, y_minus1, y_minus10, y_minus100, y_plus1, y_plus10, y_plus100,
-            zHomeButton, z_minus0_1, z_minus1, z_minus10, z_plus0_1, z_plus1, z_plus10,
+            homeButton, x_minus1, x_minus10, x_minus100, x_plus1, x_plus10, x_plus100,
+            y_minus1, y_minus10, y_minus100, y_plus1, y_plus10, y_plus100,
+            z_minus0_1, z_minus1, z_minus10, z_plus0_1, z_plus1, z_plus10,
             openNozzleButton, closeNozzleButton, selectNozzle1, selectNozzle2,
             ambientLEDButton,
             headFanButton, headLEDButton

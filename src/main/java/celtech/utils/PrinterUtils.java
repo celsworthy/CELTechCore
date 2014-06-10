@@ -7,8 +7,11 @@ package celtech.utils;
 
 import celtech.appManager.Project;
 import celtech.appManager.TaskController;
+import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.coreUI.DisplayManager;
+import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -36,12 +39,15 @@ public class PrinterUtils
     private Dialogs.CommandLink goForPurge = null;
     private Dialogs.CommandLink dontGoForPurge = null;
     private boolean purgeDialogVisible = false;
+    private SettingsScreenState settingsScreenState = null;
 
     private PrinterUtils()
     {
         i18nBundle = DisplayManager.getLanguageBundle();
         goForPurge = new Dialogs.CommandLink(i18nBundle.getString("dialogs.goForPurgeTitle"), i18nBundle.getString("dialogs.goForPurgeInstruction"));
         dontGoForPurge = new Dialogs.CommandLink(i18nBundle.getString("dialogs.dontGoForPurgeTitle"), i18nBundle.getString("dialogs.dontGoForPurgeInstruction"));
+
+        settingsScreenState = SettingsScreenState.getInstance();
     }
 
     /**
@@ -146,7 +152,15 @@ public class PrinterUtils
      */
     public boolean isPurgeNecessary(Printer printer)
     {
-        return Math.abs(printer.getReelNozzleTemperature().get() - printer.getLastFilamentTemperature().get()) > 5;
+        boolean purgeIsNecessary = false;
+
+        // A reel is attached - check to see if the temperature is different from that stored on the head
+        if (Math.abs(printer.getNozzleTargetTemperature() - printer.getLastFilamentTemperature().get()) > ApplicationConfiguration.maxPermittedTempDifferenceForPurge)
+        {
+            purgeIsNecessary = true;
+        }
+
+        return purgeIsNecessary;
     }
 
     /**
@@ -200,6 +214,20 @@ public class PrinterUtils
     public static void runPurge(Printer printerToUse)
     {
         PurgeTask purgeTask = new PurgeTask(printerToUse);
+        TaskController.getInstance().manageTask(purgeTask);
+        Thread purgeThread = new Thread(purgeTask);
+        purgeThread.setName("Purge Task");
+        purgeThread.start();
+    }
+
+    /**
+     *
+     * @param printerToUse
+     * @param macroName
+     */
+    public static void runPurge(Printer printerToUse, String macroName)
+    {
+        PurgeTask purgeTask = new PurgeTask(printerToUse, macroName);
         TaskController.getInstance().manageTask(purgeTask);
         Thread purgeThread = new Thread(purgeTask);
         purgeThread.setName("Purge Task");

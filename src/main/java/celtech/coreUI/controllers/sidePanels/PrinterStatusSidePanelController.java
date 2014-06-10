@@ -386,14 +386,16 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
                         boolean okPressed = printerIDDialog.show();
 
-                        if (!okPressed)
+                        if (okPressed)
                         {
                             try
                             {
                                 printerToEdit.transmitWritePrinterID(printerToEdit.getPrintermodel().get(), printerToEdit.getPrinteredition().get(),
                                                                      printerToEdit.getPrinterweekOfManufacture().get(), printerToEdit.getPrinteryearOfManufacture().get(),
                                                                      printerToEdit.getPrinterpoNumber().get(), printerToEdit.getPrinterserialNumber().get(),
-                                                                     printerToEdit.getPrintercheckByte().get(), printerIDDialog.getChosenPrinterName(), currentColour);
+                                                                     printerToEdit.getPrintercheckByte().get(), printerIDDialog.getChosenPrinterName(), colourMap.displayToPrinterColour(printerIDDialog.getChosenDisplayColour()));
+
+                                printerToEdit.transmitReadPrinterID();
                             } catch (RoboxCommsException ex)
                             {
                                 steno.error("Error writing printer ID");

@@ -26,6 +26,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import libertysystems.stenographer.Stenographer;
@@ -38,49 +39,59 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class PrinterIDDialogController implements Initializable
 {
-
+    
     private Stenographer steno = StenographerFactory.getStenographer(PrinterIDDialogController.class.getName());
-
+    
     private boolean okPressed = false;
-
+    
+    @FXML
+    private VBox container;
+    
     @FXML
     private Label dialogMessage;
-
+    
     @FXML
     private Label dialogTitle;
-
+    
     @FXML
     private Button okButton;
-
+    
     @FXML
     private RestrictedTextField roboxNameField;
-
+    
     @FXML
     private ToggleGroup colourButtonGroup;
-
+    
     @FXML
     void okButtonPressed(MouseEvent event)
     {
         okPressed = true;
         myStage.close();
     }
-
+    
     @FXML
     void cancelButtonPressed(MouseEvent event)
     {
+        try
+        {
+            printerToUse.transmitReadPrinterID();
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error reading printer ID");
+        }
         okPressed = false;
         myStage.close();
     }
-
+    
     private int buttonValue = -1;
     private Stage myStage = null;
-
+    
     private ArrayList<Button> buttons = new ArrayList<>();
-
+    
     private EventHandler<KeyEvent> textInputHandler = null;
-
+    
     private Printer printerToUse = null;
-
+    
     private PrinterColourMap colourMap = PrinterColourMap.getInstance();
 
     /**
@@ -92,42 +103,32 @@ public class PrinterIDDialogController implements Initializable
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-
+        
         textInputHandler = new EventHandler<KeyEvent>()
         {
             @Override
             public void handle(KeyEvent event)
             {
-                TextField field = (TextField) event.getSource();
-                if (field.getText().length() > 100 && event.getCode() != KeyCode.BACK_SPACE)
+                if (event.getCode() == KeyCode.ENTER)
                 {
-                    event.consume();
+                    okButtonPressed(null);
                 }
             }
         };
-
-        roboxNameField.addEventFilter(KeyEvent.KEY_TYPED, textInputHandler);
-
-        okButton.disableProperty().bind(Bindings.length(roboxNameField.textProperty()).isEqualTo(0));
-
+        
+        container.addEventHandler(KeyEvent.KEY_PRESSED, textInputHandler);
+        
         colourButtonGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>()
         {
             @Override
             public void changed(ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue)
             {
                 //The first time this gets set it will be to match the picked colour against the printer, so don't send anything through...
-                if (oldValue != null && newValue != null)
+                if (newValue != null)
                 {
                     try
                     {
-                        Color oldColour = ((ColourChooserButton) oldValue).getDisplayColour();
-                        Color newColour = ((ColourChooserButton) newValue).getDisplayColour();
-
-                        steno.info("Colours " + oldColour + " - " + newColour);
-                        printerToUse.transmitWritePrinterID(printerToUse.getPrintermodel().get(), printerToUse.getPrinteredition().get(),
-                                                            printerToUse.getPrinterweekOfManufacture().get(), printerToUse.getPrinteryearOfManufacture().get(),
-                                                            printerToUse.getPrinterpoNumber().get(), printerToUse.getPrinterserialNumber().get(),
-                                                            printerToUse.getPrintercheckByte().get(), printerToUse.getPrinterFriendlyName(), colourMap.displayToPrinterColour(((ColourChooserButton) newValue).getDisplayColour()));
+                        printerToUse.transmitSetAmbientLEDColour(colourMap.displayToPrinterColour(((ColourChooserButton) newValue).getDisplayColour()));
                     } catch (RoboxCommsException ex)
                     {
                         steno.error("Error writing printer ID");
@@ -188,7 +189,7 @@ public class PrinterIDDialogController implements Initializable
         for (Toggle toggle : colourButtonGroup.getToggles())
         {
             ColourChooserButton button = (ColourChooserButton) toggle;
-
+            
             if (button.getDisplayColour().equals(colour))
             {
                 colourButtonGroup.selectToggle(button);

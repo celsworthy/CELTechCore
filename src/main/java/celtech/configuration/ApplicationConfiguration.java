@@ -92,7 +92,7 @@ public class ApplicationConfiguration
     /**
      *
      */
-    public static final String macroFileSubpath = "macros/";
+    public static final String macroFileSubpath = "Macros/";
 
     /**
      *
@@ -274,6 +274,8 @@ public class ApplicationConfiguration
      *
      */
     public static final float minTempToDisplayOnGraph = 35;
+    
+    public static final int maxPermittedTempDifferenceForPurge = 50;
 
     private static Properties installationProperties = null;
     private static Properties applicationMemoryProperties = null;

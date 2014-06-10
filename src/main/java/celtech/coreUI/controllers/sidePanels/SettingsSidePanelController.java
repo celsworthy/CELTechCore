@@ -540,7 +540,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         availableFilaments.addAll(FilamentContainer.getUserFilamentList());
         availableFilaments.add(FilamentContainer.createNewFilament);
 
-        if (currentSelection != null && availableFilaments.contains(currentSelection))
+        if (currentSelection != null && availableFilaments.contains(currentSelection) && currentSelection != FilamentContainer.createNewFilament)
         {
             materialChooser.getSelectionModel().select(currentSelection);
         } else if (materialChooser.getItems().size() > 1)
@@ -614,15 +614,22 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         }
     }
 
-    private int showCreateMaterialDialogue()
+    private void showCreateMaterialDialogue()
     {
-        int response = createMaterialDialogue.show();
-        if (response == saveMaterialAction)
+        Platform.runLater(new Runnable()
         {
-            Filament filamentToSave = materialDetailsController.getMaterialData();
-            FilamentContainer.saveFilament(filamentToSave);
 
-            materialChooser.getSelectionModel().select(filamentToSave);
+            @Override
+            public void run()
+            {
+                int response = createMaterialDialogue.show();
+                if (response == saveMaterialAction)
+                {
+                    Filament filamentToSave = materialDetailsController.getMaterialData();
+                    FilamentContainer.saveFilament(filamentToSave);
+
+                    Filament chosenFilament = FilamentContainer.getFilamentByID(filamentToSave.getReelID());
+                    materialChooser.getSelectionModel().select(chosenFilament);
 
 //            String profileNameToSave = profileDetailsController.getProfileName();
 //            SlicerSettings settingsToSave = profileDetailsController.getProfileData();
@@ -638,23 +645,21 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 //                }
 //            }
 //            qualityChooser.adjustValue(PrintQualityEnumeration.CUSTOM.getEnumPosition());
-        } else
-        {
-            if (lastFilamentSelected != null)
-            {
-                if (lastFilamentSelected == FilamentContainer.createNewFilament)
-                {
-                    inhibitMaterialSelection = true;
-                    materialChooser.getSelectionModel().select(lastFilamentSelected);
-                    inhibitMaterialSelection = true;
                 } else
                 {
-                    materialChooser.getSelectionModel().select(lastFilamentSelected);
+                    if (lastFilamentSelected != null)
+                    {
+                        if (lastFilamentSelected == FilamentContainer.createNewFilament)
+                        {
+                            materialChooser.getSelectionModel().clearSelection();
+                        } else
+                        {
+                            materialChooser.getSelectionModel().select(lastFilamentSelected);
+                        }
+                    }
                 }
             }
-        }
-
-        return response;
+        });
     }
 
     private int showCreateProfileDialogue(RoboxProfile dataToUse)

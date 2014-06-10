@@ -53,6 +53,7 @@ import celtech.services.printing.GCodePrintService;
 import celtech.services.printing.PrintQueue;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
+import celtech.utils.PrinterUtils;
 import celtech.utils.SystemUtils;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
@@ -1036,12 +1037,10 @@ public class Printer
     /*
      * Errors
      */
-
     /**
      *
      * @param value
      */
-    
     public final void setErrorsDetected(boolean value)
     {
         errorsDetected.set(value);
@@ -1284,12 +1283,10 @@ public class Printer
     /*
      * Switches
      */
-
     /**
      *
      * @return
      */
-    
     public final BooleanProperty XStopSwitchProperty()
     {
         return XStopSwitch;
@@ -1532,12 +1529,10 @@ public class Printer
     /*
      * Head data
      */
-
     /**
      *
      * @return
      */
-    
     public ObjectProperty<Head> attachedHeadProperty()
     {
         return attachedHead;
@@ -1873,12 +1868,10 @@ public class Printer
     /*
      *
      */
-
     /**
      *
      * @return
      */
-    
     public final BooleanProperty NozzleHomedProperty()
     {
         return NozzleHomed;
@@ -1950,12 +1943,10 @@ public class Printer
     /*
      * Firmware
      */
-
     /**
      *
      * @param value
      */
-    
     public final void setFirmwareVersion(String value)
     {
         firmwareVersion.set(value);
@@ -2063,12 +2054,10 @@ public class Printer
     /*
      * Error lists for tooltips
      */
-
     /**
      *
      * @param value
      */
-    
     public final void setErrorList(String value)
     {
         errorList.set(value);
@@ -2220,13 +2209,7 @@ public class Printer
                 if (reelEEPROMStatus.get() != EEPROMState.PROGRAMMED
                         && statusResponse.getReelEEPROMState() == EEPROMState.PROGRAMMED)
                 {
-                    try
-                    {
-                        transmitReadReelEEPROM();
-                    } catch (RoboxCommsException ex)
-                    {
-                        steno.error("Error from triggered read of Reel EEPROM");
-                    }
+                    Filament.repairFilamentIfNecessary(this);
                 } else if (reelEEPROMStatus.get() != EEPROMState.NOT_PRESENT
                         && statusResponse.getReelEEPROMState() == EEPROMState.NOT_PRESENT)
                 {
@@ -2252,59 +2235,7 @@ public class Printer
                 if (headEEPROMStatus.get() != EEPROMState.PROGRAMMED
                         && statusResponse.getHeadEEPROMState() == EEPROMState.PROGRAMMED)
                 {
-                    try
-                    {
-                        HeadEEPROMDataResponse response = transmitReadHeadEEPROM();
-                        // Check to see if the maximum temperature of the head matches our view
-                        // If not, change the max value and prompt to calibrate
-                        if (response != null)
-                        {
-                            if (response.getTypeCode() != null)
-                            {
-                                Head referenceHead = HeadContainer.getHeadByID(response.getTypeCode());
-                                if (referenceHead != null)
-                                {
-                                    if (response.getMaximumTemperature() - referenceHead.getMaximumTemperature() > 2)
-                                    {
-                                        steno.info("Head " + response.getTypeCode()
-                                                + " id " + response.getUniqueID()
-                                                + " has incorrect max temperature settings ("
-                                                + response.getMaximumTemperature()
-                                                + ") resetting to " + referenceHead.getMaximumTemperature());
-                                        //zap the temperature
-                                        transmitWriteHeadEEPROM(
-                                                response.getTypeCode(),
-                                                response.getUniqueID(),
-                                                referenceHead.getMaximumTemperature(),
-                                                response.getBeta(),
-                                                response.getTCal(),
-                                                response.getNozzle1XOffset(),
-                                                response.getNozzle1YOffset(),
-                                                response.getNozzle1ZOffset(),
-                                                response.getNozzle1BOffset(),
-                                                response.getNozzle2XOffset(),
-                                                response.getNozzle2YOffset(),
-                                                response.getNozzle2ZOffset(),
-                                                response.getNozzle2BOffset(),
-                                                response.getLastFilamentTemperature(),
-                                                response.getHeadHours());
-
-                                        Platform.runLater(new Runnable()
-                                        {
-                                            @Override
-                                            public void run()
-                                            {
-                                                Notifier.showInformationNotification(DisplayManager.getLanguageBundle().getString("notification.headSettingsUpdatedTitle"), DisplayManager.getLanguageBundle().getString("notification.noActionRequired"));
-                                            }
-                                        });
-                                    }
-                                }
-                            }
-                        }
-                    } catch (RoboxCommsException ex)
-                    {
-                        steno.error("Error from triggered read of Head EEPROM");
-                    }
+                    Head.repairHeadIfNecessary(this);
                 } else if (headEEPROMStatus.get() != EEPROMState.NOT_PRESENT
                         && statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PRESENT)
                 {
@@ -2323,6 +2254,16 @@ public class Printer
                     temporaryHead.setNozzle2_Z_offset(0);
                     temporaryHead.setBeta(0);
                     temporaryHead.setTcal(0);
+                } else if (headEEPROMStatus.get() != EEPROMState.NOT_PROGRAMMED
+                        && statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PROGRAMMED)
+                {
+                    try
+                    {
+                        transmitFormatHeadEEPROM();
+                    } catch (RoboxCommsException ex)
+                    {
+                        steno.error("Error whilst attempting to format the head EEPROM");
+                    }
                 }
 
                 headEEPROMStatus.set(statusResponse.getHeadEEPROMState());
@@ -2418,15 +2359,15 @@ public class Printer
                         temporaryFilament.setReelID(reelResponse.getReelTypeCode());
                         temporaryFilament.setDisplayColour(loadedFilamentCandidate.getDisplayColour());
                         temporaryFilament.setUniqueID(reelResponse.getReelUniqueID());
-                        temporaryFilament.setRequiredAmbientTemperature(reelResponse.getReelAmbientTemperature());
-                        temporaryFilament.setBedTemperature(reelResponse.getReelBedTemperature());
-                        temporaryFilament.setRequiredFirstLayerBedTemperature(reelResponse.getReelFirstLayerBedTemperature());
-                        temporaryFilament.setRequiredNozzleTemperature(reelResponse.getReelNozzleTemperature());
-                        temporaryFilament.setRequiredFirstLayerNozzleTemperature(reelResponse.getReelFirstLayerNozzleTemperature());
-                        temporaryFilament.setFilamentMultiplier(reelResponse.getReelFilamentMultiplier());
-                        temporaryFilament.setFeedRateMultiplier(reelResponse.getReelFeedRateMultiplier());
+                        temporaryFilament.setAmbientTemperature(reelResponse.getAmbientTemperature());
+                        temporaryFilament.setBedTemperature(reelResponse.getBedTemperature());
+                        temporaryFilament.setFirstLayerBedTemperature(reelResponse.getFirstLayerBedTemperature());
+                        temporaryFilament.setNozzleTemperature(reelResponse.getNozzleTemperature());
+                        temporaryFilament.setFirstLayerNozzleTemperature(reelResponse.getFirstLayerNozzleTemperature());
+                        temporaryFilament.setFilamentMultiplier(reelResponse.getFilamentMultiplier());
+                        temporaryFilament.setFeedRateMultiplier(reelResponse.getFeedRateMultiplier());
                         temporaryFilament.setRemainingFilament(reelResponse.getReelRemainingFilament());
-                        temporaryFilament.setDiameter(reelResponse.getReelFilamentDiameter());
+                        temporaryFilament.setFilamentDiameter(reelResponse.getFilamentDiameter());
                         loadedFilament.set(temporaryFilament);
                         reelFriendlyName.set(loadedFilamentCandidate.toString());
                     } else
@@ -2440,15 +2381,15 @@ public class Printer
                     loadedFilament.set(null);
                 }
                 reelUniqueID.set(reelResponse.getReelUniqueID());
-                reelAmbientTemperature.set(reelResponse.getReelAmbientTemperature());
-                reelBedTemperature.set(reelResponse.getReelBedTemperature());
-                reelFirstLayerBedTemperature.set(reelResponse.getReelFirstLayerBedTemperature());
-                reelNozzleTemperature.set(reelResponse.getReelNozzleTemperature());
-                reelFirstLayerNozzleTemperature.set(reelResponse.getReelFirstLayerNozzleTemperature());
-                reelFilamentMultiplier.set(reelResponse.getReelFilamentMultiplier());
-                reelFeedRateMultiplier.set(reelResponse.getReelFeedRateMultiplier());
+                reelAmbientTemperature.set(reelResponse.getAmbientTemperature());
+                reelBedTemperature.set(reelResponse.getBedTemperature());
+                reelFirstLayerBedTemperature.set(reelResponse.getFirstLayerBedTemperature());
+                reelNozzleTemperature.set(reelResponse.getNozzleTemperature());
+                reelFirstLayerNozzleTemperature.set(reelResponse.getFirstLayerNozzleTemperature());
+                reelFilamentMultiplier.set(reelResponse.getFilamentMultiplier());
+                reelFeedRateMultiplier.set(reelResponse.getFeedRateMultiplier());
                 reelRemainingFilament.set(reelResponse.getReelRemainingFilament());
-                reelFilamentDiameter.set(reelResponse.getReelFilamentDiameter());
+                reelFilamentDiameter.set(reelResponse.getFilamentDiameter());
                 reelDataChangedToggle.set(!reelDataChangedToggle.get());
                 break;
             case HEAD_EEPROM_DATA:
@@ -2569,7 +2510,6 @@ public class Printer
     /*
      * Data transmission commands
      */
-
     /**
      *
      * @param gcodeToSend
@@ -2577,7 +2517,6 @@ public class Printer
      * @return
      * @throws RoboxCommsException
      */
-    
     public String transmitDirectGCode(final String gcodeToSend, boolean addToTranscript) throws RoboxCommsException
     {
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.EXECUTE_GCODE);
@@ -2619,9 +2558,34 @@ public class Printer
      */
     public void transmitStoredGCode(final String macroName) throws RoboxCommsException
     {
+        transmitStoredGCode(macroName, true);
+    }
+
+    /**
+     *
+     * @param macroName
+     * @param checkForPurge
+     * @throws RoboxCommsException
+     */
+    public void transmitStoredGCode(final String macroName, boolean checkForPurge) throws RoboxCommsException
+    {
         if (printQueue.getPrintStatus() == PrinterStatusEnumeration.IDLE)
         {
-            printQueue.printGCodeFile(GCodeMacros.getFilename(macroName), true);
+            if (checkForPurge)
+            {
+                boolean purgeConsent = PrinterUtils.getInstance().offerPurgeIfNecessary(this);
+
+                if (purgeConsent)
+                {
+                    PrinterUtils.runPurge(this, macroName);
+                } else
+                {
+                    printQueue.printGCodeFile(GCodeMacros.getFilename(macroName), true);
+                }
+            } else
+            {
+                printQueue.printGCodeFile(GCodeMacros.getFilename(macroName), true);
+            }
         }
     }
 
@@ -2661,8 +2625,7 @@ public class Printer
 
     /**
      *
-     * @return
-     * @throws RoboxCommsException
+     * @return @throws RoboxCommsException
      */
     public AckResponse transmitReportErrors() throws RoboxCommsException
     {
@@ -2743,8 +2706,7 @@ public class Printer
 
     /**
      *
-     * @return
-     * @throws RoboxCommsException
+     * @return @throws RoboxCommsException
      */
     public AckResponse transmitFormatHeadEEPROM() throws RoboxCommsException
     {
@@ -2754,8 +2716,7 @@ public class Printer
 
     /**
      *
-     * @return
-     * @throws RoboxCommsException
+     * @return @throws RoboxCommsException
      */
     public AckResponse transmitFormatReelEEPROM() throws RoboxCommsException
     {
@@ -2765,8 +2726,7 @@ public class Printer
 
     /**
      *
-     * @return
-     * @throws RoboxCommsException
+     * @return @throws RoboxCommsException
      */
     public ReelEEPROMDataResponse transmitReadReelEEPROM() throws RoboxCommsException
     {
@@ -2776,8 +2736,7 @@ public class Printer
 
     /**
      *
-     * @return
-     * @throws RoboxCommsException
+     * @return @throws RoboxCommsException
      */
     public HeadEEPROMDataResponse transmitReadHeadEEPROM() throws RoboxCommsException
     {
@@ -2801,7 +2760,7 @@ public class Printer
                                        filament.getFirstLayerBedTemperature(),
                                        filament.getBedTemperature(),
                                        filament.getAmbientTemperature(),
-                                       filament.getDiameter(),
+                                       filament.getFilamentDiameter(),
                                        filament.getFilamentMultiplier(),
                                        filament.getFeedRateMultiplier(),
                                        filament.getRemainingFilament());
@@ -2908,13 +2867,11 @@ public class Printer
     /*
      * Higher level controls
      */
-
     /**
      *
      * @param on
      * @throws RoboxCommsException
      */
-    
     public void switchOnHeadLEDs(boolean on) throws RoboxCommsException
     {
         if (on)
@@ -2981,15 +2938,12 @@ public class Printer
 
         AckResponse response = (AckResponse) printerCommsManager.submitForWrite(portName, writeIDCmd);
 
-        transmitReadPrinterID();
-
         return !response.isError();
     }
 
     /**
      *
-     * @return
-     * @throws RoboxCommsException
+     * @return @throws RoboxCommsException
      */
     public FirmwareResponse transmitReadFirmwareVersion() throws RoboxCommsException
     {
@@ -3029,8 +2983,7 @@ public class Printer
 
     /**
      *
-     * @return
-     * @throws RoboxCommsException
+     * @return @throws RoboxCommsException
      */
     public ListFilesResponse transmitListFiles() throws RoboxCommsException
     {
@@ -3040,8 +2993,7 @@ public class Printer
 
     /**
      *
-     * @return
-     * @throws RoboxCommsException
+     * @return @throws RoboxCommsException
      */
     public StatusResponse transmitStatusRequest() throws RoboxCommsException
     {
@@ -3165,7 +3117,7 @@ public class Printer
             try
             {
                 transmitSetTemperatures(filament.getNozzleTemperature(), filament.getNozzleTemperature(), filament.getFirstLayerBedTemperature(), filament.getBedTemperature(), filament.getAmbientTemperature());
-                transmitSetFilamentInfo(filament.getDiameter(), filament.getFilamentMultiplier(), filament.getFeedRateMultiplier());
+                transmitSetFilamentInfo(filament.getFilamentDiameter(), filament.getFilamentMultiplier(), filament.getFeedRateMultiplier());
 
             } catch (RoboxCommsException ex)
             {

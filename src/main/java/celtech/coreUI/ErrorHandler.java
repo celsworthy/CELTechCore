@@ -80,17 +80,32 @@ public class ErrorHandler
             steno.trace("Requesting errors from printer");
             AckResponse errors = printer.transmitReportErrors();
             steno.trace("Errors are:\n" + errors.toString());
-            if (errors.isError() && !errors.isNozzleFlushNeededError())
+            if (errors.isError())
             {
-                if (errorDialog.isShowing() == false)
+                if (errors.isNozzleFlushNeededError()
+                        || errors.isReelEEPROMError()
+                        || errors.isHeadEepromError()
+                        || errors.isDFilamentSlipError()
+                        || errors.isEFilamentSlipError())
                 {
-                    genericErrorPopupController.populateErrorList(errors);
-                    errorDialog.show();
                     steno.info("Resetting errors");
                     printer.transmitResetErrors();
                     if (printer.getPaused() == true)
                     {
                         printer.resumePrint();
+                    }
+                } else
+                {
+                    if (errorDialog.isShowing() == false)
+                    {
+                        genericErrorPopupController.populateErrorList(errors);
+                        errorDialog.show();
+                        steno.info("Resetting errors");
+                        printer.transmitResetErrors();
+                        if (printer.getPaused() == true)
+                        {
+                            printer.resumePrint();
+                        }
                     }
                 }
             }
