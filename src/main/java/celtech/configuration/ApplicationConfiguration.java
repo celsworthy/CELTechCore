@@ -92,7 +92,7 @@ public class ApplicationConfiguration
     /**
      *
      */
-    public static final String macroFileSubpath = "macros/";
+    public static final String macroFileSubpath = "Macros/";
 
     /**
      *

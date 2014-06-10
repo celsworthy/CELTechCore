@@ -87,7 +87,7 @@ public class PurgeTask extends Task<Void> implements ControllableService
                                                                        savedHeadData.getNozzle2YOffset(),
                                                                        savedHeadData.getNozzle2ZOffset(),
                                                                        savedHeadData.getNozzle2BOffset(),
-                                                                       (float) (printerToUse.getReelNozzleTemperature().get()),
+                                                                       (float) (printerToUse.getNozzleTargetTemperature()),
                                                                        savedHeadData.getHeadHours());
         if (ackResponse.isNozzleFlushNeededError())
         {
