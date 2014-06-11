@@ -141,14 +141,18 @@ public class DisplayManager implements EventHandler<KeyEvent>
     private Parent gcodeEntrySlideout = null;
 
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
+    
+    private Font primaryFont;
 
     private DisplayManager()
     {
 
-        Locale appLocale = Locale.getDefault();
+        Locale appLocale;
         appLocale = Locale.forLanguageTag(ApplicationConfiguration.getApplicationLanguage());
 
-        Font.loadFont(CoreTest.class.getResource(ApplicationConfiguration.fontResourcePath + "SourceSansPro-Light.ttf").toExternalForm(), 10);
+//      "SourceSansPro-Light.ttf"
+        String primaryFontLocation = DisplayManager.class.getResource(ApplicationConfiguration.fontResourcePath + "SourceSansPro-Light.ttf").toExternalForm();
+        primaryFont = Font.loadFont(primaryFontLocation, 10);
         i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData", appLocale);
 
         modelLoadDialog = new ProgressDialog(modelLoaderService);
@@ -460,6 +464,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         scene.getStylesheets()
                 .add("/celtech/resources/css/JMetroDarkTheme.css");
+//        root.setStyle("-fx-font-family: FreeMono;");
+        String primaryFontFamily = primaryFont.getFamily();
+        root.setStyle("-fx-font-family: " + primaryFontFamily + ";");
 
         // Camera required to allow 2D shapes to be rotated in 3D in the '2D' UI
         PerspectiveCamera controlOverlaycamera = new PerspectiveCamera(false);
@@ -812,5 +819,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
         {
             rhPanel.startSlidingOut();
         }
+    }
+
+    public String getPrimaryFontFamily()
+    {
+        return primaryFont.getFamily();
     }
 }
