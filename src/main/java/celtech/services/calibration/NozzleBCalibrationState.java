@@ -57,7 +57,7 @@ public enum NozzleBCalibrationState
     /**
      *
      */
-    HEAD_CLEAN_CHECK_POST_CALIBRATION("calibrationPanel.ensureHeadIsCleanMessage", null),
+    HEAD_CLEAN_CHECK_POST_CALIBRATION("calibrationPanel.ensureHeadIsCleanBMessage", null),
 
     /**
      *
