@@ -158,6 +158,27 @@ public class MaintenancePanelController implements Initializable
     }
 
     @FXML
+    void macroButtonPressNoPurgeCheck(ActionEvent event)
+    {
+        if (event.getSource() instanceof GCodeMacroButton)
+        {
+            GCodeMacroButton button = (GCodeMacroButton) event.getSource();
+            String macroName = button.getMacroName();
+
+            if (macroName != null)
+            {
+                try
+                {
+                    connectedPrinter.transmitStoredGCode(macroName, false);
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error sending macro : " + macroName);
+                }
+            }
+        }
+    }
+
+    @FXML
     void loadFirmware(ActionEvent event)
     {
         firmwareFileChooser.setInitialFileName("Untitled");

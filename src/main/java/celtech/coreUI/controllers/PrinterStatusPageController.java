@@ -246,7 +246,7 @@ public class PrinterStatusPageController implements Initializable
     {
         try
         {
-            printerToUse.transmitStoredGCode("Home_all");
+            printerToUse.transmitStoredGCode("Home_all", false);
         } catch (RoboxCommsException ex)
         {
             steno.error("Couldn't run home macro");

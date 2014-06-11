@@ -82,7 +82,11 @@ public class ErrorHandler
             steno.trace("Errors are:\n" + errors.toString());
             if (errors.isError())
             {
-                if (errors.isNozzleFlushNeededError())
+                if (errors.isNozzleFlushNeededError()
+                        || errors.isReelEEPROMError()
+                        || errors.isHeadEepromError()
+                        || errors.isDFilamentSlipError()
+                        || errors.isEFilamentSlipError())
                 {
                     steno.info("Resetting errors");
                     printer.transmitResetErrors();
