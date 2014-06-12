@@ -858,7 +858,6 @@
 
 .tab:selected, .tab:selected .tab-label{
     -fx-background-color: blue_colour;
-    /*-fx-border-width: 0;*/
     -fx-border-color: blue_colour;
 }
 
