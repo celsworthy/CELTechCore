@@ -65,15 +65,6 @@ public class DiagnosticPanelController implements Initializable
     @FXML
     private Label headID;
     
-    @FXML
-    private CheckBox nullPrinterCheckBox;
-    
-    @FXML
-    void enableNullPrinter(ActionEvent event)
-    {
-        RoboxCommsManager.getInstance().enableNullPrinter(nullPrinterCheckBox.isSelected());
-    }
-
     /**
      * Initializes the controller class.
      * @param url
