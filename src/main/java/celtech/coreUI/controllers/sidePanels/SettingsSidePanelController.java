@@ -202,6 +202,9 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 return (double) selectedQuality.getEnumPosition();
             }
         });
+        // Hack to force slider font, don't know why we need this
+        String primaryFontFamily = displayManager.getPrimaryFontFamily();
+        qualityChooser.setStyle("-fx-tick-label-font-family: " + primaryFontFamily + ";");
 
         settingsScreenState.setPrintQuality(PrintQualityEnumeration.DRAFT);
         settingsScreenState.setSettings(draftSettings);
