@@ -142,6 +142,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
     
+    /**
+     * The primary font used throughout the GUI, at various font sizes
+     */
     private Font primaryFont;
 
     private DisplayManager()
@@ -821,6 +824,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
+    /**
+     * Return the font family name of the primary font used in the GUI
+     * @return 
+     */
     public String getPrimaryFontFamily()
     {
         return primaryFont.getFamily();
