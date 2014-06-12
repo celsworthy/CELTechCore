@@ -846,9 +846,9 @@
 .tab-header-area{
     -fx-padding: 0px;
 }
+
 .tab-pane, .tab-header-background{
     -fx-background-color: dark_grey;
-    -fx-border-width: 0;
 }
 
 
@@ -858,12 +858,18 @@
 
 .tab:selected, .tab:selected .tab-label{
     -fx-background-color: blue_colour;
-    -fx-border-width: 0;
+    /*-fx-border-width: 0;*/
+    -fx-border-color: blue_colour;
 }
 
 .tab .tab-label{
     -fx-background-color: mid_grey;
     -fx-text-fill: white;
+}
+
+.tab:top {
+    -fx-border-width: 0.3;
+    -fx-border-color: black;
 }
 
 .tab{

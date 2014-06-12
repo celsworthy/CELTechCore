@@ -4,15 +4,21 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" styleClass="sidePanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.SmartReelProgrammerController">
-<children>
-<VBox alignment="TOP_CENTER" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-<children>
-<HBox alignment="CENTER" spacing="5.0">
-<children>
-<Label layoutX="74.0" layoutY="10.0" text="%smartreelProgrammer.currentReel" /><Label fx:id="currentReelTitle" />
-</children>
-</HBox><Separator prefWidth="200.0" /><Label layoutX="74.0" layoutY="10.0" text="%smartreelProgrammer.chooseMaterial" /><ComboBox fx:id="materialSelector" prefWidth="250.0" /><Button fx:id="programReelButton" mnemonicParsing="false" onAction="#programReel" text="%smartreelProgrammer.programReel" />
-</children>
-</VBox>
-</children></AnchorPane>
+<AnchorPane styleClass="sidePanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.SmartReelProgrammerController">
+    <children>
+        <VBox alignment="TOP_CENTER" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <HBox alignment="CENTER" spacing="5.0">
+                    <children>
+                        <Label layoutX="74.0" layoutY="10.0" text="%smartreelProgrammer.currentReel" />
+                        <Label fx:id="currentReelTitle" />
+                    </children>
+                </HBox>
+                <Separator prefWidth="200.0" />
+                <Label layoutX="74.0" layoutY="10.0" text="%smartreelProgrammer.chooseMaterial" />
+                <ComboBox fx:id="materialSelector" prefWidth="250.0" />
+                <Button fx:id="programReelButton" mnemonicParsing="false" onAction="#programReel" text="%smartreelProgrammer.programReel" />
+            </children>
+        </VBox>
+    </children>
+</AnchorPane>
