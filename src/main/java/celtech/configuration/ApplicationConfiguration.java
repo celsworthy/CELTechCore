@@ -1022,6 +1022,10 @@ public class ApplicationConfiguration
         } else if (applicationName.equals("CEL Configurator"))
         {
             return "14f690bc22c";
+        } 
+	   else if (applicationName.equals("CEL Commissionator"))
+        {
+            return "1532f2c4ab";
         } else
         {
             return null;
