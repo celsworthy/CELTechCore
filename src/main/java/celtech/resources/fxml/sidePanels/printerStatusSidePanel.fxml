@@ -56,12 +56,12 @@
                                         <StackPane>
                                             <children>
                                                 <Label fx:id="nozzleTemperaturePlaceholder" text="-" />
-                                                <RestrictedTextField fx:id="nozzleFirstLayerTargetTemperature" maxLength="4" onAction="#setNozzleFirstLayerTargetTemp" prefColumnCount="3" restrict="0-9" />
-                                                <RestrictedTextField fx:id="nozzleTargetTemperature" alignment="CENTER_RIGHT" maxLength="4" onAction="#setNozzleTargetTemp" prefColumnCount="3" restrict="0-9" text="555">
+                                                <RestrictedNumberField fx:id="nozzleFirstLayerTargetTemperature" maxLength="4" onAction="#setNozzleFirstLayerTargetTemp" prefColumnCount="3" />
+                                                <RestrictedNumberField fx:id="nozzleTargetTemperature" alignment="CENTER_RIGHT" maxLength="4" onAction="#setNozzleTargetTemp" prefColumnCount="3" text="555">
                                                     <font>
                                                         <Font size="10.0" />
                                                     </font>
-                                                </RestrictedTextField>
+                                                </RestrictedNumberField>
                                             </children>
                                         </StackPane>
                                         <Label text="%misc.degreesC" />
@@ -71,9 +71,9 @@
                                     <children>
                                         <StackPane>
                                             <children>
-                                                <RestrictedTextField fx:id="bedFirstLayerTargetTemperature" maxLength="4" onAction="#setBedFirstLayerTargetTemp" prefColumnCount="3" restrict="0-9" />
-                                                <RestrictedTextField fx:id="bedTargetTemperature" maxLength="4" onAction="#setBedTargetTemp" prefColumnCount="3" restrict="0-9" text="666">
-                                                </RestrictedTextField>
+                                                <RestrictedNumberField fx:id="bedFirstLayerTargetTemperature" maxLength="4" onAction="#setBedFirstLayerTargetTemp" prefColumnCount="3" />
+                                                <RestrictedNumberField fx:id="bedTargetTemperature" maxLength="4" onAction="#setBedTargetTemp" prefColumnCount="3" text="666">
+                                                </RestrictedNumberField>
                                                 <Label fx:id="bedTemperaturePlaceholder" text="-" />
                                             </children>
                                         </StackPane>
@@ -82,8 +82,8 @@
                                 </HBox>
                                 <HBox id="HBox" fx:id="targetAmbientTempHBox" alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
                                     <children>
-                                        <RestrictedTextField fx:id="ambientTargetTemperature" maxHeight="20.0" maxLength="50" minHeight="0.0" minWidth="0.0" onAction="#setAmbientTargetTemp" prefColumnCount="3" restrict="0-9" HBox.hgrow="NEVER">
-                                        </RestrictedTextField>
+                                        <RestrictedNumberField fx:id="ambientTargetTemperature" maxHeight="20.0" maxLength="50" minHeight="0.0" minWidth="0.0" onAction="#setAmbientTargetTemp" prefColumnCount="3" HBox.hgrow="NEVER">
+                                        </RestrictedNumberField>
                                         <Label text="%misc.degreesC" />
                                     </children>
                                 </HBox>

@@ -5,7 +5,6 @@
 package celtech.printerControl.comms.commands.rx;
 
 import java.io.UnsupportedEncodingException;
-import java.text.NumberFormat;
 
 /**
  *
@@ -18,8 +17,6 @@ public class FirmwareResponse extends RoboxRxPacket
     private String firmwareRevision = null;
     private final int firmwareRevisionBytes = 8;
     private int firmwareRevisionInt = 0;
-
-    private NumberFormat numberFormatter = NumberFormat.getNumberInstance();
 
     /**
      *

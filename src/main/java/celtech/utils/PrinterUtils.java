@@ -8,7 +8,6 @@ package celtech.utils;
 import celtech.appManager.Project;
 import celtech.appManager.TaskController;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.SettingsScreenState;

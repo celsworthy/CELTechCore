@@ -5,6 +5,10 @@
  */
 package celtech.coreUI.components;
 
+import celtech.coreUI.DisplayManager;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -19,11 +23,12 @@ import javafx.scene.control.TextField;
  */
 public class RestrictedTextField extends TextField
 {
-    private StringProperty restrict = new SimpleStringProperty();
-    private IntegerProperty maxLength = new SimpleIntegerProperty(-1);
-    private BooleanProperty forceUpperCase = new SimpleBooleanProperty(false);
 
-    private String standardAllowedCharacters = "\u0008";
+    private final StringProperty restrict = new SimpleStringProperty("");
+    private final IntegerProperty maxLength = new SimpleIntegerProperty(-1);
+    private final BooleanProperty forceUpperCase = new SimpleBooleanProperty(false);
+
+    private final String standardAllowedCharacters = "\u0008\u007f";
 
     /**
      *
@@ -81,15 +86,15 @@ public class RestrictedTextField extends TextField
     }
 
     /**
-     * Sets a regular expression character class which restricts the user
-     * input.
+     * Sets a regular expression character class which restricts the user input.
      * E.g. 0-9 only allows numeric values.
      *
      * @param restrict The regular expression.
      */
     public void setRestrict(String restrict)
     {
-        this.restrict.set("[" + restrict + standardAllowedCharacters + "]+");
+        String restrictString = "[" + restrict + standardAllowedCharacters + "]+";
+        this.restrict.set(restrictString);
     }
 
     /**
@@ -116,71 +121,6 @@ public class RestrictedTextField extends TextField
     public RestrictedTextField()
     {
         this.getStyleClass().add(this.getClass().getSimpleName());
-//        this.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>()
-//        {
-//
-//            @Override
-//            public void handle(KeyEvent t)
-//            {
-//                if (getSelection().getLength() > 0 && t.getText().matches("[a-zA-Z0-9.\\-? ]+"))
-//                {
-//                    replaceSelection("");
-//                    t.consume();
-//                }
-//            }
-//        });
-//
-//        this.addEventFilter(KeyEvent.KEY_TYPED, new EventHandler<KeyEvent>()
-//        {
-//            @Override
-//            public void handle(KeyEvent t)
-//            {
-//                if (forceUpperCase.get())
-//                {
-//                    insertText(getCaretPosition(), t.getCharacter().toUpperCase());
-//                    t.consume();
-//                }
-//            }
-//        });
-//
-//        textProperty().addListener(new ChangeListener<String>()
-//        {
-//
-//            private boolean ignore;
-//
-//            @Override
-//            public void changed(ObservableValue<? extends String> observableValue, String s, String s1)
-//            {
-//                if (ignore || s1 == null)
-//                {
-//                    return;
-//                }
-//                if (maxLength.get() > -1 && s1.length() > maxLength.get())
-//                {
-//                    ignore = true;
-//                    setText(s1.substring(0, maxLength.get()));
-//                    ignore = false;
-//                }
-//
-////                if (getSelection().getLength() > 0)
-////                {
-////                    int startIndex = getSelection().getStart();
-////                    int endIndex = getSelection().getEnd();
-////                    StringBuilder updatedString = new StringBuilder(s);
-////                    updatedString = updatedString.replace(getSelection().getStart(), getSelection().getEnd(), "");
-////                    ignore = true;
-////                    setText(updatedString.toString());
-////                    ignore = false;
-////                }
-//                if (restrict.get() != null && !restrict.get().equals("") && !s1.matches(restrict.get() + "*"))
-//                {
-//                    ignore = true;
-//                    setText(s);
-//                    ignore = false;
-//                }
-//            }
-//        });
-
     }
 
     @Override
@@ -191,8 +131,11 @@ public class RestrictedTextField extends TextField
             text = text.toUpperCase();
         }
         int length = this.getText().length() + text.length() - (end - start);
+        String currentText = this.getText();
 
-        if ((text.matches(restrict.get()) && length <= maxLength.getValue()) || text.equals(""))
+        if ( //Control characters - always let them through
+                text.equals("")
+                || (text.matches(restrict.get()) && length <= maxLength.getValue()))
         {
             super.replaceText(start, end, text);
         }
@@ -212,5 +155,4 @@ public class RestrictedTextField extends TextField
             super.replaceSelection(text);
         }
     }
-
 }

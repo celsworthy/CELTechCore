@@ -142,14 +142,17 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
 
+    private Locale usersLocale = null;
+    private Locale textLocale = null;
+    
     private DisplayManager()
     {
 
-        Locale appLocale = Locale.getDefault();
-        appLocale = Locale.forLanguageTag(ApplicationConfiguration.getApplicationLanguage());
+        usersLocale = Locale.getDefault();
+        textLocale = Locale.forLanguageTag(ApplicationConfiguration.getApplicationLanguage());
 
         Font.loadFont(CoreTest.class.getResource(ApplicationConfiguration.fontResourcePath + "SourceSansPro-Light.ttf").toExternalForm(), 10);
-        i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData", appLocale);
+        i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData", textLocale);
 
         modelLoadDialog = new ProgressDialog(modelLoaderService);
 
@@ -336,7 +339,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             {
                 slideOutPanels.put(mode, null);
                 slideOutControllers.put(mode, null);
-                steno.error("Couldn't load slideout panel for mode:" + mode + ". " + ex);
+                steno.error("Couldn't load slideout panel for mode:" + mode + ". " + ex  + " : " + ex.getCause());
                 System.out.println("Exception: " + ex.getMessage());
             }
         }
@@ -812,5 +815,15 @@ public class DisplayManager implements EventHandler<KeyEvent>
         {
             rhPanel.startSlidingOut();
         }
+    }
+    
+    public Locale getApplicationLocale()
+    {
+        return textLocale;
+    }
+
+    public Locale getUsersLocale()
+    {
+        return usersLocale;
     }
 }

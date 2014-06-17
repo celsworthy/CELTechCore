@@ -1,4 +1,3 @@
-
 package celtech.services.slicer;
 
 import java.io.BufferedReader;
@@ -16,7 +15,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
@@ -40,13 +41,13 @@ public class RoboxProfile implements Serializable, Cloneable
     private Stenographer LOCAL_steno = StenographerFactory.getStenographer(RoboxProfile.class.getName());
     private StringProperty LOCAL_profileName = new SimpleStringProperty("");
     private boolean LOCAL_mutable = false;
+    private NumberFormat LOCAL_numberFormatter = NumberFormat.getInstance(Locale.UK);
 
     //Immutable
-
     /**
      *
      */
-        protected StringProperty print_center = new SimpleStringProperty("105,75");
+    protected StringProperty print_center = new SimpleStringProperty("105,75");
 
     /**
      *
@@ -445,11 +446,10 @@ public class RoboxProfile implements Serializable, Cloneable
 
     //END of firmware overridden
     //Advanced controls
-
     /**
      *
      */
-        protected StringProperty start_gcode = new SimpleStringProperty("");
+    protected StringProperty start_gcode = new SimpleStringProperty("");
 
     /**
      *
@@ -656,6 +656,7 @@ public class RoboxProfile implements Serializable, Cloneable
      */
     public RoboxProfile()
     {
+        this.LOCAL_numberFormatter.setMaximumFractionDigits(2);
     }
 
     /**
@@ -665,6 +666,7 @@ public class RoboxProfile implements Serializable, Cloneable
     public RoboxProfile(boolean mutable)
     {
         this.LOCAL_mutable = mutable;
+        this.LOCAL_numberFormatter.setMaximumFractionDigits(2);
     }
 
     /**
@@ -698,12 +700,11 @@ public class RoboxProfile implements Serializable, Cloneable
     //Common options
     //END Common options
     //Other stuff
-
     /**
      *
      * @return
      */
-        public StringProperty getPrint_center()
+    public StringProperty getPrint_center()
     {
         return print_center;
     }
@@ -2129,7 +2130,7 @@ public class RoboxProfile implements Serializable, Cloneable
     {
         return extrusion_width;
     }
-    
+
     /**
      *
      * @return
@@ -2138,7 +2139,7 @@ public class RoboxProfile implements Serializable, Cloneable
     {
         return support_material_extrusion_width;
     }
-    
+
     /**
      *
      * @return
@@ -2642,7 +2643,7 @@ public class RoboxProfile implements Serializable, Cloneable
     {
         this.un_retract_ratio = un_retract_ratio;
     }
-    
+
     /**
      *
      * @return
@@ -2938,7 +2939,7 @@ public class RoboxProfile implements Serializable, Cloneable
 
                             fileWriter.write(
                                     " = ");
-                            fileWriter.write(String.format("%.2f", value.get()));
+                            fileWriter.write(LOCAL_numberFormatter.format(value.get()));
                             fileWriter.write(
                                     "\n");
                         } else if (fieldClass.equals(ObservableList.class
@@ -2963,7 +2964,7 @@ public class RoboxProfile implements Serializable, Cloneable
                                     sb.append(((IntegerProperty) arrayElement).get());
                                 } else if (arrayElement instanceof FloatProperty)
                                 {
-                                    sb.append(String.format("%.2f", ((FloatProperty) arrayElement).get()));
+                                    sb.append(LOCAL_numberFormatter.format(((FloatProperty) arrayElement).get()));
                                 } else if (arrayElement instanceof StringProperty)
                                 {
                                     sb.append(((StringProperty) arrayElement).get());
@@ -3535,7 +3536,7 @@ public class RoboxProfile implements Serializable, Cloneable
         clone.support_material_extruder.set(support_material_extruder.get());
         clone.support_material_interface_extruder.set(support_material_interface_extruder.get());
         clone.first_layer_acceleration.set(first_layer_acceleration.get());
-        
+
         clone.autowipe.set(autowipe.get());
 
         return clone;

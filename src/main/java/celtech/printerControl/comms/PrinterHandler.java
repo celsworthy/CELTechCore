@@ -373,7 +373,7 @@ public class PrinterHandler extends Thread
                         } catch (RoboxCommsException ex)
                         {
                             controlInterface.publishEvent(portName, new RoboxEvent(RoboxEventType.PRINTER_COMMS_ERROR));
-                            steno.error("Failure during printer status request. " + ex.toString());
+                            steno.error("Failure during firmware version request. " + ex.toString());
                         }
                     } else
                     {
@@ -560,7 +560,7 @@ public class PrinterHandler extends Thread
     {
         RoboxRxPacket receivedPacket = null;
 
-        if (commsState == RoboxCommsState.CONNECTED || commsState == RoboxCommsState.CHECKING_FIRMWARE || commsState == RoboxCommsState.POST || commsState == RoboxCommsState.CHECKING_ID)
+        if (commsState == RoboxCommsState.CONNECTED || commsState == RoboxCommsState.CHECKING_FIRMWARE || commsState == RoboxCommsState.POST || commsState == RoboxCommsState.CHECKING_ID && serialPort != null)
         {
             try
             {

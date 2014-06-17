@@ -1141,6 +1141,12 @@ table-view .column-header-background {
     -fx-alignment: CENTER_LEFT;
 }
 
+.RestrictedNumberField{
+    -fx-font-size: 10pt;
+    -fx-padding: 2 2 2 2;
+    -fx-alignment: CENTER_RIGHT;
+}
+
 .custom-text-field{
     -fx-font-size: 10pt;
     -fx-padding: 2 2 2 2;

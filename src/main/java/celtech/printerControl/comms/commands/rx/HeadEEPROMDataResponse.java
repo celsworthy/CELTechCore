@@ -4,8 +4,8 @@
  */
 package celtech.printerControl.comms.commands.rx;
 
+import celtech.utils.FixedDecimalFloatFormat;
 import java.io.UnsupportedEncodingException;
-import java.text.NumberFormat;
 import java.text.ParseException;
 
 /**
@@ -16,7 +16,6 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
 {
 
     private final String charsetToUse = "US-ASCII";
-    private NumberFormat numberFormatter = NumberFormat.getNumberInstance();
 
     private final int decimalFloatFormatBytes = 8;
     private final int headTypeCodeBytes = 16;
@@ -58,6 +57,8 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
     public boolean populatePacket(byte[] byteData)
     {
         boolean success = false;
+        
+        FixedDecimalFloatFormat decimalFloatFormatter = new FixedDecimalFloatFormat();
 
         try
         {
@@ -73,7 +74,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             byteOffset += decimalFloatFormatBytes;
             try
             {
-                maximumTemperature = numberFormatter.parse(maxTempString.trim()).floatValue();
+                maximumTemperature = decimalFloatFormatter.parse(maxTempString.trim()).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse maximum temperature - " + maxTempString);
@@ -83,7 +84,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             byteOffset += decimalFloatFormatBytes;
             try
             {
-                thermistorBeta = numberFormatter.parse(thermistorBetaString.trim()).floatValue();
+                thermistorBeta = decimalFloatFormatter.parse(thermistorBetaString.trim()).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse thermistor beta - " + thermistorBetaString);
@@ -93,7 +94,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             byteOffset += decimalFloatFormatBytes;
             try
             {
-                thermistorTCal = numberFormatter.parse(thermistorTCalString.trim()).floatValue();
+                thermistorTCal = decimalFloatFormatter.parse(thermistorTCalString.trim()).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse thermistor tcal - " + thermistorTCalString);
@@ -103,7 +104,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             byteOffset += decimalFloatFormatBytes;
             try
             {
-                nozzle1XOffset = numberFormatter.parse(nozzle1XOffsetString.trim()).floatValue();
+                nozzle1XOffset = decimalFloatFormatter.parse(nozzle1XOffsetString.trim()).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse nozzle 1 X offset - " + nozzle1XOffsetString);
@@ -114,7 +115,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
 
             try
             {
-                nozzle1YOffset = numberFormatter.parse(nozzle1YOffsetString.trim()).floatValue();
+                nozzle1YOffset = decimalFloatFormatter.parse(nozzle1YOffsetString.trim()).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse nozzle 1 Y offset - " + nozzle1YOffsetString);
@@ -125,7 +126,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
 
             try
             {
-                nozzle1ZOffset = numberFormatter.parse(nozzle1ZOffsetString.trim()).floatValue();
+                nozzle1ZOffset = decimalFloatFormatter.parse(nozzle1ZOffsetString.trim()).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse nozzle 1 Z offset - " + nozzle1ZOffsetString);
@@ -136,7 +137,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
 
             try
             {
-                nozzle1BOffset = numberFormatter.parse(nozzle1BOffsetString.trim()).floatValue();
+                nozzle1BOffset = decimalFloatFormatter.parse(nozzle1BOffsetString.trim()).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse nozzle 1 B offset - " + nozzle1BOffsetString);
@@ -149,7 +150,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             byteOffset += decimalFloatFormatBytes;
             try
             {
-                nozzle2XOffset = numberFormatter.parse(nozzle2XOffsetString.trim()).floatValue();
+                nozzle2XOffset = decimalFloatFormatter.parse(nozzle2XOffsetString.trim()).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse nozzle 2 X offset - " + nozzle2XOffsetString);
@@ -160,7 +161,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
 
             try
             {
-                nozzle2YOffset = numberFormatter.parse(nozzle2YOffsetString.trim()).floatValue();
+                nozzle2YOffset = decimalFloatFormatter.parse(nozzle2YOffsetString.trim()).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse nozzle 2 Y offset - " + nozzle2YOffsetString);
@@ -171,7 +172,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
 
             try
             {
-                nozzle2ZOffset = numberFormatter.parse(nozzle2ZOffsetString.trim()).floatValue();
+                nozzle2ZOffset = decimalFloatFormatter.parse(nozzle2ZOffsetString.trim()).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse nozzle 2 Z offset - " + nozzle2ZOffsetString);
@@ -182,7 +183,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
 
             try
             {
-                nozzle2BOffset = numberFormatter.parse(nozzle2BOffsetString.trim()).floatValue();
+                nozzle2BOffset = decimalFloatFormatter.parse(nozzle2BOffsetString.trim()).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse nozzle 2 B offset - " + nozzle2BOffsetString);
@@ -196,7 +197,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
 
             try
             {
-                lastFilamentTemperature = numberFormatter.parse(lastFilamentTemperatureString.trim()).floatValue();
+                lastFilamentTemperature = decimalFloatFormatter.parse(lastFilamentTemperatureString.trim()).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse last filament temperature - " + lastFilamentTemperatureString);
@@ -207,7 +208,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
 
             try
             {
-                hoursUsed = numberFormatter.parse(hoursUsedString.trim()).intValue();
+                hoursUsed = decimalFloatFormatter.parse(hoursUsedString.trim()).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse hours used - " + hoursUsedString);
