@@ -137,7 +137,7 @@ public class RoboxProfile implements Serializable, Cloneable
     /**
      *
      */
-    protected BooleanProperty retract_layer_change = new SimpleBooleanProperty(false);
+    protected ObservableList<BooleanProperty> retract_layer_change = FXCollections.observableArrayList(new SimpleBooleanProperty(false), new SimpleBooleanProperty(false));
 
     /**
      *
@@ -651,6 +651,39 @@ public class RoboxProfile implements Serializable, Cloneable
      */
     protected BooleanProperty autowipe = new SimpleBooleanProperty(false);
 
+    /*
+     * Introduced in version 1.1.4 of Slic3r
+     */
+    /**
+     *
+     */
+    protected BooleanProperty dont_support_bridges = new SimpleBooleanProperty(false);
+
+    /**
+     *
+     */
+    protected IntegerProperty interface_shells = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
+    protected StringProperty seam_position = new SimpleStringProperty("aligned");
+
+    /**
+     *
+     */
+    protected FloatProperty standby_temperature_delta = new SimpleFloatProperty(-5f);
+
+    /**
+     *
+     */
+    protected IntegerProperty support_material_interface_speed = new SimpleIntegerProperty(40);
+
+    /**
+     *
+     */
+    protected ObservableList<StringProperty> extruderOffset = FXCollections.observableArrayList(new SimpleStringProperty("0x0"), new SimpleStringProperty("0x0"));
+
     /**
      *
      */
@@ -1064,7 +1097,7 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      * @return
      */
-    public BooleanProperty getRetract_layer_change()
+    public ObservableList<BooleanProperty> getRetract_layer_change()
     {
         return retract_layer_change;
     }
@@ -1073,9 +1106,9 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      * @param retract_layer_change
      */
-    public void setRetract_layer_change(boolean retract_layer_change)
+    public void setRetract_layer_change(ObservableList<BooleanProperty> retract_layer_change)
     {
-        this.retract_layer_change.set(retract_layer_change);
+        this.retract_layer_change = retract_layer_change;
     }
 
     /**
@@ -2776,7 +2809,6 @@ public class RoboxProfile implements Serializable, Cloneable
                     {
                         Type genericType = field.getGenericType();
                         Class<?> fieldContentClass = (Class<?>) ((ParameterizedType) genericType).getActualTypeArguments()[0];
-
                         String[] elements = lineParts[1].split(",");
                         int elementCounter = 0;
 
@@ -2820,6 +2852,9 @@ public class RoboxProfile implements Serializable, Cloneable
                 } catch (InvocationTargetException ex)
                 {
                     LOCAL_steno.error("Couldn't set up field " + lineParts[0] + " " + ex);
+                } catch (IndexOutOfBoundsException ex)
+                {
+                    LOCAL_steno.error("Index out of bounds  " + lineParts[0] + " " + ex);
                 }
             }
 
@@ -2892,16 +2927,14 @@ public class RoboxProfile implements Serializable, Cloneable
 
                             fileWriter.write(name);
 
-                            fileWriter.write(
-                                    " = ");
+                            fileWriter.write(" = ");
 
-                            if (value
-                                    == true)
+                            if (value == true)
                             {
                                 fileWriter.write("1\n");
                             } else
                             {
-                                fileWriter.write("\n");
+                                fileWriter.write("0\n");
                             }
                         } else if (fieldClass.equals(StringProperty.class
                         ))
@@ -2916,42 +2949,34 @@ public class RoboxProfile implements Serializable, Cloneable
                             fileWriter.write(value.get());
                             fileWriter.write(
                                     "\n");
-                        } else if (fieldClass.equals(IntegerProperty.class
-                        ))
+                        } else if (fieldClass.equals(IntegerProperty.class))
                         {
                             String name = field.getName();
                             IntegerProperty value = (IntegerProperty) field.get(this);
 
                             fileWriter.write(name);
 
-                            fileWriter.write(
-                                    " = ");
+                            fileWriter.write(" = ");
                             fileWriter.write(value.asString().get());
-                            fileWriter.write(
-                                    "\n");
-                        } else if (fieldClass.equals(FloatProperty.class
-                        ))
+                            fileWriter.write("\n");
+                        } else if (fieldClass.equals(FloatProperty.class))
                         {
                             String name = field.getName();
                             FloatProperty value = (FloatProperty) field.get(this);
 
                             fileWriter.write(name);
 
-                            fileWriter.write(
-                                    " = ");
+                            fileWriter.write(" = ");
                             fileWriter.write(LOCAL_numberFormatter.format(value.get()));
-                            fileWriter.write(
-                                    "\n");
-                        } else if (fieldClass.equals(ObservableList.class
-                        ))
+                            fileWriter.write("\n");
+                        } else if (fieldClass.equals(ObservableList.class))
                         {
                             StringBuilder sb = new StringBuilder();
 
                             sb.append(field.getName());
-                            sb.append(
-                                    " = ");
+                            sb.append(" = ");
                             ObservableList fieldValue = (ObservableList) field.get(this);
-//
+
                             int length = fieldValue.size();
 
                             for (int i = 0;
@@ -2968,6 +2993,15 @@ public class RoboxProfile implements Serializable, Cloneable
                                 } else if (arrayElement instanceof StringProperty)
                                 {
                                     sb.append(((StringProperty) arrayElement).get());
+                                } else if (arrayElement instanceof BooleanProperty)
+                                {
+                                    if (((BooleanProperty) arrayElement).get() == true)
+                                    {
+                                        sb.append("1");
+                                    } else
+                                    {
+                                        sb.append("0");
+                                    }
                                 }
                                 if (i < (length - 1))
                                 {
@@ -2975,15 +3009,8 @@ public class RoboxProfile implements Serializable, Cloneable
                                 }
                             }
 
-                            sb.append(
-                                    "\n");
+                            sb.append("\n");
                             fileWriter.write(sb.toString());
-//                        FloatProperty value = (FloatProperty) field.get(this);
-//
-//                        fileWriter.write(name);
-//                        fileWriter.write(" = ");
-//                        fileWriter.write(String.format("%.2f", value.get()));
-//                        fileWriter.write("\n");
                         } else if (fieldClass.equals(BooleanProperty.class
                         ))
                         {
@@ -2998,6 +3025,9 @@ public class RoboxProfile implements Serializable, Cloneable
                                     == true)
                             {
                                 fileWriter.write("1");
+                            } else
+                            {
+                                fileWriter.write("0");
                             }
 
                             fileWriter.write(
@@ -3077,7 +3107,11 @@ public class RoboxProfile implements Serializable, Cloneable
             out.writeInt(retract_speedProp.get());
         }
 
-        out.writeBoolean(retract_layer_change.get());
+        for (BooleanProperty retract_layer_change_prop : retract_layer_change)
+        {
+            out.writeBoolean(retract_layer_change_prop.get());
+        }
+
         for (IntegerProperty wipeProp : wipe)
         {
             out.writeInt(wipeProp.get());
@@ -3191,6 +3225,15 @@ public class RoboxProfile implements Serializable, Cloneable
         out.writeInt(support_material_interface_extruder.get());
         out.writeInt(first_layer_acceleration.get());
         out.writeBoolean(autowipe.get());
+
+        /*
+         * Introduced in Slic3r 1.1.4
+         */
+        out.writeBoolean(dont_support_bridges.get());
+        out.writeInt(interface_shells.get());
+        out.writeUTF(seam_position.get());
+        out.writeFloat(standby_temperature_delta.get());
+        out.writeInt(support_material_interface_speed.get());
     }
 
     private void readObject(ObjectInputStream in)
@@ -3218,7 +3261,7 @@ public class RoboxProfile implements Serializable, Cloneable
         retract_restart_extra_toolchange = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
         retract_speed = FXCollections.observableArrayList(new SimpleIntegerProperty(in.readInt()), new SimpleIntegerProperty(in.readInt()));
 
-        retract_layer_change = new SimpleBooleanProperty(in.readBoolean());
+        retract_layer_change = FXCollections.observableArrayList(new SimpleBooleanProperty(in.readBoolean()), new SimpleBooleanProperty(in.readBoolean()));
         wipe = FXCollections.observableArrayList(new SimpleIntegerProperty(in.readInt()), new SimpleIntegerProperty(in.readInt()));
         nozzle_diameter = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
         perimeter_acceleration = new SimpleIntegerProperty(in.readInt());
@@ -3323,6 +3366,21 @@ public class RoboxProfile implements Serializable, Cloneable
         support_material_interface_extruder = new SimpleIntegerProperty(in.readInt());
         first_layer_acceleration = new SimpleIntegerProperty(in.readInt());
         autowipe = new SimpleBooleanProperty(in.readBoolean());
+
+        /*
+         * Introduced in Slic3r 1.1.4
+         */
+        try
+        {
+            dont_support_bridges = new SimpleBooleanProperty(in.readBoolean());
+            interface_shells = new SimpleIntegerProperty(in.readInt());
+            seam_position = new SimpleStringProperty(in.readUTF());
+            standby_temperature_delta = new SimpleFloatProperty(in.readFloat());
+            support_material_interface_speed = new SimpleIntegerProperty(in.readInt());
+        } catch (IOException ex)
+        {
+            LOCAL_steno.warning("Variables missing from config file - using defaults");
+        }
     }
 
     private void readObjectNoData()
@@ -3408,7 +3466,12 @@ public class RoboxProfile implements Serializable, Cloneable
         clone.end_gcode.set(end_gcode.get());
         clone.layer_gcode.set(layer_gcode.get());
         clone.toolchange_gcode.set(toolchange_gcode.get());
-        clone.retract_layer_change.set(retract_layer_change.get());
+        int retract_layer_change_counter = 0;
+        for (BooleanProperty retract_layer_change_prop : retract_layer_change)
+        {
+            clone.retract_layer_change.get(retract_layer_change_counter).set(retract_layer_change_prop.get());
+            retract_layer_change_counter++;
+        }
 
         int wipeCounter = 0;
         for (IntegerProperty wipeProp : wipe)
@@ -3538,6 +3601,15 @@ public class RoboxProfile implements Serializable, Cloneable
         clone.first_layer_acceleration.set(first_layer_acceleration.get());
 
         clone.autowipe.set(autowipe.get());
+
+        /*
+         * Introduced in Slic3r 1.1.4
+         */
+        clone.dont_support_bridges.set(dont_support_bridges.get());
+        clone.interface_shells.set(interface_shells.get());
+        clone.seam_position.set(seam_position.get());
+        clone.standby_temperature_delta.set(standby_temperature_delta.get());
+        clone.support_material_interface_speed.set(support_material_interface_speed.get());
 
         return clone;
     }
