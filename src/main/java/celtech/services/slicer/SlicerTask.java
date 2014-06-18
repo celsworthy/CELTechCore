@@ -4,7 +4,6 @@
  */
 package celtech.services.slicer;
 
-import celtech.CoreTest;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.FilamentContainer;

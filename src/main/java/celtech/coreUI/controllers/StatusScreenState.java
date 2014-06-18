@@ -5,7 +5,7 @@
  */
 package celtech.coreUI.controllers;
 
-import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
@@ -17,7 +17,7 @@ public class StatusScreenState
 {
 
     private static StatusScreenState instance = null;
-    private static ObjectProperty<Printer> currentlySelectedPrinter = new SimpleObjectProperty<>();
+    private static ObjectProperty<PrinterImpl> currentlySelectedPrinter = new SimpleObjectProperty<>();
     private static ObjectProperty<StatusScreenMode> currentMode = new SimpleObjectProperty<>();
 
     private StatusScreenState()
@@ -41,7 +41,7 @@ public class StatusScreenState
      *
      * @return
      */
-    public Printer getCurrentlySelectedPrinter()
+    public PrinterImpl getCurrentlySelectedPrinter()
     {
         return currentlySelectedPrinter.get();
     }
@@ -50,7 +50,7 @@ public class StatusScreenState
      *
      * @param currentlySelectedPrinter
      */
-    public void setCurrentlySelectedPrinter(Printer currentlySelectedPrinter)
+    public void setCurrentlySelectedPrinter(PrinterImpl currentlySelectedPrinter)
     {
         StatusScreenState.currentlySelectedPrinter.set(currentlySelectedPrinter);
     }
@@ -59,7 +59,7 @@ public class StatusScreenState
      *
      * @return
      */
-    public ObjectProperty<Printer> currentlySelectedPrinterProperty()
+    public ObjectProperty<PrinterImpl> currentlySelectedPrinterProperty()
     {
         return currentlySelectedPrinter;
     }

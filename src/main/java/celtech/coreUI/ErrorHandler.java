@@ -8,7 +8,7 @@ package celtech.coreUI;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.controllers.popups.GenericErrorPopupController;
-import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.utils.PrinterUtils;
@@ -72,7 +72,7 @@ public class ErrorHandler
      *
      * @param printer
      */
-    public void checkForErrors(Printer printer)
+    public void checkForErrors(PrinterImpl printer)
     {
         //Check for errors and open a Dialog if there are any present
         try

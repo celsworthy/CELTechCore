@@ -15,7 +15,7 @@ import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.controllers.CalibrationNozzleBPageController;
 import celtech.coreUI.controllers.CalibrationNozzleOffsetPageController;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
@@ -60,7 +60,7 @@ public class MaintenancePanelController implements Initializable
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(MaintenancePanelController.class.getName());
-    private Printer connectedPrinter = null;
+    private PrinterImpl connectedPrinter = null;
     private ResourceBundle i18nBundle = null;
 
     private ProgressDialog firmwareUpdateProgress = null;
@@ -442,10 +442,10 @@ public class MaintenancePanelController implements Initializable
         });
 
         StatusScreenState statusScreenState = StatusScreenState.getInstance();
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<PrinterImpl>()
         {
             @Override
-            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
+            public void changed(ObservableValue<? extends PrinterImpl> observable, PrinterImpl oldValue, PrinterImpl newValue)
             {
                 if (connectedPrinter != null)
                 {

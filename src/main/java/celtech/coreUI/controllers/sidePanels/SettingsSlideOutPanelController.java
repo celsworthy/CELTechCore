@@ -10,7 +10,7 @@ import celtech.coreUI.controllers.popups.PopupCommandReceiver;
 import celtech.coreUI.controllers.popups.PopupCommandTransmitter;
 import celtech.coreUI.controllers.utilityPanels.MaterialDetailsController;
 import celtech.coreUI.controllers.utilityPanels.ProfileDetailsController;
-import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.services.slicer.RoboxProfile;
 import celtech.utils.FXUtils;
 import java.net.URL;
@@ -75,7 +75,7 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
 
     private ObservableList<Filament> availableFilaments = FXCollections.observableArrayList();
 
-    private Printer currentPrinter = null;
+    private PrinterImpl currentPrinter = null;
     private Filament currentlyLoadedFilament = null;
 
     private int boundToNozzle = -1;

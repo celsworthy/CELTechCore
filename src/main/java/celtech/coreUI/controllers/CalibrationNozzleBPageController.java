@@ -2,7 +2,7 @@ package celtech.coreUI.controllers;
 
 import celtech.appManager.TaskController;
 import celtech.coreUI.DisplayManager;
-import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
@@ -36,7 +36,7 @@ public class CalibrationNozzleBPageController implements Initializable
     private NozzleBCalibrationState state = NozzleBCalibrationState.IDLE;
 
     private ResourceBundle i18nBundle = null;
-    private Printer printerToUse = null;
+    private PrinterImpl printerToUse = null;
     private final float bOffsetStartingValue = 0.8f;
     private int currentNozzleNumber = 0;
     private float nozzlePosition = 0;
@@ -287,10 +287,10 @@ public class CalibrationNozzleBPageController implements Initializable
         i18nBundle = DisplayManager.getLanguageBundle();
 
         StatusScreenState statusScreenState = StatusScreenState.getInstance();
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<PrinterImpl>()
         {
             @Override
-            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
+            public void changed(ObservableValue<? extends PrinterImpl> observable, PrinterImpl oldValue, PrinterImpl newValue)
             {
                 printerToUse = newValue;
             }
@@ -298,10 +298,10 @@ public class CalibrationNozzleBPageController implements Initializable
 
         printerToUse = statusScreenState.getCurrentlySelectedPrinter();
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<PrinterImpl>()
         {
             @Override
-            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
+            public void changed(ObservableValue<? extends PrinterImpl> observable, PrinterImpl oldValue, PrinterImpl newValue)
             {
                 printerToUse = newValue;
             }

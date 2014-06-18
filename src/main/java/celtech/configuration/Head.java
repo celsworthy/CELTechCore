@@ -8,7 +8,7 @@ package celtech.configuration;
 import celtech.appManager.Notifier;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.utilityPanels.MaintenancePanelController;
-import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.SystemUtils;
@@ -602,7 +602,7 @@ public class Head implements Cloneable
      *
      * @param printer
      */
-    public static void repairHeadIfNecessary(Printer printer)
+    public static void repairHeadIfNecessary(PrinterImpl printer)
     {
         try
         {

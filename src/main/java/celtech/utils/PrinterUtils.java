@@ -8,11 +8,11 @@ package celtech.utils;
 import celtech.appManager.Project;
 import celtech.appManager.TaskController;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
@@ -69,7 +69,7 @@ public class PrinterUtils
      * @param printerToCheck
      * @param task
      */
-    public static void waitOnMacroFinished(Printer printerToCheck, Task task)
+    public static void waitOnMacroFinished(PrinterImpl printerToCheck, Task task)
     {
         if (task != null)
         {
@@ -150,7 +150,7 @@ public class PrinterUtils
      * @param printer
      * @return
      */
-    public boolean isPurgeNecessary(Printer printer)
+    public boolean isPurgeNecessary(PrinterImpl printer)
     {
         boolean purgeIsNecessary = false;
 
@@ -168,7 +168,7 @@ public class PrinterUtils
      * @param printer
      * @return
      */
-    public boolean offerPurgeIfNecessary(Printer printer)
+    public boolean offerPurgeIfNecessary(PrinterImpl printer)
     {
         boolean purgeConsent = false;
         if (isPurgeNecessary(printer) && purgeDialogVisible == false)
@@ -198,7 +198,7 @@ public class PrinterUtils
      * @param settings
      * @param printerToUse
      */
-    public static void runPurge(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings, Printer printerToUse)
+    public static void runPurge(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings, PrinterImpl printerToUse)
     {
         PurgeTask purgeTask = new PurgeTask(project, filament, printQuality, settings, printerToUse);
         TaskController.getInstance().manageTask(purgeTask);
@@ -211,7 +211,7 @@ public class PrinterUtils
      *
      * @param printerToUse
      */
-    public static void runPurge(Printer printerToUse)
+    public static void runPurge(PrinterImpl printerToUse)
     {
         PurgeTask purgeTask = new PurgeTask(printerToUse);
         TaskController.getInstance().manageTask(purgeTask);
@@ -225,7 +225,7 @@ public class PrinterUtils
      * @param printerToUse
      * @param macroName
      */
-    public static void runPurge(Printer printerToUse, String macroName)
+    public static void runPurge(PrinterImpl printerToUse, String macroName)
     {
         PurgeTask purgeTask = new PurgeTask(printerToUse, macroName);
         TaskController.getInstance().manageTask(purgeTask);

@@ -317,6 +317,13 @@ public class ApplicationConfiguration
      *
      */
     public static final int maxPrintSpoolFiles = 20;
+    
+    /**
+     * Used in testing only
+     */
+    public static void setInstallationProperties(Properties testingProperties) {
+        installationProperties = testingProperties;
+    }
 
     /**
      *

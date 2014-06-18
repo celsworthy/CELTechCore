@@ -13,7 +13,7 @@ import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.AmbientLEDState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.JogButton;
-import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.GCodeConstants;
@@ -57,7 +57,7 @@ public class PrinterStatusPageController implements Initializable
     private Stenographer steno = StenographerFactory.getStenographer(PrinterStatusPageController.class.getName());
     private StatusScreenState statusScreenState = null;
     private RoboxCommsManager printerCommsManager = RoboxCommsManager.getInstance();
-    private Printer printerToUse = null;
+    private PrinterImpl printerToUse = null;
     private ChangeListener<Boolean> reelDataChangeListener = null;
     private ChangeListener<EEPROMState> reelChangeListener = null;
     private ChangeListener<Color> printerColourChangeListener = null;
@@ -239,7 +239,7 @@ public class PrinterStatusPageController implements Initializable
     private Node[] advancedControls = null;
     private BooleanProperty advancedControlsVisible = new SimpleBooleanProperty(false);
 
-    private Printer lastSelectedPrinter = null;
+    private PrinterImpl lastSelectedPrinter = null;
 
     @FXML
     void home(ActionEvent event)
@@ -528,7 +528,7 @@ public class PrinterStatusPageController implements Initializable
 
         if (statusScreenState.getCurrentlySelectedPrinter() != null)
         {
-            Printer printer = statusScreenState.getCurrentlySelectedPrinter();
+            PrinterImpl printer = statusScreenState.getCurrentlySelectedPrinter();
             switch (printer.getPrinterStatus())
             {
                 case IDLE:
@@ -550,10 +550,10 @@ public class PrinterStatusPageController implements Initializable
             }
         }
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<PrinterImpl>()
         {
             @Override
-            public void changed(ObservableValue<? extends Printer> ov, Printer t, Printer selectedPrinter)
+            public void changed(ObservableValue<? extends PrinterImpl> ov, PrinterImpl t, PrinterImpl selectedPrinter)
             {
                 printerToUse = selectedPrinter;
 
@@ -586,7 +586,7 @@ public class PrinterStatusPageController implements Initializable
 
                     progressGroup.visibleProperty().bind(selectedPrinter.getPrintQueue().printInProgressProperty());
                     progressBar.progressProperty().bind(selectedPrinter.getPrintQueue().progressProperty());
-                    progressPercent.textProperty().bind(Bindings.multiply(selectedPrinter.getPrintQueue().progressProperty(), 100).asString("%.0f%%"));
+                    progressPercent.textProperty().bind(selectedPrinter.getPrintQueue().progressAndETCProperty());
                     progressPercent.visibleProperty().bind(selectedPrinter.printerStatusProperty().isNotEqualTo(PrinterStatusEnumeration.PRINTING)
                             .or(Bindings.and(selectedPrinter.getPrintQueue().linesInPrintingFileProperty().greaterThan(0), selectedPrinter.getPrintQueue().progressProperty().greaterThanOrEqualTo(0))));
                     secondProgressBar.visibleProperty().bind(selectedPrinter.getPrintQueue().sendingDataToPrinterProperty());

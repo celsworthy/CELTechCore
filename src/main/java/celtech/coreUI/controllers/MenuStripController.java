@@ -16,7 +16,7 @@ import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.ErrorHandler;
 import celtech.coreUI.visualisation.SelectionContainer;
-import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.utils.PrinterUtils;
 import java.io.File;
@@ -104,7 +104,7 @@ public class MenuStripController
     @FXML
     void printPressed(ActionEvent event)
     {
-        Printer printer = settingsScreenState.getSelectedPrinter();
+        PrinterImpl printer = settingsScreenState.getSelectedPrinter();
         
         Project currentProject = DisplayManager.getInstance().getCurrentlyVisibleProject();
         
@@ -212,7 +212,7 @@ public class MenuStripController
         displayManager.activateSnapToGround();
     }
     
-    private Printer currentPrinter = null;
+    private PrinterImpl currentPrinter = null;
     private BooleanProperty printerOKToPrint = new SimpleBooleanProperty(false);
 
     /*
@@ -231,10 +231,10 @@ public class MenuStripController
 //        forwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS).and(printerOKToPrint));
         printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(printerOKToPrint));
         
-        settingsScreenState.selectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        settingsScreenState.selectedPrinterProperty().addListener(new ChangeListener<PrinterImpl>()
         {
             @Override
-            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
+            public void changed(ObservableValue<? extends PrinterImpl> observable, PrinterImpl oldValue, PrinterImpl newValue)
             {
                 if (newValue != null)
                 {

@@ -7,7 +7,7 @@ package celtech.coreUI.controllers;
 import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.ColourChooserButton;
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -90,7 +90,7 @@ public class PrinterIDDialogController implements Initializable
     
     private EventHandler<KeyEvent> textInputHandler = null;
     
-    private Printer printerToUse = null;
+    private PrinterImpl printerToUse = null;
     
     private PrinterColourMap colourMap = PrinterColourMap.getInstance();
 
@@ -175,7 +175,7 @@ public class PrinterIDDialogController implements Initializable
      *
      * @param printerToUse
      */
-    public void setPrinterToUse(Printer printerToUse)
+    public void setPrinterToUse(PrinterImpl printerToUse)
     {
         this.printerToUse = printerToUse;
     }

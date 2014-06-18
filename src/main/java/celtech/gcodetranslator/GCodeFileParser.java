@@ -423,6 +423,7 @@ public class GCodeFileParser {
 //                    }
 //                }
                 if (eventToOutput != null) {
+                    eventToOutput.setLinesSoFar(linesSoFar);
                     try {
                         for (GCodeTranslationEventHandler listener : listeners) {
                             listener.processEvent(eventToOutput);

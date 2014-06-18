@@ -9,7 +9,7 @@
  */
 package celtech.coreUI;
 
-import celtech.CoreTest;
+import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
@@ -17,7 +17,6 @@ import celtech.appManager.ProjectManager;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
-import celtech.coreUI.components.ProjectNotLoadedException;
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.components.SlideoutAndProjectHolder;
 import celtech.coreUI.controllers.InfoScreenIndicatorController;
@@ -26,7 +25,6 @@ import celtech.coreUI.controllers.PrinterStatusPageController;
 import celtech.coreUI.controllers.sidePanels.LayoutSidePanelController;
 import celtech.coreUI.controllers.sidePanels.LayoutSlideOutPanelController;
 import celtech.coreUI.controllers.sidePanels.SidePanelManager;
-import celtech.coreUI.visualisation.CameraPositionPreset;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
@@ -37,7 +35,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -87,7 +85,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
     private static ProjectManager projectManager = ProjectManager.getInstance();
     private static Configuration configuration = null;
 
-    private static ResourceBundle i18nBundle = null;
     /*
     
      */
@@ -101,12 +98,12 @@ public class DisplayManager implements EventHandler<KeyEvent>
     private HBox mainHolder = null;
     private StackPane sidePanelContainer = null;
     private AnchorPane modeSelectionControl = null;
-    private final HashMap<ApplicationMode, HBox> sidePanels = new HashMap<>();
-    private final HashMap<ApplicationMode, HBox> slideOutPanels = new HashMap<>();
-    private final SlideoutAndProjectHolder rhPanel = new SlideoutAndProjectHolder();
+    private final Map<ApplicationMode, HBox> sidePanels = new HashMap<>();
+    private final Map<ApplicationMode, HBox> slideOutPanels = new HashMap<>();
+    private SlideoutAndProjectHolder rhPanel;
     private final HBox emptyHBox = new HBox();
-    private final HashMap<ApplicationMode, SidePanelManager> sidePanelControllers = new HashMap<>();
-    private final HashMap<ApplicationMode, Initializable> slideOutControllers = new HashMap<>();
+    private final Map<ApplicationMode, SidePanelManager> sidePanelControllers = new HashMap<>();
+    private final Map<ApplicationMode, Initializable> slideOutControllers = new HashMap<>();
     private static TabPane tabDisplay = null;
     private MenuStripController menuStripController = null;
     private static SingleSelectionModel<Tab> tabDisplaySelectionModel = null;
@@ -149,19 +146,13 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private DisplayManager()
     {
-
-        Locale appLocale;
-        appLocale = Locale.forLanguageTag(ApplicationConfiguration.getApplicationLanguage());
-
-//      "SourceSansPro-Light.ttf"
         String primaryFontLocation = DisplayManager.class.getResource(ApplicationConfiguration.fontResourcePath + "SourceSansPro-Light.ttf").toExternalForm();
         primaryFont = Font.loadFont(primaryFontLocation, 10);
-        i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData", appLocale);
-
+        
         modelLoadDialog = new ProgressDialog(modelLoaderService);
 
-        CommandLink dontLoadModel = new Dialogs.CommandLink(i18nBundle.getString("dialogs.ModelTooLargeNo"), null);
-        CommandLink shrinkModel = new Dialogs.CommandLink(i18nBundle.getString("dialogs.ShrinkModelToFit"), null);
+        CommandLink dontLoadModel = new Dialogs.CommandLink(getLanguageBundle().getString("dialogs.ModelTooLargeNo"), null);
+        CommandLink shrinkModel = new Dialogs.CommandLink(getLanguageBundle().getString("dialogs.ShrinkModelToFit"), null);
 
         modelLoaderService.setOnSucceeded((WorkerStateEvent t) ->
         {
@@ -172,8 +163,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 if (loadResult.isModelTooLarge())
                 {
 
-                    Action tooBigResponse = Dialogs.create().title(i18nBundle.getString("dialogs.ModelTooLargeTitle"))
-                            .message(i18nBundle.getString("dialogs.ModelTooLargeDescription"))
+                    Action tooBigResponse = Dialogs.create().title(getLanguageBundle().getString("dialogs.ModelTooLargeTitle"))
+                            .message(getLanguageBundle().getString("dialogs.ModelTooLargeDescription"))
                             .masthead(null)
                             .showCommandLinks(shrinkModel, shrinkModel, dontLoadModel);
 
@@ -284,7 +275,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
 
         return instance;
-    }
+    }    
 
     /**
      *
@@ -293,9 +284,11 @@ public class DisplayManager implements EventHandler<KeyEvent>
      */
     public void configureDisplayManager(Stage mainStage, String applicationName)
     {
+        rhPanel = new SlideoutAndProjectHolder();
+        
         this.mainStage = mainStage;
         mainStage.setTitle(applicationName + " - " + ApplicationConfiguration.getApplicationVersion());
-        ApplicationConfiguration.setTitleAndVersion(i18nBundle.getString("application.title") + " - " + ApplicationConfiguration.getApplicationVersion());
+        ApplicationConfiguration.setTitleAndVersion(getLanguageBundle().getString("application.title") + " - " + ApplicationConfiguration.getApplicationVersion());
 
         root = new AnchorPane();
         mainHolder = new HBox();
@@ -314,7 +307,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             {
                 URL fxmlFileName = getClass().getResource(mode.getSidePanelFXMLName());
                 steno.debug("About to load side panel fxml: " + fxmlFileName);
-                FXMLLoader sidePanelLoader = new FXMLLoader(fxmlFileName, i18nBundle);
+                FXMLLoader sidePanelLoader = new FXMLLoader(fxmlFileName, getLanguageBundle());
                 HBox sidePanel = (HBox) sidePanelLoader.load();
                 SidePanelManager sidePanelController = sidePanelLoader.getController();
                 sidePanel.setId(mode.name());
@@ -333,7 +326,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             {
                 URL fxmlSlideOutFileName = getClass().getResource(mode.getSlideOutFXMLName());
                 steno.debug("About to load slideout fxml: " + fxmlSlideOutFileName);
-                FXMLLoader slideOutLoader = new FXMLLoader(fxmlSlideOutFileName, i18nBundle);
+                FXMLLoader slideOutLoader = new FXMLLoader(fxmlSlideOutFileName, getLanguageBundle());
                 HBox slideOut = (HBox) slideOutLoader.load();
                 Initializable slideOutController = slideOutLoader.getController();
                 slideOutPanels.put(mode, slideOut);
@@ -373,14 +366,14 @@ public class DisplayManager implements EventHandler<KeyEvent>
         // The printer status tab will always be visible - the page is static
         try
         {
-            FXMLLoader printerStatusPageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "PrinterStatusPage.fxml"), i18nBundle);
+            FXMLLoader printerStatusPageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "PrinterStatusPage.fxml"), getLanguageBundle());
             AnchorPane printerStatusPage = printerStatusPageLoader.load();
             PrinterStatusPageController printerStatusPageController = printerStatusPageLoader.getController();
             printerStatusPageController.configure(rhPanel.getProjectTabPaneHolder());
 
             printerStatusTab = new Tab();
-            printerStatusTab.setText(i18nBundle.getString("printerStatusTabTitle"));
-            FXMLLoader printerStatusPageLabelLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "infoScreenIndicator.fxml"), i18nBundle);
+            printerStatusTab.setText(getLanguageBundle().getString("printerStatusTabTitle"));
+            FXMLLoader printerStatusPageLabelLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "infoScreenIndicator.fxml"), getLanguageBundle());
             VBox printerStatusLabelGroup = printerStatusPageLabelLoader.load();
             infoScreenIndicatorController = printerStatusPageLabelLoader.getController();
             printerStatusTab.setGraphic(printerStatusLabelGroup);
@@ -450,7 +443,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
         try
         {
             URL menuStripURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "MenuStrip.fxml");
-            FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, i18nBundle);
+            FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, getLanguageBundle());
             BorderPane menuStripControls = (BorderPane) menuStripLoader.load();
             menuStripController = menuStripLoader.getController();
             menuStripControls.prefWidthProperty().bind(rhPanel.widthProperty());
@@ -498,7 +491,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
      */
     public static ResourceBundle getLanguageBundle()
     {
-        return i18nBundle;
+        return Lookup.getApplicationEnvironment().getLanguageBundle();
     }
 
     private void addGCode(Group gCodeParts)

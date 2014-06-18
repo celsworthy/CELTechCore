@@ -7,7 +7,7 @@ package celtech.coreUI.components;
 import celtech.coreUI.DisplayManager;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.controllers.PrinterIDDialogController;
-import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import java.io.IOException;
 import java.net.URL;
 import javafx.fxml.FXMLLoader;
@@ -96,7 +96,7 @@ public class PrinterIDDialog
      *
      * @param printerToUse
      */
-    public void setPrinterToUse(Printer printerToUse)
+    public void setPrinterToUse(PrinterImpl printerToUse)
     {
         dialogController.setPrinterToUse(printerToUse);
     }

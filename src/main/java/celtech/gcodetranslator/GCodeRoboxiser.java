@@ -23,7 +23,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.beans.property.DoubleProperty;
@@ -100,6 +100,11 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     private int mixToLayer = 0;
     private int currentMixPoint = 0;
     private boolean mixing = false;
+    private int currentLayer = 0;
+    
+    private final List<Integer> layerNumberToLineNumber = new ArrayList<Integer>();
+    private final List<Double> layerNumberToDistanceTravelled = new ArrayList<Double>();
+    private double distanceSoFarInLayer = 0;
 
     /**
      *
@@ -206,6 +211,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         result.setSuccess(success);
         result.setPredictedDuration(predictedDuration);
         result.setVolumeUsed(volumeUsed);
+        result.setLayerNumberToDistanceTravelled(layerNumberToDistanceTravelled);
+        result.setLayerNumberToLineNumber(layerNumberToLineNumber);
 
         steno.info("Estimated print time " + result.getPredictedDuration());
         return result;
@@ -377,6 +384,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 //                        System.out.println("Distance " + distance);
                     distanceSoFar += distance;
                     totalXYMovement += distance;
+                    distanceSoFarInLayer += distance;
 //                        System.out.println("Total Distance " + distanceSoFar);
 
                     if (triggerCloseFromTravel == true && (currentNozzle.getState() != NozzleState.CLOSED && distance > currentNozzle.getAllowedTravelBeforeClose()))
@@ -386,6 +394,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                     extrusionBuffer.add(event);
                 }
                 lastPoint = currentPoint;
+                
             } else if (event instanceof LayerChangeEvent)
             {
                 LayerChangeEvent layerChangeEvent = (LayerChangeEvent) event;
@@ -414,6 +423,10 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                     extrusionBuffer.add(nozzleChangeEvent);
                     pastFirstLayer = true;
                 }
+                
+                layerNumberToLineNumber.add(layer, event.getLinesSoFar());
+                layerNumberToDistanceTravelled.add(layer, distanceSoFarInLayer);
+                distanceSoFarInLayer = 0;
 
                 layer++;
 

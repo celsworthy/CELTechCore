@@ -11,7 +11,7 @@ import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -35,7 +35,7 @@ public class SmartReelProgrammerController implements Initializable
 
     private Stenographer steno = StenographerFactory.getStenographer(SmartReelProgrammerController.class.getName());
     private StatusScreenState statusScreenState = null;
-    private Printer connectedPrinter = null;
+    private PrinterImpl connectedPrinter = null;
     private ChangeListener<Boolean> reelDataChangeListener = new ChangeListener<Boolean>()
     {
 
@@ -133,10 +133,10 @@ public class SmartReelProgrammerController implements Initializable
 
         materialSelector.setItems(FilamentContainer.getCompleteFilamentList());
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<PrinterImpl>()
         {
             @Override
-            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newPrinter)
+            public void changed(ObservableValue<? extends PrinterImpl> observable, PrinterImpl oldValue, PrinterImpl newPrinter)
             {
                 if (connectedPrinter != null)
                 {

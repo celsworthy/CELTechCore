@@ -5,6 +5,7 @@
 package celtech.services.printing;
 
 import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.utils.SystemUtils;
 import java.io.File;
