@@ -27,6 +27,7 @@ import celtech.services.slicer.SliceResult;
 import celtech.services.slicer.SlicerService;
 import celtech.utils.PrinterUtils;
 import celtech.utils.SystemUtils;
+import celtech.utils.ThreeD.ThreeDUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -59,6 +60,7 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.apache.commons.io.FileDeleteStrategy;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
  *
@@ -444,7 +446,6 @@ public class PrintQueue implements ControllableService
     /*
      * Properties
      */
-
     /**
      *
      * @param project
@@ -452,7 +453,6 @@ public class PrintQueue implements ControllableService
      * @param settings
      * @return
      */
-    
     public synchronized boolean printProject(Project project, PrintQualityEnumeration printQuality, RoboxProfile settings)
     {
         boolean acceptedPrintRequest = false;
@@ -562,6 +562,10 @@ public class PrintQueue implements ControllableService
 
                     //Write out the slicer config
                     settings.filament_diameterProperty().set(ApplicationConfiguration.filamentDiameterToYieldVolumetricExtrusion);
+
+                    //We need to tell Slic3r where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
+                    Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
+                    settings.getPrint_center().set((centreOfPrintedObject.getX() + ApplicationConfiguration.xPrintOffset) + "," + (centreOfPrintedObject.getZ() + ApplicationConfiguration.yPrintOffset));
                     settings.writeToFile(printJobDirectoryName + File.separator + printUUID + ApplicationConfiguration.printProfileFileExtension);
 
                     setPrintStatus(PrinterStatusEnumeration.SLICING);

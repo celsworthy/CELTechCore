@@ -327,6 +327,13 @@ public class ApplicationConfiguration
      *
      */
     private static boolean autoRepairReels = true;
+    
+    /**
+     * These variables are used to position the head correctly over the bed
+     * The actual travel of the mechanical system is not the same as the theoretical travel (to allow for door opening positions etc)
+     */
+    public static final int xPrintOffset = 6;
+    public static final int yPrintOffset = 6;
 
     /**
      *
