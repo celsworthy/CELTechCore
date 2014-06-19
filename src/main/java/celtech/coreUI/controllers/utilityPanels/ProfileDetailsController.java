@@ -108,7 +108,10 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private Label nozzleWipeVolumeLabel;
 
     @FXML
-    private RestrictedNumberField solidLayers;
+    private RestrictedNumberField solidLayersTop;
+
+    @FXML
+    private RestrictedNumberField solidLayersBottom;
 
     @FXML
     private CheckBox supportMaterialEnabled;
@@ -440,7 +443,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         solidInfillSpeed.textProperty().addListener(dirtyStringListener);
         supportMaterialEnabled.textProperty().addListener(dirtyStringListener);
         supportOverhangThreshold.textProperty().addListener(dirtyStringListener);
-        solidLayers.textProperty().addListener(dirtyStringListener);
+        solidLayersTop.textProperty().addListener(dirtyStringListener);
+        solidLayersBottom.textProperty().addListener(dirtyStringListener);
         numberOfPerimeters.textProperty().addListener(dirtyStringListener);
         topSolidInfillSpeed.textProperty().addListener(dirtyStringListener);
         perimeterSpeed.textProperty().addListener(dirtyStringListener);
@@ -568,8 +572,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
             Bindings.unbindBidirectional(bridgesSpeed.intValueProperty(), lastSettings.bridge_speedProperty());
             Bindings.unbindBidirectional(gapFillSpeed.intValueProperty(), lastSettings.gap_fill_speedProperty());
 
-            Bindings.unbindBidirectional(solidLayers.intValueProperty(), lastSettings.top_solid_layersProperty());
-            lastSettings.bottom_solid_layersProperty().unbind();
+            Bindings.unbindBidirectional(solidLayersTop.intValueProperty(), lastSettings.top_solid_layersProperty());
+            Bindings.unbindBidirectional(solidLayersBottom.intValueProperty(), lastSettings.bottom_solid_layersProperty());
 
             Bindings.unbindBidirectional(brimWidth.intValueProperty(), lastSettings.getBrim_width());
 
@@ -638,8 +642,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         Bindings.bindBidirectional(bridgesSpeed.intValueProperty(), newSettings.bridge_speedProperty());
         Bindings.bindBidirectional(gapFillSpeed.intValueProperty(), newSettings.gap_fill_speedProperty());
 
-        Bindings.bindBidirectional(solidLayers.intValueProperty(), newSettings.top_solid_layersProperty());
-        newSettings.bottom_solid_layersProperty().bind(newSettings.top_solid_layersProperty());
+        Bindings.bindBidirectional(solidLayersTop.intValueProperty(), newSettings.top_solid_layersProperty());
+        Bindings.bindBidirectional(solidLayersBottom.intValueProperty(), newSettings.bottom_solid_layersProperty());
 
         Bindings.bindBidirectional(brimWidth.intValueProperty(), newSettings.getBrim_width());
 

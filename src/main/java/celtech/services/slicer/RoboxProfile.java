@@ -57,11 +57,6 @@ public class RoboxProfile implements Serializable, Cloneable
     /**
      *
      */
-    protected StringProperty duplicate_grid = new SimpleStringProperty("1,1");
-
-    /**
-     *
-     */
     protected FloatProperty z_offset = new SimpleFloatProperty(0.0f);
 
     /**
@@ -73,11 +68,6 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      */
     protected BooleanProperty use_relative_e_distances = new SimpleBooleanProperty(true);
-
-    /**
-     *
-     */
-    protected BooleanProperty output_nozzle_control = new SimpleBooleanProperty(true);
 
     /**
      *
@@ -282,16 +272,6 @@ public class RoboxProfile implements Serializable, Cloneable
     /**
      *
      */
-    protected IntegerProperty duplicate = new SimpleIntegerProperty(1);
-
-    /**
-     *
-     */
-    protected IntegerProperty duplicate_distance = new SimpleIntegerProperty(6);
-
-    /**
-     *
-     */
     protected BooleanProperty external_perimeters_first = new SimpleBooleanProperty(false);
 
     /**
@@ -413,11 +393,6 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      */
     protected IntegerProperty threads = new SimpleIntegerProperty(8);
-
-    /**
-     *
-     */
-    protected FloatProperty un_retract_ratio = new SimpleFloatProperty(1.2f);
 
     /**
      *
@@ -624,16 +599,6 @@ public class RoboxProfile implements Serializable, Cloneable
     /**
      *
      */
-    protected BooleanProperty start_perimeters_at_concave_points = new SimpleBooleanProperty(false);
-
-    /**
-     *
-     */
-    protected BooleanProperty start_perimeters_at_non_overhang = new SimpleBooleanProperty(false);
-
-    /**
-     *
-     */
     protected IntegerProperty support_material_extruder = new SimpleIntegerProperty(1);
 
     /**
@@ -678,11 +643,6 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      */
     protected IntegerProperty support_material_interface_speed = new SimpleIntegerProperty(40);
-
-    /**
-     *
-     */
-    protected ObservableList<StringProperty> extruderOffset = FXCollections.observableArrayList(new SimpleStringProperty("0x0"), new SimpleStringProperty("0x0"));
 
     /**
      *
@@ -791,24 +751,6 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      * @return
      */
-    public StringProperty getDuplicate_grid()
-    {
-        return duplicate_grid;
-    }
-
-    /**
-     *
-     * @param duplicate_grid
-     */
-    public void setDuplicate_grid(StringProperty duplicate_grid)
-    {
-        this.duplicate_grid = duplicate_grid;
-    }
-
-    /**
-     *
-     * @return
-     */
     public FloatProperty getZ_offset()
     {
         return z_offset;
@@ -857,24 +799,6 @@ public class RoboxProfile implements Serializable, Cloneable
     public void setUse_relative_e_distances(boolean use_relative_e_distances)
     {
         this.use_relative_e_distances.set(use_relative_e_distances);
-    }
-
-    /**
-     *
-     * @return
-     */
-    public BooleanProperty getOutput_nozzle_control()
-    {
-        return output_nozzle_control;
-    }
-
-    /**
-     *
-     * @param output_nozzle_control
-     */
-    public void setOutput_nozzle_control(boolean output_nozzle_control)
-    {
-        this.output_nozzle_control.set(output_nozzle_control);
     }
 
     /**
@@ -2051,42 +1975,6 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      * @return
      */
-    public IntegerProperty getDuplicate()
-    {
-        return duplicate;
-    }
-
-    /**
-     *
-     * @param duplicate
-     */
-    public void setDuplicate(IntegerProperty duplicate)
-    {
-        this.duplicate = duplicate;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public IntegerProperty getDuplicate_distance()
-    {
-        return duplicate_distance;
-    }
-
-    /**
-     *
-     * @param duplicate_distance
-     */
-    public void setDuplicate_distance(IntegerProperty duplicate_distance)
-    {
-        this.duplicate_distance = duplicate_distance;
-    }
-
-    /**
-     *
-     * @return
-     */
     public BooleanProperty getExternal_perimeters_first()
     {
         return external_perimeters_first;
@@ -2663,24 +2551,6 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      * @return
      */
-    public FloatProperty getUn_retract_ratio()
-    {
-        return un_retract_ratio;
-    }
-
-    /**
-     *
-     * @param un_retract_ratio
-     */
-    public void setUn_retract_ratio(FloatProperty un_retract_ratio)
-    {
-        this.un_retract_ratio = un_retract_ratio;
-    }
-
-    /**
-     *
-     * @return
-     */
     public boolean getAutowipe()
     {
         return autowipe.get();
@@ -3068,11 +2938,9 @@ public class RoboxProfile implements Serializable, Cloneable
         {
             out.writeInt(sizeProp.get());
         }
-        out.writeUTF(duplicate_grid.get());
         out.writeFloat(z_offset.get());
         out.writeUTF(gcode_flavor.get());
         out.writeBoolean(use_relative_e_distances.get());
-        out.writeBoolean(output_nozzle_control.get());
         out.writeInt(vibration_limit.get());
         out.writeUTF(end_gcode.get());
         out.writeUTF(layer_gcode.get());
@@ -3155,8 +3023,6 @@ public class RoboxProfile implements Serializable, Cloneable
         out.writeInt(bridge_flow_ratio.get());
         out.writeInt(brim_width.get());
         out.writeBoolean(complete_objects.get());
-        out.writeInt(duplicate.get());
-        out.writeInt(duplicate_distance.get());
         out.writeBoolean(external_perimeters_first.get());
         out.writeBoolean(extra_perimeters.get());
         out.writeInt(extruder_clearance_height.get());
@@ -3188,7 +3054,6 @@ public class RoboxProfile implements Serializable, Cloneable
         out.writeInt(skirts.get());
         out.writeUTF(solid_fill_pattern.get());
         out.writeInt(threads.get());
-        out.writeFloat(un_retract_ratio.get());
         out.writeInt(support_material_interface_layers.get());
         out.writeInt(support_material_interface_spacing.get());
         out.writeInt(raft_layers.get());
@@ -3219,8 +3084,6 @@ public class RoboxProfile implements Serializable, Cloneable
         out.writeBoolean(spiral_vase.get());
         out.writeInt(perimeters.get());
         out.writeBoolean(overhangs.get());
-        out.writeBoolean(start_perimeters_at_concave_points.get());
-        out.writeBoolean(start_perimeters_at_non_overhang.get());
         out.writeInt(support_material_extruder.get());
         out.writeInt(support_material_interface_extruder.get());
         out.writeInt(first_layer_acceleration.get());
@@ -3243,11 +3106,9 @@ public class RoboxProfile implements Serializable, Cloneable
 
         print_center = new SimpleStringProperty(in.readUTF());
         bed_size = FXCollections.observableArrayList(new SimpleIntegerProperty(in.readInt()), new SimpleIntegerProperty(in.readInt()));
-        duplicate_grid = new SimpleStringProperty(in.readUTF());
         z_offset = new SimpleFloatProperty(in.readFloat());
         gcode_flavor = new SimpleStringProperty(in.readUTF());
         use_relative_e_distances = new SimpleBooleanProperty(in.readBoolean());
-        output_nozzle_control = new SimpleBooleanProperty(in.readBoolean());
         vibration_limit = new SimpleIntegerProperty(in.readInt());
         end_gcode = new SimpleStringProperty(in.readUTF());
         layer_gcode = new SimpleStringProperty(in.readUTF());
@@ -3292,8 +3153,6 @@ public class RoboxProfile implements Serializable, Cloneable
         bridge_flow_ratio = new SimpleIntegerProperty(in.readInt());
         brim_width = new SimpleIntegerProperty(in.readInt());
         complete_objects = new SimpleBooleanProperty(in.readBoolean());
-        duplicate = new SimpleIntegerProperty(in.readInt());
-        duplicate_distance = new SimpleIntegerProperty(in.readInt());
         external_perimeters_first = new SimpleBooleanProperty(in.readBoolean());
         extra_perimeters = new SimpleBooleanProperty(in.readBoolean());
         extruder_clearance_height = new SimpleIntegerProperty(in.readInt());
@@ -3327,7 +3186,6 @@ public class RoboxProfile implements Serializable, Cloneable
         skirts = new SimpleIntegerProperty(in.readInt());
         solid_fill_pattern = new SimpleStringProperty(in.readUTF());
         threads = new SimpleIntegerProperty(in.readInt());
-        un_retract_ratio = new SimpleFloatProperty(in.readFloat());
         support_material_interface_layers = new SimpleIntegerProperty(in.readInt());
         support_material_interface_spacing = new SimpleIntegerProperty(in.readInt());
         raft_layers = new SimpleIntegerProperty(in.readInt());
@@ -3360,8 +3218,6 @@ public class RoboxProfile implements Serializable, Cloneable
         perimeters = new SimpleIntegerProperty(in.readInt());
 
         overhangs = new SimpleBooleanProperty(in.readBoolean());
-        start_perimeters_at_concave_points = new SimpleBooleanProperty(in.readBoolean());
-        start_perimeters_at_non_overhang = new SimpleBooleanProperty(in.readBoolean());
         support_material_extruder = new SimpleIntegerProperty(in.readInt());
         support_material_interface_extruder = new SimpleIntegerProperty(in.readInt());
         first_layer_acceleration = new SimpleIntegerProperty(in.readInt());
@@ -3397,219 +3253,112 @@ public class RoboxProfile implements Serializable, Cloneable
     public RoboxProfile clone()
     {
         RoboxProfile clone = new RoboxProfile();
-
         clone.getProfileNameProperty().set(getProfileName());
         clone.filament_diameter.set(filament_diameter.get());
         clone.print_center.set(print_center.get());
 
-        int indexCounter = 0;
-        for (FloatProperty retract_before_travelProp : retract_before_travel)
+        Field[] originFields = this.getClass().getDeclaredFields();
+        if (originFields.length == 0)
         {
-            clone.retract_before_travel.get(indexCounter).set(retract_before_travelProp.get());
-            indexCounter++;
+            originFields = this.getClass().getSuperclass().getDeclaredFields();
         }
 
-        indexCounter = 0;
-        for (FloatProperty retract_lengthProp : retract_length)
+        Field[] cloneFields = clone.getClass().getDeclaredFields();
+        if (cloneFields.length == 0)
         {
-            clone.retract_length.get(indexCounter).set(retract_lengthProp.get());
-            indexCounter++;
+            cloneFields = clone.getClass().getSuperclass().getDeclaredFields();
         }
 
-        indexCounter = 0;
-        for (FloatProperty retract_length_toolchangeProp : retract_length_toolchange)
+        try
         {
-            clone.retract_length_toolchange.get(indexCounter).set(retract_length_toolchangeProp.get());
-            indexCounter++;
-        }
+            Method observableListGet = List.class.getDeclaredMethod("get", int.class);
 
-        indexCounter = 0;
-        for (FloatProperty retract_liftProp : retract_lift)
+            for (int i = 0; i < originFields.length; i++)
+            {
+                Field originField = originFields[i];
+                Field cloneField = cloneFields[i];
+
+                try
+                {
+                    Class<?> fieldClass = originField.getType();
+
+                    if (originField.getName().startsWith("LOCAL") == false)
+                    {
+                        if (fieldClass.isArray())
+                        {
+                            Object originFieldValue = originField.get(this);
+                            Object cloneFieldValue = cloneField.get(clone);
+
+                            int length = Array.getLength(originFieldValue);
+                            for (int arrayIndex = 0; arrayIndex < length; arrayIndex++)
+                            {
+                                Array.set(cloneFieldValue, arrayIndex, Array.get(originFieldValue, arrayIndex));
+                            }
+                        } else if (fieldClass.equals(boolean.class))
+                        {
+                            cloneField.setBoolean(clone, originField.getBoolean(this));
+                        } else if (fieldClass.equals(StringProperty.class))
+                        {
+                            cloneField.set(clone, originField.get(this));
+                        } else if (fieldClass.equals(IntegerProperty.class))
+                        {
+                            cloneField.set(clone, originField.get(this));
+                        } else if (fieldClass.equals(FloatProperty.class))
+                        {
+                            cloneField.set(clone, originField.get(this));
+                        } else if (fieldClass.equals(ObservableList.class))
+                        {
+                            Type genericType = originField.getGenericType();
+                            Class<?> fieldContentClass = (Class<?>) ((ParameterizedType) genericType).getActualTypeArguments()[0];
+
+                            ObservableList originFieldValue = (ObservableList) originField.get(this);
+                            ObservableList cloneFieldValue = (ObservableList) cloneField.get(this);
+
+                            int length = originFieldValue.size();
+                            for (int index = 0;
+                                    index < length;
+                                    index++)
+                            {
+                                Object originArrayElement = originFieldValue.get(index);
+                                Object cloneArrayElement = cloneFieldValue.get(index);
+
+                                try
+                                {
+                                    if (fieldContentClass.equals(IntegerProperty.class))
+                                    {
+                                        IntegerProperty property = (IntegerProperty) observableListGet.invoke(cloneField.get(clone), index);
+                                        property.set(((IntegerProperty) originArrayElement).get());
+                                    } else if (fieldContentClass.equals(FloatProperty.class))
+                                    {
+                                        FloatProperty property = (FloatProperty) observableListGet.invoke(cloneField.get(clone), index);
+                                        property.set(((FloatProperty) originArrayElement).get());
+                                    } else if (fieldContentClass.equals(StringProperty.class))
+                                    {
+                                        StringProperty property = (StringProperty) observableListGet.invoke(cloneField.get(clone), index);
+                                        property.set(((StringProperty) originArrayElement).get());
+                                    }
+                                } catch (InvocationTargetException ex)
+                                {
+                                    LOCAL_steno.error("Couldn't set up field " + originField.getName() + " " + ex);
+                                }
+                            }
+                        } else if (fieldClass.equals(BooleanProperty.class))
+                        {
+                            cloneField.set(clone, originField.get(this));
+                        } else
+                        {
+                            cloneField.set(clone, originField.get(this));
+                        }
+                    }
+                } catch (IllegalAccessException ex)
+                {
+                    LOCAL_steno.error("Error whilst outputting setting " + originField.getName());
+                }
+            }
+        } catch (NoSuchMethodException ex)
         {
-            clone.retract_lift.get(indexCounter).set(retract_liftProp.get());
-            indexCounter++;
+            LOCAL_steno.error("Couldn't establish reflection methods whilst setting up clone " + ex);
         }
-
-        indexCounter = 0;
-        for (FloatProperty retract_restart_extraProp : retract_restart_extra)
-        {
-            clone.retract_restart_extra.get(indexCounter).set(retract_restart_extraProp.get());
-            indexCounter++;
-        }
-
-        indexCounter = 0;
-        for (FloatProperty retract_restart_extra_toolchangeProp : retract_restart_extra_toolchange)
-        {
-            clone.retract_restart_extra_toolchange.get(indexCounter).set(retract_restart_extra_toolchangeProp.get());
-            indexCounter++;
-        }
-
-        indexCounter = 0;
-        for (IntegerProperty retract_speedProp : retract_speed)
-        {
-            clone.retract_speed.get(indexCounter).set(retract_speedProp.get());
-            indexCounter++;
-        }
-
-        int bed_size_counter = 0;
-        for (IntegerProperty sizeProp : bed_size)
-        {
-            clone.bed_size.get(bed_size_counter).set(sizeProp.get());
-            bed_size_counter++;
-        }
-        clone.duplicate_grid.set(duplicate_grid.get());
-        clone.z_offset.set(z_offset.get());
-        clone.gcode_flavor.set(gcode_flavor.get());
-        clone.use_relative_e_distances.set(use_relative_e_distances.get());
-        clone.output_nozzle_control.set(output_nozzle_control.get());
-        clone.vibration_limit.set(vibration_limit.get());
-        clone.end_gcode.set(end_gcode.get());
-        clone.layer_gcode.set(layer_gcode.get());
-        clone.toolchange_gcode.set(toolchange_gcode.get());
-        int retract_layer_change_counter = 0;
-        for (BooleanProperty retract_layer_change_prop : retract_layer_change)
-        {
-            clone.retract_layer_change.get(retract_layer_change_counter).set(retract_layer_change_prop.get());
-            retract_layer_change_counter++;
-        }
-
-        int wipeCounter = 0;
-        for (IntegerProperty wipeProp : wipe)
-        {
-            clone.wipe.get(wipeCounter).set(wipeProp.get());
-            wipeCounter++;
-        }
-
-        int nozzle_diameter_counter = 0;
-        for (FloatProperty nozzleDiameterProp : nozzle_diameter)
-        {
-            clone.nozzle_diameter.get(nozzle_diameter_counter).set(nozzleDiameterProp.get());
-            nozzle_diameter_counter++;
-        }
-        clone.perimeter_acceleration.set(perimeter_acceleration.get());
-        clone.infill_acceleration.set(infill_acceleration.get());
-        clone.bridge_acceleration.set(bridge_acceleration.get());
-        clone.default_acceleration.set(default_acceleration.get());
-        int nozzleCounter = 0;
-        for (FloatProperty nozzleProp : nozzle_ejection_volume)
-        {
-            clone.nozzle_ejection_volume.get(nozzleCounter).set(nozzleProp.get());
-            nozzleCounter++;
-        }
-        nozzleCounter = 0;
-        for (FloatProperty nozzleProp : nozzle_partial_b_minimum)
-        {
-            clone.nozzle_partial_b_minimum.get(nozzleCounter).set(nozzleProp.get());
-            nozzleCounter++;
-        }
-        nozzleCounter = 0;
-        for (FloatProperty nozzleProp : nozzle_wipe_volume)
-        {
-            clone.nozzle_wipe_volume.get(nozzleCounter).set(nozzleProp.get());
-            nozzleCounter++;
-        }
-        clone.infill_only_where_needed.set(infill_only_where_needed.get());
-        clone.solid_infill_every_layers.set(solid_infill_every_layers.get());
-        clone.fill_angle.set(fill_angle.get());
-        clone.solid_infill_below_area.set(solid_infill_below_area.get());
-        clone.only_retract_when_crossing_perimeters.set(only_retract_when_crossing_perimeters.get());
-        clone.infill_first.set(infill_first.get());
-        clone.cooling.set(cooling.get());
-        clone.fan_always_on.set(fan_always_on.get());
-        clone.max_fan_speed.set(max_fan_speed.get());
-        clone.min_fan_speed.set(min_fan_speed.get());
-        clone.bridge_fan_speed.set(bridge_fan_speed.get());
-        clone.disable_fan_first_layers.set(disable_fan_first_layers.get());
-        clone.fan_below_layer_time.set(fan_below_layer_time.get());
-        clone.slowdown_below_layer_time.set(slowdown_below_layer_time.get());
-        clone.min_print_speed.set(min_print_speed.get());
-        clone.avoid_crossing_perimeters.set(avoid_crossing_perimeters.get());
-        clone.bridge_flow_ratio.set(bridge_flow_ratio.get());
-        clone.brim_width.set(brim_width.get());
-        clone.complete_objects.set(complete_objects.get());
-        clone.duplicate.set(duplicate.get());
-        clone.duplicate_distance.set(duplicate_distance.get());
-        clone.external_perimeters_first.set(external_perimeters_first.get());
-        clone.extra_perimeters.set(extra_perimeters.get());
-        clone.extruder_clearance_height.set(extruder_clearance_height.get());
-        clone.extruder_clearance_radius.set(extruder_clearance_radius.get());
-        clone.extrusion_axis.set(extrusion_axis.get());
-
-        clone.extrusion_width.set(extrusion_width.get());
-        clone.first_layer_extrusion_width.set(first_layer_extrusion_width.get());
-        clone.perimeter_extrusion_width.set(perimeter_extrusion_width.get());
-        clone.infill_extrusion_width.set(infill_extrusion_width.get());
-        clone.solid_infill_extrusion_width.set(solid_infill_extrusion_width.get());
-        clone.top_infill_extrusion_width.set(top_infill_extrusion_width.get());
-        clone.support_material_extrusion_width.set(support_material_extrusion_width.get());
-
-        clone.first_layer_height.set(first_layer_height.get());
-        clone.g0.set(g0.get());
-        clone.gcode_arcs.set(gcode_arcs.get());
-        clone.gcode_comments.set(gcode_comments.get());
-        clone.infill_extruder.set(infill_extruder.get());
-        clone.min_skirt_length.set(min_skirt_length.get());
-        clone.notes.set(notes.get());
-        clone.output_filename_format.set(output_filename_format.get());
-        clone.perimeter_extruder.set(perimeter_extruder.get());
-        clone.post_process.set(post_process.get());
-        clone.randomize_start.set(randomize_start.get());
-        clone.resolution.set(resolution.get());
-        clone.rotate.set(rotate.get());
-        clone.scale.set(scale.get());
-        clone.skirt_distance.set(skirt_distance.get());
-        clone.skirt_height.set(skirt_height.get());
-        clone.skirts.set(skirts.get());
-        clone.solid_fill_pattern.set(solid_fill_pattern.get());
-        clone.threads.set(threads.get());
-        clone.un_retract_ratio.set(un_retract_ratio.get());
-        clone.support_material_interface_layers.set(support_material_interface_layers.get());
-        clone.support_material_interface_spacing.set(support_material_interface_spacing.get());
-        clone.raft_layers.set(raft_layers.get());
-        clone.travel_speed.set(travel_speed.get());
-        clone.start_gcode.set(start_gcode.get());
-        clone.fill_density.set(fill_density.get());
-        clone.fill_pattern.set(fill_pattern.get());
-        clone.infill_every_layers.set(infill_every_layers.get());
-        clone.bottom_solid_layers.set(bottom_solid_layers.get());
-        clone.top_solid_layers.set(top_solid_layers.get());
-        clone.support_material.set(support_material.get());
-        clone.support_material_threshold.set(support_material_threshold.get());
-        clone.support_material_enforce_layers.set(support_material_enforce_layers.get());
-        clone.support_material_pattern.set(support_material_pattern.get());
-        clone.support_material_spacing.set(support_material_spacing.get());
-        clone.support_material_angle.set(support_material_angle.get());
-        clone.layer_height.set(layer_height.get());
-        clone.perimeter_speed.set(perimeter_speed.get());
-        clone.small_perimeter_speed.set(small_perimeter_speed.get());
-        clone.external_perimeter_speed.set(external_perimeter_speed.get());
-        clone.infill_speed.set(infill_speed.get());
-        clone.solid_infill_speed.set(solid_infill_speed.get());
-        clone.top_solid_infill_speed.set(top_solid_infill_speed.get());
-        clone.support_material_speed.set(support_material_speed.get());
-        clone.bridge_speed.set(bridge_speed.get());
-        clone.gap_fill_speed.set(gap_fill_speed.get());
-        clone.first_layer_speed.set(first_layer_speed.get());
-        clone.spiral_vase.set(spiral_vase.get());
-        clone.perimeters.set(perimeters.get());
-
-        clone.overhangs.set(overhangs.get());
-        clone.start_perimeters_at_concave_points.set(start_perimeters_at_concave_points.get());
-        clone.start_perimeters_at_non_overhang.set(start_perimeters_at_non_overhang.get());
-        clone.support_material_extruder.set(support_material_extruder.get());
-        clone.support_material_interface_extruder.set(support_material_interface_extruder.get());
-        clone.first_layer_acceleration.set(first_layer_acceleration.get());
-
-        clone.autowipe.set(autowipe.get());
-
-        /*
-         * Introduced in Slic3r 1.1.4
-         */
-        clone.dont_support_bridges.set(dont_support_bridges.get());
-        clone.interface_shells.set(interface_shells.get());
-        clone.seam_position.set(seam_position.get());
-        clone.standby_temperature_delta.set(standby_temperature_delta.get());
-        clone.support_material_interface_speed.set(support_material_interface_speed.get());
 
         return clone;
     }

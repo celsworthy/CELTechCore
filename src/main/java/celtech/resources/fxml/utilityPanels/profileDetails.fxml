@@ -55,12 +55,14 @@
                                         <Label minWidth="-1.0" text="%misc.layers" />
                                     </children>
                                 </HBox>
-                                <RestrictedNumberField fx:id="solidLayers" allowedDecimalPlaces="0" maxLength="5" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                                <Label minWidth="-1.0" text="%extrusion.solidLayers" textAlignment="RIGHT" wrapText="true" GridPane.rowIndex="4" />
-                                <Label minWidth="-1.0" text="%sidePanel_settings.numberOfPerimeters" GridPane.rowIndex="5" />
-                                <RestrictedNumberField allowedDecimalPlaces="0" maxLength="5" fx:id="numberOfPerimeters" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                                <Label minWidth="-1.0" text="%extrusion.brimWidth" GridPane.rowIndex="6" />
-                                <RestrictedNumberField allowedDecimalPlaces="0" maxLength="5" fx:id="brimWidth" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                                <RestrictedNumberField fx:id="solidLayersTop" allowedDecimalPlaces="0" maxLength="5" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                <Label minWidth="-1.0" text="%extrusion.solidLayersTop" textAlignment="RIGHT" wrapText="true" GridPane.rowIndex="4" />
+                                <RestrictedNumberField fx:id="solidLayersBottom" allowedDecimalPlaces="0" maxLength="5" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                <Label minWidth="-1.0" text="%extrusion.solidLayersBottom" textAlignment="RIGHT" wrapText="true" GridPane.rowIndex="5" />
+                                <Label minWidth="-1.0" text="%sidePanel_settings.numberOfPerimeters" GridPane.rowIndex="6" />
+                                <RestrictedNumberField allowedDecimalPlaces="0" maxLength="5" fx:id="numberOfPerimeters" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                                <Label minWidth="-1.0" text="%extrusion.brimWidth" GridPane.rowIndex="7" />
+                                <RestrictedNumberField allowedDecimalPlaces="0" maxLength="5" fx:id="brimWidth" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
                                 <ComboBox fx:id="fillPatternChoice" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                             </children>
                         </GridPane>
