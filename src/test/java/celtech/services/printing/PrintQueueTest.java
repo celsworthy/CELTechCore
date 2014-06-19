@@ -3,10 +3,9 @@
  */
 package celtech.services.printing;
 
-import celtech.Lookup;
+import celtech.JavaFXConfiguredTest;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectMode;
-import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PrintProfileContainer;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.coreUI.visualisation.importers.stl.STLImporter;
@@ -15,20 +14,14 @@ import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
-import java.io.File;
 import java.io.IOException;
-import java.util.Properties;
+import java.net.URL;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -36,7 +29,7 @@ import org.junit.Test;
  *
  * @author tony
  */
-public class PrintQueueTest
+public class PrintQueueTest extends JavaFXConfiguredTest
 {
 
     static final int WAIT_INTERVAL = 500;
@@ -51,12 +44,6 @@ public class PrintQueueTest
     @Test
     public void testProgressPropertyIsZeroAtStartOfPrint()
     {
-        Properties testProperties = new Properties();
-        testProperties.setProperty("language", "UK");
-        ApplicationConfiguration.setInstallationProperties(testProperties);
-        Lookup.initialise();
-
-//        RoboxCommsManager singletonCommsManager = RoboxCommsManager.getInstance("");
         Printer testPrinter = new TestPrinter();
         PrintQueue printQueue = new PrintQueue(testPrinter);
         ReadOnlyDoubleProperty result = printQueue.progressProperty();
@@ -69,25 +56,24 @@ public class PrintQueueTest
     @Test
     public void testProgressPropertyIsOneAtEndOfPrint() throws IOException, InterruptedException
     {
-        Properties testProperties = new Properties();
-        testProperties.setProperty("language", "UK");
-        ApplicationConfiguration.setInstallationProperties(testProperties);
-        Lookup.initialise();
-
-        // force initialisation
-        System.setProperty("libertySystems.configFile",
-                           "/home/tony/CEL/AutoMaker/AutoMaker.configFile.xml");
-        String installDir = ApplicationConfiguration.getApplicationInstallDirectory(Lookup.class);
-        PrintProfileContainer.getInstance();
 
         Printer testPrinter = new TestPrinter();
+        testPrinter.setBedTargetTemperature(120);
+        testPrinter.setBedTemperature(120);
+
+        TestSlicerService testSlicerService = new TestSlicerService();
         TestNotificationsHandler testNotificationsHandler = new TestNotificationsHandler();
-        PrintQueue printQueue = new PrintQueue(testPrinter, testNotificationsHandler);
+        PrintQueue printQueue = new PrintQueue(testPrinter, testNotificationsHandler,
+                                               testSlicerService);
 
         STLImporter stlImporter = new STLImporter();
         DoubleProperty progressProperty = new SimpleDoubleProperty(0);
-        ModelLoadResult modelLoadResult = stlImporter.loadFile(null, "/home/tony/Downloads/pyramid1.stl", null, progressProperty);
-        ObservableList<ModelContainer> modelList = FXCollections.observableArrayList(modelLoadResult.getModelContainer());
+        URL pyramidSTLURL = this.getClass().getResource("/pyramid1.stl");
+        ModelLoadResult modelLoadResult = stlImporter.loadFile(null,
+                                                               pyramidSTLURL.getFile(),
+                                                               null, progressProperty);
+        ObservableList<ModelContainer> modelList = FXCollections.observableArrayList(
+                modelLoadResult.getModelContainer());
         Project project = new Project("abcdef", "Pyramid", modelList);
         project.setProjectMode(ProjectMode.MESH);
 
@@ -109,17 +95,15 @@ public class PrintQueueTest
                 fail("Test print took too long");
             }
         }
-        
+
         testPrinter.setPrintJobLineNumber(0);
         Thread.sleep(2000);
         testPrinter.setPrintJobLineNumber(1);
-        ReadOnlyStringProperty etcFormatted = printQueue.progressAndETCProperty();
-        System.out.println("ETCF " + etcFormatted);
 
         testPrinter.setPrintJobLineNumber(1633);
 
-        ReadOnlyStringProperty result = printQueue.progressAndETCProperty();
-        assertEquals("100% Elapsed Time (HH:MM) 00:00", result.get());
+        int ETC = printQueue.progressETCProperty().get();
+        assertEquals(0, ETC);
         ReadOnlyDoubleProperty progress = printQueue.progressProperty();
         assertEquals(1.0d, progress.get(), 0.001);
     }

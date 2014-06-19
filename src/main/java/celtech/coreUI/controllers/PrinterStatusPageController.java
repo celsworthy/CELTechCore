@@ -22,6 +22,8 @@ import celtech.utils.AxisSpecifier;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.binding.StringBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -54,7 +56,8 @@ import org.controlsfx.dialog.Dialogs.CommandLink;
 public class PrinterStatusPageController implements Initializable
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(PrinterStatusPageController.class.getName());
+    private Stenographer steno = StenographerFactory.getStenographer(
+            PrinterStatusPageController.class.getName());
     private StatusScreenState statusScreenState = null;
     private RoboxCommsManager printerCommsManager = RoboxCommsManager.getInstance();
     private PrinterImpl printerToUse = null;
@@ -204,6 +207,9 @@ public class PrinterStatusPageController implements Initializable
     private Text secondProgressPercent;
 
     @FXML
+    private Text progressETC;
+
+    @FXML
     private Button cancelPrintButton;
 
     @FXML
@@ -334,14 +340,18 @@ public class PrinterStatusPageController implements Initializable
             {
                 if (button.getFeedRate() > 0)
                 {
-                    printerToUse.transmitDirectGCode(String.format("G1 " + axis.name() + "%.2f F%d", distance, button.getFeedRate()), true);
+                    printerToUse.transmitDirectGCode(String.format(
+                            "G1 " + axis.name() + "%.2f F%d", distance,
+                            button.getFeedRate()), true);
                 } else
                 {
-                    printerToUse.transmitDirectGCode(String.format("G1 " + axis.name() + "%.2f", distance), true);
+                    printerToUse.transmitDirectGCode(String.format(
+                            "G1 " + axis.name() + "%.2f", distance), true);
                 }
             } else
             {
-                printerToUse.transmitDirectGCode(String.format("G0 " + axis.name() + "%.2f", distance), true);
+                printerToUse.transmitDirectGCode(String.format(
+                        "G0 " + axis.name() + "%.2f", distance), true);
             }
         } catch (RoboxCommsException ex)
         {
@@ -406,12 +416,15 @@ public class PrinterStatusPageController implements Initializable
                     printerColourRectangle.setFill(Color.BLACK);
                     break;
                 case WHITE:
-                    printerToUse.transmitSetAmbientLEDColour(colourMap.displayToPrinterColour(Color.WHITE));
+                    printerToUse.transmitSetAmbientLEDColour(
+                            colourMap.displayToPrinterColour(Color.WHITE));
                     printerColourRectangle.setFill(Color.WHITE);
                     break;
                 case COLOUR:
-                    printerToUse.transmitSetAmbientLEDColour(printerToUse.getPrinterColour());
-                    printerColourRectangle.setFill(colourMap.printerToDisplayColour(printerToUse.getPrinterColour()));
+                    printerToUse.transmitSetAmbientLEDColour(
+                            printerToUse.getPrinterColour());
+                    printerColourRectangle.setFill(colourMap.printerToDisplayColour(
+                            printerToUse.getPrinterColour()));
                     break;
             }
         } catch (RoboxCommsException ex)
@@ -471,15 +484,19 @@ public class PrinterStatusPageController implements Initializable
 
         transferringDataString = i18nBundle.getString("PrintQueue.SendingToPrinter");
 
-        goAheadAndOpenTheLid = new Dialogs.CommandLink(i18nBundle.getString("dialogs.openLidPrinterHotGoAheadHeading"), i18nBundle.getString("dialogs.openLidPrinterHotGoAheadInfo"));
-        dontOpenTheLid = new Dialogs.CommandLink(i18nBundle.getString("dialogs.openLidPrinterHotDontOpenHeading"), null);
+        goAheadAndOpenTheLid = new Dialogs.CommandLink(i18nBundle.getString(
+                "dialogs.openLidPrinterHotGoAheadHeading"), i18nBundle.getString(
+                                                               "dialogs.openLidPrinterHotGoAheadInfo"));
+        dontOpenTheLid = new Dialogs.CommandLink(i18nBundle.getString(
+                "dialogs.openLidPrinterHotDontOpenHeading"), null);
         openLidPrinterTooHotTitle = i18nBundle.getString("dialogs.openLidPrinterHotTitle");
         openLidPrinterTooHotInfo = i18nBundle.getString("dialogs.openLidPrinterHotInfo");
 
         reelDataChangeListener = new ChangeListener<Boolean>()
         {
             @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t,
+                    Boolean t1)
             {
                 setFilamentColour(printerToUse.loadedFilamentProperty().get());
             }
@@ -488,7 +505,8 @@ public class PrinterStatusPageController implements Initializable
         reelChangeListener = new ChangeListener<EEPROMState>()
         {
             @Override
-            public void changed(ObservableValue<? extends EEPROMState> ov, EEPROMState t, EEPROMState t1)
+            public void changed(ObservableValue<? extends EEPROMState> ov, EEPROMState t,
+                    EEPROMState t1)
             {
                 if (t1 == EEPROMState.PROGRAMMED)
                 {
@@ -500,11 +518,13 @@ public class PrinterStatusPageController implements Initializable
         printerColourChangeListener = new ChangeListener<Color>()
         {
             @Override
-            public void changed(ObservableValue<? extends Color> observable, Color oldValue, Color newValue)
+            public void changed(ObservableValue<? extends Color> observable,
+                    Color oldValue, Color newValue)
             {
                 if (ambientLEDState == AmbientLEDState.COLOUR)
                 {
-                    printerColourRectangle.setFill(colourMap.printerToDisplayColour(newValue));
+                    printerColourRectangle.setFill(colourMap.printerToDisplayColour(
+                            newValue));
                 }
             }
         };
@@ -550,85 +570,160 @@ public class PrinterStatusPageController implements Initializable
             }
         }
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<PrinterImpl>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends PrinterImpl> ov, PrinterImpl t, PrinterImpl selectedPrinter)
-            {
-                printerToUse = selectedPrinter;
-
-                if (selectedPrinter == null)
+        statusScreenState.currentlySelectedPrinterProperty().addListener(
+                new ChangeListener<PrinterImpl>()
                 {
-                    printerSilhouette.setVisible(true);
-                } else
-                {
-                    printerSilhouette.setVisible(false);
-                }
+                    @Override
+                    public void changed(ObservableValue<? extends PrinterImpl> ov,
+                            PrinterImpl t, PrinterImpl selectedPrinter)
+                    {
+                        printerToUse = selectedPrinter;
 
-                if (selectedPrinter == null)
-                {
-                    unbindFromSelectedPrinter();
+                        if (selectedPrinter == null)
+                        {
+                            printerSilhouette.setVisible(true);
+                        } else
+                        {
+                            printerSilhouette.setVisible(false);
+                        }
 
-                    progressGroup.setVisible(false);
-                    printerColourRectangle.setVisible(false);
-                    pausePrintButton.setVisible(false);
-                    resumePrintButton.setVisible(false);
+                        if (selectedPrinter == null)
+                        {
+                            unbindFromSelectedPrinter();
 
-                    ejectReelButton.setVisible(false);
-                    unlockLidButton.setVisible(false);
-                    temperatureWarning.setVisible(false);
+                            progressGroup.setVisible(false);
+                            printerColourRectangle.setVisible(false);
+                            pausePrintButton.setVisible(false);
+                            resumePrintButton.setVisible(false);
 
-                    reel.setVisible(false);
-                    filamentRectangle.setVisible(false);
-                } else
-                {
-                    unbindFromSelectedPrinter();
+                            ejectReelButton.setVisible(false);
+                            unlockLidButton.setVisible(false);
+                            temperatureWarning.setVisible(false);
 
-                    progressGroup.visibleProperty().bind(selectedPrinter.getPrintQueue().printInProgressProperty());
-                    progressBar.progressProperty().bind(selectedPrinter.getPrintQueue().progressProperty());
-                    progressPercent.textProperty().bind(selectedPrinter.getPrintQueue().progressAndETCProperty());
-                    progressPercent.visibleProperty().bind(selectedPrinter.printerStatusProperty().isNotEqualTo(PrinterStatusEnumeration.PRINTING)
-                            .or(Bindings.and(selectedPrinter.getPrintQueue().linesInPrintingFileProperty().greaterThan(0), selectedPrinter.getPrintQueue().progressProperty().greaterThanOrEqualTo(0))));
-                    secondProgressBar.visibleProperty().bind(selectedPrinter.getPrintQueue().sendingDataToPrinterProperty());
-                    secondProgressBar.progressProperty().bind(selectedPrinter.getPrintQueue().secondaryProgressProperty());
-                    secondProgressPercent.visibleProperty().bind(selectedPrinter.getPrintQueue().sendingDataToPrinterProperty());
-                    secondProgressPercent.textProperty().bind(Bindings.format("%s %.0f%%", transferringDataString, Bindings.multiply(selectedPrinter.getPrintQueue().secondaryProgressProperty(), 100)));
-                    progressTitle.textProperty().bind(selectedPrinter.getPrintQueue().titleProperty());
-                    progressMessage.textProperty().bind(selectedPrinter.getPrintQueue().messageProperty());
+                            reel.setVisible(false);
+                            filamentRectangle.setVisible(false);
+                        } else
+                        {
+                            unbindFromSelectedPrinter();
 
-                    printerColourRectangle.setVisible(true);
-                    printerColourRectangle.setFill(colourMap.printerToDisplayColour(selectedPrinter.getPrinterColour()));
-                    selectedPrinter.printerColourProperty().addListener(printerColourChangeListener);
+                            progressGroup.visibleProperty().bind(
+                                    selectedPrinter.getPrintQueue().printInProgressProperty());
+                            progressBar.progressProperty().bind(
+                                    selectedPrinter.getPrintQueue().progressProperty());
+                            progressPercent.textProperty().bind(Bindings.multiply(
+                                            selectedPrinter.getPrintQueue().progressProperty(),
+                                            100).asString("%.0f%%"));
+                            BooleanBinding progressVisible = 
+                                    selectedPrinter.printerStatusProperty().isNotEqualTo(
+                                            PrinterStatusEnumeration.PRINTING)
+                                    .or(Bindings.and(
+                                                    selectedPrinter.getPrintQueue().linesInPrintingFileProperty().greaterThan(
+                                                            0),
+                                                    selectedPrinter.getPrintQueue().progressProperty().greaterThanOrEqualTo(
+                                                            0)));
+                            progressPercent.visibleProperty().bind(progressVisible);
+                            progressETC.visibleProperty().bind(progressVisible);
+                            // selectedPrinter.getPrintQueue().progressETCProperty()
+                            progressETC.textProperty().bind(new StringBinding()
+                                    {
+                                        {
+                                            super.bind(
+                                                    selectedPrinter.getPrintQueue().progressETCProperty());
+                                        }
+
+                                        @Override
+                                        protected String computeValue()
+                                        {
+                                            String hoursMinutes = convertToHoursMinutes(
+                                                    selectedPrinter.getPrintQueue().progressETCProperty().get());
+                                            return "ETC\n" + hoursMinutes;
+                                        }
+                            });
+                            secondProgressBar.visibleProperty().bind(
+                                    selectedPrinter.getPrintQueue().sendingDataToPrinterProperty());
+                            secondProgressBar.progressProperty().bind(
+                                    selectedPrinter.getPrintQueue().secondaryProgressProperty());
+                            secondProgressPercent.visibleProperty().bind(
+                                    selectedPrinter.getPrintQueue().sendingDataToPrinterProperty());
+                            secondProgressPercent.textProperty().bind(Bindings.format(
+                                            "%s %.0f%%", transferringDataString,
+                                            Bindings.multiply(
+                                                    selectedPrinter.getPrintQueue().secondaryProgressProperty(),
+                                                    100)));
+                            progressTitle.textProperty().bind(
+                                    selectedPrinter.getPrintQueue().titleProperty());
+                            progressMessage.textProperty().bind(
+                                    selectedPrinter.getPrintQueue().messageProperty());
+
+                            printerColourRectangle.setVisible(true);
+                            printerColourRectangle.setFill(
+                                    colourMap.printerToDisplayColour(
+                                            selectedPrinter.getPrinterColour()));
+                            selectedPrinter.printerColourProperty().addListener(
+                                    printerColourChangeListener);
 
 //                    steno.info("Status " + selectedPrinter.getPrinterStatus() + " in progress=" + selectedPrinter.getPrintQueue().printInProgressProperty().getValue());
-                    pausePrintButton.visibleProperty().bind(selectedPrinter.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.PRINTING)
-                            .or(selectedPrinter.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.SENDING_TO_PRINTER))
-                            .or(selectedPrinter.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.EXECUTING_MACRO)));
-                    resumePrintButton.visibleProperty().bind(selectedPrinter.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.PAUSED));
-                    cancelPrintButton.visibleProperty().bind(selectedPrinter.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.PAUSED).or(selectedPrinter.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.SLICING)));
+                            pausePrintButton.visibleProperty().bind(
+                                    selectedPrinter.printerStatusProperty().isEqualTo(
+                                            PrinterStatusEnumeration.PRINTING)
+                                    .or(selectedPrinter.printerStatusProperty().isEqualTo(
+                                                    PrinterStatusEnumeration.SENDING_TO_PRINTER))
+                                    .or(selectedPrinter.printerStatusProperty().isEqualTo(
+                                                    PrinterStatusEnumeration.EXECUTING_MACRO)));
+                            resumePrintButton.visibleProperty().bind(
+                                    selectedPrinter.printerStatusProperty().isEqualTo(
+                                            PrinterStatusEnumeration.PAUSED));
+                            cancelPrintButton.visibleProperty().bind(
+                                    selectedPrinter.printerStatusProperty().isEqualTo(
+                                            PrinterStatusEnumeration.PAUSED).or(
+                                            selectedPrinter.printerStatusProperty().isEqualTo(
+                                                    PrinterStatusEnumeration.SLICING)));
 
-                    ejectReelButton.visibleProperty().bind(selectedPrinter.Filament1LoadedProperty().and(selectedPrinter.printerStatusProperty().isNotEqualTo(PrinterStatusEnumeration.PRINTING)));
+                            ejectReelButton.visibleProperty().bind(
+                                    selectedPrinter.Filament1LoadedProperty().and(
+                                            selectedPrinter.printerStatusProperty().isNotEqualTo(
+                                                    PrinterStatusEnumeration.PRINTING)));
 
-                    unlockLidButton.setVisible(true);
-                    unlockLidButton.disableProperty().bind(selectedPrinter.LidOpenProperty().or(selectedPrinter.whyAreWeWaitingProperty().isNotEqualTo(WhyAreWeWaitingState.NOT_WAITING)));
-                    temperatureWarning.visibleProperty().bind(selectedPrinter.bedTemperatureProperty().greaterThan(ApplicationConfiguration.bedHotAboveDegrees));
+                            unlockLidButton.setVisible(true);
+                            unlockLidButton.disableProperty().bind(
+                                    selectedPrinter.LidOpenProperty().or(
+                                            selectedPrinter.whyAreWeWaitingProperty().isNotEqualTo(
+                                                    WhyAreWeWaitingState.NOT_WAITING)));
+                            temperatureWarning.visibleProperty().bind(
+                                    selectedPrinter.bedTemperatureProperty().greaterThan(
+                                            ApplicationConfiguration.bedHotAboveDegrees));
 
-                    selectedPrinter.reelDataChangedProperty().addListener(reelDataChangeListener);
-                    selectedPrinter.reelEEPROMStatusProperty().addListener(reelChangeListener);
-                    setFilamentColour(selectedPrinter.loadedFilamentProperty().get());
-                    filamentRectangle.visibleProperty().bind(selectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
-                    reel.visibleProperty().bind(selectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
+                            selectedPrinter.reelDataChangedProperty().addListener(
+                                    reelDataChangeListener);
+                            selectedPrinter.reelEEPROMStatusProperty().addListener(
+                                    reelChangeListener);
+                            setFilamentColour(
+                                    selectedPrinter.loadedFilamentProperty().get());
+                            filamentRectangle.visibleProperty().bind(
+                                    selectedPrinter.reelEEPROMStatusProperty().isEqualTo(
+                                            EEPROMState.PROGRAMMED));
+                            reel.visibleProperty().bind(
+                                    selectedPrinter.reelEEPROMStatusProperty().isEqualTo(
+                                            EEPROMState.PROGRAMMED));
 
-                    printerOpenImage.visibleProperty().bind(selectedPrinter.LidOpenProperty());
-                    printerClosedImage.visibleProperty().bind(selectedPrinter.LidOpenProperty().not());
+                            printerOpenImage.visibleProperty().bind(
+                                    selectedPrinter.LidOpenProperty());
+                            printerClosedImage.visibleProperty().bind(
+                                    selectedPrinter.LidOpenProperty().not());
 
-                    advancedControlsVisible.unbind();
-                    advancedControlsVisible.bind((selectedPrinter.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.IDLE).and(selectedPrinter.whyAreWeWaitingProperty().isEqualTo(WhyAreWeWaitingState.NOT_WAITING))).or(selectedPrinter.printerStatusProperty().isEqualTo(PrinterStatusEnumeration.PAUSED)));
-                }
+                            advancedControlsVisible.unbind();
+                            advancedControlsVisible.bind(
+                                    (selectedPrinter.printerStatusProperty().isEqualTo(
+                                            PrinterStatusEnumeration.IDLE).and(
+                                            selectedPrinter.whyAreWeWaitingProperty().isEqualTo(
+                                                    WhyAreWeWaitingState.NOT_WAITING))).or(
+                                            selectedPrinter.printerStatusProperty().isEqualTo(
+                                                    PrinterStatusEnumeration.PAUSED)));
+                        }
 
-                lastSelectedPrinter = selectedPrinter;
-            }
-        });
+                        lastSelectedPrinter = selectedPrinter;
+                    }
+                });
 
         advancedControls = new Node[]
         {
@@ -660,7 +755,8 @@ public class PrinterStatusPageController implements Initializable
                 new ChangeListener<Boolean>()
                 {
                     @Override
-                    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue
+                    public void changed(ObservableValue<? extends Boolean> observable,
+                            Boolean oldValue, Boolean newValue
                     )
                     {
                         for (Node node : advancedControls)
@@ -670,6 +766,14 @@ public class PrinterStatusPageController implements Initializable
                     }
                 }
         );
+    }
+
+    private String convertToHoursMinutes(int seconds)
+    {
+        int minutes = (int) (seconds / 60);
+        int hours = minutes / 60;
+        minutes = minutes - (60 * hours);
+        return String.format("%02d:%02d", hours, minutes);
     }
 
     /**
@@ -707,7 +811,8 @@ public class PrinterStatusPageController implements Initializable
         parent.widthProperty().addListener(new ChangeListener<Number>()
         {
             @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            public void changed(ObservableValue<? extends Number> observable,
+                    Number oldValue, Number newValue)
             {
                 resizePrinterDisplay(parent);
             }
@@ -715,7 +820,8 @@ public class PrinterStatusPageController implements Initializable
         parent.heightProperty().addListener(new ChangeListener<Number>()
         {
             @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            public void changed(ObservableValue<? extends Number> observable,
+                    Number oldValue, Number newValue)
             {
                 resizePrinterDisplay(parent);
             }
@@ -756,7 +862,8 @@ public class PrinterStatusPageController implements Initializable
     {
         try
         {
-            printerToUse.transmitDirectGCode(GCodeConstants.selectNozzle + nozzleNumber, true);
+            printerToUse.transmitDirectGCode(GCodeConstants.selectNozzle + nozzleNumber,
+                                             true);
         } catch (RoboxCommsException ex)
         {
             steno.error("Error selecting nozzle");
@@ -781,9 +888,12 @@ public class PrinterStatusPageController implements Initializable
         reel.visibleProperty().unbind();
         if (lastSelectedPrinter != null)
         {
-            lastSelectedPrinter.printerColourProperty().removeListener(printerColourChangeListener);
-            lastSelectedPrinter.reelDataChangedProperty().removeListener(reelDataChangeListener);
-            lastSelectedPrinter.reelEEPROMStatusProperty().removeListener(reelChangeListener);
+            lastSelectedPrinter.printerColourProperty().removeListener(
+                    printerColourChangeListener);
+            lastSelectedPrinter.reelDataChangedProperty().removeListener(
+                    reelDataChangeListener);
+            lastSelectedPrinter.reelEEPROMStatusProperty().removeListener(
+                    reelChangeListener);
         }
 
         filamentRectangle.visibleProperty().unbind();

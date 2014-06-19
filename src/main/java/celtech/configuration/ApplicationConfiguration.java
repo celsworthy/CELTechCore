@@ -321,8 +321,13 @@ public class ApplicationConfiguration
     /**
      * Used in testing only
      */
-    public static void setInstallationProperties(Properties testingProperties) {
+    public static void setInstallationProperties(Properties testingProperties,
+            String applicationInstallDirectory, String commonApplicationDirectory,
+            String userStorageDirectory) {
         installationProperties = testingProperties;
+        ApplicationConfiguration.applicationInstallDirectory = applicationInstallDirectory;
+        ApplicationConfiguration.commonApplicationDirectory = commonApplicationDirectory;
+        ApplicationConfiguration.userStorageDirectory = userStorageDirectory;
     }
 
     /**

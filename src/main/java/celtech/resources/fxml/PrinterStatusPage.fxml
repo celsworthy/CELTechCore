@@ -342,6 +342,7 @@
                             </effect>
                         </ProgressBar>
                         <Text id="progressText" fx:id="progressPercent" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" translateY="0.0" />
+                  <Text fx:id="progressETC" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" translateX="300.0" />
                     </children>
                 </StackPane>
                 <StackPane id="StackPane">

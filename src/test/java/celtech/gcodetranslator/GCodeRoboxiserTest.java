@@ -3,20 +3,15 @@
  */
 package celtech.gcodetranslator;
 
-import celtech.Lookup;
-import celtech.configuration.ApplicationConfiguration;
+import celtech.JavaFXConfiguredTest;
 import celtech.configuration.PrintProfileContainer;
 import celtech.services.slicer.RoboxProfile;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Properties;
+import java.util.List;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -25,45 +20,11 @@ import org.junit.rules.TemporaryFolder;
  *
  * @author tony
  */
-public class GCodeRoboxiserTest
+public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 {
-
-    public GCodeRoboxiserTest()
-    {
-    }
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    @BeforeClass
-    public static void setUpClass()
-    {
-    }
-
-    @AfterClass
-    public static void tearDownClass()
-    {
-    }
-
-    @Before
-    public void setUp()
-    {
-        Properties testProperties = new Properties();
-        testProperties.setProperty("language", "UK");
-        ApplicationConfiguration.setInstallationProperties(testProperties);
-        Lookup.initialise();
-
-        // force initialisation
-        System.setProperty("libertySystems.configFile",
-                           "/home/tony/CEL/AutoMaker/AutoMaker.configFile.xml");
-        String installDir = ApplicationConfiguration.getApplicationInstallDirectory(Lookup.class);
-        PrintProfileContainer.getInstance();
-    }
-
-    @After
-    public void tearDown()
-    {
-    }
 
     @Test
     public void testRoboxiseFileProduces67Layers() throws IOException
@@ -74,8 +35,11 @@ public class GCodeRoboxiserTest
 
         RoboxProfile roboxProfile = PrintProfileContainer.getCompleteProfileList().get(0);
         DoubleProperty progressProperty = new SimpleDoubleProperty(0);
-        RoboxiserResult roboxiserResult = gCodeRoboxiser.roboxiseFile(url.getFile(), outputFilePath, roboxProfile, progressProperty);
-        
+        RoboxiserResult roboxiserResult = gCodeRoboxiser.roboxiseFile(url.getFile(),
+                                                                      outputFilePath,
+                                                                      roboxProfile,
+                                                                      progressProperty);
+
         int numLayers = roboxiserResult.getLayerNumberToDistanceTravelled().size();
         assertEquals(67, numLayers);
         assertEquals(roboxiserResult.getLayerNumberToDistanceTravelled().size(),
@@ -86,5 +50,53 @@ public class GCodeRoboxiserTest
             System.out.println(i + " " + distance);
         }
     }
+
+    @Test
+    public void testRoboxiseFileProducesFirstExtrusionLineNumber() throws IOException
+    {
+        GCodeRoboxiser gCodeRoboxiser = new GCodeRoboxiser();
+        URL url = this.getClass().getResource("/pyramid.gcode");
+        String outputFilePath = temporaryFolder.newFile("pyramid.gcode").getCanonicalPath();
+
+        RoboxProfile roboxProfile = PrintProfileContainer.getCompleteProfileList().get(0);
+        DoubleProperty progressProperty = new SimpleDoubleProperty(0);
+        RoboxiserResult roboxiserResult = gCodeRoboxiser.roboxiseFile(url.getFile(),
+                                                                      outputFilePath,
+                                                                      roboxProfile,
+                                                                      progressProperty);
+        assertEquals(34, (long) roboxiserResult.getLineNumberOfFirstExtrusion());
+    }
+    
+    @Test
+    public void testRoboxiseFileTotalDistanceAndTime() throws IOException
+    {
+        GCodeRoboxiser gCodeRoboxiser = new GCodeRoboxiser();
+        URL url = this.getClass().getResource("/pyramid.gcode");
+        String outputFilePath = temporaryFolder.newFile("pyramid.gcode").getCanonicalPath();
+
+        RoboxProfile roboxProfile = PrintProfileContainer.getCompleteProfileList().get(0);
+        DoubleProperty progressProperty = new SimpleDoubleProperty(0);
+        RoboxiserResult roboxiserResult = gCodeRoboxiser.roboxiseFile(url.getFile(),
+                                                                      outputFilePath,
+                                                                      roboxProfile,
+                                                                      progressProperty);
+        
+        List<Double> distanceForLayers = roboxiserResult.getLayerNumberToDistanceTravelled();
+        List<Double> durationForLayers = roboxiserResult.getLayerNumberToPredictedDuration();
+        double totalDistance = 0;
+        for (Double distance : distanceForLayers)
+        {
+            totalDistance += distance;
+        }
+        assertEquals(9465d, totalDistance, 1); 
+       
+       double totalDuration = 0;
+       for (Double duration : durationForLayers)
+        {
+            totalDuration += duration;
+        }
+        assertEquals(536d, totalDuration, 1);        
+
+    }    
 
 }

@@ -40,6 +40,8 @@ public class TestPrinter implements Printer
 {
 
     private IntegerProperty printJobLineNumber = new SimpleIntegerProperty(0);
+    private IntegerProperty bedTargetTemperature = new SimpleIntegerProperty(100);
+    private IntegerProperty bedTemperature = new SimpleIntegerProperty(22);
     private boolean printInitiated = false;
     private int sequenceNumber;
 
@@ -59,6 +61,42 @@ public class TestPrinter implements Printer
     public StringProperty printJobIDProperty()
     {
         return new SimpleStringProperty("JobIdA");
+    }
+
+    @Override
+    public int getBedTargetTemperature()
+    {
+        return bedTargetTemperature.get();
+    }
+
+    @Override
+    public IntegerProperty bedTargetTemperatureProperty()
+    {
+        return bedTargetTemperature;
+    }
+
+    @Override
+    public int getBedTemperature()
+    {
+        return bedTemperature.get();
+    }
+
+    @Override
+    public IntegerProperty bedTemperatureProperty()
+    {
+        return bedTemperature;
+    }
+
+    @Override
+    public void setBedTemperature(int temperature)
+    {
+        bedTemperature.set(temperature);
+    }
+
+    @Override
+    public void setBedTargetTemperature(int temperature)
+    {
+        bedTargetTemperature.set(temperature);
     }
 
     @Override
@@ -344,24 +382,6 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void setBedTemperature(int value)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public int getBedTemperature()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public IntegerProperty bedTemperatureProperty()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public XYChart.Series<Number, Number> bedTemperatureHistory()
     {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -387,24 +407,6 @@ public class TestPrinter implements Printer
 
     @Override
     public IntegerProperty bedFirstLayerTargetTemperatureProperty()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void setBedTargetTemperature(int value)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public int getBedTargetTemperature()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public IntegerProperty bedTargetTemperatureProperty()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -1298,7 +1300,12 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void transmitWriteReelEEPROM(String reelTypeCode, String reelUniqueID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature, float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter, float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament) throws RoboxCommsException
+    public void transmitWriteReelEEPROM(String reelTypeCode, String reelUniqueID,
+            float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
+            float reelFirstLayerBedTemperature, float reelBedTemperature,
+            float reelAmbientTemperature, float reelFilamentDiameter,
+            float reelFilamentMultiplier, float reelFeedRateMultiplier,
+            float reelRemainingFilament) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -1310,7 +1317,12 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature, float thermistorBeta, float thermistorTCal, float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset, float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset, float lastFilamentTemperature, float hourCounter) throws RoboxCommsException
+    public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID,
+            float maximumTemperature, float thermistorBeta, float thermistorTCal,
+            float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset,
+            float nozzle1BOffset, float nozzle2XOffset, float nozzle2YOffset,
+            float nozzle2ZOffset, float nozzle2BOffset, float lastFilamentTemperature,
+            float hourCounter) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -1340,7 +1352,10 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public boolean transmitWritePrinterID(String model, String edition, String weekOfManufacture, String yearOfManufacture, String poNumber, String serialNumber, String checkByte, String printerFriendlyName, Color colour) throws RoboxCommsException
+    public boolean transmitWritePrinterID(String model, String edition,
+            String weekOfManufacture, String yearOfManufacture, String poNumber,
+            String serialNumber, String checkByte, String printerFriendlyName,
+            Color colour) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -1352,13 +1367,15 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void transmitSetTemperatures(double nozzleFirstLayerTarget, double nozzleTarget, double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException
+    public void transmitSetTemperatures(double nozzleFirstLayerTarget, double nozzleTarget,
+            double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void transmitSetFilamentInfo(double filamentDiameter, double filamentMultiplier, double feedRateMultiplier) throws RoboxCommsException
+    public void transmitSetFilamentInfo(double filamentDiameter, double filamentMultiplier,
+            double feedRateMultiplier) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -1391,11 +1408,12 @@ public class TestPrinter implements Printer
     @Override
     public void sendDataFileChunk(String hexDigits, boolean lastPacket, boolean appendCRLF) throws DatafileSendNotInitialised, RoboxCommsException
     {
-        
+
     }
 
     @Override
-    public void printProject(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings)
+    public void printProject(Project project, Filament filament,
+            PrintQualityEnumeration printQuality, RoboxProfile settings)
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }

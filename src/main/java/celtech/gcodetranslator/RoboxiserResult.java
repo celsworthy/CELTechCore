@@ -17,8 +17,23 @@ public class RoboxiserResult
     private boolean success = false;
     private double predictedDuration = 0.0;
     private double volumeUsed = 0.0;
+    /**
+     * Line number for the start of the layer at the given index
+     */
     private List<Integer> layerNumberToLineNumber;
+    /**
+     *  Distance travelled for the layer at the given index
+     */
     private List<Double> layerNumberToDistanceTravelled;
+    /**
+     * The line number where the first extrusion is performed
+     */
+    private Integer lineNumberOfFirstExtrusion;
+    
+    /**
+     * The predicted duration in seconds for the layer at the given index
+     */
+    private List<Double> layerNumberToPredictedDuration;
 
     /**
      *
@@ -104,6 +119,39 @@ public class RoboxiserResult
     public void setLayerNumberToDistanceTravelled(List<Double> layerNumberToDistanceTravelled)
     {
         this.layerNumberToDistanceTravelled = layerNumberToDistanceTravelled;
+    }
+
+    /**
+     * @return the lineNumberOfFirstExtrusion
+     */
+    public Integer getLineNumberOfFirstExtrusion()
+    {
+        return lineNumberOfFirstExtrusion;
+    }
+
+    /**
+     * @param lineNumberOfFirstExtrusion the lineNumberOfFirstExtrusion to set
+     */
+    public void setLineNumberOfFirstExtrusion(Integer lineNumberOfFirstExtrusion)
+    {
+        this.lineNumberOfFirstExtrusion = lineNumberOfFirstExtrusion;
+    }
+
+    /**
+     * @return the layerNumberToPredictedDuration
+     */
+    public List<Double> getLayerNumberToPredictedDuration()
+    {
+        return layerNumberToPredictedDuration;
+    }
+
+    /**
+     * @param layerNumberToPredictedDuration the layerNumberToPredictedDuration to set
+     */
+    public void setLayerNumberToPredictedDuration(
+            List<Double> layerNumberToPredictedDuration)
+    {
+        this.layerNumberToPredictedDuration = layerNumberToPredictedDuration;
     }
     
     
