@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package celtech.utils.ThreeD;
+package celtech.utils.threed;
 
 import celtech.modelcontrol.ModelContainer;
 import java.util.List;
