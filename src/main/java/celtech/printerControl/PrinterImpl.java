@@ -138,7 +138,8 @@ public class PrinterImpl implements Printer
     private FloatProperty headZPosition = new SimpleFloatProperty(0);
     private FloatProperty BPosition = new SimpleFloatProperty(0);
     private final ObjectProperty<PrinterStatusEnumeration> printerStatus = new SimpleObjectProperty<>(PrinterStatusEnumeration.IDLE);
-    private IntegerProperty printJobLineNumber = new SimpleIntegerProperty(0);
+    // make the initial value to non-zero so that we get a change event when set to 0
+    private IntegerProperty printJobLineNumber = new SimpleIntegerProperty(-1);
     private StringProperty printJobID = new SimpleStringProperty();
     private BooleanProperty busy = new SimpleBooleanProperty(false);
     private BooleanProperty paused = new SimpleBooleanProperty(false);

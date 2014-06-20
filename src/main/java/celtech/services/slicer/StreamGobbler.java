@@ -43,7 +43,6 @@ class StreamGobbler extends Thread
             }
         } catch (IOException ioe)
         {
-            ioe.printStackTrace();
             steno.error("Error during slicer execution: " + ioe.toString());
         }
     }

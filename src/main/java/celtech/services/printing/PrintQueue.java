@@ -81,6 +81,10 @@ public class PrintQueue implements ControllableService
     private IntegerProperty estimatedMaterialVolume = new SimpleIntegerProperty(0);
     private IntegerProperty estimatedRemainingPrintTimeSeconds = new SimpleIntegerProperty(
             0);
+    /**
+     * Indicates if ETC data is available for the current print
+     */
+    private BooleanProperty etcAvailable = new SimpleBooleanProperty(false);
     /*
      * 
      */
@@ -245,7 +249,8 @@ public class PrintQueue implements ControllableService
 
         succeededGCodePostProcessEventHandler = (WorkerStateEvent t) ->
         {
-            GCodePostProcessingResult result = (GCodePostProcessingResult) (t.getSource().getValue());
+            GCodePostProcessingResult result = (GCodePostProcessingResult) (t.getSource().
+                    getValue());
 
             if (result.getRoboxiserResult().isSuccess())
             {
@@ -264,16 +269,21 @@ public class PrintQueue implements ControllableService
                 int numberOfLines = SystemUtils.countLinesInFile(gcodeFromPrintJob, ";");
                 linesInPrintingFile.set(numberOfLines);
 
-                List<Double> layerNumberToDistanceTravelled = result.getRoboxiserResult().getLayerNumberToDistanceTravelled();
-                List<Double> layerNumberToPredictedDuration = result.getRoboxiserResult().getLayerNumberToPredictedDuration();
-                List<Integer> layerNumberToLineNumber = result.getRoboxiserResult().getLayerNumberToLineNumber();
-                Integer lineNumberOfFirstExtrusion = result.getRoboxiserResult().getLineNumberOfFirstExtrusion();
+                List<Double> layerNumberToDistanceTravelled = result.getRoboxiserResult().
+                        getLayerNumberToDistanceTravelled();
+                List<Double> layerNumberToPredictedDuration = result.getRoboxiserResult().
+                        getLayerNumberToPredictedDuration();
+                List<Integer> layerNumberToLineNumber = result.getRoboxiserResult().
+                        getLayerNumberToLineNumber();
+                Integer lineNumberOfFirstExtrusion = result.getRoboxiserResult().
+                        getLineNumberOfFirstExtrusion();
 
                 etcCalculator = new ETCCalculator(associatedPrinter,
                                                   layerNumberToDistanceTravelled,
                                                   layerNumberToPredictedDuration,
                                                   layerNumberToLineNumber, numberOfLines,
                                                   lineNumberOfFirstExtrusion);
+                etcAvailable.set(true);
 
                 gcodePrintService.reset();
                 gcodePrintService.setCurrentPrintJobID(jobUUID);
@@ -330,7 +340,8 @@ public class PrintQueue implements ControllableService
                     {
                         setPrintStatus(PrinterStatusEnumeration.EXECUTING_MACRO);
                         //Remove the print job from disk
-                        String printjobFilename = ApplicationConfiguration.getPrintSpoolDirectory() + result.getPrintJobID();
+                        String printjobFilename = ApplicationConfiguration.
+                                getPrintSpoolDirectory() + result.getPrintJobID();
                         File directoryToDelete = new File(printjobFilename);
                         try
                         {
@@ -338,15 +349,17 @@ public class PrintQueue implements ControllableService
                         } catch (IOException ex)
                         {
                             steno.error(
-                                    "Error whilst deleting macro print directory " + printjobFilename + " exception - " + ex.getMessage());
+                                    "Error whilst deleting macro print directory "
+                                    + printjobFilename + " exception - " + ex.getMessage());
                         }
                     } else
                     {
                         PrintQueue.this.notificationsHandler.showInformationNotification(
                                 notificationTitle,
-                                printTransferSuccessfulNotification + " " + associatedPrinter.getPrinterFriendlyName() + "\n" + printTransferSuccessfulNotificationEnd);
+                                printTransferSuccessfulNotification + " "
+                                + associatedPrinter.getPrinterFriendlyName() + "\n"
+                                + printTransferSuccessfulNotificationEnd);
                         setPrintStatus(PrinterStatusEnumeration.PRINTING);
-                        updateETCUsingETCCalculator(0);
                     }
                 } else
                 {
@@ -378,13 +391,15 @@ public class PrintQueue implements ControllableService
                     Number newValue)
             {
 //                steno.info("Line number is " + newValue.toString() + " and was " + oldValue.toString());
+                System.out.println("Line number changed to " + newValue);
                 switch (printState)
                 {
                     case IDLE:
 //Ignore this state...
                         break;
                     case PRINTING:
-                        if (etcCalculator != null)
+                    case SENDING_TO_PRINTER:
+                        if (etcAvailable.get())
                         {
                             updateETCUsingETCCalculator(newValue);
                         } else
@@ -392,7 +407,6 @@ public class PrintQueue implements ControllableService
                             updateETCUsingLineNumber(newValue);
                         }
                         break;
-                    case SENDING_TO_PRINTER:
                     case EXECUTING_MACRO:
                         updateETCUsingLineNumber(newValue);
                         break;
@@ -405,7 +419,8 @@ public class PrintQueue implements ControllableService
             {
                 if (linesInPrintingFile.get() > 0)
                 {
-                    double percentDone = newValue.doubleValue() / linesInPrintingFile.doubleValue();
+                    double percentDone = newValue.doubleValue() / linesInPrintingFile.
+                            doubleValue();
                     primaryProgressPercent.set(percentDone);
                 }
             }
@@ -431,7 +446,8 @@ public class PrintQueue implements ControllableService
 
         setPrintStatus(PrinterStatusEnumeration.IDLE);
 
-        associatedPrinter.printJobLineNumberProperty().addListener(printLineNumberListener);
+        associatedPrinter.printJobLineNumberProperty().
+                addListener(printLineNumberListener);
         associatedPrinter.printJobIDProperty().addListener(printJobIDListener);
     }
 
@@ -470,15 +486,20 @@ public class PrintQueue implements ControllableService
                         //Try to find the print job and determine how many lines there were in it
 
                         File gcodeFromPrintJob = new File(
-                                ApplicationConfiguration.getPrintSpoolDirectory() + associatedPrinter.getPrintJobID() + File.separator + associatedPrinter.getPrintJobID() + ApplicationConfiguration.gcodeTempFileExtension);
-                        int numberOfLines = SystemUtils.countLinesInFile(gcodeFromPrintJob,
-                                                                         ";");
+                                ApplicationConfiguration.getPrintSpoolDirectory()
+                                + associatedPrinter.getPrintJobID() + File.separator
+                                + associatedPrinter.getPrintJobID()
+                                + ApplicationConfiguration.gcodeTempFileExtension);
+                        int numberOfLines = SystemUtils.
+                                countLinesInFile(gcodeFromPrintJob,
+                                                 ";");
                         linesInPrintingFile.set(numberOfLines);
 
                         double percentDone = -1;
                         if (linesInPrintingFile.get() > 0)
                         {
-                            percentDone = (double) associatedPrinter.getPrintJobLineNumber() / numberOfLines;
+                            percentDone = (double) associatedPrinter.
+                                    getPrintJobLineNumber() / numberOfLines;
                         }
 
                         primaryProgressPercent.set(percentDone);
@@ -531,6 +552,7 @@ public class PrintQueue implements ControllableService
             PrintQualityEnumeration printQuality, RoboxProfile settings)
     {
         boolean acceptedPrintRequest = false;
+        etcAvailable.set(false);
 
         if (printState == PrinterStatusEnumeration.IDLE)
         {
@@ -544,7 +566,8 @@ public class PrintQueue implements ControllableService
                 //Is it still on the printer?
                 try
                 {
-                    ListFilesResponse listFilesResponse = associatedPrinter.transmitListFiles();
+                    ListFilesResponse listFilesResponse = associatedPrinter.
+                            transmitListFiles();
                     if (listFilesResponse.getPrintJobIDs().contains(jobUUID))
                     {
                         //Reprint directly from printer
@@ -554,7 +577,11 @@ public class PrintQueue implements ControllableService
                                         "notification.reprintInitiated"));
 
                         //Try to get the number of lines in the file
-                        String printjobFilename = ApplicationConfiguration.getPrintSpoolDirectory() + jobUUID + File.separator + jobUUID + ApplicationConfiguration.gcodePostProcessedFileHandle + ApplicationConfiguration.gcodeTempFileExtension;
+                        String printjobFilename = ApplicationConfiguration.
+                                getPrintSpoolDirectory() + jobUUID + File.separator
+                                + jobUUID
+                                + ApplicationConfiguration.gcodePostProcessedFileHandle
+                                + ApplicationConfiguration.gcodeTempFileExtension;
                         File printJobFile = new File(printjobFilename);
                         if (printJobFile.exists())
                         {
@@ -570,7 +597,11 @@ public class PrintQueue implements ControllableService
                     {
                         //Need to send the file to the printer
                         //Is it still on disk?
-                        String printjobFilename = ApplicationConfiguration.getPrintSpoolDirectory() + jobUUID + File.separator + jobUUID + ApplicationConfiguration.gcodePostProcessedFileHandle + ApplicationConfiguration.gcodeTempFileExtension;
+                        String printjobFilename = ApplicationConfiguration.
+                                getPrintSpoolDirectory() + jobUUID + File.separator
+                                + jobUUID
+                                + ApplicationConfiguration.gcodePostProcessedFileHandle
+                                + ApplicationConfiguration.gcodeTempFileExtension;
                         File printJobFile = new File(printjobFilename);
                         if (printJobFile.exists())
                         {
@@ -594,7 +625,8 @@ public class PrintQueue implements ControllableService
                         {
                             printFromScratchRequired = true;
                             steno.error(
-                                    "Print job " + jobUUID + " not found on printer or disk - going ahead with print from scratch");
+                                    "Print job " + jobUUID
+                                    + " not found on printer or disk - going ahead with print from scratch");
                         }
                     }
                 } catch (RoboxCommsException ex)
@@ -613,7 +645,8 @@ public class PrintQueue implements ControllableService
                 //Create the print job directory
                 String printUUID = SystemUtils.generate16DigitID();
 
-                String printJobDirectoryName = ApplicationConfiguration.getPrintSpoolDirectory() + printUUID;
+                String printJobDirectoryName = ApplicationConfiguration.
+                        getPrintSpoolDirectory() + printUUID;
 
                 File printJobDirectory = new File(printJobDirectoryName);
                 printJobDirectory.mkdirs();
@@ -624,7 +657,8 @@ public class PrintQueue implements ControllableService
                 File[] filesOnDisk = printSpoolDirectory.listFiles();
                 if (filesOnDisk.length > ApplicationConfiguration.maxPrintSpoolFiles)
                 {
-                    int filesToDelete = filesOnDisk.length - ApplicationConfiguration.maxPrintSpoolFiles;
+                    int filesToDelete = filesOnDisk.length
+                            - ApplicationConfiguration.maxPrintSpoolFiles;
                     Arrays.sort(filesOnDisk, (File f1, File f2) -> Long.valueOf(
                                 f1.lastModified()).compareTo(f2.lastModified()));
                     for (int i = 0; i < filesToDelete; i++)
@@ -649,7 +683,8 @@ public class PrintQueue implements ControllableService
                     settings.filament_diameterProperty().set(
                             ApplicationConfiguration.filamentDiameterToYieldVolumetricExtrusion);
                     settings.writeToFile(
-                            printJobDirectoryName + File.separator + printUUID + ApplicationConfiguration.printProfileFileExtension);
+                            printJobDirectoryName + File.separator + printUUID
+                            + ApplicationConfiguration.printProfileFileExtension);
 
                     setPrintStatus(PrinterStatusEnumeration.SLICING);
                     slicerService.reset();
@@ -666,7 +701,9 @@ public class PrintQueue implements ControllableService
                     acceptedPrintRequest = true;
                 } else if (project.getProjectMode() == ProjectMode.GCODE)
                 {
-                    String printjobFilename = ApplicationConfiguration.getPrintSpoolDirectory() + printUUID + File.separator + printUUID + ApplicationConfiguration.gcodeTempFileExtension;
+                    String printjobFilename = ApplicationConfiguration.
+                            getPrintSpoolDirectory() + printUUID + File.separator
+                            + printUUID + ApplicationConfiguration.gcodeTempFileExtension;
                     String fileToCopyname = project.getGCodeFilename();
                     File printjobFile = new File(printjobFilename);
                     File fileToCopy = new File(fileToCopyname);
@@ -685,7 +722,8 @@ public class PrintQueue implements ControllableService
                     } catch (IOException ex)
                     {
                         steno.error(
-                                "Error whilt preparing for print. Can't copy " + fileToCopyname + " to " + printjobFilename);
+                                "Error whilt preparing for print. Can't copy "
+                                + fileToCopyname + " to " + printjobFilename);
                     }
                 }
             }
@@ -912,6 +950,7 @@ public class PrintQueue implements ControllableService
      */
     public void resumePrint()
     {
+        etcAvailable.set(false);
         if (associatedPrinter.pausedProperty().get() == true)
         {
             try
@@ -1083,7 +1122,8 @@ public class PrintQueue implements ControllableService
         //Create the print job directory
         String printUUID = SystemUtils.generate16DigitID();
 
-        String printJobDirectoryName = ApplicationConfiguration.getPrintSpoolDirectory() + printUUID;
+        String printJobDirectoryName = ApplicationConfiguration.getPrintSpoolDirectory()
+                + printUUID;
 
         File printJobDirectory = new File(printJobDirectoryName);
         printJobDirectory.mkdirs();
@@ -1094,7 +1134,8 @@ public class PrintQueue implements ControllableService
         File[] filesOnDisk = printSpoolDirectory.listFiles();
         if (filesOnDisk.length > ApplicationConfiguration.maxPrintSpoolFiles)
         {
-            int filesToDelete = filesOnDisk.length - ApplicationConfiguration.maxPrintSpoolFiles;
+            int filesToDelete = filesOnDisk.length
+                    - ApplicationConfiguration.maxPrintSpoolFiles;
             Arrays.sort(filesOnDisk,
                         (File f1, File f2) -> Long.valueOf(f1.lastModified()).compareTo(
                                 f2.lastModified()));
@@ -1110,7 +1151,9 @@ public class PrintQueue implements ControllableService
             }
         }
 
-        String printjobFilename = ApplicationConfiguration.getPrintSpoolDirectory() + printUUID + File.separator + printUUID + ApplicationConfiguration.gcodeTempFileExtension;
+        String printjobFilename = ApplicationConfiguration.getPrintSpoolDirectory()
+                + printUUID + File.separator + printUUID
+                + ApplicationConfiguration.gcodeTempFileExtension;
         File printjobFile = new File(printjobFilename);
         File fileToCopy = new File(filename);
 
@@ -1122,7 +1165,8 @@ public class PrintQueue implements ControllableService
         } catch (IOException ex)
         {
             steno.error(
-                    "Error whilst preparing for gcode print. Can't copy " + filename + " to " + printjobFilename);
+                    "Error whilst preparing for gcode print. Can't copy " + filename
+                    + " to " + printjobFilename);
         }
 
         int numberOfLines = SystemUtils.countLinesInFile(printjobFile, ";");
@@ -1153,5 +1197,9 @@ public class PrintQueue implements ControllableService
     public IntegerProperty progressETCProperty()
     {
         return progressETC;
+    }
+    
+    public ReadOnlyBooleanProperty etcAvailableProperty() {
+        return etcAvailable;
     }
 }
