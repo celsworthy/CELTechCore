@@ -37,13 +37,11 @@
 
 .header{
     -fx-font-size: 42pt;
-    -fx-font-family: "Segoe UI Light";
     -fx-text-fill: white;
 }
 
 .item-title{
     -fx-font-size: 11pt;
-    -fx-font-family: "Segoe UI Semibold";
     -fx-text-fill: white;
     -fx-opacity: 0.6;
 }   
@@ -81,7 +79,6 @@
 
     -fx-background-color: #1d1d1d;
 
-    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
     -fx-font-size: 11pt;
     -fx-text-fill: #d8d8d8;
 }
@@ -259,7 +256,6 @@
 
     -fx-background-color: #1d1d1d;
 
-    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
     -fx-font-size: 11pt;
     -fx-text-fill: #d8d8d8;
 }
@@ -518,7 +514,6 @@
 .menu-item .label {
     -fx-padding: 0em 0.5em 0em 0em;
     -fx-text-fill: #212121;
-    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
     -fx-font-size: 11pt;
 }
 
@@ -798,7 +793,6 @@
 
 .list-spinner .label
 {
-    -fx-font-family: "Segoe UI";
     -fx-text-fill: white;    
 }
 
@@ -852,9 +846,9 @@
 .tab-header-area{
     -fx-padding: 0px;
 }
+
 .tab-pane, .tab-header-background{
     -fx-background-color: dark_grey;
-    -fx-border-width: 0;
 }
 
 
@@ -864,12 +858,17 @@
 
 .tab:selected, .tab:selected .tab-label{
     -fx-background-color: blue_colour;
-    -fx-border-width: 0;
+    -fx-border-color: blue_colour;
 }
 
 .tab .tab-label{
     -fx-background-color: mid_grey;
     -fx-text-fill: white;
+}
+
+.tab:top {
+    -fx-border-width: 0.3;
+    -fx-border-color: black;
 }
 
 .tab{
@@ -945,7 +944,6 @@ table-view .column-header-background {
 
 .table-view .column-header .label {
     -fx-font-size: 20pt;
-    -fx-font-family: "Segoe UI Light";
     -fx-text-fill: black;
     -fx-alignment: center-left;
     -fx-opacity: 1;
@@ -984,7 +982,6 @@ table-view .column-header-background {
  */
 .slider .axis:bottom {
     -fx-tick-label-fill: white;
-    -fx-tick-label-font: 16 "Segoe UI";
 }
 
 
@@ -1139,6 +1136,12 @@ table-view .column-header-background {
     -fx-font-size: 10pt;
     -fx-padding: 2 2 2 2;
     -fx-alignment: CENTER_LEFT;
+}
+
+.RestrictedNumberField{
+    -fx-font-size: 10pt;
+    -fx-padding: 2 2 2 2;
+    -fx-alignment: CENTER_RIGHT;
 }
 
 .custom-text-field{

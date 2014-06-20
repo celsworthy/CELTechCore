@@ -4,6 +4,9 @@
  */
 package celtech.printerControl.comms.commands.tx;
 
+import celtech.utils.FixedDecimalFloatFormat;
+import celtech.utils.PrinterUtils;
+
 /**
  *
  * @author ianhudson
@@ -40,9 +43,11 @@ public class SetFilamentInfo extends RoboxTxPacket
     {
         StringBuilder payload = new StringBuilder();
 
-        payload.append(String.format("%08.2f", filamentDiameter));
-        payload.append(String.format("%08.2f", filamentMultiplier));
-        payload.append(String.format("%08.2f", feedRateMultiplier));
+        FixedDecimalFloatFormat decimalFloatFormatter = new FixedDecimalFloatFormat();
+
+        payload.append(decimalFloatFormatter.format(filamentDiameter));
+        payload.append(decimalFloatFormatter.format(filamentMultiplier));
+        payload.append(decimalFloatFormatter.format(feedRateMultiplier));
 
         this.setMessagePayload(payload.toString());
     }

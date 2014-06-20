@@ -142,14 +142,22 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
 
+    /**
+     * The primary font used throughout the GUI, at various font sizes
+     */
+    private Font primaryFont;
+
+    private Locale usersLocale = null;
+    private Locale installedLocale = null;
+
     private DisplayManager()
     {
+        usersLocale = Locale.getDefault();
+        installedLocale = Locale.forLanguageTag(ApplicationConfiguration.getApplicationLanguage());
 
-        Locale appLocale = Locale.getDefault();
-        appLocale = Locale.forLanguageTag(ApplicationConfiguration.getApplicationLanguage());
-
-        Font.loadFont(CoreTest.class.getResource(ApplicationConfiguration.fontResourcePath + "SourceSansPro-Light.ttf").toExternalForm(), 10);
-        i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData", appLocale);
+        String primaryFontLocation = DisplayManager.class.getResource(ApplicationConfiguration.fontResourcePath + "SourceSansPro-Light.ttf").toExternalForm();
+        primaryFont = Font.loadFont(primaryFontLocation, 10);
+        i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData", installedLocale);
 
         modelLoadDialog = new ProgressDialog(modelLoaderService);
 
@@ -336,7 +344,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             {
                 slideOutPanels.put(mode, null);
                 slideOutControllers.put(mode, null);
-                steno.error("Couldn't load slideout panel for mode:" + mode + ". " + ex);
+                steno.error("Couldn't load slideout panel for mode:" + mode + ". " + ex + " : " + ex.getCause());
                 System.out.println("Exception: " + ex.getMessage());
             }
         }
@@ -460,6 +468,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         scene.getStylesheets()
                 .add("/celtech/resources/css/JMetroDarkTheme.css");
+//        root.setStyle("-fx-font-family: FreeMono;");
+        String primaryFontFamily = primaryFont.getFamily();
+        root.setStyle("-fx-font-family: " + primaryFontFamily + ";");
 
         // Camera required to allow 2D shapes to be rotated in 3D in the '2D' UI
         PerspectiveCamera controlOverlaycamera = new PerspectiveCamera(false);
@@ -499,12 +510,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
     /* 
      * GCode display controls
      */
-
     /**
      *
      * @param equalsIgnoreCase
      */
-    
     public void showGCodeTravel(boolean equalsIgnoreCase)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -541,12 +550,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
     /*
     
      */
-
     /**
      *
      * @return
      */
-    
     public ObservableList<String> gcodeFileLinesProperty()
     {
         return gcodeFileLines;
@@ -812,5 +819,25 @@ public class DisplayManager implements EventHandler<KeyEvent>
         {
             rhPanel.startSlidingOut();
         }
+    }
+
+    public Locale getApplicationLocale()
+    {
+        return installedLocale;
+    }
+
+    public Locale getUsersLocale()
+    {
+        return usersLocale;
+    }
+
+    /**
+     * Return the font family name of the primary font used in the GUI
+     *
+     * @return
+     */
+    public String getPrimaryFontFamily()
+    {
+        return primaryFont.getFamily();
     }
 }

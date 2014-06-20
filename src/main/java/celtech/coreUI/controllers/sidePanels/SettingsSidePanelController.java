@@ -122,6 +122,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private ModalDialog createProfileDialogue = null;
     private int saveProfileAction = 0;
     private int cancelProfileSaveAction = 0;
+    private RoboxProfile lastCustomProfileSelected = null;
 
     private SettingsSlideOutPanelController slideOutController = null;
 
@@ -202,6 +203,9 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 return (double) selectedQuality.getEnumPosition();
             }
         });
+        // Hack to force slider font, don't know why we need this
+        String primaryFontFamily = displayManager.getPrimaryFontFamily();
+        qualityChooser.setStyle("-fx-tick-label-font-family: " + primaryFontFamily + ";");
 
         settingsScreenState.setPrintQuality(PrintQualityEnumeration.DRAFT);
         settingsScreenState.setSettings(draftSettings);
@@ -245,7 +249,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         {
                             displayManager.slideOutAdvancedPanel();
                         }
-                        customProfileChooser.getSelectionModel().selectFirst();
                         settings = customSettings;
                         break;
                     default:
@@ -297,22 +300,23 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 {
                     displayManager.slideOutAdvancedPanel();
                     slideOutController.showProfileTab();
+
+                    lastCustomProfileSelected = newValue;
                 }
 
                 if (newValue == PrintProfileContainer.createNewProfile)
                 {
                     showCreateProfileDialogue(draftSettings.clone());
-                } else if (newValue != null)
+                }
+                else if (newValue != null)
                 {
                     slideOutController.updateProfileData(newValue);
                     customSettings = newValue;
-//                    if (PrintQualityEnumeration.fromEnumPosition((int) qualityChooser.getValue()) == PrintQualityEnumeration.CUSTOM)
-//                    {
                     settingsScreenState.setSettings(newValue);
-//                    }
-                } else if (newValue == null)
+                }
+                else if (newValue == null && settingsScreenState.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
                 {
-                    customProfileChooser.getSelectionModel().selectFirst();
+                    slideOutController.updateProfileData(null);
                 }
             }
         });
@@ -514,15 +518,20 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     private void updateProfileList()
     {
-        RoboxProfile selectedProfile = customProfileChooser.getSelectionModel().getSelectedItem();
+        RoboxProfile currentSelection = customProfileChooser.getSelectionModel().getSelectedItem();
 
         availableProfiles.clear();
         availableProfiles.addAll(PrintProfileContainer.getUserProfileList());
         availableProfiles.add(PrintProfileContainer.createNewProfile);
 
-        if (selectedProfile != null)
+        if (currentSelection != null && availableProfiles.contains(currentSelection) && currentSelection != PrintProfileContainer.createNewProfile)
         {
-            customProfileChooser.getSelectionModel().select(selectedProfile);
+            customProfileChooser.getSelectionModel().select(currentSelection);
+        } else if (customProfileChooser.getItems().size() > 1)
+        {
+            // Only pick the first element if there is something to select
+            // If size == 1 then we only have the Create new filament entry
+            customProfileChooser.getSelectionModel().selectFirst();
         }
     }
 
@@ -664,12 +673,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     private int showCreateProfileDialogue(RoboxProfile dataToUse)
     {
-        RoboxProfile profileToRevertTo = null;
-        if (settingsScreenState.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
-        {
-            profileToRevertTo = settingsScreenState.getSettings();
-        }
-
         dataToUse.setMutable(true);
         profileDetailsController.updateProfileData(dataToUse);
         int response = createProfileDialogue.show();
@@ -691,9 +694,15 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             qualityChooser.adjustValue(PrintQualityEnumeration.CUSTOM.getEnumPosition());
         } else
         {
-            if (profileToRevertTo != null)
+            if (lastCustomProfileSelected != null)
             {
-                customProfileChooser.getSelectionModel().select(profileToRevertTo);
+                if (lastCustomProfileSelected == PrintProfileContainer.createNewProfile)
+                {
+                    customProfileChooser.getSelectionModel().clearSelection();
+                } else
+                {
+                    customProfileChooser.getSelectionModel().select(lastCustomProfileSelected);
+                }
             }
         }
 

@@ -274,7 +274,7 @@ public class ApplicationConfiguration
      *
      */
     public static final float minTempToDisplayOnGraph = 35;
-    
+
     public static final int maxPermittedTempDifferenceForPurge = 50;
 
     private static Properties installationProperties = null;
@@ -317,6 +317,23 @@ public class ApplicationConfiguration
      *
      */
     public static final int maxPrintSpoolFiles = 20;
+
+    /**
+     *
+     */
+    private static boolean autoRepairHeads = true;
+
+    /**
+     *
+     */
+    private static boolean autoRepairReels = true;
+    
+    /**
+     * These variables are used to position the head correctly over the bed
+     * The actual travel of the mechanical system is not the same as the theoretical travel (to allow for door opening positions etc)
+     */
+    public static final int xPrintOffset = 6;
+    public static final int yPrintOffset = 6;
 
     /**
      *
@@ -1022,9 +1039,32 @@ public class ApplicationConfiguration
         } else if (applicationName.equals("CEL Configurator"))
         {
             return "14f690bc22c";
+        } else if (applicationName.equals("CEL Commissionator"))
+        {
+            return "1532f2c4ab";
         } else
         {
             return null;
         }
+    }
+
+    public static boolean isAutoRepairHeads()
+    {
+        return autoRepairHeads;
+    }
+
+    public static void setAutoRepairHeads(boolean value)
+    {
+        autoRepairHeads = value;
+    }
+
+    public static boolean isAutoRepairReels()
+    {
+        return autoRepairReels;
+    }
+
+    public static void setAutoRepairReels(boolean value)
+    {
+        autoRepairReels = value;
     }
 }

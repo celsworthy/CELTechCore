@@ -9,11 +9,13 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.coreUI.DisplayManager;
+import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.coreUI.visualisation.SelectionContainer;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
@@ -28,13 +30,11 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
-import javafx.util.StringConverter;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -52,28 +52,28 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private StatusScreenState statusScreenState = null;
 
     @FXML
-    private TextField widthTextField;
+    private RestrictedNumberField widthTextField;
 
     @FXML
-    private TextField depthTextField;
+    private RestrictedNumberField depthTextField;
 
     @FXML
     private VBox selectedItemDetails;
 
     @FXML
-    private TextField xAxisTextField;
+    private RestrictedNumberField xAxisTextField;
 
     @FXML
-    private TextField scaleTextField;
+    private RestrictedNumberField scaleTextField;
 
     @FXML
-    private TextField heightTextField;
+    private RestrictedNumberField heightTextField;
 
     @FXML
-    private TextField yAxisTextField;
+    private RestrictedNumberField yAxisTextField;
 
     @FXML
-    private TextField rotationTextField;
+    private RestrictedNumberField rotationTextField;
 
     @FXML
     private TableView<ModelContainer> modelDataTableView;
@@ -87,8 +87,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private ChangeListener<ModelContainer> selectedItemListener = null;
     private DisplayManager displayManager = DisplayManager.getInstance();
 
-    private StringConverter doubleTwoDigitsConverter = null;
-    private StringConverter doubleOneDigitConverter = null;
     private ListChangeListener<ModelContainer> modelChangeListener = null;
 
     private ChangeListener<Number> modelScaleChangeListener = null;
@@ -112,6 +110,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     /**
      * Initializes the controller class.
+     *
      * @param url
      * @param rb
      */
@@ -132,36 +131,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         heightTextField.setText("-");
         xAxisTextField.setText("-");
         yAxisTextField.setText("-");
-
-        doubleTwoDigitsConverter = new StringConverter<Double>()
-        {
-            @Override
-            public String toString(Double t)
-            {
-                return String.format("%.2f", t);
-            }
-
-            @Override
-            public Double fromString(String string)
-            {
-                return Double.valueOf(string);
-            }
-        };
-
-        doubleOneDigitConverter = new StringConverter<Double>()
-        {
-            @Override
-            public String toString(Double t)
-            {
-                return String.format("%.1f", t);
-            }
-
-            @Override
-            public Double fromString(String string)
-            {
-                return Double.valueOf(string);
-            }
-        };
 
         modelNameColumn.setText(modelNameLabelString);
         modelNameColumn.setCellValueFactory(new PropertyValueFactory<ModelContainer, String>("modelName"));
@@ -242,7 +211,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
         modelScaleChangeListener = new ChangeListener<Number>()
         {
-
             @Override
             public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
             {
@@ -337,7 +305,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         {
                             case ENTER:
                             case TAB:
-                                displayManager.getCurrentlyVisibleViewManager().scaleSelection(Double.valueOf(scaleTextField.getText()) / 100);
+                                try
+                                {
+                                    displayManager.getCurrentlyVisibleViewManager().scaleSelection(scaleTextField.getAsDouble() / 100.0);
+                                } catch (ParseException ex)
+                                {
+                                    steno.warning("Error converting scale " + scaleTextField.getText());
+                                }
                                 break;
                             case DECIMAL:
                             case BACK_SPACE:
@@ -359,7 +333,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 if (newValue == false)
                 {
-                    displayManager.getCurrentlyVisibleViewManager().scaleSelection(Double.valueOf(scaleTextField.getText()) / 100);
+                    try
+                    {
+                        displayManager.getCurrentlyVisibleViewManager().scaleSelection(scaleTextField.getAsDouble() / 100.0);
+                    } catch (ParseException ex)
+                    {
+                        steno.warning("Error converting scale " + scaleTextField.getText());
+                    }
                 }
             }
         });
@@ -376,7 +356,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         {
                             case ENTER:
                             case TAB:
-                                displayManager.getCurrentlyVisibleViewManager().rotateSelection(Double.valueOf(rotationTextField.getText()));
+                                try
+                                {
+                                    displayManager.getCurrentlyVisibleViewManager().rotateSelection(rotationTextField.getAsDouble());
+                                } catch (ParseException ex)
+                                {
+                                    steno.warning("Error converting rotation " + rotationTextField.getText());
+                                }
                                 break;
                             case DECIMAL:
                             case BACK_SPACE:
@@ -398,7 +384,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 if (newValue == false)
                 {
-                    displayManager.getCurrentlyVisibleViewManager().rotateSelection(Double.valueOf(rotationTextField.getText()));
+                    try
+                    {
+                        displayManager.getCurrentlyVisibleViewManager().rotateSelection(rotationTextField.getAsDouble());
+                    } catch (ParseException ex)
+                    {
+                        steno.warning("Error converting rotation " + rotationTextField.getText());
+                    }
                 }
             }
         });
@@ -415,7 +407,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         {
                             case ENTER:
                             case TAB:
-                                displayManager.getCurrentlyVisibleViewManager().resizeSelectionWidth(Double.valueOf(widthTextField.getText()));
+                                try
+                                {
+                                    displayManager.getCurrentlyVisibleViewManager().resizeSelectionWidth(widthTextField.getAsDouble());
+                                } catch (ParseException ex)
+                                {
+                                    steno.warning("Error converting width " + widthTextField.getText());
+                                }
                                 break;
                             case DECIMAL:
                             case BACK_SPACE:
@@ -437,7 +435,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 if (newValue == false)
                 {
-                    displayManager.getCurrentlyVisibleViewManager().resizeSelectionWidth(Double.valueOf(widthTextField.getText()));
+                    try
+                    {
+                        displayManager.getCurrentlyVisibleViewManager().resizeSelectionWidth(widthTextField.getAsDouble());
+                    } catch (ParseException ex)
+                    {
+                        steno.warning("Error converting width " + widthTextField.getText());
+                    }
                 }
             }
         });
@@ -454,7 +458,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         {
                             case ENTER:
                             case TAB:
-                                displayManager.getCurrentlyVisibleViewManager().resizeSelectionHeight(Double.valueOf(heightTextField.getText()));
+                                try
+                                {
+                                    displayManager.getCurrentlyVisibleViewManager().resizeSelectionHeight(heightTextField.getAsDouble());
+                                } catch (ParseException ex)
+                                {
+                                    steno.warning("Error converting height " + heightTextField.getText());
+                                }
                                 break;
                             case DECIMAL:
                             case BACK_SPACE:
@@ -476,7 +486,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 if (newValue == false)
                 {
-                    displayManager.getCurrentlyVisibleViewManager().resizeSelectionHeight(Double.valueOf(heightTextField.getText()));
+                    try
+                    {
+                        displayManager.getCurrentlyVisibleViewManager().resizeSelectionHeight(heightTextField.getAsDouble());
+                    } catch (ParseException ex)
+                    {
+                        steno.warning("Error converting height " + heightTextField.getText());
+                    }
                 }
             }
         });
@@ -484,7 +500,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         depthTextField.setOnKeyPressed(
                 new EventHandler<KeyEvent>()
                 {
-
                     @Override
                     public void handle(KeyEvent t
                     )
@@ -493,7 +508,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         {
                             case ENTER:
                             case TAB:
-                                displayManager.getCurrentlyVisibleViewManager().resizeSelectionDepth(Double.valueOf(depthTextField.getText()));
+                                try
+                                {
+                                    displayManager.getCurrentlyVisibleViewManager().resizeSelectionDepth(depthTextField.getAsDouble());
+                                } catch (ParseException ex)
+                                {
+                                    steno.error("Error parsing depth string " + ex + " : " + ex.getMessage());
+                                }
                                 break;
                             case DECIMAL:
                             case BACK_SPACE:
@@ -515,37 +536,42 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 if (newValue == false)
                 {
-                    displayManager.getCurrentlyVisibleViewManager().resizeSelectionDepth(Double.valueOf(depthTextField.getText()));
+                    try
+                    {
+                        displayManager.getCurrentlyVisibleViewManager().resizeSelectionDepth(depthTextField.getAsDouble());
+                    } catch (ParseException ex)
+                    {
+                        steno.error("Error parsing depth string " + ex + " : " + ex.getMessage());
+                    }
                 }
             }
         });
 
         xAxisTextField.setOnKeyPressed(
-                new EventHandler<KeyEvent>()
+                (KeyEvent t) ->
                 {
-
-                    @Override
-                    public void handle(KeyEvent t
-                    )
+                    switch (t.getCode())
                     {
-                        switch (t.getCode())
-                        {
-                            case ENTER:
-                            case TAB:
-                                displayManager.getCurrentlyVisibleViewManager().translateSelectionXTo(Double.valueOf(xAxisTextField.getText()));
-                                break;
-                            case DECIMAL:
-                            case BACK_SPACE:
-                            case LEFT:
-                            case RIGHT:
-                                break;
-                            default:
-                                t.consume();
-                                break;
-                        }
+                        case ENTER:
+                        case TAB:
+                            try
+                            {
+                                displayManager.getCurrentlyVisibleViewManager().translateSelectionXTo(xAxisTextField.getAsDouble());
+                            } catch (ParseException ex)
+                            {
+                                steno.error("Error parsing x translate string " + ex + " : " + ex.getMessage());
+                            }
+                            break;
+                        case DECIMAL:
+                        case BACK_SPACE:
+                        case LEFT:
+                        case RIGHT:
+                            break;
+                        default:
+                            t.consume();
+                            break;
                     }
-                }
-        );
+                });
 
         xAxisTextField.focusedProperty().addListener(new ChangeListener<Boolean>()
         {
@@ -557,7 +583,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                     ThreeDViewManager viewManager = displayManager.getCurrentlyVisibleViewManager();
                     if (viewManager != null)
                     {
-                        viewManager.translateSelectionXTo(Double.valueOf(xAxisTextField.getText()));
+                        try
+                        {
+                            displayManager.getCurrentlyVisibleViewManager().translateSelectionXTo(xAxisTextField.getAsDouble());
+                        } catch (ParseException ex)
+                        {
+                            steno.error("Error parsing x translate string " + ex + " : " + ex.getMessage());
+                        }
                     }
 
                 }
@@ -576,7 +608,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         {
                             case ENTER:
                             case TAB:
-                                displayManager.getCurrentlyVisibleViewManager().translateSelectionZTo(Double.valueOf(yAxisTextField.getText()));
+                                try
+                                {
+                                    displayManager.getCurrentlyVisibleViewManager().translateSelectionZTo(yAxisTextField.getAsDouble());
+                                } catch (ParseException ex)
+                                {
+                                    steno.error("Error parsing y translate string " + ex + " : " + ex.getMessage());
+                                }
                                 break;
                             case DECIMAL:
                             case BACK_SPACE:
@@ -601,7 +639,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                     ThreeDViewManager viewManager = displayManager.getCurrentlyVisibleViewManager();
                     if (viewManager != null)
                     {
-                        viewManager.translateSelectionZTo(Double.valueOf(yAxisTextField.getText()));
+                        try
+                        {
+                            displayManager.getCurrentlyVisibleViewManager().translateSelectionZTo(yAxisTextField.getAsDouble());
+                        } catch (ParseException ex)
+                        {
+                            steno.error("Error parsing y translate string " + ex + " : " + ex.getMessage());
+                        }
                     }
                 }
             }
@@ -643,7 +687,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             @Override
             public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
             {
-                widthTextField.setText(doubleOneDigitConverter.toString(t1));
+                widthTextField.doubleValueProperty().set(t1.doubleValue());
             }
         };
 
@@ -652,7 +696,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             @Override
             public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
             {
-                heightTextField.setText(doubleOneDigitConverter.toString(t1));
+                heightTextField.doubleValueProperty().set(t1.doubleValue());
             }
         };
 
@@ -661,7 +705,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             @Override
             public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
             {
-                depthTextField.setText(doubleOneDigitConverter.toString(t1));
+                depthTextField.doubleValueProperty().set(t1.doubleValue());
             }
         };
 
@@ -670,7 +714,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             @Override
             public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
             {
-                xAxisTextField.setText(doubleOneDigitConverter.toString(t1));
+                xAxisTextField.doubleValueProperty().set(t1.doubleValue());
             }
         };
 
@@ -679,7 +723,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             @Override
             public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
             {
-                yAxisTextField.setText(doubleOneDigitConverter.toString(t1));
+                yAxisTextField.doubleValueProperty().set(t1.doubleValue());
             }
         };
     }
@@ -713,13 +757,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
         if (selectionContainer.selectedModelsProperty().size() > 0)
         {
-            widthTextField.setText(doubleOneDigitConverter.toString(selectionContainer.getWidth()));
-            heightTextField.setText(doubleOneDigitConverter.toString(selectionContainer.getHeight()));
-            depthTextField.setText(doubleOneDigitConverter.toString(selectionContainer.getDepth()));
-            xAxisTextField.setText(doubleOneDigitConverter.toString(selectionContainer.getCentreX()));
-            yAxisTextField.setText(doubleOneDigitConverter.toString(selectionContainer.getCentreZ()));
-            scaleTextField.setText(String.format(scaleFormat, selectionContainer.getScale() * 100));
-            rotationTextField.setText(String.format(rotationFormat, selectionContainer.getRotationY()));
+            widthTextField.doubleValueProperty().set(selectionContainer.getWidth());
+            heightTextField.doubleValueProperty().set(selectionContainer.getHeight());
+            depthTextField.doubleValueProperty().set(selectionContainer.getDepth());
+            xAxisTextField.doubleValueProperty().set(selectionContainer.getCentreX());
+            yAxisTextField.doubleValueProperty().set(selectionContainer.getCentreZ());
+            scaleTextField.doubleValueProperty().set(selectionContainer.getScale() * 100);
+            rotationTextField.doubleValueProperty().set(selectionContainer.getRotationY());
         } else
         {
             widthTextField.setText("-");

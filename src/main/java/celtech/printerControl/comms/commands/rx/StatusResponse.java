@@ -3,8 +3,8 @@ package celtech.printerControl.comms.commands.rx;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.HeaterMode;
 import celtech.configuration.WhyAreWeWaitingState;
+import celtech.utils.FixedDecimalFloatFormat;
 import java.io.UnsupportedEncodingException;
-import java.text.NumberFormat;
 import java.text.ParseException;
 
 /**
@@ -110,8 +110,6 @@ public class StatusResponse extends RoboxRxPacket
     private float filamentMultiplier = 0;
     private float feedRateMultiplier = 0;
     private WhyAreWeWaitingState whyAreWeWaitingState = WhyAreWeWaitingState.NOT_WAITING;
-
-    private NumberFormat numberFormatter = NumberFormat.getNumberInstance();
 
     /**
      *
@@ -449,11 +447,9 @@ public class StatusResponse extends RoboxRxPacket
     /*
      * Errors...
      */
-
     /**
      *
      */
-    
     public StatusResponse()
     {
         super(RxPacketTypeEnum.STATUS_RESPONSE, false, false);
@@ -468,6 +464,8 @@ public class StatusResponse extends RoboxRxPacket
     public boolean populatePacket(byte[] byteData)
     {
         boolean success = false;
+
+        FixedDecimalFloatFormat decimalFloatFormatter = new FixedDecimalFloatFormat();
 
         try
         {
@@ -529,7 +527,7 @@ public class StatusResponse extends RoboxRxPacket
 
             try
             {
-                this.nozzleTemperature = numberFormatter.parse(nozzleTemperatureString).intValue();
+                this.nozzleTemperature = decimalFloatFormatter.parse(nozzleTemperatureString).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse nozzle temperature - " + nozzleTemperatureString);
@@ -540,7 +538,7 @@ public class StatusResponse extends RoboxRxPacket
 
             try
             {
-                this.nozzleTargetTemperature = numberFormatter.parse(nozzleTargetTemperatureString).intValue();
+                this.nozzleTargetTemperature = decimalFloatFormatter.parse(nozzleTargetTemperatureString).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse nozzle target temperature - " + nozzleTargetTemperatureString);
@@ -551,7 +549,7 @@ public class StatusResponse extends RoboxRxPacket
 
             try
             {
-                this.nozzleFirstLayerTargetTemperature = numberFormatter.parse(nozzleFirstLayerTargetTemperatureString).intValue();
+                this.nozzleFirstLayerTargetTemperature = decimalFloatFormatter.parse(nozzleFirstLayerTargetTemperatureString).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse nozzle first layer target temperature - " + nozzleFirstLayerTargetTemperatureString);
@@ -566,7 +564,7 @@ public class StatusResponse extends RoboxRxPacket
 
             try
             {
-                this.bedTemperature = numberFormatter.parse(bedTemperatureString).intValue();
+                this.bedTemperature = decimalFloatFormatter.parse(bedTemperatureString).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse bed temperature - " + bedTemperatureString);
@@ -577,7 +575,7 @@ public class StatusResponse extends RoboxRxPacket
 
             try
             {
-                this.bedTargetTemperature = numberFormatter.parse(bedTargetTemperatureString).intValue();
+                this.bedTargetTemperature = decimalFloatFormatter.parse(bedTargetTemperatureString).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse bed target temperature - " + bedTargetTemperatureString);
@@ -588,7 +586,7 @@ public class StatusResponse extends RoboxRxPacket
 
             try
             {
-                this.bedFirstLayerTargetTemperature = numberFormatter.parse(bedFirstLayerTargetTemperatureString).intValue();
+                this.bedFirstLayerTargetTemperature = decimalFloatFormatter.parse(bedFirstLayerTargetTemperatureString).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse bed first layer target temperature - " + bedFirstLayerTargetTemperatureString);
@@ -602,7 +600,7 @@ public class StatusResponse extends RoboxRxPacket
 
             try
             {
-                this.ambientTemperature = numberFormatter.parse(ambientTemperatureString).intValue();
+                this.ambientTemperature = decimalFloatFormatter.parse(ambientTemperatureString).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse ambient temperature - " + ambientTemperatureString);
@@ -613,7 +611,7 @@ public class StatusResponse extends RoboxRxPacket
 
             try
             {
-                this.ambientTargetTemperature = numberFormatter.parse(ambientTargetTemperatureString).intValue();
+                this.ambientTargetTemperature = decimalFloatFormatter.parse(ambientTargetTemperatureString).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse ambient target temperature - " + ambientTargetTemperatureString);
@@ -641,7 +639,7 @@ public class StatusResponse extends RoboxRxPacket
             byteOffset += decimalFloatFormatBytes;
             try
             {
-                this.headXPosition = numberFormatter.parse(headXPositionString).floatValue();
+                this.headXPosition = decimalFloatFormatter.parse(headXPositionString).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse head X position - " + headXPositionString);
@@ -651,7 +649,7 @@ public class StatusResponse extends RoboxRxPacket
             byteOffset += decimalFloatFormatBytes;
             try
             {
-                this.headYPosition = numberFormatter.parse(headYPositionString).floatValue();
+                this.headYPosition = decimalFloatFormatter.parse(headYPositionString).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse head Y position - " + headYPositionString);
@@ -661,7 +659,7 @@ public class StatusResponse extends RoboxRxPacket
             byteOffset += decimalFloatFormatBytes;
             try
             {
-                this.headZPosition = numberFormatter.parse(headZPositionString).floatValue();
+                this.headZPosition = decimalFloatFormatter.parse(headZPositionString).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse head Z position - " + headZPositionString);
@@ -671,7 +669,7 @@ public class StatusResponse extends RoboxRxPacket
             byteOffset += decimalFloatFormatBytes;
             try
             {
-                this.BPosition = numberFormatter.parse(BPositionString).floatValue();
+                this.BPosition = decimalFloatFormatter.parse(BPositionString).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse B position - " + BPositionString);
@@ -681,7 +679,7 @@ public class StatusResponse extends RoboxRxPacket
             byteOffset += decimalFloatFormatBytes;
             try
             {
-                this.filamentDiameter = numberFormatter.parse(filamentDiameterString).floatValue();
+                this.filamentDiameter = decimalFloatFormatter.parse(filamentDiameterString).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse filament diameter - " + filamentDiameterString);
@@ -691,7 +689,7 @@ public class StatusResponse extends RoboxRxPacket
             byteOffset += decimalFloatFormatBytes;
             try
             {
-                this.filamentMultiplier = numberFormatter.parse(filamentMultiplierString).floatValue();
+                this.filamentMultiplier = decimalFloatFormatter.parse(filamentMultiplierString).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse filament multiplier - " + filamentMultiplierString);
@@ -701,7 +699,7 @@ public class StatusResponse extends RoboxRxPacket
             byteOffset += decimalFloatFormatBytes;
             try
             {
-                this.feedRateMultiplier = numberFormatter.parse(feedRateMultiplierString).floatValue();
+                this.feedRateMultiplier = decimalFloatFormatter.parse(feedRateMultiplierString).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse feed rate multiplier - " + feedRateMultiplierString);

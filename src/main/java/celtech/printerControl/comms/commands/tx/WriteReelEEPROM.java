@@ -4,6 +4,7 @@
  */
 package celtech.printerControl.comms.commands.tx;
 
+import celtech.utils.FixedDecimalFloatFormat;
 import java.io.UnsupportedEncodingException;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -45,18 +46,20 @@ public class WriteReelEEPROM extends RoboxTxPacket
     {
         StringBuilder payload = new StringBuilder();
 
+        FixedDecimalFloatFormat decimalFloatFormatter = new FixedDecimalFloatFormat();
+
         payload.append(String.format("%1$-16s", reelTypeCode));
         payload.append(String.format("%1$-24s", reelUniqueID));
-        payload.append(String.format("%08.2f", reelFirstLayerNozzleTemperature));
-        payload.append(String.format("%08.2f", reelNozzleTemperature));
-        payload.append(String.format("%08.2f", reelFirstLayerBedTemperature));
-        payload.append(String.format("%08.2f", reelBedTemperature));
-        payload.append(String.format("%08.2f", reelAmbientTemperature));
-        payload.append(String.format("%08.2f", reelFilamentDiameter));
-        payload.append(String.format("%08.2f", reelFilamentMultiplier));
-        payload.append(String.format("%08.2f", reelFeedRateMultiplier));
+        payload.append(decimalFloatFormatter.format(reelFirstLayerNozzleTemperature));
+        payload.append(decimalFloatFormatter.format(reelNozzleTemperature));
+        payload.append(decimalFloatFormatter.format(reelFirstLayerBedTemperature));
+        payload.append(decimalFloatFormatter.format(reelBedTemperature));
+        payload.append(decimalFloatFormatter.format(reelAmbientTemperature));
+        payload.append(decimalFloatFormatter.format(reelFilamentDiameter));
+        payload.append(decimalFloatFormatter.format(reelFilamentMultiplier));
+        payload.append(decimalFloatFormatter.format(reelFeedRateMultiplier));
         payload.append(String.format("%1$80s", " "));
-        String remainingFilamentValue = String.format("%08.2f", reelRemainingFilament);
+        String remainingFilamentValue = decimalFloatFormatter.format(reelRemainingFilament);
         if (remainingFilamentValue.length() > 8)
         {
             String oldValue = remainingFilamentValue;

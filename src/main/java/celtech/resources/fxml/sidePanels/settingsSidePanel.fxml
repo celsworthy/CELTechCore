@@ -214,7 +214,7 @@
                                     <children>
                                         <Label fx:id="customSettingsLabel" styleClass="sidePanelDivider" text="%sidePanel_settings.customButtonLabel">
                                         </Label>
-                                        <ComboBox fx:id="customProfileChooser" maxWidth="1.7976931348623157E308">
+                                        <ComboBox fx:id="customProfileChooser" maxWidth="1.7976931348623157E308" promptText="%sidePanel_settings.customProfileSelectionLabel">
                                         </ComboBox>
                                     </children>
                                 </VBox>

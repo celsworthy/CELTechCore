@@ -25,6 +25,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.Toggle;
+import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -36,54 +37,61 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class SettingsSlideOutPanelController implements Initializable, PopupCommandTransmitter
 {
-
+    
     private Stenographer steno = StenographerFactory.getStenographer(SettingsSlideOutPanelController.class.getName());
     private SettingsScreenState settingsScreenState = null;
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
-
+    
     @FXML
     private TabPane detailedSettingsTabPane;
-
+    
     @FXML
     private Tab materialTab;
-
+    
     @FXML
     private Tab profileTab;
-
+    
     @FXML
     private MaterialDetailsController materialDetailsController;
-
+    
     @FXML
     private ProfileDetailsController profileDetailsController;
-
+    
+    @FXML
+    private VBox profileData;
+    
+    @FXML
+    private VBox materialData;
+    
     private StringConverter intConverter = FXUtils.getIntConverter();
     private StringConverter floatConverter = FXUtils.getFloatConverter(2);
     private StringConverter booleanConverter = null;
-
+    
     private RoboxProfile draftSettings = PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
     private RoboxProfile normalSettings = PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.normalSettingsProfileName);
     private RoboxProfile fineSettings = PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.fineSettingsProfileName);
     private RoboxProfile customSettings = null;
     private RoboxProfile lastSettings = null;
-
+    
     private ObservableList<String> nozzleOptions = FXCollections.observableArrayList(new String("0.3mm"), new String("0.8mm"));
     private ObservableList<String> fillPatternOptions = FXCollections.observableArrayList(new String("rectilinear"), new String("line"), new String("concentric"), new String("honeycomb"));
     private ObservableList<String> supportPatternOptions = FXCollections.observableArrayList(new String("rectilinear"), new String("rectilinear grid"), new String("honeycomb"));
-
+    
     private ChangeListener<Toggle> nozzleSelectionListener = null;
-
+    
     private ObservableList<Filament> availableFilaments = FXCollections.observableArrayList();
-
+    
     private Printer currentPrinter = null;
     private Filament currentlyLoadedFilament = null;
-
+    
     private int boundToNozzle = -1;
-
+    
     private BooleanProperty showProfileData = new SimpleBooleanProperty(false);
 
     /**
      * Initializes the controller class.
+     *
      * @param url
      * @param rb
      */
@@ -92,10 +100,8 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
     {
         applicationStatus = ApplicationStatus.getInstance();
         displayManager = DisplayManager.getInstance();
-
+        
         settingsScreenState = SettingsScreenState.getInstance();
-
-//        profileData.visibleProperty().bind(showProfileData);
     }
 
     /**
@@ -104,7 +110,14 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
      */
     public void updateFilamentData(Filament filament)
     {
-        materialDetailsController.updateMaterialData(filament);
+        if (filament == null)
+        {
+            materialData.setVisible(false);
+        } else
+        {
+            materialData.setVisible(true);
+            materialDetailsController.updateMaterialData(filament);
+        }
     }
 
     /**
@@ -115,10 +128,10 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
     {
         if (settings == null)
         {
-            showProfileData.set(false);
+            profileData.setVisible(false);
         } else
         {
-            showProfileData.set(true);
+            profileData.setVisible(true);
             profileDetailsController.updateProfileData(settings);
         }
     }

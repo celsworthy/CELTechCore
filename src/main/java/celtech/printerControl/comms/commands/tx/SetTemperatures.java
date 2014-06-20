@@ -4,7 +4,7 @@
  */
 package celtech.printerControl.comms.commands.tx;
 
-import javafx.scene.paint.Color;
+import celtech.utils.FixedDecimalFloatFormat;
 
 /**
  *
@@ -46,12 +46,14 @@ public class SetTemperatures extends RoboxTxPacket
     public void setTemperatures(double nozzleFirstLayerTarget, double nozzleTarget, double bedFirstLayerTarget, double bedTarget, double ambientTarget)
     {
         StringBuilder payload = new StringBuilder();
+        
+        FixedDecimalFloatFormat decimalFloatFormatter = new FixedDecimalFloatFormat();
 
-        payload.append(String.format("%08.2f", nozzleTarget));
-        payload.append(String.format("%08.2f", nozzleFirstLayerTarget));
-        payload.append(String.format("%08.2f", bedTarget));
-        payload.append(String.format("%08.2f", bedFirstLayerTarget));
-        payload.append(String.format("%08.2f", ambientTarget));
+        payload.append(decimalFloatFormatter.format(nozzleTarget));
+        payload.append(decimalFloatFormatter.format(nozzleFirstLayerTarget));
+        payload.append(decimalFloatFormatter.format(bedTarget));
+        payload.append(decimalFloatFormatter.format(bedFirstLayerTarget));
+        payload.append(decimalFloatFormatter.format(ambientTarget));
 
         this.setMessagePayload(payload.toString());
     }

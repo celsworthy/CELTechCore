@@ -604,156 +604,159 @@ public class Head implements Cloneable
      */
     public static void repairHeadIfNecessary(Printer printer)
     {
-        try
+        if (ApplicationConfiguration.isAutoRepairHeads())
         {
-            HeadEEPROMDataResponse response = printer.transmitReadHeadEEPROM();
-            // Check to see if the maximum temperature of the head matches our view
-            // If not, change the max value and prompt to calibrate
-            if (response != null)
+            try
             {
-                String receivedTypeCode = response.getTypeCode();
-                boolean calibrationRequired = false;
+                HeadEEPROMDataResponse response = printer.transmitReadHeadEEPROM();
+            // Check to see if the maximum temperature of the head matches our view
+                // If not, change the max value and prompt to calibrate
+                if (response != null)
+                {
+                    String receivedTypeCode = response.getTypeCode();
+                    boolean calibrationRequired = false;
 
-                if (receivedTypeCode == null || receivedTypeCode.equals(""))
-                {
-                    // Force the defaults - we only have one head at the moment so pick the first...
-                    Head headToWrite = HeadContainer.getCompleteHeadList().get(0).clone();
-                    String typeCode = headToWrite.getTypeCode();
-                    String idToCreate = typeCode + SystemUtils.generate16DigitID().substring(typeCode.length());
-                    headToWrite.setUniqueID(idToCreate);
-                    headToWrite.setLastFilamentTemperature(10);
-                    printer.transmitWriteHeadEEPROM(headToWrite);
-                    // Calibration should follow
-                    calibrationRequired = true;
-                } else
-                {
-                    Head referenceHead = HeadContainer.getHeadByID(response.getTypeCode());
-                    if (referenceHead != null)
+                    if (receivedTypeCode == null || receivedTypeCode.equals(""))
                     {
-                        boolean needToWriteHeadData = false;
-
-                        Head headToWrite = new Head(response);
-                        headToWrite.setFriendlyName(referenceHead.getFriendlyName());
-
-                        if (Math.abs(response.getMaximumTemperature() - referenceHead.getMaximumTemperature()) > epsilon)
+                        // Force the defaults - we only have one head at the moment so pick the first...
+                        Head headToWrite = HeadContainer.getCompleteHeadList().get(0).clone();
+                        String typeCode = headToWrite.getTypeCode();
+                        String idToCreate = typeCode + SystemUtils.generate16DigitID().substring(typeCode.length());
+                        headToWrite.setUniqueID(idToCreate);
+                        headToWrite.setLastFilamentTemperature(10);
+                        printer.transmitWriteHeadEEPROM(headToWrite);
+                        // Calibration should follow
+                        calibrationRequired = true;
+                    } else
+                    {
+                        Head referenceHead = HeadContainer.getHeadByID(response.getTypeCode());
+                        if (referenceHead != null)
                         {
-                            headToWrite.setMaximumTemperature(referenceHead.getMaximumTemperature());
-                            needToWriteHeadData = true;
-                        }
+                            boolean needToWriteHeadData = false;
 
-                        if (Math.abs(response.getTCal() - referenceHead.getTCal()) > epsilon)
-                        {
-                            headToWrite.setTcal(referenceHead.getTCal());
-                            needToWriteHeadData = true;
-                        }
+                            Head headToWrite = new Head(response);
+                            headToWrite.setFriendlyName(referenceHead.getFriendlyName());
 
-                        if (Math.abs(response.getBeta() - referenceHead.getBeta()) > epsilon)
-                        {
-                            headToWrite.setBeta(referenceHead.getBeta());
-                            needToWriteHeadData = true;
-                        }
-
-                        if (response.getNozzle1XOffset() < normalX1OffsetMin || response.getNozzle1XOffset() > normalX1OffsetMax)
-                        {
-                            headToWrite.setNozzle1_X_offset(referenceHead.getNozzle1XOffset());
-                            needToWriteHeadData = true;
-                            calibrationRequired = true;
-                        }
-
-                        if (response.getNozzle1YOffset() < normalYOffsetMin || response.getNozzle1YOffset() > normalYOffsetMax)
-                        {
-                            headToWrite.setNozzle1_Y_offset(referenceHead.getNozzle1YOffset());
-                            needToWriteHeadData = true;
-                            calibrationRequired = true;
-                        }
-
-                        if (response.getNozzle1ZOffset() < normalZ1OffsetMin || response.getNozzle1ZOffset() > normalZ1OffsetMax)
-                        {
-                            headToWrite.setNozzle1_Z_offset(referenceHead.getNozzle1ZOffset());
-                            needToWriteHeadData = true;
-                            calibrationRequired = true;
-                        }
-
-                        if (response.getNozzle1BOffset() < normalB1OffsetMin || response.getNozzle1BOffset() > normalB1OffsetMax)
-                        {
-                            headToWrite.setNozzle1_B_offset(referenceHead.getNozzle1BOffset());
-                            needToWriteHeadData = true;
-                            calibrationRequired = true;
-                        }
-
-                        if (response.getNozzle2XOffset() < normalX2OffsetMin || response.getNozzle2XOffset() > normalX2OffsetMax)
-                        {
-                            headToWrite.setNozzle2_X_offset(referenceHead.getNozzle2XOffset());
-                            needToWriteHeadData = true;
-                            calibrationRequired = true;
-                        }
-
-                        if (response.getNozzle2YOffset() < normalYOffsetMin || response.getNozzle2YOffset() > normalYOffsetMax)
-                        {
-                            headToWrite.setNozzle2_Y_offset(referenceHead.getNozzle2YOffset());
-                            needToWriteHeadData = true;
-                            calibrationRequired = true;
-                        }
-
-                        if (response.getNozzle2ZOffset() < normalZ2OffsetMin || response.getNozzle2ZOffset() > normalZ2OffsetMax)
-                        {
-                            headToWrite.setNozzle2_Z_offset(referenceHead.getNozzle2ZOffset());
-                            needToWriteHeadData = true;
-                            calibrationRequired = true;
-                        }
-
-                        if (response.getNozzle2BOffset() < normalB2OffsetMin || response.getNozzle2BOffset() > normalB2OffsetMax)
-                        {
-                            headToWrite.setNozzle2_B_offset(referenceHead.getNozzle2BOffset());
-                            needToWriteHeadData = true;
-                            calibrationRequired = true;
-                        }
-
-                        if (needToWriteHeadData)
-                        {
-                            printer.transmitWriteHeadEEPROM(headToWrite);
-                            printer.transmitReadHeadEEPROM();
-                            steno.info("Automatically updated head data for " + receivedTypeCode);
-                        }
-
-                        if (needToWriteHeadData && !calibrationRequired)
-                        {
-                            Platform.runLater(new Runnable()
+                            if (Math.abs(response.getMaximumTemperature() - referenceHead.getMaximumTemperature()) > epsilon)
                             {
-                                @Override
-                                public void run()
+                                headToWrite.setMaximumTemperature(referenceHead.getMaximumTemperature());
+                                needToWriteHeadData = true;
+                            }
+
+                            if (Math.abs(response.getTCal() - referenceHead.getTCal()) > epsilon)
+                            {
+                                headToWrite.setTcal(referenceHead.getTCal());
+                                needToWriteHeadData = true;
+                            }
+
+                            if (Math.abs(response.getBeta() - referenceHead.getBeta()) > epsilon)
+                            {
+                                headToWrite.setBeta(referenceHead.getBeta());
+                                needToWriteHeadData = true;
+                            }
+
+                            if (response.getNozzle1XOffset() < normalX1OffsetMin || response.getNozzle1XOffset() > normalX1OffsetMax)
+                            {
+                                headToWrite.setNozzle1_X_offset(referenceHead.getNozzle1XOffset());
+                                needToWriteHeadData = true;
+                                calibrationRequired = true;
+                            }
+
+                            if (response.getNozzle1YOffset() < normalYOffsetMin || response.getNozzle1YOffset() > normalYOffsetMax)
+                            {
+                                headToWrite.setNozzle1_Y_offset(referenceHead.getNozzle1YOffset());
+                                needToWriteHeadData = true;
+                                calibrationRequired = true;
+                            }
+
+                            if (response.getNozzle1ZOffset() < normalZ1OffsetMin || response.getNozzle1ZOffset() > normalZ1OffsetMax)
+                            {
+                                headToWrite.setNozzle1_Z_offset(referenceHead.getNozzle1ZOffset());
+                                needToWriteHeadData = true;
+                                calibrationRequired = true;
+                            }
+
+                            if (response.getNozzle1BOffset() < normalB1OffsetMin || response.getNozzle1BOffset() > normalB1OffsetMax)
+                            {
+                                headToWrite.setNozzle1_B_offset(referenceHead.getNozzle1BOffset());
+                                needToWriteHeadData = true;
+                                calibrationRequired = true;
+                            }
+
+                            if (response.getNozzle2XOffset() < normalX2OffsetMin || response.getNozzle2XOffset() > normalX2OffsetMax)
+                            {
+                                headToWrite.setNozzle2_X_offset(referenceHead.getNozzle2XOffset());
+                                needToWriteHeadData = true;
+                                calibrationRequired = true;
+                            }
+
+                            if (response.getNozzle2YOffset() < normalYOffsetMin || response.getNozzle2YOffset() > normalYOffsetMax)
+                            {
+                                headToWrite.setNozzle2_Y_offset(referenceHead.getNozzle2YOffset());
+                                needToWriteHeadData = true;
+                                calibrationRequired = true;
+                            }
+
+                            if (response.getNozzle2ZOffset() < normalZ2OffsetMin || response.getNozzle2ZOffset() > normalZ2OffsetMax)
+                            {
+                                headToWrite.setNozzle2_Z_offset(referenceHead.getNozzle2ZOffset());
+                                needToWriteHeadData = true;
+                                calibrationRequired = true;
+                            }
+
+                            if (response.getNozzle2BOffset() < normalB2OffsetMin || response.getNozzle2BOffset() > normalB2OffsetMax)
+                            {
+                                headToWrite.setNozzle2_B_offset(referenceHead.getNozzle2BOffset());
+                                needToWriteHeadData = true;
+                                calibrationRequired = true;
+                            }
+
+                            if (needToWriteHeadData)
+                            {
+                                printer.transmitWriteHeadEEPROM(headToWrite);
+                                printer.transmitReadHeadEEPROM();
+                                steno.info("Automatically updated head data for " + receivedTypeCode);
+                            }
+
+                            if (needToWriteHeadData && !calibrationRequired)
+                            {
+                                Platform.runLater(new Runnable()
                                 {
-                                    Notifier.showInformationNotification(DisplayManager.getLanguageBundle().getString("notification.headSettingsUpdatedTitle"), DisplayManager.getLanguageBundle().getString("notification.noActionRequired"));
-                                }
-                            });
-                        }
-                    }
-                }
-
-                if (calibrationRequired)
-                {
-                    Platform.runLater(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            Action calibrationResponse = Dialogs.create().title(DisplayManager.getLanguageBundle().getString("dialogs.headUpdateCalibrationRequiredTitle"))
-                                    .message(DisplayManager.getLanguageBundle().getString("dialogs.headUpdateCalibrationRequiredInstruction"))
-                                    .masthead(null)
-                                    .showCommandLinks(okCalibrate, okCalibrate, dontCalibrate);
-
-                            if (calibrationResponse == okCalibrate)
-                            {
-                                MaintenancePanelController.calibrateBAction();
-                                MaintenancePanelController.calibrateZOffsetAction();
+                                    @Override
+                                    public void run()
+                                    {
+                                        Notifier.showInformationNotification(DisplayManager.getLanguageBundle().getString("notification.headSettingsUpdatedTitle"), DisplayManager.getLanguageBundle().getString("notification.noActionRequired"));
+                                    }
+                                });
                             }
                         }
-                    });
+                    }
+
+                    if (calibrationRequired)
+                    {
+                        Platform.runLater(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                Action calibrationResponse = Dialogs.create().title(DisplayManager.getLanguageBundle().getString("dialogs.headUpdateCalibrationRequiredTitle"))
+                                        .message(DisplayManager.getLanguageBundle().getString("dialogs.headUpdateCalibrationRequiredInstruction"))
+                                        .masthead(null)
+                                        .showCommandLinks(okCalibrate, okCalibrate, dontCalibrate);
+
+                                if (calibrationResponse == okCalibrate)
+                                {
+                                    MaintenancePanelController.calibrateBAction();
+                                    MaintenancePanelController.calibrateZOffsetAction();
+                                }
+                            }
+                        });
+                    }
                 }
+            } catch (RoboxCommsException ex)
+            {
+                steno.error("Error from triggered read of Head EEPROM");
             }
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error from triggered read of Head EEPROM");
         }
     }
 }

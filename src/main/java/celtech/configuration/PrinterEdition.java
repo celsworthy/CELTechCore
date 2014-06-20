@@ -15,7 +15,17 @@ public enum PrinterEdition
     /**
      *
      */
-    Kickstarter("KS", "Kickstarter Edition");
+    Kickstarter("KS", "Kickstarter Edition"),
+    /**
+     *
+     */
+    TradeSample(
+            "TS", "Trade Sample"),
+    /**
+     *
+     */
+    FirstEdition(
+            "FE", "First Edition");
 
     private String codeName;
     private String friendlyName;

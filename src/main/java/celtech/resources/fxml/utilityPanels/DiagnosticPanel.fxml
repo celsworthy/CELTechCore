@@ -58,7 +58,6 @@
                 <Label layoutX="27.0" layoutY="10.0" text="%misc.headID" GridPane.columnSpan="2" GridPane.rowIndex="1" />
                 <Label fx:id="printerID" text="Label" GridPane.columnIndex="2" GridPane.columnSpan="2147483647" />
                 <Label fx:id="headID" text="Label" GridPane.columnIndex="2" GridPane.columnSpan="2147483647" GridPane.rowIndex="1" />
-                <CheckBox fx:id="nullPrinterCheckBox" mnemonicParsing="false" onAction="#enableNullPrinter" text="%diagnosticPanel.enableNullPrinter" textAlignment="CENTER" GridPane.columnSpan="2" GridPane.rowIndex="15" />
             </children>
         </GridPane>
     </children>

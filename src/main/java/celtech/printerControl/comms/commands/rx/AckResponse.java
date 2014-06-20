@@ -1,8 +1,6 @@
 
 package celtech.printerControl.comms.commands.rx;
 
-import java.text.NumberFormat;
-
 /**
  *
  * @author ianhudson
@@ -34,7 +32,6 @@ public class AckResponse extends RoboxRxPacket
     private byte[] errorFlags = new byte[32];
     private final int errorFlagBytes = 32;
 
-    private NumberFormat numberFormatter = NumberFormat.getNumberInstance();
     /*
      * Error flags - starting with byte 0
      */

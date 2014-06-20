@@ -10,7 +10,7 @@
             <tabs>
                 <Tab fx:id="materialTab" text="%genericFirstLetterCapitalised.Material">
                     <content>
-                        <VBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308">
+                        <VBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" fx:id="materialData">
                             <children>
                                 <fx:include fx:id="materialDetails" source="../utilityPanels/materialDetails.fxml" />
                             </children>

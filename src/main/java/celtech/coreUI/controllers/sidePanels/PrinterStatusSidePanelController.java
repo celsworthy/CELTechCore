@@ -14,6 +14,7 @@ import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.PrinterStatusListCell;
+import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.RoboxCommsManager;
@@ -80,16 +81,16 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private Label ambientTemperatureLabel;
 
     @FXML
-    private TextField ambientTargetTemperature;
+    private RestrictedNumberField ambientTargetTemperature;
 
     @FXML
     private Label bedTemperatureLabel;
 
     @FXML
-    private TextField bedTargetTemperature;
+    private RestrictedNumberField bedTargetTemperature;
 
     @FXML
-    private TextField bedFirstLayerTargetTemperature;
+    private RestrictedNumberField bedFirstLayerTargetTemperature;
 
     @FXML
     private Label bedTemperaturePlaceholder;
@@ -104,10 +105,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private Label nozzleTemperatureLabel;
 
     @FXML
-    private TextField nozzleTargetTemperature;
+    private RestrictedNumberField nozzleTargetTemperature;
 
     @FXML
-    private TextField nozzleFirstLayerTargetTemperature;
+    private RestrictedNumberField nozzleFirstLayerTargetTemperature;
 
     @FXML
     private Label nozzleTemperaturePlaceholder;
