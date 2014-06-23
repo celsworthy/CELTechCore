@@ -984,6 +984,9 @@ table-view .column-header-background {
     -fx-tick-label-fill: white;
 }
 
+.slider {
+    -fx-font-size: 12pt;
+}
 
 /*
  * 3D gizmo
