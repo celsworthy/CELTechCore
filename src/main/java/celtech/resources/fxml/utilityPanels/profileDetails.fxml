@@ -100,16 +100,16 @@
                                         <RestrictedNumberField allowedDecimalPlaces="1" maxLength="5" fx:id="nozzlePartialOpen" prefWidth="50.0" />
                                     </children>
                                 </HBox>
+                                <Label fx:id="retractLengthLabel" minWidth="95.0" text="%extrusion.retractLength" GridPane.columnIndex="0" GridPane.rowIndex="8" />
                                 <HBox fx:id="retractLengthHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="8">
                                     <children>
-                                        <Label minWidth="95.0" text="%extrusion.retractLength" />
                                         <RestrictedNumberField allowedDecimalPlaces="1" maxLength="5" fx:id="retractLength" prefWidth="50.0" />
                                         <Label text="%misc.mm" />
                                     </children>
                                 </HBox>
+                                <Label fx:id="retractSpeedLabel" minWidth="95.0" text="%extrusion.retractSpeed" GridPane.columnIndex="0" GridPane.rowIndex="9" />
                                 <HBox fx:id="retractSpeedHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="9">
                                     <children>
-                                        <Label minWidth="95.0" text="%extrusion.retractSpeed" />
                                         <RestrictedNumberField allowedDecimalPlaces="0" maxLength="5" fx:id="retractSpeed" prefWidth="50.0" />
                                         <Label text="%misc.mmpersec" />
                                     </children>

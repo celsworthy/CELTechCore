@@ -151,6 +151,9 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
     @FXML
     private HBox retractLengthHBox;
+    
+    @FXML
+    private Label retractLengthLabel;
 
     @FXML
     private ComboBox<String> supportInterfaceNozzleChoice;
@@ -235,6 +238,9 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
     @FXML
     private HBox retractSpeedHBox;
+
+    @FXML
+    private Label retractSpeedLabel;
 
     @FXML
     private HBox nozzlePartialOpenHBox;
@@ -367,9 +373,11 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         nozzlePartialOpenLabel.disableProperty().bind(isMutable.not());
         nozzlePartialOpenHBox.disableProperty().bind(isMutable.not());
         retractLength.disableProperty().bind(isMutable.not());
+        retractLengthLabel.disableProperty().bind(isMutable.not());
         retractLengthHBox.disableProperty().bind(isMutable.not());
         retractSpeed.disableProperty().bind(isMutable.not());
         retractSpeedHBox.disableProperty().bind(isMutable.not());
+        retractSpeedLabel.disableProperty().bind(isMutable.not());
         supportGrid.disableProperty().bind(isMutable.not());
         speedGrid.disableProperty().bind(isMutable.not());
 
