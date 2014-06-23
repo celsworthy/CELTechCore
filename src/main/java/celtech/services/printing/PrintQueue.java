@@ -950,7 +950,6 @@ public class PrintQueue implements ControllableService
      */
     public void resumePrint()
     {
-        etcAvailable.set(false);
         if (associatedPrinter.pausedProperty().get() == true)
         {
             try
