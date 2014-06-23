@@ -222,11 +222,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             @Override
             public void changed(ObservableValue<? extends Number> ov, Number lastQualityValue, Number newQualityValue)
             {
-                if (newQualityValue != lastQualityValue)
-                {
-                    DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-                    slideOutController.showProfileTab();
-                }
 
                 PrintQualityEnumeration quality = PrintQualityEnumeration.fromEnumPosition(newQualityValue.intValue());
                 settingsScreenState.setPrintQuality(quality);
@@ -267,6 +262,12 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 }
 
                 slideOutController.updateProfileData(settings);
+                if (newQualityValue != lastQualityValue)
+                {
+                    DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+                    slideOutController.showProfileTab();
+                }
+
                 settingsScreenState.setSettings(settings);
             }
         });
@@ -307,14 +308,12 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 if (newValue == PrintProfileContainer.createNewProfile)
                 {
                     showCreateProfileDialogue(draftSettings.clone());
-                }
-                else if (newValue != null)
+                } else if (newValue != null)
                 {
                     slideOutController.updateProfileData(newValue);
                     customSettings = newValue;
                     settingsScreenState.setSettings(newValue);
-                }
-                else if (newValue == null && settingsScreenState.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
+                } else if (newValue == null && settingsScreenState.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
                 {
                     slideOutController.updateProfileData(null);
                 }
