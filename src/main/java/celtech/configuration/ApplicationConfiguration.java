@@ -317,6 +317,10 @@ public class ApplicationConfiguration
      *
      */
     public static final int maxPrintSpoolFiles = 20;
+    /**
+     * The extension for statistics files in print spool directories
+     */
+    public static String statisticsFileExtension = ".statistics";
     
     /**
      * Used in testing only

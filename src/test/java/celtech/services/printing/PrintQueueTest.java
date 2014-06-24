@@ -100,7 +100,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
         Thread.sleep(2000);
         testPrinter.setPrintJobLineNumber(1);
 
-        testPrinter.setPrintJobLineNumber(1633);
+        testPrinter.setPrintJobLineNumber(1736);
 
         int ETC = printQueue.progressETCProperty().get();
         assertEquals(0, ETC);

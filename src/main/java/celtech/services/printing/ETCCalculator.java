@@ -4,7 +4,6 @@
 package celtech.services.printing;
 
 import celtech.printerControl.Printer;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,11 +24,8 @@ class ETCCalculator
     int firstLineNotified;
     int totalNumberOfLines;
     private final List<Integer> layerNumberToLineNumber;
-    private final List<Double> layerNumberToDistanceTravelled;
     private final List<Double> layerNumberToPredictedDuration;
-    private final List<Double> layerNumberToTotalDistanceTravelled = new ArrayList<Double>();
     private final List<Double> layerNumberToTotalPredictedDuration = new ArrayList<Double>();
-    double totalDistanceTravelledAllLayers;
     double totalPredictedDurationAllLayers;
     private final int lineNumberOfFirstExtrusion;
 
@@ -42,26 +38,16 @@ class ETCCalculator
     protected static int PREDICTED_BED_HEAT_RATE = 2;
     private final Printer printer;
 
-    ETCCalculator(Printer printer, List<Double> layerNumberToDistanceTravelled,
+    ETCCalculator(Printer printer, 
             List<Double> layerNumberToPredictedDuration,
             List<Integer> layerNumberToLineNumber,
             int totalNumberOfLines, int lineNumberOfFirstExtrusion)
     {
         this.printer = printer;
         this.layerNumberToLineNumber = layerNumberToLineNumber;
-        this.layerNumberToDistanceTravelled = layerNumberToDistanceTravelled;
         this.layerNumberToPredictedDuration = layerNumberToPredictedDuration;
         this.totalNumberOfLines = totalNumberOfLines;
         this.lineNumberOfFirstExtrusion = lineNumberOfFirstExtrusion;
-
-        double totalDistanceTravelled = 0;
-        for (int i = 0; i < layerNumberToDistanceTravelled.size(); i++)
-        {
-            Double distance = layerNumberToDistanceTravelled.get(i);
-            totalDistanceTravelled += distance;
-            layerNumberToTotalDistanceTravelled.add(i, totalDistanceTravelled);
-        }
-        totalDistanceTravelledAllLayers = totalDistanceTravelled;
 
         double totalPredictedDuration = 0;
         for (int i = 0; i < layerNumberToPredictedDuration.size(); i++)
@@ -77,54 +63,6 @@ class ETCCalculator
     {
         firstLineNotified = lineNumber;
         timeAtFirstLine = Instant.now();
-    }
-
-    /**
-     * Calculate the progress percent and ETC, and return as a user displayable string
-     */
-    String getProgressAndETC(int lineNumber)
-    {
-        if (timeAtFirstLine == null)
-        {
-            throw new RuntimeException(
-                    "initialise must be called once before calls to getProgressAndETC");
-        }
-        int elapsedTimeSeconds = (int) (Duration.between(timeAtFirstLine, Instant.now()).toMillis() / 1000);
-        String hoursMinutes = convertToHoursMinutes(elapsedTimeSeconds);
-        int percentComplete = (int) (lineNumber * 100 / totalNumberOfLines);
-        String elapsedTimeFormatted = String.format("%d%% Elapsed Time (HH:MM) %s",
-                                                    percentComplete, hoursMinutes);
-
-        int remainingTimeSeconds;
-        if (lineNumber > lineNumberOfFirstExtrusion + NUM_LINES_BEFORE_USING_ACTUAL_FIGURES)
-        {
-            // Printing has started so we can provide an ETC based on time so far
-            /**
-             * The principle to get the ETC is get the total distance traversed for all
-             * layers up until this layer, together with the time taken to traverse that
-             * distance. Then we can calculate the remaining distance and hence remaining
-             * time.
-             */
-            int layerNumber = getLayerNumberForLineNumber(lineNumber);
-            double totalDistanceTraversedForLayer = layerNumberToTotalDistanceTravelled.get(
-                    layerNumber);
-
-            double distanceTravelledInNextLayer = getPartialDistanceInLayer(
-                    layerNumber, lineNumber);
-            double totalDistanceSoFar = totalDistanceTraversedForLayer + distanceTravelledInNextLayer;
-            double timerPerUnitTravelled = elapsedTimeSeconds / totalDistanceSoFar;
-            remainingTimeSeconds = (int) ((totalDistanceTravelledAllLayers - totalDistanceSoFar)
-                    * timerPerUnitTravelled);
-        } else
-        {
-            // use approximate feed rate to get total estimated time
-            remainingTimeSeconds = (int) ((totalDistanceTravelledAllLayers * ESTIMATED_TIME_PER_DISTANCE_UNIT)
-                    - elapsedTimeSeconds);
-        }
-        hoursMinutes = convertToHoursMinutes(remainingTimeSeconds);
-        elapsedTimeFormatted += " ETC " + hoursMinutes;
-
-        return elapsedTimeFormatted;
     }
 
     /**
@@ -211,31 +149,6 @@ class ETCCalculator
         return (timeAtFirstLine != null);
     }
 
-    /**
-     * At the given line number the printer has travelled a certain distance in the given
-     * layer. Return the partial distance travelled in that layer.
-     */
-    protected double getPartialDistanceInLayer(int layerNumber, int lineNumber)
-    {
-        double extraLinesProgressInNextlayer = lineNumber - layerNumberToLineNumber.get(
-                layerNumber);
-        double numLinesAtEndOfLayer;
-        double distanceTravelledInNextLayer;
-        if (layerNumber == layerNumberToLineNumber.size() - 1)
-        {
-            numLinesAtEndOfLayer = totalNumberOfLines;
-            distanceTravelledInNextLayer = 0;
-        } else
-        {
-            numLinesAtEndOfLayer = layerNumberToLineNumber.get(layerNumber + 1);
-            distanceTravelledInNextLayer = layerNumberToDistanceTravelled.get(
-                    layerNumber + 1);
-        }
-        double totalLinesInNextLayer = numLinesAtEndOfLayer - layerNumberToLineNumber.get(
-                layerNumber);
-        return (extraLinesProgressInNextlayer / totalLinesInNextLayer) * distanceTravelledInNextLayer;
-    }
-    
     protected double getPartialDurationInLayer(int layerNumber, int lineNumber)
     {
         double extraLinesProgressInNextlayer = lineNumber - layerNumberToLineNumber.get(

@@ -9,12 +9,12 @@
  */
 package celtech.services.postProcessor;
 
-import celtech.configuration.ApplicationConfiguration;
 import celtech.gcodetranslator.GCodeRoboxiser;
+import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.gcodetranslator.RoboxiserResult;
+import celtech.printerControl.PrintJob;
 import celtech.printerControl.Printer;
 import celtech.services.slicer.RoboxProfile;
-import java.io.File;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
@@ -25,7 +25,8 @@ import javafx.concurrent.Task;
  *
  * @author Ian
  */
-public class PostProcessorTask extends Task<GCodePostProcessingResult> {
+public class PostProcessorTask extends Task<GCodePostProcessingResult>
+{
 
     private String printJobUUID = null;
     private RoboxProfile settings = null;
@@ -38,32 +39,42 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult> {
      * @param settings
      * @param printerToUse
      */
-    public PostProcessorTask(String printJobUUID, RoboxProfile settings, Printer printerToUse) {
+    public PostProcessorTask(String printJobUUID, RoboxProfile settings,
+        Printer printerToUse)
+    {
         this.printJobUUID = printJobUUID;
         this.settings = settings;
         this.printerToUse = printerToUse;
     }
 
     @Override
-    protected GCodePostProcessingResult call() throws Exception {
+    protected GCodePostProcessingResult call() throws Exception
+    {
         updateMessage("");
         updateProgress(0, 100);
 
         GCodeRoboxiser roboxiser = new GCodeRoboxiser();
-        String gcodeFileToProcess = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID + File.separator + printJobUUID + ApplicationConfiguration.gcodeTempFileExtension;
-        String gcodeOutputFile = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID + File.separator + printJobUUID + ApplicationConfiguration.gcodePostProcessedFileHandle + ApplicationConfiguration.gcodeTempFileExtension;
+        PrintJob printJob = PrintJob.readJobFromDirectory(printJobUUID);
+        String gcodeFileToProcess = printJob.getGCodeFileLocation();
+        String gcodeOutputFile = printJob.getRoboxisedFileLocation();
 
-        taskProgress.addListener(new ChangeListener<Number>() {
+        taskProgress.addListener(new ChangeListener<Number>()
+        {
             @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+            public void changed(ObservableValue<? extends Number> observable,
+                Number oldValue, Number newValue)
+            {
                 updateProgress(newValue.doubleValue(), 100.0);
             }
         });
-        
-        RoboxiserResult roboxiserResult = roboxiser.roboxiseFile(gcodeFileToProcess, gcodeOutputFile, settings, taskProgress);
 
-        GCodePostProcessingResult postProcessingResult = new GCodePostProcessingResult(printJobUUID, gcodeOutputFile, printerToUse, roboxiserResult);
-        
+        RoboxiserResult roboxiserResult = roboxiser.roboxiseFile(
+            gcodeFileToProcess, gcodeOutputFile, settings, taskProgress);
+        roboxiserResult.getPrintJobStatistics().writeToFile(printJob.getStatisticsFileLocation());
+
+        GCodePostProcessingResult postProcessingResult = new GCodePostProcessingResult(
+            printJobUUID, gcodeOutputFile, printerToUse, roboxiserResult);
+
         return postProcessingResult;
     }
 
