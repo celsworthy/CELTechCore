@@ -1,9 +1,6 @@
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
  */
 package celtech.services.printing;
 
@@ -36,8 +33,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -69,22 +64,21 @@ import org.apache.commons.io.FileUtils;
 public class PrintQueue implements ControllableService
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(
+    private final Stenographer steno = StenographerFactory.getStenographer(
         PrintQueue.class.getName());
 
     private Printer associatedPrinter = null;
     private PrinterStatusEnumeration printState = PrinterStatusEnumeration.IDLE;
     private PrinterStatusEnumeration lastStateBeforePause = PrinterStatusEnumeration.IDLE;
     private AbstractSlicerService slicerService;
-    private PostProcessorService gcodePostProcessorService = new PostProcessorService();
-    private GCodePrintService gcodePrintService = new GCodePrintService();
-    private IntegerProperty linesInPrintingFile = new SimpleIntegerProperty(0);
-    private IntegerProperty estimatedRemainingPrintTimeSeconds = new SimpleIntegerProperty(
-        0);
+    private final PostProcessorService gcodePostProcessorService = new PostProcessorService();
+    private final GCodePrintService gcodePrintService = new GCodePrintService();
+    private final IntegerProperty linesInPrintingFile = new SimpleIntegerProperty(0);
+
     /**
      * Indicates if ETC data is available for the current print
      */
-    private BooleanProperty etcAvailable = new SimpleBooleanProperty(false);
+    private final BooleanProperty etcAvailable = new SimpleBooleanProperty(false);
     /*
      * 
      */
@@ -97,10 +91,7 @@ public class PrintQueue implements ControllableService
     private EventHandler<WorkerStateEvent> cancelPrintEventHandler = null;
     private EventHandler<WorkerStateEvent> failedPrintEventHandler = null;
     private EventHandler<WorkerStateEvent> succeededPrintEventHandler = null;
-    /*
-     * 
-     */
-    private final StringProperty printQueueStatusString = new SimpleStringProperty();
+
     private final StringProperty printProgressTitle = new SimpleStringProperty();
     private final StringProperty printProgressMessage = new SimpleStringProperty();
     private final BooleanProperty dialogRequired = new SimpleBooleanProperty(
@@ -119,14 +110,12 @@ public class PrintQueue implements ControllableService
      */
     private ChangeListener<Number> printLineNumberListener = null;
     private ChangeListener<String> printJobIDListener = null;
-    private final int numberOfLinesInGCode = 0;
 
     private ResourceBundle i18nBundle = null;
     private String printTransferInitiatedNotification = null;
     private String printTransferSuccessfulNotification = null;
     private String printTransferSuccessfulNotificationEnd = null;
     private String printJobCancelledNotification = null;
-    private String printJobCompletedNotification = null;
     private String printJobFailedNotification = null;
     private String sliceSuccessfulNotification = null;
     private String sliceFailedNotification = null;
@@ -135,7 +124,7 @@ public class PrintQueue implements ControllableService
     private String detectedPrintInProgressNotification = null;
     private String notificationTitle = null;
 
-    private HashMap<String, Project> printJobsAgainstProjects = new HashMap<>();
+    private final HashMap<String, Project> printJobsAgainstProjects = new HashMap<>();
 
     private boolean consideringPrintRequest = false;
     private final NotificationsHandler notificationsHandler;
@@ -145,6 +134,14 @@ public class PrintQueue implements ControllableService
      * print
      */
     private final IntegerProperty progressETC = new SimpleIntegerProperty();
+    /**
+     * The current layer being processed
+     */
+    private final IntegerProperty progressCurrentLayer = new SimpleIntegerProperty();
+        /**
+     * The total number of layers in the model being printed
+     */
+    private final IntegerProperty progressNumLayers = new SimpleIntegerProperty();
 
     public PrintQueue(Printer associatedPrinter)
     {
@@ -169,8 +166,6 @@ public class PrintQueue implements ControllableService
             "notification.printTransferredSuccessfullyEnd");
         printJobCancelledNotification = i18nBundle.getString(
             "notification.printJobCancelled");
-        printJobCompletedNotification = i18nBundle.getString(
-            "notification.printJobCompleted");
         printJobFailedNotification = i18nBundle.getString(
             "notification.printJobFailed");
         sliceSuccessfulNotification = i18nBundle.getString(
@@ -464,18 +459,22 @@ public class PrintQueue implements ControllableService
             layerNumberToPredictedDuration,
             layerNumberToLineNumber, numberOfLines,
             lineNumberOfFirstExtrusion);
+        
+        progressNumLayers.set(layerNumberToLineNumber.size());
         etcAvailable.set(true);
     }
 
     private void updateETCUsingETCCalculator(Number newValue)
     {
+        int lineNumber = newValue.intValue();
         if (!etcCalculator.isInitialised())
         {
-            etcCalculator.initialise(newValue.intValue());
+            etcCalculator.initialise(lineNumber);
         }
         primaryProgressPercent.set(
             newValue.doubleValue() / linesInPrintingFile.doubleValue());
         progressETC.set(etcCalculator.getETCPredicted(newValue.intValue()));
+        progressCurrentLayer.set(etcCalculator.getLayerNumberForLineNumber(lineNumber));
     }
 
     private void detectAlreadyPrinting()
@@ -1261,4 +1260,12 @@ public class PrintQueue implements ControllableService
     {
         return etcAvailable;
     }
+    
+    public ReadOnlyIntegerProperty progressCurrentLayerProperty() {
+        return progressCurrentLayer;
+    }
+    
+    public ReadOnlyIntegerProperty progressNumLayersProperty() {
+        return progressNumLayers;
+    }    
 }

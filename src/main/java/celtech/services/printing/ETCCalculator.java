@@ -118,7 +118,7 @@ class ETCCalculator
     /**
      * Get the layer number for the given line number
      */
-    protected int getLayerNumberForLineNumber(int lineNumber)
+    public int getLayerNumberForLineNumber(int lineNumber)
     {
         for (int layerNumber = 1; layerNumber < layerNumberToLineNumber.size(); layerNumber++)
         {
@@ -134,14 +134,6 @@ class ETCCalculator
             return layerNumberToLineNumber.size() - 1;
         }
         throw new RuntimeException("Did not calculate layer number");
-    }
-
-    private String convertToHoursMinutes(int seconds)
-    {
-        int minutes = (int) (seconds / 60);
-        int hours = minutes / 60;
-        minutes = minutes - (60 * hours);
-        return String.format("%02d:%02d", hours, minutes);
     }
 
     boolean isInitialised()

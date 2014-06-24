@@ -208,6 +208,15 @@ public class PrinterStatusPageController implements Initializable
 
     @FXML
     private Text progressETC;
+    
+    @FXML
+    private Text progressLayers;   
+    
+    @FXML
+    private Text progressLayerLabel;    
+    
+    @FXML
+    private Text progressETCLabel;      
 
     @FXML
     private Button cancelPrintButton;
@@ -508,6 +517,8 @@ public class PrinterStatusPageController implements Initializable
             "dialogs.openLidPrinterHotTitle");
         openLidPrinterTooHotInfo = i18nBundle.getString(
             "dialogs.openLidPrinterHotInfo");
+        progressLayerLabel.setText(i18nBundle.getString("dialogs.progressLayerLabel"));
+        progressETCLabel.setText(i18nBundle.getString("dialogs.progressETCLabel"));
 
         reelDataChangeListener = new ChangeListener<Boolean>()
         {
@@ -673,13 +684,32 @@ public class PrinterStatusPageController implements Initializable
                                     {
                                         String hoursMinutes = convertToHoursMinutes(
                                             secondsRemaining);
-                                        return "Estimated Time \nTo Complete: " + hoursMinutes;
+                                        return hoursMinutes;
                                     } else
                                     {
-                                        return "Estimated Time \nTo Complete: < 1 minute";
+                                        return i18nBundle.getString("dialogs.lessThanOneMinute");
                                     }
                                 }
                         });
+                        progressLayers.textProperty().bind(new StringBinding()
+                            {
+                                {
+                                    super.bind(
+                                        selectedPrinter.getPrintQueue().progressCurrentLayerProperty(),
+                                        selectedPrinter.getPrintQueue().progressNumLayersProperty());
+                                }
+
+                                @Override
+                                protected String computeValue()
+                                {
+                                    int currentLayer = selectedPrinter.getPrintQueue().progressCurrentLayerProperty().get();
+                                    int totalLayers = selectedPrinter.getPrintQueue().progressNumLayersProperty().get();
+                                    return (currentLayer + 1) + "/" + totalLayers;
+                                }
+                        });
+                        progressLayers.visibleProperty().bind(progressETCVisible);
+                        progressLayerLabel.visibleProperty().bind(progressETCVisible);
+                        progressETCLabel.visibleProperty().bind(progressETCVisible);
                         secondProgressBar.visibleProperty().bind(
                             selectedPrinter.getPrintQueue().
                             sendingDataToPrinterProperty());
