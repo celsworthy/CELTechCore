@@ -1,6 +1,8 @@
 package celtech.coreUI.controllers.sidePanels;
 
+import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
+import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
@@ -240,11 +242,15 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         settings = fineSettings;
                         break;
                     case CUSTOM:
-                        if (newQualityValue != lastQualityValue)
+                        if (newQualityValue != lastQualityValue && applicationStatus.getMode() == ApplicationMode.SETTINGS)
                         {
                             displayManager.slideOutAdvancedPanel();
                         }
                         settings = customSettings;
+                        if (settings != null)
+                        {
+                            DisplayManager.getInstance().getCurrentlyVisibleProject().setCustomProfileName(settings.getProfileName());
+                        }
                         break;
                     default:
                         break;
@@ -259,6 +265,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     {
                         noSupportRadioButton.selectedProperty().set(true);
                     }
+
+                    DisplayManager.getInstance().getCurrentlyVisibleProject().setPrintQuality(quality);
                 }
 
                 slideOutController.updateProfileData(settings);
@@ -271,8 +279,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 settingsScreenState.setSettings(settings);
             }
         });
-
-        qualityChooser.setValue(PrintQualityEnumeration.DRAFT.getEnumPosition());
 
         customProfileVBox.visibleProperty().bind(qualityChooser.valueProperty().isEqualTo(PrintQualityEnumeration.CUSTOM.getEnumPosition()));
 
@@ -310,12 +316,17 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     showCreateProfileDialogue(draftSettings.clone());
                 } else if (newValue != null)
                 {
-                    slideOutController.updateProfileData(newValue);
+                    if (settingsScreenState.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
+                    {
+                        slideOutController.updateProfileData(newValue);
+                        settingsScreenState.setSettings(newValue);
+                        DisplayManager.getInstance().getCurrentlyVisibleProject().setCustomProfileName(newValue.getProfileName());
+                    }
                     customSettings = newValue;
-                    settingsScreenState.setSettings(newValue);
-                } else if (newValue == null && settingsScreenState.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
+                } else if (newValue == null)
                 {
                     slideOutController.updateProfileData(null);
+                    customSettings = null;
                 }
             }
         });
@@ -576,7 +587,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     {
         this.slideOutController = (SettingsSlideOutPanelController) slideOutController;
         this.slideOutController.provideReceiver(this);
-        this.slideOutController.updateProfileData(draftSettings);
         this.slideOutController.updateFilamentData(settingsScreenState.getFilament());
         updateFilamentList();
         if (availableFilaments.size() > 1)
@@ -584,6 +594,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             materialChooser.getSelectionModel().selectFirst();
         }
         updateProfileList();
+        this.slideOutController.updateProfileData(draftSettings);
     }
 
     /**
@@ -706,5 +717,26 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         }
 
         return response;
+    }
+
+    public void projectChanged(Project project)
+    {
+        if (project.getPrintQuality() != null)
+        {
+            if (project.getPrintQuality() != settingsScreenState.getPrintQuality())
+            {
+                qualityChooser.setValue(project.getPrintQuality().getEnumPosition());
+            }
+        }
+
+        if (project.getCustomProfileName() != null)
+        {
+            if (customSettings == null || project.getCustomProfileName().equals(customSettings.getProfileName()) == false)
+            {
+                RoboxProfile chosenProfile = PrintProfileContainer.getSettingsByProfileName(project.getCustomProfileName());
+                customProfileChooser.getSelectionModel().select(chosenProfile);
+            }
+        }
+
     }
 }

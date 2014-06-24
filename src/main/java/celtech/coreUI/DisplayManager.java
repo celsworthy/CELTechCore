@@ -25,6 +25,7 @@ import celtech.coreUI.controllers.MenuStripController;
 import celtech.coreUI.controllers.PrinterStatusPageController;
 import celtech.coreUI.controllers.sidePanels.LayoutSidePanelController;
 import celtech.coreUI.controllers.sidePanels.LayoutSlideOutPanelController;
+import celtech.coreUI.controllers.sidePanels.SettingsSidePanelController;
 import celtech.coreUI.controllers.sidePanels.SidePanelManager;
 import celtech.coreUI.visualisation.CameraPositionPreset;
 import celtech.coreUI.visualisation.ThreeDViewManager;
@@ -418,8 +419,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                         ProjectTab projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
                         ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).bindLoadedModels(projectTab.getThreeDViewManager());
                         menuStripController.bindSelectedModels(projectTab.getSelectionContainer());
-//                        ((SettingsSidePanelController) (sidePanels.get(ApplicationMode.SETTINGS).getSidePanelController())).bindLoadedModels(projectTab.getProject());
-//                        ((SettingsSidePanelController) (sidePanelControllers.get(ApplicationMode.SETTINGS))).bindLoadedModels(projectTab.getProject());
+                        ((SettingsSidePanelController) sidePanelControllers.get(ApplicationMode.SETTINGS)).projectChanged(projectTab.getProject());
                     }
                 } else
                 {

@@ -158,6 +158,21 @@ public class RestrictedNumberField extends TextField
         super.replaceText(start, end, text);
 
         enforceRestriction(oldText, oldSelectionRange);
+        updateNumberValues();
+    }
+
+    private void updateNumberValues()
+    {
+        try
+        {
+            suppressTextToNumberUpdate = true;
+            intValue.set(getNumberFormatter().parse(this.getText()).intValue());
+            floatValue.set(getNumberFormatter().parse(this.getText()).floatValue());
+            doubleValue.set(getNumberFormatter().parse(this.getText()).doubleValue());
+            suppressTextToNumberUpdate = false;
+        } catch (ParseException ex)
+        {
+        }
     }
 
     @Override
@@ -169,6 +184,7 @@ public class RestrictedNumberField extends TextField
         super.replaceSelection(text);
 
         enforceRestriction(oldText, oldSelectionRange);
+        updateNumberValues();
     }
 
     @Override
@@ -180,6 +196,7 @@ public class RestrictedNumberField extends TextField
         super.replaceText(range, text);
 
         enforceRestriction(oldText, oldSelectionRange);
+        updateNumberValues();
     }
 
     public int getAsInt() throws ParseException

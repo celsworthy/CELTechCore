@@ -3,6 +3,7 @@ package celtech.appManager;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PrintProfileContainer;
 import celtech.modelcontrol.ModelContainer;
+import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +18,8 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -24,12 +27,16 @@ import javafx.collections.ObservableList;
  */
 public class Project implements Serializable
 {
+
+    private transient Stenographer steno = StenographerFactory.getStenographer(Project.class.getName());
     private static final long serialVersionUID = 1L;
     private ProjectHeader projectHeader = new ProjectHeader();
     private ObservableList<ModelContainer> loadedModels = FXCollections.observableArrayList();
     private String gcodeFileName = "";
     private ObjectProperty<ProjectMode> projectMode = new SimpleObjectProperty<>(ProjectMode.NONE);
+    private PrintQualityEnumeration printQuality = null;
     private RoboxProfile customSettings = null;
+    private String customProfileName = "";
     private BooleanProperty isDirty = new SimpleBooleanProperty(false);
     private String lastPrintJobID = "";
 
@@ -81,7 +88,7 @@ public class Project implements Serializable
     {
         return projectHeader.projectNameProperty();
     }
-    
+
     /**
      *
      * @return
@@ -131,11 +138,17 @@ public class Project implements Serializable
         out.writeUTF(lastPrintJobID);
 
         out.writeObject(customSettings);
+
+        //Introduced in version 1.00.06
+        out.writeUTF(customProfileName);
+        out.writeObject(printQuality);
     }
 
     private void readObject(ObjectInputStream in)
             throws IOException, ClassNotFoundException
     {
+        steno = StenographerFactory.getStenographer(Project.class.getName());
+
         projectHeader = (ProjectHeader) in.readObject();
         int numberOfModels = in.readInt();
         loadedModels = FXCollections.observableArrayList();
@@ -151,7 +164,23 @@ public class Project implements Serializable
         // We have to be of mesh type as no others are saved...
         projectMode = new SimpleObjectProperty<>(ProjectMode.MESH);
 
-        customSettings = (RoboxProfile) in.readObject();
+        try
+        {
+            customSettings = (RoboxProfile) in.readObject();
+            //Introduced in version 1.00.06
+            if (in.available() > 0)
+            {
+                customProfileName = in.readUTF();
+                printQuality = (PrintQualityEnumeration) in.readObject();
+            }
+        } catch (IOException ex)
+        {
+            steno.warning("Unable to deserialise settings");
+            customSettings = null;
+            customProfileName = "";
+            printQuality = null;
+        }
+
     }
 
     private void readObjectNoData()
@@ -239,5 +268,53 @@ public class Project implements Serializable
     public String getLastPrintJobID()
     {
         return lastPrintJobID;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public PrintQualityEnumeration getPrintQuality()
+    {
+        return printQuality;
+    }
+
+    /**
+     *
+     * @param printQuality
+     */
+    public void setPrintQuality(PrintQualityEnumeration printQuality)
+    {
+        if (this.printQuality != printQuality)
+        {
+            projectModified();
+            this.printQuality = printQuality;
+        }
+    }
+
+    /**
+     *
+     * @return
+     */
+    public String getCustomProfileName()
+    {
+        return customProfileName;
+    }
+
+    /**
+     *
+     * @param customProfileName
+     */
+    public void setCustomProfileName(String customProfileName)
+    {
+        if (customProfileName == null)
+        {
+            this.customProfileName = "";
+        }
+        else if (this.customProfileName.equals(customProfileName) == false)
+        {
+            projectModified();
+            this.customProfileName = customProfileName;
+        }
     }
 }
