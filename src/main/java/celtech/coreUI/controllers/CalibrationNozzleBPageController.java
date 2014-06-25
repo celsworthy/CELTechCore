@@ -21,7 +21,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class CalibrationNozzleBPageController implements Initializable
+public class CalibrationNozzleBPageController implements Initializable, CalibrationBStateListener
 {
 
     private Stenographer steno = StenographerFactory.getStenographer(CalibrationNozzleBPageController.class.getName());
@@ -98,9 +98,9 @@ public class CalibrationNozzleBPageController implements Initializable
         i18nBundle = DisplayManager.getLanguageBundle();
 
         StatusScreenState statusScreenState = StatusScreenState.getInstance();
-        
+
         calibrationHelper.setPrinterToUse(statusScreenState.currentlySelectedPrinterProperty().get());
-        
+
         statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
             @Override
@@ -110,136 +110,135 @@ public class CalibrationNozzleBPageController implements Initializable
             }
         });
 
-        calibrationHelper.getStateProperty().addListener(new ChangeListener<NozzleBCalibrationState>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends NozzleBCalibrationState> observable, NozzleBCalibrationState oldValue, NozzleBCalibrationState newValue)
-            {
-                switch (newValue)
-                {
-                    case IDLE:
-                        startCalibrationButton.setVisible(true);
-                        cancelCalibrationButton.setVisible(true);
-                        yesButton.setVisible(false);
-                        noButton.setVisible(false);
-                        calibrationStatus.setText(newValue.getStepTitle());
-                        calibrationInstruction.setText(newValue.getStepInstruction());
-                        break;
-                    case INITIALISING:
-                        startCalibrationButton.setVisible(false);
-                        cancelCalibrationButton.setVisible(true);
-                        yesButton.setVisible(false);
-                        noButton.setVisible(false);
-                        calibrationStatus.setText(newValue.getStepTitle());
-                        calibrationInstruction.setText(newValue.getStepInstruction());
-                        break;
-                    case HEATING:
-                        startCalibrationButton.setVisible(false);
-                        cancelCalibrationButton.setVisible(true);
-                        yesButton.setVisible(false);
-                        noButton.setVisible(false);
-                        calibrationStatus.setText(newValue.getStepTitle());
-                        calibrationInstruction.setText(newValue.getStepInstruction());
-                        break;
-                    case PRIMING:
-                        startCalibrationButton.setVisible(false);
-                        cancelCalibrationButton.setVisible(true);
-                        yesButton.setVisible(false);
-                        noButton.setVisible(false);
-                        calibrationStatus.setText(newValue.getStepTitle());
-                        calibrationInstruction.setText(newValue.getStepInstruction());
-                        break;
-                    case NO_MATERIAL_CHECK:
-                        startCalibrationButton.setVisible(false);
-                        cancelCalibrationButton.setVisible(true);
-                        yesButton.setVisible(true);
-                        noButton.setVisible(true);
-                        calibrationStatus.setText(newValue.getStepTitle());
-                        calibrationInstruction.setText(newValue.getStepInstruction());
-                        break;
-                    case MATERIAL_EXTRUDING_CHECK:
-                        startCalibrationButton.setVisible(false);
-                        cancelCalibrationButton.setVisible(true);
-                        yesButton.setVisible(true);
-                        noButton.setVisible(true);
-                        calibrationStatus.setText(newValue.getStepTitle(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
-                        calibrationInstruction.setText(newValue.getStepInstruction(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
-                        break;
-                    case HEAD_CLEAN_CHECK:
-                        startCalibrationButton.setVisible(false);
-                        cancelCalibrationButton.setVisible(true);
-                        yesButton.setVisible(true);
-                        noButton.setVisible(false);
-                        calibrationStatus.setText(newValue.getStepTitle());
-                        calibrationInstruction.setText(newValue.getStepInstruction());
-                        break;
-                    case PRE_CALIBRATION_PRIMING:
-                        startCalibrationButton.setVisible(false);
-                        cancelCalibrationButton.setVisible(true);
-                        yesButton.setVisible(false);
-                        noButton.setVisible(false);
-                        calibrationStatus.setText(newValue.getStepTitle());
-                        calibrationInstruction.setText(newValue.getStepInstruction());
-                        break;
-                    case CALIBRATE_NOZZLE:
-                        startCalibrationButton.setVisible(false);
-                        cancelCalibrationButton.setVisible(true);
-                        yesButton.setVisible(true);
-                        noButton.setVisible(true);
-                        calibrationStatus.setText(newValue.getStepTitle(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
-                        calibrationInstruction.setText(newValue.getStepInstruction(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
-                        break;
-                    case HEAD_CLEAN_CHECK_POST_CALIBRATION:
-                        startCalibrationButton.setVisible(false);
-                        cancelCalibrationButton.setVisible(true);
-                        yesButton.setVisible(true);
-                        noButton.setVisible(false);
-                        calibrationStatus.setText(newValue.getStepTitle());
-                        calibrationInstruction.setText(newValue.getStepInstruction());
-                        break;
-                    case POST_CALIBRATION_PRIMING:
-                        startCalibrationButton.setVisible(false);
-                        cancelCalibrationButton.setVisible(true);
-                        yesButton.setVisible(false);
-                        noButton.setVisible(false);
-                        calibrationStatus.setText(newValue.getStepTitle());
-                        calibrationInstruction.setText(newValue.getStepInstruction());
-                        break;
-                    case CONFIRM_NO_MATERIAL:
-                        startCalibrationButton.setVisible(false);
-                        cancelCalibrationButton.setVisible(true);
-                        yesButton.setVisible(true);
-                        noButton.setVisible(true);
-                        calibrationStatus.setText(newValue.getStepTitle());
-                        calibrationInstruction.setText(newValue.getStepInstruction());
-                        break;
-                    case CONFIRM_MATERIAL_EXTRUDING:
-                        startCalibrationButton.setVisible(false);
-                        cancelCalibrationButton.setVisible(true);
-                        yesButton.setVisible(true);
-                        noButton.setVisible(true);
-                        calibrationStatus.setText(newValue.getStepTitle(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
-                        calibrationInstruction.setText(newValue.getStepInstruction(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
-                        break;
-                    case FINISHED:
-                        startCalibrationButton.setVisible(false);
-                        cancelCalibrationButton.setVisible(false);
-                        yesButton.setVisible(false);
-                        noButton.setVisible(false);
-                        calibrationStatus.setText(newValue.getStepTitle());
-                        calibrationInstruction.setText(newValue.getStepInstruction());
-                        break;
-                    case FAILED:
-                        startCalibrationButton.setVisible(false);
-                        cancelCalibrationButton.setVisible(true);
-                        yesButton.setVisible(false);
-                        noButton.setVisible(false);
-                        calibrationStatus.setText(newValue.getStepTitle());
-                        calibrationInstruction.setText(newValue.getStepInstruction());
-                        break;
-                }
-            }
-        });
+        calibrationHelper.addStateListener(this);
         calibrationHelper.setState(NozzleBCalibrationState.IDLE);
+    }
+
+    @Override
+    public void setState(NozzleBCalibrationState state)
+    {
+        switch (state)
+        {
+            case IDLE:
+                startCalibrationButton.setVisible(true);
+                cancelCalibrationButton.setVisible(true);
+                yesButton.setVisible(false);
+                noButton.setVisible(false);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
+                break;
+            case INITIALISING:
+                startCalibrationButton.setVisible(false);
+                cancelCalibrationButton.setVisible(true);
+                yesButton.setVisible(false);
+                noButton.setVisible(false);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
+                break;
+            case HEATING:
+                startCalibrationButton.setVisible(false);
+                cancelCalibrationButton.setVisible(true);
+                yesButton.setVisible(false);
+                noButton.setVisible(false);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
+                break;
+            case PRIMING:
+                startCalibrationButton.setVisible(false);
+                cancelCalibrationButton.setVisible(true);
+                yesButton.setVisible(false);
+                noButton.setVisible(false);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
+                break;
+            case NO_MATERIAL_CHECK:
+                startCalibrationButton.setVisible(false);
+                cancelCalibrationButton.setVisible(true);
+                yesButton.setVisible(true);
+                noButton.setVisible(true);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
+                break;
+            case MATERIAL_EXTRUDING_CHECK:
+                startCalibrationButton.setVisible(false);
+                cancelCalibrationButton.setVisible(true);
+                yesButton.setVisible(true);
+                noButton.setVisible(true);
+                calibrationStatus.setText(state.getStepTitle(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
+                calibrationInstruction.setText(state.getStepInstruction(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
+                break;
+            case HEAD_CLEAN_CHECK:
+                startCalibrationButton.setVisible(false);
+                cancelCalibrationButton.setVisible(true);
+                yesButton.setVisible(true);
+                noButton.setVisible(false);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
+                break;
+            case PRE_CALIBRATION_PRIMING:
+                startCalibrationButton.setVisible(false);
+                cancelCalibrationButton.setVisible(true);
+                yesButton.setVisible(false);
+                noButton.setVisible(false);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
+                break;
+            case CALIBRATE_NOZZLE:
+                startCalibrationButton.setVisible(false);
+                cancelCalibrationButton.setVisible(true);
+                yesButton.setVisible(true);
+                noButton.setVisible(true);
+                calibrationStatus.setText(state.getStepTitle(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
+                calibrationInstruction.setText(state.getStepInstruction(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
+                break;
+            case HEAD_CLEAN_CHECK_POST_CALIBRATION:
+                startCalibrationButton.setVisible(false);
+                cancelCalibrationButton.setVisible(true);
+                yesButton.setVisible(true);
+                noButton.setVisible(false);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
+                break;
+            case POST_CALIBRATION_PRIMING:
+                startCalibrationButton.setVisible(false);
+                cancelCalibrationButton.setVisible(true);
+                yesButton.setVisible(false);
+                noButton.setVisible(false);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
+                break;
+            case CONFIRM_NO_MATERIAL:
+                startCalibrationButton.setVisible(false);
+                cancelCalibrationButton.setVisible(true);
+                yesButton.setVisible(true);
+                noButton.setVisible(true);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
+                break;
+            case CONFIRM_MATERIAL_EXTRUDING:
+                startCalibrationButton.setVisible(false);
+                cancelCalibrationButton.setVisible(true);
+                yesButton.setVisible(true);
+                noButton.setVisible(true);
+                calibrationStatus.setText(state.getStepTitle(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
+                calibrationInstruction.setText(state.getStepInstruction(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
+                break;
+            case FINISHED:
+                startCalibrationButton.setVisible(false);
+                cancelCalibrationButton.setVisible(false);
+                yesButton.setVisible(false);
+                noButton.setVisible(false);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
+                break;
+            case FAILED:
+                startCalibrationButton.setVisible(false);
+                cancelCalibrationButton.setVisible(true);
+                yesButton.setVisible(false);
+                noButton.setVisible(false);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
+                break;
+        }
     }
 }
