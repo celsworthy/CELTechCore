@@ -24,6 +24,7 @@ import javafx.collections.ObservableList;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.Before;
 
 /**
  *
@@ -34,6 +35,10 @@ public class PrintQueueTest extends JavaFXConfiguredTest
 
     static final int WAIT_INTERVAL = 500;
     static final int MAX_WAIT_INTERVAL = 3000;
+    
+    Printer testPrinter;
+    PrintQueue printQueue;
+    Project project;
 
     @Rule
     public JavaFXThreadingRule jfxRule = new JavaFXThreadingRule();
@@ -44,26 +49,21 @@ public class PrintQueueTest extends JavaFXConfiguredTest
     @Test
     public void testProgressPropertyIsZeroAtStartOfPrint()
     {
-        Printer testPrinter = new TestPrinter();
-        PrintQueue printQueue = new PrintQueue(testPrinter);
+        testPrinter = new TestPrinter();
+        printQueue = new PrintQueue(testPrinter);
         ReadOnlyDoubleProperty result = printQueue.progressProperty();
         assertEquals(0d, result.get(), 0.001);
     }
-
-    /**
-     * Test that progressProperty is 1 at end of print
-     */
-    @Test
-    public void testProgressPropertyIsOneAtEndOfPrint() throws IOException, InterruptedException
-    {
-
-        Printer testPrinter = new TestPrinter();
+    
+    @Before
+    public void setupPrintQueue() {
+        testPrinter = new TestPrinter();
         testPrinter.setBedTargetTemperature(120);
         testPrinter.setBedTemperature(120);
 
         TestSlicerService testSlicerService = new TestSlicerService();
         TestNotificationsHandler testNotificationsHandler = new TestNotificationsHandler();
-        PrintQueue printQueue = new PrintQueue(testPrinter, testNotificationsHandler,
+        printQueue = new PrintQueue(testPrinter, testNotificationsHandler,
                                                testSlicerService);
 
         STLImporter stlImporter = new STLImporter();
@@ -74,10 +74,20 @@ public class PrintQueueTest extends JavaFXConfiguredTest
                                                                null, progressProperty);
         ObservableList<ModelContainer> modelList = FXCollections.observableArrayList(
                 modelLoadResult.getModelContainer());
-        Project project = new Project("abcdef", "Pyramid", modelList);
+        project = new Project("abcdef", "Pyramid", modelList);
         project.setProjectMode(ProjectMode.MESH);
+    }
 
-        RoboxProfile roboxProfile = PrintProfileContainer.getCompleteProfileList().get(0);
+    /**
+     * Test that progressProperty is 1 at end of print
+     * @throws java.io.IOException
+     * @throws java.lang.InterruptedException
+     */
+    @Test
+    public void testProgressPropertyIsOneAtEndOfPrint() throws IOException, InterruptedException
+    {
+        RoboxProfile roboxProfile = PrintProfileContainer.getSettingsByProfileName(
+            "DraftSettings");
         printQueue.printProject(project, PrintQualityEnumeration.DRAFT, roboxProfile);
 
         int totalWaitTime = 0;
@@ -100,12 +110,44 @@ public class PrintQueueTest extends JavaFXConfiguredTest
         Thread.sleep(2000);
         testPrinter.setPrintJobLineNumber(1);
 
-        testPrinter.setPrintJobLineNumber(1736);
+        testPrinter.setPrintJobLineNumber(1702);
 
         int ETC = printQueue.progressETCProperty().get();
         assertEquals(0, ETC);
         ReadOnlyDoubleProperty progress = printQueue.progressProperty();
         assertEquals(1.0d, progress.get(), 0.001);
     }
+    
+    @Test
+    public void testCurrentLayerAtEndOfPrint() throws IOException, InterruptedException
+    {
+        RoboxProfile roboxProfile = PrintProfileContainer.getSettingsByProfileName(
+            "DraftSettings");
+        printQueue.printProject(project, PrintQualityEnumeration.DRAFT, roboxProfile);
+
+        int totalWaitTime = 0;
+        while (true)
+        {
+            System.out.println("STATUS " + printQueue.getPrintStatus());
+            if (PrinterStatusEnumeration.PRINTING.equals(printQueue.getPrintStatus()))
+            {
+                break;
+            }
+            Thread.sleep(WAIT_INTERVAL);
+            totalWaitTime += WAIT_INTERVAL;
+            if (totalWaitTime > MAX_WAIT_INTERVAL)
+            {
+                fail("Test print took too long");
+            }
+        }
+
+        testPrinter.setPrintJobLineNumber(0);
+        Thread.sleep(2000);
+        testPrinter.setPrintJobLineNumber(1);
+
+        testPrinter.setPrintJobLineNumber(1702);
+        int currentLayer = printQueue.progressCurrentLayerProperty().get();
+        assertEquals(66, currentLayer);
+    }    
 
 }

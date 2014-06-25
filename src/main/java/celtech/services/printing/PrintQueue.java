@@ -381,7 +381,7 @@ public class PrintQueue implements ControllableService
                 Number newValue)
             {
 //                steno.info("Line number is " + newValue.toString() + " and was " + oldValue.toString());
-                System.out.println("Line number changed to " + newValue);
+//                System.out.println("Line number changed to " + newValue);
                 switch (printState)
                 {
                     case IDLE:
@@ -451,14 +451,12 @@ public class PrintQueue implements ControllableService
         Printer associatedPrinter)
     {
         int numberOfLines = printJobStatistics.getNumberOfLines();
-        linesInPrintingFile.set(printJobStatistics.getNumberOfLines());
+        linesInPrintingFile.set(numberOfLines);
         List<Double> layerNumberToPredictedDuration = printJobStatistics.getLayerNumberToPredictedDuration();
         List<Integer> layerNumberToLineNumber = printJobStatistics.getLayerNumberToLineNumber();
-        int lineNumberOfFirstExtrusion = printJobStatistics.getLineNumberOfFirstExtrusion();
         etcCalculator = new ETCCalculator(associatedPrinter,
             layerNumberToPredictedDuration,
-            layerNumberToLineNumber, numberOfLines,
-            lineNumberOfFirstExtrusion);
+            layerNumberToLineNumber);
         
         progressNumLayers.set(layerNumberToLineNumber.size());
         etcAvailable.set(true);
@@ -467,14 +465,9 @@ public class PrintQueue implements ControllableService
     private void updateETCUsingETCCalculator(Number newValue)
     {
         int lineNumber = newValue.intValue();
-        if (!etcCalculator.isInitialised())
-        {
-            etcCalculator.initialise(lineNumber);
-        }
-        primaryProgressPercent.set(
-            newValue.doubleValue() / linesInPrintingFile.doubleValue());
-        progressETC.set(etcCalculator.getETCPredicted(newValue.intValue()));
-        progressCurrentLayer.set(etcCalculator.getLayerNumberForLineNumber(lineNumber));
+        primaryProgressPercent.set(etcCalculator.getPercentCompleteAtLine(lineNumber));
+        progressETC.set(etcCalculator.getETCPredicted(lineNumber));
+        progressCurrentLayer.set(etcCalculator.getCompletedLayerNumberForLineNumber(lineNumber));
     }
 
     private void detectAlreadyPrinting()

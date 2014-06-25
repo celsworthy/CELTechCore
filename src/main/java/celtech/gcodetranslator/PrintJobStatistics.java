@@ -16,7 +16,6 @@ import org.codehaus.jackson.map.SerializationConfig;
 public class PrintJobStatistics
 {
 
-    private final double predictedDuration;
     private final int numberOfLines;
     private final double volumeUsed;
     private final List<Integer> layerNumberToLineNumber;
@@ -26,21 +25,19 @@ public class PrintJobStatistics
     public PrintJobStatistics()
     {
         numberOfLines = 0;
-        predictedDuration = 0;
         volumeUsed = 0;
         lineNumberOfFirstExtrusion = 0;
         layerNumberToLineNumber = null;
         layerNumberToPredictedDuration = null;
     }
 
-    public PrintJobStatistics(int numberOfLines, double predictedDuration,
+    public PrintJobStatistics(int numberOfLines, 
         double volumeUsed,
         int lineNumberOfFirstExtrusion,
         List<Integer> layerNumberToLineNumber,
         List<Double> layerNumberToPredictedDuration)
     {
         this.numberOfLines = numberOfLines;
-        this.predictedDuration = predictedDuration;
         this.volumeUsed = volumeUsed;
         this.lineNumberOfFirstExtrusion = lineNumberOfFirstExtrusion;
         this.layerNumberToLineNumber = layerNumberToLineNumber;
@@ -52,14 +49,6 @@ public class PrintJobStatistics
         ObjectMapper mapper = new ObjectMapper();
         mapper.enable(SerializationConfig.Feature.INDENT_OUTPUT);
         mapper.writeValue(new File(statisticsFileLocation), this);
-    }
-
-    /**
-     * @return the predictedDuration
-     */
-    public double getPredictedDuration()
-    {
-        return predictedDuration;
     }
 
     /**

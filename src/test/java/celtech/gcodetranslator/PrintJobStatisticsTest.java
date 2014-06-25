@@ -39,7 +39,7 @@ public class PrintJobStatisticsTest
         layerNumberToPredictedDuration.add(3.4);
 
         PrintJobStatistics printJobStatistics = new PrintJobStatistics(
-            lineNumberOfFirstExtrusion, volumeUsed, volumeUsed,
+            lineNumberOfFirstExtrusion, volumeUsed, 
             lineNumberOfFirstExtrusion, layerNumberToLineNumber,
             layerNumberToPredictedDuration);
 
@@ -56,9 +56,6 @@ public class PrintJobStatisticsTest
                      readIntoPrintJobStatistics.getLineNumberOfFirstExtrusion());
         assertEquals(printJobStatistics.getNumberOfLines(),
                      readIntoPrintJobStatistics.getNumberOfLines());
-        assertEquals(printJobStatistics.getPredictedDuration(),
-                     readIntoPrintJobStatistics.getPredictedDuration(), 0.001);        
-
     }
 
 }

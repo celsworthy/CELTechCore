@@ -2,15 +2,10 @@
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
  */
 package celtech.services.postProcessor;
 
 import celtech.gcodetranslator.GCodeRoboxiser;
-import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.gcodetranslator.RoboxiserResult;
 import celtech.printerControl.PrintJob;
 import celtech.printerControl.Printer;

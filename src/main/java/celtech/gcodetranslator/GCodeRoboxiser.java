@@ -83,8 +83,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     private int ejectionVolumeIndex = -1;
     private int wipeVolumeIndex = -1;
 
-    private boolean pastFirstLayer = false;
-
     private double predictedDurationInLayer = 0.0;
     private double volumeUsed = 0.0;
     private double autoUnretractEValue = 0.0;
@@ -101,24 +99,22 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     private int mixFromLayer = 0;
     private int mixToLayer = 0;
     private int currentMixPoint = 0;
-    private boolean mixing = false;
-    private int currentLayer = 0;
 
     private OutputWriter outputWriter;
     private int layerIndex = 0;
-    private final List<Integer> layerNumberToLineNumber = new ArrayList<>();
-    private final List<Double> layerNumberToDistanceTravelled = new ArrayList<>();
-    private final List<Double> layerNumberToPredictedDuration = new ArrayList<>();
+    private List<Integer> layerNumberToLineNumber;
+    private List<Double> layerNumberToDistanceTravelled;
+    private List<Double> layerNumberToPredictedDuration;
     private double distanceSoFarInLayer = 0;
     private Integer lineNumberOfFirstExtrusion;
-    
 
     /**
-     * OutputWriter is a wrapper to a file writer that allows us to count the number
-     * of non-comment and non-blank lines.
+     * OutputWriter is a wrapper to a file writer that allows us to count the
+     * number of non-comment and non-blank lines.
      */
     class OutputWriter
     {
+
         private int numberOfLinesOutput = 0;
         private BufferedWriter fileWriter = null;
 
@@ -175,19 +171,32 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         String outputFilename,
         RoboxProfile settings, DoubleProperty percentProgress)
     {
+        layerNumberToLineNumber = new ArrayList<>();
+        layerNumberToDistanceTravelled = new ArrayList<>();
+        layerNumberToPredictedDuration = new ArrayList<>();
+        layerNumberToDistanceTravelled.add(0, 0d);
+        layerNumberToPredictedDuration.add(0, 0d);
+        layerNumberToLineNumber.add(0, 0);
+
         RoboxiserResult result = new RoboxiserResult();
         boolean success = false;
 
         extruderMixPoints.clear();
 
-        extruderMixPoints.add(new ExtruderMix(1, 0, 5));
-        extruderMixPoints.add(new ExtruderMix(0, 1, 30));
-        extruderMixPoints.add(new ExtruderMix(0.5, 0.5, 31));
-        extruderMixPoints.add(new ExtruderMix(0.5, 0.5, 40));
-        extruderMixPoints.add(new ExtruderMix(1, 0, 46));
+        extruderMixPoints.add(
+            new ExtruderMix(1, 0, 5));
+        extruderMixPoints.add(
+            new ExtruderMix(0, 1, 30));
+        extruderMixPoints.add(
+            new ExtruderMix(0.5, 0.5, 31));
+        extruderMixPoints.add(
+            new ExtruderMix(0.5, 0.5, 40));
+        extruderMixPoints.add(
+            new ExtruderMix(1, 0, 46));
 
-        mixing = false;
-        if (mixExtruderOutputs && extruderMixPoints.size() >= 2)
+        if (mixExtruderOutputs
+            && extruderMixPoints.size()
+            >= 2)
         {
             ExtruderMix firstMixPoint = extruderMixPoints.get(0);
             startingEMixValue = firstMixPoint.getEFactor();
@@ -230,7 +239,9 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                                1).doubleValue(),
                                            settings.getNozzle_partial_b_minimum().get(
                                                1).doubleValue());
+
         nozzles.add(point3mmNozzle);
+
         nozzles.add(point8mmNozzle);
 
         currentNozzle = point3mmNozzle;
@@ -265,15 +276,21 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         }
 
         result.setSuccess(success);
+        /**
+         * TODO: layerNumberToLineNumber uses lines numbers from the GCode file
+         * so are a little less than the line numbers for each layer after
+         * roboxisation. As a quick fix for now set the line number of the last
+         * layer to the actual maximum line number.
+         */
+        layerNumberToLineNumber.set(layerNumberToLineNumber.size() - 1,
+                                    outputWriter.numberOfLinesOutput);
         PrintJobStatistics roboxisedStatistics = new PrintJobStatistics(
             outputWriter.numberOfLinesOutput,
-            predictedDurationInLayer, volumeUsed,
-            lineNumberOfFirstExtrusion,
+            volumeUsed, lineNumberOfFirstExtrusion,
             layerNumberToLineNumber, layerNumberToPredictedDuration);
+
         result.setRoboxisedStatistics(roboxisedStatistics);
 
-        steno.info("Estimated print time "
-            + result.getPrintJobStatistics().getPredictedDuration());
         return result;
     }
 
@@ -496,7 +513,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                     nozzleChangeEvent.setNozzleNumber(tempNozzleMemory);
                     nozzleChangeEvent.setComment("return to intended nozzle");
                     extrusionBuffer.add(nozzleChangeEvent);
-                    pastFirstLayer = true;
                 }
 
                 layer++;
@@ -909,7 +925,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                 {
                                     if (layer == mixFromLayer)
                                     {
-                                        mixing = true;
                                         currentEMixValue = startingEMixValue;
                                     } else if (layer == mixToLayer)
                                     {
@@ -949,6 +964,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                     currentDMixValue = 1 - currentEMixValue;
                                 }
 
+                                layerIndex++;
                                 layerNumberToLineNumber.add(layerIndex,
                                                             candidateevent.getLinesSoFar());
                                 layerNumberToDistanceTravelled.add(layerIndex,
@@ -957,7 +973,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                                                    predictedDurationInLayer);
                                 distanceSoFarInLayer = 0;
                                 predictedDurationInLayer = 0;
-                                layerIndex++;
 
                             }
 

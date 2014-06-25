@@ -40,10 +40,8 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
         RoboxProfile roboxProfile = PrintProfileContainer.getSettingsByProfileName(DRAFT_SETTINGS);
         DoubleProperty progressProperty = new SimpleDoubleProperty(0);
         RoboxiserResult roboxiserResult = gCodeRoboxiser.roboxiseFile(
-            inputURL.getFile(),
-            outputFilePath,
-            roboxProfile,
-            progressProperty);
+            inputURL.getFile(), outputFilePath,
+            roboxProfile, progressProperty);
         assertEquals(34, (long) roboxiserResult.getPrintJobStatistics().getLineNumberOfFirstExtrusion());
     }
     

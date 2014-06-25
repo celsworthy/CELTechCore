@@ -15,7 +15,6 @@ import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.JogButton;
 import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.PrinterStatusEnumeration;
-import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.utils.AxisSpecifier;
@@ -35,8 +34,6 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -59,7 +56,6 @@ public class PrinterStatusPageController implements Initializable
     private Stenographer steno = StenographerFactory.getStenographer(
         PrinterStatusPageController.class.getName());
     private StatusScreenState statusScreenState = null;
-    private RoboxCommsManager printerCommsManager = RoboxCommsManager.getInstance();
     private PrinterImpl printerToUse = null;
     private ChangeListener<Boolean> reelDataChangeListener = null;
     private ChangeListener<EEPROMState> reelChangeListener = null;
@@ -73,9 +69,6 @@ public class PrinterStatusPageController implements Initializable
     private String transferringDataString = null;
 
     private PrinterColourMap colourMap = PrinterColourMap.getInstance();
-
-    @FXML
-    private AnchorPane container;
 
     @FXML
     private ImageView printerSilhouette;
@@ -180,9 +173,6 @@ public class PrinterStatusPageController implements Initializable
     private JogButton extruder_minus100;
 
     @FXML
-    private StackPane pauseResumeStack;
-
-    @FXML
     private Button unlockLidButton;
 
     @FXML
@@ -223,9 +213,6 @@ public class PrinterStatusPageController implements Initializable
 
     @FXML
     private JogButton extruder_plus20;
-
-    @FXML
-    private HBox printControlButtons;
 
     @FXML
     private JogButton z_plus1;
@@ -643,8 +630,7 @@ public class PrinterStatusPageController implements Initializable
                         progressBar.progressProperty().bind(
                             selectedPrinter.getPrintQueue().progressProperty());
                         progressPercent.textProperty().bind(Bindings.multiply(
-                                selectedPrinter.getPrintQueue().
-                                progressProperty(),
+                                selectedPrinter.getPrintQueue().progressProperty(),
                                 100).asString("%.0f%%"));
                         BooleanBinding progressVisible
                         = selectedPrinter.printerStatusProperty().isNotEqualTo(
@@ -867,32 +853,6 @@ public class PrinterStatusPageController implements Initializable
      */
     public void configure(VBox parent)
     {
-
-//        parent.widthProperty().addListener(new ChangeListener<Number>()
-//        {
-//
-//            @Override
-//            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-//            {
-//                steno.info("Width is " + t1.doubleValue());
-//            }
-//        });
-//
-//        parent.heightProperty().addListener(new ChangeListener<Number>()
-//        {
-//
-//            @Override
-//            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-//            {
-//                steno.info("Height is " + t1.doubleValue());
-//            }
-//        });
-//        printerClosedImage.fitWidthProperty().bind(parent.widthProperty());
-//        printerClosedImage.fitHeightProperty().bind(parent.heightProperty());
-//        printerOpenImage.fitWidthProperty().bind(parent.widthProperty());
-//        printerOpenImage.fitHeightProperty().bind(parent.heightProperty());
-//        printerSilhouette.fitWidthProperty().bind(parent.widthProperty());
-//        printerSilhouette.fitHeightProperty().bind(parent.heightProperty());
         parent.widthProperty().addListener(new ChangeListener<Number>()
         {
             @Override

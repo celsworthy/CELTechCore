@@ -9,157 +9,158 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * ETCCalculator calculates the ETC (estimated time to complete) of print jobs for a given
- * line number being processed.
+ * ETCCalculator calculates the ETC (estimated time to complete) of print jobs
+ * for a given line number being processed.
  *
  * @author tony
  */
 class ETCCalculator
 {
 
-    Instant timeAtFirstLine;
     /**
-     * The first lineNumber we were notified of by the printer
+     * The line number at the top of the given layer. The first element should
+     * have a value of 0.
      */
-    int firstLineNotified;
-    int totalNumberOfLines;
     private final List<Integer> layerNumberToLineNumber;
     private final List<Double> layerNumberToPredictedDuration;
-    private final List<Double> layerNumberToTotalPredictedDuration = new ArrayList<Double>();
-    double totalPredictedDurationAllLayers;
-    private final int lineNumberOfFirstExtrusion;
-
-    // Current estimate 1s per distance unit
-    protected static int ESTIMATED_TIME_PER_DISTANCE_UNIT = 1;
-    protected static int NUM_LINES_BEFORE_USING_ACTUAL_FIGURES = 150;
     /**
-     * The number of seconds it takes to heat the bed up by one degree
+     * The time taken to get to the start of the given layer. The first element
+     * should have a value of 0.
+     */
+    private final List<Double> layerNumberToTotalPredictedDuration = new ArrayList<>();
+    /**
+     * The time to print all layers
+     */
+    double totalPredictedDurationAllLayers;
+
+    /**
+     * The estimated number of seconds it takes to heat the bed up by one degree
      */
     protected static int PREDICTED_BED_HEAT_RATE = 2;
     private final Printer printer;
 
-    ETCCalculator(Printer printer, 
-            List<Double> layerNumberToPredictedDuration,
-            List<Integer> layerNumberToLineNumber,
-            int totalNumberOfLines, int lineNumberOfFirstExtrusion)
+    ETCCalculator(Printer printer,
+        List<Double> layerNumberToPredictedDuration,
+        List<Integer> layerNumberToLineNumber)
     {
         this.printer = printer;
         this.layerNumberToLineNumber = layerNumberToLineNumber;
         this.layerNumberToPredictedDuration = layerNumberToPredictedDuration;
-        this.totalNumberOfLines = totalNumberOfLines;
-        this.lineNumberOfFirstExtrusion = lineNumberOfFirstExtrusion;
+
+        assert (layerNumberToPredictedDuration.get(0) == 0);
+        assert (layerNumberToLineNumber.get(0) == 0);
 
         double totalPredictedDuration = 0;
         for (int i = 0; i < layerNumberToPredictedDuration.size(); i++)
         {
-            Double duration = layerNumberToPredictedDuration.get(i);
-            totalPredictedDuration += duration;
+            totalPredictedDuration += layerNumberToPredictedDuration.get(i);
             layerNumberToTotalPredictedDuration.add(i, totalPredictedDuration);
         }
         totalPredictedDurationAllLayers = totalPredictedDuration;
     }
 
-    public void initialise(int lineNumber)
-    {
-        firstLineNotified = lineNumber;
-        timeAtFirstLine = Instant.now();
-    }
-
     /**
      * Calculate the ETC based on predicted durations.
+     *
      * @return the number of seconds
      */
     int getETCPredicted(int lineNumber)
     {
-        int remainingTimeSeconds = getPredictedPrintTime(lineNumber);
+        int remainingTimeSeconds = getPredictedRemainingPrintTime(lineNumber);
         remainingTimeSeconds += getBedHeatingTime();
         return remainingTimeSeconds;
     }
-    
+
     /**
      * Estimate the time to heat the bed up to the target temperature
+     *
      * @return the time in seconds
      */
-    private int getBedHeatingTime() {
+    private int getBedHeatingTime()
+    {
         int bedTargetTemperature = printer.getBedTargetTemperature();
         int bedTemperature = printer.getBedTemperature();
-        if (bedTemperature < bedTargetTemperature) {
-            return (bedTargetTemperature - bedTemperature) * PREDICTED_BED_HEAT_RATE;
-        } else {
+        if (bedTemperature < bedTargetTemperature)
+        {
+            return (bedTargetTemperature - bedTemperature)
+                * PREDICTED_BED_HEAT_RATE;
+        } else
+        {
             return 0;
         }
     }
 
     /**
-     * Return the predicted print time by calculating the predicted time to reach
-     * the current layer, and subtract from the predicted total time.
+     * Return the predicted remaining print time by calculating the predicted
+     * time to reach the current line, and subtract from the predicted total
+     * time.
      */
-    private int getPredictedPrintTime(int lineNumber)
+    private int getPredictedRemainingPrintTime(int lineNumber)
     {
-        int remainingTimeSeconds;
-        int layerNumber = getLayerNumberForLineNumber(lineNumber);
-        double totalPredictedDurationForLayer = layerNumberToTotalPredictedDuration.get(
-                layerNumber);
+        int layerNumber = getCompletedLayerNumberForLineNumber(lineNumber);
+        double totalPredictedDurationForCompletedLayer = layerNumberToTotalPredictedDuration.get(
+            layerNumber);
         double predictedDurationInNextLayer = getPartialDurationInLayer(
-                layerNumber, lineNumber);
-        double totalDurationSoFar = totalPredictedDurationForLayer + predictedDurationInNextLayer;
-        remainingTimeSeconds = (int) ((totalPredictedDurationAllLayers - totalDurationSoFar));
+            layerNumber + 1, lineNumber);
+        double totalDurationSoFar = totalPredictedDurationForCompletedLayer
+            + predictedDurationInNextLayer;
+        int remainingTimeSeconds = (int) ((totalPredictedDurationAllLayers
+            - totalDurationSoFar));
         return remainingTimeSeconds;
     }
 
     /**
-     * TESTING ONLY - simulate the passing of minutes by pushing back timeAtFirstLayer;
+     * Get the completed layer number for the given line number.
      */
-    void elapseMinutes(int minutes)
-    {
-        timeAtFirstLine = timeAtFirstLine.minusSeconds(minutes * 60);
-    }
-
-    /**
-     * Get the layer number for the given line number
-     */
-    public int getLayerNumberForLineNumber(int lineNumber)
+    public int getCompletedLayerNumberForLineNumber(int lineNumber)
     {
         for (int layerNumber = 1; layerNumber < layerNumberToLineNumber.size(); layerNumber++)
         {
             Integer lineNumberForLayer = layerNumberToLineNumber.get(layerNumber);
-            if (lineNumberForLayer > lineNumber)
+            if (lineNumberForLayer >= lineNumber)
             {
                 return layerNumber - 1;
             }
-
         }
-        if (lineNumber <= totalNumberOfLines)
-        {
-            return layerNumberToLineNumber.size() - 1;
-        }
-        throw new RuntimeException("Did not calculate layer number");
+        throw new RuntimeException(
+            "Did not calculate layer number - line number greater"
+            + " than total number of lines");
     }
 
-    boolean isInitialised()
-    {
-        return (timeAtFirstLine != null);
-    }
-
+    /**
+     * Return the estimated duration to partially print a layer up to the given
+     * line number.
+     */
     protected double getPartialDurationInLayer(int layerNumber, int lineNumber)
     {
-        double extraLinesProgressInNextlayer = lineNumber - layerNumberToLineNumber.get(
-                layerNumber);
-        double numLinesAtEndOfLayer;
-        double durationInNextLayer;
-        if (layerNumber == layerNumberToLineNumber.size() - 1)
+        double numLinesAtStartOfLayer = 0;
+        if (layerNumber > 0)
         {
-            numLinesAtEndOfLayer = totalNumberOfLines;
-            durationInNextLayer = 0;
-        } else
-        {
-            numLinesAtEndOfLayer = layerNumberToLineNumber.get(layerNumber + 1);
-            durationInNextLayer = layerNumberToPredictedDuration.get(
-                    layerNumber + 1);
+            numLinesAtStartOfLayer = layerNumberToLineNumber.get(layerNumber - 1);
         }
-        double totalLinesInNextLayer = numLinesAtEndOfLayer - layerNumberToLineNumber.get(
-                layerNumber);
-        return (extraLinesProgressInNextlayer / totalLinesInNextLayer) * durationInNextLayer;
-    }    
+        double extraLinesProgressInNextlayer = lineNumber
+                                                 - numLinesAtStartOfLayer;
+        if (extraLinesProgressInNextlayer == 0)
+        {
+            return 0;
+        }
+
+        double numLinesAtEndOfLayer = layerNumberToLineNumber.get(layerNumber);
+        double durationInNextLayer = layerNumberToPredictedDuration.get(layerNumber);
+        double totalLinesInNextLayer = numLinesAtEndOfLayer
+            - numLinesAtStartOfLayer;
+        return (extraLinesProgressInNextlayer / totalLinesInNextLayer)
+            * durationInNextLayer;
+    }
+
+    /**
+     * Return the percentage complete based on the line number reached.
+     */
+    double getPercentCompleteAtLine(int lineNumber)
+    {
+        return (totalPredictedDurationAllLayers
+            - getPredictedRemainingPrintTime(lineNumber))
+            / totalPredictedDurationAllLayers;
+    }
 
 }
