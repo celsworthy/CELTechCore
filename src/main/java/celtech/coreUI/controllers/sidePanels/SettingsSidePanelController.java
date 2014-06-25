@@ -305,7 +305,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             {
                 if (oldValue != newValue)
                 {
-                    displayManager.slideOutAdvancedPanel();
+                    if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
+                    {
+                        displayManager.slideOutAdvancedPanel();
+                    }
                     slideOutController.showProfileTab();
 
                     lastCustomProfileSelected = newValue;

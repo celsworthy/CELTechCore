@@ -13,8 +13,10 @@ import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.services.calibration.CalibrateNozzleOffsetTask;
+import celtech.services.calibration.NozzleBCalibrationState;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOffsetCalibrationStepResult;
+import java.util.ArrayList;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.WorkerStateEvent;
@@ -40,7 +42,8 @@ public class CalibrationNozzleOffsetHelper
 
     private CalibrateNozzleOffsetTask calibrationTask = null;
 
-    private ObjectProperty<NozzleOffsetCalibrationState> observableState = new SimpleObjectProperty(null);
+    private NozzleOffsetCalibrationState state = NozzleOffsetCalibrationState.IDLE;
+    private ArrayList<CalibrationNozzleOffsetStateListener> stateListeners = new ArrayList<>();
 
     private EventHandler<WorkerStateEvent> failedTaskHandler = new EventHandler<WorkerStateEvent>()
     {
@@ -56,20 +59,20 @@ public class CalibrationNozzleOffsetHelper
         @Override
         public void handle(WorkerStateEvent event)
         {
-            if (observableState.get() == NozzleOffsetCalibrationState.MEASURE_Z_DIFFERENCE)
+            if (state == NozzleOffsetCalibrationState.MEASURE_Z_DIFFERENCE)
             {
                 NozzleOffsetCalibrationStepResult result = (NozzleOffsetCalibrationStepResult) event.getSource().getValue();
                 if (result.isSuccess())
                 {
                     zDifference = result.getFloatValue();
-                    setState(observableState.get().getNextState());
+                    setState(state.getNextState());
                 } else
                 {
                     setState(NozzleOffsetCalibrationState.FAILED);
                 }
             } else
             {
-                setState(observableState.get().getNextState());
+                setState(state.getNextState());
             }
         }
     };
@@ -81,7 +84,7 @@ public class CalibrationNozzleOffsetHelper
 
     public void yesButtonAction()
     {
-        switch (observableState.get())
+        switch (state)
         {
             case INSERT_PAPER:
                 try
@@ -89,7 +92,7 @@ public class CalibrationNozzleOffsetHelper
                     printerToUse.transmitDirectGCode("G28 Z", false);
                 } catch (RoboxCommsException ex)
                 {
-                    steno.error("Error in nozzle offset calibration - mode=" + observableState.get().name());
+                    steno.error("Error in nozzle offset calibration - mode=" + state.name());
                 }
                 setState(NozzleOffsetCalibrationState.PROBING);
                 break;
@@ -129,7 +132,7 @@ public class CalibrationNozzleOffsetHelper
             steno.error("Error changing Z height");
         }
     }
-    
+
     public double getZCo()
     {
         return zco;
@@ -147,7 +150,7 @@ public class CalibrationNozzleOffsetHelper
 
         try
         {
-            if (savedHeadData != null && observableState.get() != NozzleOffsetCalibrationState.FINISHED)
+            if (savedHeadData != null && state != NozzleOffsetCalibrationState.FINISHED)
             {
                 printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                                                      savedHeadData.getUniqueID(),
@@ -172,14 +175,29 @@ public class CalibrationNozzleOffsetHelper
             printerToUse.transmitDirectGCode("G0 Z25", false);
         } catch (RoboxCommsException ex)
         {
-            steno.error("Error in nozzle offset calibration - mode=" + observableState.get().name());
+            steno.error("Error in nozzle offset calibration - mode=" + state.name());
         }
 
     }
 
+    public void addStateListener(CalibrationNozzleOffsetStateListener stateListener)
+    {
+        stateListeners.add(stateListener);
+    }
+
+    public void removeStateListener(CalibrationNozzleOffsetStateListener stateListener)
+    {
+        stateListeners.remove(stateListener);
+    }
+
     public void setState(NozzleOffsetCalibrationState newState)
     {
-        this.observableState.set(newState);
+        this.state = newState;
+        for (CalibrationNozzleOffsetStateListener listener : stateListeners)
+        {
+            listener.setState(state);
+        }
+
         switch (newState)
         {
             case IDLE:
@@ -210,10 +228,10 @@ public class CalibrationNozzleOffsetHelper
                                                          savedHeadData.getHeadHours());
                 } catch (RoboxCommsException ex)
                 {
-                    steno.error("Error in nozzle offset calibration - mode=" + observableState.get().name());
+                    steno.error("Error in nozzle offset calibration - mode=" + state.name());
                 }
 
-                calibrationTask = new CalibrateNozzleOffsetTask(observableState.get());
+                calibrationTask = new CalibrateNozzleOffsetTask(state);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
@@ -225,7 +243,7 @@ public class CalibrationNozzleOffsetHelper
             case HEAD_CLEAN_CHECK:
                 break;
             case MEASURE_Z_DIFFERENCE:
-                calibrationTask = new CalibrateNozzleOffsetTask(observableState.get());
+                calibrationTask = new CalibrateNozzleOffsetTask(state);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
@@ -263,7 +281,7 @@ public class CalibrationNozzleOffsetHelper
                     printerToUse.transmitDirectGCode("G0 Z25", false);
                 } catch (RoboxCommsException ex)
                 {
-                    steno.error("Error in nozzle offset calibration - mode=" + observableState.get().name());
+                    steno.error("Error in nozzle offset calibration - mode=" + state.name());
                 }
                 break;
             case FAILED:
@@ -281,14 +299,9 @@ public class CalibrationNozzleOffsetHelper
         }
     }
 
-    public ObjectProperty<NozzleOffsetCalibrationState> getStateProperty()
-    {
-        return observableState;
-    }
-
     public NozzleOffsetCalibrationState getState()
     {
-        return observableState.get();
+        return state;
     }
 
 }
