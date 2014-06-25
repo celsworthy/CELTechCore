@@ -9,6 +9,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
+import celtech.configuration.Head;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
@@ -30,10 +31,10 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class SmartReelProgrammerController implements Initializable
+public class SmartPartProgrammerController implements Initializable
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(SmartReelProgrammerController.class.getName());
+    private Stenographer steno = StenographerFactory.getStenographer(SmartPartProgrammerController.class.getName());
     private StatusScreenState statusScreenState = null;
     private Printer connectedPrinter = null;
     private ChangeListener<Boolean> reelDataChangeListener = new ChangeListener<Boolean>()
@@ -55,6 +56,27 @@ public class SmartReelProgrammerController implements Initializable
         public void changed(ObservableValue<? extends EEPROMState> observable, EEPROMState oldValue, EEPROMState newValue)
         {
             setupSmartReelDisplay(newValue);
+        }
+    };
+
+    private ChangeListener<Head> headChangeListener = new ChangeListener<Head>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends Head> observable, Head oldValue, Head newValue)
+        {
+            if (connectedPrinter != null)
+            {
+                setupSmartHeadDisplay(connectedPrinter.getReelEEPROMStatus());
+            }
+        }
+    };
+
+    private ChangeListener<EEPROMState> headEEPROMStateChangeListener = new ChangeListener<EEPROMState>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends EEPROMState> observable, EEPROMState oldValue, EEPROMState newValue)
+        {
+            setupSmartHeadDisplay(newValue);
         }
     };
 
@@ -80,6 +102,28 @@ public class SmartReelProgrammerController implements Initializable
         }
     }
 
+    private void setupSmartHeadDisplay(EEPROMState newValue)
+    {
+        switch (newValue)
+        {
+            case NOT_PRESENT:
+                currentHeadTitle.setText(DisplayManager.getLanguageBundle().getString("sidePanel_printerStatus.headNotAttached"));
+                break;
+            case NOT_PROGRAMMED:
+                currentHeadTitle.setText(DisplayManager.getLanguageBundle().getString("smartheadProgrammer.headNotFormatted"));
+                break;
+            case PROGRAMMED:
+                if (connectedPrinter.attachedHeadProperty().get() != null)
+                {
+                    currentHeadTitle.setText(connectedPrinter.attachedHeadProperty().get().getFriendlyName());
+                } else
+                {
+                    currentHeadTitle.setText(DisplayManager.getLanguageBundle().getString("smartheadProgrammer.unknownHead"));
+                }
+                break;
+        }
+    }
+
     @FXML
     private Label currentReelTitle;
 
@@ -88,6 +132,12 @@ public class SmartReelProgrammerController implements Initializable
 
     @FXML
     private Button programReelButton;
+
+    @FXML
+    private Button resetHeadButton;
+
+    @FXML
+    private Label currentHeadTitle;
 
     @FXML
     void programReel(ActionEvent event)
@@ -108,21 +158,30 @@ public class SmartReelProgrammerController implements Initializable
             }
 
             connectedPrinter.transmitWriteReelEEPROM(selectedFilament.getReelID(),
-                    selectedFilament.getUniqueID(),
-                    selectedFilament.getFirstLayerNozzleTemperature(),
-                    selectedFilament.getNozzleTemperature(),
-                    selectedFilament.getFirstLayerBedTemperature(),
-                    selectedFilament.getBedTemperature(),
-                    selectedFilament.getAmbientTemperature(),
-                    selectedFilament.getFilamentDiameter(),
-                    selectedFilament.getFilamentMultiplier(),
-                    selectedFilament.getFeedRateMultiplier(),
-                    remainingFilament);
-            
+                                                     selectedFilament.getUniqueID(),
+                                                     selectedFilament.getFirstLayerNozzleTemperature(),
+                                                     selectedFilament.getNozzleTemperature(),
+                                                     selectedFilament.getFirstLayerBedTemperature(),
+                                                     selectedFilament.getBedTemperature(),
+                                                     selectedFilament.getAmbientTemperature(),
+                                                     selectedFilament.getFilamentDiameter(),
+                                                     selectedFilament.getFilamentMultiplier(),
+                                                     selectedFilament.getFeedRateMultiplier(),
+                                                     remainingFilament);
+
             connectedPrinter.transmitReadReelEEPROM();
         } catch (RoboxCommsException ex)
         {
             steno.error("Error writing reel EEPROM");
+        }
+    }
+
+    @FXML
+    void resetHeadToDefaults(ActionEvent event)
+    {
+        if (connectedPrinter != null)
+        {
+            Head.softResetHead(connectedPrinter);
         }
     }
 
@@ -142,6 +201,8 @@ public class SmartReelProgrammerController implements Initializable
                 {
                     connectedPrinter.reelEEPROMStatusProperty().removeListener(reelEEPROMStateChangeListener);
                     connectedPrinter.reelDataChangedProperty().removeListener(reelDataChangeListener);
+                    connectedPrinter.headEEPROMStatusProperty().removeListener(headEEPROMStateChangeListener);
+                    connectedPrinter.attachedHeadProperty().removeListener(headChangeListener);
                 }
 
                 if (newPrinter == null)
@@ -151,12 +212,16 @@ public class SmartReelProgrammerController implements Initializable
                     materialSelector.getSelectionModel().clearSelection();
                     materialSelector.disableProperty().unbind();
                     materialSelector.setDisable(true);
+                    resetHeadButton.disableProperty().unbind();
                 } else
                 {
                     programReelButton.disableProperty().bind(newPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PRESENT).or(materialSelector.getSelectionModel().selectedItemProperty().isNull()));
                     materialSelector.disableProperty().bind(newPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PRESENT));
                     newPrinter.reelEEPROMStatusProperty().addListener(reelEEPROMStateChangeListener);
                     newPrinter.reelDataChangedProperty().addListener(reelDataChangeListener);
+                    resetHeadButton.disableProperty().bind(newPrinter.headEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PRESENT));
+                    newPrinter.headEEPROMStatusProperty().addListener(headEEPROMStateChangeListener);
+                    newPrinter.attachedHeadProperty().addListener(headChangeListener);
                 }
 
                 connectedPrinter = newPrinter;

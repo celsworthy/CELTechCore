@@ -27,7 +27,7 @@ import celtech.services.slicer.SliceResult;
 import celtech.services.slicer.SlicerService;
 import celtech.utils.PrinterUtils;
 import celtech.utils.SystemUtils;
-import celtech.utils.ThreeD.ThreeDUtils;
+import celtech.utils.threed.ThreeDUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;

@@ -5,10 +5,6 @@
  */
 package celtech.coreUI.components;
 
-import celtech.coreUI.DisplayManager;
-import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
-import java.text.ParseException;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;

@@ -602,6 +602,43 @@ public class Head implements Cloneable
      *
      * @param printer
      */
+    public static void softResetHead(Printer printer)
+    {
+        try
+        {
+            HeadEEPROMDataResponse response = printer.transmitReadHeadEEPROM();
+
+            //We will only write defaults if we can tell what this head is...
+            if (response != null)
+            {
+                String receivedTypeCode = response.getTypeCode();
+
+                Head referenceHead = HeadContainer.getHeadByID(response.getTypeCode());
+
+                Head headToWrite = referenceHead.clone();
+                headToWrite.setUniqueID(response.getUniqueID());
+                headToWrite.setHeadHours(response.getHeadHours());
+                headToWrite.setLastFilamentTemperature(response.getLastFilamentTemperature());
+
+                printer.transmitWriteHeadEEPROM(headToWrite);
+                printer.transmitReadHeadEEPROM();
+                steno.info("Updated head data at user request for " + receivedTypeCode);
+                showCalibrationDialogue();
+            }
+            else
+            {
+                steno.warning("Request to soft reset head of unknown type");
+            }
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error during soft reset of head");
+        }
+    }
+
+    /**
+     *
+     * @param printer
+     */
     public static void repairHeadIfNecessary(Printer printer)
     {
         if (ApplicationConfiguration.isAutoRepairHeads())
@@ -609,7 +646,7 @@ public class Head implements Cloneable
             try
             {
                 HeadEEPROMDataResponse response = printer.transmitReadHeadEEPROM();
-            // Check to see if the maximum temperature of the head matches our view
+                // Check to see if the maximum temperature of the head matches our view
                 // If not, change the max value and prompt to calibrate
                 if (response != null)
                 {
@@ -734,23 +771,7 @@ public class Head implements Cloneable
 
                     if (calibrationRequired)
                     {
-                        Platform.runLater(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                Action calibrationResponse = Dialogs.create().title(DisplayManager.getLanguageBundle().getString("dialogs.headUpdateCalibrationRequiredTitle"))
-                                        .message(DisplayManager.getLanguageBundle().getString("dialogs.headUpdateCalibrationRequiredInstruction"))
-                                        .masthead(null)
-                                        .showCommandLinks(okCalibrate, okCalibrate, dontCalibrate);
-
-                                if (calibrationResponse == okCalibrate)
-                                {
-                                    MaintenancePanelController.calibrateBAction();
-                                    MaintenancePanelController.calibrateZOffsetAction();
-                                }
-                            }
-                        });
+                        showCalibrationDialogue();
                     }
                 }
             } catch (RoboxCommsException ex)
@@ -758,5 +779,26 @@ public class Head implements Cloneable
                 steno.error("Error from triggered read of Head EEPROM");
             }
         }
+    }
+
+    private static void showCalibrationDialogue()
+    {
+        Platform.runLater(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                Action calibrationResponse = Dialogs.create().title(DisplayManager.getLanguageBundle().getString("dialogs.headUpdateCalibrationRequiredTitle"))
+                        .message(DisplayManager.getLanguageBundle().getString("dialogs.headUpdateCalibrationRequiredInstruction"))
+                        .masthead(null)
+                        .showCommandLinks(okCalibrate, okCalibrate, dontCalibrate);
+
+                if (calibrationResponse == okCalibrate)
+                {
+                    MaintenancePanelController.calibrateBAction();
+                    MaintenancePanelController.calibrateZOffsetAction();
+                }
+            }
+        });
     }
 }

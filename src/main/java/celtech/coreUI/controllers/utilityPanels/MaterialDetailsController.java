@@ -40,67 +40,67 @@ import org.controlsfx.control.textfield.CustomTextField;
  */
 public class MaterialDetailsController implements Initializable, PopupCommandTransmitter
 {
-
+    
     private final Stenographer steno = StenographerFactory.getStenographer(MaterialDetailsController.class.getName());
     private PopupCommandReceiver commandReceiver = null;
-
+    
     @FXML
     private VBox container;
-
+    
     @FXML
     private RestrictedNumberField bedTemperature;
-
+    
     @FXML
     private HBox notEditingOptions;
-
+    
     @FXML
     private RestrictedNumberField firstLayerBedTemperature;
-
+    
     @FXML
     private RestrictedNumberField nozzleTemperature;
-
+    
     @FXML
     private HBox editingOptions;
-
+    
     @FXML
     private RestrictedNumberField ambientTemperature;
-
+    
     @FXML
     private Button saveAsButton;
-
+    
     @FXML
     private ColorPicker colour;
-
+    
     @FXML
     private RestrictedNumberField firstLayerNozzleTemperature;
-
+    
     @FXML
     private Button cancelButton;
-
+    
     @FXML
     private ComboBox<MaterialType> material;
-
+    
     @FXML
     private RestrictedNumberField filamentDiameter;
-
+    
     @FXML
     private HBox immutableOptions;
-
+    
     @FXML
     private RestrictedNumberField feedRateMultiplier;
-
+    
     @FXML
     private Button deleteProfileButton;
-
+    
     @FXML
     private CustomTextField name;
-
+    
     @FXML
     private Button saveButton;
-
+    
     @FXML
     private RestrictedNumberField filamentMultiplier;
-
+    
     @FXML
     void saveData(ActionEvent event)
     {
@@ -108,7 +108,7 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
         FilamentContainer.saveFilament(filamentToSave);
         isDirty.set(false);
     }
-
+    
     @FXML
     void cancelEdit(ActionEvent event)
     {
@@ -117,14 +117,14 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
             updateMaterialData(lastFilamentUpdate);
         }
     }
-
+    
     @FXML
     void deleteProfile(ActionEvent event)
     {
         final Filament filamentToDelete = getMaterialData();
         FilamentContainer.deleteFilament(filamentToDelete);
     }
-
+    
     @FXML
     void launchSaveAsDialogue(ActionEvent event)
     {
@@ -133,11 +133,11 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
             commandReceiver.triggerSaveAs(this);
         }
     }
-
+    
     private final BooleanProperty isDirty = new SimpleBooleanProperty(false);
     private final BooleanProperty isMutable = new SimpleBooleanProperty(false);
     private final BooleanProperty showButtons = new SimpleBooleanProperty(true);
-
+    
     private final ChangeListener<String> dirtyStringListener = new ChangeListener<String>()
     {
         @Override
@@ -146,7 +146,7 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
             isDirty.set(true);
         }
     };
-
+    
     private final ChangeListener<MaterialType> dirtyMaterialTypeListener = new ChangeListener<MaterialType>()
     {
         @Override
@@ -155,9 +155,9 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
             isDirty.set(true);
         }
     };
-
+    
     private Filament lastFilamentUpdate = null;
-
+    
     private BooleanProperty materialNameInvalid = new SimpleBooleanProperty(true);
     private final Image redcrossImage = new Image(CoreTest.class.getResource(ApplicationConfiguration.imageResourcePath + "redcross.png").toExternalForm());
     private final ImageView redcrossHolder = new ImageView(redcrossImage);
@@ -181,11 +181,11 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
                 validateMaterialName();
             }
         });
-
+        
         editingOptions.visibleProperty().bind(isDirty.and(showButtons).and(isMutable));
         notEditingOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable));
         immutableOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable.not()));
-
+        
         bedTemperature.disableProperty().bind(isMutable.not());
         firstLayerNozzleTemperature.disableProperty().bind(isMutable.not());
         colour.disableProperty().bind(isMutable.not());
@@ -197,12 +197,12 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
         name.disableProperty().bind(isMutable.not());
         nozzleTemperature.disableProperty().bind(isMutable.not());
         ambientTemperature.disableProperty().bind(isMutable.not());
-
+        
         for (MaterialType materialType : MaterialType.values())
         {
             material.getItems().add(materialType);
         }
-
+        
         bedTemperature.textProperty().addListener(dirtyStringListener);
         firstLayerNozzleTemperature.textProperty().addListener(dirtyStringListener);
         colour.valueProperty().asString().addListener(dirtyStringListener);
@@ -222,8 +222,12 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
      */
     public void updateMaterialData(Filament filament)
     {
-        if (filament != null)
+        if (filament == null)
         {
+            container.setVisible(false);
+        } else
+        {
+            container.setVisible(true);
             name.setText(filament.getFriendlyFilamentName());
             material.getSelectionModel().select(filament.getMaterial());
             filamentDiameter.floatValueProperty().set(filament.getFilamentDiameter());
@@ -248,7 +252,7 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
     public Filament getMaterialData()
     {
         Filament filamentToReturn = null;
-
+        
         try
         {
             filamentToReturn = new Filament(
@@ -273,12 +277,12 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
         
         return filamentToReturn;
     }
-
+    
     private void validateMaterialName()
     {
         boolean invalid = false;
         String profileNameText = name.getText();
-
+        
         if (profileNameText.equals(""))
         {
             invalid = true;

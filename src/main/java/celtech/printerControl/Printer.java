@@ -2254,16 +2254,6 @@ public class Printer
                     temporaryHead.setNozzle2_Z_offset(0);
                     temporaryHead.setBeta(0);
                     temporaryHead.setTcal(0);
-                } else if (headEEPROMStatus.get() != EEPROMState.NOT_PROGRAMMED
-                        && statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PROGRAMMED)
-                {
-                    try
-                    {
-                        transmitFormatHeadEEPROM();
-                    } catch (RoboxCommsException ex)
-                    {
-                        steno.error("Error whilst attempting to format the head EEPROM");
-                    }
                 }
 
                 headEEPROMStatus.set(statusResponse.getHeadEEPROMState());
@@ -2416,6 +2406,7 @@ public class Printer
                         temporaryHead.setNozzle2_Z_offset(headResponse.getNozzle2ZOffset());
                         temporaryHead.setBeta(headResponse.getBeta());
                         temporaryHead.setTcal(headResponse.getTCal());
+                        temporaryHead.setFriendlyName(attachedHeadCandidate.getFriendlyName());
                         attachedHead.set(temporaryHead);
                     } else
                     {
