@@ -8,10 +8,10 @@ package celtech.utils;
 import java.text.ParseException;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -20,7 +20,7 @@ import static org.junit.Assert.*;
 public class FixedDecimalFloatFormatTest
 {
 
-    private double epsilon = 1e-10;
+    private final double epsilon = 1e-10;
 
     public FixedDecimalFloatFormatTest()
     {
@@ -149,6 +149,20 @@ public class FixedDecimalFloatFormatTest
             fail("Parse exception");
         }
 
+    }
+
+    /**
+     * Test of parsing, of class FixedDecimalFloatFormat.
+     */
+    @Test
+    public void testParseDoubleHighPrecision()
+    {
+        System.out.println("FixedDecimalFloatFormat parse double - large number of digits");
+        FixedDecimalFloatFormat formatter = new FixedDecimalFloatFormat();
+
+        double testValue = 0.123456789012345;
+        String result = formatter.format(testValue);
+        assertEquals("0.123457", result);
     }
 
     /**

@@ -6,8 +6,10 @@
 package celtech.utils;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.FieldPosition;
 import java.text.ParseException;
+import java.util.Locale;
 
 /**
  * This class provides a formatter suitable for used in Robox comms.
@@ -18,8 +20,9 @@ import java.text.ParseException;
  * Leading spaces are used - e.g. ' 123.3' Negative numbers are also represented
  * using leading spaces - e.g. ' -1232'
  *
- * NB - DecimalFormat is NOT threadsafe, so instantiate one of these per thread at a minimum
- * 
+ * NB - DecimalFormat is NOT threadsafe, so instantiate one of these per thread
+ * at a minimum
+ *
  * @author Ian
  */
 public class FixedDecimalFloatFormat extends DecimalFormat
@@ -29,6 +32,7 @@ public class FixedDecimalFloatFormat extends DecimalFormat
 
     public FixedDecimalFloatFormat()
     {
+        super("#.######", new DecimalFormatSymbols(Locale.UK));
         this.setGroupingUsed(false);
     }
 
@@ -46,10 +50,10 @@ public class FixedDecimalFloatFormat extends DecimalFormat
             output.insert(0, " ");
             charactersToPad--;
         }
-        
+
         return output;
     }
-
+    
     @Override
     public StringBuffer format(double d, StringBuffer sb, FieldPosition fp)
     {

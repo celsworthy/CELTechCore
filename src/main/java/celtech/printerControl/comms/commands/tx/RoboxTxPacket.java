@@ -71,7 +71,7 @@ public abstract class RoboxTxPacket
     {
         this.messagePayload = messagePayload;
     }
-    
+
     /**
      *
      * @param sequenceNumber
@@ -130,22 +130,7 @@ public abstract class RoboxTxPacket
 
         outputArray[0] = packetType.getCommandByte();
 
-        StringBuilder finalPayload = new StringBuilder();
-
-        if (includeSequenceNumber)
-        {
-            finalPayload.append(String.format("%08X", sequenceNumber));
-        }
-
-        if (includeCharsOfDataInOutput && messagePayload != null)
-        {
-            finalPayload.append(String.format("%04X", messagePayload.length()));
-        }
-
-        if (messagePayload != null)
-        {
-            finalPayload.append(messagePayload);
-        }
+        String finalPayload = constructPayloadString();
 
         if (bufferSize > 1)
         {
@@ -164,6 +149,24 @@ public abstract class RoboxTxPacket
         }
 
         return outputArray;
+    }
+
+    public String constructPayloadString()
+    {
+        StringBuilder finalPayload = new StringBuilder();
+        if (includeSequenceNumber)
+        {
+            finalPayload.append(String.format("%08X", sequenceNumber));
+        }
+        if (includeCharsOfDataInOutput && messagePayload != null)
+        {
+            finalPayload.append(String.format("%04X", messagePayload.length()));
+        }
+        if (messagePayload != null)
+        {
+            finalPayload.append(messagePayload);
+        }
+        return finalPayload.toString();
     }
 
     /**
