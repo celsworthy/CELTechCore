@@ -36,6 +36,7 @@ import celtech.printerControl.comms.events.RoboxEvent;
 import celtech.printerControl.comms.events.RoboxEventType;
 import celtech.services.firmware.FirmwareLoadService;
 import celtech.services.firmware.FirmwareLoadTask;
+import java.io.UnsupportedEncodingException;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.concurrent.WorkerStateEvent;
@@ -609,7 +610,7 @@ public class PrinterHandler extends Thread
                         int payloadSize = Integer.valueOf(new String(lengthData), 16);
                         if (packetType == RxPacketTypeEnum.LIST_FILES_RESPONSE)
                         {
-                            payloadSize = payloadSize * 16; 
+                            payloadSize = payloadSize * 16;
                         }
 
                         inputBuffer = new byte[1 + packetType.getLengthFieldSize() + payloadSize];
