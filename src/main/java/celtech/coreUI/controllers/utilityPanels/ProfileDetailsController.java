@@ -13,7 +13,6 @@ import celtech.coreUI.controllers.popups.PopupCommandTransmitter;
 import celtech.services.slicer.RoboxProfile;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;

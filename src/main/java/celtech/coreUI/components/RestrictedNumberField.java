@@ -29,7 +29,7 @@ import javafx.scene.control.TextField;
 public class RestrictedNumberField extends TextField
 {
 
-    private final IntegerProperty maxLength = new SimpleIntegerProperty(-1);
+    private final IntegerProperty maxLength = new SimpleIntegerProperty(0);
     private final IntegerProperty allowedDecimalPlaces = new SimpleIntegerProperty(0);
     private final IntegerProperty intValue = new SimpleIntegerProperty(-1);
     private final FloatProperty floatValue = new SimpleFloatProperty(-1);
@@ -100,12 +100,15 @@ public class RestrictedNumberField extends TextField
     private void configureRestriction()
     {
         String newRestriction = null;
-        if (maxLength.get() > allowedDecimalPlaces.get())
+        if (allowedDecimalPlaces.get() > 0 && maxLength.get() > allowedDecimalPlaces.get())
         {
             newRestriction = "[0-9]{0," + (maxLength.get() - allowedDecimalPlaces.get() - 1) + "}(?:\\" + getDecimalSeparator() + "[0-9]{0," + allowedDecimalPlaces.get() + "})?";
-        } else
+        } else if (allowedDecimalPlaces.get() > 0)
         {
             newRestriction = "[0-9]+(?:\\" + getDecimalSeparator() + "[0-9]{0," + allowedDecimalPlaces.get() + "})?";
+        } else
+        {
+            newRestriction = "[0-9]{0," + maxLength.get() + "}";
         }
         restrictionPattern = Pattern.compile(newRestriction);
     }
