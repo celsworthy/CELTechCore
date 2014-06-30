@@ -16,14 +16,14 @@ public class Lookup
 {
 
     private static Lookup instance;
-    private static ApplicationEnvironment applicationEnvironment;
+    private ApplicationEnvironment applicationEnvironment;
 
     /**
      * @return the applicationEnvironment
      */
     public static ApplicationEnvironment getApplicationEnvironment()
     {
-        return applicationEnvironment;
+        return instance.applicationEnvironment;
     }
 
     /**
@@ -31,12 +31,12 @@ public class Lookup
      */
     public static void setApplicationEnvironment(ApplicationEnvironment applicationEnvironment)
     {
-        applicationEnvironment = applicationEnvironment;
+        instance.applicationEnvironment = applicationEnvironment;
     }
 
     private Lookup()
     {
-        Locale appLocale = Locale.forLanguageTag(ApplicationConfiguration.getApplicationLanguage());
+        Locale appLocale = Locale.forLanguageTag(ApplicationConfiguration.getApplicationInstallationLanguage());
         ResourceBundle i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData", appLocale);
         applicationEnvironment = new ApplicationEnvironment(i18nBundle, appLocale);
         

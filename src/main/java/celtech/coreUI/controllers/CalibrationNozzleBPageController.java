@@ -101,10 +101,10 @@ public class CalibrationNozzleBPageController implements Initializable, Calibrat
 
         calibrationHelper.setPrinterToUse(statusScreenState.currentlySelectedPrinterProperty().get());
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<PrinterImpl>()
+        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
             @Override
-            public void changed(ObservableValue<? extends PrinterImpl> observable, PrinterImpl oldValue, PrinterImpl newValue)
+            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
             {
                 calibrationHelper.setPrinterToUse(newValue);
             }

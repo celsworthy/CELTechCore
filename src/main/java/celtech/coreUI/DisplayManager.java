@@ -140,15 +140,13 @@ public class DisplayManager implements EventHandler<KeyEvent>
     /**
      * The primary font used throughout the GUI, at various font sizes
      */
-    private Font primaryFont;
+    private final Font primaryFont;
 
     private Locale usersLocale = null;
-    private Locale installedLocale = null;
 
     private DisplayManager()
     {
         usersLocale = Locale.getDefault();
-        installedLocale = Locale.forLanguageTag(ApplicationConfiguration.getApplicationInstallationLanguage());
 
         String primaryFontLocation = DisplayManager.class.getResource(ApplicationConfiguration.fontResourcePath + "SourceSansPro-Light.ttf").toExternalForm();
         primaryFont = Font.loadFont(primaryFontLocation, 10);
@@ -819,7 +817,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     public Locale getApplicationLocale()
     {
-        return installedLocale;
+        return Lookup.getApplicationEnvironment().getAppLocale();
     }
 
     public Locale getUsersLocale()
