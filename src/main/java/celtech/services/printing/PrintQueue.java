@@ -32,9 +32,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -126,7 +125,7 @@ public class PrintQueue implements ControllableService
     private String detectedPrintInProgressNotification = null;
     private String notificationTitle = null;
 
-    private final HashMap<String, Project> printJobsAgainstProjects = new HashMap<>();
+    private final Map<String, Project> printJobsAgainstProjects = new HashMap<>();
 
     private boolean consideringPrintRequest = false;
     private final NotificationsHandler notificationsHandler;
