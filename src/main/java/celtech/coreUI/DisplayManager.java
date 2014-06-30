@@ -147,6 +147,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private DisplayManager()
     {
+        usersLocale = Locale.getDefault();
+        installedLocale = Locale.forLanguageTag(ApplicationConfiguration.getApplicationInstallationLanguage());
+
         String primaryFontLocation = DisplayManager.class.getResource(ApplicationConfiguration.fontResourcePath + "SourceSansPro-Light.ttf").toExternalForm();
         primaryFont = Font.loadFont(primaryFontLocation, 10);
         
@@ -771,6 +774,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 switch (event.getCode())
                 {
                     case DELETE:
+                    case BACK_SPACE:
                         projectTab.deleteSelectedModels();
                         break;
                     default:
