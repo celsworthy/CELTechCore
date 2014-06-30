@@ -9,7 +9,6 @@
  */
 package celtech.coreUI;
 
-import celtech.CoreTest;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
@@ -17,7 +16,6 @@ import celtech.appManager.ProjectManager;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
-import celtech.coreUI.components.ProjectNotLoadedException;
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.components.SlideoutAndProjectHolder;
 import celtech.coreUI.controllers.InfoScreenIndicatorController;
@@ -27,7 +25,6 @@ import celtech.coreUI.controllers.sidePanels.LayoutSidePanelController;
 import celtech.coreUI.controllers.sidePanels.LayoutSlideOutPanelController;
 import celtech.coreUI.controllers.sidePanels.SettingsSidePanelController;
 import celtech.coreUI.controllers.sidePanels.SidePanelManager;
-import celtech.coreUI.visualisation.CameraPositionPreset;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
@@ -154,7 +151,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
     private DisplayManager()
     {
         usersLocale = Locale.getDefault();
-        installedLocale = Locale.forLanguageTag(ApplicationConfiguration.getApplicationLanguage());
+        installedLocale = Locale.forLanguageTag(ApplicationConfiguration.getApplicationInstallationLanguage());
 
         String primaryFontLocation = DisplayManager.class.getResource(ApplicationConfiguration.fontResourcePath + "SourceSansPro-Light.ttf").toExternalForm();
         primaryFont = Font.loadFont(primaryFontLocation, 10);
@@ -779,6 +776,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 switch (event.getCode())
                 {
                     case DELETE:
+                    case BACK_SPACE:
                         projectTab.deleteSelectedModels();
                         break;
                     default:

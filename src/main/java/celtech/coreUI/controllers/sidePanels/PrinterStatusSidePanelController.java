@@ -164,9 +164,11 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private String closedString;
     private String filamentLoadedString;
     private String filamentNotLoadedString;
+    private String reelNotFormattedString;
     private String connectedString;
     private String notConnectedString;
     private String headNotAttachedString;
+    private String headNotFormattedString;
     private String tempOutOfRangeHighString;
     private String tempOutOfRangeLowString;
 
@@ -343,9 +345,11 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         closedString = languageBundle.getString("genericFirstLetterCapitalised.Closed");
         filamentLoadedString = languageBundle.getString("sidePanel_printerStatus.filamentLoaded");
         filamentNotLoadedString = languageBundle.getString("smartReelProgrammer.noReelLoaded");
+        reelNotFormattedString = languageBundle.getString("smartReelProgrammer.reelNotFormatted");
         connectedString = languageBundle.getString("sidePanel_printerStatus.connected");
         notConnectedString = languageBundle.getString("sidePanel_printerStatus.notConnected");
         headNotAttachedString = languageBundle.getString("sidePanel_printerStatus.headNotAttached");
+        headNotFormattedString = languageBundle.getString("smartheadProgrammer.headNotFormatted");
         tempOutOfRangeHighString = languageBundle.getString("printerStatus.tempOutOfRangeHigh");
         tempOutOfRangeLowString = languageBundle.getString("printerStatus.tempOutOfRangeLow");
 
@@ -785,12 +789,12 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             /*
              * Reel
              */
-            filamentStatusLabel.textProperty().bind(Bindings.when(selectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED)).then(selectedPrinter.reelFriendlyNameProperty()).otherwise(filamentNotLoadedString));
+            filamentStatusLabel.textProperty().bind(Bindings.when(selectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED)).then(selectedPrinter.reelFriendlyNameProperty()).otherwise(Bindings.when(selectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PROGRAMMED)).then(reelNotFormattedString).otherwise(filamentNotLoadedString)));
 
             /*
              * Head
              */
-            printHeadLabel.textProperty().bind(Bindings.when(selectedPrinter.headEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED)).then(selectedPrinter.getHeadType()).otherwise(headNotAttachedString));
+            printHeadLabel.textProperty().bind(Bindings.when(selectedPrinter.headEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED)).then(selectedPrinter.getHeadType()).otherwise(Bindings.when(selectedPrinter.headEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PROGRAMMED)).then(headNotFormattedString).otherwise(headNotAttachedString)));
 
             currentAmbientTemperatureHistory = selectedPrinter.ambientTemperatureHistory();
             temperatureChart.getData().add(selectedPrinter.ambientTemperatureHistory());

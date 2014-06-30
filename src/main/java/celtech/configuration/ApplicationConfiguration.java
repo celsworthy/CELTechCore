@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Properties;
 import javafx.geometry.Pos;
 import javafx.scene.paint.Color;
@@ -280,6 +281,7 @@ public class ApplicationConfiguration
     private static Properties installationProperties = null;
     private static Properties applicationMemoryProperties = null;
     private static final String fileMemoryItem = "FileMemory";
+    private static final String userLocaleItem = "Locale";
 
     private static String applicationVersion = null;
     private static String applicationLanguageRaw = null;
@@ -790,7 +792,7 @@ public class ApplicationConfiguration
      *
      * @return
      */
-    public static String getApplicationLanguage()
+    public static String getApplicationInstallationLanguage()
     {
         if (installationProperties == null)
         {
@@ -988,6 +990,37 @@ public class ApplicationConfiguration
         }
 
         applicationMemoryProperties.setProperty(fileMemoryItem + whichProperty.name(), directoryName);
+    }
+
+    public static Locale getUserPreferredLocale()
+    {
+        if (applicationMemoryProperties == null)
+        {
+            loadApplicationMemoryProperties();
+        }
+
+        Locale localeToReturn = null;
+        
+        if (applicationMemoryProperties.getProperty(userLocaleItem) != null)
+        {
+            localeToReturn = Locale.forLanguageTag(applicationMemoryProperties.getProperty(userLocaleItem));
+        }
+        else
+        {
+            localeToReturn = Locale.forLanguageTag(getApplicationInstallationLanguage());
+        }                   
+        
+        return localeToReturn;
+    }
+
+    public static void setUserPreferredLocale(Locale locale)
+    {
+        if (applicationMemoryProperties == null)
+        {
+            loadApplicationMemoryProperties();
+        }
+
+        applicationMemoryProperties.setProperty(userLocaleItem, locale.getLanguage());
     }
 
     /**

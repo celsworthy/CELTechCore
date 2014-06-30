@@ -81,7 +81,16 @@ public class MaintenancePanelController implements Initializable
         @Override
         public void changed(ObservableValue<? extends PrinterStatusEnumeration> observable, PrinterStatusEnumeration oldValue, PrinterStatusEnumeration newValue)
         {
-            setPrintSensitiveButtonVisibility(newValue);
+            setButtonVisibility();
+        }
+    };
+
+    private ChangeListener<Boolean> filamentLoadedListener = new ChangeListener<Boolean>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+        {
+            setButtonVisibility();
         }
     };
 
@@ -458,42 +467,45 @@ public class MaintenancePanelController implements Initializable
                 {
                     readFirmwareVersion();
                     connectedPrinter.printerStatusProperty().addListener(printerStatusListener);
-                    setPrintSensitiveButtonVisibility(connectedPrinter.getPrinterStatus());
+                    connectedPrinter.Filament1LoadedProperty().addListener(filamentLoadedListener);
+                    connectedPrinter.Filament2LoadedProperty().addListener(filamentLoadedListener);
+                    setButtonVisibility();
                 }
             }
         });
     }
 
-    private void setPrintSensitiveButtonVisibility(PrinterStatusEnumeration status)
+    private void setButtonVisibility()
     {
-        boolean visible = status != PrinterStatusEnumeration.IDLE;
+        boolean printingdisabled = connectedPrinter.getPrinterStatus() != PrinterStatusEnumeration.IDLE;
+        boolean noFilamentOrPrintingdisabled = printingdisabled || (connectedPrinter.getFilament1Loaded() == false && connectedPrinter.getFilament2Loaded() == false);
 
-        YTestButton.setDisable(visible);
+        YTestButton.setDisable(printingdisabled);
 
-        PurgeMaterialButton.setDisable(visible);
+        PurgeMaterialButton.setDisable(noFilamentOrPrintingdisabled);
 
-        T1CleanButton.setDisable(visible);
+        T1CleanButton.setDisable(noFilamentOrPrintingdisabled);
 
-        EjectStuckMaterialButton.setDisable(visible);
+        EjectStuckMaterialButton.setDisable(noFilamentOrPrintingdisabled);
 
-        SpeedTestButton.setDisable(visible);
+        SpeedTestButton.setDisable(printingdisabled);
 
-        CalibrateOffsetButton.setDisable(visible);
+        CalibrateOffsetButton.setDisable(noFilamentOrPrintingdisabled);
 
-        sendGCodeStreamGCodeMacroButton.setDisable(visible);
+        sendGCodeStreamGCodeMacroButton.setDisable(printingdisabled);
 
-        CalibrateBButton.setDisable(visible);
+        CalibrateBButton.setDisable(noFilamentOrPrintingdisabled);
 
-        XTestButton.setDisable(visible);
+        XTestButton.setDisable(printingdisabled);
 
-        Level_YButton.setDisable(visible);
+        Level_YButton.setDisable(printingdisabled);
 
-        T0CleanButton.setDisable(visible);
+        T0CleanButton.setDisable(noFilamentOrPrintingdisabled);
 
-        LevelGantryButton.setDisable(visible);
+        LevelGantryButton.setDisable(printingdisabled);
 
-        sendGCodeSDGCodeMacroButton.setDisable(visible);
+        sendGCodeSDGCodeMacroButton.setDisable(printingdisabled);
 
-        ZTestButton.setDisable(visible);
+        ZTestButton.setDisable(printingdisabled);
     }
 }
