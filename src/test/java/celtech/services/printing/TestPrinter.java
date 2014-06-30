@@ -16,6 +16,7 @@ import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.comms.commands.rx.ListFilesResponse;
+import celtech.printerControl.comms.commands.rx.ListFilesResponseImpl;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.comms.events.RoboxEvent;
@@ -44,6 +45,8 @@ public class TestPrinter implements Printer
     private IntegerProperty bedTemperature = new SimpleIntegerProperty(22);
     private boolean printInitiated = false;
     private int sequenceNumber;
+    
+    private ListFilesResponse listFilesResonse;
 
     @Override
     public IntegerProperty printJobLineNumberProperty()
@@ -1383,7 +1386,7 @@ public class TestPrinter implements Printer
     @Override
     public ListFilesResponse transmitListFiles() throws RoboxCommsException
     {
-        return new ListFilesResponse();
+        return listFilesResonse;
     }
 
     @Override
@@ -1452,6 +1455,14 @@ public class TestPrinter implements Printer
     public void transmitWriteMaterialTemperatureToHeadEEPROM(int reelNozzleTemperature)
     {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    /**
+     * @param listFilesResonse the listFilesResonse to set
+     */
+    public void setListFilesResonse(ListFilesResponse listFilesResonse)
+    {
+        this.listFilesResonse = listFilesResonse;
     }
 
 }

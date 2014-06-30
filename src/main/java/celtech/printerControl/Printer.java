@@ -1527,4 +1527,5 @@ public interface Printer
      * @param reelNozzleTemperature
      */
     public void transmitWriteMaterialTemperatureToHeadEEPROM(int reelNozzleTemperature);
+    
 }

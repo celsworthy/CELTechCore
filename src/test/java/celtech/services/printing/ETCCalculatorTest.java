@@ -5,7 +5,6 @@ package celtech.services.printing;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;

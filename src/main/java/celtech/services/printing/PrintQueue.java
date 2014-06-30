@@ -33,6 +33,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -410,8 +412,7 @@ public class PrintQueue implements ControllableService
                 if (linesInPrintingFile.get() > 0)
                 {
                     double percentDone = newValue.doubleValue()
-                        / linesInPrintingFile.
-                        doubleValue();
+                        / linesInPrintingFile.doubleValue();
                     primaryProgressPercent.set(percentDone);
                 }
             }
@@ -455,8 +456,7 @@ public class PrintQueue implements ControllableService
         List<Double> layerNumberToPredictedDuration = printJobStatistics.getLayerNumberToPredictedDuration();
         List<Integer> layerNumberToLineNumber = printJobStatistics.getLayerNumberToLineNumber();
         etcCalculator = new ETCCalculator(associatedPrinter,
-            layerNumberToPredictedDuration,
-            layerNumberToLineNumber);
+            layerNumberToPredictedDuration, layerNumberToLineNumber);
         
         progressNumLayers.set(layerNumberToLineNumber.size());
         etcAvailable.set(true);
@@ -482,6 +482,7 @@ public class PrintQueue implements ControllableService
                 if (printJobID.codePointAt(0) != 0)
                 {
                     roboxIsPrinting = true;
+                    makeETCCalculatorForJobOfUUID(printJobID);
                 }
             }
 
@@ -490,7 +491,7 @@ public class PrintQueue implements ControllableService
                 case IDLE:
                     if (roboxIsPrinting)
                     {
-                        updateETCForDetectedJob();
+                        makeETCCalculatorForJobOfUUID(printJobID);
 //                            fxToJMEInterface.exposeGCodeModel(percentDone);
                         this.notificationsHandler.showInformationNotification(
                             notificationTitle,
@@ -520,29 +521,16 @@ public class PrintQueue implements ControllableService
         }
     }
 
-    private void updateETCForDetectedJob()
+    private void makeETCCalculatorForJobOfUUID(String printJobID)
     {
-        //We've detected a print job when we're idle...
-        //Try to find the print job and determine how many lines there were in it
-
-        File gcodeFromPrintJob = new File(
-            ApplicationConfiguration.getPrintSpoolDirectory()
-            + associatedPrinter.getPrintJobID() + File.separator
-            + associatedPrinter.getPrintJobID()
-            + ApplicationConfiguration.gcodeTempFileExtension);
-        int numberOfLines = SystemUtils.
-            countLinesInFile(gcodeFromPrintJob,
-                             ";");
-        linesInPrintingFile.set(numberOfLines);
-
-        double percentDone = -1;
-        if (linesInPrintingFile.get() > 0)
+        PrintJob printJob = PrintJob.readJobFromDirectory(printJobID);
+        try
         {
-            percentDone = (double) associatedPrinter.
-                getPrintJobLineNumber() / numberOfLines;
+            makeETCCalculator(printJob.getStatistics(), associatedPrinter);
+        } catch (IOException ex)
+        {
+            etcAvailable.set(false);
         }
-
-        primaryProgressPercent.set(percentDone);
     }
 
     /**
@@ -585,7 +573,7 @@ public class PrintQueue implements ControllableService
                         transmitListFiles();
                     if (listFilesResponse.getPrintJobIDs().contains(jobUUID))
                     {
-                        acceptedPrintRequest = reprintDirectFromPrinter(jobUUID);
+                        acceptedPrintRequest = reprintDirectFromPrinter(printJob);
                     } else
                     {
                         //Need to send the file to the printer
@@ -720,13 +708,15 @@ public class PrintQueue implements ControllableService
     private boolean reprintFileFromDisk(PrintJob printJob)
     {
         String gCodeFileName = printJob.getRoboxisedFileLocation();
-        File printJobFile = new File(gCodeFileName);
         String jobUUID = printJob.getJobUUID();
         boolean acceptedPrintRequest;
-        //Go ahead and spool it
-        int numberOfLines = SystemUtils.countLinesInFile(printJobFile,
-                                                         ";");
-        linesInPrintingFile.set(numberOfLines);
+        try
+        {
+            linesInPrintingFile.set(printJob.getStatistics().getNumberOfLines());
+        } catch (IOException ex)
+        {
+            steno.error("Couldn't get job statistics for job " + jobUUID);
+        }
         setPrintStatus(PrinterStatusEnumeration.SENDING_TO_PRINTER);
         steno.info("Respooling job " + jobUUID + " to printer");
         gcodePrintService.reset();
@@ -740,37 +730,29 @@ public class PrintQueue implements ControllableService
         return acceptedPrintRequest;
     }
 
-    private boolean reprintDirectFromPrinter(String jobUUID) throws RoboxCommsException
+    private boolean reprintDirectFromPrinter(PrintJob printJob) throws RoboxCommsException
     {
         boolean acceptedPrintRequest;
         //Reprint directly from printer
-        steno.info("Printing job " + jobUUID + " from printer store");
+        steno.info("Printing job " + printJob.getJobUUID() + " from printer store");
         this.notificationsHandler.showInformationNotification(
             notificationTitle, i18nBundle.getString(
                 "notification.reprintInitiated"));
-        String printjobFilename = getGCodeFileNameForJobUUID(jobUUID);
-        File printJobFile = new File(printjobFilename);
-        if (printJobFile.exists())
+        
+        if (printJob.roboxisedFileExists())
         {
-            int numberOfLines = SystemUtils.countLinesInFile(printJobFile,
-                                                             ";");
-            linesInPrintingFile.set(numberOfLines);
+            try
+            {
+                linesInPrintingFile.set(printJob.getStatistics().getNumberOfLines());
+            } catch (IOException ex)
+            {
+                steno.error("Couldn't get job statistics for job " + printJob.getJobUUID());
+            }
         }
-        associatedPrinter.initiatePrint(jobUUID);
+        associatedPrinter.initiatePrint(printJob.getJobUUID());
         setPrintStatus(PrinterStatusEnumeration.PRINTING);
         acceptedPrintRequest = true;
         return acceptedPrintRequest;
-    }
-
-    private String getGCodeFileNameForJobUUID(String jobUUID)
-    {
-        //Try to get the number of lines in the file
-        String printjobFilename = ApplicationConfiguration.
-            getPrintSpoolDirectory() + jobUUID + File.separator
-            + jobUUID
-            + ApplicationConfiguration.gcodePostProcessedFileHandle
-            + ApplicationConfiguration.gcodeTempFileExtension;
-        return printjobFilename;
     }
 
     /**

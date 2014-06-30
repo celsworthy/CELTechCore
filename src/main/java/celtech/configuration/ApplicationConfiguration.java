@@ -640,7 +640,7 @@ public class ApplicationConfiguration
     {
         if (printFileSpoolDirectory == null)
         {
-            printFileSpoolDirectory = getUserStorageDirectory() + printSpoolStorageDirectoryPath + '/';
+            printFileSpoolDirectory = getUserStorageDirectory() + printSpoolStorageDirectoryPath + File.separator;
 
             File dirHandle = new File(printFileSpoolDirectory);
 
