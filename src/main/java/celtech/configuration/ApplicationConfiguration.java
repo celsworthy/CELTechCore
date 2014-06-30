@@ -317,6 +317,22 @@ public class ApplicationConfiguration
      *
      */
     public static final int maxPrintSpoolFiles = 20;
+    /**
+     * The extension for statistics files in print spool directories
+     */
+    public static String statisticsFileExtension = ".statistics";
+    
+    /**
+     * Used in testing only
+     */
+    public static void setInstallationProperties(Properties testingProperties,
+            String applicationInstallDirectory, String commonApplicationDirectory,
+            String userStorageDirectory) {
+        installationProperties = testingProperties;
+        ApplicationConfiguration.applicationInstallDirectory = applicationInstallDirectory;
+        ApplicationConfiguration.commonApplicationDirectory = commonApplicationDirectory;
+        ApplicationConfiguration.userStorageDirectory = userStorageDirectory;
+    }
 
     /**
      *
@@ -642,7 +658,7 @@ public class ApplicationConfiguration
     {
         if (printFileSpoolDirectory == null)
         {
-            printFileSpoolDirectory = getUserStorageDirectory() + printSpoolStorageDirectoryPath + '/';
+            printFileSpoolDirectory = getUserStorageDirectory() + printSpoolStorageDirectoryPath + File.separator;
 
             File dirHandle = new File(printFileSpoolDirectory);
 

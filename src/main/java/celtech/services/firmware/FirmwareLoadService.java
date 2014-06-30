@@ -4,7 +4,7 @@
  */
 package celtech.services.firmware;
 
-import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.services.ControllableService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -19,7 +19,7 @@ public class FirmwareLoadService extends Service<Integer> implements Controllabl
 {
 
     private StringProperty firmwareFileToLoad = new SimpleStringProperty();
-    private Printer printerToUse = null;
+    private PrinterImpl printerToUse = null;
 
     /**
      *
@@ -68,7 +68,7 @@ public class FirmwareLoadService extends Service<Integer> implements Controllabl
      *
      * @param printerToUse
      */
-    public void setPrinterToUse(Printer printerToUse)
+    public void setPrinterToUse(PrinterImpl printerToUse)
     {
         this.printerToUse = printerToUse;
     }

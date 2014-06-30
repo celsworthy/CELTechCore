@@ -10,6 +10,10 @@ public abstract class GCodeParseEvent
     private String comment = null;
     private double feedRate = -1;
     private double length = 0;
+    /**
+     * Number of lines processed at the point of this event
+     */
+    private int linesSoFar = 0;
 
     /**
      *
@@ -70,4 +74,20 @@ public abstract class GCodeParseEvent
      * @return
      */
     public abstract String renderForOutput();
+
+    /**
+     * @return the linesSoFar
+     */
+    public int getLinesSoFar()
+    {
+        return linesSoFar;
+    }
+
+    /**
+     * @param linesSoFar the linesSoFar to set
+     */
+    public void setLinesSoFar(int linesSoFar)
+    {
+        this.linesSoFar = linesSoFar;
+    }
 }

@@ -7,7 +7,7 @@ package celtech.services.calibration;
 
 import celtech.configuration.HeaterMode;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
@@ -32,7 +32,7 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
     private NozzleOffsetCalibrationState desiredState = null;
     private int nozzleNumber = -1;
 
-    private Printer printerToUse = null;
+    private PrinterImpl printerToUse = null;
     private ResourceBundle i18nBundle = null;
 
     private Pattern zDeltaPattern = Pattern.compile(".*(?<offset>[\\-0-9.]+).*");

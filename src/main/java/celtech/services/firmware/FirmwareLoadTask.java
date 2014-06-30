@@ -5,7 +5,7 @@
 package celtech.services.firmware;
 
 import celtech.coreUI.DisplayManager;
-import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.exceptions.SDCardErrorException;
 import celtech.utils.SystemUtils;
@@ -47,14 +47,14 @@ public class FirmwareLoadTask extends Task<Integer>
 
     private String firmwareFileToLoad = null;
     private final Stenographer steno = StenographerFactory.getStenographer(this.getClass().getName());
-    private Printer printerToUpdate = null;
+    private PrinterImpl printerToUpdate = null;
 
     /**
      *
      * @param firmwareFileToLoad
      * @param printerToUpdate
      */
-    public FirmwareLoadTask(String firmwareFileToLoad, Printer printerToUpdate)
+    public FirmwareLoadTask(String firmwareFileToLoad, PrinterImpl printerToUpdate)
     {
         this.firmwareFileToLoad = firmwareFileToLoad;
         this.printerToUpdate = printerToUpdate;

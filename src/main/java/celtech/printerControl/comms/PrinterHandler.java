@@ -13,7 +13,7 @@ import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
-import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.comms.commands.exceptions.BadCommandException;
 import celtech.printerControl.comms.commands.exceptions.ConnectionLostException;
 import celtech.printerControl.comms.commands.exceptions.InvalidCommandByteException;
@@ -65,7 +65,7 @@ public class PrinterHandler extends Thread
     private Stenographer steno = StenographerFactory.getStenographer(PrinterHandler.class.getName());
     private PrinterControlInterface controlInterface = null;
     private String portName = null;
-    private Printer printerToUse = null;
+    private PrinterImpl printerToUse = null;
     private String printerFriendlyName = "Robox";
     private RoboxCommsState commsState = RoboxCommsState.FOUND;
     private SerialPort serialPort = null;
@@ -736,7 +736,7 @@ public class PrinterHandler extends Thread
         keepRunning = false;
     }
 
-    void setPrinterToUse(Printer newPrinter)
+    void setPrinterToUse(PrinterImpl newPrinter)
     {
         this.printerToUse = newPrinter;
     }

@@ -8,7 +8,7 @@ package celtech.services.purge;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.coreUI.DisplayManager;
-import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
@@ -34,19 +34,19 @@ public class PurgeTask extends Task<Void> implements ControllableService
     private Filament filament = null;
     private PrintQualityEnumeration printQuality = null;
     private RoboxProfile settings = null;
-    private Printer printerToUse = null;
+    private PrinterImpl printerToUse = null;
     private String macroName = null;
 
     /**
      *
      * @param printerToUse
      */
-    public PurgeTask(Printer printerToUse)
+    public PurgeTask(PrinterImpl printerToUse)
     {
         this.printerToUse = printerToUse;
     }
 
-    public PurgeTask(Printer printerToUse, String macroName)
+    public PurgeTask(PrinterImpl printerToUse, String macroName)
     {
         this.printerToUse = printerToUse;
         this.macroName = macroName;
@@ -60,7 +60,7 @@ public class PurgeTask extends Task<Void> implements ControllableService
      * @param settings
      * @param printerToUse
      */
-    public PurgeTask(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings, Printer printerToUse)
+    public PurgeTask(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings, PrinterImpl printerToUse)
     {
         this.project = project;
         this.filament = filament;

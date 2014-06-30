@@ -10,7 +10,7 @@ import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.services.printing.GCodePrintService;
@@ -40,7 +40,7 @@ public class GCodeMacroPanelController
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(GCodeMacroPanelController.class.getName());
-    private Printer connectedPrinter = null;
+    private PrinterImpl connectedPrinter = null;
 
     @FXML
     private AnchorPane container;

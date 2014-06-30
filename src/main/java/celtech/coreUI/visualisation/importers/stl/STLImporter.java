@@ -128,7 +128,7 @@ public class STLImporter
 
         steno.info("loaded and processing mesh");
 
-        if (!parentTask.isCancelled())
+        if (parentTask == null || (!parentTask.isCancelled()))
         {
             MeshView meshView = new MeshView();
 
@@ -279,7 +279,7 @@ public class STLImporter
 
             for (int facetNum = 0; facetNum < numberOfFacets; facetNum++)
             {
-                if (parentTask.isCancelled())
+                if ((parentTask != null) && parentTask.isCancelled())
                 {
                     break;
                 }

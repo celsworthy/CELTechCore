@@ -29,7 +29,7 @@ public class MacroPrintTask extends Task<String>
 
     private final Stenographer steno = StenographerFactory.getStenographer(MacroPrintTask.class.getName());
     private ArrayList<String> macroData = null;
-    private Printer printer = null;
+    private PrinterImpl printer = null;
     private RoboxCommsManager commsManager = null;
     private String portName = null;
     private ResourceBundle i18nBundle = null;
@@ -41,7 +41,7 @@ public class MacroPrintTask extends Task<String>
      * @param commsManager
      * @param portName
      */
-    public MacroPrintTask(ArrayList<String> macroData, Printer printer, RoboxCommsManager commsManager, String portName)
+    public MacroPrintTask(ArrayList<String> macroData, PrinterImpl printer, RoboxCommsManager commsManager, String portName)
     {
         this.macroData = macroData;
         this.printer = printer;

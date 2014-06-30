@@ -190,7 +190,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         if (!empty)
                         {
                             // Use a SimpleDateFormat or similar in the format method
-                            setText(String.format("%.0fº", item));
+                            setText(String.format("%.0f°", item));
                         } else
                         {
                             setText(null);

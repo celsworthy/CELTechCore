@@ -10,7 +10,7 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.EnhancedToggleGroup;
-import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.comms.RoboxCommsManager;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -68,7 +68,7 @@ public class ModeSelectionControlController implements Initializable
     @FXML
     private ToggleButton printModeButton;
 
-    private ObservableList<Printer> printerStatusList = null;
+    private ObservableList<PrinterImpl> printerStatusList = null;
 
     @FXML
     void gotoStatusMode(MouseEvent event)

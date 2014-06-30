@@ -333,32 +333,59 @@
         </VBox>
         <VBox id="VBox" fx:id="progressGroup" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="120.0" prefWidth="500.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
             <children>
-                <Text id="progressText" fx:id="progressTitle" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" translateY="0.0" />
-                <StackPane id="StackPane">
-                    <children>
-                        <ProgressBar fx:id="progressBar" prefHeight="30.0" prefWidth="500.0" progress="0.0" translateY="0.0">
-                            <effect>
-                                <InnerShadow />
-                            </effect>
-                        </ProgressBar>
-                        <Text id="progressText" fx:id="progressPercent" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" translateY="0.0" />
-                    </children>
-                </StackPane>
-                <StackPane id="StackPane">
-                    <children>
-                        <Text id="progressText" fx:id="progressMessage" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="labelText" text="Text" translateY="0.0" />
-                        <StackPane id="StackPane" layoutX="10.0" layoutY="55.0">
-                            <children>
-                                <ProgressBar fx:id="secondProgressBar" prefHeight="30.0" prefWidth="500.0" progress="0.0" translateY="0.0">
-                                    <effect>
-                                        <InnerShadow />
-                                    </effect>
-                                </ProgressBar>
-                                <Text id="progressText" fx:id="secondProgressPercent" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" translateY="0.0" />
-                            </children>
-                        </StackPane>
-                    </children> 
-                </StackPane>
+            <GridPane maxWidth="503.0" prefHeight="90.0" prefWidth="503.0">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+              </columnConstraints>
+              <rowConstraints>
+                  <RowConstraints maxHeight="21.0" minHeight="0.0" prefHeight="18.0" vgrow="SOMETIMES" />
+                  <RowConstraints maxHeight="30.0" minHeight="3.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints maxHeight="5.0" minHeight="5.0" prefHeight="5.0" vgrow="SOMETIMES" />
+                  <RowConstraints maxHeight="44.0" minHeight="0.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <Text fx:id="progressMessage" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="3" />
+                        <Text fx:id="progressTitle" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" GridPane.columnIndex="2" GridPane.halignment="CENTER" />
+                  <ProgressBar fx:id="progressBar" prefHeight="30.0" prefWidth="500.0" progress="0.0" GridPane.columnSpan="5" GridPane.halignment="CENTER" GridPane.rowIndex="1">
+                     <effect>
+                        <InnerShadow />
+                     </effect>
+                  </ProgressBar>
+                  <Text fx:id="progressLayers" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" GridPane.rowIndex="1">
+                     <GridPane.margin>
+                        <Insets left="10.0" />
+                     </GridPane.margin>
+                  </Text>
+                  <Text fx:id="progressETC" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" GridPane.columnIndex="4" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
+                     <GridPane.margin>
+                        <Insets right="10.0" />
+                     </GridPane.margin>
+                  </Text>
+                      <Text fx:id="progressPercent" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
+                  <ProgressBar fx:id="secondProgressBar" prefHeight="30.0" prefWidth="500.0" progress="0.0" GridPane.columnSpan="5" GridPane.rowIndex="3">
+                     <effect>
+                        <InnerShadow />
+                     </effect>
+                  </ProgressBar>
+                  <Text id="progressText" fx:id="secondProgressPercent" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="3" />
+                  <Text fx:id="progressLayerLabel" strokeType="OUTSIDE" strokeWidth="0.0" text="Text">
+                     <GridPane.margin>
+                        <Insets left="10.0" />
+                     </GridPane.margin>
+                  </Text>
+                  <Text fx:id="progressETCLabel" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" GridPane.columnIndex="4" GridPane.halignment="RIGHT">
+                     <GridPane.margin>
+                        <Insets right="10.0" />
+                     </GridPane.margin>
+                  </Text>
+               </children>
+            </GridPane>
+                <StackPane id="StackPane" />
+                <StackPane id="StackPane" />
             </children>
         </VBox>
         <HBox fx:id="printControlButtons" alignment="TOP_RIGHT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="70.0" prefWidth="-1.0" spacing="5.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
