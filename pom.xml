@@ -84,6 +84,11 @@
     </build>
     <dependencies>
         <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+            <version>1.9.13</version>
+	</dependency>        
+        <dependency>
             <groupId>LeapMotion</groupId>
             <artifactId>LeapJava</artifactId>
             <version>1.0.9.8391</version>
