@@ -9,6 +9,7 @@ import celtech.coreUI.DisplayManager;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.beans.property.DoubleProperty;
@@ -218,7 +219,8 @@ public class RestrictedNumberField extends TextField
     {
         if (numberFormatter == null)
         {
-            numberFormatter = NumberFormat.getInstance(DisplayManager.getInstance().getUsersLocale());
+            Locale usersLocale = DisplayManager.getInstance().getUsersLocale();
+            numberFormatter = NumberFormat.getInstance(usersLocale);
             numberFormatter.setMaximumFractionDigits(allowedDecimalPlaces.get());
             numberFormatter.setMinimumFractionDigits(allowedDecimalPlaces.get());
         }
