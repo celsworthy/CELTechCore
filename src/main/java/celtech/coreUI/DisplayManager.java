@@ -78,28 +78,20 @@ import org.controlsfx.dialog.Dialogs.CommandLink;
 public class DisplayManager implements EventHandler<KeyEvent>
 {
 
-    private static Stenographer steno = StenographerFactory.getStenographer(DisplayManager.class.getName());
-    private static ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
-    private static ProjectManager projectManager = ProjectManager.getInstance();
-    private static Configuration configuration = null;
+    private static final Stenographer steno = StenographerFactory.getStenographer(DisplayManager.class.getName());
+    private static final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
+    private static final ProjectManager projectManager = ProjectManager.getInstance();
 
-    /*
-    
-     */
     private static DisplayManager instance = null;
     private static Stage mainStage = null;
     private static Scene scene = null;
-    /*
-     *
-     */
+    
     private static AnchorPane root = null;
     private HBox mainHolder = null;
     private StackPane sidePanelContainer = null;
-    private AnchorPane modeSelectionControl = null;
     private final Map<ApplicationMode, HBox> sidePanels = new HashMap<>();
     private final Map<ApplicationMode, HBox> slideOutPanels = new HashMap<>();
     private SlideoutAndProjectHolder rhPanel;
-    private final HBox emptyHBox = new HBox();
     private final Map<ApplicationMode, SidePanelManager> sidePanelControllers = new HashMap<>();
     private final Map<ApplicationMode, Initializable> slideOutControllers = new HashMap<>();
     private static TabPane tabDisplay = null;
@@ -122,18 +114,12 @@ public class DisplayManager implements EventHandler<KeyEvent>
     /*
      * GCode model loading
      */
-    private ArrayList<String> gcodeFileLinesBacking = new ArrayList<String>();
-    private ObservableList<String> gcodeFileLines = FXCollections.observableArrayList();
+    private final ObservableList<String> gcodeFileLines = FXCollections.observableArrayList();
     /*
      * GCode-related
      */
     private final IntegerProperty layersInGCode = new SimpleIntegerProperty(0);
     private final BooleanProperty noGCodeLoaded = new SimpleBooleanProperty(true);
-
-    private AnchorPane statusAnchor = null;
-    private HBox statusSubContainer = null;
-    private VBox supplementaryStatusControlContainer = null;
-    private Parent gcodeEntrySlideout = null;
 
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
 
