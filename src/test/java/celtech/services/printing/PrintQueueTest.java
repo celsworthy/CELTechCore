@@ -16,11 +16,11 @@ import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -91,7 +91,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
 
     @Test
     public void testETCCalculatorCreatedForReprint() throws
-        InterruptedException, IOException
+        InterruptedException, IOException, URISyntaxException
     {
         RoboxProfile roboxProfile = PrintProfileContainer.getSettingsByProfileName(
             DRAFT_SETTINGS);
@@ -102,7 +102,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
         printJobDirectory.mkdir();
         System.out.println("PJD " + printJobDirectory);
         URL pyramidURL = this.getClass().getResource("/pyramid.statistics");
-        Path statisticsFile = Paths.get(pyramidURL.getFile());
+        Path statisticsFile = Paths.get(pyramidURL.toURI());
         Path destinationStatisticsFile = Paths.get(printJobDirectory
             + File.separator + TEST_JOB_ID
             + ApplicationConfiguration.statisticsFileExtension);

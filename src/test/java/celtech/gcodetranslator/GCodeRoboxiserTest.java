@@ -6,10 +6,12 @@ package celtech.gcodetranslator;
 import celtech.JavaFXConfiguredTest;
 import celtech.configuration.PrintProfileContainer;
 import celtech.services.slicer.RoboxProfile;
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import javafx.beans.property.DoubleProperty;
@@ -90,16 +92,16 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
                                     roboxProfile,
                                     progressProperty);
 
-        String producedFileContents = getFileContentsAsString(outputFilePath);
+        String producedFileContents = getFileContentsAsString(Paths.get(outputFilePath));
         String expectedFileContents = getFileContentsAsString(
-            expectedDataURL.toURI().getSchemeSpecificPart());
+            Paths.get(expectedDataURL.toURI()));
         assertEquals(expectedFileContents, producedFileContents);
 
     }
 
-    private String getFileContentsAsString(String outputFilePath) throws IOException
+    private String getFileContentsAsString(Path outputFilePath) throws IOException
     {
-        byte[] producedData = Files.readAllBytes(Paths.get(outputFilePath));
+        byte[] producedData = Files.readAllBytes(outputFilePath);
         return new String(producedData);
     }
 

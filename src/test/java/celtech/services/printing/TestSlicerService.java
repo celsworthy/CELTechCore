@@ -120,7 +120,7 @@ public class TestSlicerService extends AbstractSlicerService
             Path destinationFilePath = Paths.get(workingDirectory + printJobUUID
                     + ApplicationConfiguration.gcodeTempFileExtension);
             URL pyramidGCodeURL = this.getClass().getResource("/pyramid.gcode");
-            Path sourceFilePath = Paths.get(pyramidGCodeURL.getFile());
+            Path sourceFilePath = Paths.get(pyramidGCodeURL.toURI());
             Files.copy(sourceFilePath, destinationFilePath);
             return new SliceResult(printJobUUID, project, filament, printQuality, settings,
                                    printerToUse, true);
