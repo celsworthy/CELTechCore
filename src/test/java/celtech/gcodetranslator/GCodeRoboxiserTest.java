@@ -7,6 +7,7 @@ import celtech.JavaFXConfiguredTest;
 import celtech.configuration.PrintProfileContainer;
 import celtech.services.slicer.RoboxProfile;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -73,7 +74,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     }
 
     @Test
-    public void testRoboxiseFileAsExpectedRegressionTest() throws IOException
+    public void testRoboxiseFileAsExpectedRegressionTest() throws IOException, URISyntaxException
     {
         GCodeRoboxiser gCodeRoboxiser = new GCodeRoboxiser();
         URL inputURL = this.getClass().getResource("/pyramid.gcode");
@@ -91,7 +92,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 
         String producedFileContents = getFileContentsAsString(outputFilePath);
         String expectedFileContents = getFileContentsAsString(
-            expectedDataURL.getFile());
+            expectedDataURL.toURI().getSchemeSpecificPart());
         assertEquals(expectedFileContents, producedFileContents);
 
     }
