@@ -22,7 +22,7 @@ public class PrintJobStatisticsTest
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-//    @Test
+    @Test
     public void testWriteToFileAndReadBack() throws IOException
     {
         double volumeUsed = 100;
