@@ -86,22 +86,22 @@ public class JavaFXThreadingRule implements TestRule {
 
         protected void setupJavaFX() throws InterruptedException {
             
-//            long timeMillis = System.currentTimeMillis();
-//            
-//            final CountDownLatch latch = new CountDownLatch(1);
-//            
-//            SwingUtilities.invokeLater(new Runnable() {
-//                public void run() {
-//                    // initializes JavaFX environment
-//                    new JFXPanel(); 
-//                    
-//                    latch.countDown();
-//                }
-//            });
-//            
-//            System.out.println("javafx initialising...");
-//            latch.await();
-//            System.out.println("javafx is initialised in " + (System.currentTimeMillis() - timeMillis) + "ms");
+            long timeMillis = System.currentTimeMillis();
+            
+            final CountDownLatch latch = new CountDownLatch(1);
+            
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    // initializes JavaFX environment
+                    new JFXPanel(); 
+                    
+                    latch.countDown();
+                }
+            });
+            
+            System.out.println("javafx initialising...");
+            latch.await();
+            System.out.println("javafx is initialised in " + (System.currentTimeMillis() - timeMillis) + "ms");
         }
         
     }
