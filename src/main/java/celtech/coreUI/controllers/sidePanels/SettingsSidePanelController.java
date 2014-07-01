@@ -636,6 +636,28 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         }
     }
 
+    /**
+     *
+     * @param source
+     */
+    @Override
+    public void triggerSave(Object profile)
+    {
+        if (profile instanceof Filament)
+        {
+            Filament filamentToSave = (Filament) profile;
+
+            FilamentContainer.saveFilament(filamentToSave);
+            Filament chosenFilament = FilamentContainer.getFilamentByID(filamentToSave.getReelID());
+            materialChooser.getSelectionModel().select(chosenFilament);
+        } else if (profile instanceof RoboxProfile)
+        {
+            RoboxProfile profiletoSave = (RoboxProfile) profile;
+            PrintProfileContainer.saveProfile(profiletoSave);
+            selectPrintProfileByName(profiletoSave.getProfileName());
+        }
+    }
+
     private void showCreateMaterialDialogue()
     {
         Platform.runLater(new Runnable()
@@ -652,21 +674,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
                     Filament chosenFilament = FilamentContainer.getFilamentByID(filamentToSave.getReelID());
                     materialChooser.getSelectionModel().select(chosenFilament);
-
-//            String profileNameToSave = profileDetailsController.getProfileName();
-//            SlicerSettings settingsToSave = profileDetailsController.getProfileData();
-//            settingsToSave.getProfileNameProperty().set(profileNameToSave);
-//            PrintProfileContainer.saveProfile(settingsToSave);
-//            updateProfileList();
-//            for (SlicerSettings settings : availableProfiles)
-//            {
-//                if (settings.getProfileName().equals(profileNameToSave))
-//                {
-//                    customProfileChooser.getSelectionModel().select(settings);
-//                    break;
-//                }
-//            }
-//            qualityChooser.adjustValue(PrintQualityEnumeration.CUSTOM.getEnumPosition());
                 } else
                 {
                     if (lastFilamentSelected != null)
@@ -696,14 +703,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             settingsToSave.getProfileNameProperty().set(profileNameToSave);
             PrintProfileContainer.saveProfile(settingsToSave);
             updateProfileList();
-            for (RoboxProfile settings : availableProfiles)
-            {
-                if (settings.getProfileName().equals(profileNameToSave))
-                {
-                    customProfileChooser.getSelectionModel().select(settings);
-                    break;
-                }
-            }
+            selectPrintProfileByName(profileNameToSave);
             qualityChooser.adjustValue(PrintQualityEnumeration.CUSTOM.getEnumPosition());
         } else
         {
@@ -720,6 +720,18 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         }
 
         return response;
+    }
+
+    private void selectPrintProfileByName(String profileNameToSave)
+    {
+        for (RoboxProfile settings : availableProfiles)
+        {
+            if (settings.getProfileName().equals(profileNameToSave))
+            {
+                customProfileChooser.getSelectionModel().select(settings);
+                break;
+            }
+        }
     }
 
     public void projectChanged(Project project)
