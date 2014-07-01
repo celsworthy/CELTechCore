@@ -8,7 +8,6 @@ import celtech.configuration.MaterialType;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.controllers.popups.PopupCommandReceiver;
 import celtech.coreUI.controllers.popups.PopupCommandTransmitter;
-import celtech.utils.FXUtils;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ResourceBundle;
@@ -28,7 +27,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.util.StringConverter;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.controlsfx.control.textfield.CustomTextField;
@@ -105,7 +103,10 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
     void saveData(ActionEvent event)
     {
         final Filament filamentToSave = getMaterialData();
-        FilamentContainer.saveFilament(filamentToSave);
+        if (commandReceiver != null)
+        {
+            commandReceiver.triggerSave(filamentToSave);
+        }
         isDirty.set(false);
     }
     

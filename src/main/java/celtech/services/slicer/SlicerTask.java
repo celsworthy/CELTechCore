@@ -78,13 +78,13 @@ public class SlicerTask extends Task<SliceResult>
                 commands.add("command.com");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r-console.exe\" --load " + configFile + " -o " + tempGcodeFilename + " " + tempModelFilename + "\"");
+                commands.add("\"\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\" --load " + configFile + " -o " + tempGcodeFilename + " " + tempModelFilename + "\"");
                 break;
             case WINDOWS:
                 commands.add("cmd.exe");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r-console.exe\" --load " + configFile + " -o " + tempGcodeFilename + " " + tempModelFilename + "\"");
+                commands.add("\"\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\" --load " + configFile + " -o " + tempGcodeFilename + " " + tempModelFilename + "\"");
                 break;
             case MAC:
                 commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r.app/Contents/MacOS/slic3r");
