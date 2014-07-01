@@ -6,7 +6,6 @@ package celtech.services.postProcessor;
 
 import celtech.gcodetranslator.RoboxiserResult;
 import celtech.printerControl.Printer;
-import celtech.printerControl.PrinterImpl;
 
 /**
  *

@@ -12,7 +12,7 @@ package celtech.coreUI.controllers;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.PrintProfileContainer;
-import celtech.printerControl.PrinterImpl;
+import celtech.printerControl.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
 import javafx.beans.property.ObjectProperty;
@@ -26,7 +26,7 @@ public class SettingsScreenState
 {
 
     private static SettingsScreenState instance = null;
-    private final ObjectProperty<PrinterImpl> selectedPrinter = new SimpleObjectProperty<>();
+    private final ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
     private final ObjectProperty<Filament> selectedFilament = new SimpleObjectProperty<>(null);
     private final ObjectProperty<RoboxProfile> settings = new SimpleObjectProperty<>(PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName));
     private final ObjectProperty<PrintQualityEnumeration> printQuality = new SimpleObjectProperty<>();
@@ -53,7 +53,7 @@ public class SettingsScreenState
      *
      * @param value
      */
-    public void setSelectedPrinter(PrinterImpl value)
+    public void setSelectedPrinter(Printer value)
     {
         selectedPrinter.set(value);
     }
@@ -62,7 +62,7 @@ public class SettingsScreenState
      *
      * @return
      */
-    public PrinterImpl getSelectedPrinter()
+    public Printer getSelectedPrinter()
     {
         return selectedPrinter.get();
     }
@@ -71,7 +71,7 @@ public class SettingsScreenState
      *
      * @return
      */
-    public ObjectProperty<PrinterImpl> selectedPrinterProperty()
+    public ObjectProperty<Printer> selectedPrinterProperty()
     {
         return selectedPrinter;
     }

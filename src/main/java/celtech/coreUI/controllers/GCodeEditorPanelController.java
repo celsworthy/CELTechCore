@@ -9,7 +9,7 @@ import celtech.appManager.Project;
 import celtech.appManager.ProjectMode;
 import celtech.coreUI.components.SlidingComponentDirection;
 import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.PrinterImpl;
+import celtech.printerControl.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.IntegerProperty;
@@ -22,7 +22,6 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
-import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
@@ -64,10 +63,10 @@ public class GCodeEditorPanelController extends SlidingElementController impleme
             gcodeListView.setItems(statusScreenState.getCurrentlySelectedPrinter().gcodeTranscriptProperty());
         }
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<PrinterImpl>()
+        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
             @Override
-            public void changed(ObservableValue<? extends PrinterImpl> ov, PrinterImpl t, PrinterImpl t1)
+            public void changed(ObservableValue<? extends Printer> ov, Printer t, Printer t1)
             {
                 if (t1 != null)
                 {

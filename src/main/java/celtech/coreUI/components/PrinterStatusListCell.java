@@ -7,7 +7,7 @@ package celtech.coreUI.components;
 
 import celtech.configuration.PrinterColourMap;
 import celtech.configuration.WhyAreWeWaitingState;
-import celtech.printerControl.PrinterImpl;
+import celtech.printerControl.Printer;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -21,7 +21,7 @@ import javafx.scene.shape.Rectangle;
  *
  * @author Ian
  */
-public class PrinterStatusListCell extends ListCell<PrinterImpl>
+public class PrinterStatusListCell extends ListCell<Printer>
 {
     
     private final static String PRINTER_STATUS_LIST_CELL_STYLE_CLASS = "printer-status-list-cell";
@@ -58,7 +58,7 @@ public class PrinterStatusListCell extends ListCell<PrinterImpl>
     }
     
     @Override
-    protected void updateItem(PrinterImpl printer, boolean empty)
+    protected void updateItem(Printer printer, boolean empty)
     {
         super.updateItem(printer, empty);
         if (empty)
@@ -76,7 +76,7 @@ public class PrinterStatusListCell extends ListCell<PrinterImpl>
         setGraphic(null);
     }
     
-    private void addContent(PrinterImpl printer)
+    private void addContent(Printer printer)
     {
         setText(null);
         printer.printerColourProperty().addListener(printerColourChangeListener);

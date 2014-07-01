@@ -1464,4 +1464,22 @@ public class TestPrinter implements Printer
         this.listFilesResonse = listFilesResonse;
     }
 
+    @Override
+    public void transmitResetErrors() throws RoboxCommsException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public AckResponse transmitReportErrors() throws RoboxCommsException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean transmitUpdateFirmware(String firmwareID) throws RoboxCommsException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

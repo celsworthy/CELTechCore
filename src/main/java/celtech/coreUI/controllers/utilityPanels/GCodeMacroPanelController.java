@@ -5,29 +5,9 @@
  */
 package celtech.coreUI.controllers.utilityPanels;
 
-import celtech.configuration.ApplicationConfiguration;
-import celtech.coreUI.DisplayManager;
-import celtech.coreUI.components.ModalDialog;
-import celtech.coreUI.components.ProgressDialog;
-import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.PrinterImpl;
-import celtech.printerControl.comms.commands.GCodeMacros;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.services.printing.GCodePrintService;
-import celtech.utils.SystemUtils;
-import java.io.File;
-import java.net.URL;
-import java.util.ResourceBundle;
-import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.concurrent.WorkerStateEvent;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import celtech.printerControl.Printer;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.layout.AnchorPane;
-import javafx.stage.FileChooser;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -40,7 +20,7 @@ public class GCodeMacroPanelController
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(GCodeMacroPanelController.class.getName());
-    private PrinterImpl connectedPrinter = null;
+    private Printer connectedPrinter = null;
 
     @FXML
     private AnchorPane container;

@@ -127,7 +127,6 @@ public class RestrictedTextField extends TextField
             text = text.toUpperCase();
         }
         int length = this.getText().length() + text.length() - (end - start);
-        String currentText = this.getText();
 
         if ( //Control characters - always let them through
                 text.equals("")

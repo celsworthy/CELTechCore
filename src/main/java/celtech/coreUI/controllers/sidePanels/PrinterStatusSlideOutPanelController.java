@@ -9,7 +9,7 @@ import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.SlidablePanel;
 import celtech.coreUI.controllers.SlideOutHandleController;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.PrinterImpl;
+import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -116,7 +116,7 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
         
         populateGCodeArea();
         
-        statusScreenState.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends PrinterImpl> ov, PrinterImpl t, PrinterImpl t1) ->
+        statusScreenState.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
         {
             if (t1 != null)
             {

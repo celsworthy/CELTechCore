@@ -7,7 +7,6 @@ package celtech.services.slicer;
 import celtech.appManager.Project;
 import celtech.configuration.FilamentContainer;
 import celtech.printerControl.Printer;
-import celtech.printerControl.PrinterImpl;
 
 /**
  *

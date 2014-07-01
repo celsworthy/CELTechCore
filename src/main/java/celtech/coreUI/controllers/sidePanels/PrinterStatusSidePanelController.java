@@ -16,6 +16,7 @@ import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.PrinterStatusListCell;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.controllers.StatusScreenState;
+import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.GCodeConstants;
@@ -43,7 +44,6 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
@@ -155,7 +155,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private TableColumn printerNameColumn = new TableColumn();
     private SelectionModel printerStatusTableSelectionModel = null;
 
-    private ObservableList<PrinterImpl> printerStatusList = null;
+    private ObservableList<Printer> printerStatusList = null;
     private StatusScreenState statusScreenState = null;
 
     private String offString;
@@ -187,7 +187,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private ChangeListener<HeaterMode> bedHeaterStatusListener = null;
     private ChangeListener<HeaterMode> nozzleHeaterStatusListener = null;
 
-    private PrinterImpl lastSelectedPrinter = null;
+    private Printer lastSelectedPrinter = null;
 
     private DisplayManager displayManager = null;
 
@@ -355,7 +355,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         printerNameColumn.setText(languageBundle.getString("sidePanel_printerStatus.printerNameColumn"));
         printerNameColumn.setPrefWidth(300);
-        printerNameColumn.setCellValueFactory(new PropertyValueFactory<PrinterImpl, String>("printerFriendlyName"));
+        printerNameColumn.setCellValueFactory(new PropertyValueFactory<Printer, String>("printerFriendlyName"));
 
 //        printerStatusTable.getColumns().addAll(printerNameColumn);
 //        printerStatusTable.setEditable(false);
@@ -363,10 +363,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         printerStatusTableSelectionModel = printerStatusTable.getSelectionModel();
         printerStatusTable.setItems(printerStatusList);
         printerStatusTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        printerStatusTable.setCellFactory(new Callback<ListView<PrinterImpl>, ListCell<PrinterImpl>>()
+        printerStatusTable.setCellFactory(new Callback<ListView<Printer>, ListCell<Printer>>()
         {
             @Override
-            public ListCell<PrinterImpl> call(ListView<PrinterImpl> list)
+            public ListCell<Printer> call(ListView<Printer> list)
             {
                 return new PrinterStatusListCell();
             }
@@ -380,7 +380,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             {
                 if (event.getClickCount() > 1)
                 {
-                    PrinterImpl printerToEdit = (PrinterImpl) printerStatusTableSelectionModel.getSelectedItem();
+                    Printer printerToEdit = (Printer) printerStatusTableSelectionModel.getSelectedItem();
                     if (printerToEdit != null)
                     {
                         printerIDDialog.setPrinterToUse(printerToEdit);
@@ -416,22 +416,22 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         printerStatusTable.setPlaceholder(noPrinterLabel);
 
-        printerStatusList.addListener(new ListChangeListener<PrinterImpl>()
+        printerStatusList.addListener(new ListChangeListener<Printer>()
         {
             @Override
-            public void onChanged(ListChangeListener.Change<? extends PrinterImpl> change)
+            public void onChanged(ListChangeListener.Change<? extends Printer> change)
             {
                 while (change.next())
                 {
                     if (change.wasAdded())
                     {
-                        for (PrinterImpl additem : change.getAddedSubList())
+                        for (Printer additem : change.getAddedSubList())
                         {
                             printerStatusTableSelectionModel.select(additem);
                         }
                     } else if (change.wasRemoved())
                     {
-                        for (PrinterImpl additem : change.getRemoved())
+                        for (Printer additem : change.getRemoved())
                         {
                         }
                     } else if (change.wasReplaced())
@@ -445,11 +445,11 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         controlDetailsVisibility();
 
-        printerStatusTableSelectionModel.selectedItemProperty().addListener(new ChangeListener<PrinterImpl>()
+        printerStatusTableSelectionModel.selectedItemProperty().addListener(new ChangeListener<Printer>()
         {
 
             @Override
-            public void changed(ObservableValue<? extends PrinterImpl> ov, PrinterImpl t, PrinterImpl latestSelection)
+            public void changed(ObservableValue<? extends Printer> ov, Printer t, Printer latestSelection)
             {
                 if (latestSelection != null
                         || printerStatusList.size() > 0)
@@ -716,7 +716,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     }
 
-    private void bindDetails(PrinterImpl selectedPrinter)
+    private void bindDetails(Printer selectedPrinter)
     {
         nozzleTemperatureLabel.textProperty().unbind();
         bedTemperatureLabel.textProperty().unbind();

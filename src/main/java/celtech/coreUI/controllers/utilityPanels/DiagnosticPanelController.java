@@ -6,16 +6,13 @@
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.PrinterImpl;
-import celtech.printerControl.comms.RoboxCommsManager;
+import celtech.printerControl.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 
 /**
@@ -26,7 +23,7 @@ import javafx.scene.control.Label;
 public class DiagnosticPanelController implements Initializable
 {
     
-    private PrinterImpl connectedPrinter = null;
+    private Printer connectedPrinter = null;
     private StatusScreenState statusScreenState = null;
     
     @FXML
@@ -75,11 +72,11 @@ public class DiagnosticPanelController implements Initializable
     {
         statusScreenState = StatusScreenState.getInstance();
         
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<PrinterImpl>()
+        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
             
             @Override
-            public void changed(ObservableValue<? extends PrinterImpl> observable, PrinterImpl oldValue, PrinterImpl newValue)
+            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
             {
                 if (connectedPrinter != null)
                 {
@@ -94,7 +91,7 @@ public class DiagnosticPanelController implements Initializable
         });
     }
     
-    private void unbindFromPrinter(PrinterImpl printer)
+    private void unbindFromPrinter(Printer printer)
     {
         if (connectedPrinter != null)
         {
@@ -127,7 +124,7 @@ public class DiagnosticPanelController implements Initializable
         }
     }
     
-    private void bindToPrinter(PrinterImpl printer)
+    private void bindToPrinter(Printer printer)
     {
         if (connectedPrinter == null)
         {
