@@ -46,8 +46,8 @@ public class PrintQueueTest extends JavaFXConfiguredTest
     PrintQueue printQueue;
     Project project;
 
-//    @Rule
-//    public JavaFXThreadingRule jfxRule = new JavaFXThreadingRule();
+    @Rule
+    public JavaFXThreadingRule jfxRule = new JavaFXThreadingRule();
 
     /**
      * Test that progressProperty is 0 at start of print
