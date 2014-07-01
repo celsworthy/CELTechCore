@@ -39,7 +39,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
 {
 
     static final int WAIT_INTERVAL = 500;
-    static final int MAX_WAIT_INTERVAL = 3000;
+    static final int MAX_WAIT_INTERVAL = 10000;
     static final String DRAFT_SETTINGS = "DraftSettings";
 
     TestPrinter testPrinter;
