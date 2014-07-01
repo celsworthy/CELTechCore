@@ -115,7 +115,7 @@ public class FixedDecimalFloatFormatLocaleToStringTest
     /**
      * Test of parsing, of class FixedDecimalFloatFormat.
      */
-//    @Test
+    @Test
     public void testParse()
     {
         String result = null;

@@ -49,7 +49,7 @@ public class FixedDecimalFloatFormatTest
     /**
      * Test of instantiation of class FixedDecimalFloatFormat.
      */
-//    @Test
+    @Test
     public void testCreateFixedDecimalFloatFormat()
     {
         System.out.println("create FixedDecimalFloatFormat");
@@ -60,7 +60,7 @@ public class FixedDecimalFloatFormatTest
     /**
      * Test overflow during format (long)
      */
-//    @Test(expected = NumberFormatException.class)
+    @Test(expected = NumberFormatException.class)
     public void testFormatLongOverflow()
     {
         System.out.println("FixedDecimalFloatFormat format long overflow");
@@ -71,7 +71,7 @@ public class FixedDecimalFloatFormatTest
     /**
      * Test overflow during format (double)
      */
-//    @Test(expected = NumberFormatException.class)
+    @Test(expected = NumberFormatException.class)
     public void testFormatDoubleOverflow()
     {
         System.out.println("FixedDecimalFloatFormat format double overflow");
@@ -82,7 +82,7 @@ public class FixedDecimalFloatFormatTest
     /**
      * Test of format handling, of class FixedDecimalFloatFormat.
      */
-//    @Test
+    @Test
     public void testFormatDoubleLeadingSpace()
     {
         System.out.println("FixedDecimalFloatFormat format double");
@@ -95,7 +95,7 @@ public class FixedDecimalFloatFormatTest
     /**
      * Test of format handling, of class FixedDecimalFloatFormat.
      */
-//    @Test
+    @Test
     public void testFormatDoubleNoLeadingSpace()
     {
         System.out.println("FixedDecimalFloatFormat format double");
@@ -108,7 +108,7 @@ public class FixedDecimalFloatFormatTest
     /**
      * Test of decimalFloatFormat handling, of class FixedDecimalFloatFormat.
      */
-//    @Test
+    @Test
     public void testFormatNegativeDoubleLeadingSpace()
     {
         System.out.println("FixedDecimalFloatFormat format negative double");
@@ -121,7 +121,7 @@ public class FixedDecimalFloatFormatTest
     /**
      * Test of decimalFloatFormat handling, of class FixedDecimalFloatFormat.
      */
-//    @Test
+    @Test
     public void testFormatNegativeDoubleNoLeadingSpace()
     {
         System.out.println("FixedDecimalFloatFormat format negative double");
@@ -134,7 +134,7 @@ public class FixedDecimalFloatFormatTest
     /**
      * Test of parsing, of class FixedDecimalFloatFormat.
      */
-//    @Test
+    @Test
     public void testParseDouble()
     {
         System.out.println("FixedDecimalFloatFormat parse double");
@@ -154,7 +154,7 @@ public class FixedDecimalFloatFormatTest
     /**
      * Test of parsing, of class FixedDecimalFloatFormat.
      */
-//    @Test
+    @Test
     public void testParseDoubleHighPrecision()
     {
         System.out.println("FixedDecimalFloatFormat parse double - large number of digits");
@@ -168,7 +168,7 @@ public class FixedDecimalFloatFormatTest
     /**
      * Test of parsing, of class FixedDecimalFloatFormat.
      */
-//    @Test
+    @Test
     public void testParseInt()
     {
         System.out.println("FixedDecimalFloatFormat parse int");
@@ -187,7 +187,7 @@ public class FixedDecimalFloatFormatTest
     /**
      * Test overflow during parse
      */
-//    @Test(expected = NumberFormatException.class)
+    @Test(expected = NumberFormatException.class)
     public void testParseOverflow()
     {
         System.out.println("FixedDecimalFloatFormat format double");

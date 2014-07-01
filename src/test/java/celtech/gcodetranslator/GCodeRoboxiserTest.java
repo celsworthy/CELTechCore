@@ -75,7 +75,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 
     }
 
-//    @Test
+    @Test
     public void testRoboxiseFileAsExpectedRegressionTest() throws IOException, URISyntaxException
     {
         GCodeRoboxiser gCodeRoboxiser = new GCodeRoboxiser();
