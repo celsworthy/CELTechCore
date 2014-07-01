@@ -9,7 +9,6 @@ import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.coreUI.DisplayManager;
 import celtech.printerControl.Printer;
-import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
