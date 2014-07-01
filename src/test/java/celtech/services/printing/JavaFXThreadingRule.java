@@ -93,7 +93,7 @@ public class JavaFXThreadingRule implements TestRule {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     // initializes JavaFX environment
-                    new JFXPanel(); 
+//                    new JFXPanel(); 
                     
                     latch.countDown();
                 }
