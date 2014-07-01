@@ -32,7 +32,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    @Test
+//    @Test
     public void testRoboxiseFileProducesFirstExtrusionLineNumber() throws IOException
     {
         GCodeRoboxiser gCodeRoboxiser = new GCodeRoboxiser();
@@ -48,7 +48,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
         assertEquals(34, (long) roboxiserResult.getPrintJobStatistics().getLineNumberOfFirstExtrusion());
     }
     
-    @Test
+//    @Test
     public void testRoboxiseFileTotalDistanceAndTime() throws IOException
     {
         GCodeRoboxiser gCodeRoboxiser = new GCodeRoboxiser();
@@ -75,7 +75,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 
     }
 
-    @Test
+//    @Test
     public void testRoboxiseFileAsExpectedRegressionTest() throws IOException, URISyntaxException
     {
         GCodeRoboxiser gCodeRoboxiser = new GCodeRoboxiser();

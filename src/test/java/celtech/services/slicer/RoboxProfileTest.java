@@ -47,7 +47,7 @@ public class RoboxProfileTest
     /**
      * Test of clone method, of class RoboxProfile.
      */
-//    @Test
+////    @Test
 //    public void testClone()
 //    {
 //        System.out.println("clone");
@@ -59,7 +59,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setFilament_diameter method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetFilament_diameter()
 //    {
 //        System.out.println("setFilament_diameter");
@@ -73,7 +73,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getFilament_diameter method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetFilament_diameter()
 //    {
 //        System.out.println("getFilament_diameter");
@@ -88,7 +88,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of filament_diameterProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testFilament_diameterProperty()
 //    {
 //        System.out.println("filament_diameterProperty");
@@ -103,7 +103,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getPrint_center method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetPrint_center()
 //    {
 //        System.out.println("getPrint_center");
@@ -118,7 +118,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setPrint_center method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetPrint_center()
 //    {
 //        System.out.println("setPrint_center");
@@ -132,7 +132,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getRetract_restart_extra_toolchange method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetRetract_restart_extra_toolchange()
 //    {
 //        System.out.println("getRetract_restart_extra_toolchange");
@@ -147,7 +147,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setRetract_restart_extra_toolchange method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetRetract_restart_extra_toolchange()
 //    {
 //        System.out.println("setRetract_restart_extra_toolchange");
@@ -161,7 +161,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getBed_size method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetBed_size()
 //    {
 //        System.out.println("getBed_size");
@@ -176,7 +176,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setBed_size method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetBed_size()
 //    {
 //        System.out.println("setBed_size");
@@ -190,7 +190,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getDuplicate_grid method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetDuplicate_grid()
 //    {
 //        System.out.println("getDuplicate_grid");
@@ -205,7 +205,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setDuplicate_grid method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetDuplicate_grid()
 //    {
 //        System.out.println("setDuplicate_grid");
@@ -219,7 +219,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getZ_offset method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetZ_offset()
 //    {
 //        System.out.println("getZ_offset");
@@ -234,7 +234,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setZ_offset method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetZ_offset()
 //    {
 //        System.out.println("setZ_offset");
@@ -248,7 +248,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getGcode_flavor method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetGcode_flavor()
 //    {
 //        System.out.println("getGcode_flavor");
@@ -263,7 +263,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setGcode_flavor method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetGcode_flavor()
 //    {
 //        System.out.println("setGcode_flavor");
@@ -277,7 +277,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getUse_relative_e_distances method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetUse_relative_e_distances()
 //    {
 //        System.out.println("getUse_relative_e_distances");
@@ -292,7 +292,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setUse_relative_e_distances method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetUse_relative_e_distances()
 //    {
 //        System.out.println("setUse_relative_e_distances");
@@ -306,7 +306,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getOutput_nozzle_control method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetOutput_nozzle_control()
 //    {
 //        System.out.println("getOutput_nozzle_control");
@@ -321,7 +321,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setOutput_nozzle_control method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetOutput_nozzle_control()
 //    {
 //        System.out.println("setOutput_nozzle_control");
@@ -335,7 +335,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getVibration_limit method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetVibration_limit()
 //    {
 //        System.out.println("getVibration_limit");
@@ -350,7 +350,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setVibration_limit method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetVibration_limit()
 //    {
 //        System.out.println("setVibration_limit");
@@ -364,7 +364,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getStart_gcode method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetStart_gcode()
 //    {
 //        System.out.println("getStart_gcode");
@@ -379,7 +379,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setStart_gcode method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetStart_gcode()
 //    {
 //        System.out.println("setStart_gcode");
@@ -393,7 +393,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getEnd_gcode method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetEnd_gcode()
 //    {
 //        System.out.println("getEnd_gcode");
@@ -408,7 +408,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setEnd_gcode method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetEnd_gcode()
 //    {
 //        System.out.println("setEnd_gcode");
@@ -422,7 +422,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getLayer_gcode method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetLayer_gcode()
 //    {
 //        System.out.println("getLayer_gcode");
@@ -437,7 +437,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setLayer_gcode method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetLayer_gcode()
 //    {
 //        System.out.println("setLayer_gcode");
@@ -451,7 +451,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getToolchange_gcode method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetToolchange_gcode()
 //    {
 //        System.out.println("getToolchange_gcode");
@@ -466,7 +466,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setToolchange_gcode method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetToolchange_gcode()
 //    {
 //        System.out.println("setToolchange_gcode");
@@ -480,7 +480,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of perimeter_nozzleProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testPerimeter_nozzleProperty()
 //    {
 //        System.out.println("perimeter_nozzleProperty");
@@ -495,7 +495,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setPerimeter_nozzle method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetPerimeter_nozzle()
 //    {
 //        System.out.println("setPerimeter_nozzle");
@@ -509,7 +509,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of infill_nozzleProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testInfill_nozzleProperty()
 //    {
 //        System.out.println("infill_nozzleProperty");
@@ -524,7 +524,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setInfill_nozzle method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetInfill_nozzle()
 //    {
 //        System.out.println("setInfill_nozzle");
@@ -538,7 +538,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of support_material_nozzleProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSupport_material_nozzleProperty()
 //    {
 //        System.out.println("support_material_nozzleProperty");
@@ -553,7 +553,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSupport_material_nozzle method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSupport_material_nozzle()
 //    {
 //        System.out.println("setSupport_material_nozzle");
@@ -567,7 +567,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of support_material_interface_nozzleProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSupport_material_interface_nozzleProperty()
 //    {
 //        System.out.println("support_material_interface_nozzleProperty");
@@ -582,7 +582,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSupport_material_interface_nozzle method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSupport_material_interface_nozzle()
 //    {
 //        System.out.println("setSupport_material_interface_nozzle");
@@ -596,7 +596,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getRetract_lift method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetRetract_lift()
 //    {
 //        System.out.println("getRetract_lift");
@@ -611,7 +611,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setRetract_lift method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetRetract_lift()
 //    {
 //        System.out.println("setRetract_lift");
@@ -625,7 +625,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getRetract_restart_extra method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetRetract_restart_extra()
 //    {
 //        System.out.println("getRetract_restart_extra");
@@ -640,7 +640,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setRetract_restart_extra method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetRetract_restart_extra()
 //    {
 //        System.out.println("setRetract_restart_extra");
@@ -654,7 +654,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getRetract_before_travel method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetRetract_before_travel()
 //    {
 //        System.out.println("getRetract_before_travel");
@@ -669,7 +669,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setRetract_before_travel method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetRetract_before_travel()
 //    {
 //        System.out.println("setRetract_before_travel");
@@ -683,7 +683,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getRetract_layer_change method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetRetract_layer_change()
 //    {
 //        System.out.println("getRetract_layer_change");
@@ -698,7 +698,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setRetract_layer_change method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetRetract_layer_change()
 //    {
 //        System.out.println("setRetract_layer_change");
@@ -712,7 +712,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getWipe method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetWipe()
 //    {
 //        System.out.println("getWipe");
@@ -727,7 +727,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setWipe method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetWipe()
 //    {
 //        System.out.println("setWipe");
@@ -741,7 +741,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getNozzle_diameter method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetNozzle_diameter()
 //    {
 //        System.out.println("getNozzle_diameter");
@@ -756,7 +756,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setNozzle_diameter method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetNozzle_diameter()
 //    {
 //        System.out.println("setNozzle_diameter");
@@ -770,7 +770,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getPerimeter_acceleration method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetPerimeter_acceleration()
 //    {
 //        System.out.println("getPerimeter_acceleration");
@@ -785,7 +785,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setPerimeter_acceleration method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetPerimeter_acceleration()
 //    {
 //        System.out.println("setPerimeter_acceleration");
@@ -799,7 +799,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getInfill_acceleration method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetInfill_acceleration()
 //    {
 //        System.out.println("getInfill_acceleration");
@@ -814,7 +814,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setInfill_acceleration method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetInfill_acceleration()
 //    {
 //        System.out.println("setInfill_acceleration");
@@ -828,7 +828,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getBridge_acceleration method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetBridge_acceleration()
 //    {
 //        System.out.println("getBridge_acceleration");
@@ -843,7 +843,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setBridge_acceleration method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetBridge_acceleration()
 //    {
 //        System.out.println("setBridge_acceleration");
@@ -857,7 +857,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getDefault_acceleration method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetDefault_acceleration()
 //    {
 //        System.out.println("getDefault_acceleration");
@@ -872,7 +872,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setDefault_acceleration method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetDefault_acceleration()
 //    {
 //        System.out.println("setDefault_acceleration");
@@ -886,7 +886,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of retract_lengthProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testRetract_lengthProperty()
 //    {
 //        System.out.println("retract_lengthProperty");
@@ -901,7 +901,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setRetract_length method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetRetract_length()
 //    {
 //        System.out.println("setRetract_length");
@@ -915,7 +915,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of retract_speedProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testRetract_speedProperty()
 //    {
 //        System.out.println("retract_speedProperty");
@@ -930,7 +930,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setRetract_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetRetract_speed()
 //    {
 //        System.out.println("setRetract_speed");
@@ -944,7 +944,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getNozzle_ejection_volume method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetNozzle_ejection_volume()
 //    {
 //        System.out.println("getNozzle_ejection_volume");
@@ -959,7 +959,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getNozzle_partial_b_minimum method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetNozzle_partial_b_minimum()
 //    {
 //        System.out.println("getNozzle_partial_b_minimum");
@@ -974,7 +974,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getNozzle_wipe_volume method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetNozzle_wipe_volume()
 //    {
 //        System.out.println("getNozzle_wipe_volume");
@@ -989,7 +989,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getFan_always_on method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetFan_always_on()
 //    {
 //        System.out.println("getFan_always_on");
@@ -1004,7 +1004,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setFan_always_on method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetFan_always_on()
 //    {
 //        System.out.println("setFan_always_on");
@@ -1018,7 +1018,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getCooling method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetCooling()
 //    {
 //        System.out.println("getCooling");
@@ -1033,7 +1033,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setCooling method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetCooling()
 //    {
 //        System.out.println("setCooling");
@@ -1047,7 +1047,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getMax_fan_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetMax_fan_speed()
 //    {
 //        System.out.println("getMax_fan_speed");
@@ -1062,7 +1062,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setMax_fan_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetMax_fan_speed()
 //    {
 //        System.out.println("setMax_fan_speed");
@@ -1076,7 +1076,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getMin_fan_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetMin_fan_speed()
 //    {
 //        System.out.println("getMin_fan_speed");
@@ -1091,7 +1091,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setMin_fan_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetMin_fan_speed()
 //    {
 //        System.out.println("setMin_fan_speed");
@@ -1105,7 +1105,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getBridge_fan_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetBridge_fan_speed()
 //    {
 //        System.out.println("getBridge_fan_speed");
@@ -1120,7 +1120,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setBridge_fan_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetBridge_fan_speed()
 //    {
 //        System.out.println("setBridge_fan_speed");
@@ -1134,7 +1134,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getDisable_fan_first_layers method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetDisable_fan_first_layers()
 //    {
 //        System.out.println("getDisable_fan_first_layers");
@@ -1149,7 +1149,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setDisable_fan_first_layers method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetDisable_fan_first_layers()
 //    {
 //        System.out.println("setDisable_fan_first_layers");
@@ -1163,7 +1163,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getFan_below_layer_time method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetFan_below_layer_time()
 //    {
 //        System.out.println("getFan_below_layer_time");
@@ -1178,7 +1178,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setFan_below_layer_time method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetFan_below_layer_time()
 //    {
 //        System.out.println("setFan_below_layer_time");
@@ -1192,7 +1192,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getSlowdown_below_layer_time method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetSlowdown_below_layer_time()
 //    {
 //        System.out.println("getSlowdown_below_layer_time");
@@ -1207,7 +1207,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSlowdown_below_layer_time method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSlowdown_below_layer_time()
 //    {
 //        System.out.println("setSlowdown_below_layer_time");
@@ -1221,7 +1221,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getMin_print_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetMin_print_speed()
 //    {
 //        System.out.println("getMin_print_speed");
@@ -1236,7 +1236,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setMin_print_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetMin_print_speed()
 //    {
 //        System.out.println("setMin_print_speed");
@@ -1250,7 +1250,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of fill_densityProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testFill_densityProperty()
 //    {
 //        System.out.println("fill_densityProperty");
@@ -1265,7 +1265,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setFill_density method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetFill_density()
 //    {
 //        System.out.println("setFill_density");
@@ -1279,7 +1279,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of fill_patternProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testFill_patternProperty()
 //    {
 //        System.out.println("fill_patternProperty");
@@ -1294,7 +1294,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setFill_pattern method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetFill_pattern()
 //    {
 //        System.out.println("setFill_pattern");
@@ -1308,7 +1308,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of infill_every_layersProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testInfill_every_layersProperty()
 //    {
 //        System.out.println("infill_every_layersProperty");
@@ -1323,7 +1323,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setInfill_every_layers method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetInfill_every_layers()
 //    {
 //        System.out.println("setInfill_every_layers");
@@ -1337,7 +1337,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getInfill_only_where_needed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetInfill_only_where_needed()
 //    {
 //        System.out.println("getInfill_only_where_needed");
@@ -1352,7 +1352,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setInfill_only_where_needed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetInfill_only_where_needed()
 //    {
 //        System.out.println("setInfill_only_where_needed");
@@ -1366,7 +1366,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getSolid_infill_every_layers method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetSolid_infill_every_layers()
 //    {
 //        System.out.println("getSolid_infill_every_layers");
@@ -1381,7 +1381,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSolid_infill_every_layers method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSolid_infill_every_layers()
 //    {
 //        System.out.println("setSolid_infill_every_layers");
@@ -1395,7 +1395,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getFill_angle method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetFill_angle()
 //    {
 //        System.out.println("getFill_angle");
@@ -1410,7 +1410,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setFill_angle method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetFill_angle()
 //    {
 //        System.out.println("setFill_angle");
@@ -1424,7 +1424,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getSolid_infill_below_area method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetSolid_infill_below_area()
 //    {
 //        System.out.println("getSolid_infill_below_area");
@@ -1439,7 +1439,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSolid_infill_below_area method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSolid_infill_below_area()
 //    {
 //        System.out.println("setSolid_infill_below_area");
@@ -1453,7 +1453,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getOnly_retract_when_crossing_perimeters method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetOnly_retract_when_crossing_perimeters()
 //    {
 //        System.out.println("getOnly_retract_when_crossing_perimeters");
@@ -1468,7 +1468,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getInfill_first method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetInfill_first()
 //    {
 //        System.out.println("getInfill_first");
@@ -1483,7 +1483,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of perimeter_speedProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testPerimeter_speedProperty()
 //    {
 //        System.out.println("perimeter_speedProperty");
@@ -1498,7 +1498,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setPerimeter_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetPerimeter_speed()
 //    {
 //        System.out.println("setPerimeter_speed");
@@ -1512,7 +1512,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of small_perimeter_speedProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSmall_perimeter_speedProperty()
 //    {
 //        System.out.println("small_perimeter_speedProperty");
@@ -1527,7 +1527,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSmall_perimeter_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSmall_perimeter_speed()
 //    {
 //        System.out.println("setSmall_perimeter_speed");
@@ -1541,7 +1541,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of external_perimeter_speedProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testExternal_perimeter_speedProperty()
 //    {
 //        System.out.println("external_perimeter_speedProperty");
@@ -1556,7 +1556,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setExternal_perimeter_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetExternal_perimeter_speed()
 //    {
 //        System.out.println("setExternal_perimeter_speed");
@@ -1570,7 +1570,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of infill_speedProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testInfill_speedProperty()
 //    {
 //        System.out.println("infill_speedProperty");
@@ -1585,7 +1585,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setInfill_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetInfill_speed()
 //    {
 //        System.out.println("setInfill_speed");
@@ -1599,7 +1599,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of solid_infill_speedProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSolid_infill_speedProperty()
 //    {
 //        System.out.println("solid_infill_speedProperty");
@@ -1614,7 +1614,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSolid_infill_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSolid_infill_speed()
 //    {
 //        System.out.println("setSolid_infill_speed");
@@ -1628,7 +1628,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of top_solid_infill_speedProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testTop_solid_infill_speedProperty()
 //    {
 //        System.out.println("top_solid_infill_speedProperty");
@@ -1643,7 +1643,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setTop_solid_infill_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetTop_solid_infill_speed()
 //    {
 //        System.out.println("setTop_solid_infill_speed");
@@ -1657,7 +1657,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of support_material_speedProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSupport_material_speedProperty()
 //    {
 //        System.out.println("support_material_speedProperty");
@@ -1672,7 +1672,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSupport_material_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSupport_material_speed()
 //    {
 //        System.out.println("setSupport_material_speed");
@@ -1686,7 +1686,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of bridge_speedProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testBridge_speedProperty()
 //    {
 //        System.out.println("bridge_speedProperty");
@@ -1701,7 +1701,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setBridge_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetBridge_speed()
 //    {
 //        System.out.println("setBridge_speed");
@@ -1715,7 +1715,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of gap_fill_speedProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGap_fill_speedProperty()
 //    {
 //        System.out.println("gap_fill_speedProperty");
@@ -1730,7 +1730,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setGap_fill_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetGap_fill_speed()
 //    {
 //        System.out.println("setGap_fill_speed");
@@ -1744,7 +1744,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of travel_speedProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testTravel_speedProperty()
 //    {
 //        System.out.println("travel_speedProperty");
@@ -1759,7 +1759,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setTravel_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetTravel_speed()
 //    {
 //        System.out.println("setTravel_speed");
@@ -1773,7 +1773,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of first_layer_speedProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testFirst_layer_speedProperty()
 //    {
 //        System.out.println("first_layer_speedProperty");
@@ -1788,7 +1788,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setFirst_layer_speed method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetFirst_layer_speed()
 //    {
 //        System.out.println("setFirst_layer_speed");
@@ -1802,7 +1802,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of support_material_thresholdProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSupport_material_thresholdProperty()
 //    {
 //        System.out.println("support_material_thresholdProperty");
@@ -1817,7 +1817,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSupport_material_threshold method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSupport_material_threshold()
 //    {
 //        System.out.println("setSupport_material_threshold");
@@ -1831,7 +1831,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of support_material_enforce_layersProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSupport_material_enforce_layersProperty()
 //    {
 //        System.out.println("support_material_enforce_layersProperty");
@@ -1846,7 +1846,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSupport_material_enforce_layers method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSupport_material_enforce_layers()
 //    {
 //        System.out.println("setSupport_material_enforce_layers");
@@ -1860,7 +1860,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getRaft_layers method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetRaft_layers()
 //    {
 //        System.out.println("getRaft_layers");
@@ -1875,7 +1875,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setRaft_layers method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetRaft_layers()
 //    {
 //        System.out.println("setRaft_layers");
@@ -1889,7 +1889,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of support_material_patternProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSupport_material_patternProperty()
 //    {
 //        System.out.println("support_material_patternProperty");
@@ -1904,7 +1904,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSupport_material_pattern method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSupport_material_pattern()
 //    {
 //        System.out.println("setSupport_material_pattern");
@@ -1918,7 +1918,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of support_material_spacingProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSupport_material_spacingProperty()
 //    {
 //        System.out.println("support_material_spacingProperty");
@@ -1933,7 +1933,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSupport_material_spacing method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSupport_material_spacing()
 //    {
 //        System.out.println("setSupport_material_spacing");
@@ -1947,7 +1947,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of support_material_angleProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSupport_material_angleProperty()
 //    {
 //        System.out.println("support_material_angleProperty");
@@ -1962,7 +1962,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSupport_material_angle method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSupport_material_angle()
 //    {
 //        System.out.println("setSupport_material_angle");
@@ -1976,7 +1976,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getSupport_material_interface_layers method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetSupport_material_interface_layers()
 //    {
 //        System.out.println("getSupport_material_interface_layers");
@@ -1991,7 +1991,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSupport_material_interface_layers method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSupport_material_interface_layers()
 //    {
 //        System.out.println("setSupport_material_interface_layers");
@@ -2005,7 +2005,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getSupport_material_interface_spacing method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetSupport_material_interface_spacing()
 //    {
 //        System.out.println("getSupport_material_interface_spacing");
@@ -2020,7 +2020,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSupport_material_interface_spacing method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSupport_material_interface_spacing()
 //    {
 //        System.out.println("setSupport_material_interface_spacing");
@@ -2034,7 +2034,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getLayer_height method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetLayer_height()
 //    {
 //        System.out.println("getLayer_height");
@@ -2049,7 +2049,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setLayer_height method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetLayer_height()
 //    {
 //        System.out.println("setLayer_height");
@@ -2063,7 +2063,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of support_materialProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSupport_materialProperty()
 //    {
 //        System.out.println("support_materialProperty");
@@ -2078,7 +2078,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSupport_material method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSupport_material()
 //    {
 //        System.out.println("setSupport_material");
@@ -2092,7 +2092,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getAvoid_crossing_perimeters method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetAvoid_crossing_perimeters()
 //    {
 //        System.out.println("getAvoid_crossing_perimeters");
@@ -2107,7 +2107,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setAvoid_crossing_perimeters method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetAvoid_crossing_perimeters()
 //    {
 //        System.out.println("setAvoid_crossing_perimeters");
@@ -2121,7 +2121,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of bottom_solid_layersProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testBottom_solid_layersProperty()
 //    {
 //        System.out.println("bottom_solid_layersProperty");
@@ -2136,7 +2136,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setBottom_solid_layers method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetBottom_solid_layers()
 //    {
 //        System.out.println("setBottom_solid_layers");
@@ -2150,7 +2150,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getBridge_flow_ratio method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetBridge_flow_ratio()
 //    {
 //        System.out.println("getBridge_flow_ratio");
@@ -2165,7 +2165,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setBridge_flow_ratio method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetBridge_flow_ratio()
 //    {
 //        System.out.println("setBridge_flow_ratio");
@@ -2179,7 +2179,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getBrim_width method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetBrim_width()
 //    {
 //        System.out.println("getBrim_width");
@@ -2194,7 +2194,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setBrim_width method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetBrim_width()
 //    {
 //        System.out.println("setBrim_width");
@@ -2208,7 +2208,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getComplete_objects method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetComplete_objects()
 //    {
 //        System.out.println("getComplete_objects");
@@ -2223,7 +2223,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getDuplicate method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetDuplicate()
 //    {
 //        System.out.println("getDuplicate");
@@ -2238,7 +2238,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setDuplicate method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetDuplicate()
 //    {
 //        System.out.println("setDuplicate");
@@ -2252,7 +2252,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getDuplicate_distance method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetDuplicate_distance()
 //    {
 //        System.out.println("getDuplicate_distance");
@@ -2267,7 +2267,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setDuplicate_distance method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetDuplicate_distance()
 //    {
 //        System.out.println("setDuplicate_distance");
@@ -2281,7 +2281,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getExternal_perimeters_first method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetExternal_perimeters_first()
 //    {
 //        System.out.println("getExternal_perimeters_first");
@@ -2296,7 +2296,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getExtra_perimeters method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetExtra_perimeters()
 //    {
 //        System.out.println("getExtra_perimeters");
@@ -2311,7 +2311,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getExtruder_clearance_height method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetExtruder_clearance_height()
 //    {
 //        System.out.println("getExtruder_clearance_height");
@@ -2326,7 +2326,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setExtruder_clearance_height method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetExtruder_clearance_height()
 //    {
 //        System.out.println("setExtruder_clearance_height");
@@ -2340,7 +2340,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getExtruder_clearance_radius method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetExtruder_clearance_radius()
 //    {
 //        System.out.println("getExtruder_clearance_radius");
@@ -2355,7 +2355,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setExtruder_clearance_radius method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetExtruder_clearance_radius()
 //    {
 //        System.out.println("setExtruder_clearance_radius");
@@ -2369,7 +2369,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getExtrusion_axis method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetExtrusion_axis()
 //    {
 //        System.out.println("getExtrusion_axis");
@@ -2384,7 +2384,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setExtrusion_axis method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetExtrusion_axis()
 //    {
 //        System.out.println("setExtrusion_axis");
@@ -2398,7 +2398,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getExtrusion_width method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetExtrusion_width()
 //    {
 //        System.out.println("getExtrusion_width");
@@ -2413,7 +2413,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getSupport_material_extrusion_width method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetSupport_material_extrusion_width()
 //    {
 //        System.out.println("getSupport_material_extrusion_width");
@@ -2428,7 +2428,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getFirst_layer_extrusion_width method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetFirst_layer_extrusion_width()
 //    {
 //        System.out.println("getFirst_layer_extrusion_width");
@@ -2443,7 +2443,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setFirst_layer_extrusion_width method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetFirst_layer_extrusion_width()
 //    {
 //        System.out.println("setFirst_layer_extrusion_width");
@@ -2457,7 +2457,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getFirst_layer_height method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetFirst_layer_height()
 //    {
 //        System.out.println("getFirst_layer_height");
@@ -2472,7 +2472,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setFirst_layer_height method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetFirst_layer_height()
 //    {
 //        System.out.println("setFirst_layer_height");
@@ -2486,7 +2486,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getG0 method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetG0()
 //    {
 //        System.out.println("getG0");
@@ -2501,7 +2501,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setG0 method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetG0()
 //    {
 //        System.out.println("setG0");
@@ -2515,7 +2515,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getGcode_arcs method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetGcode_arcs()
 //    {
 //        System.out.println("getGcode_arcs");
@@ -2530,7 +2530,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setGcode_arcs method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetGcode_arcs()
 //    {
 //        System.out.println("setGcode_arcs");
@@ -2544,7 +2544,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getGcode_comments method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetGcode_comments()
 //    {
 //        System.out.println("getGcode_comments");
@@ -2559,7 +2559,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getInfill_extruder method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetInfill_extruder()
 //    {
 //        System.out.println("getInfill_extruder");
@@ -2574,7 +2574,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setInfill_extruder method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetInfill_extruder()
 //    {
 //        System.out.println("setInfill_extruder");
@@ -2588,7 +2588,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getInfill_extrusion_width method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetInfill_extrusion_width()
 //    {
 //        System.out.println("getInfill_extrusion_width");
@@ -2603,7 +2603,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setInfill_extrusion_width method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetInfill_extrusion_width()
 //    {
 //        System.out.println("setInfill_extrusion_width");
@@ -2617,7 +2617,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getMin_skirt_length method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetMin_skirt_length()
 //    {
 //        System.out.println("getMin_skirt_length");
@@ -2632,7 +2632,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setMin_skirt_length method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetMin_skirt_length()
 //    {
 //        System.out.println("setMin_skirt_length");
@@ -2646,7 +2646,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getNotes method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetNotes()
 //    {
 //        System.out.println("getNotes");
@@ -2661,7 +2661,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setNotes method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetNotes()
 //    {
 //        System.out.println("setNotes");
@@ -2675,7 +2675,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getOutput_filename_format method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetOutput_filename_format()
 //    {
 //        System.out.println("getOutput_filename_format");
@@ -2690,7 +2690,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setOutput_filename_format method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetOutput_filename_format()
 //    {
 //        System.out.println("setOutput_filename_format");
@@ -2704,7 +2704,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getPerimeter_extruder method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetPerimeter_extruder()
 //    {
 //        System.out.println("getPerimeter_extruder");
@@ -2719,7 +2719,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setPerimeter_extruder method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetPerimeter_extruder()
 //    {
 //        System.out.println("setPerimeter_extruder");
@@ -2733,7 +2733,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getPerimeter_extrusion_width method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetPerimeter_extrusion_width()
 //    {
 //        System.out.println("getPerimeter_extrusion_width");
@@ -2748,7 +2748,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setPerimeter_extrusion_width method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetPerimeter_extrusion_width()
 //    {
 //        System.out.println("setPerimeter_extrusion_width");
@@ -2762,7 +2762,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of perimetersProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testPerimetersProperty()
 //    {
 //        System.out.println("perimetersProperty");
@@ -2777,7 +2777,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setPerimeters method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetPerimeters()
 //    {
 //        System.out.println("setPerimeters");
@@ -2791,7 +2791,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getPost_process method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetPost_process()
 //    {
 //        System.out.println("getPost_process");
@@ -2806,7 +2806,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setPost_process method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetPost_process()
 //    {
 //        System.out.println("setPost_process");
@@ -2820,7 +2820,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getRandomize_start method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetRandomize_start()
 //    {
 //        System.out.println("getRandomize_start");
@@ -2835,7 +2835,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getResolution method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetResolution()
 //    {
 //        System.out.println("getResolution");
@@ -2850,7 +2850,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setResolution method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetResolution()
 //    {
 //        System.out.println("setResolution");
@@ -2864,7 +2864,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getRetract_length_toolchange method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetRetract_length_toolchange()
 //    {
 //        System.out.println("getRetract_length_toolchange");
@@ -2879,7 +2879,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setRetract_length_toolchange method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetRetract_length_toolchange()
 //    {
 //        System.out.println("setRetract_length_toolchange");
@@ -2893,7 +2893,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getRotate method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetRotate()
 //    {
 //        System.out.println("getRotate");
@@ -2908,7 +2908,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setRotate method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetRotate()
 //    {
 //        System.out.println("setRotate");
@@ -2922,7 +2922,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getScale method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetScale()
 //    {
 //        System.out.println("getScale");
@@ -2937,7 +2937,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setScale method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetScale()
 //    {
 //        System.out.println("setScale");
@@ -2951,7 +2951,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getSkirt_distance method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetSkirt_distance()
 //    {
 //        System.out.println("getSkirt_distance");
@@ -2966,7 +2966,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSkirt_distance method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSkirt_distance()
 //    {
 //        System.out.println("setSkirt_distance");
@@ -2980,7 +2980,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getSkirt_height method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetSkirt_height()
 //    {
 //        System.out.println("getSkirt_height");
@@ -2995,7 +2995,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSkirt_height method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSkirt_height()
 //    {
 //        System.out.println("setSkirt_height");
@@ -3009,7 +3009,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getSkirts method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetSkirts()
 //    {
 //        System.out.println("getSkirts");
@@ -3024,7 +3024,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSkirts method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSkirts()
 //    {
 //        System.out.println("setSkirts");
@@ -3038,7 +3038,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getSolid_fill_pattern method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetSolid_fill_pattern()
 //    {
 //        System.out.println("getSolid_fill_pattern");
@@ -3053,7 +3053,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSolid_fill_pattern method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSolid_fill_pattern()
 //    {
 //        System.out.println("setSolid_fill_pattern");
@@ -3067,7 +3067,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getSolid_infill_extrusion_width method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetSolid_infill_extrusion_width()
 //    {
 //        System.out.println("getSolid_infill_extrusion_width");
@@ -3082,7 +3082,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSolid_infill_extrusion_width method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSolid_infill_extrusion_width()
 //    {
 //        System.out.println("setSolid_infill_extrusion_width");
@@ -3096,7 +3096,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of spiral_vaseProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSpiral_vaseProperty()
 //    {
 //        System.out.println("spiral_vaseProperty");
@@ -3111,7 +3111,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setSpiral_vase method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetSpiral_vase()
 //    {
 //        System.out.println("setSpiral_vase");
@@ -3125,7 +3125,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getThreads method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetThreads()
 //    {
 //        System.out.println("getThreads");
@@ -3140,7 +3140,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setThreads method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetThreads()
 //    {
 //        System.out.println("setThreads");
@@ -3154,7 +3154,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getTop_infill_extrusion_width method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetTop_infill_extrusion_width()
 //    {
 //        System.out.println("getTop_infill_extrusion_width");
@@ -3169,7 +3169,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setTop_infill_extrusion_width method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetTop_infill_extrusion_width()
 //    {
 //        System.out.println("setTop_infill_extrusion_width");
@@ -3183,7 +3183,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of top_solid_layersProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testTop_solid_layersProperty()
 //    {
 //        System.out.println("top_solid_layersProperty");
@@ -3198,7 +3198,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setTop_solid_layers method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetTop_solid_layers()
 //    {
 //        System.out.println("setTop_solid_layers");
@@ -3212,7 +3212,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getUn_retract_ratio method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetUn_retract_ratio()
 //    {
 //        System.out.println("getUn_retract_ratio");
@@ -3227,7 +3227,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setUn_retract_ratio method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetUn_retract_ratio()
 //    {
 //        System.out.println("setUn_retract_ratio");
@@ -3241,7 +3241,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getAutowipe method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetAutowipe()
 //    {
 //        System.out.println("getAutowipe");
@@ -3256,7 +3256,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of isMutable method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testIsMutable()
 //    {
 //        System.out.println("isMutable");
@@ -3271,7 +3271,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of setMutable method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testSetMutable()
 //    {
 //        System.out.println("setMutable");
@@ -3285,7 +3285,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getProfileName method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetProfileName()
 //    {
 //        System.out.println("getProfileName");
@@ -3300,7 +3300,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of getProfileNameProperty method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testGetProfileNameProperty()
 //    {
 //        System.out.println("getProfileNameProperty");
@@ -3315,7 +3315,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of readFromFile method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testReadFromFile()
 //    {
 //        System.out.println("readFromFile");
@@ -3331,7 +3331,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of writeToFile method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testWriteToFile()
 //    {
 //        System.out.println("writeToFile");
@@ -3345,7 +3345,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of clone method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testClone()
 //    {
 //        System.out.println("clone");
@@ -3360,7 +3360,7 @@ public class RoboxProfileTest
 //    /**
 //     * Test of toString method, of class RoboxProfile.
 //     */
-//    @Test
+////    @Test
 //    public void testToString()
 //    {
 //        System.out.println("toString");

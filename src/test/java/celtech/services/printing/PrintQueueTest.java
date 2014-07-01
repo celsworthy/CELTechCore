@@ -52,7 +52,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
     /**
      * Test that progressProperty is 0 at start of print
      */
-    @Test
+//    @Test
     public void testProgressPropertyIsZeroAtStartOfPrint()
     {
         testPrinter = new TestPrinter();
@@ -89,7 +89,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
         project.setProjectMode(ProjectMode.MESH);
     }
 
-    @Test
+//    @Test
     public void testETCCalculatorCreatedForReprint() throws
         InterruptedException, IOException, URISyntaxException
     {
@@ -144,7 +144,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
      * @throws java.io.IOException
      * @throws java.lang.InterruptedException
      */
-    @Test
+//    @Test
     public void testProgressPropertyIsOneAtEndOfPrint() throws IOException, InterruptedException
     {
         RoboxProfile roboxProfile = PrintProfileContainer.getSettingsByProfileName(
@@ -181,7 +181,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
         assertEquals(1.0d, progress.get(), 0.001);
     }
 
-    @Test
+//    @Test
     public void testCurrentLayerAtEndOfPrint() throws IOException, InterruptedException
     {
         RoboxProfile roboxProfile = PrintProfileContainer.getSettingsByProfileName(
@@ -215,7 +215,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
         assertEquals(66, currentLayer);
     }
 
-    @Test
+//    @Test
     public void testCurrentLayerAtStartOfPrint() throws IOException, InterruptedException
     {
         RoboxProfile roboxProfile = PrintProfileContainer.getSettingsByProfileName(
