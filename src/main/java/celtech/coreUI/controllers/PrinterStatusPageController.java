@@ -13,8 +13,13 @@ import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.AmbientLEDState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.JogButton;
-import celtech.printerControl.PrinterImpl;
+import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
+import static celtech.printerControl.PrinterStatusEnumeration.ERROR;
+import static celtech.printerControl.PrinterStatusEnumeration.IDLE;
+import static celtech.printerControl.PrinterStatusEnumeration.PAUSED;
+import static celtech.printerControl.PrinterStatusEnumeration.PRINTING;
+import static celtech.printerControl.PrinterStatusEnumeration.SENDING_TO_PRINTER;
 import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.utils.AxisSpecifier;
@@ -56,7 +61,7 @@ public class PrinterStatusPageController implements Initializable
     private Stenographer steno = StenographerFactory.getStenographer(
         PrinterStatusPageController.class.getName());
     private StatusScreenState statusScreenState = null;
-    private PrinterImpl printerToUse = null;
+    private Printer printerToUse = null;
     private ChangeListener<Boolean> reelDataChangeListener = null;
     private ChangeListener<EEPROMState> reelChangeListener = null;
     private ChangeListener<Color> printerColourChangeListener = null;
@@ -242,7 +247,7 @@ public class PrinterStatusPageController implements Initializable
     private BooleanProperty advancedControlsVisible = new SimpleBooleanProperty(
         false);
 
-    private PrinterImpl lastSelectedPrinter = null;
+    private Printer lastSelectedPrinter = null;
 
     @FXML
     void home(ActionEvent event)
@@ -566,7 +571,7 @@ public class PrinterStatusPageController implements Initializable
 
         if (statusScreenState.getCurrentlySelectedPrinter() != null)
         {
-            PrinterImpl printer = statusScreenState.getCurrentlySelectedPrinter();
+            Printer printer = statusScreenState.getCurrentlySelectedPrinter();
             switch (printer.getPrinterStatus())
             {
                 case IDLE:
@@ -589,11 +594,11 @@ public class PrinterStatusPageController implements Initializable
         }
 
         statusScreenState.currentlySelectedPrinterProperty().addListener(
-            new ChangeListener<PrinterImpl>()
+            new ChangeListener<Printer>()
             {
                 @Override
-                public void changed(ObservableValue<? extends PrinterImpl> ov,
-                    PrinterImpl t, PrinterImpl selectedPrinter)
+                public void changed(ObservableValue<? extends Printer> ov,
+                    Printer t, Printer selectedPrinter)
                 {
                     printerToUse = selectedPrinter;
 

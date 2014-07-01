@@ -16,6 +16,7 @@ import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.controllers.popups.PopupCommandReceiver;
 import celtech.coreUI.controllers.utilityPanels.MaterialDetailsController;
 import celtech.coreUI.controllers.utilityPanels.ProfileDetailsController;
+import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.services.slicer.PrintQualityEnumeration;
@@ -57,13 +58,13 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 {
 
     private Stenographer steno = StenographerFactory.getStenographer(SettingsSidePanelController.class.getName());
-    private ObservableList<PrinterImpl> printerStatusList = null;
+    private ObservableList<Printer> printerStatusList = null;
     private SettingsScreenState settingsScreenState = null;
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
 
     @FXML
-    private ComboBox<PrinterImpl> printerChooser;
+    private ComboBox<Printer> printerChooser;
 
     @FXML
     private ComboBox<Filament> materialChooser;
@@ -110,7 +111,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private ObservableList<Filament> availableFilaments = FXCollections.observableArrayList();
     private ObservableList<RoboxProfile> availableProfiles = FXCollections.observableArrayList();
 
-    private PrinterImpl currentPrinter = null;
+    private Printer currentPrinter = null;
     private Filament currentlyLoadedFilament = null;
     private Filament lastFilamentSelected = null;
 
@@ -347,17 +348,17 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         printerChooser.getSelectionModel()
                 .clearSelection();
 
-        printerChooser.getItems().addListener(new ListChangeListener<PrinterImpl>()
+        printerChooser.getItems().addListener(new ListChangeListener<Printer>()
         {
             @Override
-            public void onChanged(ListChangeListener.Change<? extends PrinterImpl> change
+            public void onChanged(ListChangeListener.Change<? extends Printer> change
             )
             {
                 while (change.next())
                 {
                     if (change.wasAdded())
                     {
-                        for (PrinterImpl addedPrinter : change.getAddedSubList())
+                        for (Printer addedPrinter : change.getAddedSubList())
                         {
                             Platform.runLater(new Runnable()
                             {
@@ -371,7 +372,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         }
                     } else if (change.wasRemoved())
                     {
-                        for (PrinterImpl removedPrinter : change.getRemoved())
+                        for (Printer removedPrinter : change.getRemoved())
                         {
                             if (printerChooser.getItems().isEmpty())
                             {
@@ -409,10 +410,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         );
 
         printerChooser.getSelectionModel()
-                .selectedItemProperty().addListener(new ChangeListener<PrinterImpl>()
+                .selectedItemProperty().addListener(new ChangeListener<Printer>()
                         {
                             @Override
-                            public void changed(ObservableValue<? extends PrinterImpl> ov, PrinterImpl lastSelectedPrinter, PrinterImpl selectedPrinter
+                            public void changed(ObservableValue<? extends Printer> ov, Printer lastSelectedPrinter, Printer selectedPrinter
                             )
                             {
                                 if (lastSelectedPrinter != null)
@@ -575,7 +576,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     private void populatePrinterChooser()
     {
-        for (PrinterImpl printer : printerStatusList)
+        for (Printer printer : printerStatusList)
         {
             printerChooser.getItems().add(printer);
         }

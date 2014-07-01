@@ -13,7 +13,7 @@ import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
-import celtech.printerControl.PrinterImpl;
+import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.exceptions.BadCommandException;
 import celtech.printerControl.comms.commands.exceptions.ConnectionLostException;
 import celtech.printerControl.comms.commands.exceptions.InvalidCommandByteException;
@@ -36,7 +36,6 @@ import celtech.printerControl.comms.events.RoboxEvent;
 import celtech.printerControl.comms.events.RoboxEventType;
 import celtech.services.firmware.FirmwareLoadService;
 import celtech.services.firmware.FirmwareLoadTask;
-import java.io.UnsupportedEncodingException;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.concurrent.WorkerStateEvent;
@@ -65,7 +64,7 @@ public class PrinterHandler extends Thread
     private Stenographer steno = StenographerFactory.getStenographer(PrinterHandler.class.getName());
     private PrinterControlInterface controlInterface = null;
     private String portName = null;
-    private PrinterImpl printerToUse = null;
+    private Printer printerToUse = null;
     private String printerFriendlyName = "Robox";
     private RoboxCommsState commsState = RoboxCommsState.FOUND;
     private SerialPort serialPort = null;
@@ -736,7 +735,7 @@ public class PrinterHandler extends Thread
         keepRunning = false;
     }
 
-    void setPrinterToUse(PrinterImpl newPrinter)
+    void setPrinterToUse(Printer newPrinter)
     {
         this.printerToUse = newPrinter;
     }

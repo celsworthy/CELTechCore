@@ -1316,6 +1316,14 @@ public interface Printer
      */
     public HeadEEPROMDataResponse transmitReadHeadEEPROM() throws RoboxCommsException;
 
+    
+    public void transmitResetErrors() throws RoboxCommsException;
+    
+    
+    public AckResponse transmitReportErrors() throws RoboxCommsException;
+    
+    public boolean transmitUpdateFirmware(final String firmwareID) throws RoboxCommsException;
+    
     /**
      *
      * @param filament

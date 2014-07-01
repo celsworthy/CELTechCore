@@ -69,7 +69,7 @@ public class PrinterUtils
      * @param printerToCheck
      * @param task
      */
-    public static void waitOnMacroFinished(PrinterImpl printerToCheck, Task task)
+    public static void waitOnMacroFinished(Printer printerToCheck, Task task)
     {
         if (task != null)
         {
@@ -150,7 +150,7 @@ public class PrinterUtils
      * @param printer
      * @return
      */
-    public boolean isPurgeNecessary(PrinterImpl printer)
+    public boolean isPurgeNecessary(Printer printer)
     {
         boolean purgeIsNecessary = false;
 
@@ -168,7 +168,7 @@ public class PrinterUtils
      * @param printer
      * @return
      */
-    public boolean offerPurgeIfNecessary(PrinterImpl printer)
+    public boolean offerPurgeIfNecessary(Printer printer)
     {
         boolean purgeConsent = false;
         if (isPurgeNecessary(printer) && purgeDialogVisible == false)
@@ -198,7 +198,7 @@ public class PrinterUtils
      * @param settings
      * @param printerToUse
      */
-    public static void runPurge(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings, PrinterImpl printerToUse)
+    public static void runPurge(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings, Printer printerToUse)
     {
         PurgeTask purgeTask = new PurgeTask(project, filament, printQuality, settings, printerToUse);
         TaskController.getInstance().manageTask(purgeTask);
@@ -211,7 +211,7 @@ public class PrinterUtils
      *
      * @param printerToUse
      */
-    public static void runPurge(PrinterImpl printerToUse)
+    public static void runPurge(Printer printerToUse)
     {
         PurgeTask purgeTask = new PurgeTask(printerToUse);
         TaskController.getInstance().manageTask(purgeTask);
@@ -225,7 +225,7 @@ public class PrinterUtils
      * @param printerToUse
      * @param macroName
      */
-    public static void runPurge(PrinterImpl printerToUse, String macroName)
+    public static void runPurge(Printer printerToUse, String macroName)
     {
         PurgeTask purgeTask = new PurgeTask(printerToUse, macroName);
         TaskController.getInstance().manageTask(purgeTask);

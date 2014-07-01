@@ -7,12 +7,11 @@ package celtech.coreUI.controllers;
 import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.ColourChooserButton;
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.printerControl.PrinterImpl;
+import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -20,7 +19,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.KeyCode;
@@ -90,7 +88,7 @@ public class PrinterIDDialogController implements Initializable
     
     private EventHandler<KeyEvent> textInputHandler = null;
     
-    private PrinterImpl printerToUse = null;
+    private Printer printerToUse = null;
     
     private PrinterColourMap colourMap = PrinterColourMap.getInstance();
 
@@ -175,7 +173,7 @@ public class PrinterIDDialogController implements Initializable
      *
      * @param printerToUse
      */
-    public void setPrinterToUse(PrinterImpl printerToUse)
+    public void setPrinterToUse(Printer printerToUse)
     {
         this.printerToUse = printerToUse;
     }

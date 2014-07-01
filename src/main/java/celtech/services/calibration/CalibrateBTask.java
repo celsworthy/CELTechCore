@@ -7,11 +7,10 @@ package celtech.services.calibration;
 
 import celtech.configuration.HeaterMode;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.PrinterImpl;
+import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
-import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.services.ControllableService;
 import celtech.utils.PrinterUtils;
 import java.util.ResourceBundle;
@@ -30,7 +29,7 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
     private NozzleBCalibrationState desiredState = null;
     private int nozzleNumber = -1;
 
-    private PrinterImpl printerToUse = null;
+    private Printer printerToUse = null;
     private String progressTitle = null;
     private String initialisingMessage = null;
     private String heatingMessage = null;
