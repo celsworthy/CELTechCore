@@ -102,7 +102,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     private String getFileContentsAsString(Path outputFilePath) throws IOException
     {
         byte[] producedData = Files.readAllBytes(outputFilePath);
-        return new String(producedData);
+        return new String(producedData).replaceAll("\r", "");
     }
 
 }
