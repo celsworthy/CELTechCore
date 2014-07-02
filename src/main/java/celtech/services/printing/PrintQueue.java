@@ -458,7 +458,6 @@ public class PrintQueue implements ControllableService
         List<Integer> layerNumberToLineNumber = printJobStatistics.getLayerNumberToLineNumber();
         etcCalculator = new ETCCalculator(associatedPrinter,
             layerNumberToPredictedDuration, layerNumberToLineNumber);
-        updateETCUsingETCCalculator(0);
         
         progressNumLayers.set(layerNumberToLineNumber.size());
         etcAvailable.set(true);
