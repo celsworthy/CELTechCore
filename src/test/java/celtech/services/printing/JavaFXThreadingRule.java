@@ -62,20 +62,22 @@ public class JavaFXThreadingRule implements TestRule {
             
             statement.evaluate();
             
-            final CountDownLatch countDownLatch = new CountDownLatch(1);
+            // We don't need to run in a different thread
             
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        statement.evaluate();
-                    } catch (Throwable e) {
-                        rethrownException = e;
-                    }
-                    countDownLatch.countDown();
-                }});
-            
-            countDownLatch.await();
+//            final CountDownLatch countDownLatch = new CountDownLatch(1);
+//            
+//            Platform.runLater(new Runnable() {
+//                @Override
+//                public void run() {
+//                    try {
+//                        statement.evaluate();
+//                    } catch (Throwable e) {
+//                        rethrownException = e;
+//                    }
+//                    countDownLatch.countDown();
+//                }});
+//            
+//            countDownLatch.await();
             
             // if an exception was thrown by the statement during evaluation,
             // then re-throw it to fail the test

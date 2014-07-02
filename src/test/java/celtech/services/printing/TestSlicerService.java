@@ -128,6 +128,7 @@ public class TestSlicerService extends AbstractSlicerService
             } catch (Exception ex) {
                 ex.printStackTrace();
                 System.out.println("ex" + ex.getMessage());
+                return null;
             }
         }
     }
