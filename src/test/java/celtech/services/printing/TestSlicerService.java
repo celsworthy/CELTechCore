@@ -114,6 +114,7 @@ public class TestSlicerService extends AbstractSlicerService
          */
         protected SliceResult call() throws Exception
         {
+            try {
             // copy presliced file to user storage project area
             String workingDirectory = ApplicationConfiguration.getPrintSpoolDirectory()
                     + printJobUUID + File.separator;
@@ -124,6 +125,10 @@ public class TestSlicerService extends AbstractSlicerService
             Files.copy(sourceFilePath, destinationFilePath);
             return new SliceResult(printJobUUID, project, filament, printQuality, settings,
                                    printerToUse, true);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                System.out.println("ex" + ex.getMessage());
+            }
         }
     }
 
