@@ -124,13 +124,7 @@ public class RestrictedTextField extends TextField
     @Override
     public void replaceText(int start, int end, String text)
     {
-        if (forceUpperCase.getValue())
-        {
-            text = text.toUpperCase();
-        }
-        if (directorySafeName.get()) {
-            text = text.replace(File.separator, "");
-        }
+        text = applyRestriction(text);
         int length = this.getText().length() + text.length() - (end - start);
 
         if ( //Control characters - always let them through
@@ -141,16 +135,27 @@ public class RestrictedTextField extends TextField
         }
     }
 
-    @Override
-    public void replaceSelection(String text)
+    private String applyRestriction(String text)
     {
         if (forceUpperCase.getValue())
         {
             text = text.toUpperCase();
         }
         if (directorySafeName.get()) {
-            text = text.replace(File.separator, "");
-        }        
+            for (char disallowedChar : "/<>:\"\\|?*".toCharArray())
+            {
+                char[] toReplace = new char[1];
+                toReplace[0] = disallowedChar;
+                text = text.replace(new String(toReplace), "");
+            }
+        }     
+        return text;
+    }
+
+    @Override
+    public void replaceSelection(String text)
+    {
+        text = applyRestriction(text);
         int length = this.getText().length() + text.length();
 
         if ((text.matches(restrict.get()) && length <= maxLength.getValue()) || text.equals(""))
