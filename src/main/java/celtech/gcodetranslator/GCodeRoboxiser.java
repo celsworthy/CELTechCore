@@ -1020,7 +1020,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                     }
                                 } else if (eventWriteIndex >= wipeVolumeIndex)
                                 {
-                                    outputNoBNoE(event);
+                                    outputNoBNoE(event, "Wipe");
                                 } else if (eventWriteIndex
                                         >= ejectionVolumeIndex)
                                 {
@@ -1031,9 +1031,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                     nozzleEvent.setY(event.getY());
                                     nozzleEvent.setLength(event.getLength());
                                     nozzleEvent.setFeedRate(event.getFeedRate());
-                                    nozzleEvent.setComment(
-                                            event.getComment()
-                                            + " after start of close");
+                                    nozzleEvent.setComment("Ejection volume");
                                     currentNozzlePosition = currentNozzlePosition
                                             - (nozzleStartPosition * (event.getE()
                                             / nozzleCloseOverVolume));
@@ -1057,7 +1055,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                     }
                                 } else if (preejectionVolumeIndex != -1 && eventWriteIndex >= preejectionVolumeIndex)
                                 {
-                                    outputNoBNoE(event);
+                                    outputNoBNoE(event, "Pre-ejection");
                                 } else
                                 {
                                     volumeUsed += event.getE();
@@ -1100,7 +1098,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         }
     }
 
-    private void outputNoBNoE(ExtrusionEvent event)
+    private void outputNoBNoE(ExtrusionEvent event, String comment)
     {
         // No extrusion
         // No B
@@ -1109,9 +1107,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         noBNoETravel.setY(event.getY());
         noBNoETravel.setLength(event.getLength());
         noBNoETravel.setFeedRate(event.getFeedRate());
-        noBNoETravel.setComment(
-                event.getComment()
-                        + " after finish of close");
+        noBNoETravel.setComment(comment);
         writeEventToFile(noBNoETravel);
         if (mixExtruderOutputs)
         {

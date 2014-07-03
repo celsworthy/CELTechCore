@@ -76,12 +76,18 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                 try
                 {
                     printerToUse.transmitDirectGCode("M104", false);
-                    PrinterUtils.waitOnBusy(printerToUse, this);
-                    printerToUse.transmitStoredGCode("Home_all");
-                    PrinterUtils.waitOnMacroFinished(printerToUse, this);
-                    printerToUse.transmitDirectGCode("G0 Z50", false);
-                    PrinterUtils.waitOnBusy(printerToUse, this);
-                    success = true;
+                    if (PrinterUtils.waitOnBusy(printerToUse, this) == false)
+                    {
+                        printerToUse.transmitStoredGCode("Home_all");
+                        if (PrinterUtils.waitOnMacroFinished(printerToUse, this) == false)
+                        {
+                            printerToUse.transmitDirectGCode("G0 Z50", false);
+                            if (PrinterUtils.waitOnBusy(printerToUse, this) == false)
+                            {
+                                success = true;
+                            }
+                        }
+                    }
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in needle valve calibration - mode=" + desiredState.name());

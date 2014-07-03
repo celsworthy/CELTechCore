@@ -12,42 +12,43 @@ public enum NozzleOffsetCalibrationState
     /**
      *
      */
+    CHOOSE_MODE(null, null),
+    /**
+     *
+     */
     IDLE("calibrationPanel.readyToBeginNozzleOffsetCalibration", null),
-
     /**
      *
      */
     INITIALISING("calibrationPanel.heating", null),
-
     /**
      *
      */
     HEAD_CLEAN_CHECK("calibrationPanel.ensureHeadIsCleanOffsetMessage", null),
-
     /**
      *
      */
     MEASURE_Z_DIFFERENCE("calibrationPanel.measuringZOffset", null),
-
     /**
      *
      */
     INSERT_PAPER("calibrationPanel.insertPieceOfPaper", "calibrationPanel.isThePaperInPlace"),
-
     /**
      *
      */
     PROBING("calibrationPanel.moveThePaperMessage", null),
-
     /**
      *
      */
     FINISHED("calibrationPanel.calibrationSucceededOffsetMessage", null),
-
     /**
      *
      */
-    FAILED("calibrationPanel.nozzleCalibrationFailed", null);
+    FAILED("calibrationPanel.nozzleCalibrationFailed", null),
+    /**
+     *
+     */
+    NUDGE_MODE(null, null);
 
     private String stepTitleResource = null;
     private String stepInstructionResource = null;

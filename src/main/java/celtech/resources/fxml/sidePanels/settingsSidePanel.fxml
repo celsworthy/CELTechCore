@@ -178,27 +178,19 @@
                                 </Label>
                             </children>
                         </VBox>
-                        <VBox spacing="5.0">
+                        <VBox fillWidth="true" spacing="5.0">
                             <children>
                                 <Label layoutX="141.0" layoutY="141.0" maxWidth="-1.0" styleClass="sidePanelDivider" text="%sidePanel_settings.printerSelectionLabel" />
                                 <ComboBox fx:id="printerChooser" maxWidth="1.7976931348623157E308" promptText="%sidePanel_printerStatus.noPrinterPlaceholder" VBox.vgrow="NEVER">
                                 </ComboBox>
-                            </children>
-                        </VBox>
-                        <VBox spacing="5.0">
-                            <children>
                                 <Label fx:id="materialLabel" styleClass="sidePanelDivider" text="%sidePanel_settings.materialSelectionLabel">
   
                                 </Label>
                                 <ComboBox fx:id="materialChooser" layoutX="10.0" layoutY="117.0" maxWidth="1.7976931348623157E308" promptText="%sidePanel_settings.materialSelectionLabel">
                                 </ComboBox>
-                            </children>
-                        </VBox>
-                        <VBox spacing="5.0">
-                            <children>
                                 <Label fx:id="printQualityLabel" styleClass="sidePanelDivider" text="%sidePanel_settings.printQualityLabel">
                                 </Label>
-                                <Slider fx:id="qualityChooser" majorTickUnit="1.0" max="3.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true">
+                                <Slider fx:id="qualityChooser" majorTickUnit="1.0" max="3.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="-1.0" >
                                     <padding>
                                         <Insets left="20.0" right="20.0" />
                                     </padding>
@@ -206,19 +198,15 @@
                                         <Insets />
                                     </VBox.margin>
                                 </Slider>
-                            </children>
-                        </VBox>
-                        <StackPane>
-                            <children>
-                                <VBox fx:id="customProfileVBox">
+                                <VBox fx:id="customProfileVBox" minHeight="0.0" spacing="5.0">
                                     <children>
-                                        <Label fx:id="customSettingsLabel" styleClass="sidePanelDivider" text="%sidePanel_settings.customButtonLabel">
+                                        <Label fx:id="customSettingsLabel" minHeight="0.0" styleClass="sidePanelDivider" text="%sidePanel_settings.customButtonLabel">
                                         </Label>
-                                        <ComboBox fx:id="customProfileChooser" maxWidth="1.7976931348623157E308" promptText="%sidePanel_settings.customProfileSelectionLabel">
+                                         <ComboBox fx:id="customProfileChooser" maxWidth="1.7976931348623157E308" minHeight="0.0" promptText="%sidePanel_settings.customProfileSelectionLabel">
                                         </ComboBox>
                                     </children>
                                 </VBox>
-                                <VBox fx:id="supportVBox" alignment="CENTER_LEFT" maxWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" VBox.vgrow="NEVER">
+                                <VBox fx:id="nonCustomProfileVBox" fillWidth="true" spacing="5.0">
                                     <children>
                                         <Label styleClass="sidePanelDivider" text="%sidePanel_settings.supportMaterialLabel" />
                                         <HBox alignment="TOP_CENTER" spacing="15.0">
@@ -231,10 +219,33 @@
                                                 <RadioButton fx:id="autoSupportRadioButton" mnemonicParsing="false" text="%sidePanel_settings.supportMaterialAuto" toggleGroup="$supportMaterialGroup" />
                                             </children>
                                         </HBox>
+                                        <Label styleClass="sidePanelDivider" text="%sidePanel_settings.brimLabel" />
+                                        <HBox alignment="TOP_CENTER" spacing="15.0">
+                                            <children>
+                                                <Slider fx:id="brimSlider" majorTickUnit="1.0" max="3.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true">
+                                                    <padding>
+                                                        <Insets left="20.0" right="20.0" />
+                                                    </padding>
+                                                    <VBox.margin>
+                                                        <Insets />
+                                                    </VBox.margin>
+                                                </Slider>
+                                            </children>
+                                        </HBox>
+                                        <Label styleClass="sidePanelDivider" text="%sidePanel_settings.fillDensityLabel" />
+                                        <HBox alignment="TOP_CENTER" spacing="15.0">
+                                            <children>
+                                                <Slider fx:id="fillDensitySlider" majorTickUnit="10.0" max="100.0" minorTickCount="5" showTickLabels="true" showTickMarks="true" snapToTicks="true" HBox.hgrow="ALWAYS">
+                                                    <HBox.margin>
+                                                        <Insets left="10.0" right="10.0" />
+                                                    </HBox.margin>
+                                                </Slider>
+                                            </children>
+                                        </HBox>
                                     </children>
                                 </VBox>
-                            </children> 
-                        </StackPane>
+                            </children>
+                        </VBox>
                     </children>
                 </VBox>
             </top>

@@ -13,12 +13,9 @@ import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.services.calibration.CalibrateNozzleOffsetTask;
-import celtech.services.calibration.NozzleBCalibrationState;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOffsetCalibrationStepResult;
 import java.util.ArrayList;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import libertysystems.stenographer.Stenographer;
@@ -148,36 +145,42 @@ public class CalibrationNozzleOffsetHelper
             }
         }
 
-        try
+        if (state != NozzleOffsetCalibrationState.IDLE && state != NozzleOffsetCalibrationState.CHOOSE_MODE)
         {
-            if (savedHeadData != null && state != NozzleOffsetCalibrationState.FINISHED)
+            try
             {
-                printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                                     savedHeadData.getUniqueID(),
-                                                     savedHeadData.getMaximumTemperature(),
-                                                     savedHeadData.getBeta(),
-                                                     savedHeadData.getTCal(),
-                                                     savedHeadData.getNozzle1XOffset(),
-                                                     savedHeadData.getNozzle1YOffset(),
-                                                     savedHeadData.getNozzle1ZOffset(),
-                                                     savedHeadData.getNozzle1BOffset(),
-                                                     savedHeadData.getNozzle2XOffset(),
-                                                     savedHeadData.getNozzle2YOffset(),
-                                                     savedHeadData.getNozzle2ZOffset(),
-                                                     savedHeadData.getNozzle2BOffset(),
-                                                     savedHeadData.getLastFilamentTemperature(),
-                                                     savedHeadData.getHeadHours());
+                if (savedHeadData != null && state != NozzleOffsetCalibrationState.FINISHED)
+                {
+                    steno.info("Calibration cancelled - restoring head data");
+                    printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+                                                         savedHeadData.getUniqueID(),
+                                                         savedHeadData.getMaximumTemperature(),
+                                                         savedHeadData.getBeta(),
+                                                         savedHeadData.getTCal(),
+                                                         savedHeadData.getNozzle1XOffset(),
+                                                         savedHeadData.getNozzle1YOffset(),
+                                                         savedHeadData.getNozzle1ZOffset(),
+                                                         savedHeadData.getNozzle1BOffset(),
+                                                         savedHeadData.getNozzle2XOffset(),
+                                                         savedHeadData.getNozzle2YOffset(),
+                                                         savedHeadData.getNozzle2ZOffset(),
+                                                         savedHeadData.getNozzle2BOffset(),
+                                                         savedHeadData.getLastFilamentTemperature(),
+                                                         savedHeadData.getHeadHours());
+                }
+
+                printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+                printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
+                printerToUse.transmitDirectGCode("G90", false);
+                printerToUse.transmitDirectGCode("G0 Z25", false);
+            } catch (RoboxCommsException ex)
+            {
+                steno.error("Error in nozzle offset calibration - mode=" + state.name());
             }
-
-            printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-            printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
-            printerToUse.transmitDirectGCode("G90", false);
-            printerToUse.transmitDirectGCode("G0 Z25", false);
-        } catch (RoboxCommsException ex)
+        } else
         {
-            steno.error("Error in nozzle offset calibration - mode=" + state.name());
+            steno.info("Cancelling from state " + state.name() + " - no change to head data");
         }
-
     }
 
     public void addStateListener(CalibrationNozzleOffsetStateListener stateListener)
@@ -211,6 +214,7 @@ public class CalibrationNozzleOffsetHelper
                     zDifference = savedHeadData.getNozzle2ZOffset() - savedHeadData.getNozzle1ZOffset();
 
                     Head defaultHead = HeadContainer.getCompleteHeadList().get(0);
+                    steno.info("Initialising head data prior to calibration");
                     printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                                                          savedHeadData.getUniqueID(),
                                                          savedHeadData.getMaximumTemperature(),
@@ -259,6 +263,7 @@ public class CalibrationNozzleOffsetHelper
             case FINISHED:
                 try
                 {
+                    steno.info("Writing new calibration data to head");
                     printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                                                          savedHeadData.getUniqueID(),
                                                          savedHeadData.getMaximumTemperature(),
@@ -296,6 +301,15 @@ public class CalibrationNozzleOffsetHelper
                     steno.error("Error clearing up after failed calibration");
                 }
                 break;
+            case NUDGE_MODE:
+                try
+                {
+                    savedHeadData = printerToUse.transmitReadHeadEEPROM();
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error retrieving current settings from the head");
+                }
+                break;
         }
     }
 
@@ -304,4 +318,34 @@ public class CalibrationNozzleOffsetHelper
         return state;
     }
 
+    public HeadEEPROMDataResponse getSavedHeadData()
+    {
+        return savedHeadData;
+    }
+
+    public void saveNozzleOffsets(double fineNozzleOffset, double coarseNozzleOffset)
+    {
+        steno.info("Saving nozzle offsets");
+        try
+        {
+            printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+                                                 savedHeadData.getUniqueID(),
+                                                 savedHeadData.getMaximumTemperature(),
+                                                 savedHeadData.getBeta(),
+                                                 savedHeadData.getTCal(),
+                                                 savedHeadData.getNozzle1XOffset(),
+                                                 savedHeadData.getNozzle1YOffset(),
+                                                 (float) fineNozzleOffset,
+                                                 savedHeadData.getNozzle1BOffset(),
+                                                 savedHeadData.getNozzle2XOffset(),
+                                                 savedHeadData.getNozzle2YOffset(),
+                                                 (float) coarseNozzleOffset,
+                                                 savedHeadData.getNozzle2BOffset(),
+                                                 savedHeadData.getLastFilamentTemperature(),
+                                                 savedHeadData.getHeadHours());
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Unable to write new nozzle offsets to head");
+        }
+    }
 }

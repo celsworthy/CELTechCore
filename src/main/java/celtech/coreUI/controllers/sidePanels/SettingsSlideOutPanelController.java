@@ -102,6 +102,8 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
         displayManager = DisplayManager.getInstance();
 
         settingsScreenState = SettingsScreenState.getInstance();
+        
+        showMaterialTab();
     }
 
     /**

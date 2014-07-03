@@ -39,10 +39,12 @@ public class Head implements Cloneable
     private final FloatProperty nozzle1_X_offset = new SimpleFloatProperty(0);
     private final FloatProperty nozzle1_Y_offset = new SimpleFloatProperty(0);
     private final FloatProperty nozzle1_Z_offset = new SimpleFloatProperty(0);
+    private final FloatProperty nozzle1_Z_overrun = new SimpleFloatProperty(0);
     private final FloatProperty nozzle1_B_offset = new SimpleFloatProperty(0);
     private final FloatProperty nozzle2_X_offset = new SimpleFloatProperty(0);
     private final FloatProperty nozzle2_Y_offset = new SimpleFloatProperty(0);
     private final FloatProperty nozzle2_Z_offset = new SimpleFloatProperty(0);
+    private final FloatProperty nozzle2_Z_overrun = new SimpleFloatProperty(0);
     private final FloatProperty nozzle2_B_offset = new SimpleFloatProperty(0);
     private final FloatProperty lastFilamentTemperature = new SimpleFloatProperty(0);
     private final FloatProperty headHours = new SimpleFloatProperty(0);
@@ -56,11 +58,11 @@ public class Head implements Cloneable
     private static final float normalYOffsetMin = -0.3f;
     private static final float normalYOffsetMax = 0.3f;
 
-    private static final float normalZ1OffsetMin = -1.2f;
-    private static final float normalZ1OffsetMax = 1.2f;
+    public static final float normalZ1OffsetMin = -1.2f;
+    public static final float normalZ1OffsetMax = 1.2f;
 
-    private static final float normalZ2OffsetMin = -1.2f;
-    private static final float normalZ2OffsetMax = 1.2f;
+    public static final float normalZ2OffsetMin = -1.2f;
+    public static final float normalZ2OffsetMax = 1.2f;
 
     private static final float normalB1OffsetMin = 0.7f;
     private static final float normalB1OffsetMax = 2f;
@@ -115,6 +117,7 @@ public class Head implements Cloneable
         this.nozzle2_Y_offset.set(nozzle2_Y_offset);
         this.nozzle2_Z_offset.set(nozzle2_Z_offset);
         this.nozzle2_B_offset.set(nozzle2_B_offset);
+        deriveZOverrunFromOffsets();
     }
 
     /**
@@ -137,6 +140,7 @@ public class Head implements Cloneable
         this.nozzle2_Z_offset.set(response.getNozzle2ZOffset());
         this.nozzle2_B_offset.set(response.getNozzle2BOffset());
         this.uniqueID.set(response.getUniqueID());
+        deriveZOverrunFromOffsets();
     }
 
     /**
@@ -386,6 +390,33 @@ public class Head implements Cloneable
      *
      * @return
      */
+    public FloatProperty getNozzle1_Z_overrunProperty()
+    {
+        return nozzle1_Z_overrun;
+    }
+
+    /**
+     *
+     * @param value
+     */
+    public void setNozzle1_Z_overrun(float value)
+    {
+        nozzle1_Z_overrun.set(value);
+    }
+
+    /**
+     *
+     * @return
+     */
+    public float getNozzle1ZOverrun()
+    {
+        return nozzle1_Z_overrun.get();
+    }
+
+    /**
+     *
+     * @return
+     */
     public FloatProperty getNozzle1_B_offsetProperty()
     {
         return nozzle1_B_offset;
@@ -494,6 +525,33 @@ public class Head implements Cloneable
      *
      * @return
      */
+    public FloatProperty getNozzle2_Z_overrunProperty()
+    {
+        return nozzle2_Z_overrun;
+    }
+
+    /**
+     *
+     * @param value
+     */
+    public void setNozzle2_Z_overrun(float value)
+    {
+        nozzle2_Z_overrun.set(value);
+    }
+
+    /**
+     *
+     * @return
+     */
+    public float getNozzle2ZOverrun()
+    {
+        return nozzle2_Z_overrun.get();
+    }
+
+    /**
+     *
+     * @return
+     */
     public FloatProperty getNozzle2_B_offsetProperty()
     {
         return nozzle2_B_offset;
@@ -594,6 +652,8 @@ public class Head implements Cloneable
                 this.getNozzle2ZOffset(),
                 this.getNozzle2BOffset()
         );
+        
+        clone.deriveZOverrunFromOffsets();
 
         return clone;
     }
@@ -802,5 +862,33 @@ public class Head implements Cloneable
                 }
             }
         });
+    }
+
+    public void deriveZOverrunFromOffsets()
+    {
+        float nozzle1Offset = getNozzle1ZOffset();
+        float nozzle2Offset = getNozzle2ZOffset();
+
+        float delta = nozzle2Offset - nozzle1Offset;
+        float halfdelta = delta / 2;
+
+        float nozzle1Overrun = -(nozzle1Offset + halfdelta);
+        float nozzle2Overrun = nozzle1Overrun + delta;
+
+        nozzle1_Z_overrun.set(nozzle1Overrun);
+        nozzle2_Z_overrun.set(nozzle2Overrun);
+    }
+
+    public void deriveZOffsetsFromOverrun()
+    {
+        float nozzle1OverrunValue = nozzle1_Z_overrun.get();
+        float nozzle2OverrunValue = nozzle2_Z_overrun.get();
+        float offsetAverage = -nozzle1OverrunValue;
+        float delta = (nozzle2OverrunValue - nozzle1OverrunValue) / 2;
+        float nozzle1Offset = offsetAverage - delta;
+        float nozzle2Offset = offsetAverage + delta;
+
+        nozzle1_Z_offset.set(nozzle1Offset);
+        nozzle2_Z_offset.set(nozzle2Offset);
     }
 }

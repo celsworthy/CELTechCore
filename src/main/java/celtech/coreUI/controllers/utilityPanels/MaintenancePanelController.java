@@ -230,7 +230,7 @@ public class MaintenancePanelController implements Initializable
     {
         if (needleValvecalibrationStage == null)
         {
-            needleValvecalibrationStage = new Stage(StageStyle.UTILITY);
+            needleValvecalibrationStage = new Stage(StageStyle.UNDECORATED);
             URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "CalibrationNozzleBPage.fxml");
             FXMLLoader needleValveCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, DisplayManager.getLanguageBundle());
             try
@@ -270,7 +270,7 @@ public class MaintenancePanelController implements Initializable
     {
         if (offsetCalibrationStage == null)
         {
-            offsetCalibrationStage = new Stage(StageStyle.UTILITY);
+            offsetCalibrationStage = new Stage(StageStyle.UNDECORATED);
             URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "CalibrationNozzleOffsetPage.fxml");
             FXMLLoader nozzleOffsetCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, DisplayManager.getLanguageBundle());
             try
@@ -282,14 +282,6 @@ public class MaintenancePanelController implements Initializable
                 offsetCalibrationStage.setScene(dialogScene);
                 offsetCalibrationStage.initOwner(DisplayManager.getMainStage());
                 offsetCalibrationStage.initModality(Modality.WINDOW_MODAL);
-                offsetCalibrationStage.setOnCloseRequest(new EventHandler<WindowEvent>()
-                {
-                    @Override
-                    public void handle(WindowEvent event)
-                    {
-                        nozzleOffsetCalibrationController.cancelCalibrationAction();
-                    }
-                });
             } catch (IOException ex)
             {
                 steno.error("Couldn't load nozzle offset calibration FXML");

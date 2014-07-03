@@ -80,17 +80,17 @@
                                 <ComboBox fx:id="supportNozzleChoice" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                 <Label fx:id="supportInterfaceNozzleChoiceLabel" text="%extrusion.supportInterfaceNozzle" GridPane.rowIndex="3" />
                                 <ComboBox fx:id="supportInterfaceNozzleChoice" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                                <Label fx:id="nozzleEjectionVolumeLabel" minWidth="95.0" text="%nozzle.ejectionVolume" GridPane.rowIndex="5" />
-                                <HBox fx:id="nozzleEjectionVolumeHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                <Label fx:id="nozzlePreejectionVolumeLabel" minWidth="95.0" text="%nozzle.preejectionVolume" GridPane.rowIndex="5" />
+                                <HBox fx:id="nozzlePreejectionVolumeHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
                                     <children>
-                                        <RestrictedNumberField allowedDecimalPlaces="2" maxLength="5" fx:id="nozzleEjectionVolume" prefWidth="50.0" />
+                                        <RestrictedNumberField allowedDecimalPlaces="2" maxLength="5" fx:id="nozzlePreejectionVolume" prefWidth="50.0" />
                                         <Label text="%misc.mm3" />
                                     </children>
                                 </HBox>
-                                <Label fx:id="nozzlePreejectionVolumeLabel" minWidth="95.0" text="%nozzle.preejectionVolume" GridPane.rowIndex="6" />
-                                <HBox fx:id="nozzlePreejectionVolumeHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                                <Label fx:id="nozzleEjectionVolumeLabel" minWidth="95.0" text="%nozzle.ejectionVolume" GridPane.rowIndex="6" />
+                                <HBox fx:id="nozzleEjectionVolumeHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
                                     <children>
-                                        <RestrictedNumberField allowedDecimalPlaces="2" maxLength="5" fx:id="nozzlePreejectionVolume" prefWidth="50.0" />
+                                        <RestrictedNumberField allowedDecimalPlaces="2" maxLength="5" fx:id="nozzleEjectionVolume" prefWidth="50.0" />
                                         <Label text="%misc.mm3" />
                                     </children>
                                 </HBox>

@@ -9,6 +9,7 @@ import celtech.appManager.Project;
 import celtech.appManager.TaskController;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
+import celtech.configuration.Head;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.printerControl.Printer;
@@ -67,9 +68,12 @@ public class PrinterUtils
      *
      * @param printerToCheck
      * @param task
+     * @return interrupted
      */
-    public static void waitOnMacroFinished(Printer printerToCheck, Task task)
+    public static boolean waitOnMacroFinished(Printer printerToCheck, Task task)
     {
+        boolean interrupted = false;
+
         if (task != null)
         {
             while ((printerToCheck.getPrintQueue().isConsideringPrintRequest() == true || printerToCheck.getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.IDLE) && task.isCancelled() == false && !TaskController.isShuttingDown())
@@ -79,6 +83,7 @@ public class PrinterUtils
                     Thread.sleep(100);
                 } catch (InterruptedException ex)
                 {
+                    interrupted = true;
                     steno.error("Interrupted whilst waiting on Macro");
                 }
             }
@@ -91,19 +96,24 @@ public class PrinterUtils
                     Thread.sleep(100);
                 } catch (InterruptedException ex)
                 {
+                    interrupted = true;
                     steno.error("Interrupted whilst waiting on Macro");
                 }
             }
         }
+        return interrupted;
     }
 
     /**
      *
      * @param printerToCheck
      * @param task
+     * @return failed
      */
-    public static void waitOnBusy(Printer printerToCheck, Task task)
+    public static boolean waitOnBusy(Printer printerToCheck, Task task)
     {
+        boolean failed = false;
+
         if (task != null)
         {
             try
@@ -118,9 +128,11 @@ public class PrinterUtils
             } catch (RoboxCommsException ex)
             {
                 steno.error("Error requesting status");
+                failed = true;
             } catch (InterruptedException ex)
             {
                 steno.error("Interrupted during busy check");
+                failed = true;
             }
         } else
         {
@@ -136,12 +148,15 @@ public class PrinterUtils
             } catch (RoboxCommsException ex)
             {
                 steno.error("Error requesting status");
+                failed = true;
             } catch (InterruptedException ex)
             {
                 steno.error("Interrupted during busy check");
+                failed = true;
             }
         }
 
+        return failed;
     }
 
     /**
