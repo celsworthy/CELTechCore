@@ -29,12 +29,12 @@ import celtech.services.modelLoader.ModelLoaderService;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -185,7 +185,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
     {
         // Load up any projects that were open last time we shut down....
         ProjectManager pm = ProjectManager.getInstance();
-        ArrayList<Project> preloadedProjects = pm.getLoadedModels();
+        List<Project> preloadedProjects = pm.getOpenProjects();
         for (Project project : preloadedProjects)
         {
             ProjectTab newProjectTab = new ProjectTab(instance, project, tabDisplay.widthProperty(), tabDisplay.heightProperty());

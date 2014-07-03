@@ -15,6 +15,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import libertysystems.stenographer.Stenographer;
@@ -28,7 +31,7 @@ public class ProjectManager implements Savable, Serializable
 {
 
     private static ProjectManager instance = null;
-    private static ArrayList<Project> openProjects = new ArrayList<>();
+    private static List<Project> openProjects = new ArrayList<>();
     private final static String projectFileName = "projects.dat";
     private final static Stenographer steno = StenographerFactory.getStenographer(ProjectManager.class.getName());
     private final static ProjectFileFilter fileFilter = new ProjectFileFilter();
@@ -170,7 +173,9 @@ public class ProjectManager implements Savable, Serializable
      */
     public void projectOpened(Project project)
     {
-        openProjects.add(project);
+        if (! openProjects.contains(project)) {
+            openProjects.add(project);
+        }
     }
 
     /**
@@ -186,7 +191,7 @@ public class ProjectManager implements Savable, Serializable
      *
      * @return
      */
-    public ArrayList<Project> getLoadedModels()
+    public List<Project> getOpenProjects()
     {
         return openProjects;
     }
@@ -219,6 +224,19 @@ public class ProjectManager implements Savable, Serializable
             }
         }
         return availableProjects;
+    }
+    
+    public Set<String> getOpenAndAvailableProjectNames() {
+        Set<String> openAndAvailableProjectNames = new HashSet<>();
+        for (Project project : openProjects)
+        {
+            openAndAvailableProjectNames.add(project.getProjectName());
+        }
+        for (Project project : getAvailableProjects())
+        {
+            openAndAvailableProjectNames.add(project.getProjectName());
+        }
+        return openAndAvailableProjectNames;
     }
 
 }

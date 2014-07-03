@@ -5,6 +5,8 @@
 package celtech.printerControl.comms.commands.rx;
 
 import celtech.printerControl.comms.commands.PrinterIDDataStructure;
+import celtech.printerControl.comms.commands.StringToBase64Encoder;
+import celtech.printerControl.comms.commands.tx.WritePrinterID;
 import java.io.UnsupportedEncodingException;
 import javafx.scene.paint.Color;
 
@@ -43,6 +45,7 @@ public class PrinterIDResponse extends RoboxRxPacket
     @Override
     public boolean populatePacket(byte[] byteData)
     {
+        
         boolean success = false;
 
         try
@@ -77,13 +80,18 @@ public class PrinterIDResponse extends RoboxRxPacket
             this.checkByte = this.checkByte.trim();
             byteOffset += PrinterIDDataStructure.checkByteBytes;
 
-            byteOffset += 41;
+            byteOffset += WritePrinterID.BYTES_FOR_FIRST_PAD;
 
             this.printerFriendlyName = new String(byteData, byteOffset, PrinterIDDataStructure.printerFriendlyNameBytes, charsetToUse);
             this.printerFriendlyName = this.printerFriendlyName.trim();
+            // beta testers will have unencoded printer names.
+            // TODO: remove this test after 1.000.08 has been out for a while
+            if (StringToBase64Encoder.isEncodedData(this.printerFriendlyName)) {
+                this.printerFriendlyName = StringToBase64Encoder.decode(this.printerFriendlyName);
+            }
             byteOffset += PrinterIDDataStructure.printerFriendlyNameBytes;
 
-            byteOffset += 162;
+            byteOffset += WritePrinterID.BYTES_FOR_SECOND_PAD;
 
             try
             {
