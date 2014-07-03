@@ -5,6 +5,7 @@
  */
 package celtech.coreUI.components;
 
+import java.io.File;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -23,6 +24,7 @@ public class RestrictedTextField extends TextField
     private final StringProperty restrict = new SimpleStringProperty("");
     private final IntegerProperty maxLength = new SimpleIntegerProperty(-1);
     private final BooleanProperty forceUpperCase = new SimpleBooleanProperty(false);
+    private BooleanProperty directorySafeName = new SimpleBooleanProperty(false);
 
     private final String standardAllowedCharacters = "\u0008\u007f";
 
@@ -126,6 +128,9 @@ public class RestrictedTextField extends TextField
         {
             text = text.toUpperCase();
         }
+        if (directorySafeName.get()) {
+            text = text.replace(File.separator, "");
+        }
         int length = this.getText().length() + text.length() - (end - start);
 
         if ( //Control characters - always let them through
@@ -143,11 +148,30 @@ public class RestrictedTextField extends TextField
         {
             text = text.toUpperCase();
         }
+        if (directorySafeName.get()) {
+            text = text.replace(File.separator, "");
+        }        
         int length = this.getText().length() + text.length();
 
         if ((text.matches(restrict.get()) && length <= maxLength.getValue()) || text.equals(""))
         {
             super.replaceSelection(text);
         }
+    }
+
+    /**
+     * @return the directorySafeName
+     */
+    public boolean getDirectorySafeName()
+    {
+        return directorySafeName.get();
+    }
+
+    /**
+     * @param directorySafeName the directorySafeName to set
+     */
+    public void setDirectorySafeName(boolean directorySafeName)
+    {
+        this.directorySafeName.set(directorySafeName);
     }
 }

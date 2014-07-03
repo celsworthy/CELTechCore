@@ -7,6 +7,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PrintProfileContainer;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.RestrictedNumberField;
+import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.controllers.popups.PopupCommandReceiver;
 import celtech.coreUI.controllers.popups.PopupCommandTransmitter;
@@ -40,7 +41,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.control.textfield.CustomTextField;
 
 /**
  * FXML Controller class
@@ -152,7 +152,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private RestrictedNumberField gapFillSpeed;
 
     @FXML
-    private CustomTextField profileNameField;
+    private RestrictedTextField profileNameField;
 
     @FXML
     private RestrictedNumberField retractLength;
@@ -357,8 +357,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         displayManager = DisplayManager.getInstance();
         settingsScreenState = SettingsScreenState.getInstance();
 
-        profileNameField.setRight(redcrossHolder);
-        profileNameField.getRight().visibleProperty().bind(profileNameInvalid.and(isDirty));
+//        profileNameField.setRight(redcrossHolder);
+//        profileNameField.getRight().visibleProperty().bind(profileNameInvalid.and(isDirty));
 
 //        profileNameField.addEventHandler(KeyEvent.KEY_TYPED, new EventHandler<KeyEvent>() {
 //
