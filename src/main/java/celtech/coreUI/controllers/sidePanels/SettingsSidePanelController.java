@@ -8,6 +8,7 @@ import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
 import celtech.configuration.MaterialType;
 import celtech.configuration.PrintProfileContainer;
+import static celtech.coreUI.DeDuplicator.suggestNonDuplicateName;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.MaterialChoiceListCell;
 import celtech.coreUI.components.ModalDialog;
@@ -22,6 +23,7 @@ import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
 import celtech.utils.SystemUtils;
 import java.net.URL;
+import java.util.Collection;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -705,6 +707,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         {
             String profileNameToSave = profileDetailsController.getProfileName();
             RoboxProfile settingsToSave = profileDetailsController.getProfileData();
+            Collection<String> profileNames = PrintProfileContainer.getProfileNames();
+            profileNameToSave = suggestNonDuplicateName(profileNameToSave, profileNames);
             settingsToSave.getProfileNameProperty().set(profileNameToSave);
             PrintProfileContainer.saveProfile(settingsToSave);
             updateProfileList();

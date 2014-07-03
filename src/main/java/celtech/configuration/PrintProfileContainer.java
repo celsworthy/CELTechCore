@@ -20,6 +20,8 @@ package celtech.configuration;
 import celtech.services.slicer.RoboxProfile;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
@@ -44,6 +46,15 @@ public class PrintProfileContainer
      *
      */
     public static final RoboxProfile createNewProfile = new RoboxProfile();
+
+    /**
+     * Return a read-only set of current profile names
+     * @return 
+     */
+    public static Set<String> getProfileNames()
+    {
+        return Collections.unmodifiableSet(profileMap.keySet());
+    }
 
     private PrintProfileContainer()
     {

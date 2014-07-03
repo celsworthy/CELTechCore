@@ -50,7 +50,7 @@ public class PrinterIDDataStructure
     /**
      *
      */
-    public static final int printerFriendlyNameBytes = 24;
+    public static final int printerFriendlyNameBytes = 100;
 
     /**
      *

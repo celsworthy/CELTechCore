@@ -5,14 +5,21 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.textfield.*?>
+<?import celtech.coreUI.components.RestrictedTextField?>
 <?import celtech.coreUI.components.RestrictedNumberField?>
 
-<VBox fx:id="container" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="380.0" spacing="5.0" styleClass="slideOutPanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.ProfileDetailsController">
+<VBox fx:id="container" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" 
+      maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="380.0" 
+      spacing="5.0" styleClass="slideOutPanel" stylesheets="@../../css/JMetroDarkTheme.css"
+      xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="celtech.coreUI.controllers.utilityPanels.ProfileDetailsController">
     <children>
         <HBox alignment="TOP_CENTER" spacing="5.0">
             <children>
                 <Label text="%sidePanel_settings.Profilename" />
-                <CustomTextField fx:id="profileNameField" />
+                <RestrictedTextField fx:id="profileNameField" 
+                forceUpperCase="false" directorySafeName="true"
+                maxLength="24" restrict="-_0-9a-zA-Z\p{L}\p{M}*+"/>
             </children>
             <VBox.margin>
                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
