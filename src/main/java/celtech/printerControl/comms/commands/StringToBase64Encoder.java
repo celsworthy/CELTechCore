@@ -16,7 +16,7 @@ import javax.xml.bind.DatatypeConverter;
  * 
  * @author tony
  */
-public class UTF8Encoder
+public class StringToBase64Encoder
 {
 
     /**

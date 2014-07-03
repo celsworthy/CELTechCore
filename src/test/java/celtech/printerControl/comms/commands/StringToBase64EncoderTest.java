@@ -13,7 +13,7 @@ import org.junit.Test;
  *
  * @author tony
  */
-public class UTF8EncoderTest
+public class StringToBase64EncoderTest
 {
 
     static final String TAJRIBA = "تجربة";
@@ -33,14 +33,14 @@ public class UTF8EncoderTest
     public void testEncodeUTF8StringArabic() throws UnsupportedEncodingException
     {
 
-        String encodedData = UTF8Encoder.encode(TAJRIBA);
+        String encodedData = StringToBase64Encoder.encode(TAJRIBA);
         assertEquals(TAJRIBA_ENCODED, encodedData);
     }
 
     @Test
     public void testDecodeUTF8StringArabic() throws UnsupportedEncodingException
     {
-        String decodedData = UTF8Encoder.decode(TAJRIBA_ENCODED);
+        String decodedData = StringToBase64Encoder.decode(TAJRIBA_ENCODED);
         assertEquals(TAJRIBA, decodedData);
     }
 
@@ -48,14 +48,14 @@ public class UTF8EncoderTest
     public void testEncodeUTF8StringChinese() throws UnsupportedEncodingException
     {
 
-        String encodedData = UTF8Encoder.encode(CHINESE);
+        String encodedData = StringToBase64Encoder.encode(CHINESE);
         assertEquals(CHINESE_ENCODED, encodedData);
     }
 
     @Test
     public void testDecodeUTF8StringChinese() throws UnsupportedEncodingException
     {
-        String decodedData = UTF8Encoder.decode(CHINESE_ENCODED);
+        String decodedData = StringToBase64Encoder.decode(CHINESE_ENCODED);
         assertEquals(CHINESE, decodedData);
     }
 
@@ -63,21 +63,21 @@ public class UTF8EncoderTest
     public void testEncodeUTF8StringEnglish() throws UnsupportedEncodingException
     {
 
-        String encodedData = UTF8Encoder.encode(ENGLISH);
+        String encodedData = StringToBase64Encoder.encode(ENGLISH);
         assertEquals(ENGLISH_ENCODED, encodedData);
     }
 
     @Test
     public void testDecodeUTF8StringEnglish() throws UnsupportedEncodingException
     {
-        String decodedData = UTF8Encoder.decode(ENGLISH_ENCODED);
+        String decodedData = StringToBase64Encoder.decode(ENGLISH_ENCODED);
         assertEquals(ENGLISH, decodedData);
     }
 
     @Test
     public void testEncodeUTF8StringEnglishDoesNotExceedMaxEncodedLength() throws UnsupportedEncodingException
     {
-        String encodedData = UTF8Encoder.encode(ENGLISH_LONG, 25);
+        String encodedData = StringToBase64Encoder.encode(ENGLISH_LONG, 25);
         assertTrue(encodedData.getBytes("US-ASCII").length <= 25);
         assertEquals(ENGLISH_LONG_ENCODED, encodedData);
     }
@@ -85,14 +85,14 @@ public class UTF8EncoderTest
     @Test
     public void testDecodeUTF8StringEnglishHitMaxEncodedLength() throws UnsupportedEncodingException
     {
-        String decodedData = UTF8Encoder.decode(ENGLISH_LONG_ENCODED);
+        String decodedData = StringToBase64Encoder.decode(ENGLISH_LONG_ENCODED);
         assertEquals(ENGLISH_LONG_TRUNCATED, decodedData);
     }
 
     @Test
     public void testEncodeUTF8StringArabicDoesNotExceedMaxEncodedLength() throws UnsupportedEncodingException
     {
-        String encodedData = UTF8Encoder.encode(ARABIC_LONG, 25);
+        String encodedData = StringToBase64Encoder.encode(ARABIC_LONG, 25);
         assertTrue(encodedData.getBytes("US-ASCII").length <= 25);
         assertEquals(ARABIC_LONG_ENCODED, encodedData);
     }
@@ -100,7 +100,7 @@ public class UTF8EncoderTest
     @Test
     public void testDecodeUTF8StringArabicHitMaxEncodedLength() throws UnsupportedEncodingException
     {
-        String decodedData = UTF8Encoder.decode(ARABIC_LONG_ENCODED);
+        String decodedData = StringToBase64Encoder.decode(ARABIC_LONG_ENCODED);
         System.out.println(decodedData);
         assertEquals(ARABIC_LONG_TRUNCATED, decodedData);
     }
@@ -108,12 +108,12 @@ public class UTF8EncoderTest
     @Test
     public void testPlainTextIsNotValidEncodedData() throws UnsupportedEncodingException {
         String plainString = "andy's printer";
-        assertFalse(UTF8Encoder.isEncodedData(plainString));
+        assertFalse(StringToBase64Encoder.isEncodedData(plainString));
     }
     
     @Test
     public void testEncodedTextIsValidEncodedData() throws UnsupportedEncodingException {
-        assertTrue(UTF8Encoder.isEncodedData(TAJRIBA_ENCODED));
+        assertTrue(StringToBase64Encoder.isEncodedData(TAJRIBA_ENCODED));
     }    
 
 }

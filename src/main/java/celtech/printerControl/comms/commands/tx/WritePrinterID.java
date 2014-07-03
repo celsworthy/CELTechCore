@@ -5,7 +5,7 @@
 package celtech.printerControl.comms.commands.tx;
 
 import celtech.printerControl.comms.commands.PrinterIDDataStructure;
-import celtech.printerControl.comms.commands.UTF8Encoder;
+import celtech.printerControl.comms.commands.StringToBase64Encoder;
 import java.io.UnsupportedEncodingException;
 import javafx.scene.paint.Color;
 
@@ -62,7 +62,7 @@ public class WritePrinterID extends RoboxTxPacket
 
         try
         {
-            printerFriendlyName = UTF8Encoder.encode(printerFriendlyName,
+            printerFriendlyName = StringToBase64Encoder.encode(printerFriendlyName,
                                                      BYTES_FOR_NAME);
         } catch (UnsupportedEncodingException ex)
         {

@@ -5,7 +5,7 @@
 package celtech.printerControl.comms.commands.rx;
 
 import celtech.printerControl.comms.commands.PrinterIDDataStructure;
-import celtech.printerControl.comms.commands.UTF8Encoder;
+import celtech.printerControl.comms.commands.StringToBase64Encoder;
 import celtech.printerControl.comms.commands.tx.WritePrinterID;
 import java.io.UnsupportedEncodingException;
 import javafx.scene.paint.Color;
@@ -86,8 +86,8 @@ public class PrinterIDResponse extends RoboxRxPacket
             this.printerFriendlyName = this.printerFriendlyName.trim();
             // beta testers will have unencoded printer names.
             // TODO: remove this test after 1.000.08 has been out for a while
-            if (UTF8Encoder.isEncodedData(this.printerFriendlyName)) {
-                this.printerFriendlyName = UTF8Encoder.decode(this.printerFriendlyName);
+            if (StringToBase64Encoder.isEncodedData(this.printerFriendlyName)) {
+                this.printerFriendlyName = StringToBase64Encoder.decode(this.printerFriendlyName);
             }
             byteOffset += PrinterIDDataStructure.printerFriendlyNameBytes;
 
