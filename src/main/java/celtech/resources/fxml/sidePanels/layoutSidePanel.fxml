@@ -165,7 +165,7 @@
                                 <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                     <children>
                                         <RestrictedNumberField fx:id="rotationTextField" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" text="-" />
-                                        <Label text="º" />
+                                        <Label text="°" />
                                     </children>
                                 </HBox>
                                 <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="1">
