@@ -160,7 +160,7 @@ public class CalibrationNozzleBHelper
                 setState(NozzleBCalibrationState.FAILED);
                 break;
             case CALIBRATE_NOZZLE:
-                nozzlePosition += 0.1;
+                nozzlePosition += 0.05;
                 if (nozzlePosition <= 2f)
                 {
                     setState(NozzleBCalibrationState.CALIBRATE_NOZZLE);
