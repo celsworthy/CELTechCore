@@ -6,15 +6,13 @@ package celtech.services.slicer;
 
 import celtech.appManager.Project;
 import celtech.printerControl.Printer;
-import celtech.services.ControllableService;
-import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 
 /**
  *
  * @author ianhudson
  */
-public class SlicerService extends Service<SliceResult> implements ControllableService
+public class SlicerService extends AbstractSlicerService
 {
 
     private String printJobUUID = null;

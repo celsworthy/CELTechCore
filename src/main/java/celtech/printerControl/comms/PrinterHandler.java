@@ -36,7 +36,6 @@ import celtech.printerControl.comms.events.RoboxEvent;
 import celtech.printerControl.comms.events.RoboxEventType;
 import celtech.services.firmware.FirmwareLoadService;
 import celtech.services.firmware.FirmwareLoadTask;
-import java.io.UnsupportedEncodingException;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.concurrent.WorkerStateEvent;

@@ -9,6 +9,7 @@ import celtech.coreUI.DisplayManager;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.beans.property.DoubleProperty;
@@ -92,8 +93,14 @@ public class RestrictedNumberField extends TextField
     public void setAllowedDecimalPlaces(int numberOfDecimalPlaces)
     {
         this.allowedDecimalPlaces.set(numberOfDecimalPlaces);
-        getNumberFormatter().setMaximumFractionDigits(allowedDecimalPlaces.get());
-        getNumberFormatter().setMinimumFractionDigits(allowedDecimalPlaces.get());
+
+        NumberFormat numberFormatter = getNumberFormatter();
+
+        if (numberFormatter != null)
+        {
+            numberFormatter.setMaximumFractionDigits(allowedDecimalPlaces.get());
+            numberFormatter.setMinimumFractionDigits(allowedDecimalPlaces.get());
+        }
         configureRestriction();
     }
 
@@ -221,7 +228,15 @@ public class RestrictedNumberField extends TextField
     {
         if (numberFormatter == null)
         {
-            numberFormatter = NumberFormat.getInstance(DisplayManager.getInstance().getUsersLocale());
+            try
+            {
+                Locale usersLocale = DisplayManager.getInstance().getUsersLocale();
+                numberFormatter = NumberFormat.getInstance(usersLocale);
+            } catch (NoClassDefFoundError ex)
+            {
+                //We should only be here if we're being loaded by Scene Builder
+                numberFormatter = NumberFormat.getInstance();
+            }
             numberFormatter.setMaximumFractionDigits(allowedDecimalPlaces.get());
             numberFormatter.setMinimumFractionDigits(allowedDecimalPlaces.get());
         }
@@ -233,9 +248,15 @@ public class RestrictedNumberField extends TextField
     {
         if (decimalSeparator == null)
         {
-            decimalSeparator = Character.toString(new DecimalFormatSymbols(DisplayManager.getInstance().getUsersLocale()).getDecimalSeparator());
+            try
+            {
+                decimalSeparator = Character.toString(new DecimalFormatSymbols(DisplayManager.getInstance().getUsersLocale()).getDecimalSeparator());
+            } catch (NoClassDefFoundError ex)
+            {
+                //We should only be here if we're being loaded by Scene Builder
+                decimalSeparator = ".";
+            }
         }
-
         return decimalSeparator;
     }
 

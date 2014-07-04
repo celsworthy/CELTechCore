@@ -9,8 +9,8 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
 import celtech.appManager.ProjectMode;
-import celtech.appManager.UndoBuffer;
 import celtech.configuration.ApplicationConfiguration;
+import static celtech.coreUI.DeDuplicator.suggestNonDuplicateName;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.GCodeEditorPanelController;
 import celtech.coreUI.visualisation.CameraPositionPreset;
@@ -30,6 +30,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -40,17 +41,13 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Point2D;
 import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
-import javafx.scene.control.TextField;
 import javafx.scene.effect.Glow;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import libertysystems.stenographer.Stenographer;
@@ -63,33 +60,32 @@ import libertysystems.stenographer.StenographerFactory;
 public class ProjectTab extends Tab
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(ProjectTab.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        ProjectTab.class.getName());
 
-    private final HBox nonEditableTab = new HBox();
     private final Label nonEditableProjectNameField = new Label();
-    private final TextField editableProjectNameField = new TextField();
+    private final RestrictedTextField editableProjectNameField = new RestrictedTextField();
     private Project project = null;
     private AnchorPane basePane = null;
-    private UndoBuffer undoBuffer = new UndoBuffer();
     private ThreeDViewManager viewManager = null;
     private DisplayManager displayManager = null;
-    private ProjectManager projectManager = ProjectManager.getInstance();
+    private final ProjectManager projectManager = ProjectManager.getInstance();
     private boolean titleBeingEdited = false;
     private Xform gizmoXform = new Xform(Xform.RotateOrder.YXZ);
-    private AnchorPane gizmoOverlay = null;
-    private final Menu projectMenu = new Menu();
-    private final MenuItem projectMenuItem = new MenuItem();
 
     final Rectangle testRect = new Rectangle(5, 5);
 
-    private ChangeListener<Number> selectionContainerMoveListener = new ChangeListener<Number>()
+    private final ChangeListener<Number> selectionContainerMoveListener = new ChangeListener<Number>()
     {
         @Override
-        public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+        public void changed(ObservableValue<? extends Number> ov, Number t,
+            Number t1)
         {
             Point2D reference = basePane.localToScreen(0, 0);
-            double x = viewManager.getSelectionContainer().getScreenX() - reference.getX();
-            double y = viewManager.getSelectionContainer().getScreenY() - reference.getY();
+            double x = viewManager.getSelectionContainer().getScreenX()
+                - reference.getX();
+            double y = viewManager.getSelectionContainer().getScreenY()
+                - reference.getY();
             gizmoXform.setTx(x);
             gizmoXform.setTy(y);
         }
@@ -101,7 +97,9 @@ public class ProjectTab extends Tab
      * @param tabDisplayWidthProperty
      * @param tabDisplayHeightProperty
      */
-    public ProjectTab(DisplayManager dispManagerRef, ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty)
+    public ProjectTab(DisplayManager dispManagerRef,
+        ReadOnlyDoubleProperty tabDisplayWidthProperty,
+        ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
         displayManager = dispManagerRef;
         project = new Project();
@@ -116,7 +114,9 @@ public class ProjectTab extends Tab
      * @param tabDisplayHeightProperty
      * @throws ProjectNotLoadedException
      */
-    public ProjectTab(DisplayManager dispManagerRef, String projectName, ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty) throws ProjectNotLoadedException
+    public ProjectTab(DisplayManager dispManagerRef, String projectName,
+        ReadOnlyDoubleProperty tabDisplayWidthProperty,
+        ReadOnlyDoubleProperty tabDisplayHeightProperty) throws ProjectNotLoadedException
     {
         project = ProjectManager.loadProject(projectName);
 
@@ -138,20 +138,23 @@ public class ProjectTab extends Tab
      * @param tabDisplayWidthProperty
      * @param tabDisplayHeightProperty
      */
-    public ProjectTab(DisplayManager dispManagerRef, Project inboundProject, ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty)
+    public ProjectTab(DisplayManager dispManagerRef, Project inboundProject,
+        ReadOnlyDoubleProperty tabDisplayWidthProperty,
+        ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
         project = inboundProject;
         displayManager = dispManagerRef;
         initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
     }
 
-    private void initialise(ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty)
+    private void initialise(ReadOnlyDoubleProperty tabDisplayWidthProperty,
+        ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
-//        projectMenu.getItems().add(projectMenuItem);
-//        nonEditableTab.getChildren().add(nonEditableProjectNameField);
-//        nonEditableTab.getChildren().add(projectMenu);
         nonEditableProjectNameField.getStyleClass().add("nonEditableProjectTab");
         editableProjectNameField.getStyleClass().add("editableProjectTab");
+        editableProjectNameField.setDirectorySafeName(true);
+        editableProjectNameField.setRestrict("-_0-9a-zA-Z\\p{L}\\p{M}*+");
+        editableProjectNameField.setMaxLength(25);
 
         setOnCloseRequest((Event t) ->
         {
@@ -161,7 +164,9 @@ public class ProjectTab extends Tab
             steno.info("Completed save");
         });
 
-        viewManager = new ThreeDViewManager(project.getLoadedModels(), tabDisplayWidthProperty, tabDisplayHeightProperty);
+        viewManager = new ThreeDViewManager(project.getLoadedModels(),
+                                            tabDisplayWidthProperty,
+                                            tabDisplayHeightProperty);
 //        camera = viewManager.getCamera();
 
         basePane = new AnchorPane();
@@ -182,7 +187,8 @@ public class ProjectTab extends Tab
                         for (File file : fileList)
                         {
                             boolean extensionFound = false;
-                            for (String extension : ApplicationConfiguration.getSupportedFileExtensions(project.getProjectMode()))
+                            for (String extension : ApplicationConfiguration.getSupportedFileExtensions(
+                                project.getProjectMode()))
                             {
                                 if (file.getName().endsWith(extension))
                                 {
@@ -226,7 +232,8 @@ public class ProjectTab extends Tab
                         for (File file : fileList)
                         {
                             boolean extensionFound = false;
-                            for (String extension : ApplicationConfiguration.getSupportedFileExtensions(project.getProjectMode()))
+                            for (String extension : ApplicationConfiguration.getSupportedFileExtensions(
+                                project.getProjectMode()))
                             {
                                 if (file.getName().endsWith(extension))
                                 {
@@ -290,57 +297,22 @@ public class ProjectTab extends Tab
         });
 
         basePane.getChildren().add(viewManager.getSubScene());
-
-//        try
-//        {
-//            URL layoutControlsURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "GizmoOverlay.fxml");
-//            FXMLLoader gizmoOverlayLoader = new FXMLLoader(layoutControlsURL, DisplayManager.getLanguageBundle());
-//            gizmoOverlay = (AnchorPane) gizmoOverlayLoader.load();
-//            GizmoOverlayController gizmoOverlayController = gizmoOverlayLoader.getController();
-//            gizmoOverlayController.configure(viewManager);
-//            viewManager.associateGizmoOverlayController(gizmoOverlayController);
-//
-//            gizmoOverlay.setRotationAxis(MathUtils.xAxis);
-//            gizmoOverlay.setRotate(90);
-//            gizmoXform.getChildren().add(gizmoOverlay);
-//            gizmoOverlay.setPickOnBounds(false);
-//            basePane.getChildren().add(gizmoXform);
-//
-//            gizmoXform.setRotateX(viewManager.demandedCameraRotationXProperty().get());
-//            gizmoXform.setRotateY(viewManager.demandedCameraRotationYProperty().get());
-//
-//            viewManager.demandedCameraRotationXProperty().addListener(new ChangeListener<Number>()
-//            {
-//                @Override
-//                public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
-//                {
-//                    gizmoXform.setRotateX(newValue.doubleValue());
-//                }
-//            });
-//
-//            viewManager.demandedCameraRotationYProperty().addListener(new ChangeListener<Number>()
-//            {
-//                @Override
-//                public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
-//                {
-//                    gizmoXform.setRotateY(newValue.doubleValue());
-//                }
-//            });
-//
-//        } catch (IOException ex)
-//        {
-//            steno.error("Failed to load 3d Gizmo:" + ex);
-//        }
-        viewManager.getSelectionContainer().screenXProperty().addListener(selectionContainerMoveListener);
-        viewManager.getSelectionContainer().screenYProperty().addListener(selectionContainerMoveListener);
+        viewManager.getSelectionContainer().screenXProperty().addListener(
+            selectionContainerMoveListener);
+        viewManager.getSelectionContainer().screenYProperty().addListener(
+            selectionContainerMoveListener);
 
         try
         {
-            URL gcodeEditorURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "GCodeEditorPanel.fxml");
-            FXMLLoader gcodeEditorLoader = new FXMLLoader(gcodeEditorURL, DisplayManager.getLanguageBundle());
+            URL gcodeEditorURL = getClass().getResource(
+                ApplicationConfiguration.fxmlResourcePath
+                + "GCodeEditorPanel.fxml");
+            FXMLLoader gcodeEditorLoader = new FXMLLoader(gcodeEditorURL,
+                                                          DisplayManager.getLanguageBundle());
             StackPane gcodeEditor = (StackPane) gcodeEditorLoader.load();
             GCodeEditorPanelController gcodeEditorController = gcodeEditorLoader.getController();
-            gcodeEditorController.configure(viewManager.getLoadedModels(), project);
+            gcodeEditorController.configure(viewManager.getLoadedModels(),
+                                            project);
             AnchorPane.setTopAnchor(gcodeEditor, 30.0);
             AnchorPane.setRightAnchor(gcodeEditor, 0.0);
 
@@ -353,13 +325,16 @@ public class ProjectTab extends Tab
         this.setContent(basePane);
 
         this.setGraphic(nonEditableProjectNameField);
-        nonEditableProjectNameField.textProperty().bind(project.projectNameProperty());
+        nonEditableProjectNameField.textProperty().bind(
+            project.projectNameProperty());
 
         nonEditableProjectNameField.setOnMouseClicked((MouseEvent event) ->
         {
-            if (event.getClickCount() == 2 && project.getProjectMode() != ProjectMode.GCODE)
+            if (event.getClickCount() == 2 && project.getProjectMode()
+                != ProjectMode.GCODE)
             {
-                editableProjectNameField.setText(nonEditableProjectNameField.getText());
+                editableProjectNameField.setText(
+                    nonEditableProjectNameField.getText());
                 setGraphic(editableProjectNameField);
                 editableProjectNameField.selectAll();
                 editableProjectNameField.requestFocus();
@@ -367,17 +342,19 @@ public class ProjectTab extends Tab
             }
         });
 
-        editableProjectNameField.focusedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+        editableProjectNameField.focusedProperty().addListener(
+            new ChangeListener<Boolean>()
             {
-                if (t1.booleanValue() == false)
+                @Override
+                public void changed(ObservableValue<? extends Boolean> ov,
+                    Boolean t, Boolean t1)
                 {
-                    switchToNonEditableTitle();
+                    if (t1.booleanValue() == false)
+                    {
+                        switchToNonEditableTitle();
+                    }
                 }
-            }
-        });
+            });
 
         editableProjectNameField.setOnAction((ActionEvent event) ->
         {
@@ -391,7 +368,10 @@ public class ProjectTab extends Tab
         if (titleBeingEdited == true)
         {
             projectManager.projectClosed(project);
-            project.setProjectName(editableProjectNameField.getText());
+            String newProjectName = editableProjectNameField.getText();
+            Set<String> currentProjectNames = projectManager.getOpenAndAvailableProjectNames();
+            newProjectName = suggestNonDuplicateName(newProjectName, currentProjectNames);
+            project.setProjectName(newProjectName);
             projectManager.projectOpened(project);
             setGraphic(nonEditableProjectNameField);
             titleBeingEdited = false;
@@ -408,7 +388,8 @@ public class ProjectTab extends Tab
         nonEditableProjectNameField.setText("");
 
         project = ProjectManager.loadProject(projectToLoad);
-        nonEditableProjectNameField.textProperty().bind(project.projectNameProperty());
+        nonEditableProjectNameField.textProperty().bind(
+            project.projectNameProperty());
         viewManager.setLoadedModels(project.getLoadedModels());
 
         projectManager.projectOpened(project);
@@ -441,14 +422,19 @@ public class ProjectTab extends Tab
             }
         }
 
-        if ((project.getProjectMode() == ProjectMode.GCODE && modelGroup.getModelContentsType() == ModelContentsEnumeration.GCODE)
-                || (project.getProjectMode() == ProjectMode.MESH && modelGroup.getModelContentsType() == ModelContentsEnumeration.MESH))
+        if ((project.getProjectMode() == ProjectMode.GCODE
+            && modelGroup.getModelContentsType()
+            == ModelContentsEnumeration.GCODE)
+            || (project.getProjectMode() == ProjectMode.MESH
+            && modelGroup.getModelContentsType()
+            == ModelContentsEnumeration.MESH))
         {
             viewManager.addModel(modelGroup);
             displayManager.selectModel(modelGroup);
         } else
         {
-            steno.warning("Discarded load of " + modelGroup.getModelName() + " due to conflict with project type");
+            steno.warning("Discarded load of " + modelGroup.getModelName()
+                + " due to conflict with project type");
         }
     }
 
@@ -554,7 +540,11 @@ public class ProjectTab extends Tab
             {
                 try
                 {
-                    ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(project.getProjectHeader().getProjectPath() + File.separator + project.getProjectName() + ApplicationConfiguration.projectFileExtension));
+                    ObjectOutputStream out = new ObjectOutputStream(
+                        new FileOutputStream(
+                            project.getProjectHeader().getProjectPath()
+                            + File.separator + project.getProjectName()
+                            + ApplicationConfiguration.projectFileExtension));
                     out.writeObject(project);
                     out.close();
                 } catch (FileNotFoundException ex)
@@ -562,7 +552,9 @@ public class ProjectTab extends Tab
                     steno.error("Failed to save project state");
                 } catch (IOException ex)
                 {
-                    steno.error("Couldn't write project state to file for project " + project.getUUID());
+                    steno.error(
+                        "Couldn't write project state to file for project "
+                        + project.getUUID());
                 }
             }
         }
@@ -592,7 +584,8 @@ public class ProjectTab extends Tab
      *
      * @param cameraPositionPreset
      */
-    public void switchToPresetCameraView(CameraPositionPreset cameraPositionPreset)
+    public void switchToPresetCameraView(
+        CameraPositionPreset cameraPositionPreset)
     {
 //        viewManager.getCamera().gotoPreset(cameraPositionPreset);
     }

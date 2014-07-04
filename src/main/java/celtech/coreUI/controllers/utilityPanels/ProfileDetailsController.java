@@ -7,6 +7,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PrintProfileContainer;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.RestrictedNumberField;
+import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.controllers.popups.PopupCommandReceiver;
 import celtech.coreUI.controllers.popups.PopupCommandTransmitter;
@@ -40,7 +41,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.control.textfield.CustomTextField;
 
 /**
  * FXML Controller class
@@ -54,6 +54,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private SettingsScreenState settingsScreenState = null;
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
+    private int lastNozzleSelected = 0;
 
     @FXML
     private VBox container;
@@ -86,10 +87,16 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private RestrictedNumberField solidInfillSpeed;
 
     @FXML
+    private Label nozzlePreejectionVolumeLabel;
+
+    @FXML
     private Label nozzleEjectionVolumeLabel;
 
     @FXML
     private RestrictedNumberField nozzlePartialOpen;
+
+    @FXML
+    private HBox nozzlePreejectionVolumeHBox;
 
     @FXML
     private HBox nozzleEjectionVolumeHBox;
@@ -99,6 +106,9 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
     @FXML
     private ComboBox<String> fillNozzleChoice;
+
+    @FXML
+    private RestrictedNumberField nozzlePreejectionVolume;
 
     @FXML
     private RestrictedNumberField nozzleEjectionVolume;
@@ -143,7 +153,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private RestrictedNumberField gapFillSpeed;
 
     @FXML
-    private CustomTextField profileNameField;
+    private RestrictedTextField profileNameField;
 
     @FXML
     private RestrictedNumberField retractLength;
@@ -273,7 +283,10 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     {
         updateSettingsFromGUI(workingProfile);
         saveNozzleParametersToWorkingProfile();
-        PrintProfileContainer.saveProfile(workingProfile);
+        if (commandReceiver != null)
+        {
+            commandReceiver.triggerSave(workingProfile);
+        }
         isDirty.set(false);
     }
 
@@ -345,17 +358,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         displayManager = DisplayManager.getInstance();
         settingsScreenState = SettingsScreenState.getInstance();
 
-        profileNameField.setRight(redcrossHolder);
-        profileNameField.getRight().visibleProperty().bind(profileNameInvalid.and(isDirty));
-
-//        profileNameField.addEventHandler(KeyEvent.KEY_TYPED, new EventHandler<KeyEvent>() {
-//
-//            @Override
-//            public void handle(KeyEvent event)
-//            {
-//                    validateProfileName();
-//            }
-//        });
         editingOptions.visibleProperty().bind(isDirty.and(showButtons).and(isMutable));
         notEditingOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable));
         immutableOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable.not()));
@@ -371,6 +373,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         supportNozzleChoiceLabel.disableProperty().bind(isMutable.not());
         supportInterfaceNozzleChoice.disableProperty().bind(isMutable.not());
         supportInterfaceNozzleChoiceLabel.disableProperty().bind(isMutable.not());
+        nozzlePreejectionVolumeLabel.disableProperty().bind(isMutable.not());
+        nozzlePreejectionVolumeHBox.disableProperty().bind(isMutable.not());
         nozzleEjectionVolumeLabel.disableProperty().bind(isMutable.not());
         nozzleEjectionVolumeHBox.disableProperty().bind(isMutable.not());
         nozzleWipeVolumeLabel.disableProperty().bind(isMutable.not());
@@ -404,6 +408,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
                         saveNozzleParametersToWorkingProfile();
                         unbindNozzleParameters();
                         bindNozzleParameters(newNozzle, lastBoundProfile);
+                        lastNozzleSelected = newNozzle;
                     }
                 }
             }
@@ -511,12 +516,14 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     {
         boundToNozzle = nozzleNumber;
 
+        nozzlePreejectionVolume.floatValueProperty().set(newSettings.getNozzle_preejection_volume().get(nozzleNumber).get());
         nozzleEjectionVolume.floatValueProperty().set(newSettings.getNozzle_ejection_volume().get(nozzleNumber).get());
         nozzleWipeVolume.floatValueProperty().set(newSettings.getNozzle_wipe_volume().get(nozzleNumber).get());
         nozzlePartialOpen.floatValueProperty().set(newSettings.getNozzle_partial_b_minimum().get(nozzleNumber).get());
         retractLength.floatValueProperty().set(newSettings.retract_lengthProperty().get(nozzleNumber).get());
         retractSpeed.intValueProperty().set(newSettings.retract_speedProperty().get(nozzleNumber).get());
 
+        nozzlePreejectionVolume.textProperty().addListener(dirtyStringListener);
         nozzleEjectionVolume.textProperty().addListener(dirtyStringListener);
         nozzleWipeVolume.textProperty().addListener(dirtyStringListener);
         nozzlePartialOpen.textProperty().addListener(dirtyStringListener);
@@ -528,6 +535,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     {
         if (boundToNozzle != -1)
         {
+            workingProfile.getNozzle_preejection_volume().get(boundToNozzle).set(nozzlePreejectionVolume.floatValueProperty().get());
             workingProfile.getNozzle_ejection_volume().get(boundToNozzle).set(nozzleEjectionVolume.floatValueProperty().get());
             workingProfile.getNozzle_wipe_volume().get(boundToNozzle).set(nozzleWipeVolume.floatValueProperty().get());
             workingProfile.getNozzle_partial_b_minimum().get(boundToNozzle).set(nozzlePartialOpen.floatValueProperty().get());
@@ -542,12 +550,14 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         {
             if (lastBoundProfile != null)
             {
+                lastBoundProfile.getNozzle_preejection_volume().get(boundToNozzle).set(nozzlePreejectionVolume.floatValueProperty().get());
                 lastBoundProfile.getNozzle_ejection_volume().get(boundToNozzle).set(nozzleEjectionVolume.floatValueProperty().get());
                 lastBoundProfile.getNozzle_wipe_volume().get(boundToNozzle).set(nozzleWipeVolume.floatValueProperty().get());
                 lastBoundProfile.getNozzle_partial_b_minimum().get(boundToNozzle).set(nozzlePartialOpen.floatValueProperty().get());
                 lastBoundProfile.retract_lengthProperty().get(boundToNozzle).set(retractLength.floatValueProperty().get());
                 lastBoundProfile.retract_speedProperty().get(boundToNozzle).set(retractSpeed.intValueProperty().get());
             }
+            nozzlePreejectionVolume.textProperty().removeListener(dirtyStringListener);
             nozzleEjectionVolume.textProperty().removeListener(dirtyStringListener);
             nozzleWipeVolume.textProperty().removeListener(dirtyStringListener);
             nozzlePartialOpen.textProperty().removeListener(dirtyStringListener);
@@ -569,10 +579,15 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
         updateGUIFromSettings(newSettings);
 
-        //Switch to nozzle 1 data by default
-        nozzle1Button.setSelected(true);
+        if (lastNozzleSelected == 0)
+        {
+            nozzle1Button.setSelected(true);
+        } else if (lastNozzleSelected == 1)
+        {
+            nozzle2Button.setSelected(true);
+        }
 
-        bindNozzleParameters(0, newSettings);
+        bindNozzleParameters(lastNozzleSelected, newSettings);
 
         lastBoundProfile = newSettings;
     }

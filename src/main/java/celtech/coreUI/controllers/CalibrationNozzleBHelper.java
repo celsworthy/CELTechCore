@@ -26,37 +26,37 @@ public class CalibrationNozzleBHelper
 {
 
     private Stenographer steno = StenographerFactory.getStenographer(CalibrationNozzleBHelper.class.getName());
-    
+
     private Printer printerToUse = null;
-    
+
     private final float bOffsetStartingValue = 0.8f;
     private int currentNozzleNumber = 0;
     private float nozzlePosition = 0;
     private float nozzle0BOffset = 0;
     private float nozzle1BOffset = 0;
-    
+
     private HeadEEPROMDataResponse savedHeadData = null;
-    
+
     private CalibrateBTask calibrationTask = null;
     private boolean parkRequired = false;
     private NozzleBCalibrationState state = NozzleBCalibrationState.IDLE;
     private ArrayList<CalibrationBStateListener> stateListeners = new ArrayList<>();
-    
+
     private EventHandler<WorkerStateEvent> failedTaskHandler = (WorkerStateEvent event) ->
     {
         cancelCalibrationAction();
     };
-    
+
     private EventHandler<WorkerStateEvent> succeededTaskHandler = (WorkerStateEvent event) ->
     {
         setState(state.getNextState());
     };
-    
+
     public void setPrinterToUse(Printer printer)
     {
         this.printerToUse = printer;
     }
-    
+
     public void yesButtonAction()
     {
         switch (state)
@@ -119,7 +119,7 @@ public class CalibrationNozzleBHelper
                                                              nozzle1BOffset,
                                                              savedHeadData.getLastFilamentTemperature(),
                                                              savedHeadData.getHeadHours());
-                        
+
                     } catch (RoboxCommsException ex)
                     {
                         steno.error("Error in needle valve calibration - mode=" + state.name());
@@ -145,9 +145,9 @@ public class CalibrationNozzleBHelper
                 }
                 break;
         }
-        
+
     }
-    
+
     public void noButtonAction()
     {
         switch (state)
@@ -177,7 +177,7 @@ public class CalibrationNozzleBHelper
                 setState(NozzleBCalibrationState.FAILED);
                 break;
         }
-        
+
     }
 
     /**
@@ -192,63 +192,65 @@ public class CalibrationNozzleBHelper
                 calibrationTask.cancel();
             }
         }
-        
-        try
+        if (state != NozzleBCalibrationState.IDLE)
         {
-            if (savedHeadData != null && state != NozzleBCalibrationState.FINISHED)
+            try
             {
-                printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                                     savedHeadData.getUniqueID(),
-                                                     savedHeadData.getMaximumTemperature(),
-                                                     savedHeadData.getBeta(),
-                                                     savedHeadData.getTCal(),
-                                                     savedHeadData.getNozzle1XOffset(),
-                                                     savedHeadData.getNozzle1YOffset(),
-                                                     savedHeadData.getNozzle1ZOffset(),
-                                                     savedHeadData.getNozzle1BOffset(),
-                                                     savedHeadData.getNozzle2XOffset(),
-                                                     savedHeadData.getNozzle2YOffset(),
-                                                     savedHeadData.getNozzle2ZOffset(),
-                                                     savedHeadData.getNozzle2BOffset(),
-                                                     savedHeadData.getLastFilamentTemperature(),
-                                                     savedHeadData.getHeadHours());
-            }
-            
-            printerToUse.transmitDirectGCode("G0 B0", false);
-            printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-            printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
-            
-            if (parkRequired)
+                if (savedHeadData != null && state != NozzleBCalibrationState.FINISHED)
+                {
+                    printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+                                                         savedHeadData.getUniqueID(),
+                                                         savedHeadData.getMaximumTemperature(),
+                                                         savedHeadData.getBeta(),
+                                                         savedHeadData.getTCal(),
+                                                         savedHeadData.getNozzle1XOffset(),
+                                                         savedHeadData.getNozzle1YOffset(),
+                                                         savedHeadData.getNozzle1ZOffset(),
+                                                         savedHeadData.getNozzle1BOffset(),
+                                                         savedHeadData.getNozzle2XOffset(),
+                                                         savedHeadData.getNozzle2YOffset(),
+                                                         savedHeadData.getNozzle2ZOffset(),
+                                                         savedHeadData.getNozzle2BOffset(),
+                                                         savedHeadData.getLastFilamentTemperature(),
+                                                         savedHeadData.getHeadHours());
+                }
+
+                printerToUse.transmitDirectGCode("G0 B0", false);
+                printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+                printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
+
+                if (parkRequired)
+                {
+                    parkRequired = false;
+                    printerToUse.transmitStoredGCode("Park");
+                }
+            } catch (RoboxCommsException ex)
             {
-                parkRequired = false;
-                printerToUse.transmitStoredGCode("Park");
+                steno.error("Error in needle valve calibration - mode=" + state.name());
             }
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error in needle valve calibration - mode=" + state.name());
         }
     }
-    
+
     public NozzleBCalibrationState getState()
     {
         return state;
     }
-    
+
     public int getCurrentNozzleNumber()
     {
         return currentNozzleNumber;
     }
-    
+
     public void addStateListener(CalibrationBStateListener stateListener)
     {
         stateListeners.add(stateListener);
     }
-    
+
     public void removeStateListener(CalibrationBStateListener stateListener)
     {
         stateListeners.remove(stateListener);
     }
-    
+
     public void setState(NozzleBCalibrationState newState)
     {
         this.state = newState;
@@ -256,14 +258,14 @@ public class CalibrationNozzleBHelper
         {
             listener.setState(state);
         }
-        
+
         switch (state)
         {
             case IDLE:
                 break;
             case INITIALISING:
                 currentNozzleNumber = 0;
-                
+
                 try
                 {
                     savedHeadData = printerToUse.transmitReadHeadEEPROM();
@@ -282,17 +284,17 @@ public class CalibrationNozzleBHelper
                                                          -bOffsetStartingValue,
                                                          savedHeadData.getLastFilamentTemperature(),
                                                          savedHeadData.getHeadHours());
-                    
+
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in needle valve calibration - mode=" + state.name());
                 }
-                
+
                 calibrationTask = new CalibrateBTask(state);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
-                
+
                 Thread initialiseTaskThread = new Thread(calibrationTask);
                 initialiseTaskThread.setName("Calibration - initialiser");
                 initialiseTaskThread.start();
@@ -302,23 +304,23 @@ public class CalibrationNozzleBHelper
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
-                
+
                 Thread heatingTaskThread = new Thread(calibrationTask);
                 heatingTaskThread.setName("Calibration - heating");
                 heatingTaskThread.start();
-                
+
                 break;
-            
+
             case PRIMING:
                 calibrationTask = new CalibrateBTask(state);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
-                
+
                 Thread primingTaskThread = new Thread(calibrationTask);
                 primingTaskThread.setName("Calibration - priming");
                 primingTaskThread.start();
-                
+
                 parkRequired = true;
                 break;
             case NO_MATERIAL_CHECK:
@@ -327,7 +329,7 @@ public class CalibrationNozzleBHelper
                 calibrationTask = new CalibrateBTask(state, currentNozzleNumber);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
-                
+
                 Thread materialExtrudingTaskThread = new Thread(calibrationTask);
                 materialExtrudingTaskThread.setName("Calibration - extrusion check");
                 materialExtrudingTaskThread.start();
@@ -336,7 +338,7 @@ public class CalibrationNozzleBHelper
                 break;
             case PRE_CALIBRATION_PRIMING:
                 nozzlePosition = 0;
-                
+
                 try
                 {
                     printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
@@ -358,12 +360,12 @@ public class CalibrationNozzleBHelper
                 {
                     steno.error("Error in needle valve calibration - mode=" + state.name());
                 }
-                
+
                 calibrationTask = new CalibrateBTask(state, currentNozzleNumber);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
-                
+
                 Thread preCalibrationPrimingTaskThread = new Thread(calibrationTask);
                 preCalibrationPrimingTaskThread.setName("Calibration - pre calibration priming");
                 preCalibrationPrimingTaskThread.start();
@@ -385,7 +387,7 @@ public class CalibrationNozzleBHelper
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
-                
+
                 Thread postCalibrationPrimingTaskThread = new Thread(calibrationTask);
                 postCalibrationPrimingTaskThread.setName("Calibration - post calibration priming");
                 postCalibrationPrimingTaskThread.start();
@@ -396,7 +398,7 @@ public class CalibrationNozzleBHelper
                 calibrationTask = new CalibrateBTask(state, currentNozzleNumber);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
-                
+
                 Thread confirmMaterialExtrudingTaskThread = new Thread(calibrationTask);
                 confirmMaterialExtrudingTaskThread.setName("Calibration - extruding");
                 confirmMaterialExtrudingTaskThread.start();
@@ -419,7 +421,7 @@ public class CalibrationNozzleBHelper
                                                          nozzle1BOffset,
                                                          savedHeadData.getLastFilamentTemperature(),
                                                          savedHeadData.getHeadHours());
-                    
+
                     printerToUse.transmitDirectGCode("G0 B0", false);
                     printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
                     printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
@@ -436,7 +438,7 @@ public class CalibrationNozzleBHelper
                     printerToUse.transmitDirectGCode("G0 B0", false);
                     printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
                     printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
-                    
+
                     if (parkRequired)
                     {
                         printerToUse.transmitStoredGCode("Park");

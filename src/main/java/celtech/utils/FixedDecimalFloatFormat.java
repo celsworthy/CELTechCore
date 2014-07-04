@@ -10,6 +10,8 @@ import java.text.DecimalFormatSymbols;
 import java.text.FieldPosition;
 import java.text.ParseException;
 import java.util.Locale;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  * This class provides a formatter suitable for used in Robox comms.
@@ -28,21 +30,31 @@ import java.util.Locale;
 public class FixedDecimalFloatFormat extends DecimalFormat
 {
 
+    private static final Stenographer steno = StenographerFactory.getStenographer(FixedDecimalFloatFormat.class.getName());
     private final int fieldLength = 8;
+    private String decimalSeparator = "";
 
     public FixedDecimalFloatFormat()
     {
         super("#.######", new DecimalFormatSymbols(Locale.UK));
         this.setGroupingUsed(false);
+        this.decimalSeparator = decimalSeparator + this.getDecimalFormatSymbols().getDecimalSeparator();
     }
 
     private StringBuffer padResult(StringBuffer output)
     {
+        if (output.length() > fieldLength && (output.indexOf(decimalSeparator) == -1 || output.indexOf(decimalSeparator) > fieldLength - 1))
+        {
+            throw new NumberFormatException("Number length exceeds maximum (" + fieldLength + ") : " + output);
+        }
+
         int charactersToPad = fieldLength - output.length();
 
         if (charactersToPad < 0)
         {
-            throw new NumberFormatException("Number length exceeds maximum (" + fieldLength + ") : " + output);
+            String originalNumber = output.toString();
+            output.delete(fieldLength, output.length());
+            steno.warning("Truncated float from " + originalNumber + " to " + output);
         }
 
         while (charactersToPad > 0)
@@ -53,7 +65,7 @@ public class FixedDecimalFloatFormat extends DecimalFormat
 
         return output;
     }
-    
+
     @Override
     public StringBuffer format(double d, StringBuffer sb, FieldPosition fp)
     {
