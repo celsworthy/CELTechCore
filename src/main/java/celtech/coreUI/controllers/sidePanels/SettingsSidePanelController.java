@@ -782,17 +782,14 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         {
             case DRAFT:
                 settings = draftSettings;
-                customProfileVBox.setMaxHeight(0);
                 customProfileVBox.setVisible(false);
                 break;
             case NORMAL:
                 settings = normalSettings;
-                customProfileVBox.setMaxHeight(0);
                 customProfileVBox.setVisible(false);
                 break;
             case FINE:
                 settings = fineSettings;
-                customProfileVBox.setMaxHeight(0);
                 customProfileVBox.setVisible(false);
                 break;
             case CUSTOM:
@@ -801,7 +798,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     displayManager.slideOutAdvancedPanel();
                 }
                 settings = customSettings;
-                customProfileVBox.setMaxHeight(-1);
                 customProfileVBox.setVisible(true);
                 break;
             default:
