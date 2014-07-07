@@ -54,6 +54,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private SettingsScreenState settingsScreenState = null;
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
+    private int lastNozzleSelected = 0;
 
     @FXML
     private VBox container;
@@ -357,17 +358,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         displayManager = DisplayManager.getInstance();
         settingsScreenState = SettingsScreenState.getInstance();
 
-//        profileNameField.setRight(redcrossHolder);
-//        profileNameField.getRight().visibleProperty().bind(profileNameInvalid.and(isDirty));
-
-//        profileNameField.addEventHandler(KeyEvent.KEY_TYPED, new EventHandler<KeyEvent>() {
-//
-//            @Override
-//            public void handle(KeyEvent event)
-//            {
-//                    validateProfileName();
-//            }
-//        });
         editingOptions.visibleProperty().bind(isDirty.and(showButtons).and(isMutable));
         notEditingOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable));
         immutableOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable.not()));
@@ -418,6 +408,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
                         saveNozzleParametersToWorkingProfile();
                         unbindNozzleParameters();
                         bindNozzleParameters(newNozzle, lastBoundProfile);
+                        lastNozzleSelected = newNozzle;
                     }
                 }
             }
@@ -525,7 +516,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     {
         boundToNozzle = nozzleNumber;
 
-        nozzlePreejectionVolume.floatValueProperty().set(newSettings.getNozzle_ejection_volume().get(nozzleNumber).get());
+        nozzlePreejectionVolume.floatValueProperty().set(newSettings.getNozzle_preejection_volume().get(nozzleNumber).get());
         nozzleEjectionVolume.floatValueProperty().set(newSettings.getNozzle_ejection_volume().get(nozzleNumber).get());
         nozzleWipeVolume.floatValueProperty().set(newSettings.getNozzle_wipe_volume().get(nozzleNumber).get());
         nozzlePartialOpen.floatValueProperty().set(newSettings.getNozzle_partial_b_minimum().get(nozzleNumber).get());
@@ -588,10 +579,15 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
         updateGUIFromSettings(newSettings);
 
-        //Switch to nozzle 1 data by default
-        nozzle1Button.setSelected(true);
+        if (lastNozzleSelected == 0)
+        {
+            nozzle1Button.setSelected(true);
+        } else if (lastNozzleSelected == 1)
+        {
+            nozzle2Button.setSelected(true);
+        }
 
-        bindNozzleParameters(0, newSettings);
+        bindNozzleParameters(lastNozzleSelected, newSettings);
 
         lastBoundProfile = newSettings;
     }
