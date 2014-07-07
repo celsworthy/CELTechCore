@@ -7,8 +7,8 @@ package celtech.services.modelLoader;
 import celtech.coreUI.components.ProjectTab;
 import celtech.services.ControllableService;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import java.io.File;
+import java.util.List;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 
@@ -16,71 +16,28 @@ import javafx.concurrent.Task;
  *
  * @author ianhudson
  */
-public class ModelLoaderService extends Service<ModelLoadResult> implements ControllableService
+public class ModelLoaderService extends Service<ModelLoadResults> implements
+    ControllableService
 {
 
-    private StringProperty modelFileToLoad = new SimpleStringProperty();
-    private StringProperty shortModelName = new SimpleStringProperty();
+    private List<File> modelFilesToLoad;
     private ProjectTab targetProjectTab = null;
+    private boolean relayout;
 
     /**
      *
      * @param value
      */
-    public final void setModelFileToLoad(String value)
+    public final void setModelFilesToLoad(List<File> modelFiles, boolean relayout)
     {
-        modelFileToLoad.set(value);
-    }
-
-    /**
-     *
-     * @return
-     */
-    public final String getModelFileToLoad()
-    {
-        return modelFileToLoad.get();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public final StringProperty modelFileToLoadProperty()
-    {
-        return modelFileToLoad;
-    }
-
-    /**
-     *
-     * @param value
-     */
-    public final void setShortModelName(String value)
-    {
-        shortModelName.set(value);
-    }
-
-    /**
-     *
-     * @return
-     */
-    public final String getShortModelName()
-    {
-        return shortModelName.get();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public final StringProperty shortModelNameProperty()
-    {
-        return shortModelName;
+        modelFilesToLoad = modelFiles;
+        this.relayout = relayout;
     }
 
     @Override
-    protected Task<ModelLoadResult> createTask()
+    protected Task<ModelLoadResults> createTask()
     {
-        return new ModelLoaderTask(getModelFileToLoad(), getShortModelName(), targetProjectTab);
+        return new ModelLoaderTask(modelFilesToLoad, targetProjectTab, relayout);
     }
 
     /**
@@ -101,4 +58,5 @@ public class ModelLoaderService extends Service<ModelLoadResult> implements Cont
     {
         this.targetProjectTab = targetProjectTab;
     }
+
 }
