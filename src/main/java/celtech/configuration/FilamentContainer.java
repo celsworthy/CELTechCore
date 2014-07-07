@@ -102,19 +102,19 @@ public class FilamentContainer
                 Properties filamentProperties = new Properties();
                 filamentProperties.load(new FileInputStream(filamentFile));
                 
-                String filename = filamentFile.getName();
-                String name = filamentProperties.getProperty(nameProperty);
-                String reelID = filamentProperties.getProperty(reelIDProperty);
-                String material = filamentProperties.getProperty(materialProperty);
-                String diameterString = filamentProperties.getProperty(diameterProperty);
-                String filamentMultiplierString = filamentProperties.getProperty(filamentMultiplierProperty);
-                String feedRateMultiplierString = filamentProperties.getProperty(feedRateMultiplierProperty);
-                String ambientTempString = filamentProperties.getProperty(ambientTempProperty);
-                String firstLayerBedTempString = filamentProperties.getProperty(firstLayerBedTempProperty);
-                String bedTempString = filamentProperties.getProperty(bedTempProperty);
-                String firstLayerNozzleTempString = filamentProperties.getProperty(firstLayerNozzleTempProperty);
-                String nozzleTempString = filamentProperties.getProperty(nozzleTempProperty);
-                String displayColourString = filamentProperties.getProperty(displayColourProperty);
+                String filename = filamentFile.getName().trim();
+                String name = filamentProperties.getProperty(nameProperty).trim();
+                String reelID = filamentProperties.getProperty(reelIDProperty).trim();
+                String material = filamentProperties.getProperty(materialProperty).trim();
+                String diameterString = filamentProperties.getProperty(diameterProperty).trim();
+                String filamentMultiplierString = filamentProperties.getProperty(filamentMultiplierProperty).trim();
+                String feedRateMultiplierString = filamentProperties.getProperty(feedRateMultiplierProperty).trim();
+                String ambientTempString = filamentProperties.getProperty(ambientTempProperty).trim();
+                String firstLayerBedTempString = filamentProperties.getProperty(firstLayerBedTempProperty).trim();
+                String bedTempString = filamentProperties.getProperty(bedTempProperty).trim();
+                String firstLayerNozzleTempString = filamentProperties.getProperty(firstLayerNozzleTempProperty).trim();
+                String nozzleTempString = filamentProperties.getProperty(nozzleTempProperty).trim();
+                String displayColourString = filamentProperties.getProperty(displayColourProperty).trim();
                 
                 if (name != null
                         && material != null
