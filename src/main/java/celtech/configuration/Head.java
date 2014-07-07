@@ -60,9 +60,13 @@ public class Head implements Cloneable
 
     public static final float normalZ1OffsetMin = -1.2f;
     public static final float normalZ1OffsetMax = 1.2f;
+    public static final float normalZ1OverrunMin = 0f;
+    public static final float normalZ1OverrunMax = 1.2f;
 
     public static final float normalZ2OffsetMin = -1.2f;
     public static final float normalZ2OffsetMax = 1.2f;
+    public static final float normalZ2OverrunMin = 0f;
+    public static final float normalZ2OverrunMax = 1.2f;
 
     private static final float normalB1OffsetMin = 0.7f;
     private static final float normalB1OffsetMax = 2f;

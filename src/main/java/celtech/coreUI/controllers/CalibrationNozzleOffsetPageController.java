@@ -205,10 +205,10 @@ public class CalibrationNozzleOffsetPageController implements Initializable, Cal
         fineNozzleNudge.setDeltaValue(0.05);
         coarseNozzleNudge.setDeltaValue(0.05);
 
-        fineNozzleNudge.setMaxValue(Head.normalZ1OffsetMax);
-        fineNozzleNudge.setMinValue(Head.normalZ1OffsetMin);
-        coarseNozzleNudge.setMaxValue(Head.normalZ2OffsetMax);
-        coarseNozzleNudge.setMinValue(Head.normalZ2OffsetMin);
+        fineNozzleNudge.setMaxValue(Head.normalZ1OverrunMax);
+        fineNozzleNudge.setMinValue(Head.normalZ1OverrunMin);
+        coarseNozzleNudge.setMaxValue(Head.normalZ2OverrunMax);
+        coarseNozzleNudge.setMinValue(Head.normalZ2OverrunMin);
     }
 
     @Override
