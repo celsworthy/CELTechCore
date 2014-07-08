@@ -71,7 +71,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
         {
             totalDuration += duration;
         }
-        assertEquals(551d, totalDuration, 1);
+        assertEquals(781d, totalDuration, 1);
 
     }
 
