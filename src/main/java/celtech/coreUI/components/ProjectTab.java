@@ -496,6 +496,7 @@ public class ProjectTab extends Tab
         thing.relocateBlocks();
 
         viewManager.recalculateSelectionBounds(false);
+        viewManager.collideModels();
 
 //        for (Block block : blocks)
 //        {

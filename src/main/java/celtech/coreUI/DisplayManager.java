@@ -192,7 +192,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 steno.error("Error whilst attempting to load model");
             }
         }
-        if (loadResults.isRelayout() && projectIsEmpty)
+        if (loadResults.isRelayout() && projectIsEmpty && loadResults.getResults().size() > 1)
         {
             autoLayout();
         }
