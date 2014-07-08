@@ -3,6 +3,9 @@
  */
 package celtech.services.printing;
 
+import celtech.gcodetranslator.PrintJobStatistics;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import static org.junit.Assert.assertEquals;
@@ -78,8 +81,8 @@ public class ETCCalculatorTest
     {
         int ETC = etcCalculator.getETCPredicted(55);
         /**
-         * lineNumber = 55, layerNumber = 3 totalDuration = 40 + 10/2 = 45
-         * totalTime = 100 remainingTime = (100 - 45) = 55
+         * lineNumber = 55, layerNumber = 3 totalDuration = 40 + 10/2 = 45 totalTime = 100
+         * remainingTime = (100 - 45) = 55
          */
         assertEquals(55, ETC);
     }
@@ -89,10 +92,9 @@ public class ETCCalculatorTest
     {
         testPrinter.setBedTemperature(120 - 30);
         int ETC = etcCalculator.getETCPredicted(55);
-       /**
-         * lineNumber = 55, layerNumber = 3 totalDuration = 40 + 10/2 = 45
-         * totalTime = 100 remainingTime = (100 - 45) = 55
-         * to warm up bed 60 seconds
+        /**
+         * lineNumber = 55, layerNumber = 3 totalDuration = 40 + 10/2 = 45 totalTime = 100
+         * remainingTime = (100 - 45) = 55 to warm up bed 60 seconds
          */
         assertEquals(115, ETC);
     }
@@ -129,7 +131,7 @@ public class ETCCalculatorTest
         double progressPercent = etcCalculator.getPercentCompleteAtLine(0);
         assertEquals(0.0, progressPercent, 0.001);
     }
-    
+
     @Test
     public void testPercentCompleteAtLine10_2EqualLayers()
     {
@@ -154,8 +156,8 @@ public class ETCCalculatorTest
                                           layerNumberToLineNumber);
         double progressPercent = etcCalculator.getPercentCompleteAtLine(10);
         assertEquals(0.5, progressPercent, 0.001);
-    }   
-    
+    }
+
     @Test
     public void testPercentCompleteAtLine20_2EqualLayers()
     {
@@ -180,8 +182,8 @@ public class ETCCalculatorTest
                                           layerNumberToLineNumber);
         double progressPercent = etcCalculator.getPercentCompleteAtLine(20);
         assertEquals(1.0, progressPercent, 0.001);
-    }    
-    
+    }
+
     @Test
     public void testPercentCompleteAtLine0_2DifferingLayers()
     {
@@ -206,8 +208,8 @@ public class ETCCalculatorTest
                                           layerNumberToLineNumber);
         double progressPercent = etcCalculator.getPercentCompleteAtLine(0);
         assertEquals(0.0, progressPercent, 0.001);
-    }   
-    
+    }
+
     @Test
     public void testPercentCompleteAtLine10_2DifferingLayers()
     {
@@ -232,8 +234,8 @@ public class ETCCalculatorTest
                                           layerNumberToLineNumber);
         double progressPercent = etcCalculator.getPercentCompleteAtLine(10);
         assertEquals(0.333, progressPercent, 0.001);
-    }  
-    
+    }
+
     @Test
     public void testPercentCompleteAtLine30_2DifferingLayers()
     {
@@ -258,9 +260,9 @@ public class ETCCalculatorTest
                                           layerNumberToLineNumber);
         double progressPercent = etcCalculator.getPercentCompleteAtLine(20);
         assertEquals(1.000, progressPercent, 0.001);
-    }     
-    
- @Test
+    }
+
+    @Test
     public void testPercentCompleteAtLine0_1Layer()
     {
         layerNumberToDistanceTravelled = new ArrayList<>();
@@ -282,8 +284,8 @@ public class ETCCalculatorTest
                                           layerNumberToLineNumber);
         double progressPercent = etcCalculator.getPercentCompleteAtLine(0);
         assertEquals(0.0, progressPercent, 0.0001);
-    }       
-    
+    }
+
     @Test
     public void testPercentCompleteAtLine1_1Layer()
     {
@@ -306,8 +308,8 @@ public class ETCCalculatorTest
                                           layerNumberToLineNumber);
         double progressPercent = etcCalculator.getPercentCompleteAtLine(1);
         assertEquals(0.1, progressPercent, 0.001);
-    }    
-    
+    }
+
     @Test
     public void testPercentCompleteAtLine5_1Layer()
     {
@@ -330,8 +332,8 @@ public class ETCCalculatorTest
                                           layerNumberToLineNumber);
         double progressPercent = etcCalculator.getPercentCompleteAtLine(5);
         assertEquals(0.5, progressPercent, 0.001);
-    }    
-    
+    }
+
     @Test
     public void testPercentCompleteAtLine10_1Layer()
     {
@@ -354,8 +356,29 @@ public class ETCCalculatorTest
                                           layerNumberToLineNumber);
         double progressPercent = etcCalculator.getPercentCompleteAtLine(10);
         assertEquals(1.0, progressPercent, 0.001);
-    }      
+    }
 
-
+    @Test
+    public void testSpecificCaseWhereAppearsInAppFinishedWhenNot() throws IOException
+    {
+        URL statisticsFile = this.getClass().getResource("/badetcprintjob/job.statistics");
+        PrintJobStatistics readIntoPrintJobStatistics = PrintJobStatistics.readFromFile(
+            statisticsFile.getFile());
+        etcCalculator = new ETCCalculator(testPrinter,
+                                          readIntoPrintJobStatistics.getLayerNumberToPredictedDuration(),
+                                          readIntoPrintJobStatistics.getLayerNumberToLineNumber());
+        
+        assertEquals(0, etcCalculator.getCompletedLayerNumberForLineNumber(1));
+        assertEquals(7, etcCalculator.getCompletedLayerNumberForLineNumber(3140));
+        assertEquals(71, etcCalculator.getCompletedLayerNumberForLineNumber(20631));
+        assertEquals(157, etcCalculator.getCompletedLayerNumberForLineNumber(26609));
+        assertEquals(167, etcCalculator.getCompletedLayerNumberForLineNumber(27191));
+        assertEquals(226, etcCalculator.getCompletedLayerNumberForLineNumber(30020));
+        
+        assertEquals(437, etcCalculator.getETCPredicted(27191));
+        assertEquals(8, etcCalculator.getETCPredicted(30205));
+        assertEquals(2, etcCalculator.getETCPredicted(30239));
+        
+    }
 
 }
