@@ -21,6 +21,8 @@ import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.utils.PrinterUtils;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
@@ -178,12 +180,23 @@ public class MenuStripController
             
             modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(DirectoryMemoryProperty.MODEL)));
             
-            final File file = modelFileChooser.showOpenDialog(displayManager.getMainStage());
+            List<File> files;
+            if (projectMode == ProjectMode.NONE || projectMode == ProjectMode.MESH) {
+                files = modelFileChooser.showOpenMultipleDialog(displayManager.getMainStage());
+            } else {
+                File file = modelFileChooser.showOpenDialog(displayManager.getMainStage());
+                files = new ArrayList<>();
+                if (file != null) {
+                    files.add(file);
+                }
+            }
             
-            if (file != null)
+            if (! files.isEmpty())
             {
-                ApplicationConfiguration.setLastDirectory(DirectoryMemoryProperty.MODEL, file.getParentFile().getAbsolutePath());
-                displayManager.loadExternalModel(file);
+                ApplicationConfiguration.setLastDirectory(
+                    DirectoryMemoryProperty.MODEL,
+                    files.get(0).getParentFile().getAbsolutePath());
+                displayManager.loadExternalModels(files, true);
             }
         });
     }
