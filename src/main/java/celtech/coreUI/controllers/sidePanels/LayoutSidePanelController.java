@@ -887,8 +887,8 @@ public class LayoutSidePanelController implements Initializable,
 
         if (boundModel != null)
         {
-            boundModel.maxLayerVisibleProperty().unbind();
-            boundModel.minLayerVisibleProperty().unbind();
+//            boundModel.maxLayerVisibleProperty().unbind();
+//            boundModel.minLayerVisibleProperty().unbind();
         }
 
         boundProject = displayManager.getCurrentlyVisibleProject();

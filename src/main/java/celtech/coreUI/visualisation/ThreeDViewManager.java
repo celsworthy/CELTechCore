@@ -1091,7 +1091,7 @@ public class ThreeDViewManager
             selectionContainer.setDepth(depth);
             selectionContainer.setScale(model.getScale());
 //            selectionContainer.setRotationX(model.getRotationX());
-            selectionContainer.setRotationY(model.getRotateY());
+            selectionContainer.setRotationY(model.getRotationY());
 //            selectionContainer.setRotationZ(model.getRotationZ());
 //            selectionContainer.setMinX(model.getCentreX() - );
 
@@ -1386,7 +1386,7 @@ public class ThreeDViewManager
         {
             ModelContainer modelToRotate = selectionContainer.selectedModelsProperty().get(0);
             modelToRotate.setRotationY(rotation);
-            steno.info("Pivot is " + selectionContainer.selectedModelsProperty().get(0).getPivot());
+//            steno.info("Pivot is " + selectionContainer.selectedModelsProperty().get(0).getPivot());
             selectionContainer.setRotationY(rotation);
 //            recalculateSelectionBounds(false);
         } else
@@ -1395,9 +1395,7 @@ public class ThreeDViewManager
             {
                 if (model.isSelected())
                 {
-                    model.deltaRotateAroundY(selectionContainer.getCentreX(),
-                                             selectionContainer.getCentreY(),
-                                             selectionContainer.getCentreZ(), rotation);
+                    model.deltaRotateAroundY(rotation);
                 }
             }
             selectionContainer.setRotationX(0);
@@ -1557,7 +1555,7 @@ public class ThreeDViewManager
             steno.info("Angles were X:" + angles[0] * MathUtils.RAD_TO_DEG + " Y:" + angles[1]
                 * MathUtils.RAD_TO_DEG + " Z:" + angles[2] * MathUtils.RAD_TO_DEG);
 
-            selectionContainer.selectedModelsProperty().get(0).rotateRadians(result);
+//            selectionContainer.selectedModelsProperty().get(0).rotateRadians(result);
             
             Bounds bounds = meshView.getBoundsInParent();
             double maximumY = bounds.getMaxY();
