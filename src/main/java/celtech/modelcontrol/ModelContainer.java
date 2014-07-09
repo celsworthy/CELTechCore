@@ -96,10 +96,10 @@ public class ModelContainer extends Group implements Serializable, Comparable
     private double bedCentreOffsetX;
     private double bedCentreOffsetY;
     private double bedCentreOffsetZ;
-    
+
     /**
-     * The bounds after the last operation was run. All operations affecting transforms should
-     * call dropToBed() just before they return, which then updates this.
+     * The bounds after the last operation was run. All operations affecting transforms should call
+     * dropToBed() just before they return, which then updates this.
      */
     ModelBounds modelBoundsParentBeforeOperation;
 
@@ -215,11 +215,11 @@ public class ModelContainer extends Group implements Serializable, Comparable
         transformMoveToCentre.setX(centreXOffset);
         transformMoveToCentre.setY(centreYOffset);
         transformMoveToCentre.setZ(centreZOffset);
-        
+
         transformRotateYPreferred.setPivotX(originalModelBounds.getCentreX());
         transformRotateYPreferred.setPivotY(originalModelBounds.getCentreY());
         transformRotateYPreferred.setPivotZ(originalModelBounds.getCentreZ());
-        
+
         modelBoundsParentBeforeOperation = calculateBoundsInParent();
     }
 
@@ -243,8 +243,8 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
         this.setId(name);
 
-        getTransforms().addAll(transformMoveToPreferred, transformMoveToCentre, transformBedCentre,
-                               transformSnapToGroundYAdjust, 
+        getTransforms().addAll(transformSnapToGroundYAdjust, transformMoveToPreferred,
+                               transformMoveToCentre, transformBedCentre,
                                transformRotateYPreferred, transformRotateSnapToGround,
                                transformScalePreferred);
     }
@@ -348,8 +348,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
      */
     public void translateFrontLeftTo(double xPosition, double zPosition)
     {
-        Bounds bounds = this.getBoundsInParent();
-        translateTo(xPosition + bounds.getWidth() / 2, zPosition + bounds.getDepth() / 2);
+        translateTo(xPosition, zPosition);
     }
 
     /**
@@ -388,7 +387,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
         dropToBed();
         checkOffBed();
-        
+
     }
 
     /**
@@ -533,7 +532,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
         transformScalePreferred.setX(scaleFactor);
         transformScalePreferred.setY(scaleFactor);
         transformScalePreferred.setZ(scaleFactor);
-        
+
         dropToBed();
         checkOffBed();
     }
@@ -1290,7 +1289,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
         return getTotalWidth() + getTotalDepth();
     }
 
-    public void snapToGround(int faceNumber)
+    public void rotateToMakeFaceParallelToGround(int faceNumber)
     {
         snapFaceIndex = faceNumber;
 
@@ -1333,9 +1332,9 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
         transformRotateSnapToGround.setAxis(new Point3D(axis.getX(), axis.getY(), axis.getZ()));
         transformRotateSnapToGround.setAngle(angleDegrees);
-        transformRotateSnapToGround.setPivotX(faceCentreX);
-        transformRotateSnapToGround.setPivotY(faceCentreY);
-        transformRotateSnapToGround.setPivotZ(faceCentreZ);
+        transformRotateSnapToGround.setPivotX(originalModelBounds.getCentreX());
+        transformRotateSnapToGround.setPivotY(originalModelBounds.getCentreY());
+        transformRotateSnapToGround.setPivotZ(originalModelBounds.getCentreZ());
 
         dropToBed();
     }
@@ -1363,13 +1362,13 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
     private void dropToBed()
     {
-          // Correct transformRotateSnapToGroundYAdjust for change in height (Y)
+        // Correct transformRotateSnapToGroundYAdjust for change in height (Y)
         ModelBounds modelBoundsParent = calculateBoundsInParent();
         System.out.println("Snap bounds in parent is " + modelBoundsParent);
         double yOffset = modelBoundsParentBeforeOperation.getMaxY() - modelBoundsParent.getMaxY();
         System.out.println("Y offset = " + yOffset);
         transformSnapToGroundYAdjust.setY(transformSnapToGroundYAdjust.getY() + yOffset);
-        
+
         modelBoundsParentBeforeOperation = calculateBoundsInParent();
 //        System.out.println("New maxY is " + modelBoundsParentBeforeOperation.getMaxY());
     }

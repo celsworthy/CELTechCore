@@ -221,7 +221,7 @@ public class MenuStripController
     @FXML
     void snapToGround(ActionEvent event)
     {
-        displayManager.snapToGround();
+        displayManager.rotateToMakePickedFaceParallelToGround();
     }
 
     private Printer currentPrinter = null;

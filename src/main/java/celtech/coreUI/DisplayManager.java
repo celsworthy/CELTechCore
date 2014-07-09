@@ -664,24 +664,15 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
     
-    public void rotateModelToGround()
-    {
-        Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
-        if (currentTab instanceof ProjectTab)
-        {
-            ((ProjectTab) currentTab).autoLayout();
-        }
-    }    
-
     /**
      *
      */
-    public void snapToGround()
+    public void rotateToMakePickedFaceParallelToGround()
     {
         Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
         if (currentTab instanceof ProjectTab)
         {
-            ((ProjectTab) currentTab).getThreeDViewManager().snapToGround();
+            ((ProjectTab) currentTab).getThreeDViewManager().rotateToMakePickedFaceParallelToGround();
         }
     }
 

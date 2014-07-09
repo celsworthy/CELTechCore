@@ -1460,7 +1460,7 @@ public class ThreeDViewManager
     /**
      *
      */
-    public void snapToGround()
+    public void rotateToMakePickedFaceParallelToGround()
     {
         if (intersectedNode instanceof MeshView)
         {
@@ -1468,7 +1468,7 @@ public class ThreeDViewManager
             int faceNumber = pickResult.getIntersectedFace();
             MeshView meshView = (MeshView) intersectedNode;
             ModelContainer modelContainer = (ModelContainer) intersectedNode.getParent();
-            modelContainer.snapToGround(faceNumber);
+            modelContainer.rotateToMakeFaceParallelToGround(faceNumber);
         }
     }
 
