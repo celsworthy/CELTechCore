@@ -78,19 +78,19 @@ public class ProjectManager implements Savable, Serializable
             ObjectInputStream reader = new ObjectInputStream(projectFile);
             pm = new ProjectManager();
             int numberOfOpenProjects = reader.readInt();
-            for (int counter = 0; counter < numberOfOpenProjects; counter++)
-            {
-                String projectName = reader.readUTF();
-                Project project = loadProject(projectName);
-                if (project != null)
-                {
-                    pm.projectOpened(project);
-                }
-                else
-                {
-                    steno.warning("Project Manager tried to load " + projectName + " but it couldn't be opened");
-                }
-            }
+//            for (int counter = 0; counter < numberOfOpenProjects; counter++)
+//            {
+//                String projectName = reader.readUTF();
+//                Project project = loadProject(projectName);
+//                if (project != null)
+//                {
+//                    pm.projectOpened(project);
+//                }
+//                else
+//                {
+//                    steno.warning("Project Manager tried to load " + projectName + " but it couldn't be opened");
+//                }
+//            }
             reader.close();
         } catch (IOException ex)
         {

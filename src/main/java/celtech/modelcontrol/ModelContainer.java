@@ -14,8 +14,6 @@ import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.importers.FloatArrayList;
 import celtech.coreUI.visualisation.importers.IntegerArrayList;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
-import celtech.utils.Math.MathUtils;
-import celtech.utils.Math.PolarCoordinate;
 import celtech.utils.gcode.representation.GCodeElement;
 import celtech.utils.gcode.representation.GCodeMeshData;
 import celtech.utils.gcode.representation.MovementType;
@@ -47,14 +45,10 @@ import javafx.scene.shape.MeshView;
 import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Rotate;
-import static javafx.scene.transform.Rotate.Y_AXIS;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
  *
@@ -70,10 +64,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
     private BooleanProperty isSelected = null;
     private BooleanProperty isOffBed = null;
     private SimpleStringProperty modelName = null;
-    private DoubleProperty scale = null;
-    private DoubleProperty rotationX = null;
-    private DoubleProperty rotationY = null;
-    private DoubleProperty rotationZ = null;
     private ModelContentsEnumeration modelContentsType = ModelContentsEnumeration.MESH;
     //GCode only
     private ObservableList<String> fileLines = FXCollections.observableArrayList();
@@ -86,10 +76,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
     private IntegerProperty maxLayerVisible = new SimpleIntegerProperty(0);
     private IntegerProperty minLayerVisible = new SimpleIntegerProperty(0);
     private ModelBounds originalModelBounds = new ModelBounds();
-    private double centreX = 0;
-    private double centreZ = 0;
-    private double centreXOffset = 0;
-    private double centreZOffset = 0;
 
     private DoubleProperty height = new SimpleDoubleProperty(0);
 
@@ -105,6 +91,10 @@ public class ModelContainer extends Group implements Serializable, Comparable
     private int snapFaceIndex = SNAP_FACE_INDEX_NOT_SELECTED;
     private double preferredScale = 1;
     private double preferredYRotation = 0;
+
+    private double bedCentreOffsetX;
+    private double bedCentreOffsetZ;
+    private Translate transformBedCentre = new Translate(0, 0, 0);
 
     /**
      *
@@ -212,13 +202,17 @@ public class ModelContainer extends Group implements Serializable, Comparable
     private void configureModelOnLoad()
     {
         calculateBounds();
-        centreX = 0;
-        centreZ = 0;
-        centreXOffset = originalModelBounds.getCentreX();
-        centreZOffset = originalModelBounds.getCentreZ();
+        System.out.println("Bounds are " + originalModelBounds.toString());
 
-        transformMoveToCentre = new Translate(centreXOffset, centreZOffset,
-                                              -originalModelBounds.getMaxY());
+        double centreXOffset = -originalModelBounds.getCentreX();
+        double centreYOffset = -originalModelBounds.getMaxY();
+        double centreZOffset = -originalModelBounds.getCentreZ();
+        System.out.println("Centre offset is at X " + centreXOffset + " Y " + centreYOffset + " Z "
+            + centreZOffset);
+
+        transformMoveToCentre.setX(centreXOffset);
+        transformMoveToCentre.setY(centreYOffset);
+        transformMoveToCentre.setZ(centreZOffset);
     }
 
     private void initialiseObject(String name)
@@ -226,12 +220,14 @@ public class ModelContainer extends Group implements Serializable, Comparable
         steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
         printBed = PrintBed.getInstance();
 
+        bedCentreOffsetX = PrintBed.getPrintVolumeCentre().getX() / 2.0;
+        bedCentreOffsetZ = PrintBed.getPrintVolumeCentre().getZ() / 2.0;
+        transformBedCentre.setX(bedCentreOffsetX);
+        transformBedCentre.setZ(bedCentreOffsetZ);
+        System.out.println("Bed centre at X " + bedCentreOffsetX + " Z " + bedCentreOffsetZ);
+
         isSelected = new SimpleBooleanProperty(false);
         isOffBed = new SimpleBooleanProperty(false);
-        scale = new SimpleDoubleProperty(1);
-        rotationX = new SimpleDoubleProperty(0);
-        rotationY = new SimpleDoubleProperty(0);
-        rotationZ = new SimpleDoubleProperty(0);
 
         modelName = new SimpleStringProperty(name);
         selectedGCodeLine = new SimpleIntegerProperty(0);
@@ -240,11 +236,14 @@ public class ModelContainer extends Group implements Serializable, Comparable
         numberOfLayers = new SimpleIntegerProperty(0);
         maxLayerVisible = new SimpleIntegerProperty(0);
         minLayerVisible = new SimpleIntegerProperty(0);
+
         this.setId(name);
 
-        getTransforms().addAll(transformScalePreferred, transformRotateSnapToGround,
-                               transformRotateYPreferred, transformMoveToCentre,
-                               transformMoveToPreferred);
+//        getTransforms().addAll(transformScalePreferred, transformRotateSnapToGround,
+//                               transformRotateYPreferred, transformMoveToCentre,
+//                               transformMoveToPreferred);
+        getTransforms()
+            .addAll(transformBedCentre, transformMoveToCentre, transformMoveToPreferred);
 
     }
 
@@ -273,70 +272,56 @@ public class ModelContainer extends Group implements Serializable, Comparable
     /**
      *
      * @param xMove
-     */
-    public void translateX(double xMove)
-    {
-        translateBy(xMove, 0);
-    }
-
-    /**
-     *
-     * @param zMove
-     */
-    public void translateZ(double zMove)
-    {
-        translateBy(0, zMove);
-    }
-
-    /**
-     *
-     * @param xMove
      * @param zMove
      */
     public void translateBy(double xMove, double zMove)
     {
-        Bounds bounds = this.getBoundsInParent();
-//        steno.info("BIP:" + bounds);
+        
+        transformMoveToPreferred.setX(transformMoveToPreferred.getX() + xMove);
+        transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + zMove);
+        
+//        Bounds bounds = this.getBoundsInParent();
+////        steno.info("BIP:" + bounds);
+////
+////        steno.info("xMove:" + xMove + " zMove:" + zMove);
+////        steno.info("Tran:" + getTranslateX() + ":" + getTranslateZ());
 //
-//        steno.info("xMove:" + xMove + " zMove:" + zMove);
-//        steno.info("Tran:" + getTranslateX() + ":" + getTranslateZ());
+//        double newMaxX = bounds.getMaxX() + xMove;
+//        double newMinX = bounds.getMinX() + xMove;
+//        double newMaxZ = bounds.getMaxZ() + zMove;
+//        double newMinZ = bounds.getMinZ() + zMove;
+//
+//        double finalXMove = xMove;
+//        double finalZMove = zMove;
+//
+//        if (newMinX < 0)
+//        {
+//            finalXMove -= bounds.getMinX();
+//        }
+//
+//        if (newMinZ < 0)
+//        {
+//            finalZMove -= bounds.getMinZ();
+//        }
+//
+//        if (newMaxX > printBed.getPrintVolumeMaximums().getX())
+//        {
+//            finalXMove += printBed.getPrintVolumeMaximums().getX() - bounds.getMaxX();
+//        }
+//
+//        if (newMaxZ > printBed.getPrintVolumeMaximums().getZ())
+//        {
+//            finalZMove += printBed.getPrintVolumeMaximums().getZ() - bounds.getMaxZ();
+//        }
+//
+//        double currentX = transformMoveToPreferred.getX();
+//        double currentZ = transformMoveToPreferred.getZ();
+//
+//        transformMoveToPreferred.setX(finalXMove + currentX);
+//        transformMoveToPreferred.setZ(finalZMove + currentZ);
 
-        double newMaxX = bounds.getMaxX() + xMove;
-        double newMinX = bounds.getMinX() + xMove;
-        double newMaxZ = bounds.getMaxZ() + zMove;
-        double newMinZ = bounds.getMinZ() + zMove;
-
-        double finalXMove = xMove;
-        double finalZMove = zMove;
-
-        if (newMinX < 0)
-        {
-            finalXMove -= bounds.getMinX();
-        }
-
-        if (newMinZ < 0)
-        {
-            finalZMove -= bounds.getMinZ();
-        }
-
-        if (newMaxX > printBed.getPrintVolumeMaximums().getX())
-        {
-            finalXMove += printBed.getPrintVolumeMaximums().getX() - bounds.getMaxX();
-        }
-
-        if (newMaxZ > printBed.getPrintVolumeMaximums().getZ())
-        {
-            finalZMove += printBed.getPrintVolumeMaximums().getZ() - bounds.getMaxZ();
-        }
-
-        double currentX = transformMoveToPreferred.getX();
-        double currentZ = transformMoveToPreferred.getZ();
-
-        transformMoveToPreferred.setX(finalXMove + currentX);
-        transformMoveToPreferred.setZ(finalZMove + currentZ);
-
-        centreX = transformMoveToPreferred.getX() + centreXOffset;
-        centreZ = transformMoveToPreferred.getZ() + centreZOffset;
+//        centreX = transformMoveToPreferred.getX() + centreXOffset;
+//        centreZ = transformMoveToPreferred.getZ() + centreZOffset;
         checkOffBed();
     }
 
@@ -393,11 +378,8 @@ public class ModelContainer extends Group implements Serializable, Comparable
             finalZPosition -= (newMaxZ - printBed.getPrintVolumeMaximums().getZ());
         }
 
-        transformMoveToPreferred.setX(finalXPosition - (scale.get() * centreXOffset));
-        transformMoveToPreferred.setX(finalZPosition - (scale.get() * centreZOffset));
-
-        centreX = finalXPosition;
-        centreZ = finalZPosition;
+        transformMoveToPreferred.setX(finalXPosition);
+        transformMoveToPreferred.setX(finalZPosition);
 
         checkOffBed();
     }
@@ -548,7 +530,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
     {
         steno.info(this.toString());
         transformScalePreferred = new Scale(value, value, value);
-        scale.set(value);
         checkOffBed();
     }
 
@@ -558,44 +539,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
      */
     public double getScale()
     {
-        return scale.get();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public DoubleProperty scaleProperty()
-    {
-        return scale;
-    }
-
-    /**
-     *
-     * @param value
-     */
-//    public void setRotationX(double value)
-//    {
-//        setRotateX(value);
-//        rotationX.set(value);
-//        checkOffBed();
-//    }
-    /**
-     *
-     * @return
-     */
-    public double getRotationX()
-    {
-        return rotationX.doubleValue();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public DoubleProperty rotationXProperty()
-    {
-        return rotationX;
+        return transformScalePreferred.getMxx();
     }
 
     /**
@@ -605,7 +549,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
     public void setRotationY(double value)
     {
         transformRotateYPreferred.setAngle(value);
-        rotationY.set(value);
 //        calculateBounds();
         checkOffBed();
     }
@@ -613,43 +556,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
     public double getRotationY()
     {
         return transformRotateYPreferred.getAngle();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public DoubleProperty rotationYProperty()
-    {
-        return rotationY;
-    }
-
-    /**
-     *
-     * @param value
-     */
-//    public void setRotationZ(double value)
-//    {
-//        setRotateZ(value);
-//        rotationZ.set(value);
-//        checkOffBed();
-//    }
-    /**
-     *
-     * @return
-     */
-    public double getRotationZ()
-    {
-        return rotationZ.doubleValue();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public DoubleProperty rotationZProperty()
-    {
-        return rotationZ;
     }
 
     /**
@@ -1102,7 +1008,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
      */
     public void translateXTo(double x)
     {
-        translateTo(x, centreZ);
+//        translateTo(x, centreZ);
     }
 
     /**
@@ -1111,7 +1017,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
      */
     public void translateZTo(double z)
     {
-        translateTo(centreX, z);
+//        translateTo(centreX, z);
     }
 
     /**
@@ -1121,24 +1027,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
     public ModelBounds getOriginalModelBounds()
     {
         return originalModelBounds;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public double getCentreX()
-    {
-        return centreX;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public double getCentreZ()
-    {
-        return centreZ;
     }
 
     private void checkOffBed()
@@ -1259,6 +1147,57 @@ public class ModelContainer extends Group implements Serializable, Comparable
 //
 //    }
     private void calculateBounds()
+    {
+        TriangleMesh mesh = (TriangleMesh) getMeshView().getMesh();
+        ObservableFloatArray originalPoints = mesh.getPoints();
+
+        double minX = 999;
+        double minY = 999;
+        double minZ = 999;
+        double maxX = -999;
+        double maxY = -999;
+        double maxZ = -999;
+
+        for (int pointOffset = 0; pointOffset < originalPoints.size(); pointOffset += 3)
+        {
+            float xPos = originalPoints.get(pointOffset);
+            float yPos = originalPoints.get(pointOffset + 1);
+            float zPos = originalPoints.get(pointOffset + 2);
+
+            minX = Math.min(xPos, minX);
+            minY = Math.min(yPos, minY);
+            minZ = Math.min(zPos, minZ);
+
+            maxX = Math.max(xPos, maxX);
+            maxY = Math.max(yPos, maxY);
+            maxZ = Math.max(zPos, maxZ);
+        }
+
+        double newwidth = maxX - minX;
+        double newdepth = maxZ - minZ;
+        double newheight = maxY - minY;
+
+        double newcentreX = minX + (newwidth / 2);
+        double newcentreY = minY + (newheight / 2);
+        double newcentreZ = minZ + (newdepth / 2);
+
+        steno.info("New bounds are MinX:" + minX
+            + " MaxX:" + maxX
+            + " MinY:" + minY
+            + " MaxY:" + maxY
+            + " MinZ:" + minZ
+            + " MaxZ:" + maxZ
+            + " W:" + newwidth
+            + " H:" + newheight
+            + " D:" + newdepth);
+
+        originalModelBounds = new ModelBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
+                                              newheight, newdepth, newcentreX, newcentreY,
+                                              newcentreZ);
+
+    }
+
+    private void calculateBoundsInParent()
     {
         TriangleMesh mesh = (TriangleMesh) getMeshView().getMesh();
         ObservableFloatArray originalPoints = mesh.getPoints();

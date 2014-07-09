@@ -285,7 +285,6 @@ public class ThreeDViewManager
 
             if (event.isPrimaryButtonDown())
             {
-//                gizmoOverlayController.wasXHandleHit(event.getScreenX(), event.getScreenY());
 
                 pickResult = event.getPickResult();
                 pickedPoint = pickResult.getIntersectedPoint();
@@ -293,9 +292,7 @@ public class ThreeDViewManager
                 intersectedNode = pickResult.getIntersectedNode();
                 lastDragPosition = null;
 
-//                translationDragPlane.setTranslateX(pickedPoint.getX());
                 translationDragPlane.setTranslateY(pickedPoint.getY());
-//                translationDragPlane.setTranslateZ(pickedPoint.getZ());
 
                 Point3D bedXToS = bedTranslateXform.localToParent(pickedPoint);
                 scaleDragPlane.setTranslateX(bedXToS.getX());
@@ -327,18 +324,6 @@ public class ThreeDViewManager
                         {
                             selectModel(pickedModel, false);
                         }
-
-//                        if (pickedModel.isSelected() == false)
-//                        {
-//                            if (event.isControlDown() == false)
-//                            {
-//                                deselectAllModels();
-//                            }
-//                            selectModel(pickedModel);
-//                        } else if (event.isControlDown())
-//                        {
-//                            deselectModel(pickedModel);
-//                        }
                     }
 
                 } else if (intersectedNode == subScene)
@@ -350,8 +335,6 @@ public class ThreeDViewManager
         } else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED && dragMode.get()
             != DragMode.SCALING)
         {
-            double xDelta = event.getSceneX() - dragStartX;
-            double yDelta = event.getSceneY() - dragStartY;
 
             double modifier = 1.0;
             double modifierFactor = 0.3;
@@ -372,8 +355,6 @@ public class ThreeDViewManager
             mouseDeltaX = (mousePosX - mouseOldX); //*DELTA_MULTIPLIER;
             mouseDeltaY = (mousePosY - mouseOldY); //*DELTA_MULTIPLIER;
 
-            double flip = -1.0;
-
             boolean alt = event.isAltDown();
             if (alt && event.isSecondaryButtonDown())
             {
@@ -388,23 +369,16 @@ public class ThreeDViewManager
             } else if (dragMode.get() == DragMode.TRANSLATING && event.isPrimaryButtonDown())
             {
                 Node intersectedNode = event.getPickResult().getIntersectedNode();
-//                    steno.info("Pick drag " + event.getPickResult().getIntersectedNode().getId());
                 //Move the model!
                 if (intersectedNode == translationDragPlane)
                 {
-//                    Point3D currentDragPosition = intersectedNode.localToScene(event.getPickResult().getIntersectedPoint());
                     Point3D currentDragPosition = event.getPickResult().getIntersectedPoint();
-//                    steno.info("Pick drag " + event.getPickResult().getIntersectedNode().getId());
-//                    steno.info("Drag from " + lastDragPosition + " to " + currentDragPosition);
                     if (lastDragPosition != null)
                     {
                         Point3D resultant = currentDragPosition.subtract(lastDragPosition);
 
-//                        steno.info("Resultant " + resultant);
                         translateSelection(resultant.getX(), resultant.getZ());
                     }
-//                    translationDragPlane.setTranslateX(currentDragPosition.getX());
-//                    translationDragPlane.setTranslateZ(currentDragPosition.getZ());
                     lastDragPosition = currentDragPosition;
                 } else
                 {
@@ -414,23 +388,8 @@ public class ThreeDViewManager
             } else if (dragMode.get() == DragMode.SCALING && event.isPrimaryButtonDown())
             {
                 Node intersectedNode = event.getPickResult().getIntersectedNode();
-//                    steno.info("Pick drag " + event.getPickResult().getIntersectedNode().getId());
                 //Move the model!
-                if (intersectedNode == scaleDragPlane)
-                {
-//                    Point3D currentDragPosition = intersectedNode.localToScene(event.getPickResult().getIntersectedPoint());
-////                steno.info("Pick drag " + me.getPickResult().getIntersectedNode().getId());
-////                    steno.info("Drag from " + lastDragPosition + " to " + currentDragPosition);
-//                    if (lastDragPosition != null)
-//                    {
-//                        Point3D resultant = currentDragPosition.subtract(lastDragPosition);
-////                        steno.info("Resultant " + resultant);
-//                        translateSelection(resultant.getX(), resultant.getZ());
-//                    }
-//                    scaleDragPlane.setTranslateX(currentDragPosition.getX());
-//                    scaleDragPlane.setTranslateZ(currentDragPosition.getZ());
-//                    lastDragPosition = currentDragPosition;
-                } else
+                if (intersectedNode != scaleDragPlane)
                 {
                     steno.error(
                         "In scale drag mode but intersected with something other than scale drag plane");
@@ -455,8 +414,6 @@ public class ThreeDViewManager
         } else
         {
             double z = bedTranslateXform.getTz() - (event.getDeltaY() * 0.2);
-//            z = Math.max(z, 2000);
-//            z = Math.min(z, -2000);
             cameraDistance.set(z);
             bedTranslateXform.setTz(z);
         }
@@ -1097,9 +1054,9 @@ public class ThreeDViewManager
 
             Bounds parentBounds = model.getBoundsInParent();
 //            
-            double centreX = model.getCentreX();
+            double centreX = 0; //model.getCentreX();
             double centreY = model.getTranslateY();
-            double centreZ = model.getCentreZ();
+            double centreZ = 0; //model.getCentreZ();
             selectionContainer.setCentreX(centreX);
             selectionContainer.setCentreY(centreY);
             selectionContainer.setCentreZ(centreZ);
@@ -1226,7 +1183,7 @@ public class ThreeDViewManager
         {
             if (model.isSelected())
             {
-                model.translateX(x);
+                model.translateBy(x, 0);
             }
         }
 
@@ -1245,7 +1202,7 @@ public class ThreeDViewManager
         {
             if (model.isSelected())
             {
-                model.translateZ(z);
+                model.translateBy(0, z);
             }
         }
 
@@ -1556,10 +1513,9 @@ public class ThreeDViewManager
                 * MathUtils.RAD_TO_DEG + " Z:" + angles[2] * MathUtils.RAD_TO_DEG);
 
 //            selectionContainer.selectedModelsProperty().get(0).rotateRadians(result);
-            
             Bounds bounds = meshView.getBoundsInParent();
             double maximumY = bounds.getMaxY();
-            
+
             selectionContainer.selectedModelsProperty().get(0).setTranslateY(maximumY);
             recalculateSelectionBounds(false);
 
