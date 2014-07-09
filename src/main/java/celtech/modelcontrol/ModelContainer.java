@@ -79,9 +79,9 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
     ModelBounds originalModelBounds;
     // New AL
-    private Scale transformScalePreferred = new Scale(1, 1, 1);
+    private final Scale transformScalePreferred = new Scale(1, 1, 1);
     private final Rotate transformRotateSnapToGround = new Rotate(0, 0, 0);
-    private final Translate transformRotateSnapToGroundYAdjust = new Translate(0, 0, 0);
+    private final Translate transformSnapToGroundYAdjust = new Translate(0, 0, 0);
     private static final Point3D Y_AXIS = new Point3D(0, 1, 0);
     private final Rotate transformRotateYPreferred = new Rotate(0, 0, 0, 0, Y_AXIS);
     private final Translate transformMoveToCentre = new Translate(0, 0, 0);
@@ -96,6 +96,12 @@ public class ModelContainer extends Group implements Serializable, Comparable
     private double bedCentreOffsetX;
     private double bedCentreOffsetY;
     private double bedCentreOffsetZ;
+    
+    /**
+     * The bounds after the last operation was run. All operations affecting transforms should
+     * call dropToBed() just before they return, which then updates this.
+     */
+    ModelBounds modelBoundsParentBeforeOperation;
 
     /**
      *
@@ -201,21 +207,20 @@ public class ModelContainer extends Group implements Serializable, Comparable
     private void updateTransformMoveToCentre()
     {
         originalModelBounds = calculateBounds();
-        System.out.println("Bounds are " + originalModelBounds.toString());
 
         double centreXOffset = -originalModelBounds.getCentreX();
         double centreYOffset = -originalModelBounds.getMaxY();
         double centreZOffset = -originalModelBounds.getCentreZ();
-        System.out.println("Centre offset is at X " + centreXOffset + " Y " + centreYOffset + " Z "
-            + centreZOffset);
 
         transformMoveToCentre.setX(centreXOffset);
         transformMoveToCentre.setY(centreYOffset);
         transformMoveToCentre.setZ(centreZOffset);
-
+        
         transformRotateYPreferred.setPivotX(originalModelBounds.getCentreX());
         transformRotateYPreferred.setPivotY(originalModelBounds.getCentreY());
         transformRotateYPreferred.setPivotZ(originalModelBounds.getCentreZ());
+        
+        modelBoundsParentBeforeOperation = calculateBoundsInParent();
     }
 
     private void initialise(String name)
@@ -223,13 +228,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
         steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
         printBed = PrintBed.getInstance();
 
-        bedCentreOffsetX = PrintBed.getPrintVolumeCentreZeroHeight().getX() / 2.0;
-        bedCentreOffsetY = PrintBed.getPrintVolumeCentreZeroHeight().getY() / 2.0;
-        bedCentreOffsetZ = PrintBed.getPrintVolumeCentreZeroHeight().getZ() / 2.0;
-        transformBedCentre.setX(bedCentreOffsetX);
-        transformBedCentre.setX(bedCentreOffsetY);
-        transformBedCentre.setZ(bedCentreOffsetZ);
-        System.out.println("Bed centre at X " + bedCentreOffsetX + " Z " + bedCentreOffsetZ);
+        setBedCentreOffsetTransform();
 
         isSelected = new SimpleBooleanProperty(false);
         isOffBed = new SimpleBooleanProperty(false);
@@ -245,8 +244,23 @@ public class ModelContainer extends Group implements Serializable, Comparable
         this.setId(name);
 
         getTransforms().addAll(transformMoveToPreferred, transformMoveToCentre, transformBedCentre,
-                               transformRotateSnapToGroundYAdjust, 
-                               transformRotateYPreferred, transformRotateSnapToGround);
+                               transformSnapToGroundYAdjust, 
+                               transformRotateYPreferred, transformRotateSnapToGround,
+                               transformScalePreferred);
+    }
+
+    /**
+     * Set transformBedCentre according to the position of the centre of the bed.
+     */
+    private void setBedCentreOffsetTransform()
+    {
+        bedCentreOffsetX = PrintBed.getPrintVolumeCentreZeroHeight().getX();
+        bedCentreOffsetY = PrintBed.getPrintVolumeCentreZeroHeight().getY();
+        bedCentreOffsetZ = PrintBed.getPrintVolumeCentreZeroHeight().getZ();
+        transformBedCentre.setX(bedCentreOffsetX);
+        transformBedCentre.setX(bedCentreOffsetY);
+        transformBedCentre.setZ(bedCentreOffsetZ);
+        System.out.println("Bed centre at X " + bedCentreOffsetX + " Z " + bedCentreOffsetZ);
     }
 
     /**
@@ -281,6 +295,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
         transformMoveToPreferred.setX(transformMoveToPreferred.getX() + xMove);
         transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + zMove);
+        dropToBed();
 
 //        Bounds bounds = this.getBoundsInParent();
 ////        steno.info("BIP:" + bounds);
@@ -338,19 +353,11 @@ public class ModelContainer extends Group implements Serializable, Comparable
     }
 
     /**
-     *
-     * @param xPosition
-     * @param zPosition
+     * Move the CENTRE of the object to the desired x,z position.
      */
     public void translateTo(double xPosition, double zPosition)
     {
-        //Move the CENTRE of the object to the desired point
-
         Bounds bounds = this.getBoundsInParent();
-//        steno.info("BIP:" + bounds);
-//
-//        steno.info("xMove:" + xMove + " zMove:" + zMove);
-//        steno.info("Tran:" + getTranslateX() + ":" + getTranslateZ());
 
         double newMaxX = xPosition + bounds.getWidth() / 2;
         double newMinX = xPosition - bounds.getWidth() / 2;
@@ -359,9 +366,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
         double finalXPosition = xPosition;
         double finalZPosition = zPosition;
-
-        double xNudge = 0;
-        double zNudge = 0;
 
         if (newMinX < 0)
         {
@@ -382,7 +386,9 @@ public class ModelContainer extends Group implements Serializable, Comparable
         transformMoveToPreferred.setX(finalXPosition);
         transformMoveToPreferred.setX(finalZPosition);
 
+        dropToBed();
         checkOffBed();
+        
     }
 
     /**
@@ -390,8 +396,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
      */
     public void centreObjectOnBed()
     {
-        translateTo(PrintBed.getPrintVolumeCentre().getX(), PrintBed.getPrintVolumeCentre().getZ());
-        dropModelOnBed();
+        translateTo(0, 0);
     }
 
     /**
@@ -438,15 +443,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
             setScale(scaling);
         }
 
-        dropModelOnBed();
         centreObjectOnBed();
-    }
-
-    private void dropModelOnBed()
-    {
-//        double yOffset = originalModelBounds.getMaxY();
-//
-//        setTy(getTy() + (-yOffset));
     }
 
     /**
@@ -525,12 +522,19 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
     /**
      *
-     * @param value
+     * @param scaleFactor
      */
-    public void setScale(double value)
+    public void setScale(double scaleFactor)
     {
-        steno.info(this.toString());
-        transformScalePreferred = new Scale(value, value, value);
+        preferredScale = scaleFactor;
+        transformScalePreferred.setPivotX(originalModelBounds.getCentreX());
+        transformScalePreferred.setPivotY(originalModelBounds.getCentreY());
+        transformScalePreferred.setPivotZ(originalModelBounds.getCentreZ());
+        transformScalePreferred.setX(scaleFactor);
+        transformScalePreferred.setY(scaleFactor);
+        transformScalePreferred.setZ(scaleFactor);
+        
+        dropToBed();
         checkOffBed();
     }
 
@@ -540,7 +544,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
      */
     public double getScale()
     {
-        return transformScalePreferred.getMxx();
+        return transformScalePreferred.getX();
     }
 
     /**
@@ -551,6 +555,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
     {
         transformRotateYPreferred.setAngle(value);
         checkOffBed();
+        dropToBed();
     }
 
     public double getRotationY()
@@ -967,7 +972,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
         double newScale = width / currentWidth;
 
         setScale(newScale);
-        dropModelOnBed();
     }
 
     /**
@@ -983,7 +987,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
         double newScale = height / currentHeight;
 
         setScale(newScale);
-        dropModelOnBed();
     }
 
     /**
@@ -999,7 +1002,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
         double newScale = depth / currentDepth;
 
         setScale(newScale);
-        dropModelOnBed();
     }
 
     /**
@@ -1335,15 +1337,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
         transformRotateSnapToGround.setPivotY(faceCentreY);
         transformRotateSnapToGround.setPivotZ(faceCentreZ);
 
-        // Correct moveToCentre for change in height (Y)
-        ModelBounds modelBoundsParent = calculateBoundsInParent();
-        System.out.println("Snap bounds in parent is " + modelBoundsParent);
-        double yOffset = modelBoundsParentBefore.getMaxY() - modelBoundsParent.getMaxY();
-        System.out.println("Y offset = " + yOffset);
-        transformRotateSnapToGroundYAdjust.setY(transformRotateSnapToGroundYAdjust.getY() + yOffset);
-        
-        modelBoundsParent = calculateBoundsInParent();
-        System.out.println("New maxY is " + modelBoundsParent.getMaxY());
+        dropToBed();
     }
 
     private double getPointAverage(ObservableFloatArray points, int v1PointIndex,
@@ -1365,6 +1359,19 @@ public class ModelContainer extends Group implements Serializable, Comparable
     public ModelBounds getOriginalModelBounds()
     {
         return originalModelBounds;
+    }
+
+    private void dropToBed()
+    {
+          // Correct transformRotateSnapToGroundYAdjust for change in height (Y)
+        ModelBounds modelBoundsParent = calculateBoundsInParent();
+        System.out.println("Snap bounds in parent is " + modelBoundsParent);
+        double yOffset = modelBoundsParentBeforeOperation.getMaxY() - modelBoundsParent.getMaxY();
+        System.out.println("Y offset = " + yOffset);
+        transformSnapToGroundYAdjust.setY(transformSnapToGroundYAdjust.getY() + yOffset);
+        
+        modelBoundsParentBeforeOperation = calculateBoundsInParent();
+//        System.out.println("New maxY is " + modelBoundsParentBeforeOperation.getMaxY());
     }
 
 }
