@@ -46,6 +46,7 @@ import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
@@ -96,12 +97,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
     private double bedCentreOffsetX;
     private double bedCentreOffsetY;
     private double bedCentreOffsetZ;
-
-    /**
-     * The bounds after the last operation was run. All operations affecting transforms should call
-     * dropToBed() just before they return, which then updates this.
-     */
-    ModelBounds modelBoundsParentBeforeOperation;
 
     /**
      *
@@ -220,7 +215,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
         transformRotateYPreferred.setPivotY(originalModelBounds.getCentreY());
         transformRotateYPreferred.setPivotZ(originalModelBounds.getCentreZ());
 
-        modelBoundsParentBeforeOperation = calculateBoundsInParent();
     }
 
     private void initialise(String name)
@@ -1293,39 +1287,12 @@ public class ModelContainer extends Group implements Serializable, Comparable
     {
         snapFaceIndex = faceNumber;
 
-        MeshView meshView = getMeshView();
-        TriangleMesh triMesh = (TriangleMesh) meshView.getMesh();
+        Vector3D faceNormal = getFaceNormal(faceNumber);
+        Vector3D downVector = new Vector3D(0, 1, 0); 
 
-        int baseFaceIndex = faceNumber * 6;
-
-        int v1PointIndex = triMesh.getFaces().get(baseFaceIndex);
-        int v2PointIndex = triMesh.getFaces().get(baseFaceIndex + 2);
-        int v3PointIndex = triMesh.getFaces().get(baseFaceIndex + 4);
-
-        ObservableFloatArray points = triMesh.getPoints();
-
-        Vector3D v1 = convertToVector3D(points, v1PointIndex);
-        Vector3D v2 = convertToVector3D(points, v2PointIndex);
-        Vector3D v3 = convertToVector3D(points, v3PointIndex);
-
-        double faceCentreX = getPointAverage(points, v1PointIndex, v2PointIndex,
-                                             v3PointIndex, 0);
-        double faceCentreY = getPointAverage(points, v1PointIndex, v2PointIndex,
-                                             v3PointIndex, 1);
-        double faceCentreZ = getPointAverage(points, v1PointIndex, v2PointIndex,
-                                             v3PointIndex, 2);
-
-        Vector3D result1 = v2.subtract(v1);
-        Vector3D result2 = v3.subtract(v1);
-        Vector3D faceNormal = result1.crossProduct(result2);
-        Vector3D currentVectorNormalised = faceNormal.normalize();
-
-        Vector3D downvector = new Vector3D(0, 1, 0);
-
-        Rotation result = new Rotation(currentVectorNormalised, downvector);
+        Rotation result = new Rotation(faceNormal, downVector);
         Vector3D axis = result.getAxis();
         double angleDegrees = result.getAngle() * RAD_TO_DEG;
-//        System.out.format("axis %s %s %s angle %s ", axis.getX(), axis.getY(), axis.getZ(),angleDegrees);
 
         ModelBounds modelBoundsParentBefore = calculateBoundsInParent();
         System.out.println("Snap bounds in parent before is " + modelBoundsParentBefore);
@@ -1339,13 +1306,27 @@ public class ModelContainer extends Group implements Serializable, Comparable
         dropToBed();
     }
 
-    private double getPointAverage(ObservableFloatArray points, int v1PointIndex,
-        int v2PointIndex, int v3PointIndex, int offset)
+    /**
+     * Return the face normal for the face of the given index. 
+     *
+     */
+    private Vector3D getFaceNormal(int faceNumber) throws MathArithmeticException
     {
-        double faceCentreY = (points.get(v1PointIndex * 3 + offset) + points.get(v2PointIndex * 3
-            + offset)
-            + points.get(v3PointIndex * 3 + offset)) / 3.0d;
-        return faceCentreY;
+        MeshView meshView = getMeshView();
+        TriangleMesh triMesh = (TriangleMesh) meshView.getMesh();
+        int baseFaceIndex = faceNumber * 6;
+        int v1PointIndex = triMesh.getFaces().get(baseFaceIndex);
+        int v2PointIndex = triMesh.getFaces().get(baseFaceIndex + 2);
+        int v3PointIndex = triMesh.getFaces().get(baseFaceIndex + 4);
+        ObservableFloatArray points = triMesh.getPoints();
+        Vector3D v1 = convertToVector3D(points, v1PointIndex);
+        Vector3D v2 = convertToVector3D(points, v2PointIndex);
+        Vector3D v3 = convertToVector3D(points, v3PointIndex);
+        Vector3D result1 = v2.subtract(v1);
+        Vector3D result2 = v3.subtract(v1);
+        Vector3D faceNormal = result1.crossProduct(result2);
+        Vector3D currentVectorNormalised = faceNormal.normalize();
+        return currentVectorNormalised;
     }
 
     private Vector3D convertToVector3D(ObservableFloatArray points, int v1PointIndex)
@@ -1363,14 +1344,9 @@ public class ModelContainer extends Group implements Serializable, Comparable
     private void dropToBed()
     {
         // Correct transformRotateSnapToGroundYAdjust for change in height (Y)
+        transformSnapToGroundYAdjust.setY(0);
         ModelBounds modelBoundsParent = calculateBoundsInParent();
-        System.out.println("Snap bounds in parent is " + modelBoundsParent);
-        double yOffset = modelBoundsParentBeforeOperation.getMaxY() - modelBoundsParent.getMaxY();
-        System.out.println("Y offset = " + yOffset);
-        transformSnapToGroundYAdjust.setY(transformSnapToGroundYAdjust.getY() + yOffset);
-
-        modelBoundsParentBeforeOperation = calculateBoundsInParent();
-//        System.out.println("New maxY is " + modelBoundsParentBeforeOperation.getMaxY());
+        transformSnapToGroundYAdjust.setY(- modelBoundsParent.getMaxY());
     }
 
 }
