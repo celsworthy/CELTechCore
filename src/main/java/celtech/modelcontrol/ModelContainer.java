@@ -74,13 +74,14 @@ public class ModelContainer extends Group implements Serializable, Comparable
     private IntegerProperty numberOfLayers = new SimpleIntegerProperty(0);
     private IntegerProperty maxLayerVisible = new SimpleIntegerProperty(0);
     private IntegerProperty minLayerVisible = new SimpleIntegerProperty(0);
-    private ModelBounds originalModelBounds = new ModelBounds();
 
     private DoubleProperty height = new SimpleDoubleProperty(0);
 
+    ModelBounds originalModelBounds;
     // New AL
     private Scale transformScalePreferred = new Scale(1, 1, 1);
     private final Rotate transformRotateSnapToGround = new Rotate(0, 0, 0);
+    private final Translate transformRotateSnapToGroundYAdjust = new Translate(0, 0, 0);
     private static final Point3D Y_AXIS = new Point3D(0, 1, 0);
     private final Rotate transformRotateYPreferred = new Rotate(0, 0, 0, 0, Y_AXIS);
     private final Translate transformMoveToCentre = new Translate(0, 0, 0);
@@ -93,8 +94,8 @@ public class ModelContainer extends Group implements Serializable, Comparable
     private double preferredYRotation = 0;
 
     private double bedCentreOffsetX;
+    private double bedCentreOffsetY;
     private double bedCentreOffsetZ;
-    
 
     /**
      *
@@ -199,7 +200,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
     private void updateTransformMoveToCentre()
     {
-        calculateBounds();
+        originalModelBounds = calculateBounds();
         System.out.println("Bounds are " + originalModelBounds.toString());
 
         double centreXOffset = -originalModelBounds.getCentreX();
@@ -211,7 +212,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
         transformMoveToCentre.setX(centreXOffset);
         transformMoveToCentre.setY(centreYOffset);
         transformMoveToCentre.setZ(centreZOffset);
-        
+
         transformRotateYPreferred.setPivotX(originalModelBounds.getCentreX());
         transformRotateYPreferred.setPivotY(originalModelBounds.getCentreY());
         transformRotateYPreferred.setPivotZ(originalModelBounds.getCentreZ());
@@ -222,9 +223,11 @@ public class ModelContainer extends Group implements Serializable, Comparable
         steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
         printBed = PrintBed.getInstance();
 
-        bedCentreOffsetX = PrintBed.getPrintVolumeCentre().getX() / 2.0;
-        bedCentreOffsetZ = PrintBed.getPrintVolumeCentre().getZ() / 2.0;
+        bedCentreOffsetX = PrintBed.getPrintVolumeCentreZeroHeight().getX() / 2.0;
+        bedCentreOffsetY = PrintBed.getPrintVolumeCentreZeroHeight().getY() / 2.0;
+        bedCentreOffsetZ = PrintBed.getPrintVolumeCentreZeroHeight().getZ() / 2.0;
         transformBedCentre.setX(bedCentreOffsetX);
+        transformBedCentre.setX(bedCentreOffsetY);
         transformBedCentre.setZ(bedCentreOffsetZ);
         System.out.println("Bed centre at X " + bedCentreOffsetX + " Z " + bedCentreOffsetZ);
 
@@ -241,14 +244,9 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
         this.setId(name);
 
-//        getTransforms().addAll(transformScalePreferred, transformRotateSnapToGround,
-//                               transformRotateYPreferred, transformMoveToCentre,
-//                               transformMoveToPreferred);
-        getTransforms()
-            .addAll(transformBedCentre, transformMoveToCentre,
-                    transformMoveToPreferred, transformRotateYPreferred,
-                    transformRotateSnapToGround);
-
+        getTransforms().addAll(transformMoveToPreferred, transformMoveToCentre, transformBedCentre,
+                               transformRotateSnapToGroundYAdjust, 
+                               transformRotateYPreferred, transformRotateSnapToGround);
     }
 
     /**
@@ -1022,15 +1020,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
 //        translateTo(centreX, z);
     }
 
-    /**
-     *
-     * @return
-     */
-    public ModelBounds getOriginalModelBounds()
-    {
-        return originalModelBounds;
-    }
-
     private void checkOffBed()
     {
         Bounds bounds = getBoundsInParent();
@@ -1062,7 +1051,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
         transformRotateYPreferred.setAngle(transformRotateYPreferred.getAngle() + newValue);
     }
 
-    private void calculateBounds()
+    private ModelBounds calculateBounds()
     {
         TriangleMesh mesh = (TriangleMesh) getMeshView().getMesh();
         ObservableFloatArray originalPoints = mesh.getPoints();
@@ -1097,20 +1086,51 @@ public class ModelContainer extends Group implements Serializable, Comparable
         double newcentreY = minY + (newheight / 2);
         double newcentreZ = minZ + (newdepth / 2);
 
-        steno.info("New bounds are MinX:" + minX
-            + " MaxX:" + maxX
-            + " MinY:" + minY
-            + " MaxY:" + maxY
-            + " MinZ:" + minZ
-            + " MaxZ:" + maxZ
-            + " W:" + newwidth
-            + " H:" + newheight
-            + " D:" + newdepth);
+        return new ModelBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
+                               newheight, newdepth, newcentreX, newcentreY,
+                               newcentreZ);
+    }
 
-        originalModelBounds = new ModelBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
-                                              newheight, newdepth, newcentreX, newcentreY,
-                                              newcentreZ);
+    private ModelBounds calculateBoundsInParent()
+    {
+        TriangleMesh mesh = (TriangleMesh) getMeshView().getMesh();
+        ObservableFloatArray originalPoints = mesh.getPoints();
 
+        double minX = 999;
+        double minY = 999;
+        double minZ = 999;
+        double maxX = -999;
+        double maxY = -999;
+        double maxZ = -999;
+
+        for (int pointOffset = 0; pointOffset < originalPoints.size(); pointOffset += 3)
+        {
+            float xPos = originalPoints.get(pointOffset);
+            float yPos = originalPoints.get(pointOffset + 1);
+            float zPos = originalPoints.get(pointOffset + 2);
+
+            Point3D pointInParent = localToParent(xPos, yPos, zPos);
+
+            minX = Math.min(pointInParent.getX(), minX);
+            minY = Math.min(pointInParent.getY(), minY);
+            minZ = Math.min(pointInParent.getZ(), minZ);
+
+            maxX = Math.max(pointInParent.getX(), maxX);
+            maxY = Math.max(pointInParent.getY(), maxY);
+            maxZ = Math.max(pointInParent.getZ(), maxZ);
+        }
+
+        double newwidth = maxX - minX;
+        double newdepth = maxZ - minZ;
+        double newheight = maxY - minY;
+
+        double newcentreX = minX + (newwidth / 2);
+        double newcentreY = minY + (newheight / 2);
+        double newcentreZ = minZ + (newdepth / 2);
+
+        return new ModelBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
+                               newheight, newdepth, newcentreX, newcentreY,
+                               newcentreZ);
     }
 
     /**
@@ -1271,7 +1291,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
     public void snapToGround(int faceNumber)
     {
         snapFaceIndex = faceNumber;
-        
+
         MeshView meshView = getMeshView();
         TriangleMesh triMesh = (TriangleMesh) meshView.getMesh();
 
@@ -1286,13 +1306,13 @@ public class ModelContainer extends Group implements Serializable, Comparable
         Vector3D v1 = convertToVector3D(points, v1PointIndex);
         Vector3D v2 = convertToVector3D(points, v2PointIndex);
         Vector3D v3 = convertToVector3D(points, v3PointIndex);
-        
+
         double faceCentreX = getPointAverage(points, v1PointIndex, v2PointIndex,
                                              v3PointIndex, 0);
         double faceCentreY = getPointAverage(points, v1PointIndex, v2PointIndex,
                                              v3PointIndex, 1);
         double faceCentreZ = getPointAverage(points, v1PointIndex, v2PointIndex,
-                                             v3PointIndex, 2);        
+                                             v3PointIndex, 2);
 
         Vector3D result1 = v2.subtract(v1);
         Vector3D result2 = v3.subtract(v1);
@@ -1305,25 +1325,32 @@ public class ModelContainer extends Group implements Serializable, Comparable
         Vector3D axis = result.getAxis();
         double angleDegrees = result.getAngle() * RAD_TO_DEG;
 //        System.out.format("axis %s %s %s angle %s ", axis.getX(), axis.getY(), axis.getZ(),angleDegrees);
+
+        ModelBounds modelBoundsParentBefore = calculateBoundsInParent();
+        System.out.println("Snap bounds in parent before is " + modelBoundsParentBefore);
+
         transformRotateSnapToGround.setAxis(new Point3D(axis.getX(), axis.getY(), axis.getZ()));
         transformRotateSnapToGround.setAngle(angleDegrees);
         transformRotateSnapToGround.setPivotX(faceCentreX);
         transformRotateSnapToGround.setPivotY(faceCentreY);
         transformRotateSnapToGround.setPivotZ(faceCentreZ);
 
-//        updateTransformMoveToCentre();
+        // Correct moveToCentre for change in height (Y)
+        ModelBounds modelBoundsParent = calculateBoundsInParent();
+        System.out.println("Snap bounds in parent is " + modelBoundsParent);
+        double yOffset = modelBoundsParentBefore.getMaxY() - modelBoundsParent.getMaxY();
+        System.out.println("Y offset = " + yOffset);
+        transformRotateSnapToGroundYAdjust.setY(transformRotateSnapToGroundYAdjust.getY() + yOffset);
         
-//        Bounds bounds = meshView.getBoundsInParent();
-//        double maximumY = bounds.getMaxY();
-
-        steno.info("For points " + v1 + ":" + v2 + ":" + v3 + " got normal "
-            + currentVectorNormalised);
+        modelBoundsParent = calculateBoundsInParent();
+        System.out.println("New maxY is " + modelBoundsParent.getMaxY());
     }
 
-    private double getPointAverage(ObservableFloatArray points, int v1PointIndex, 
+    private double getPointAverage(ObservableFloatArray points, int v1PointIndex,
         int v2PointIndex, int v3PointIndex, int offset)
     {
-        double faceCentreY = (points.get(v1PointIndex * 3 + offset) + points.get(v2PointIndex * 3 + offset)
+        double faceCentreY = (points.get(v1PointIndex * 3 + offset) + points.get(v2PointIndex * 3
+            + offset)
             + points.get(v3PointIndex * 3 + offset)) / 3.0d;
         return faceCentreY;
     }
@@ -1331,8 +1358,13 @@ public class ModelContainer extends Group implements Serializable, Comparable
     private Vector3D convertToVector3D(ObservableFloatArray points, int v1PointIndex)
     {
         Vector3D v1 = new Vector3D(points.get(v1PointIndex * 3), points.get((v1PointIndex * 3)
-            + 1), points.get((v1PointIndex * 3) + 2));
+                                   + 1), points.get((v1PointIndex * 3) + 2));
         return v1;
+    }
+
+    public ModelBounds getOriginalModelBounds()
+    {
+        return originalModelBounds;
     }
 
 }
