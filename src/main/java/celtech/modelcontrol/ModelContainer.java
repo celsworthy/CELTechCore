@@ -2,10 +2,6 @@
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
  */
 package celtech.modelcontrol;
 
@@ -14,6 +10,7 @@ import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.importers.FloatArrayList;
 import celtech.coreUI.visualisation.importers.IntegerArrayList;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
+import celtech.utils.Math.MathUtils;
 import celtech.utils.gcode.representation.GCodeElement;
 import celtech.utils.gcode.representation.GCodeMeshData;
 import celtech.utils.gcode.representation.MovementType;
@@ -49,6 +46,9 @@ import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
  *
@@ -83,7 +83,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
     private Scale transformScalePreferred = new Scale(1, 1, 1);
     private Rotate transformRotateSnapToGround = new Rotate(0, 0, 0);
     private static final Point3D Y_AXIS = new Point3D(0, 1, 0);
-    private Rotate transformRotateYPreferred = new Rotate(0, Y_AXIS);
+    private Rotate transformRotateYPreferred = new Rotate(0, 0, 0, 0, Y_AXIS);
     private Translate transformMoveToCentre = new Translate(0, 0, 0);
     private Translate transformMoveToPreferred = new Translate(0, 0, 0);
 
@@ -111,8 +111,8 @@ public class ModelContainer extends Group implements Serializable, Comparable
     public ModelContainer(String name)
     {
         super();
-        initialiseObject(name);
-        configureModelOnLoad();
+        initialise(name);
+        updateTransformMoveToCentre();
     }
 
     /**
@@ -125,12 +125,11 @@ public class ModelContainer extends Group implements Serializable, Comparable
     {
         super();
         modelContentsType = ModelContentsEnumeration.GCODE;
-        initialiseObject(name);
-        configureModelOnLoad();
+        initialise(name);
+        updateTransformMoveToCentre();
         getChildren().add(gcodeMeshData.getAllParts());
         this.gcodeMeshData = gcodeMeshData;
 
-//        steno.info("Got " + gcodeMeshData.getReferencedArrays().size() + " layers and " + gcodeMeshData.getReferencedElements() + " elements");
         this.fileLines.addAll(fileLines);
 
         linesOfGCode.set(fileLines.size());
@@ -140,7 +139,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
             @Override
             public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
             {
-//                steno.info("Changed from " + t.intValue() + " to " + t1.intValue());
                 highlightGCodeLine(t1.intValue());
             }
         });
@@ -181,8 +179,8 @@ public class ModelContainer extends Group implements Serializable, Comparable
         super();
         modelContentsType = ModelContentsEnumeration.MESH;
         getChildren().add(meshToAdd);
-        initialiseObject(name);
-        configureModelOnLoad();
+        initialise(name);
+        updateTransformMoveToCentre();
     }
 
     /**
@@ -195,11 +193,11 @@ public class ModelContainer extends Group implements Serializable, Comparable
         super();
         modelContentsType = ModelContentsEnumeration.MESH;
         getChildren().addAll(meshes);
-        initialiseObject(name);
-        configureModelOnLoad();
+        initialise(name);
+        updateTransformMoveToCentre();
     }
 
-    private void configureModelOnLoad()
+    private void updateTransformMoveToCentre()
     {
         calculateBounds();
         System.out.println("Bounds are " + originalModelBounds.toString());
@@ -213,9 +211,13 @@ public class ModelContainer extends Group implements Serializable, Comparable
         transformMoveToCentre.setX(centreXOffset);
         transformMoveToCentre.setY(centreYOffset);
         transformMoveToCentre.setZ(centreZOffset);
+        
+        transformRotateYPreferred.setPivotX(originalModelBounds.getCentreX());
+        transformRotateYPreferred.setPivotY(originalModelBounds.getCentreY());
+        transformRotateYPreferred.setPivotZ(originalModelBounds.getCentreZ());
     }
 
-    private void initialiseObject(String name)
+    private void initialise(String name)
     {
         steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
         printBed = PrintBed.getInstance();
@@ -243,7 +245,8 @@ public class ModelContainer extends Group implements Serializable, Comparable
 //                               transformRotateYPreferred, transformMoveToCentre,
 //                               transformMoveToPreferred);
         getTransforms()
-            .addAll(transformBedCentre, transformMoveToCentre, transformMoveToPreferred);
+            .addAll(transformBedCentre, transformMoveToCentre,
+                    transformMoveToPreferred, transformRotateYPreferred);
 
     }
 
@@ -276,10 +279,10 @@ public class ModelContainer extends Group implements Serializable, Comparable
      */
     public void translateBy(double xMove, double zMove)
     {
-        
+
         transformMoveToPreferred.setX(transformMoveToPreferred.getX() + xMove);
         transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + zMove);
-        
+
 //        Bounds bounds = this.getBoundsInParent();
 ////        steno.info("BIP:" + bounds);
 ////
@@ -319,7 +322,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
 //
 //        transformMoveToPreferred.setX(finalXMove + currentX);
 //        transformMoveToPreferred.setZ(finalZMove + currentZ);
-
 //        centreX = transformMoveToPreferred.getX() + centreXOffset;
 //        centreZ = transformMoveToPreferred.getZ() + centreZOffset;
         checkOffBed();
@@ -549,7 +551,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
     public void setRotationY(double value)
     {
         transformRotateYPreferred.setAngle(value);
-//        calculateBounds();
         checkOffBed();
     }
 
@@ -1084,7 +1085,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
 //        setRy(this.getRotateY() + newValue);
         transformRotateYPreferred.setAngle(transformRotateYPreferred.getAngle() + newValue);
-        calculateBounds();
 //        setRotationX(getRotationX() + newValue);
 
     }
@@ -1403,6 +1403,45 @@ public class ModelContainer extends Group implements Serializable, Comparable
     public double getTotalSize()
     {
         return getTotalWidth() + getTotalDepth();
+    }
+
+    public void snapToGround(int faceNumber)
+    {
+        MeshView meshView = getMeshView();
+        TriangleMesh triMesh = (TriangleMesh) meshView.getMesh();
+
+        int baseFaceIndex = faceNumber * 6;
+
+        int v1PointIndex = triMesh.getFaces().get(baseFaceIndex);
+        int v2PointIndex = triMesh.getFaces().get(baseFaceIndex + 2);
+        int v3PointIndex = triMesh.getFaces().get(baseFaceIndex + 4);
+
+        ObservableFloatArray points = triMesh.getPoints();
+
+        Vector3D v1 = new Vector3D(points.get(v1PointIndex * 3), points.get((v1PointIndex * 3)
+                                   + 1), points.get((v1PointIndex * 3) + 2));
+        Vector3D v2 = new Vector3D(points.get(v2PointIndex * 3), points.get((v2PointIndex * 3)
+                                   + 1), points.get((v2PointIndex * 3) + 2));
+        Vector3D v3 = new Vector3D(points.get(v3PointIndex * 3), points.get((v3PointIndex * 3)
+                                   + 1), points.get((v3PointIndex * 3) + 2));
+
+        Vector3D result1 = v2.subtract(v1);
+        Vector3D result2 = v3.subtract(v1);
+        Vector3D faceNormal = result1.crossProduct(result2);
+        Vector3D currentVectorNormalised = faceNormal.normalize();
+
+        Vector3D downvector = new Vector3D(0, 1, 0);
+
+        Rotation result = new Rotation(currentVectorNormalised, downvector);
+        double angles[] = result.getAngles(RotationOrder.XYZ);
+        steno.info("Angles were X:" + angles[0] * MathUtils.RAD_TO_DEG + " Y:" + angles[1]
+            * MathUtils.RAD_TO_DEG + " Z:" + angles[2] * MathUtils.RAD_TO_DEG);
+
+        Bounds bounds = meshView.getBoundsInParent();
+        double maximumY = bounds.getMaxY();
+
+        steno.info("For points " + v1 + ":" + v2 + ":" + v3 + " got normal "
+            + currentVectorNormalised);
     }
 
 }

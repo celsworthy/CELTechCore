@@ -81,8 +81,8 @@ public class ThreeDViewManager
     private SubScene subScene = null;
     private final SimpleObjectProperty<SubScene> subSceneProperty = new SimpleObjectProperty<>();
 
-    private final PointLight pointLight1 = new PointLight(Color.WHITE);
-    private final AmbientLight ambientLight = new AmbientLight(Color.WHITE);
+//    private final PointLight pointLight1 = new PointLight(Color.WHITE);
+//    private final AmbientLight ambientLight = new AmbientLight(Color.WHITE);
 
     final Group axisGroup = new Group();
     double DELTA_MULTIPLIER = 200.0;
@@ -101,7 +101,7 @@ public class ThreeDViewManager
                                                      * 2);
     private final Box scaleDragPlane = new Box(dragPlaneHalfSize * 2, dragPlaneHalfSize * 2, 0.1);
     private SelectionHighlighter threeDControl = null;
-    private GizmoOverlayController gizmoOverlayController = null;
+//    private GizmoOverlayController gizmoOverlayController = null;
     /*
      * 
      */
@@ -118,8 +118,8 @@ public class ThreeDViewManager
     private ReadOnlyDoubleProperty widthPropertyToFollow = null;
     private ReadOnlyDoubleProperty heightPropertyToFollow = null;
 
-    private IntegerProperty screenCentreOfSelectionX = new SimpleIntegerProperty(0);
-    private IntegerProperty screenCentreOfSelectionY = new SimpleIntegerProperty(0);
+    private final IntegerProperty screenCentreOfSelectionX = new SimpleIntegerProperty(0);
+    private final IntegerProperty screenCentreOfSelectionY = new SimpleIntegerProperty(0);
 
     /*
      * ALT stuff
@@ -142,18 +142,16 @@ public class ThreeDViewManager
     private double mouseDeltaX;
     private double mouseDeltaY;
 
-    private double bedXOffsetFromCameraZero;
-    private double bedZOffsetFromCameraZero;
+    private final double bedXOffsetFromCameraZero;
+    private final double bedZOffsetFromCameraZero;
 
     private Point3D centreCoordsScene = null;
     private Point3D pickedPoint;
     private Node intersectedNode;
     private PickResult pickResult;
 
-    private double dragStartX, dragStartY;
-
-    private double settingsAnimationYAngle = 30;
-    private double settingsAnimationXAngle = 0;
+//    private final double settingsAnimationYAngle = 30;
+//    private final double settingsAnimationXAngle = 0;
     private long lastAnimationTrigger = 0;
 
     private double gizmoStartingRotationAngle = 0;
@@ -276,8 +274,8 @@ public class ThreeDViewManager
 
         if (event.getEventType() == MouseEvent.MOUSE_PRESSED)
         {
-            dragStartX = event.getSceneX();
-            dragStartY = event.getSceneY();
+//            dragStartX = event.getSceneX();
+//            dragStartY = event.getSceneY();
             mousePosX = event.getSceneX();
             mousePosY = event.getSceneY();
             mouseOldX = event.getSceneX();
@@ -425,8 +423,6 @@ public class ThreeDViewManager
             && event.getZoomFactor() < 1.2)
         {
             double z = bedTranslateXform.getTz() / event.getZoomFactor();
-//            z = Math.max(z, 2000);
-//            z = Math.min(z, -2000);
             cameraDistance.set(z);
             bedTranslateXform.setTz(z);
             recalculateCentre();
@@ -1468,59 +1464,11 @@ public class ThreeDViewManager
     {
         if (intersectedNode instanceof MeshView)
         {
-            MeshView meshView = (MeshView) intersectedNode;
-            TriangleMesh triMesh = (TriangleMesh) meshView.getMesh();
-
+            
             int faceNumber = pickResult.getIntersectedFace();
-
-            int baseFaceIndex = faceNumber * 6;
-
-            int v1PointIndex = triMesh.getFaces().get(baseFaceIndex);
-            int v2PointIndex = triMesh.getFaces().get(baseFaceIndex + 2);
-            int v3PointIndex = triMesh.getFaces().get(baseFaceIndex + 4);
-
-            ObservableFloatArray points = triMesh.getPoints();
-
-            Vector3D v1 = new Vector3D(points.get(v1PointIndex * 3), points.get((v1PointIndex * 3)
-                                       + 1), points.get((v1PointIndex * 3) + 2));
-            Vector3D v2 = new Vector3D(points.get(v2PointIndex * 3), points.get((v2PointIndex * 3)
-                                       + 1), points.get((v2PointIndex * 3) + 2));
-            Vector3D v3 = new Vector3D(points.get(v3PointIndex * 3), points.get((v3PointIndex * 3)
-                                       + 1), points.get((v3PointIndex * 3) + 2));
-
-            float[] pointArray = triMesh.getPoints().toArray(null);
-            int[] faceArray = triMesh.getFaces().toArray(null);
-
-//                    for (int i = 0; i < pointArray.length; i++)
-//                    {
-//                        steno.info("Point " + i + ":" + pointArray[i]);
-//                    }
-//
-//                    for (int i = 0; i < faceArray.length; i++)
-//                    {
-//                        steno.info("Face " + i + ":" + faceArray[i]);
-//                    }
-            Vector3D result1 = v2.subtract(v1);
-            Vector3D result2 = v3.subtract(v1);
-            Vector3D faceNormal = result1.crossProduct(result2);
-            Vector3D currentVectorNormalised = faceNormal.normalize();
-
-            Vector3D downvector = new Vector3D(0, 1, 0);
-
-            Rotation result = new Rotation(currentVectorNormalised, downvector);
-            double angles[] = result.getAngles(RotationOrder.XYZ);
-            steno.info("Angles were X:" + angles[0] * MathUtils.RAD_TO_DEG + " Y:" + angles[1]
-                * MathUtils.RAD_TO_DEG + " Z:" + angles[2] * MathUtils.RAD_TO_DEG);
-
-//            selectionContainer.selectedModelsProperty().get(0).rotateRadians(result);
-            Bounds bounds = meshView.getBoundsInParent();
-            double maximumY = bounds.getMaxY();
-
-            selectionContainer.selectedModelsProperty().get(0).setTranslateY(maximumY);
-            recalculateSelectionBounds(false);
-
-            steno.info("For points " + v1 + ":" + v2 + ":" + v3 + " got normal "
-                + currentVectorNormalised);
+            MeshView meshView = (MeshView) intersectedNode;
+            ModelContainer modelContainer = (ModelContainer) intersectedNode.getParent();
+            modelContainer.snapToGround(faceNumber);
         }
     }
 
@@ -1637,7 +1585,7 @@ public class ThreeDViewManager
      */
     public void associateGizmoOverlayController(GizmoOverlayController controller)
     {
-        this.gizmoOverlayController = controller;
+//        this.gizmoOverlayController = controller;
     }
 
     /**
