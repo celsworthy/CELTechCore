@@ -847,14 +847,13 @@ public class LayoutSidePanelController implements Initializable,
                                                 selectionModel.getPrimarySelectedModelDetails();
         if (selectedModelDetails != null)
         {
-            widthTextField.doubleValueProperty().bind(
-                selectedModelDetails.getWidth());
+            selectedModelDetails.getWidth().addListener(widthListener);
+            selectedModelDetails.getCentreX().addListener(xAxisListener);
 //            heightTextField.doubleValueProperty().set(
 //                selectionContainer.getHeight());
 //            depthTextField.doubleValueProperty().set(
 //                selectionContainer.getDepth());
-//            xAxisTextField.doubleValueProperty().set(
-//                selectionContainer.getCentreX());
+
 //            yAxisTextField.doubleValueProperty().set(
 //                selectionContainer.getCentreZ());
 //            scaleTextField.doubleValueProperty().set(

@@ -5,7 +5,6 @@ package celtech.coreUI.visualisation;
 
 import celtech.modelcontrol.ModelContainer;
 import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
@@ -36,8 +35,6 @@ public class SelectedModelContainers
     public void removeModelContainer(ModelContainer modelContainer)
     {
         modelContainers.remove(modelContainer);
-        primarySelectedModelDetails = null;
-
     }
 
     public boolean isSelected(ModelContainer modelContainer)
@@ -54,19 +51,29 @@ public class SelectedModelContainers
     {
         return primarySelectedModelDetails;
     }
+    
+    /**
+     * Call this method when the transformed geometry of the selected model have changed.
+     */
+    public void updateSelectedValues() {
+        if (primarySelectedModelDetails != null) {
+            primarySelectedModelDetails.updateSelectedProperties();
+        }    
+    }
 
     public class PrimarySelectedModelDetails
     {
-        
+
         ModelContainer boundModelContainer;
 
         private DoubleProperty width = new SimpleDoubleProperty();
+        private DoubleProperty centreX = new SimpleDoubleProperty();
 
         private PrimarySelectedModelDetails()
         {
         }
 
-        public ReadOnlyDoubleProperty getWidth()
+        public DoubleProperty getWidth()
         {
             return width;
         }
@@ -74,7 +81,19 @@ public class SelectedModelContainers
         public void bind(ModelContainer modelContainer)
         {
             boundModelContainer = modelContainer;
+            updateSelectedProperties();
+        }
+
+        public DoubleProperty getCentreX()
+        {
+            return centreX;
+        }
+
+        private void updateSelectedProperties()
+        {
             width.set(boundModelContainer.getTotalWidth());
+            System.out.println("set centre x to " + boundModelContainer.getCentreX());
+            centreX.set(boundModelContainer.getCentreX());
         }
     }
 

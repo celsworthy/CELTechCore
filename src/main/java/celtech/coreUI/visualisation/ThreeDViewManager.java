@@ -1099,11 +1099,14 @@ public class ThreeDViewManager
     {
         for (ModelContainer model : loadedModels)
         {
-            if (model.isSelected())
+            if (selectedModelContainers.isSelected(model))
             {
                 model.translateBy(x, z);
             }
+            selectedModelContainers.updateSelectedValues();
         }
+        
+        
 
         //recalculateSelectionBounds(false);
         collideModels();

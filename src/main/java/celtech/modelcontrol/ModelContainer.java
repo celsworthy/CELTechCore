@@ -97,6 +97,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
     private double bedCentreOffsetX;
     private double bedCentreOffsetY;
     private double bedCentreOffsetZ;
+    private ModelBounds lastTransformedBounds;
 
     /**
      *
@@ -214,6 +215,8 @@ public class ModelContainer extends Group implements Serializable, Comparable
         transformRotateYPreferred.setPivotX(originalModelBounds.getCentreX());
         transformRotateYPreferred.setPivotY(originalModelBounds.getCentreY());
         transformRotateYPreferred.setPivotZ(originalModelBounds.getCentreZ());
+        
+        lastTransformedBounds = calculateBoundsInParent();
 
     }
 
@@ -289,7 +292,9 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
         transformMoveToPreferred.setX(transformMoveToPreferred.getX() + xMove);
         transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + zMove);
-        dropToBed();
+
+        dropToBedAndUpdateLastTransformedBounds();
+        checkOffBed();
 
 //        Bounds bounds = this.getBoundsInParent();
 ////        steno.info("BIP:" + bounds);
@@ -332,12 +337,12 @@ public class ModelContainer extends Group implements Serializable, Comparable
 //        transformMoveToPreferred.setZ(finalZMove + currentZ);
 //        centreX = transformMoveToPreferred.getX() + centreXOffset;
 //        centreZ = transformMoveToPreferred.getZ() + centreZOffset;
-        checkOffBed();
+
     }
 
     public ModelBounds getTransformedBounds()
     {
-        return calculateBoundsInParent();
+        return lastTransformedBounds;
     }
 
     public ModelBounds getLocalBounds()
@@ -392,7 +397,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
         transformMoveToPreferred.setX(finalXPosition);
         transformMoveToPreferred.setX(finalZPosition);
 
-        dropToBed();
+        dropToBedAndUpdateLastTransformedBounds();
         checkOffBed();
 
     }
@@ -540,7 +545,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
         transformScalePreferred.setY(preferredScale);
         transformScalePreferred.setZ(preferredScale);
 
-        dropToBed();
+        dropToBedAndUpdateLastTransformedBounds();
         checkOffBed();
     }
 
@@ -560,8 +565,9 @@ public class ModelContainer extends Group implements Serializable, Comparable
     public void setRotationY(double value)
     {
         transformRotateYPreferred.setAngle(value);
+        
+        dropToBedAndUpdateLastTransformedBounds();
         checkOffBed();
-        dropToBed();
     }
 
     public double getRotationY()
@@ -1041,7 +1047,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
         double requiredTranslation = finalXPosition - currentXPosition;
         transformMoveToPreferred.setX(transformMoveToPreferred.getX() + requiredTranslation);
 
-        dropToBed();
+        dropToBedAndUpdateLastTransformedBounds();
         checkOffBed();
     }
 
@@ -1075,7 +1081,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
         double requiredTranslation = finalZPosition - currentZPosition;
         transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + requiredTranslation);
 
-        dropToBed();
+        dropToBedAndUpdateLastTransformedBounds();
         checkOffBed();
     }
 
@@ -1108,6 +1114,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
     public void deltaRotateAroundY(double newValue)
     {
         transformRotateYPreferred.setAngle(transformRotateYPreferred.getAngle() + newValue);
+        lastTransformedBounds = calculateBoundsInParent();
     }
 
     private ModelBounds calculateBounds()
@@ -1317,6 +1324,14 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
         return returnVal;
     }
+    
+    
+    public double getCentreX()
+    {
+        double centreX = getTransformedBounds().getCentreX();
+        return centreX;
+    }
+    
 
     /**
      *
@@ -1368,7 +1383,8 @@ public class ModelContainer extends Group implements Serializable, Comparable
         transformRotateSnapToGround.setPivotY(originalModelBounds.getCentreY());
         transformRotateSnapToGround.setPivotZ(originalModelBounds.getCentreZ());
 
-        dropToBed();
+        dropToBedAndUpdateLastTransformedBounds();
+        checkOffBed();
     }
 
     /**
@@ -1406,12 +1422,13 @@ public class ModelContainer extends Group implements Serializable, Comparable
         return originalModelBounds;
     }
 
-    private void dropToBed()
+    private void dropToBedAndUpdateLastTransformedBounds()
     {
         // Correct transformRotateSnapToGroundYAdjust for change in height (Y)
         transformSnapToGroundYAdjust.setY(0);
         ModelBounds modelBoundsParent = calculateBoundsInParent();
         transformSnapToGroundYAdjust.setY(-modelBoundsParent.getMaxY());
+        lastTransformedBounds = calculateBoundsInParent();
     }
 
     public double getPreferredScale()
