@@ -1103,12 +1103,9 @@ public class ThreeDViewManager
             {
                 model.translateBy(x, z);
             }
-            selectedModelContainers.updateSelectedValues();
         }
-        
-        
+        selectedModelContainers.updateSelectedValues();
 
-        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1253,24 +1250,15 @@ public class ThreeDViewManager
      */
     public void scaleSelection(double newScale)
     {
-        System.out.println("scale selection " + newScale);
-//        if (selectionContainer.selectedModelsProperty().size() == 1)
-//        {
-            ModelContainer model = null;
-            model.scale(newScale);
-//        } else
-//        {
-//            for (ModelContainer model : loadedModels)
-//            {
-//                if (model.isSelected())
-//                {
-//                    model.scale(model.getScale() * newScale);
-//                }
-//            }
-//        }
+        for (ModelContainer model : loadedModels)
+        {
+            if (selectedModelContainers.isSelected(model))
+            {
+                model.scale(newScale);
+            }
+        }
+        selectedModelContainers.updateSelectedValues();
 
-        //recalculateSelectionBounds(false);
-//        recalculateCentre();
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1281,10 +1269,17 @@ public class ThreeDViewManager
      */
     public void rotateSelection(double rotation)
     {
-//        if (selectionContainer.selectedModelsProperty().size() == 1)
-//        {
-            ModelContainer modelToRotate = null;
-            modelToRotate.setRotationY(rotation);
+        for (ModelContainer model : loadedModels)
+        {
+            if (selectedModelContainers.isSelected(model))
+            {
+                model.setRotationY(rotation);
+            }
+        }
+        selectedModelContainers.updateSelectedValues();
+        
+        // TODO: multi select rotate should be around the common centre of the multi select
+        
 //            steno.info("Pivot is " + selectionContainer.selectedModelsProperty().get(0).getPivot());
 //            selectionContainer.setRotationY(rotation);
 //            recalculateSelectionBounds(false);

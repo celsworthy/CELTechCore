@@ -1436,4 +1436,19 @@ public class ModelContainer extends Group implements Serializable, Comparable
         return preferredScale;
     }
 
+    public double getCentreZ()
+    {
+        return getTransformedBounds().getCentreZ();
+    }
+
+    public double getHeight()
+    {
+        return getTransformedBounds().getHeight();
+    }
+
+    public double getDepth()
+    {
+        return getTransformedBounds().getDepth();
+    }
+
 }

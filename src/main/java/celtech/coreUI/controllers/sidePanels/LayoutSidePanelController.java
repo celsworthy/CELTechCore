@@ -819,27 +819,9 @@ public class LayoutSidePanelController implements Initializable,
     {
         ObservableList<ModelContainer> loadedModels = viewManager.getLoadedModels();
 
-//        if (selectionModel != null)
-//        {
-//            widthTextField.doubleValueProperty().unbind();
-////            selectionModel.selectedModelsProperty().removeListener(
-////                selectionContainerModelsListener);
-////            selectionModel.widthProperty().removeListener(widthListener);
-////            selectionContainer.heightProperty().removeListener(heightListener);
-////            selectionContainer.depthProperty().removeListener(depthListener);
-////            selectionContainer.centreXProperty().removeListener(xAxisListener);
-////            selectionContainer.centreZProperty().removeListener(yAxisListener);
-////            selectionContainer.scaleProperty().removeListener(
-////                modelScaleChangeListener);
-////            selectionContainer.rotationYProperty().removeListener(
-////                modelRotationChangeListener);
-//            selectedItemDetails.visibleProperty().unbind();
-//        }
-//
         selectionModel = viewManager.getSelectedModelContainers();
-//
         modelDataTableView.setItems(loadedModels);
-//
+
 //        selectionContainer.selectedModelsProperty().addListener(
 //            selectionContainerModelsListener);
 
@@ -848,16 +830,16 @@ public class LayoutSidePanelController implements Initializable,
         if (selectedModelDetails != null)
         {
             selectedModelDetails.getWidth().addListener(widthListener);
+            selectedModelDetails.getHeight().addListener(heightListener);
+            selectedModelDetails.getDepth().addListener(depthListener);
+            
             selectedModelDetails.getCentreX().addListener(xAxisListener);
-//            heightTextField.doubleValueProperty().set(
-//                selectionContainer.getHeight());
-//            depthTextField.doubleValueProperty().set(
-//                selectionContainer.getDepth());
+            selectedModelDetails.getCentreZ().addListener(yAxisListener);
+            
+            selectedModelDetails.getScale().addListener(modelScaleChangeListener);
+            selectedModelDetails.getRotationY().addListener(modelRotationChangeListener);
 
-//            yAxisTextField.doubleValueProperty().set(
-//                selectionContainer.getCentreZ());
-//            scaleTextField.doubleValueProperty().set(
-//                selectionContainer.getScale() * 100);
+
 //            rotationTextField.doubleValueProperty().set(
 //                selectionContainer.getRotationY());
         } else

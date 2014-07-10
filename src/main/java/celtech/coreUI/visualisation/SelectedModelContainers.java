@@ -66,8 +66,13 @@ public class SelectedModelContainers
 
         ModelContainer boundModelContainer;
 
-        private DoubleProperty width = new SimpleDoubleProperty();
-        private DoubleProperty centreX = new SimpleDoubleProperty();
+        private final DoubleProperty width = new SimpleDoubleProperty();
+        private final DoubleProperty centreX = new SimpleDoubleProperty();
+        private final DoubleProperty centreZ = new SimpleDoubleProperty();
+        private DoubleProperty height= new SimpleDoubleProperty();
+        private DoubleProperty depth= new SimpleDoubleProperty();
+        private DoubleProperty scale= new SimpleDoubleProperty();
+        private DoubleProperty rotationY= new SimpleDoubleProperty();
 
         private PrimarySelectedModelDetails()
         {
@@ -94,6 +99,36 @@ public class SelectedModelContainers
             width.set(boundModelContainer.getTotalWidth());
             System.out.println("set centre x to " + boundModelContainer.getCentreX());
             centreX.set(boundModelContainer.getCentreX());
+            centreZ.set(boundModelContainer.getCentreZ());
+            height.set(boundModelContainer.getHeight());
+            depth.set(boundModelContainer.getDepth());
+            scale.set(boundModelContainer.getScale());
+            rotationY.set(boundModelContainer.getRotationY());
+        }
+
+        public DoubleProperty getCentreZ()
+        {
+            return centreZ;
+        }
+
+        public DoubleProperty getHeight()
+        {
+            return height;
+        }
+
+        public DoubleProperty getDepth()
+        {
+            return depth;
+        }
+
+        public DoubleProperty getScale()
+        {
+            return scale;
+        }
+
+        public DoubleProperty getRotationY()
+        {
+            return rotationY;
         }
     }
 
