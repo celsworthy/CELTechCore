@@ -236,7 +236,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
             ((LayoutSlideOutPanelController) slideOutControllers.get(ApplicationMode.LAYOUT)).bindLoadedModels(projectTab.getProject());
             ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).bindLoadedModels(projectTab.getThreeDViewManager());
-            menuStripController.bindSelectedModels(projectTab.getSelectionContainer());
+            menuStripController.bindSelectedModels(projectTab.getSelectionModel());
             projectTab.setMode(newMode);
         } else if (newMode == ApplicationMode.SETTINGS)
         {
@@ -394,7 +394,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                     {
                         ProjectTab projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
                         ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).bindLoadedModels(projectTab.getThreeDViewManager());
-                        menuStripController.bindSelectedModels(projectTab.getSelectionContainer());
+                        menuStripController.bindSelectedModels(projectTab.getSelectionModel());
                         ((SettingsSidePanelController) sidePanelControllers.get(ApplicationMode.SETTINGS)).projectChanged(projectTab.getProject());
                     }
                 } else

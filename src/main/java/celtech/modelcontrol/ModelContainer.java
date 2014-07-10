@@ -340,6 +340,11 @@ public class ModelContainer extends Group implements Serializable, Comparable
         return calculateBoundsInParent();
     }
 
+    public ModelBounds getLocalBounds()
+    {
+        return originalModelBounds;
+    }
+
     /**
      *
      * @param xPosition
@@ -531,9 +536,9 @@ public class ModelContainer extends Group implements Serializable, Comparable
         transformScalePreferred.setPivotX(originalModelBounds.getCentreX());
         transformScalePreferred.setPivotY(originalModelBounds.getCentreY());
         transformScalePreferred.setPivotZ(originalModelBounds.getCentreZ());
-        transformScalePreferred.setX(scaleFactor);
-        transformScalePreferred.setY(scaleFactor);
-        transformScalePreferred.setZ(scaleFactor);
+        transformScalePreferred.setX(preferredScale);
+        transformScalePreferred.setY(preferredScale);
+        transformScalePreferred.setZ(preferredScale);
 
         dropToBed();
         checkOffBed();
@@ -545,7 +550,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
      */
     public double getScale()
     {
-        return transformScalePreferred.getX();
+        return preferredScale;
     }
 
     /**
@@ -966,12 +971,14 @@ public class ModelContainer extends Group implements Serializable, Comparable
      */
     public void resizeWidth(double width)
     {
-        Bounds bounds = getBoundsInLocal();
+        ModelBounds bounds = getLocalBounds();
 
         double currentWidth = bounds.getWidth();
-
+        System.out.println("local bounds width is " + currentWidth);
+        
         double newScale = width / currentWidth;
-
+        System.out.println("factor is " + newScale);
+        System.out.println("set scale width to " + newScale);
         setScale(newScale);
     }
 
@@ -1317,7 +1324,8 @@ public class ModelContainer extends Group implements Serializable, Comparable
      */
     public double getTotalWidth()
     {
-        double totalwidth = originalModelBounds.getWidth() * getScale();
+        double totalwidth = originalModelBounds.getWidth() * preferredScale;
+        System.out.println("return total width of " + totalwidth);
         return totalwidth;
     }
 
@@ -1327,7 +1335,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
      */
     public double getTotalDepth()
     {
-        double totaldepth = originalModelBounds.getDepth() * getScale();
+        double totaldepth = originalModelBounds.getDepth() * preferredScale;
         return totaldepth;
     }
 
@@ -1404,6 +1412,11 @@ public class ModelContainer extends Group implements Serializable, Comparable
         transformSnapToGroundYAdjust.setY(0);
         ModelBounds modelBoundsParent = calculateBoundsInParent();
         transformSnapToGroundYAdjust.setY(-modelBoundsParent.getMaxY());
+    }
+
+    public double getPreferredScale()
+    {
+        return preferredScale;
     }
 
 }

@@ -46,7 +46,8 @@ public class SelectionHighlighter extends Group
      *
      */
     public static final String scaleHandleString = "scaleHandle";
-    private final Stenographer steno = StenographerFactory.getStenographer(SelectionHighlighter.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        SelectionHighlighter.class.getName());
     private ApplicationStatus applicationStatus = null;
 
     private final PhongMaterial greenMaterial = new PhongMaterial(Color.LIMEGREEN);
@@ -99,13 +100,13 @@ public class SelectionHighlighter extends Group
      * @param selectionContainer
      * @param cameraDistance
      */
-    public SelectionHighlighter(final SelectionContainer selectionContainer, final DoubleProperty cameraDistance)
+    public SelectionHighlighter(final ModelBounds modelBounds, final DoubleProperty cameraDistance)
     {
         texCoords.add(0f);
         texCoords.add(0f);
 
         String scaleHandleURL = CoreTest.class
-                .getResource(ApplicationConfiguration.modelResourcePath + "scaleHandle.obj").toExternalForm();
+            .getResource(ApplicationConfiguration.modelResourcePath + "scaleHandle.obj").toExternalForm();
 
         ObjImporter scaleHandleImporter = new ObjImporter();
         scaleHandleLoadResult = scaleHandleImporter.loadFile(null, scaleHandleURL, null);
@@ -118,97 +119,8 @@ public class SelectionHighlighter extends Group
 
         getChildren().add(selectionBox);
 
-        selectionContainer.widthProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                selectionBoundsChanged(selectionContainer);
-            }
-        });
-
-        selectionContainer.heightProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                selectionBoundsChanged(selectionContainer);
-            }
-        });
-
-        selectionContainer.depthProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                selectionBoundsChanged(selectionContainer);
-            }
-        });
-
-        selectionContainer.centreXProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                selectionBoundsChanged(selectionContainer);
-            }
-        });
-
-        selectionContainer.centreZProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                selectionBoundsChanged(selectionContainer);
-            }
-        });
-
-        selectionContainer.centreYProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                selectionBoundsChanged(selectionContainer);
-            }
-        });
-
-        selectionContainer.scaleProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                selectionBoundsChanged(selectionContainer);
-            }
-        });
-//
-        selectionContainer.rotationYProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                selectionBox.setRy(t1.doubleValue());
-            }
-        });
-
-        selectionContainer.rotationXProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                selectionBox.setRx(t1.doubleValue());
-            }
-        });
-
-        selectionContainer.rotationZProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                selectionBox.setRz(t1.doubleValue());
-            }
-        });
-
-        this.visibleProperty().bind(Bindings.isNotEmpty(selectionContainer.selectedModelsProperty()).and(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS)));
+//        this.visibleProperty().bind(Bindings.isNotEmpty(modelBounds.selectedModelsProperty()).and(
+//            applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS)));
 
         cameraDistance.addListener(new ChangeListener<Number>()
         {
@@ -239,28 +151,48 @@ public class SelectionHighlighter extends Group
 
     private void buildSelectionBox()
     {
-        selectionBoxBackLeftBottom = generateSelectionCornerGroup(0, 90, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize, false);
+        selectionBoxBackLeftBottom = generateSelectionCornerGroup(0, 90, 0, halfCornerBoxSize,
+                                                                  -halfCornerBoxSize,
+                                                                  halfCornerBoxSize, false);
 
-        selectionBoxBackRightBottom = generateSelectionCornerGroup(0, -180, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize, false);
+        selectionBoxBackRightBottom = generateSelectionCornerGroup(0, -180, 0, halfCornerBoxSize,
+                                                                   -halfCornerBoxSize,
+                                                                   halfCornerBoxSize, false);
 
-        selectionBoxBackLeftTop = generateSelectionCornerGroup(180, 0, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize, true);
+        selectionBoxBackLeftTop = generateSelectionCornerGroup(180, 0, 0, halfCornerBoxSize,
+                                                               -halfCornerBoxSize, halfCornerBoxSize,
+                                                               true);
 
-        selectionBoxBackRightTop = generateSelectionCornerGroup(180, 90, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize, true);
+        selectionBoxBackRightTop = generateSelectionCornerGroup(180, 90, 0, halfCornerBoxSize,
+                                                                -halfCornerBoxSize,
+                                                                halfCornerBoxSize, true);
 
-        selectionBoxFrontLeftBottom = generateSelectionCornerGroup(0, 0, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize, false);
+        selectionBoxFrontLeftBottom = generateSelectionCornerGroup(0, 0, 0, halfCornerBoxSize,
+                                                                   -halfCornerBoxSize,
+                                                                   halfCornerBoxSize, false);
 
-        selectionBoxFrontRightBottom = generateSelectionCornerGroup(0, -90, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize, false);
+        selectionBoxFrontRightBottom = generateSelectionCornerGroup(0, -90, 0, halfCornerBoxSize,
+                                                                    -halfCornerBoxSize,
+                                                                    halfCornerBoxSize, false);
 
-        selectionBoxFrontLeftTop = generateSelectionCornerGroup(180, -90, 0, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize, true);
+        selectionBoxFrontLeftTop = generateSelectionCornerGroup(180, -90, 0, halfCornerBoxSize,
+                                                                -halfCornerBoxSize,
+                                                                halfCornerBoxSize, true);
 
-        selectionBoxFrontRightTop = generateSelectionCornerGroup(0, 0, 180, halfCornerBoxSize, -halfCornerBoxSize, halfCornerBoxSize, true);
+        selectionBoxFrontRightTop = generateSelectionCornerGroup(0, 0, 180, halfCornerBoxSize,
+                                                                 -halfCornerBoxSize,
+                                                                 halfCornerBoxSize, true);
 
-        selectionBox.getChildren().addAll(selectionBoxBackLeftBottom, selectionBoxBackRightBottom, selectionBoxBackLeftTop, selectionBoxBackRightTop,
-                                          selectionBoxFrontLeftBottom, selectionBoxFrontRightBottom, selectionBoxFrontLeftTop, selectionBoxFrontRightTop);
+        selectionBox.getChildren().addAll(selectionBoxBackLeftBottom, selectionBoxBackRightBottom,
+                                          selectionBoxBackLeftTop, selectionBoxBackRightTop,
+                                          selectionBoxFrontLeftBottom, selectionBoxFrontRightBottom,
+                                          selectionBoxFrontLeftTop, selectionBoxFrontRightTop);
 
     }
 
-    private Xform generateSelectionCornerGroup(double xRotate, double yRotate, double zRotate, double cornerBoxXOffset, double cornerBoxYOffset, double cornerBoxZOffset, boolean generateCornerBox)
+    private Xform generateSelectionCornerGroup(double xRotate, double yRotate, double zRotate,
+        double cornerBoxXOffset, double cornerBoxYOffset, double cornerBoxZOffset,
+        boolean generateCornerBox)
     {
         final int cylSamples = 4;
         final double cylRadius = .05;
@@ -315,7 +247,6 @@ public class SelectionHighlighter extends Group
 //            box.setOnMouseExited(scaleUnhighlight);
 //            box.setId("scaleHandle");
 //            selectionCorner.getChildren().add(box);
-
         }
 
         selectionCornerTransform.setRotateX(xRotate);
@@ -323,49 +254,6 @@ public class SelectionHighlighter extends Group
         selectionCornerTransform.setRotateZ(zRotate);
 
         return selectionCornerTransform;
-    }
-
-    private void selectionBoundsChanged(SelectionContainer selectionContainer)
-    {
-        double halfWidth = selectionContainer.getWidth() / 2;
-        double halfDepth = selectionContainer.getDepth() / 2;
-        double minX = selectionContainer.getCentreX() - halfWidth;
-        double maxX = selectionContainer.getCentreX() + halfWidth;
-        double minZ = selectionContainer.getCentreZ() - halfDepth;
-        double maxZ = selectionContainer.getCentreZ() + halfDepth;
-        double minY = -selectionContainer.getHeight();
-        
-//        System.out.format("new coords %.2f %.2f %.2f %.2f, %.2f\n", minX, maxX, minZ, maxZ, minY);
-
-        selectionBoxBackLeftBottom.setTz(maxZ);
-        selectionBoxBackLeftBottom.setTx(minX);
-
-        selectionBoxBackRightBottom.setTz(maxZ);
-        selectionBoxBackRightBottom.setTx(maxX);
-
-        selectionBoxFrontLeftBottom.setTz(minZ);
-        selectionBoxFrontLeftBottom.setTx(minX);
-
-        selectionBoxFrontRightBottom.setTz(minZ);
-        selectionBoxFrontRightBottom.setTx(maxX);
-
-        selectionBoxBackLeftTop.setTz(maxZ);
-        selectionBoxBackLeftTop.setTx(minX);
-        selectionBoxBackLeftTop.setTy(minY);
-
-        selectionBoxBackRightTop.setTz(maxZ);
-        selectionBoxBackRightTop.setTx(maxX);
-        selectionBoxBackRightTop.setTy(minY);
-
-        selectionBoxFrontLeftTop.setTz(minZ);
-        selectionBoxFrontLeftTop.setTx(minX);
-        selectionBoxFrontLeftTop.setTy(minY);
-
-        selectionBoxFrontRightTop.setTz(minZ);
-        selectionBoxFrontRightTop.setTx(maxX);
-        selectionBoxFrontRightTop.setTy(minY);
-
-        selectionBox.setPivot(selectionContainer.getCentreX(), 0, selectionContainer.getCentreZ());
     }
 
     /**

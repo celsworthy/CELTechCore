@@ -14,9 +14,8 @@ import static celtech.coreUI.DeDuplicator.suggestNonDuplicateName;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.GCodeEditorPanelController;
 import celtech.coreUI.visualisation.CameraPositionPreset;
-import celtech.coreUI.visualisation.SelectionContainer;
+import celtech.coreUI.visualisation.SelectionModel;
 import celtech.coreUI.visualisation.ThreeDViewManager;
-import celtech.coreUI.visualisation.Xform;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelContentsEnumeration;
 import celtech.utils.Math.Packing.Block;
@@ -71,7 +70,7 @@ public class ProjectTab extends Tab
     private DisplayManager displayManager = null;
     private final ProjectManager projectManager = ProjectManager.getInstance();
     private boolean titleBeingEdited = false;
-    private Xform gizmoXform = new Xform(Xform.RotateOrder.YXZ);
+//    private Xform gizmoXform = new Xform(Xform.RotateOrder.YXZ);
 
     final Rectangle testRect = new Rectangle(5, 5);
 
@@ -82,12 +81,12 @@ public class ProjectTab extends Tab
             Number t1)
         {
             Point2D reference = basePane.localToScreen(0, 0);
-            double x = viewManager.getSelectionContainer().getScreenX()
-                - reference.getX();
-            double y = viewManager.getSelectionContainer().getScreenY()
-                - reference.getY();
-            gizmoXform.setTx(x);
-            gizmoXform.setTy(y);
+//            double x = viewManager.getSelectionContainer().getScreenX()
+//                - reference.getX();
+//            double y = viewManager.getSelectionContainer().getScreenY()
+//                - reference.getY();
+//            gizmoXform.setTx(x);
+//            gizmoXform.setTy(y);
         }
     };
 
@@ -297,10 +296,10 @@ public class ProjectTab extends Tab
         });
 
         basePane.getChildren().add(viewManager.getSubScene());
-        viewManager.getSelectionContainer().screenXProperty().addListener(
-            selectionContainerMoveListener);
-        viewManager.getSelectionContainer().screenYProperty().addListener(
-            selectionContainerMoveListener);
+//        viewManager.getSelectionContainer().screenXProperty().addListener(
+//            selectionContainerMoveListener);
+//        viewManager.getSelectionContainer().screenYProperty().addListener(
+//            selectionContainerMoveListener);
 
         try
         {
@@ -467,15 +466,6 @@ public class ProjectTab extends Tab
      *
      * @return
      */
-    public SelectionContainer getSelectionContainer()
-    {
-        return viewManager.getSelectionContainer();
-    }
-
-    /**
-     *
-     * @return
-     */
     public ObservableList<ModelContainer> getLoadedModels()
     {
         return viewManager.getLoadedModels();
@@ -495,7 +485,7 @@ public class ProjectTab extends Tab
         thing.pack();
         thing.relocateBlocks();
 
-        viewManager.recalculateSelectionBounds(false);
+//        viewManager.recalculateSelectionBounds(false);
 
 //        for (Block block : blocks)
 //        {
@@ -599,19 +589,19 @@ public class ProjectTab extends Tab
         viewManager.deselectModel(selectedModel);
     }
 
-    private void recentreGizmoX(int screenX)
-    {
-        Point2D newPosition = basePane.screenToLocal(screenX, 0);
-        gizmoXform.setTx(newPosition.getX());
-        steno.info("New X pos " + newPosition.getX() + " for " + screenX);
-    }
-
-    private void recentreGizmoY(int screenY)
-    {
-        Point2D newPosition = basePane.screenToLocal(0, screenY);
-        gizmoXform.setTy(newPosition.getY());
-        steno.info("New Y pos " + newPosition.getY() + " for " + screenY);
-    }
+//    private void recentreGizmoX(int screenX)
+//    {
+//        Point2D newPosition = basePane.screenToLocal(screenX, 0);
+//        gizmoXform.setTx(newPosition.getX());
+//        steno.info("New X pos " + newPosition.getX() + " for " + screenX);
+//    }
+//
+//    private void recentreGizmoY(int screenY)
+//    {
+//        Point2D newPosition = basePane.screenToLocal(0, screenY);
+//        gizmoXform.setTy(newPosition.getY());
+//        steno.info("New Y pos " + newPosition.getY() + " for " + screenY);
+//    }
 
     /**
      *
@@ -630,5 +620,10 @@ public class ProjectTab extends Tab
                 viewManager.startSettingsAnimation();
                 break;
         }
+    }
+
+    public SelectionModel getSelectionModel()
+    {
+        return viewManager.getSelectionModel();
     }
 }

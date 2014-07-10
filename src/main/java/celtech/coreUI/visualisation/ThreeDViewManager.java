@@ -10,11 +10,9 @@ import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.controllers.GizmoOverlayController;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.coreUI.visualisation.importers.obj.ObjImporter;
-import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelContentsEnumeration;
-import celtech.utils.Math.MathUtils;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -31,7 +29,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
-import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
@@ -66,7 +63,7 @@ public class ThreeDViewManager
         ThreeDViewManager.class.getName());
 
     private ObservableList<ModelContainer> loadedModels = null;
-    private final SelectionContainer selectionContainer = new SelectionContainer();
+//    private final SelectionContainer selectionContainer = new SelectionContainer();
     private final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
 
     private final PrintBed printBedData = PrintBed.getInstance();
@@ -76,7 +73,6 @@ public class ThreeDViewManager
 
 //    private final PointLight pointLight1 = new PointLight(Color.WHITE);
 //    private final AmbientLight ambientLight = new AmbientLight(Color.WHITE);
-
     final Group axisGroup = new Group();
     double DELTA_MULTIPLIER = 200.0;
     double CONTROL_MULTIPLIER = 0.1;
@@ -93,7 +89,6 @@ public class ThreeDViewManager
     private final Box translationDragPlane = new Box(dragPlaneHalfSize * 2, 0.1, dragPlaneHalfSize
                                                      * 2);
     private final Box scaleDragPlane = new Box(dragPlaneHalfSize * 2, dragPlaneHalfSize * 2, 0.1);
-    private SelectionHighlighter selectionHighlighter = null;
 //    private GizmoOverlayController gizmoOverlayController = null;
     /*
      * 
@@ -142,6 +137,8 @@ public class ThreeDViewManager
     private Point3D pickedPoint;
     private Node intersectedNode;
     private PickResult pickResult;
+    
+    private final SelectionModel selectionModel;
 
 //    private final double settingsAnimationYAngle = 30;
 //    private final double settingsAnimationXAngle = 0;
@@ -290,14 +287,14 @@ public class ThreeDViewManager
                 scaleDragPlane.setTranslateY(bedXToS.getY());
                 scaleDragPlane.setTranslateZ(pickedPoint.getZ());
 
-                if (selectionHighlighter.isScaleActive())
-                {
-                    setDragMode(DragMode.SCALING);
-                    steno.info("Got a " + intersectedNode.toString());
-                } else
-                {
+//                if (selectionHighlighter.isScaleActive())
+//                {
+//                    setDragMode(DragMode.SCALING);
+//                    steno.info("Got a " + intersectedNode.toString());
+//                } else
+//                {
                     setDragMode(DragMode.TRANSLATING);
-                }
+//                }
 
                 if (intersectedNode != null)
                 {
@@ -322,7 +319,7 @@ public class ThreeDViewManager
                     deselectAllModels();
                 }
             }
-            recalculateCentre();
+//            recalculateCentre();
         } else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED && dragMode.get()
             != DragMode.SCALING)
         {
@@ -386,13 +383,13 @@ public class ThreeDViewManager
                         "In scale drag mode but intersected with something other than scale drag plane");
                 }
             }
-            recalculateCentre();
+//            recalculateCentre();
 
         } else if (event.getEventType() == MouseEvent.MOUSE_RELEASED)
         {
             setDragMode(DragMode.IDLE);
             lastDragPosition = null;
-            recalculateCentre();
+//            recalculateCentre();
         }
     };
 
@@ -408,7 +405,7 @@ public class ThreeDViewManager
             cameraDistance.set(z);
             bedTranslateXform.setTz(z);
         }
-        recalculateCentre();
+//        recalculateCentre();
     };
     private final EventHandler<ZoomEvent> zoomEventHandler = event ->
     {
@@ -418,7 +415,7 @@ public class ThreeDViewManager
             double z = bedTranslateXform.getTz() / event.getZoomFactor();
             cameraDistance.set(z);
             bedTranslateXform.setTz(z);
-            recalculateCentre();
+//            recalculateCentre();
         }
     };
     private final EventHandler<KeyEvent> keyEventHandler = event ->
@@ -585,7 +582,7 @@ public class ThreeDViewManager
         @Override
         public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
         {
-            recalculateCentre();
+//            recalculateCentre();
         }
     };
 
@@ -630,7 +627,7 @@ public class ThreeDViewManager
         ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
     {
         this.loadedModels = loadedModels;
-        selectionHighlighter = new SelectionHighlighter(selectionContainer, cameraDistance);
+        selectionModel = new SelectionModel();
 
         this.widthPropertyToFollow = widthProperty;
         this.heightPropertyToFollow = heightProperty;
@@ -667,8 +664,7 @@ public class ThreeDViewManager
         scaleDragPlane.setOpacity(0.0);
         scaleDragPlane.setMouseTransparent(true);
 
-        bedTranslateXform.getChildren().addAll(bed, models, translationDragPlane, scaleDragPlane,
-                                               selectionHighlighter);
+        bedTranslateXform.getChildren().addAll(bed, models, translationDragPlane, scaleDragPlane);
         root3D.getChildren().add(bedTranslateXform);
 
         bedXOffsetFromCameraZero = -printBedData.getPrintVolumeBounds().getWidth() / 2;
@@ -761,47 +757,6 @@ public class ThreeDViewManager
     public SimpleObjectProperty timelineProperty()
     {
         return timeline;
-    }
-
-    private void recalculateCentre()
-    {
-//        steno.info("=================");
-//        steno.info("From " + selectionContainer.getCentreX() + ":" + selectionContainer.getCentreY() + ":" + selectionContainer.getCentreZ());
-        Point3D testPoint = new Point3D(selectionContainer.getCentreX(),
-                                        selectionContainer.getCentreY(),
-                                        selectionContainer.getCentreZ());
-        Point3D correctedBed = bedTranslateXform.localToScene(testPoint);
-//        steno.info("Corrected bed = " + correctedBed);
-        centreCoordsScene = camera.sceneToLocal(correctedBed);
-//        steno.info("Local to scene " + localToScene);
-        Point2D localToSceneToScreen = camera.localToScreen(centreCoordsScene);
-//        steno.info("Local to scene to screen " + localToSceneToScreen);
-        selectionContainer.setScreenX(localToSceneToScreen.getX());
-        selectionContainer.setScreenY(localToSceneToScreen.getY());
-
-//        Point2D dragPoint = CameraHelper.pickNodeXYPlane(camera, translationDragPlane, localToSceneToScreen.getX(), localToSceneToScreen.getY());
-//        steno.info("Drag point = " + dragPoint);
-//        Point3D projectPoint = CameraHelper.pickProjectPlane(camera, localToSceneToScreen.getX(), localToSceneToScreen.getY());
-//        steno.info("Project point = " + projectPoint);
-//        PickRay pickRay = pickingHelper.getDeathRay(localToSceneToScreen.getX(), localToSceneToScreen.getY());
-//        PickResult pickResult = pickingHelper.pick(pickRay);
-//        steno.info("Pick result was " + pickResult);
-//steno.info("View width = " + viewWidth);
-//             PickRay pickRay = PickRay.computePerspectivePickRay(x, y, true,
-//                camera.g,
-//                getViewHeight(),
-//                camera.getFieldOfView(),
-//                camera.isVerticalFieldOfView(),
-//                camera.getCameraTransform(),
-//                camera.getNearClip(), camera.getFarClip(),
-//                null);
-//             
-//             camera.impl_pickNode(pickRay, null);
-//        Point3D screenToScene = camera.sceneToLocal(localToSceneToScreen.getX(), localToSceneToScreen.getY(), cameraDistance.get());
-//        steno.info("Reverse 1 " + screenToScene);
-//        
-//        PickRay.computePerspectivePickRay(mousePosX, mousePosX, true, mousePosX, mousePosX, mouseOldX, true, null, mouseOldX, mouseOldX, null)
-//        PickRay pickRay = new PickRay(, mousePosX, mousePosX, mouseOldX, mouseOldX)
     }
 
     private Group buildBed()
@@ -942,7 +897,7 @@ public class ThreeDViewManager
 
         for (ModelContainer chosenModel : modelsToRemove)
         {
-            selectionContainer.removeSelectedModel(chosenModel);
+            selectionModel.removeModelContainer(chosenModel);
             loadedModels.remove(chosenModel);
             models.getChildren().remove(chosenModel);
         }
@@ -1021,83 +976,83 @@ public class ThreeDViewManager
      *
      * @param addedOrRemoved
      */
-    public void recalculateSelectionBounds(boolean addedOrRemoved)
-    {
-        if (selectionContainer.selectedModelsProperty().size() == 1)
-        {
-            ModelContainer model = selectionContainer.selectedModelsProperty().get(0);
-            Bounds parentBounds = model.getBoundsInParent();
-            double width = parentBounds.getWidth() * model.getScale();
-            double height = parentBounds.getHeight() * model.getScale();
-            double depth = parentBounds.getDepth() * model.getScale();
-
-            selectionContainer.setWidth(width);
-            selectionContainer.setHeight(height);
-            selectionContainer.setDepth(depth);
-            selectionContainer.setScale(model.getScale());
-            selectionContainer.setRotationY(model.getRotationY());
-
-            double centreX = parentBounds.getMinX() + parentBounds.getWidth() / 2.0;
-            double centreY = parentBounds.getMinY() + parentBounds.getHeight()/ 2.0;
-            double centreZ = parentBounds.getMinZ() + parentBounds.getDepth()/ 2.0;
-            selectionContainer.setCentreX(centreX);
-            selectionContainer.setCentreY(centreY);
-            selectionContainer.setCentreZ(centreZ);
-
-//            steno.info("Ctr X" + centreX + ":Y" + centreY + ":Z" + centreZ);
-//            steno.info("Screen " + newScreen.getX() + ":Y" + newScreen.getY());
-//            Point3D scene = root3D.localToScene(centreX, centreY, centreZ);
-//            steno.info("Scene " + scene);
-//            Point3D parent = root3D.localToParent(centreX, centreY, centreZ);
-//            steno.info("Parent " + parent);
-        } else
-        {
-            double minX = 999;
-            double minY = 999;
-            double minZ = 999;
-            double maxX = 0;
-            double maxY = 0;
-            double maxZ = 0;
-
-            for (ModelContainer model : loadedModels)
-            {
-                if (model.isSelected())
-                {
-                    Bounds modelBounds = model.getBoundsInParent();
-
-                    minX = Math.min(modelBounds.getMinX(), minX);
-                    minY = Math.min(modelBounds.getMinY(), minY);
-                    minZ = Math.min(modelBounds.getMinZ(), minZ);
-
-                    maxX = Math.max(modelBounds.getMaxX(), maxX);
-                    maxY = Math.max(modelBounds.getMaxY(), maxY);
-                    maxZ = Math.max(modelBounds.getMaxZ(), maxZ);
-                }
-            }
-
-            double width = maxX - minX;
-            double depth = maxZ - minZ;
-            double height = maxY - minY;
-
-            double centreX = minX + (width / 2);
-            double centreY = maxY - (height / 2);
-            double centreZ = minZ + (depth / 2);
-
-            selectionContainer.setCentreX(centreX);
-            selectionContainer.setCentreY(centreY);
-            selectionContainer.setCentreZ(centreZ);
-            selectionContainer.setWidth(width);
-            selectionContainer.setDepth(depth);
-            selectionContainer.setHeight(height);
-            if (addedOrRemoved)
-            {
-                selectionContainer.setRotationY(0);
-                selectionContainer.setScale(1);
-            }
-        }
-
-        recalculateCentre();
-    }
+//    public void recalculateSelectionBounds(boolean addedOrRemoved)
+//    {
+//        if (selectionContainer.selectedModelsProperty().size() == 1)
+//        {
+//            ModelContainer model = selectionContainer.selectedModelsProperty().get(0);
+//            Bounds parentBounds = model.getBoundsInParent();
+//            double width = parentBounds.getWidth() * model.getPreferredScale();
+//            double height = parentBounds.getHeight() * model.getPreferredScale();
+//            double depth = parentBounds.getDepth() * model.getPreferredScale();
+//
+//            selectionContainer.setWidth(width);
+//            selectionContainer.setHeight(height);
+//            selectionContainer.setDepth(depth);
+//            selectionContainer.setScale(model.getScale());
+//            selectionContainer.setRotationY(model.getRotationY());
+//
+//            double centreX = parentBounds.getMinX() + parentBounds.getWidth() / 2.0;
+//            double centreY = parentBounds.getMinY() + parentBounds.getHeight() / 2.0;
+//            double centreZ = parentBounds.getMinZ() + parentBounds.getDepth() / 2.0;
+//            selectionContainer.setCentreX(centreX);
+//            selectionContainer.setCentreY(centreY);
+//            selectionContainer.setCentreZ(centreZ);
+//
+////            steno.info("Ctr X" + centreX + ":Y" + centreY + ":Z" + centreZ);
+////            steno.info("Screen " + newScreen.getX() + ":Y" + newScreen.getY());
+////            Point3D scene = root3D.localToScene(centreX, centreY, centreZ);
+////            steno.info("Scene " + scene);
+////            Point3D parent = root3D.localToParent(centreX, centreY, centreZ);
+////            steno.info("Parent " + parent);
+//        } else
+//        {
+//            double minX = 999;
+//            double minY = 999;
+//            double minZ = 999;
+//            double maxX = 0;
+//            double maxY = 0;
+//            double maxZ = 0;
+//
+//            for (ModelContainer model : loadedModels)
+//            {
+//                if (model.isSelected())
+//                {
+//                    Bounds modelBounds = model.getBoundsInParent();
+//
+//                    minX = Math.min(modelBounds.getMinX(), minX);
+//                    minY = Math.min(modelBounds.getMinY(), minY);
+//                    minZ = Math.min(modelBounds.getMinZ(), minZ);
+//
+//                    maxX = Math.max(modelBounds.getMaxX(), maxX);
+//                    maxY = Math.max(modelBounds.getMaxY(), maxY);
+//                    maxZ = Math.max(modelBounds.getMaxZ(), maxZ);
+//                }
+//            }
+//
+//            double width = maxX - minX;
+//            double depth = maxZ - minZ;
+//            double height = maxY - minY;
+//
+//            double centreX = minX + (width / 2);
+//            double centreY = maxY - (height / 2);
+//            double centreZ = minZ + (depth / 2);
+//
+//            selectionContainer.setCentreX(centreX);
+//            selectionContainer.setCentreY(centreY);
+//            selectionContainer.setCentreZ(centreZ);
+//            selectionContainer.setWidth(width);
+//            selectionContainer.setDepth(depth);
+//            selectionContainer.setHeight(height);
+//            if (addedOrRemoved)
+//            {
+//                selectionContainer.setRotationY(0);
+//                selectionContainer.setScale(1);
+//            }
+//        }
+//
+//        recalculateCentre();
+//    }
 
     /**
      *
@@ -1116,8 +1071,7 @@ public class ThreeDViewManager
                 deselectAllModels();
             }
             selectedNode.setSelected(true);
-            selectionContainer.addSelectedModel(selectedNode);
-            recalculateSelectionBounds(true);
+            selectionModel.addModelContainer(selectedNode);
         }
     }
 
@@ -1133,7 +1087,7 @@ public class ThreeDViewManager
 
             deselectModel(model);
         }
-        recalculateSelectionBounds(true);
+//        recalculateSelectionBounds(true);
     }
 
     /**
@@ -1151,7 +1105,7 @@ public class ThreeDViewManager
             }
         }
 
-        recalculateSelectionBounds(false);
+        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1170,7 +1124,7 @@ public class ThreeDViewManager
             }
         }
 
-        recalculateSelectionBounds(false);
+        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1189,7 +1143,7 @@ public class ThreeDViewManager
             }
         }
 
-        recalculateSelectionBounds(false);
+        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1208,7 +1162,7 @@ public class ThreeDViewManager
             }
         }
 
-        recalculateSelectionBounds(false);
+        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1227,7 +1181,7 @@ public class ThreeDViewManager
             }
         }
 
-        recalculateSelectionBounds(false);
+        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1242,11 +1196,12 @@ public class ThreeDViewManager
         {
             if (model.isSelected())
             {
+                System.out.println("resize to " + width);
                 model.resizeWidth(width);
             }
         }
 
-        recalculateSelectionBounds(false);
+        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1265,7 +1220,7 @@ public class ThreeDViewManager
             }
         }
 
-        recalculateSelectionBounds(false);
+        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1284,7 +1239,7 @@ public class ThreeDViewManager
             }
         }
 
-        recalculateSelectionBounds(false);
+        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1295,23 +1250,24 @@ public class ThreeDViewManager
      */
     public void scaleSelection(double newScale)
     {
-        if (selectionContainer.selectedModelsProperty().size() == 1)
-        {
-            ModelContainer model = selectionContainer.selectedModelsProperty().get(0);
+        System.out.println("scale selection " + newScale);
+//        if (selectionContainer.selectedModelsProperty().size() == 1)
+//        {
+            ModelContainer model = null;
             model.scale(newScale);
-        } else
-        {
-            for (ModelContainer model : loadedModels)
-            {
-                if (model.isSelected())
-                {
-                    model.scale(model.getScale() * newScale);
-                }
-            }
-        }
+//        } else
+//        {
+//            for (ModelContainer model : loadedModels)
+//            {
+//                if (model.isSelected())
+//                {
+//                    model.scale(model.getScale() * newScale);
+//                }
+//            }
+//        }
 
-        recalculateSelectionBounds(false);
-        recalculateCentre();
+        //recalculateSelectionBounds(false);
+//        recalculateCentre();
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1322,25 +1278,25 @@ public class ThreeDViewManager
      */
     public void rotateSelection(double rotation)
     {
-        if (selectionContainer.selectedModelsProperty().size() == 1)
-        {
-            ModelContainer modelToRotate = selectionContainer.selectedModelsProperty().get(0);
+//        if (selectionContainer.selectedModelsProperty().size() == 1)
+//        {
+            ModelContainer modelToRotate = null;
             modelToRotate.setRotationY(rotation);
 //            steno.info("Pivot is " + selectionContainer.selectedModelsProperty().get(0).getPivot());
-            selectionContainer.setRotationY(rotation);
+//            selectionContainer.setRotationY(rotation);
 //            recalculateSelectionBounds(false);
-        } else
-        {
-            for (ModelContainer model : loadedModels)
-            {
-                if (model.isSelected())
-                {
-                    model.deltaRotateAroundY(rotation);
-                }
-            }
-            selectionContainer.setRotationX(0);
-        }
-        recalculateSelectionBounds(false);
+//        } else
+//        {
+//            for (ModelContainer model : loadedModels)
+//            {
+//                if (model.isSelected())
+//                {
+//                    model.deltaRotateAroundY(rotation);
+//                }
+//            }
+//            selectionContainer.setRotationX(0);
+//        }
+        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1358,7 +1314,7 @@ public class ThreeDViewManager
                 model.resizeHeight(newHeight);
             }
         }
-        recalculateSelectionBounds(false);
+        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1372,8 +1328,7 @@ public class ThreeDViewManager
         if (pickedModel.isSelected())
         {
             pickedModel.setSelected(false);
-            selectionContainer.removeSelectedModel(pickedModel);
-            recalculateSelectionBounds(false);
+            selectionModel.removeModelContainer(pickedModel);
         }
     }
 
@@ -1384,15 +1339,6 @@ public class ThreeDViewManager
     public ObservableList<ModelContainer> getLoadedModels()
     {
         return loadedModels;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public SelectionContainer getSelectionContainer()
-    {
-        return selectionContainer;
     }
 
     private void collideModels()
@@ -1428,18 +1374,19 @@ public class ThreeDViewManager
 
     /**
      *
-     * @param d
+     * @param delta
      */
-    public void deltaScaleSelection(double d)
+    public void deltaScaleSelection(double delta)
     {
+        System.out.println("delta scale selection " + delta);
         for (ModelContainer model : loadedModels)
         {
             if (model.isSelected())
             {
-                model.scale(d * model.getScale());
+                model.scale(delta * model.getScale());
             }
         }
-        recalculateSelectionBounds(false);
+        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1454,7 +1401,7 @@ public class ThreeDViewManager
             int faceNumber = pickResult.getIntersectedFace();
             ModelContainer modelContainer = (ModelContainer) intersectedNode.getParent();
             modelContainer.rotateToMakeFaceParallelToGround(faceNumber);
-            recalculateSelectionBounds(false);
+            //recalculateSelectionBounds(false);
         }
     }
 
@@ -1473,15 +1420,6 @@ public class ThreeDViewManager
     public void activateGCodeVisualisationMode()
     {
         layoutSubmode.set(LayoutSubmode.GCODE_VISUALISATION);
-    }
-
-    /**
-     *
-     * @return
-     */
-    public SelectionHighlighter getSelectionHighlighter()
-    {
-        return selectionHighlighter;
     }
 
     /**
@@ -1749,30 +1687,30 @@ public class ThreeDViewManager
      * @param event
      * @return
      */
-    public double rotateFromGizmo(MouseEvent event)
-    {
-        Point3D currentDragPosition = event.getPickResult().getIntersectedPoint();
-//        double xPos = currentDragPosition.getX() - selectionContainer.getCentreX();
-//        double yPos = currentDragPosition.getZ() - selectionContainer.getCentreZ();
-
-        double rotationAngle = MathUtils.cartesianToAngleDegreesCWFromTop(currentDragPosition.getX(),
-                                                                          currentDragPosition.getZ());
-
-        double outputAngle = gizmoStartingRotationAngle - rotationAngle;
-
-        if (!gizmoRotationStarted)
-        {
-            gizmoRotationStarted = true;
-            gizmoStartingRotationAngle = rotationAngle;
-            gizmoRotationOffset = selectionContainer.getRotationY();
-            return rotationAngle;
-        } else
-        {
-            steno.info("Rotating to " + outputAngle + " selRot=" + selectionContainer.getRotationY());
-            rotateSelection(outputAngle + gizmoRotationOffset);
-            return outputAngle;
-        }
-    }
+//    public double rotateFromGizmo(MouseEvent event)
+//    {
+//        Point3D currentDragPosition = event.getPickResult().getIntersectedPoint();
+////        double xPos = currentDragPosition.getX() - selectionContainer.getCentreX();
+////        double yPos = currentDragPosition.getZ() - selectionContainer.getCentreZ();
+//
+//        double rotationAngle = MathUtils.cartesianToAngleDegreesCWFromTop(currentDragPosition.getX(),
+//                                                                          currentDragPosition.getZ());
+//
+//        double outputAngle = gizmoStartingRotationAngle - rotationAngle;
+//
+//        if (!gizmoRotationStarted)
+//        {
+//            gizmoRotationStarted = true;
+//            gizmoStartingRotationAngle = rotationAngle;
+//            gizmoRotationOffset = selectionContainer.getRotationY();
+//            return rotationAngle;
+//        } else
+//        {
+//            steno.info("Rotating to " + outputAngle + " selRot=" + selectionContainer.getRotationY());
+//            rotateSelection(outputAngle + gizmoRotationOffset);
+//            return outputAngle;
+//        }
+//    }
 
     /**
      *
@@ -1797,5 +1735,10 @@ public class ThreeDViewManager
                 models.getChildren().add(model);
             }
         }
+    }
+
+    public SelectionModel getSelectionModel()
+    {
+        return selectionModel;
     }
 }

@@ -11,13 +11,12 @@ import celtech.appManager.Project;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.coreUI.visualisation.SelectionContainer;
+import celtech.coreUI.visualisation.SelectionModel  ;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ResourceBundle;
-import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -84,7 +83,7 @@ public class LayoutSidePanelController implements Initializable,
     private TableColumn scaleColumn = new TableColumn();
     private TableColumn rotationColumn = new TableColumn();
 
-    private SelectionContainer selectionContainer = null;
+    private SelectionModel selectionModel;
     private ListChangeListener<ModelContainer> selectionContainerModelsListener = null;
     private ChangeListener<ModelContainer> selectedItemListener = null;
     private DisplayManager displayManager = DisplayManager.getInstance();
@@ -819,66 +818,66 @@ public class LayoutSidePanelController implements Initializable,
     {
         ObservableList<ModelContainer> loadedModels = viewManager.getLoadedModels();
 
-        if (selectionContainer != null)
-        {
-            selectionContainer.selectedModelsProperty().removeListener(
-                selectionContainerModelsListener);
-            selectionContainer.widthProperty().removeListener(widthListener);
-            selectionContainer.heightProperty().removeListener(heightListener);
-            selectionContainer.depthProperty().removeListener(depthListener);
-            selectionContainer.centreXProperty().removeListener(xAxisListener);
-            selectionContainer.centreZProperty().removeListener(yAxisListener);
-            selectionContainer.scaleProperty().removeListener(
-                modelScaleChangeListener);
-            selectionContainer.rotationYProperty().removeListener(
-                modelRotationChangeListener);
-            selectedItemDetails.visibleProperty().unbind();
-        }
-
-        selectionContainer = viewManager.getSelectionContainer();
-
-        modelDataTableView.setItems(loadedModels);
-
-        selectionContainer.selectedModelsProperty().addListener(
-            selectionContainerModelsListener);
-
-        if (selectionContainer.selectedModelsProperty().size() > 0)
-        {
-            widthTextField.doubleValueProperty().set(
-                selectionContainer.getWidth());
-            heightTextField.doubleValueProperty().set(
-                selectionContainer.getHeight());
-            depthTextField.doubleValueProperty().set(
-                selectionContainer.getDepth());
-            xAxisTextField.doubleValueProperty().set(
-                selectionContainer.getCentreX());
-            yAxisTextField.doubleValueProperty().set(
-                selectionContainer.getCentreZ());
-            scaleTextField.doubleValueProperty().set(
-                selectionContainer.getScale() * 100);
-            rotationTextField.doubleValueProperty().set(
-                selectionContainer.getRotationY());
-        } else
-        {
-            widthTextField.setText("-");
-            heightTextField.setText("-");
-            depthTextField.setText("-");
-            xAxisTextField.setText("-");
-            yAxisTextField.setText("-");
-            scaleTextField.setText("-");
-            rotationTextField.setText("-");
-        }
-
-        selectedItemDetails.visibleProperty().bind(Bindings.isNotEmpty(
-            selectionContainer.selectedModelsProperty()));
-        selectionContainer.centreXProperty().addListener(xAxisListener);
-        selectionContainer.centreZProperty().addListener(yAxisListener);
-        selectionContainer.widthProperty().addListener(widthListener);
-        selectionContainer.heightProperty().addListener(heightListener);
-        selectionContainer.depthProperty().addListener(depthListener);
-        selectionContainer.scaleProperty().addListener(modelScaleChangeListener);
-        selectionContainer.rotationYProperty().addListener(
-            modelRotationChangeListener);
+//        if (selectionModel != null)
+//        {
+//            selectionModel.selectedModelsProperty().removeListener(
+//                selectionContainerModelsListener);
+//            selectionModel.widthProperty().removeListener(widthListener);
+//            selectionContainer.heightProperty().removeListener(heightListener);
+//            selectionContainer.depthProperty().removeListener(depthListener);
+//            selectionContainer.centreXProperty().removeListener(xAxisListener);
+//            selectionContainer.centreZProperty().removeListener(yAxisListener);
+//            selectionContainer.scaleProperty().removeListener(
+//                modelScaleChangeListener);
+//            selectionContainer.rotationYProperty().removeListener(
+//                modelRotationChangeListener);
+//            selectedItemDetails.visibleProperty().unbind();
+//        }
+////
+//        selectionModel = viewManager.getSelectionModel();
+////
+//        modelDataTableView.setItems(loadedModels);
+////
+//        selectionContainer.selectedModelsProperty().addListener(
+//            selectionContainerModelsListener);
+//
+//        if (selectionContainer.selectedModelsProperty().size() > 0)
+//        {
+//            widthTextField.doubleValueProperty().set(
+//                selectionContainer.getWidth());
+//            heightTextField.doubleValueProperty().set(
+//                selectionContainer.getHeight());
+//            depthTextField.doubleValueProperty().set(
+//                selectionContainer.getDepth());
+//            xAxisTextField.doubleValueProperty().set(
+//                selectionContainer.getCentreX());
+//            yAxisTextField.doubleValueProperty().set(
+//                selectionContainer.getCentreZ());
+//            scaleTextField.doubleValueProperty().set(
+//                selectionContainer.getScale() * 100);
+//            rotationTextField.doubleValueProperty().set(
+//                selectionContainer.getRotationY());
+//        } else
+//        {
+//            widthTextField.setText("-");
+//            heightTextField.setText("-");
+//            depthTextField.setText("-");
+//            xAxisTextField.setText("-");
+//            yAxisTextField.setText("-");
+//            scaleTextField.setText("-");
+//            rotationTextField.setText("-");
+//        }
+//
+//        selectedItemDetails.visibleProperty().bind(Bindings.isNotEmpty(
+//            selectionContainer.selectedModelsProperty()));
+//        selectionContainer.centreXProperty().addListener(xAxisListener);
+//        selectionContainer.centreZProperty().addListener(yAxisListener);
+//        selectionContainer.widthProperty().addListener(widthListener);
+//        selectionContainer.heightProperty().addListener(heightListener);
+//        selectionContainer.depthProperty().addListener(depthListener);
+//        selectionContainer.scaleProperty().addListener(modelScaleChangeListener);
+//        selectionContainer.rotationYProperty().addListener(
+//            modelRotationChangeListener);
 
         if (boundProject != null)
         {

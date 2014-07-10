@@ -15,7 +15,7 @@ import celtech.configuration.EEPROMState;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.ErrorHandler;
-import celtech.coreUI.visualisation.SelectionContainer;
+import celtech.coreUI.visualisation.SelectionModel;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.utils.PrinterUtils;
@@ -25,7 +25,6 @@ import java.util.ListIterator;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -291,7 +290,7 @@ public class MenuStripController
      * @param selectionContainer The selection container associated with the currently displayed
      * project.
      */
-    public void bindSelectedModels(SelectionContainer selectionContainer)
+    public void bindSelectedModels(SelectionModel selectionModel)
     {
         deleteModelButton.disableProperty().unbind();
         duplicateModelButton.disableProperty().unbind();
@@ -299,9 +298,9 @@ public class MenuStripController
         distributeModelsButton.disableProperty().unbind();
 
         deleteModelButton.disableProperty().bind(Bindings.isEmpty(
-            selectionContainer.selectedModelsProperty()));
+            selectionModel.getModelContainersProperty()));
         duplicateModelButton.disableProperty().bind(Bindings.isEmpty(
-            selectionContainer.selectedModelsProperty()));
+            selectionModel.getModelContainersProperty()));
         distributeModelsButton.setDisable(true);
 
         if (boundProject != null)
@@ -317,7 +316,7 @@ public class MenuStripController
         distributeModelsButton.disableProperty().bind(Bindings.isEmpty(
             boundProject.getLoadedModels()));
         snapToGroundButton.disableProperty().bind(Bindings.isEmpty(
-            boundProject.getLoadedModels()));
+            selectionModel.getModelContainersProperty()));
 
         forwardButton.visibleProperty().unbind();
         forwardButton.visibleProperty().bind((applicationStatus.modeProperty().isEqualTo(
