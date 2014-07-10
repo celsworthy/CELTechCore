@@ -15,7 +15,7 @@ import celtech.configuration.EEPROMState;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.ErrorHandler;
-import celtech.coreUI.visualisation.SelectionModel;
+import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.utils.PrinterUtils;
@@ -290,7 +290,7 @@ public class MenuStripController
      * @param selectionContainer The selection container associated with the currently displayed
      * project.
      */
-    public void bindSelectedModels(SelectionModel selectionModel)
+    public void bindSelectedModels(SelectedModelContainers selectionModel)
     {
         deleteModelButton.disableProperty().unbind();
         duplicateModelButton.disableProperty().unbind();

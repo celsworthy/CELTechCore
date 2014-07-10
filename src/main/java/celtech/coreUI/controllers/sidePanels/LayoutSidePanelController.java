@@ -11,7 +11,7 @@ import celtech.appManager.Project;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.coreUI.visualisation.SelectionModel  ;
+import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
 import java.net.URL;
@@ -83,7 +83,7 @@ public class LayoutSidePanelController implements Initializable,
     private TableColumn scaleColumn = new TableColumn();
     private TableColumn rotationColumn = new TableColumn();
 
-    private SelectionModel selectionModel;
+    private SelectedModelContainers selectionModel;
     private ListChangeListener<ModelContainer> selectionContainerModelsListener = null;
     private ChangeListener<ModelContainer> selectedItemListener = null;
     private DisplayManager displayManager = DisplayManager.getInstance();
@@ -278,7 +278,8 @@ public class LayoutSidePanelController implements Initializable,
                             steno.info("Updated: ");
                         }
                     }
-                } catch (Exception ex) {
+                } catch (Exception ex)
+                {
                     ex.printStackTrace();
                     steno.error("Got exception handling model change event: " + ex);
                 }
@@ -820,31 +821,34 @@ public class LayoutSidePanelController implements Initializable,
 
 //        if (selectionModel != null)
 //        {
-//            selectionModel.selectedModelsProperty().removeListener(
-//                selectionContainerModelsListener);
-//            selectionModel.widthProperty().removeListener(widthListener);
-//            selectionContainer.heightProperty().removeListener(heightListener);
-//            selectionContainer.depthProperty().removeListener(depthListener);
-//            selectionContainer.centreXProperty().removeListener(xAxisListener);
-//            selectionContainer.centreZProperty().removeListener(yAxisListener);
-//            selectionContainer.scaleProperty().removeListener(
-//                modelScaleChangeListener);
-//            selectionContainer.rotationYProperty().removeListener(
-//                modelRotationChangeListener);
+//            widthTextField.doubleValueProperty().unbind();
+////            selectionModel.selectedModelsProperty().removeListener(
+////                selectionContainerModelsListener);
+////            selectionModel.widthProperty().removeListener(widthListener);
+////            selectionContainer.heightProperty().removeListener(heightListener);
+////            selectionContainer.depthProperty().removeListener(depthListener);
+////            selectionContainer.centreXProperty().removeListener(xAxisListener);
+////            selectionContainer.centreZProperty().removeListener(yAxisListener);
+////            selectionContainer.scaleProperty().removeListener(
+////                modelScaleChangeListener);
+////            selectionContainer.rotationYProperty().removeListener(
+////                modelRotationChangeListener);
 //            selectedItemDetails.visibleProperty().unbind();
 //        }
-////
-//        selectionModel = viewManager.getSelectionModel();
-////
-//        modelDataTableView.setItems(loadedModels);
-////
+//
+        selectionModel = viewManager.getSelectedModelContainers();
+//
+        modelDataTableView.setItems(loadedModels);
+//
 //        selectionContainer.selectedModelsProperty().addListener(
 //            selectionContainerModelsListener);
-//
-//        if (selectionContainer.selectedModelsProperty().size() > 0)
-//        {
-//            widthTextField.doubleValueProperty().set(
-//                selectionContainer.getWidth());
+
+        SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails = 
+                                                selectionModel.getPrimarySelectedModelDetails();
+        if (selectedModelDetails != null)
+        {
+            widthTextField.doubleValueProperty().bind(
+                selectedModelDetails.getWidth());
 //            heightTextField.doubleValueProperty().set(
 //                selectionContainer.getHeight());
 //            depthTextField.doubleValueProperty().set(
@@ -857,17 +861,17 @@ public class LayoutSidePanelController implements Initializable,
 //                selectionContainer.getScale() * 100);
 //            rotationTextField.doubleValueProperty().set(
 //                selectionContainer.getRotationY());
-//        } else
-//        {
-//            widthTextField.setText("-");
-//            heightTextField.setText("-");
-//            depthTextField.setText("-");
-//            xAxisTextField.setText("-");
-//            yAxisTextField.setText("-");
-//            scaleTextField.setText("-");
-//            rotationTextField.setText("-");
-//        }
-//
+        } else
+        {
+            widthTextField.setText("-");
+            heightTextField.setText("-");
+            depthTextField.setText("-");
+            xAxisTextField.setText("-");
+            yAxisTextField.setText("-");
+            scaleTextField.setText("-");
+            rotationTextField.setText("-");
+        }
+
 //        selectedItemDetails.visibleProperty().bind(Bindings.isNotEmpty(
 //            selectionContainer.selectedModelsProperty()));
 //        selectionContainer.centreXProperty().addListener(xAxisListener);
@@ -878,7 +882,6 @@ public class LayoutSidePanelController implements Initializable,
 //        selectionContainer.scaleProperty().addListener(modelScaleChangeListener);
 //        selectionContainer.rotationYProperty().addListener(
 //            modelRotationChangeListener);
-
         if (boundProject != null)
         {
             boundProject.getLoadedModels().removeListener(modelChangeListener);

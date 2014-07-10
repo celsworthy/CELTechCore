@@ -138,7 +138,7 @@ public class ThreeDViewManager
     private Node intersectedNode;
     private PickResult pickResult;
     
-    private final SelectionModel selectionModel;
+    private final SelectedModelContainers selectedModelContainers;
 
 //    private final double settingsAnimationYAngle = 30;
 //    private final double settingsAnimationXAngle = 0;
@@ -627,7 +627,7 @@ public class ThreeDViewManager
         ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
     {
         this.loadedModels = loadedModels;
-        selectionModel = new SelectionModel();
+        selectedModelContainers = new SelectedModelContainers();
 
         this.widthPropertyToFollow = widthProperty;
         this.heightPropertyToFollow = heightProperty;
@@ -897,7 +897,7 @@ public class ThreeDViewManager
 
         for (ModelContainer chosenModel : modelsToRemove)
         {
-            selectionModel.removeModelContainer(chosenModel);
+            selectedModelContainers.removeModelContainer(chosenModel);
             loadedModels.remove(chosenModel);
             models.getChildren().remove(chosenModel);
         }
@@ -1071,7 +1071,7 @@ public class ThreeDViewManager
                 deselectAllModels();
             }
             selectedNode.setSelected(true);
-            selectionModel.addModelContainer(selectedNode);
+            selectedModelContainers.addModelContainer(selectedNode);
         }
     }
 
@@ -1328,7 +1328,7 @@ public class ThreeDViewManager
         if (pickedModel.isSelected())
         {
             pickedModel.setSelected(false);
-            selectionModel.removeModelContainer(pickedModel);
+            selectedModelContainers.removeModelContainer(pickedModel);
         }
     }
 
@@ -1736,9 +1736,9 @@ public class ThreeDViewManager
             }
         }
     }
-
-    public SelectionModel getSelectionModel()
+    
+    public SelectedModelContainers getSelectedModelContainers()
     {
-        return selectionModel;
+        return selectedModelContainers;
     }
 }

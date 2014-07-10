@@ -14,7 +14,7 @@ import static celtech.coreUI.DeDuplicator.suggestNonDuplicateName;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.GCodeEditorPanelController;
 import celtech.coreUI.visualisation.CameraPositionPreset;
-import celtech.coreUI.visualisation.SelectionModel;
+import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelContentsEnumeration;
@@ -622,8 +622,8 @@ public class ProjectTab extends Tab
         }
     }
 
-    public SelectionModel getSelectionModel()
+  public SelectedModelContainers getSelectionModel()
     {
-        return viewManager.getSelectionModel();
+        return viewManager.getSelectedModelContainers();
     }
 }
