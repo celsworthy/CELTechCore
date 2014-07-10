@@ -89,11 +89,6 @@ public class SelectedModelContainers
             updateSelectedProperties();
         }
 
-        public DoubleProperty getCentreX()
-        {
-            return centreX;
-        }
-
         private void updateSelectedProperties()
         {
             width.set(boundModelContainer.getTotalWidth());
@@ -110,6 +105,11 @@ public class SelectedModelContainers
         {
             return centreZ;
         }
+        
+        public DoubleProperty getCentreX()
+        {
+            return centreX;
+        }        
 
         public DoubleProperty getHeight()
         {

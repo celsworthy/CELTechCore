@@ -10,7 +10,6 @@ import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.controllers.GizmoOverlayController;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.coreUI.visualisation.importers.obj.ObjImporter;
-import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelContentsEnumeration;
 import java.util.ArrayList;
@@ -137,7 +136,7 @@ public class ThreeDViewManager
     private Point3D pickedPoint;
     private Node intersectedNode;
     private PickResult pickResult;
-    
+
     private final SelectedModelContainers selectedModelContainers;
 
 //    private final double settingsAnimationYAngle = 30;
@@ -293,7 +292,7 @@ public class ThreeDViewManager
 //                    steno.info("Got a " + intersectedNode.toString());
 //                } else
 //                {
-                    setDragMode(DragMode.TRANSLATING);
+                setDragMode(DragMode.TRANSLATING);
 //                }
 
                 if (intersectedNode != null)
@@ -974,88 +973,6 @@ public class ThreeDViewManager
 //    }
     /**
      *
-     * @param addedOrRemoved
-     */
-//    public void recalculateSelectionBounds(boolean addedOrRemoved)
-//    {
-//        if (selectionContainer.selectedModelsProperty().size() == 1)
-//        {
-//            ModelContainer model = selectionContainer.selectedModelsProperty().get(0);
-//            Bounds parentBounds = model.getBoundsInParent();
-//            double width = parentBounds.getWidth() * model.getPreferredScale();
-//            double height = parentBounds.getHeight() * model.getPreferredScale();
-//            double depth = parentBounds.getDepth() * model.getPreferredScale();
-//
-//            selectionContainer.setWidth(width);
-//            selectionContainer.setHeight(height);
-//            selectionContainer.setDepth(depth);
-//            selectionContainer.setScale(model.getScale());
-//            selectionContainer.setRotationY(model.getRotationY());
-//
-//            double centreX = parentBounds.getMinX() + parentBounds.getWidth() / 2.0;
-//            double centreY = parentBounds.getMinY() + parentBounds.getHeight() / 2.0;
-//            double centreZ = parentBounds.getMinZ() + parentBounds.getDepth() / 2.0;
-//            selectionContainer.setCentreX(centreX);
-//            selectionContainer.setCentreY(centreY);
-//            selectionContainer.setCentreZ(centreZ);
-//
-////            steno.info("Ctr X" + centreX + ":Y" + centreY + ":Z" + centreZ);
-////            steno.info("Screen " + newScreen.getX() + ":Y" + newScreen.getY());
-////            Point3D scene = root3D.localToScene(centreX, centreY, centreZ);
-////            steno.info("Scene " + scene);
-////            Point3D parent = root3D.localToParent(centreX, centreY, centreZ);
-////            steno.info("Parent " + parent);
-//        } else
-//        {
-//            double minX = 999;
-//            double minY = 999;
-//            double minZ = 999;
-//            double maxX = 0;
-//            double maxY = 0;
-//            double maxZ = 0;
-//
-//            for (ModelContainer model : loadedModels)
-//            {
-//                if (model.isSelected())
-//                {
-//                    Bounds modelBounds = model.getBoundsInParent();
-//
-//                    minX = Math.min(modelBounds.getMinX(), minX);
-//                    minY = Math.min(modelBounds.getMinY(), minY);
-//                    minZ = Math.min(modelBounds.getMinZ(), minZ);
-//
-//                    maxX = Math.max(modelBounds.getMaxX(), maxX);
-//                    maxY = Math.max(modelBounds.getMaxY(), maxY);
-//                    maxZ = Math.max(modelBounds.getMaxZ(), maxZ);
-//                }
-//            }
-//
-//            double width = maxX - minX;
-//            double depth = maxZ - minZ;
-//            double height = maxY - minY;
-//
-//            double centreX = minX + (width / 2);
-//            double centreY = maxY - (height / 2);
-//            double centreZ = minZ + (depth / 2);
-//
-//            selectionContainer.setCentreX(centreX);
-//            selectionContainer.setCentreY(centreY);
-//            selectionContainer.setCentreZ(centreZ);
-//            selectionContainer.setWidth(width);
-//            selectionContainer.setDepth(depth);
-//            selectionContainer.setHeight(height);
-//            if (addedOrRemoved)
-//            {
-//                selectionContainer.setRotationY(0);
-//                selectionContainer.setScale(1);
-//            }
-//        }
-//
-//        recalculateCentre();
-//    }
-
-    /**
-     *
      * @param selectedNode
      * @param multiSelect
      */
@@ -1087,7 +1004,6 @@ public class ThreeDViewManager
 
             deselectModel(model);
         }
-//        recalculateSelectionBounds(true);
     }
 
     /**
@@ -1124,7 +1040,6 @@ public class ThreeDViewManager
             }
         }
 
-        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1143,7 +1058,6 @@ public class ThreeDViewManager
             }
         }
 
-        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1162,7 +1076,6 @@ public class ThreeDViewManager
             }
         }
 
-        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1194,12 +1107,12 @@ public class ThreeDViewManager
     {
         for (ModelContainer model : loadedModels)
         {
-            if (model.isSelected())
+            if (selectedModelContainers.isSelected(model))
             {
-                System.out.println("resize to " + width);
                 model.resizeWidth(width);
             }
         }
+        selectedModelContainers.updateSelectedValues();
 
         //recalculateSelectionBounds(false);
         collideModels();
@@ -1214,13 +1127,13 @@ public class ThreeDViewManager
     {
         for (ModelContainer model : loadedModels)
         {
-            if (model.isSelected())
+            if (selectedModelContainers.isSelected(model))
             {
                 model.resizeHeight(height);
             }
         }
+        selectedModelContainers.updateSelectedValues();
 
-        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1233,13 +1146,13 @@ public class ThreeDViewManager
     {
         for (ModelContainer model : loadedModels)
         {
-            if (model.isSelected())
+            if (selectedModelContainers.isSelected(model))
             {
                 model.resizeDepth(depth);
             }
         }
+        selectedModelContainers.updateSelectedValues();
 
-        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1277,9 +1190,8 @@ public class ThreeDViewManager
             }
         }
         selectedModelContainers.updateSelectedValues();
-        
+
         // TODO: multi select rotate should be around the common centre of the multi select
-        
 //            steno.info("Pivot is " + selectionContainer.selectedModelsProperty().get(0).getPivot());
 //            selectionContainer.setRotationY(rotation);
 //            recalculateSelectionBounds(false);
@@ -1294,25 +1206,6 @@ public class ThreeDViewManager
 //            }
 //            selectionContainer.setRotationX(0);
 //        }
-        //recalculateSelectionBounds(false);
-        collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-    }
-
-    /**
-     *
-     * @param newHeight
-     */
-    public void changeModelHeight(double newHeight)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (model.isSelected())
-            {
-                model.resizeHeight(newHeight);
-            }
-        }
-        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1709,7 +1602,6 @@ public class ThreeDViewManager
 //            return outputAngle;
 //        }
 //    }
-
     /**
      *
      */
@@ -1734,7 +1626,7 @@ public class ThreeDViewManager
             }
         }
     }
-    
+
     public SelectedModelContainers getSelectedModelContainers()
     {
         return selectedModelContainers;

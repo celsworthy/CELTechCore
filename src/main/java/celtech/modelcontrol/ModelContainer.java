@@ -1326,13 +1326,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
     }
     
     
-    public double getCentreX()
-    {
-        double centreX = getTransformedBounds().getCentreX();
-        return centreX;
-    }
-    
-
     /**
      *
      * @return
@@ -1440,6 +1433,11 @@ public class ModelContainer extends Group implements Serializable, Comparable
     {
         return getTransformedBounds().getCentreZ();
     }
+    
+    public double getCentreX()
+    {
+        return getTransformedBounds().getCentreX();
+    }    
 
     public double getHeight()
     {

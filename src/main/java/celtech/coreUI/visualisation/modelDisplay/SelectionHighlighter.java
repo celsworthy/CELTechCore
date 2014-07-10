@@ -6,16 +6,13 @@
 package celtech.coreUI.visualisation.modelDisplay;
 
 import celtech.CoreTest;
-import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.coreUI.visualisation.SelectionContainer;
 import celtech.coreUI.visualisation.Xform;
 import celtech.coreUI.visualisation.importers.FloatArrayList;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.coreUI.visualisation.importers.obj.ObjImporter;
 import celtech.utils.Math.MathUtils;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
