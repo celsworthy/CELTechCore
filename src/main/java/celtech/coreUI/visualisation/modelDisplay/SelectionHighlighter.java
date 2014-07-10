@@ -14,9 +14,7 @@ import celtech.coreUI.visualisation.Xform;
 import celtech.coreUI.visualisation.importers.FloatArrayList;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.coreUI.visualisation.importers.obj.ObjImporter;
-import celtech.modelcontrol.ModelContainer;
 import celtech.utils.Math.MathUtils;
-import com.sun.javafx.fxml.builder.TriangleMeshBuilder;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.value.ChangeListener;
@@ -29,8 +27,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.DrawMode;
-import javafx.scene.shape.MeshView;
-import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -338,6 +334,8 @@ public class SelectionHighlighter extends Group
         double minZ = selectionContainer.getCentreZ() - halfDepth;
         double maxZ = selectionContainer.getCentreZ() + halfDepth;
         double minY = -selectionContainer.getHeight();
+        
+//        System.out.format("new coords %.2f %.2f %.2f %.2f, %.2f\n", minX, maxX, minZ, maxZ, minY);
 
         selectionBoxBackLeftBottom.setTz(maxZ);
         selectionBoxBackLeftBottom.setTx(minX);

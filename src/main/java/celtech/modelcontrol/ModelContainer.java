@@ -1086,7 +1086,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
                                newcentreZ);
     }
 
-    private ModelBounds calculateBoundsInParent()
+    public ModelBounds calculateBoundsInParent()
     {
         TriangleMesh mesh = (TriangleMesh) getMeshView().getMesh();
         ObservableFloatArray originalPoints = mesh.getPoints();

@@ -29,18 +29,15 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableFloatArray;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
-import javafx.scene.AmbientLight;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.PerspectiveCamera;
-import javafx.scene.PointLight;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
 import javafx.scene.image.Image;
@@ -55,12 +52,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.MeshView;
-import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
  *
@@ -100,7 +93,7 @@ public class ThreeDViewManager
     private final Box translationDragPlane = new Box(dragPlaneHalfSize * 2, 0.1, dragPlaneHalfSize
                                                      * 2);
     private final Box scaleDragPlane = new Box(dragPlaneHalfSize * 2, dragPlaneHalfSize * 2, 0.1);
-    private SelectionHighlighter threeDControl = null;
+    private SelectionHighlighter selectionHighlighter = null;
 //    private GizmoOverlayController gizmoOverlayController = null;
     /*
      * 
@@ -297,7 +290,7 @@ public class ThreeDViewManager
                 scaleDragPlane.setTranslateY(bedXToS.getY());
                 scaleDragPlane.setTranslateZ(pickedPoint.getZ());
 
-                if (threeDControl.isScaleActive())
+                if (selectionHighlighter.isScaleActive())
                 {
                     setDragMode(DragMode.SCALING);
                     steno.info("Got a " + intersectedNode.toString());
@@ -637,7 +630,7 @@ public class ThreeDViewManager
         ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
     {
         this.loadedModels = loadedModels;
-        threeDControl = new SelectionHighlighter(selectionContainer, cameraDistance);
+        selectionHighlighter = new SelectionHighlighter(selectionContainer, cameraDistance);
 
         this.widthPropertyToFollow = widthProperty;
         this.heightPropertyToFollow = heightProperty;
@@ -675,7 +668,7 @@ public class ThreeDViewManager
         scaleDragPlane.setMouseTransparent(true);
 
         bedTranslateXform.getChildren().addAll(bed, models, translationDragPlane, scaleDragPlane,
-                                               threeDControl);
+                                               selectionHighlighter);
         root3D.getChildren().add(bedTranslateXform);
 
         bedXOffsetFromCameraZero = -printBedData.getPrintVolumeBounds().getWidth() / 2;
@@ -1030,7 +1023,6 @@ public class ThreeDViewManager
      */
     public void recalculateSelectionBounds(boolean addedOrRemoved)
     {
-
         if (selectionContainer.selectedModelsProperty().size() == 1)
         {
             ModelContainer model = selectionContainer.selectedModelsProperty().get(0);
@@ -1048,11 +1040,11 @@ public class ThreeDViewManager
 //            selectionContainer.setRotationZ(model.getRotationZ());
 //            selectionContainer.setMinX(model.getCentreX() - );
 
-            Bounds parentBounds = model.getBoundsInParent();
+            ModelBounds parentBounds = model.calculateBoundsInParent();
 //            
-            double centreX = 0; //model.getCentreX();
-            double centreY = model.getTranslateY();
-            double centreZ = 0; //model.getCentreZ();
+            double centreX = parentBounds.getCentreX();
+            double centreY = parentBounds.getCentreY();
+            double centreZ = parentBounds.getCentreZ();
             selectionContainer.setCentreX(centreX);
             selectionContainer.setCentreY(centreY);
             selectionContainer.setCentreZ(centreZ);
@@ -1464,11 +1456,10 @@ public class ThreeDViewManager
     {
         if (intersectedNode instanceof MeshView)
         {
-            
             int faceNumber = pickResult.getIntersectedFace();
-            MeshView meshView = (MeshView) intersectedNode;
             ModelContainer modelContainer = (ModelContainer) intersectedNode.getParent();
             modelContainer.rotateToMakeFaceParallelToGround(faceNumber);
+            recalculateSelectionBounds(false);
         }
     }
 
@@ -1495,7 +1486,7 @@ public class ThreeDViewManager
      */
     public SelectionHighlighter getSelectionHighlighter()
     {
-        return threeDControl;
+        return selectionHighlighter;
     }
 
     /**
