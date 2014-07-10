@@ -1026,25 +1026,20 @@ public class ThreeDViewManager
         if (selectionContainer.selectedModelsProperty().size() == 1)
         {
             ModelContainer model = selectionContainer.selectedModelsProperty().get(0);
-            ModelBounds originalBounds = model.getOriginalModelBounds();
-            double width = originalBounds.getWidth() * model.getScale();
-            double height = originalBounds.getHeight() * model.getScale();
-            double depth = originalBounds.getDepth() * model.getScale();
+            Bounds parentBounds = model.getBoundsInParent();
+            double width = parentBounds.getWidth() * model.getScale();
+            double height = parentBounds.getHeight() * model.getScale();
+            double depth = parentBounds.getDepth() * model.getScale();
 
             selectionContainer.setWidth(width);
             selectionContainer.setHeight(height);
             selectionContainer.setDepth(depth);
             selectionContainer.setScale(model.getScale());
-//            selectionContainer.setRotationX(model.getRotationX());
             selectionContainer.setRotationY(model.getRotationY());
-//            selectionContainer.setRotationZ(model.getRotationZ());
-//            selectionContainer.setMinX(model.getCentreX() - );
 
-            ModelBounds parentBounds = model.calculateBoundsInParent();
-//            
-            double centreX = parentBounds.getCentreX();
-            double centreY = parentBounds.getCentreY();
-            double centreZ = parentBounds.getCentreZ();
+            double centreX = parentBounds.getMinX() + parentBounds.getWidth() / 2.0;
+            double centreY = parentBounds.getMinY() + parentBounds.getHeight()/ 2.0;
+            double centreZ = parentBounds.getMinZ() + parentBounds.getDepth()/ 2.0;
             selectionContainer.setCentreX(centreX);
             selectionContainer.setCentreY(centreY);
             selectionContainer.setCentreZ(centreZ);

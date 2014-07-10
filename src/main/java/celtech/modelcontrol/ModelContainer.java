@@ -335,6 +335,11 @@ public class ModelContainer extends Group implements Serializable, Comparable
         checkOffBed();
     }
 
+    public ModelBounds getTransformedBounds()
+    {
+        return calculateBoundsInParent();
+    }
+
     /**
      *
      * @param xPosition
@@ -350,7 +355,10 @@ public class ModelContainer extends Group implements Serializable, Comparable
      */
     public void translateTo(double xPosition, double zPosition)
     {
-        Bounds bounds = this.getBoundsInParent();
+        ModelBounds bounds = this.getTransformedBounds();
+
+        translateXTo(xPosition, bounds);
+        translateZTo(zPosition, bounds);
 
         double newMaxX = xPosition + bounds.getWidth() / 2;
         double newMinX = xPosition - bounds.getWidth() / 2;
@@ -997,22 +1005,71 @@ public class ModelContainer extends Group implements Serializable, Comparable
         setScale(newScale);
     }
 
+    public void translateXTo(double xPosition)
+    {
+        ModelBounds bounds = getTransformedBounds();
+        translateXTo(xPosition, bounds);
+    }
+
     /**
      *
      * @param x
      */
-    public void translateXTo(double x)
+    public void translateXTo(double xPosition, ModelBounds bounds)
     {
-//        translateTo(x, centreZ);
+        double newMaxX = xPosition + bounds.getWidth() / 2;
+        double newMinX = xPosition - bounds.getWidth() / 2;
+
+        double finalXPosition = xPosition;
+
+        if (newMinX < 0)
+        {
+            finalXPosition += -newMinX;
+        } else if (newMaxX > printBed.getPrintVolumeMaximums().getX())
+        {
+            finalXPosition -= (newMaxX - printBed.getPrintVolumeMaximums().getX());
+        }
+
+        double currentXPosition = bounds.getCentreX();
+        double requiredTranslation = finalXPosition - currentXPosition;
+        transformMoveToPreferred.setX(transformMoveToPreferred.getX() + requiredTranslation);
+
+        dropToBed();
+        checkOffBed();
+    }
+
+    public void translateZTo(double zPosition)
+    {
+        ModelBounds bounds = getTransformedBounds();
+        translateZTo(zPosition, bounds);
     }
 
     /**
      *
      * @param z
      */
-    public void translateZTo(double z)
+    public void translateZTo(double zPosition, ModelBounds bounds)
+
     {
-//        translateTo(centreX, z);
+        double newMaxZ = zPosition + bounds.getDepth() / 2;
+        double newMinZ = zPosition - bounds.getDepth() / 2;
+
+        double finalZPosition = zPosition;
+
+        if (newMinZ < 0)
+        {
+            finalZPosition += -newMinZ;
+        } else if (newMaxZ > printBed.getPrintVolumeMaximums().getZ())
+        {
+            finalZPosition -= (newMaxZ - printBed.getPrintVolumeMaximums().getZ());
+        }
+
+        double currentZPosition = bounds.getCentreZ();
+        double requiredTranslation = finalZPosition - currentZPosition;
+        transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + requiredTranslation);
+
+        dropToBed();
+        checkOffBed();
     }
 
     private void checkOffBed()
@@ -1288,7 +1345,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
         snapFaceIndex = faceNumber;
 
         Vector3D faceNormal = getFaceNormal(faceNumber);
-        Vector3D downVector = new Vector3D(0, 1, 0); 
+        Vector3D downVector = new Vector3D(0, 1, 0);
 
         Rotation result = new Rotation(faceNormal, downVector);
         Vector3D axis = result.getAxis();
@@ -1307,7 +1364,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
     }
 
     /**
-     * Return the face normal for the face of the given index. 
+     * Return the face normal for the face of the given index.
      *
      */
     private Vector3D getFaceNormal(int faceNumber) throws MathArithmeticException
@@ -1346,7 +1403,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
         // Correct transformRotateSnapToGroundYAdjust for change in height (Y)
         transformSnapToGroundYAdjust.setY(0);
         ModelBounds modelBoundsParent = calculateBoundsInParent();
-        transformSnapToGroundYAdjust.setY(- modelBoundsParent.getMaxY());
+        transformSnapToGroundYAdjust.setY(-modelBoundsParent.getMaxY());
     }
 
 }
