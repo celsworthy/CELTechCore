@@ -21,6 +21,8 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
@@ -38,7 +40,7 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.PerspectiveCamera;
+import javafx.scene.shape.Box;
 import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.ObservableFaceArray;
@@ -101,7 +103,8 @@ public class ModelContainer extends Group implements Serializable, Comparable
     private double bedCentreOffsetZ;
     private ModelBounds lastTransformedBounds;
     private DoubleProperty cameraDistance;
-    private SelectionHighlighter selectionHighlighter;
+    private SelectionHighlighter selectionHighlighter = null;
+    private final Set<Node> selectedMarkers = new HashSet<>();
 
     /**
      *
@@ -219,7 +222,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
         transformRotateYPreferred.setPivotX(originalModelBounds.getCentreX());
         transformRotateYPreferred.setPivotY(originalModelBounds.getCentreY());
         transformRotateYPreferred.setPivotZ(originalModelBounds.getCentreZ());
-        
+
         lastTransformedBounds = calculateBoundsInParent();
 
     }
@@ -342,7 +345,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
 //        transformMoveToPreferred.setZ(finalZMove + currentZ);
 //        centreX = transformMoveToPreferred.getX() + centreXOffset;
 //        centreZ = transformMoveToPreferred.getZ() + centreZOffset;
-
     }
 
     public ModelBounds getTransformedBounds()
@@ -401,7 +403,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
 //
 //        transformMoveToPreferred.setX(finalXPosition);
 //        transformMoveToPreferred.setX(finalZPosition);
-
         checkOffBed();
 
     }
@@ -569,7 +570,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
     public void setRotationY(double value)
     {
         transformRotateYPreferred.setAngle(value);
-        
+
         dropToBedAndUpdateLastTransformedBounds();
         checkOffBed();
     }
@@ -585,6 +586,17 @@ public class ModelContainer extends Group implements Serializable, Comparable
      */
     public void setSelected(boolean selected)
     {
+        if (selected)
+        {
+            if (selectionHighlighter == null)
+            {
+                addSelectionHighlighter();
+            }
+            showSelectedMarkers();
+        } else
+        {
+            hideSelectedMarkers();
+        }
         isSelected.set(selected);
     }
 
@@ -984,11 +996,8 @@ public class ModelContainer extends Group implements Serializable, Comparable
         ModelBounds bounds = getTransformedBounds();
 
         double currentWidth = bounds.getWidth();
-        System.out.println("local bounds width is " + currentWidth);
-        
+
         double newScale = width / currentWidth;
-        System.out.println("factor is " + newScale);
-        System.out.println("set scale width to " + newScale);
         setScale(getScale() * newScale);
     }
 
@@ -1013,14 +1022,13 @@ public class ModelContainer extends Group implements Serializable, Comparable
      */
     public void resizeDepth(double depth)
     {
-        
+
         ModelBounds bounds = getTransformedBounds();
 
         double currentDepth = bounds.getDepth();
 
         double newScale = depth / currentDepth;
 
-        System.out.println("MC set scale to " + newScale);
         setScale(getScale() * newScale);
     }
 
@@ -1037,7 +1045,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
     public void translateXTo(double xPosition, ModelBounds bounds)
     {
         double deltaXPosition = xPosition - getTransformedBounds().getCentreX();
-        
+
         double newMaxX = xPosition + bounds.getWidth() / 2;
         double newMinX = xPosition - bounds.getWidth() / 2;
 
@@ -1072,9 +1080,9 @@ public class ModelContainer extends Group implements Serializable, Comparable
     public void translateZTo(double zPosition, ModelBounds bounds)
 
     {
-        
+
         double deltaZPosition = zPosition - getTransformedBounds().getCentreZ();
-        
+
         double newMaxZ = zPosition + bounds.getDepth() / 2;
         double newMinZ = zPosition - bounds.getDepth() / 2;
 
@@ -1335,8 +1343,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
         return returnVal;
     }
-    
-    
+
     /**
      *
      * @return
@@ -1376,9 +1383,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
         Rotation result = new Rotation(faceNormal, downVector);
         Vector3D axis = result.getAxis();
         double angleDegrees = result.getAngle() * RAD_TO_DEG;
-
-        ModelBounds modelBoundsParentBefore = calculateBoundsInParent();
-        System.out.println("Snap bounds in parent before is " + modelBoundsParentBefore);
 
         transformRotateSnapToGround.setAxis(new Point3D(axis.getX(), axis.getY(), axis.getZ()));
         transformRotateSnapToGround.setAngle(angleDegrees);
@@ -1443,11 +1447,11 @@ public class ModelContainer extends Group implements Serializable, Comparable
     {
         return getTransformedBounds().getCentreZ();
     }
-    
+
     public double getCentreX()
     {
         return getTransformedBounds().getCentreX();
-    }    
+    }
 
     public double getHeight()
     {
@@ -1458,27 +1462,55 @@ public class ModelContainer extends Group implements Serializable, Comparable
     {
         return getTransformedBounds().getDepth();
     }
-    
+
     public double getWidth()
     {
         return getTransformedBounds().getWidth();
-    }    
-
-    public void addSelectionHighlighter(DoubleProperty camera)
-    {
-        this.cameraDistance = camera;
-        selectionHighlighter = new SelectionHighlighter(originalModelBounds, this.cameraDistance);
-        getChildren().add(selectionHighlighter);
     }
 
-   private void updateLastTransformedBoundsForTranslateByX(double deltaCentreX)
+    public void addSelectionHighlighter()
+    {
+        selectionHighlighter = new SelectionHighlighter(originalModelBounds, this.cameraDistance);
+        getChildren().add(selectionHighlighter);
+        selectedMarkers.add(selectionHighlighter);
+
+        System.out.println("add box");
+        Box box = new Box(10, 10, 10);
+        box.setTranslateY(-15);
+        getChildren().add(box);
+        selectedMarkers.add(box);
+
+    }
+
+    private void updateLastTransformedBoundsForTranslateByX(double deltaCentreX)
     {
         lastTransformedBounds.translateX(deltaCentreX);
-    }    
-   
-   private void updateLastTransformedBoundsForTranslateByZ(double deltaCentreZ)
+    }
+
+    private void updateLastTransformedBoundsForTranslateByZ(double deltaCentreZ)
     {
         lastTransformedBounds.translateZ(deltaCentreZ);
-    }    
+    }
+
+    public void setCameraDistance(DoubleProperty cameraDistance)
+    {
+        this.cameraDistance = cameraDistance;
+    }
+
+    private void showSelectedMarkers()
+    {
+        for (Node selectedMarker : selectedMarkers)
+        {
+            selectedMarker.setVisible(true);
+        }
+    }
+
+    private void hideSelectedMarkers()
+    {
+                for (Node selectedMarker : selectedMarkers)
+        {
+            selectedMarker.setVisible(false);
+        }
+    }
 
 }

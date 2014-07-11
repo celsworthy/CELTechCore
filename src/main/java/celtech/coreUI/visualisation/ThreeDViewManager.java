@@ -683,7 +683,6 @@ public class ThreeDViewManager
 
         for (ModelContainer model : loadedModels)
         {
-            model.addSelectionHighlighter(cameraDistance);
             models.getChildren().add(model);
         }
 
@@ -856,20 +855,21 @@ public class ThreeDViewManager
 
     /**
      *
-     * @param modelGroup
+     * @param modelContainer
      */
-    public void addModel(ModelContainer modelGroup)
+    public void addModel(ModelContainer modelContainer)
     {
-        if (modelGroup.getModelContentsType() == ModelContentsEnumeration.MESH)
+        modelContainer.setCameraDistance(cameraDistance);
+        if (modelContainer.getModelContentsType() == ModelContentsEnumeration.MESH)
         {
-            modelGroup.centreObjectOnBed();
-            models.getChildren().add(modelGroup);
-            loadedModels.add(modelGroup);
+            modelContainer.centreObjectOnBed();
+            models.getChildren().add(modelContainer);
+            loadedModels.add(modelContainer);
             collideModels();
         } else
         {
             steno.info("About to add gcode to model");
-            models.getChildren().add(modelGroup);
+            models.getChildren().add(modelContainer);
             steno.info("Done adding gcode");
         }
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();

@@ -246,7 +246,6 @@ public class LayoutSidePanelController implements Initializable,
             public void changed(ObservableValue<? extends Number> ov, Number t,
                 Number t1)
             {
-                System.out.println("scale updated to " + t1.doubleValue() * 100);
                 scaleTextField.setText(String.format(scaleFormat,
                                                      t1.doubleValue() * 100));
             }
@@ -259,7 +258,6 @@ public class LayoutSidePanelController implements Initializable,
             public void changed(ObservableValue<? extends Number> ov, Number t,
                 Number t1)
             {
-                System.out.println("rotation update to " + t1);
                 rotationTextField.setText(String.format(rotationFormat, t1));
             }
         };
@@ -509,7 +507,6 @@ public class LayoutSidePanelController implements Initializable,
                         case TAB:
                             try
                             {
-                                System.out.println("PANEL set depth to " + depthTextField.getAsDouble());
                                 displayManager.getCurrentlyVisibleViewManager().resizeSelectionDepth(
                                     depthTextField.getAsDouble());
                             } catch (ParseException ex)

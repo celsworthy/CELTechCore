@@ -95,9 +95,7 @@ public class SelectedModelContainers
             centreZ.set(boundModelContainer.getCentreZ());
             height.set(boundModelContainer.getHeight());
             depth.set(boundModelContainer.getDepth());
-            System.out.println("SMC update scale");
             scale.set(boundModelContainer.getScale());
-            System.out.println("SMC update rotY to " + boundModelContainer.getRotationY());
             rotationY.set(boundModelContainer.getRotationY());
         }
 
