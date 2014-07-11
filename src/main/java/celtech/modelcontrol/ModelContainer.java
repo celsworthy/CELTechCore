@@ -10,6 +10,7 @@ import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.importers.FloatArrayList;
 import celtech.coreUI.visualisation.importers.IntegerArrayList;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
+import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import static celtech.utils.Math.MathUtils.RAD_TO_DEG;
 import celtech.utils.gcode.representation.GCodeElement;
 import celtech.utils.gcode.representation.GCodeMeshData;
@@ -37,6 +38,7 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.PerspectiveCamera;
 import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.ObservableFaceArray;
@@ -98,6 +100,8 @@ public class ModelContainer extends Group implements Serializable, Comparable
     private double bedCentreOffsetY;
     private double bedCentreOffsetZ;
     private ModelBounds lastTransformedBounds;
+    private DoubleProperty cameraDistance;
+    private SelectionHighlighter selectionHighlighter;
 
     /**
      *
@@ -1447,6 +1451,13 @@ public class ModelContainer extends Group implements Serializable, Comparable
     public double getDepth()
     {
         return getTransformedBounds().getDepth();
+    }
+
+    public void addSelectionHighlighter(DoubleProperty camera)
+    {
+        this.cameraDistance = camera;
+        selectionHighlighter = new SelectionHighlighter(originalModelBounds, this.cameraDistance);
+        getChildren().add(selectionHighlighter);
     }
 
 }

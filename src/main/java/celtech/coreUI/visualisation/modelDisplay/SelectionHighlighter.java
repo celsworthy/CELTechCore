@@ -191,6 +191,9 @@ public class SelectionHighlighter extends Group
         double cornerBoxXOffset, double cornerBoxYOffset, double cornerBoxZOffset,
         boolean generateCornerBox)
     {
+        
+//        System.out.format("Build Corner Box at %.2f %.2f %.2f\n", );
+        
         final int cylSamples = 4;
         final double cylRadius = .05;
 

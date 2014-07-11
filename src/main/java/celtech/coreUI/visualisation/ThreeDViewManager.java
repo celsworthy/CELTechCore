@@ -681,12 +681,10 @@ public class ThreeDViewManager
         subScene.widthProperty().addListener(sceneSizeChangeListener);
         subScene.heightProperty().addListener(sceneSizeChangeListener);
 
-        if (loadedModels.isEmpty() == false)
+        for (ModelContainer model : loadedModels)
         {
-            for (ModelContainer model : loadedModels)
-            {
-                models.getChildren().add(model);
-            }
+            model.addSelectionHighlighter(cameraDistance);
+            models.getChildren().add(model);
         }
 
         applicationStatus.modeProperty().addListener(applicationModeListener);
@@ -1094,7 +1092,6 @@ public class ThreeDViewManager
             }
         }
 
-        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1114,7 +1111,6 @@ public class ThreeDViewManager
         }
         selectedModelContainers.updateSelectedValues();
 
-        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
