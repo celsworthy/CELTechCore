@@ -1342,7 +1342,6 @@ public class ModelContainer extends Group implements Serializable, Comparable
     public double getTotalWidth()
     {
         double totalwidth = originalModelBounds.getWidth() * preferredScale;
-        System.out.println("return total width of " + totalwidth);
         return totalwidth;
     }
 

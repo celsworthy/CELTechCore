@@ -90,7 +90,6 @@ public class SelectedModelContainers
         private void updateSelectedProperties()
         {
             width.set(boundModelContainer.getTotalWidth());
-            System.out.println("set centre x to " + boundModelContainer.getCentreX());
             centreX.set(boundModelContainer.getCentreX());
             centreZ.set(boundModelContainer.getCentreZ());
             height.set(boundModelContainer.getHeight());

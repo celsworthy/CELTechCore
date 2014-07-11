@@ -785,7 +785,6 @@ public class LayoutSidePanelController implements Initializable,
             public void changed(ObservableValue<? extends Number> ov, Number t,
                 Number t1)
             {
-                System.out.println("Update x axis");
                 xAxisTextField.doubleValueProperty().set(t1.doubleValue());
             }
         };
@@ -816,29 +815,15 @@ public class LayoutSidePanelController implements Initializable,
 
         SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails
             = selectionModel.getPrimarySelectedModelDetails();
-        if (selectedModelDetails != null)
-        {
-            System.out.println("add listeners");
-            selectedModelDetails.getWidth().addListener(widthListener);
-            selectedModelDetails.getHeight().addListener(heightListener);
-            selectedModelDetails.getDepth().addListener(depthListener);
+        selectedModelDetails.getWidth().addListener(widthListener);
+        selectedModelDetails.getHeight().addListener(heightListener);
+        selectedModelDetails.getDepth().addListener(depthListener);
 
-            selectedModelDetails.getCentreX().addListener(xAxisListener);
-            selectedModelDetails.getCentreZ().addListener(yAxisListener);
+        selectedModelDetails.getCentreX().addListener(xAxisListener);
+        selectedModelDetails.getCentreZ().addListener(yAxisListener);
 
-            selectedModelDetails.getScale().addListener(modelScaleChangeListener);
-            selectedModelDetails.getRotationY().addListener(modelRotationChangeListener);
-
-        } else
-        {
-            widthTextField.setText("-");
-            heightTextField.setText("-");
-            depthTextField.setText("-");
-            xAxisTextField.setText("-");
-            yAxisTextField.setText("-");
-            scaleTextField.setText("-");
-            rotationTextField.setText("-");
-        }
+        selectedModelDetails.getScale().addListener(modelScaleChangeListener);
+        selectedModelDetails.getRotationY().addListener(modelRotationChangeListener);
 
 //        selectedItemDetails.visibleProperty().bind(Bindings.isNotEmpty(
 //            selectionContainer.selectedModelsProperty()));
@@ -849,8 +834,8 @@ public class LayoutSidePanelController implements Initializable,
 
         if (boundModel != null)
         {
-//            boundModel.maxLayerVisibleProperty().unbind();
-//            boundModel.minLayerVisibleProperty().unbind();
+            boundModel.maxLayerVisibleProperty().unbind();
+            boundModel.minLayerVisibleProperty().unbind();
         }
 
         boundProject = displayManager.getCurrentlyVisibleProject();

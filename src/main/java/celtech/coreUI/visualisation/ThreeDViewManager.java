@@ -1159,6 +1159,7 @@ public class ThreeDViewManager
      */
     public void scaleSelection(double newScale)
     {
+        System.out.println("Scale selection to " + newScale);
         for (ModelContainer model : loadedModels)
         {
             if (selectedModelContainers.isSelected(model))
@@ -1178,6 +1179,7 @@ public class ThreeDViewManager
      */
     public void rotateSelection(double rotation)
     {
+        System.out.println("Rotate selection to " + rotation);
         for (ModelContainer model : loadedModels)
         {
             if (selectedModelContainers.isSelected(model))
