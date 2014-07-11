@@ -297,7 +297,8 @@ public class ModelContainer extends Group implements Serializable, Comparable
         transformMoveToPreferred.setX(transformMoveToPreferred.getX() + xMove);
         transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + zMove);
 
-        dropToBedAndUpdateLastTransformedBounds();
+        updateLastTransformedBoundsForTranslateByX(xMove);
+        updateLastTransformedBoundsForTranslateByZ(zMove);
         checkOffBed();
 
 //        Bounds bounds = this.getBoundsInParent();
@@ -369,39 +370,38 @@ public class ModelContainer extends Group implements Serializable, Comparable
      */
     public void translateTo(double xPosition, double zPosition)
     {
-        ModelBounds bounds = this.getTransformedBounds();
+        ModelBounds bounds = getTransformedBounds();
 
         translateXTo(xPosition, bounds);
         translateZTo(zPosition, bounds);
 
-        double newMaxX = xPosition + bounds.getWidth() / 2;
-        double newMinX = xPosition - bounds.getWidth() / 2;
-        double newMaxZ = zPosition + bounds.getDepth() / 2;
-        double newMinZ = zPosition - bounds.getDepth() / 2;
+//        double newMaxX = xPosition + bounds.getWidth() / 2;
+//        double newMinX = xPosition - bounds.getWidth() / 2;
+//        double newMaxZ = zPosition + bounds.getDepth() / 2;
+//        double newMinZ = zPosition - bounds.getDepth() / 2;
+//
+//        double finalXPosition = xPosition;
+//        double finalZPosition = zPosition;
+//
+//        if (newMinX < 0)
+//        {
+//            finalXPosition += -newMinX;
+//        } else if (newMaxX > printBed.getPrintVolumeMaximums().getX())
+//        {
+//            finalXPosition -= (newMaxX - printBed.getPrintVolumeMaximums().getX());
+//        }
+//
+//        if (newMinZ < 0)
+//        {
+//            finalZPosition += -newMinZ;
+//        } else if (newMaxZ > printBed.getPrintVolumeMaximums().getZ())
+//        {
+//            finalZPosition -= (newMaxZ - printBed.getPrintVolumeMaximums().getZ());
+//        }
+//
+//        transformMoveToPreferred.setX(finalXPosition);
+//        transformMoveToPreferred.setX(finalZPosition);
 
-        double finalXPosition = xPosition;
-        double finalZPosition = zPosition;
-
-        if (newMinX < 0)
-        {
-            finalXPosition += -newMinX;
-        } else if (newMaxX > printBed.getPrintVolumeMaximums().getX())
-        {
-            finalXPosition -= (newMaxX - printBed.getPrintVolumeMaximums().getX());
-        }
-
-        if (newMinZ < 0)
-        {
-            finalZPosition += -newMinZ;
-        } else if (newMaxZ > printBed.getPrintVolumeMaximums().getZ())
-        {
-            finalZPosition -= (newMaxZ - printBed.getPrintVolumeMaximums().getZ());
-        }
-
-        transformMoveToPreferred.setX(finalXPosition);
-        transformMoveToPreferred.setX(finalZPosition);
-
-        dropToBedAndUpdateLastTransformedBounds();
         checkOffBed();
 
     }
@@ -1034,6 +1034,8 @@ public class ModelContainer extends Group implements Serializable, Comparable
      */
     public void translateXTo(double xPosition, ModelBounds bounds)
     {
+        double deltaXPosition = xPosition - getTransformedBounds().getCentreX();
+        
         double newMaxX = xPosition + bounds.getWidth() / 2;
         double newMinX = xPosition - bounds.getWidth() / 2;
 
@@ -1051,7 +1053,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
         double requiredTranslation = finalXPosition - currentXPosition;
         transformMoveToPreferred.setX(transformMoveToPreferred.getX() + requiredTranslation);
 
-        dropToBedAndUpdateLastTransformedBounds();
+        updateLastTransformedBoundsForTranslateByX(deltaXPosition);
         checkOffBed();
     }
 
@@ -1068,6 +1070,9 @@ public class ModelContainer extends Group implements Serializable, Comparable
     public void translateZTo(double zPosition, ModelBounds bounds)
 
     {
+        
+        double deltaZPosition = zPosition - getTransformedBounds().getCentreZ();
+        
         double newMaxZ = zPosition + bounds.getDepth() / 2;
         double newMinZ = zPosition - bounds.getDepth() / 2;
 
@@ -1085,7 +1090,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
         double requiredTranslation = finalZPosition - currentZPosition;
         transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + requiredTranslation);
 
-        dropToBedAndUpdateLastTransformedBounds();
+        updateLastTransformedBoundsForTranslateByX(deltaZPosition);
         checkOffBed();
     }
 
@@ -1459,5 +1464,15 @@ public class ModelContainer extends Group implements Serializable, Comparable
         selectionHighlighter = new SelectionHighlighter(originalModelBounds, this.cameraDistance);
         getChildren().add(selectionHighlighter);
     }
+
+   private void updateLastTransformedBoundsForTranslateByX(double deltaCentreX)
+    {
+        lastTransformedBounds.translateX(deltaCentreX);
+    }    
+   
+   private void updateLastTransformedBoundsForTranslateByZ(double deltaCentreZ)
+    {
+        lastTransformedBounds.translateZ(deltaCentreZ);
+    }    
 
 }

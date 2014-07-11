@@ -313,4 +313,16 @@ public class ModelBounds
             + " Z: %.2f }", minX, maxX, minY, maxY, minZ, maxZ, width, height, depth, centreX,
                              centreY, centreZ);
     }
+
+    public void translateX(double deltaCentreX)
+    {
+        minX += deltaCentreX;
+        maxX += deltaCentreX;
+    }
+
+    public void translateZ(double deltaCentreZ)
+    {
+        minZ += deltaCentreZ;
+        maxZ += deltaCentreZ;
+    }
 }
