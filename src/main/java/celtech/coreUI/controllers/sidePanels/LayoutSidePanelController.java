@@ -139,28 +139,6 @@ public class LayoutSidePanelController implements Initializable,
 
         setUpTableView(modelNameLabelString, scaleLabelString, rotationLabelString, languageBundle);
 
-        modelScaleChangeListener = new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t,
-                Number t1)
-            {
-                scaleTextField.setText(String.format(scaleFormat,
-                                                     t1.doubleValue() * 100));
-            }
-        };
-
-        modelRotationChangeListener = new ChangeListener<Number>()
-        {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t,
-                Number t1)
-            {
-                rotationTextField.setText(String.format(rotationFormat, t1));
-            }
-        };
-
         selectionListener = new ListChangeListener<ModelContainer>()
         {
 
@@ -224,7 +202,68 @@ public class LayoutSidePanelController implements Initializable,
 //                }
             }
         };
+        
+        modelChangeListener = new ListChangeListener<ModelContainer>()
+        {
 
+            @Override
+            public void onChanged(
+                ListChangeListener.Change<? extends ModelContainer> change)
+            {
+                while (change.next())
+                {
+                    if (change.wasAdded())
+                    {
+                        for (ModelContainer additem : change.getAddedSubList())
+                        {
+                            boundModel = additem;
+                            boundModel = boundProject.getLoadedModels().get(0);
+                        }
+                    } else if (change.wasRemoved())
+                    {
+                        for (ModelContainer additem : change.getRemoved())
+                        {
+                        }
+                    } else if (change.wasReplaced())
+                    {
+                        steno.info("Replaced: ");
+                    } else if (change.wasUpdated())
+                    {
+                        steno.info("Updated: ");
+                    }
+                }
+            }
+        };        
+        
+        setUpModelGeometryListeners();
+    }
+
+    private void setUpModelGeometryListeners()
+    {
+        modelScaleChangeListener = new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t,
+                Number t1)
+            {
+                System.out.println("scale updated to " + t1.doubleValue() * 100);
+                scaleTextField.setText(String.format(scaleFormat,
+                                                     t1.doubleValue() * 100));
+            }
+        };
+
+        modelRotationChangeListener = new ChangeListener<Number>()
+        {
+
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t,
+                Number t1)
+            {
+                System.out.println("rotation update to " + t1);
+                rotationTextField.setText(String.format(rotationFormat, t1));
+            }
+        };
+        
         scaleTextField.setOnKeyPressed(
             new EventHandler<KeyEvent>()
             {
@@ -632,39 +671,9 @@ public class LayoutSidePanelController implements Initializable,
 //                    }
 //                    }
 //            });
-
-        modelChangeListener = new ListChangeListener<ModelContainer>()
-        {
-
-            @Override
-            public void onChanged(
-                ListChangeListener.Change<? extends ModelContainer> change)
-            {
-                while (change.next())
-                {
-                    if (change.wasAdded())
-                    {
-                        for (ModelContainer additem : change.getAddedSubList())
-                        {
-                            boundModel = additem;
-                            boundModel = boundProject.getLoadedModels().get(0);
-                        }
-                    } else if (change.wasRemoved())
-                    {
-                        for (ModelContainer additem : change.getRemoved())
-                        {
-                        }
-                    } else if (change.wasReplaced())
-                    {
-                        steno.info("Replaced: ");
-                    } else if (change.wasUpdated())
-                    {
-                        steno.info("Updated: ");
-                    }
-                }
-            }
-        };
-
+        
+        
+        
         widthListener = new ChangeListener<Number>()
         {
             @Override

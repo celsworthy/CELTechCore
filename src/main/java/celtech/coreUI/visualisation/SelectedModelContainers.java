@@ -64,13 +64,14 @@ public class SelectedModelContainers
 
         ModelContainer boundModelContainer;
 
-        private final DoubleProperty width = new SimpleDoubleProperty();
-        private final DoubleProperty centreX = new SimpleDoubleProperty();
-        private final DoubleProperty centreZ = new SimpleDoubleProperty();
-        private final DoubleProperty height = new SimpleDoubleProperty();
-        private final DoubleProperty depth = new SimpleDoubleProperty();
-        private final DoubleProperty scale = new SimpleDoubleProperty();
-        private final DoubleProperty rotationY = new SimpleDoubleProperty();
+        // initing values to -1 forces a change update when value first set to 0 (e.g. rotY)
+        private final DoubleProperty width = new SimpleDoubleProperty(-1);
+        private final DoubleProperty centreX = new SimpleDoubleProperty(-1);
+        private final DoubleProperty centreZ = new SimpleDoubleProperty(-1);
+        private final DoubleProperty height = new SimpleDoubleProperty(-1);
+        private final DoubleProperty depth = new SimpleDoubleProperty(-1);
+        private final DoubleProperty scale = new SimpleDoubleProperty(-1);
+        private final DoubleProperty rotationY = new SimpleDoubleProperty(-1);
 
         private PrimarySelectedModelDetails()
         {
@@ -93,9 +94,10 @@ public class SelectedModelContainers
             centreX.set(boundModelContainer.getCentreX());
             centreZ.set(boundModelContainer.getCentreZ());
             height.set(boundModelContainer.getHeight());
-            System.out.println("Selected MC set depth to " + boundModelContainer.getDepth());
             depth.set(boundModelContainer.getDepth());
+            System.out.println("SMC update scale");
             scale.set(boundModelContainer.getScale());
+            System.out.println("SMC update rotY to " + boundModelContainer.getRotationY());
             rotationY.set(boundModelContainer.getRotationY());
         }
 
