@@ -137,92 +137,7 @@ public class LayoutSidePanelController implements Initializable,
         xAxisTextField.setText("-");
         yAxisTextField.setText("-");
 
-        modelNameColumn.setText(modelNameLabelString);
-        modelNameColumn.setCellValueFactory(
-            new PropertyValueFactory<ModelContainer, String>("modelName"));
-        modelNameColumn.setMinWidth(170);
-        modelNameColumn.setMaxWidth(170);
-        modelNameColumn.setEditable(false);
-
-        scaleColumn.setText(scaleLabelString);
-        scaleColumn.setCellValueFactory(
-            new PropertyValueFactory<ModelContainer, Double>("scale"));
-        scaleColumn.setMinWidth(60);
-        scaleColumn.setPrefWidth(60);
-        scaleColumn.setMaxWidth(60);
-        scaleColumn.setCellFactory(
-            new Callback<TableColumn<ModelContainer, Double>, TableCell<ModelContainer, Double>>()
-            {
-                @Override
-                public TableCell<ModelContainer, Double> call(
-                    TableColumn<ModelContainer, Double> param)
-                {
-                    return new TableCell<ModelContainer, Double>()
-                    {
-
-                        @Override
-                        protected void updateItem(Double item, boolean empty)
-                        {
-                            super.updateItem(item, empty);
-
-                            if (!empty)
-                            {
-                                // Use a SimpleDateFormat or similar in the format method
-                                setText(String.format("%.0f%%", item * 100));
-                            } else
-                            {
-                                setText(null);
-                            }
-                        }
-                    };
-                    }
-            });
-
-        rotationColumn.setText(rotationLabelString);
-        rotationColumn.setCellValueFactory(
-            new PropertyValueFactory<ModelContainer, Double>("rotationY"));
-        rotationColumn.setMinWidth(60);
-        rotationColumn.setPrefWidth(60);
-        rotationColumn.setMaxWidth(60);
-        rotationColumn.setCellFactory(
-            new Callback<TableColumn<ModelContainer, Double>, TableCell<ModelContainer, Double>>()
-            {
-                @Override
-                public TableCell<ModelContainer, Double> call(
-                    TableColumn<ModelContainer, Double> param)
-                {
-                    return new TableCell<ModelContainer, Double>()
-                    {
-
-                        @Override
-                        protected void updateItem(Double item, boolean empty)
-                        {
-                            super.updateItem(item, empty);
-
-                            if (!empty)
-                            {
-                                // Use a SimpleDateFormat or similar in the format method
-                                setText(String.format("%.0f°", item));
-                            } else
-                            {
-                                setText(null);
-                            }
-                        }
-                    };
-                    }
-            });
-
-        modelDataTableView.getColumns().addAll(modelNameColumn, scaleColumn,
-                                               rotationColumn);
-        modelDataTableView.getSelectionModel().setSelectionMode(
-            SelectionMode.SINGLE);
-        modelDataTableView.setEditable(true);
-        modelDataTableView.getSortOrder().add(modelNameColumn);
-
-        Label noModelsLoadedPlaceholder = new Label();
-        noModelsLoadedPlaceholder.setText(languageBundle.getString(
-            "sidePanel_layout.noModelsLoaded"));
-        modelDataTableView.setPlaceholder(noModelsLoadedPlaceholder);
+        setUpTableView(modelNameLabelString, scaleLabelString, rotationLabelString, languageBundle);
 
         modelScaleChangeListener = new ChangeListener<Number>()
         {
@@ -345,28 +260,28 @@ public class LayoutSidePanelController implements Initializable,
             }
         );
 
-        scaleTextField.focusedProperty().addListener(
-            new ChangeListener<Boolean>()
-            {
-                @Override
-                public void changed(
-                    ObservableValue<? extends Boolean> observable,
-                    Boolean oldValue, Boolean newValue)
-                {
-                    if (newValue == false)
-                    {
-                        try
-                        {
-                            displayManager.getCurrentlyVisibleViewManager().scaleSelection(
-                                scaleTextField.getAsDouble() / 100.0);
-                        } catch (ParseException ex)
-                        {
-                            steno.warning("Error converting scale "
-                                + scaleTextField.getText());
-                        }
-                    }
-                    }
-            });
+//        scaleTextField.focusedProperty().addListener(
+//            new ChangeListener<Boolean>()
+//            {
+//                @Override
+//                public void changed(
+//                    ObservableValue<? extends Boolean> observable,
+//                    Boolean oldValue, Boolean newValue)
+//                {
+//                    if (newValue == false)
+//                    {
+//                        try
+//                        {
+//                            displayManager.getCurrentlyVisibleViewManager().scaleSelection(
+//                                scaleTextField.getAsDouble() / 100.0);
+//                        } catch (ParseException ex)
+//                        {
+//                            steno.warning("Error converting scale "
+//                                + scaleTextField.getText());
+//                        }
+//                    }
+//                    }
+//            });
 
         rotationTextField.setOnKeyPressed(
             new EventHandler<KeyEvent>()
@@ -403,28 +318,28 @@ public class LayoutSidePanelController implements Initializable,
             }
         );
 
-        rotationTextField.focusedProperty().addListener(
-            new ChangeListener<Boolean>()
-            {
-                @Override
-                public void changed(
-                    ObservableValue<? extends Boolean> observable,
-                    Boolean oldValue, Boolean newValue)
-                {
-                    if (newValue == false)
-                    {
-                        try
-                        {
-                            displayManager.getCurrentlyVisibleViewManager().rotateSelection(
-                                rotationTextField.getAsDouble());
-                        } catch (ParseException ex)
-                        {
-                            steno.warning("Error converting rotation "
-                                + rotationTextField.getText());
-                        }
-                    }
-                    }
-            });
+//        rotationTextField.focusedProperty().addListener(
+//            new ChangeListener<Boolean>()
+//            {
+//                @Override
+//                public void changed(
+//                    ObservableValue<? extends Boolean> observable,
+//                    Boolean oldValue, Boolean newValue)
+//                {
+//                    if (newValue == false)
+//                    {
+//                        try
+//                        {
+//                            displayManager.getCurrentlyVisibleViewManager().rotateSelection(
+//                                rotationTextField.getAsDouble());
+//                        } catch (ParseException ex)
+//                        {
+//                            steno.warning("Error converting rotation "
+//                                + rotationTextField.getText());
+//                        }
+//                    }
+//                    }
+//            });
 
         widthTextField.setOnKeyPressed(
             new EventHandler<KeyEvent>()
@@ -461,28 +376,28 @@ public class LayoutSidePanelController implements Initializable,
             }
         );
 
-        widthTextField.focusedProperty().addListener(
-            new ChangeListener<Boolean>()
-            {
-                @Override
-                public void changed(
-                    ObservableValue<? extends Boolean> observable,
-                    Boolean oldValue, Boolean newValue)
-                {
-                    if (newValue == false)
-                    {
-                        try
-                        {
-                            displayManager.getCurrentlyVisibleViewManager().resizeSelectionWidth(
-                                widthTextField.getAsDouble());
-                        } catch (ParseException ex)
-                        {
-                            steno.warning("Error converting width "
-                                + widthTextField.getText());
-                        }
-                    }
-                    }
-            });
+//        widthTextField.focusedProperty().addListener(
+//            new ChangeListener<Boolean>()
+//            {
+//                @Override
+//                public void changed(
+//                    ObservableValue<? extends Boolean> observable,
+//                    Boolean oldValue, Boolean newValue)
+//                {
+//                    if (newValue == false)
+//                    {
+//                        try
+//                        {
+//                            displayManager.getCurrentlyVisibleViewManager().resizeSelectionWidth(
+//                                widthTextField.getAsDouble());
+//                        } catch (ParseException ex)
+//                        {
+//                            steno.warning("Error converting width "
+//                                + widthTextField.getText());
+//                        }
+//                    }
+//                    }
+//            });
 
         heightTextField.setOnKeyPressed(
             new EventHandler<KeyEvent>()
@@ -519,28 +434,28 @@ public class LayoutSidePanelController implements Initializable,
             }
         );
 
-        heightTextField.focusedProperty().addListener(
-            new ChangeListener<Boolean>()
-            {
-                @Override
-                public void changed(
-                    ObservableValue<? extends Boolean> observable,
-                    Boolean oldValue, Boolean newValue)
-                {
-                    if (newValue == false)
-                    {
-                        try
-                        {
-                            displayManager.getCurrentlyVisibleViewManager().resizeSelectionHeight(
-                                heightTextField.getAsDouble());
-                        } catch (ParseException ex)
-                        {
-                            steno.warning("Error converting height "
-                                + heightTextField.getText());
-                        }
-                    }
-                    }
-            });
+//        heightTextField.focusedProperty().addListener(
+//            new ChangeListener<Boolean>()
+//            {
+//                @Override
+//                public void changed(
+//                    ObservableValue<? extends Boolean> observable,
+//                    Boolean oldValue, Boolean newValue)
+//                {
+//                    if (newValue == false)
+//                    {
+//                        try
+//                        {
+//                            displayManager.getCurrentlyVisibleViewManager().resizeSelectionHeight(
+//                                heightTextField.getAsDouble());
+//                        } catch (ParseException ex)
+//                        {
+//                            steno.warning("Error converting height "
+//                                + heightTextField.getText());
+//                        }
+//                    }
+//                    }
+//            });
 
         depthTextField.setOnKeyPressed(
             new EventHandler<KeyEvent>()
@@ -555,6 +470,7 @@ public class LayoutSidePanelController implements Initializable,
                         case TAB:
                             try
                             {
+                                System.out.println("PANEL set depth to " + depthTextField.getAsDouble());
                                 displayManager.getCurrentlyVisibleViewManager().resizeSelectionDepth(
                                     depthTextField.getAsDouble());
                             } catch (ParseException ex)
@@ -576,28 +492,28 @@ public class LayoutSidePanelController implements Initializable,
             }
         );
 
-        depthTextField.focusedProperty().addListener(
-            new ChangeListener<Boolean>()
-            {
-                @Override
-                public void changed(
-                    ObservableValue<? extends Boolean> observable,
-                    Boolean oldValue, Boolean newValue)
-                {
-                    if (newValue == false)
-                    {
-                        try
-                        {
-                            displayManager.getCurrentlyVisibleViewManager().resizeSelectionDepth(
-                                depthTextField.getAsDouble());
-                        } catch (ParseException ex)
-                        {
-                            steno.error("Error parsing depth string " + ex
-                                + " : " + ex.getMessage());
-                        }
-                    }
-                    }
-            });
+//        depthTextField.focusedProperty().addListener(
+//            new ChangeListener<Boolean>()
+//            {
+//                @Override
+//                public void changed(
+//                    ObservableValue<? extends Boolean> observable,
+//                    Boolean oldValue, Boolean newValue)
+//                {
+//                    if (newValue == false)
+//                    {
+//                        try
+//                        {
+//                            displayManager.getCurrentlyVisibleViewManager().resizeSelectionDepth(
+//                                depthTextField.getAsDouble());
+//                        } catch (ParseException ex)
+//                        {
+//                            steno.error("Error parsing depth string " + ex
+//                                + " : " + ex.getMessage());
+//                        }
+//                    }
+//                    }
+//            });
 
         xAxisTextField.setOnKeyPressed(
             (KeyEvent t) ->
@@ -627,33 +543,33 @@ public class LayoutSidePanelController implements Initializable,
                 }
             });
 
-        xAxisTextField.focusedProperty().addListener(
-            new ChangeListener<Boolean>()
-            {
-                @Override
-                public void changed(
-                    ObservableValue<? extends Boolean> observable,
-                    Boolean oldValue, Boolean newValue)
-                {
-                    if (newValue == false)
-                    {
-                        ThreeDViewManager viewManager = displayManager.getCurrentlyVisibleViewManager();
-                        if (viewManager != null)
-                        {
-                            try
-                            {
-                                displayManager.getCurrentlyVisibleViewManager().translateSelectionXTo(
-                                    xAxisTextField.getAsDouble());
-                            } catch (ParseException ex)
-                            {
-                                steno.error("Error parsing x translate string "
-                                    + ex + " : " + ex.getMessage());
-                            }
-                        }
-
-                    }
-                    }
-            });
+//        xAxisTextField.focusedProperty().addListener(
+//            new ChangeListener<Boolean>()
+//            {
+//                @Override
+//                public void changed(
+//                    ObservableValue<? extends Boolean> observable,
+//                    Boolean oldValue, Boolean newValue)
+//                {
+//                    if (newValue == false)
+//                    {
+//                        ThreeDViewManager viewManager = displayManager.getCurrentlyVisibleViewManager();
+//                        if (viewManager != null)
+//                        {
+//                            try
+//                            {
+//                                displayManager.getCurrentlyVisibleViewManager().translateSelectionXTo(
+//                                    xAxisTextField.getAsDouble());
+//                            } catch (ParseException ex)
+//                            {
+//                                steno.error("Error parsing x translate string "
+//                                    + ex + " : " + ex.getMessage());
+//                            }
+//                        }
+//
+//                    }
+//                    }
+//            });
 
         yAxisTextField.setOnKeyPressed(
             new EventHandler<KeyEvent>()
@@ -690,32 +606,32 @@ public class LayoutSidePanelController implements Initializable,
             }
         );
 
-        yAxisTextField.focusedProperty().addListener(
-            new ChangeListener<Boolean>()
-            {
-                @Override
-                public void changed(
-                    ObservableValue<? extends Boolean> observable,
-                    Boolean oldValue, Boolean newValue)
-                {
-                    if (newValue == false)
-                    {
-                        ThreeDViewManager viewManager = displayManager.getCurrentlyVisibleViewManager();
-                        if (viewManager != null)
-                        {
-                            try
-                            {
-                                displayManager.getCurrentlyVisibleViewManager().translateSelectionZTo(
-                                    yAxisTextField.getAsDouble());
-                            } catch (ParseException ex)
-                            {
-                                steno.error("Error parsing y translate string "
-                                    + ex + " : " + ex.getMessage());
-                            }
-                        }
-                    }
-                    }
-            });
+//        yAxisTextField.focusedProperty().addListener(
+//            new ChangeListener<Boolean>()
+//            {
+//                @Override
+//                public void changed(
+//                    ObservableValue<? extends Boolean> observable,
+//                    Boolean oldValue, Boolean newValue)
+//                {
+//                    if (newValue == false)
+//                    {
+//                        ThreeDViewManager viewManager = displayManager.getCurrentlyVisibleViewManager();
+//                        if (viewManager != null)
+//                        {
+//                            try
+//                            {
+//                                displayManager.getCurrentlyVisibleViewManager().translateSelectionZTo(
+//                                    yAxisTextField.getAsDouble());
+//                            } catch (ParseException ex)
+//                            {
+//                                steno.error("Error parsing y translate string "
+//                                    + ex + " : " + ex.getMessage());
+//                            }
+//                        }
+//                    }
+//                    }
+//            });
 
         modelChangeListener = new ListChangeListener<ModelContainer>()
         {
@@ -798,6 +714,97 @@ public class LayoutSidePanelController implements Initializable,
                 yAxisTextField.doubleValueProperty().set(t1.doubleValue());
             }
         };
+    }
+
+    private void setUpTableView(String modelNameLabelString, String scaleLabelString,
+        String rotationLabelString, ResourceBundle languageBundle)
+    {
+        modelNameColumn.setText(modelNameLabelString);
+        modelNameColumn.setCellValueFactory(
+            new PropertyValueFactory<ModelContainer, String>("modelName"));
+        modelNameColumn.setMinWidth(170);
+        modelNameColumn.setMaxWidth(170);
+        modelNameColumn.setEditable(false);
+        
+        scaleColumn.setText(scaleLabelString);
+        scaleColumn.setCellValueFactory(
+            new PropertyValueFactory<ModelContainer, Double>("scale"));
+        scaleColumn.setMinWidth(60);
+        scaleColumn.setPrefWidth(60);
+        scaleColumn.setMaxWidth(60);
+        scaleColumn.setCellFactory(
+            new Callback<TableColumn<ModelContainer, Double>, TableCell<ModelContainer, Double>>()
+            {
+                @Override
+                public TableCell<ModelContainer, Double> call(
+                    TableColumn<ModelContainer, Double> param)
+                {
+                    return new TableCell<ModelContainer, Double>()
+                    {
+                        
+                        @Override
+                        protected void updateItem(Double item, boolean empty)
+                        {
+                            super.updateItem(item, empty);
+                            
+                            if (!empty)
+                            {
+                                // Use a SimpleDateFormat or similar in the format method
+                                setText(String.format("%.0f%%", item * 100));
+                            } else
+                            {
+                                setText(null);
+                            }
+                        }
+                    };
+                }
+            });
+        
+        rotationColumn.setText(rotationLabelString);
+        rotationColumn.setCellValueFactory(
+            new PropertyValueFactory<ModelContainer, Double>("rotationY"));
+        rotationColumn.setMinWidth(60);
+        rotationColumn.setPrefWidth(60);
+        rotationColumn.setMaxWidth(60);
+        rotationColumn.setCellFactory(
+            new Callback<TableColumn<ModelContainer, Double>, TableCell<ModelContainer, Double>>()
+            {
+                @Override
+                public TableCell<ModelContainer, Double> call(
+                    TableColumn<ModelContainer, Double> param)
+                {
+                    return new TableCell<ModelContainer, Double>()
+                    {
+                        
+                        @Override
+                        protected void updateItem(Double item, boolean empty)
+                        {
+                            super.updateItem(item, empty);
+                            
+                            if (!empty)
+                            {
+                                // Use a SimpleDateFormat or similar in the format method
+                                setText(String.format("%.0f°", item));
+                            } else
+                            {
+                                setText(null);
+                            }
+                        }
+                    };
+                }
+            });
+        
+        modelDataTableView.getColumns().addAll(modelNameColumn, scaleColumn,
+                                                                rotationColumn);
+        modelDataTableView.getSelectionModel().setSelectionMode(
+            SelectionMode.SINGLE);
+        modelDataTableView.setEditable(true);
+        modelDataTableView.getSortOrder().add(modelNameColumn);
+        
+        Label noModelsLoadedPlaceholder = new Label();
+        noModelsLoadedPlaceholder.setText(languageBundle.getString(
+            "sidePanel_layout.noModelsLoaded"));
+        modelDataTableView.setPlaceholder(noModelsLoadedPlaceholder);
     }
 
     /**

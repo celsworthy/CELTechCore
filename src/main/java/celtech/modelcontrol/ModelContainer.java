@@ -981,7 +981,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
      */
     public void resizeWidth(double width)
     {
-        ModelBounds bounds = getLocalBounds();
+        ModelBounds bounds = getTransformedBounds();
 
         double currentWidth = bounds.getWidth();
         System.out.println("local bounds width is " + currentWidth);
@@ -989,7 +989,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
         double newScale = width / currentWidth;
         System.out.println("factor is " + newScale);
         System.out.println("set scale width to " + newScale);
-        setScale(newScale);
+        setScale(getScale() * newScale);
     }
 
     /**
@@ -998,13 +998,13 @@ public class ModelContainer extends Group implements Serializable, Comparable
      */
     public void resizeHeight(double height)
     {
-        Bounds bounds = getBoundsInLocal();
+        ModelBounds bounds = getTransformedBounds();
 
         double currentHeight = bounds.getHeight();
 
         double newScale = height / currentHeight;
 
-        setScale(newScale);
+        setScale(getScale() * newScale);
     }
 
     /**
@@ -1013,13 +1013,15 @@ public class ModelContainer extends Group implements Serializable, Comparable
      */
     public void resizeDepth(double depth)
     {
-        Bounds bounds = getBoundsInLocal();
+        
+        ModelBounds bounds = getTransformedBounds();
 
         double currentDepth = bounds.getDepth();
 
         double newScale = depth / currentDepth;
 
-        setScale(newScale);
+        System.out.println("MC set scale to " + newScale);
+        setScale(getScale() * newScale);
     }
 
     public void translateXTo(double xPosition)
@@ -1456,6 +1458,11 @@ public class ModelContainer extends Group implements Serializable, Comparable
     {
         return getTransformedBounds().getDepth();
     }
+    
+    public double getWidth()
+    {
+        return getTransformedBounds().getWidth();
+    }    
 
     public void addSelectionHighlighter(DoubleProperty camera)
     {

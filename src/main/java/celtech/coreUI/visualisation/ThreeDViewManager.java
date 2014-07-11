@@ -1140,6 +1140,7 @@ public class ThreeDViewManager
      */
     public void resizeSelectionDepth(double depth)
     {
+        System.out.println("3DV set depth to " + depth);
         for (ModelContainer model : loadedModels)
         {
             if (selectedModelContainers.isSelected(model))

@@ -89,10 +89,11 @@ public class SelectedModelContainers
 
         private void updateSelectedProperties()
         {
-            width.set(boundModelContainer.getTotalWidth());
+            width.set(boundModelContainer.getWidth());
             centreX.set(boundModelContainer.getCentreX());
             centreZ.set(boundModelContainer.getCentreZ());
             height.set(boundModelContainer.getHeight());
+            System.out.println("Selected MC set depth to " + boundModelContainer.getDepth());
             depth.set(boundModelContainer.getDepth());
             scale.set(boundModelContainer.getScale());
             rotationY.set(boundModelContainer.getRotationY());
