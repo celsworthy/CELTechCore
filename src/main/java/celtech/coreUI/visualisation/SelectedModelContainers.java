@@ -17,8 +17,8 @@ import javafx.collections.ObservableSet;
 public class SelectedModelContainers
 {
 
-    private ObservableSet<ModelContainer> modelContainers;
-    private PrimarySelectedModelDetails primarySelectedModelDetails;
+    private final ObservableSet<ModelContainer> modelContainers;
+    private final PrimarySelectedModelDetails primarySelectedModelDetails;
 
     public SelectedModelContainers()
     {
@@ -29,7 +29,7 @@ public class SelectedModelContainers
     public void addModelContainer(ModelContainer modelContainer)
     {
         modelContainers.add(modelContainer);
-        primarySelectedModelDetails.bind(modelContainer);
+        primarySelectedModelDetails.setTo(modelContainer);
     }
 
     public void removeModelContainer(ModelContainer modelContainer)
@@ -56,9 +56,7 @@ public class SelectedModelContainers
      * Call this method when the transformed geometry of the selected model have changed.
      */
     public void updateSelectedValues() {
-        if (primarySelectedModelDetails != null) {
-            primarySelectedModelDetails.updateSelectedProperties();
-        }    
+        primarySelectedModelDetails.updateSelectedProperties();
     }
 
     public class PrimarySelectedModelDetails
@@ -69,10 +67,10 @@ public class SelectedModelContainers
         private final DoubleProperty width = new SimpleDoubleProperty();
         private final DoubleProperty centreX = new SimpleDoubleProperty();
         private final DoubleProperty centreZ = new SimpleDoubleProperty();
-        private DoubleProperty height= new SimpleDoubleProperty();
-        private DoubleProperty depth= new SimpleDoubleProperty();
-        private DoubleProperty scale= new SimpleDoubleProperty();
-        private DoubleProperty rotationY= new SimpleDoubleProperty();
+        private final DoubleProperty height = new SimpleDoubleProperty();
+        private final DoubleProperty depth = new SimpleDoubleProperty();
+        private final DoubleProperty scale = new SimpleDoubleProperty();
+        private final DoubleProperty rotationY = new SimpleDoubleProperty();
 
         private PrimarySelectedModelDetails()
         {
@@ -83,7 +81,7 @@ public class SelectedModelContainers
             return width;
         }
 
-        public void bind(ModelContainer modelContainer)
+        public void setTo(ModelContainer modelContainer)
         {
             boundModelContainer = modelContainer;
             updateSelectedProperties();

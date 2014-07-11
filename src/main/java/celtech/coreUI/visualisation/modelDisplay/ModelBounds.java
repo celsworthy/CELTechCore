@@ -318,11 +318,13 @@ public class ModelBounds
     {
         minX += deltaCentreX;
         maxX += deltaCentreX;
+        centreX += deltaCentreX;
     }
 
     public void translateZ(double deltaCentreZ)
     {
         minZ += deltaCentreZ;
         maxZ += deltaCentreZ;
+        centreZ += deltaCentreZ;
     }
 }
