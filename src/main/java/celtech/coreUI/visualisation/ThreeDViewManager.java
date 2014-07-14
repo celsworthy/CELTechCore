@@ -1276,7 +1276,6 @@ public class ThreeDViewManager
                 model.setScale(delta * model.getScale());
             }
         }
-        //recalculateSelectionBounds(false);
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1291,7 +1290,6 @@ public class ThreeDViewManager
             int faceNumber = pickResult.getIntersectedFace();
             ModelContainer modelContainer = (ModelContainer) intersectedNode.getParent();
             modelContainer.rotateToMakeFaceParallelToGround(faceNumber);
-            //recalculateSelectionBounds(false);
         }
     }
 

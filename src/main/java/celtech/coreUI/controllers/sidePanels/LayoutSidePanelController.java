@@ -152,15 +152,15 @@ public class LayoutSidePanelController implements Initializable,
                     {
                         if (change.wasAdded())
                         {
-                            for (ModelContainer additem : change.getAddedSubList())
+                            for (ModelContainer modelContainer : change.getAddedSubList())
                             {
-                                displayManager.selectModel(additem);
+                                selectionModel.addModelContainer(modelContainer);
                             }
                         } else if (change.wasRemoved())
                         {
-                            for (ModelContainer additem : change.getRemoved())
+                            for (ModelContainer modelContainer : change.getRemoved())
                             {
-                                displayManager.deselectModel(additem);
+                                selectionModel.removeModelContainer(modelContainer);
                             }
                         } else if (change.wasReplaced())
                         {
