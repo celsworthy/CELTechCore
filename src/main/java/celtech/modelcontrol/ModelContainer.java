@@ -72,7 +72,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private SimpleStringProperty modelName = null;
     private ModelContentsEnumeration modelContentsType = ModelContentsEnumeration.MESH;
     //GCode only
-    private ObservableList<String> fileLines = FXCollections.observableArrayList();
+    private final ObservableList<String> fileLines = FXCollections.observableArrayList();
     private GCodeMeshData gcodeMeshData = null;
     private GCodeElement lastSelectedPart = null;
     private IntegerProperty selectedGCodeLine = new SimpleIntegerProperty(0);
@@ -81,8 +81,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private IntegerProperty numberOfLayers = new SimpleIntegerProperty(0);
     private IntegerProperty maxLayerVisible = new SimpleIntegerProperty(0);
     private IntegerProperty minLayerVisible = new SimpleIntegerProperty(0);
-
-    private DoubleProperty height = new SimpleDoubleProperty(0);
 
     ModelBounds originalModelBounds;
     // New AL
@@ -124,7 +122,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         super();
         initialise(name);
-        updateTransformMoveToCentre();
+        initialiseTransforms();
     }
 
     /**
@@ -138,7 +136,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         super();
         modelContentsType = ModelContentsEnumeration.GCODE;
         initialise(name);
-        updateTransformMoveToCentre();
+        initialiseTransforms();
         getChildren().add(gcodeMeshData.getAllParts());
         this.gcodeMeshData = gcodeMeshData;
 
@@ -192,7 +190,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         modelContentsType = ModelContentsEnumeration.MESH;
         getChildren().add(meshToAdd);
         initialise(name);
-        updateTransformMoveToCentre();
+        initialiseTransforms();
     }
 
     /**
@@ -206,10 +204,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         modelContentsType = ModelContentsEnumeration.MESH;
         getChildren().addAll(meshes);
         initialise(name);
-        updateTransformMoveToCentre();
+        initialiseTransforms();
     }
 
-    private void updateTransformMoveToCentre()
+    private void initialiseTransforms()
     {
         originalModelBounds = calculateBounds();
 
@@ -217,6 +215,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double centreYOffset = -originalModelBounds.getMaxY();
         double centreZOffset = -originalModelBounds.getCentreZ();
 
+        System.out.format("Move orig to centre offsets: %.2f %.2f %.2f \n", centreXOffset,
+                          centreYOffset,
+                          centreZOffset);
         transformMoveToCentre.setX(centreXOffset);
         transformMoveToCentre.setY(centreYOffset);
         transformMoveToCentre.setZ(centreZOffset);
@@ -224,6 +225,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformRotateYPreferred.setPivotX(originalModelBounds.getCentreX());
         transformRotateYPreferred.setPivotY(originalModelBounds.getCentreY());
         transformRotateYPreferred.setPivotZ(originalModelBounds.getCentreZ());
+        
+        transformMoveToPreferred.setX(0);
+        transformMoveToPreferred.setY(0);
+        transformMoveToPreferred.setZ(0);
 
         lastTransformedBounds = calculateBoundsInParent();
         notifyShapeChange();
@@ -255,6 +260,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                                transformMoveToCentre, transformBedCentre,
                                transformRotateYPreferred, transformRotateSnapToGround,
                                transformScalePreferred);
+
+//        getTransforms().addAll(transformMoveToCentre, transformBedCentre,
+//                               transformMoveToPreferred,
+//                                                      transformRotateYPreferred, transformRotateSnapToGround,
+//                               transformScalePreferred);
     }
 
     /**
@@ -266,7 +276,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         bedCentreOffsetY = PrintBed.getPrintVolumeCentreZeroHeight().getY();
         bedCentreOffsetZ = PrintBed.getPrintVolumeCentreZeroHeight().getZ();
         transformBedCentre.setX(bedCentreOffsetX);
-        transformBedCentre.setX(bedCentreOffsetY);
+        transformBedCentre.setY(bedCentreOffsetY);
         transformBedCentre.setZ(bedCentreOffsetZ);
         System.out.println("Bed centre at X " + bedCentreOffsetX + " Z " + bedCentreOffsetZ);
     }
@@ -368,6 +378,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public void translateFrontLeftTo(double xPosition, double zPosition)
     {
+        System.out.format("translate front left to %.2f %.2f\n", xPosition, zPosition);
         translateTo(xPosition, zPosition);
     }
 
@@ -376,10 +387,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public void translateTo(double xPosition, double zPosition)
     {
-        ModelBounds bounds = getTransformedBounds();
-
-        translateXTo(xPosition, bounds);
-        translateZTo(zPosition, bounds);
+        translateXTo(xPosition);
+        translateZTo(zPosition);
 
 //        double newMaxX = xPosition + bounds.getWidth() / 2;
 //        double newMinX = xPosition - bounds.getWidth() / 2;
@@ -416,7 +425,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public void centreObjectOnBed()
     {
-        translateTo(0, 0);
+        transformMoveToPreferred.setX(0);
+        transformMoveToPreferred.setZ(0);
     }
 
     /**
@@ -574,6 +584,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public void setRotationY(double value)
     {
+        preferredYRotation = value;
         transformRotateYPreferred.setAngle(value);
 
         dropToBedAndUpdateLastTransformedBounds();
@@ -1041,18 +1052,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyShapeChange();
     }
 
-    public void translateXTo(double xPosition)
-    {
-        ModelBounds bounds = getTransformedBounds();
-        translateXTo(xPosition, bounds);
-    }
-
     /**
      *
      * @param x
      */
-    public void translateXTo(double xPosition, ModelBounds bounds)
+    public void translateXTo(double xPosition)
     {
+        ModelBounds bounds = getTransformedBounds();
         double deltaXPosition = xPosition - getTransformedBounds().getCentreX();
 
         double newMaxX = xPosition + bounds.getWidth() / 2;
@@ -1077,20 +1083,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyShapeChange();
     }
 
-    public void translateZTo(double zPosition)
-    {
-        ModelBounds bounds = getTransformedBounds();
-        translateZTo(zPosition, bounds);
-    }
-
     /**
      *
      * @param z
      */
-    public void translateZTo(double zPosition, ModelBounds bounds)
+    public void translateZTo(double zPosition)
 
     {
-
+        ModelBounds bounds = getTransformedBounds();
         double deltaZPosition = zPosition - getTransformedBounds().getCentreZ();
 
         double newMaxZ = zPosition + bounds.getDepth() / 2;
@@ -1555,6 +1555,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         for (ShapeChangeListener shapeChangeListener : shapeChangeListeners)
         {
+            System.out.println("shape changed");
+            System.out.println("preferred move is " + transformMoveToPreferred.getX() +
+                " "  + transformMoveToPreferred.getZ());
             shapeChangeListener.shapeChanged(this);
         }
     }

@@ -861,7 +861,6 @@ public class ThreeDViewManager
     {
         if (modelContainer.getModelContentsType() == ModelContentsEnumeration.MESH)
         {
-            modelContainer.centreObjectOnBed();
             models.getChildren().add(modelContainer);
             loadedModels.add(modelContainer);
             collideModels();
@@ -916,7 +915,6 @@ public class ThreeDViewManager
             if (model.isSelected())
             {
                 ModelContainer modelCopy = model.clone();
-                modelCopy.centreObjectOnBed();
                 modelsToAdd.add(modelCopy);
             }
         }

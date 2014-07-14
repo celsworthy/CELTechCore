@@ -234,10 +234,12 @@ public class LayoutSidePanelController implements Initializable,
         };        
         
         setUpModelGeometryListeners();
+        setUpKeyPressListeners();
     }
 
     private void setUpModelGeometryListeners()
     {
+        
         modelScaleChangeListener = new ChangeListener<Number>()
         {
             @Override
@@ -260,6 +262,59 @@ public class LayoutSidePanelController implements Initializable,
             }
         };
         
+        widthListener = new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t,
+                Number t1)
+            {
+                widthTextField.doubleValueProperty().set(t1.doubleValue());
+            }
+        };
+
+        heightListener = new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t,
+                Number t1)
+            {
+                heightTextField.doubleValueProperty().set(t1.doubleValue());
+            }
+        };
+
+        depthListener = new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t,
+                Number t1)
+            {
+                depthTextField.doubleValueProperty().set(t1.doubleValue());
+            }
+        };
+
+        xAxisListener = new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t,
+                Number t1)
+            {
+                xAxisTextField.doubleValueProperty().set(t1.doubleValue());
+            }
+        };
+
+        yAxisListener = new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t,
+                Number t1)
+            {
+                yAxisTextField.doubleValueProperty().set(t1.doubleValue());
+            }
+        };
+    }
+
+    private void setUpKeyPressListeners()
+    {
         scaleTextField.setOnKeyPressed(
             new EventHandler<KeyEvent>()
             {
@@ -329,8 +384,8 @@ public class LayoutSidePanelController implements Initializable,
                 }
             }
         );
-
-
+        
+        
         widthTextField.setOnKeyPressed(
             new EventHandler<KeyEvent>()
             {
@@ -434,8 +489,8 @@ public class LayoutSidePanelController implements Initializable,
                 }
             }
         );
-
-
+        
+        
         xAxisTextField.setOnKeyPressed(
             (KeyEvent t) ->
             {
@@ -463,8 +518,8 @@ public class LayoutSidePanelController implements Initializable,
                         break;
                 }
             });
-
-
+        
+        
         yAxisTextField.setOnKeyPressed(
             new EventHandler<KeyEvent>()
             {
@@ -499,56 +554,6 @@ public class LayoutSidePanelController implements Initializable,
                 }
             }
         );
-
-        widthListener = new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t,
-                Number t1)
-            {
-                widthTextField.doubleValueProperty().set(t1.doubleValue());
-            }
-        };
-
-        heightListener = new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t,
-                Number t1)
-            {
-                heightTextField.doubleValueProperty().set(t1.doubleValue());
-            }
-        };
-
-        depthListener = new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t,
-                Number t1)
-            {
-                depthTextField.doubleValueProperty().set(t1.doubleValue());
-            }
-        };
-
-        xAxisListener = new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t,
-                Number t1)
-            {
-                xAxisTextField.doubleValueProperty().set(t1.doubleValue());
-            }
-        };
-
-        yAxisListener = new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t,
-                Number t1)
-            {
-                yAxisTextField.doubleValueProperty().set(t1.doubleValue());
-            }
-        };
     }
 
     private void setUpTableView(String modelNameLabelString, String scaleLabelString,
