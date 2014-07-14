@@ -5,29 +5,15 @@
  */
 package celtech.coreUI.visualisation.modelDisplay;
 
-import celtech.CoreTest;
-import celtech.appManager.ApplicationStatus;
-import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.visualisation.ShapeProvider;
 import celtech.coreUI.visualisation.Xform;
-import celtech.coreUI.visualisation.importers.FloatArrayList;
-import celtech.coreUI.visualisation.importers.ModelLoadResult;
-import celtech.coreUI.visualisation.importers.obj.ObjImporter;
 import celtech.modelcontrol.ModelContainer;
 import celtech.utils.Math.MathUtils;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.DrawMode;
-import libertysystems.stenographer.Stenographer;
-import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -36,15 +22,7 @@ import libertysystems.stenographer.StenographerFactory;
 public class SelectionHighlighter extends Group implements ShapeProvider.ShapeChangeListener
 {
 
-    /**
-     *
-     */
     public static final String idString = "selectionHighlighter";
-
-    /**
-     *
-     */
-    public static final String scaleHandleString = "scaleHandle";
 
     private final PhongMaterial greenMaterial = new PhongMaterial(Color.LIMEGREEN);
 
@@ -59,16 +37,11 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
     private Xform selectionBoxFrontRightBottom = null;
 
     private final double cornerBracketLength = 5;
-    private boolean scaleActive = false;
-
 
     /**
      *
-     * @param selectionContainer
-     * @param cameraDistance
      */
-    public SelectionHighlighter(final ModelContainer modelContainer,
-        final DoubleProperty cameraDistance)
+    public SelectionHighlighter(final ModelContainer modelContainer)
     {
 
         this.setId(idString);
@@ -77,55 +50,27 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
 
         getChildren().add(selectionBox);
 
-//        this.visibleProperty().bind(Bindings.isNotEmpty(modelBounds.selectedModelsProperty()).and(
-//            applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS)));
-//        cameraDistance.addListener(new ChangeListener<Number>()
-//        {
-//            @Override
-//            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-//            {
-////                steno.info("Camera distance is now " + t1.doubleValue());
-//                double newScale = t1.doubleValue() / 295;
-//
-//                for (Node node : selectionBox.getChildren())
-//                {
-//                    Xform xform = (Xform) node;
-//                    xform.setScale(newScale);
-////                    for (Node subnode : xform.getChildren())
-////                    {
-////                        Group corner = (Group) subnode;
-////                        for (Node subsubnode : corner.getChildren())
-////                        {
-////                            Box box = (Box) subsubnode;
-////                            box.setScaleX(newScale);
-////                            box.setScaleZ(newScale);
-////                        }
-////                    }
-//                }
-//            }
-//        });
-
         modelContainer.addShapeChangeListener(this);
 
     }
 
     private void buildSelectionBox()
     {
-        selectionBoxBackLeftBottom = generateSelectionCornerGroup(0, 90, 0, false);
+        selectionBoxBackLeftBottom = generateSelectionCornerGroup(0, 90, 0);
 
-        selectionBoxBackRightBottom = generateSelectionCornerGroup(0, -180, 0, false);
+        selectionBoxBackRightBottom = generateSelectionCornerGroup(0, -180, 0);
 
-        selectionBoxBackLeftTop = generateSelectionCornerGroup(180, 0, 0, true);
+        selectionBoxBackLeftTop = generateSelectionCornerGroup(180, 0, 0);
 
-        selectionBoxBackRightTop = generateSelectionCornerGroup(180, 90, 0, true);
+        selectionBoxBackRightTop = generateSelectionCornerGroup(180, 90, 0);
 
-        selectionBoxFrontLeftBottom = generateSelectionCornerGroup(0, 0, 0, false);
+        selectionBoxFrontLeftBottom = generateSelectionCornerGroup(0, 0, 0);
 
-        selectionBoxFrontRightBottom = generateSelectionCornerGroup(0, -90, 0, false);
+        selectionBoxFrontRightBottom = generateSelectionCornerGroup(0, -90, 0);
 
-        selectionBoxFrontLeftTop = generateSelectionCornerGroup(180, -90, 0, true);
+        selectionBoxFrontLeftTop = generateSelectionCornerGroup(180, -90, 0);
 
-        selectionBoxFrontRightTop = generateSelectionCornerGroup(0, 0, 180, true);
+        selectionBoxFrontRightTop = generateSelectionCornerGroup(0, 0, 180);
 
         selectionBox.getChildren().addAll(selectionBoxBackLeftBottom, selectionBoxBackRightBottom,
                                           selectionBoxBackLeftTop, selectionBoxBackRightTop,
@@ -176,8 +121,7 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
         selectionBox.setPivot(shapeProvider.getCentreX(), 0, shapeProvider.getCentreZ());
     }
 
-    private Xform generateSelectionCornerGroup(double xRotate, double yRotate, double zRotate,
-        boolean generateCornerBox)
+    private Xform generateSelectionCornerGroup(double xRotate, double yRotate, double zRotate)
     {
 
         final double cylRadius = .05;
@@ -206,31 +150,6 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
         part3.setTranslateZ(cornerBracketLength / 2);
         selectionCorner.getChildren().addAll(part1, part2, part3);
 
-        if (generateCornerBox)
-        {
-
-//            Box part4 = new Box(cornerBoxSize, cornerBoxSize, cornerBoxSize);
-//            part4.setMaterial(greenMaterial);
-//            part4.setId(scaleHandleString);
-//            part4.setOnMouseDragged(new EventHandler<MouseEvent>()
-//            {
-//
-//                @Override
-//                public void handle(MouseEvent event)
-//                {
-//                    steno.info("Got " + event.toString());
-//                }
-//            });
-//            ModelContainer box = scaleHandleLoadResult.getModelContainer().clone();
-//            box.setTranslateX(cornerBoxXOffset);
-//            box.setTranslateY(cornerBoxYOffset);
-//            box.setTranslateZ(cornerBoxZOffset);
-//            box.setOnMouseEntered(scaleHighlight);
-//            box.setOnMouseExited(scaleUnhighlight);
-//            box.setId("scaleHandle");
-//            selectionCorner.getChildren().add(box);
-        }
-
         selectionCornerTransform.setRotateX(xRotate);
         selectionCornerTransform.setRotateY(yRotate);
         selectionCornerTransform.setRotateZ(zRotate);
@@ -238,12 +157,4 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
         return selectionCornerTransform;
     }
 
-    /**
-     *
-     * @return
-     */
-    public boolean isScaleActive()
-    {
-        return scaleActive;
-    }
 }

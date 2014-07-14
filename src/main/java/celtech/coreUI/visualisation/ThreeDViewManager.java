@@ -859,7 +859,6 @@ public class ThreeDViewManager
      */
     public void addModel(ModelContainer modelContainer)
     {
-        modelContainer.setCameraDistance(cameraDistance);
         if (modelContainer.getModelContentsType() == ModelContentsEnumeration.MESH)
         {
             modelContainer.centreObjectOnBed();

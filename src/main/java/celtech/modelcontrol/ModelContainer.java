@@ -60,7 +60,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class ModelContainer extends Group implements Serializable, Comparable,  ShapeProvider
+public class ModelContainer extends Group implements Serializable, Comparable, ShapeProvider
 {
 
     private static final long serialVersionUID = 1L;
@@ -104,11 +104,9 @@ public class ModelContainer extends Group implements Serializable, Comparable,  
     private double bedCentreOffsetY;
     private double bedCentreOffsetZ;
     private ModelBounds lastTransformedBounds;
-    private DoubleProperty cameraDistance;
     private SelectionHighlighter selectionHighlighter = null;
     List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
     private final Set<Node> selectedMarkers = new HashSet<>();
-    
 
     /**
      *
@@ -1001,12 +999,12 @@ public class ModelContainer extends Group implements Serializable, Comparable,  
      */
     public void resizeWidth(double width)
     {
-        ModelBounds bounds = getTransformedBounds();
+        ModelBounds bounds = getLocalBounds();
 
-        double currentWidth = bounds.getWidth();
+        double originalWidth = bounds.getWidth();
 
-        double newScale = width / currentWidth;
-        setScale(getScale() * newScale);
+        double newScale = width / originalWidth;
+        setScale(newScale);
         notifyShapeChange();
     }
 
@@ -1016,14 +1014,14 @@ public class ModelContainer extends Group implements Serializable, Comparable,  
      */
     public void resizeHeight(double height)
     {
-        ModelBounds bounds = getTransformedBounds();
+        ModelBounds bounds = getLocalBounds();
 
         double currentHeight = bounds.getHeight();
 
         double newScale = height / currentHeight;
 
-        setScale(getScale() * newScale);
-                notifyShapeChange();
+        setScale(newScale);
+        notifyShapeChange();
     }
 
     /**
@@ -1033,14 +1031,14 @@ public class ModelContainer extends Group implements Serializable, Comparable,  
     public void resizeDepth(double depth)
     {
 
-        ModelBounds bounds = getTransformedBounds();
+        ModelBounds bounds = getLocalBounds();
 
         double currentDepth = bounds.getDepth();
 
         double newScale = depth / currentDepth;
 
-        setScale(getScale() * newScale);
-                notifyShapeChange();
+        setScale(newScale);
+        notifyShapeChange();
     }
 
     public void translateXTo(double xPosition)
@@ -1469,10 +1467,25 @@ public class ModelContainer extends Group implements Serializable, Comparable,  
         return getLocalBounds().getCentreX();
     }
 
+    public double getTransformedCentreZ()
+    {
+        return getTransformedBounds().getCentreZ();
+    }
+
+    public double getTransformedCentreX()
+    {
+        return getTransformedBounds().getCentreX();
+    }
+
     @Override
     public double getHeight()
     {
         return getLocalBounds().getHeight();
+    }
+
+    public double getScaledHeight()
+    {
+        return getLocalBounds().getHeight() * preferredScale;
     }
 
     @Override
@@ -1481,15 +1494,25 @@ public class ModelContainer extends Group implements Serializable, Comparable,  
         return getLocalBounds().getDepth();
     }
 
+    public double getScaledDepth()
+    {
+        return getLocalBounds().getDepth() * preferredScale;
+    }
+
     @Override
     public double getWidth()
     {
         return getLocalBounds().getWidth();
     }
 
+    public double getScaledWidth()
+    {
+        return getLocalBounds().getWidth() * preferredScale;
+    }
+
     public void addSelectionHighlighter()
     {
-        selectionHighlighter = new SelectionHighlighter(this, this.cameraDistance);
+        selectionHighlighter = new SelectionHighlighter(this);
         getChildren().add(selectionHighlighter);
         selectedMarkers.add(selectionHighlighter);
     }
@@ -1506,11 +1529,6 @@ public class ModelContainer extends Group implements Serializable, Comparable,  
         notifyShapeChange();
     }
 
-    public void setCameraDistance(DoubleProperty cameraDistance)
-    {
-        this.cameraDistance = cameraDistance;
-    }
-
     private void showSelectedMarkers()
     {
         for (Node selectedMarker : selectedMarkers)
@@ -1521,7 +1539,7 @@ public class ModelContainer extends Group implements Serializable, Comparable,  
 
     private void hideSelectedMarkers()
     {
-                for (Node selectedMarker : selectedMarkers)
+        for (Node selectedMarker : selectedMarkers)
         {
             selectedMarker.setVisible(false);
         }
@@ -1532,8 +1550,9 @@ public class ModelContainer extends Group implements Serializable, Comparable,  
     {
         shapeChangeListeners.add(listener);
     }
-    
-    private void notifyShapeChange() {
+
+    private void notifyShapeChange()
+    {
         for (ShapeChangeListener shapeChangeListener : shapeChangeListeners)
         {
             shapeChangeListener.shapeChanged(this);

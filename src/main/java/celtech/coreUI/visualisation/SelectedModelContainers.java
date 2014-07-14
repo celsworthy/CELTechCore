@@ -90,11 +90,11 @@ public class SelectedModelContainers
 
         private void updateSelectedProperties()
         {
-            width.set(boundModelContainer.getWidth());
-            centreX.set(boundModelContainer.getCentreX());
-            centreZ.set(boundModelContainer.getCentreZ());
-            height.set(boundModelContainer.getHeight());
-            depth.set(boundModelContainer.getDepth());
+            width.set(boundModelContainer.getScaledWidth());
+            centreX.set(boundModelContainer.getTransformedCentreX());
+            centreZ.set(boundModelContainer.getTransformedCentreZ());
+            height.set(boundModelContainer.getScaledHeight());
+            depth.set(boundModelContainer.getScaledDepth());
             scale.set(boundModelContainer.getScale());
             rotationY.set(boundModelContainer.getRotationY());
         }
