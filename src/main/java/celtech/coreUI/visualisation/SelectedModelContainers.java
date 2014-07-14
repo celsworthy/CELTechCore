@@ -29,12 +29,14 @@ public class SelectedModelContainers
     public void addModelContainer(ModelContainer modelContainer)
     {
         modelContainers.add(modelContainer);
+        modelContainer.setSelected(true);
         primarySelectedModelDetails.setTo(modelContainer);
     }
 
     public void removeModelContainer(ModelContainer modelContainer)
     {
         modelContainers.remove(modelContainer);
+        modelContainer.setSelected(false);
     }
 
     public boolean isSelected(ModelContainer modelContainer)

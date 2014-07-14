@@ -17,6 +17,7 @@ import celtech.modelcontrol.ModelContainer;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ResourceBundle;
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -86,7 +87,6 @@ public class LayoutSidePanelController implements Initializable,
 
     private SelectedModelContainers selectionModel;
     private SetChangeListener<ModelContainer> selectionContainerModelsListener = null;
-    private final ChangeListener<ModelContainer> selectedItemListener = null;
     private final DisplayManager displayManager = DisplayManager.getInstance();
 
     private ListChangeListener<ModelContainer> modelChangeListener = null;
@@ -189,15 +189,15 @@ public class LayoutSidePanelController implements Initializable,
             } else if (change.wasRemoved())
             {
                 ModelContainer removedContainer = change.getElementRemoved();
-//                {
-//                    int modelIndex = modelDataTableView.getItems().indexOf(
-//                        additem);
-//                    if (modelIndex != -1)
-//                    {
-//                        modelDataTableView.getSelectionModel().clearSelection(
-//                            modelIndex);
-//                    }
-//                }
+                {
+                    int modelIndex = modelDataTableView.getItems().indexOf(
+                        removedContainer);
+                    if (modelIndex != -1)
+                    {
+                        modelDataTableView.getSelectionModel().clearSelection(
+                            modelIndex);
+                    }
+                }
             }
         };
         
@@ -637,7 +637,7 @@ public class LayoutSidePanelController implements Initializable,
         modelDataTableView.getColumns().addAll(modelNameColumn, scaleColumn,
                                                                 rotationColumn);
         modelDataTableView.getSelectionModel().setSelectionMode(
-            SelectionMode.SINGLE);
+            SelectionMode.MULTIPLE);
         modelDataTableView.setEditable(true);
         modelDataTableView.getSortOrder().add(modelNameColumn);
         
@@ -660,8 +660,8 @@ public class LayoutSidePanelController implements Initializable,
 
         selectionModel.getModelContainersProperty().addListener(selectionContainerModelsListener);
 
-        SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails
-            = selectionModel.getPrimarySelectedModelDetails();
+        SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails = 
+                                    selectionModel.getPrimarySelectedModelDetails();
         selectedModelDetails.getWidth().addListener(widthListener);
         selectedModelDetails.getHeight().addListener(heightListener);
         selectedModelDetails.getDepth().addListener(depthListener);
@@ -672,8 +672,8 @@ public class LayoutSidePanelController implements Initializable,
         selectedModelDetails.getScale().addListener(modelScaleChangeListener);
         selectedModelDetails.getRotationY().addListener(modelRotationChangeListener);
 
-//        selectedItemDetails.visibleProperty().bind(Bindings.isNotEmpty(
-//            selectionContainer.selectedModelsProperty()));
+        selectedItemDetails.visibleProperty().bind(Bindings.isNotEmpty(
+            selectionModel.getModelContainersProperty()));
         if (boundProject != null)
         {
             boundProject.getLoadedModels().removeListener(modelChangeListener);

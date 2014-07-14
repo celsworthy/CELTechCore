@@ -266,11 +266,12 @@ public class ThreeDViewManager
 
         if (event.isPrimaryButtonDown())
         {
-
+            System.out.println("Primary down");
             pickResult = event.getPickResult();
             pickedPoint = pickResult.getIntersectedPoint();
 
             intersectedNode = pickResult.getIntersectedNode();
+            System.out.println("intersected node is " + intersectedNode);
             lastDragPosition = null;
 
             translationDragPlane.setTranslateY(pickedPoint.getY());
@@ -297,78 +298,86 @@ public class ThreeDViewManager
                     if (pickedModel.isSelected() == false)
                     {
                         boolean multiSelect = event.isControlDown();
-                        System.out.println("Control down: " + multiSelect);
                         selectModel(pickedModel, multiSelect);
+                    } else
+                    {
+                        boolean multiSelect = event.isControlDown();
+                        if (multiSelect)
+                        {
+                            deselectModel(pickedModel);
+                        }
                     }
+                } else if (true) //intersectedNode == subScene)
+                {
+                    System.out.println("deselect all");
+                    deselectAllModels();
                 }
 
-            } else if (intersectedNode == subScene)
-            {
-                deselectAllModels();
             }
         }
     }
-    
-    private void handleMouseDragEvent(MouseEvent event) {
-         double modifier = 1.0;
-            double modifierFactor = 0.3;
 
-            if (event.isControlDown())
-            {
-                modifier = 0.1;
-            }
-            if (event.isShiftDown())
-            {
-                modifier = 10.0;
-            }
+    private void handleMouseDragEvent(MouseEvent event)
+    {
+        double modifier = 1.0;
+        double modifierFactor = 0.3;
 
-            mouseOldX = mousePosX;
-            mouseOldY = mousePosY;
-            mousePosX = event.getSceneX();
-            mousePosY = event.getSceneY();
-            mouseDeltaX = (mousePosX - mouseOldX); //*DELTA_MULTIPLIER;
-            mouseDeltaY = (mousePosY - mouseOldY); //*DELTA_MULTIPLIER;
+        if (event.isControlDown())
+        {
+            modifier = 0.1;
+        }
+        if (event.isShiftDown())
+        {
+            modifier = 10.0;
+        }
 
-            boolean alt = event.isAltDown();
-            if (alt && event.isSecondaryButtonDown())
+        mouseOldX = mousePosX;
+        mouseOldY = mousePosY;
+        mousePosX = event.getSceneX();
+        mousePosY = event.getSceneY();
+        mouseDeltaX = (mousePosX - mouseOldX); //*DELTA_MULTIPLIER;
+        mouseDeltaY = (mousePosY - mouseOldY); //*DELTA_MULTIPLIER;
+
+        boolean alt = event.isAltDown();
+        if (alt && event.isSecondaryButtonDown())
+        {
+            bedTranslateXform.setTx(bedTranslateXform.getTx() + mouseDeltaX * modifierFactor
+                * modifier * 0.3);  // -
+            bedTranslateXform.setTy(bedTranslateXform.getTy() + mouseDeltaY * modifierFactor
+                * modifier * 0.3);  // -
+        } else if (event.isSecondaryButtonDown())
+        {
+            rotateCameraAroundAxes(-mouseDeltaY * modifierFactor * modifier * 2.0, mouseDeltaX
+                                   * modifierFactor * modifier * 2.0);
+        } else if (dragMode.get() == DragMode.TRANSLATING && event.isPrimaryButtonDown())
+        {
+            Node intersectedNode = event.getPickResult().getIntersectedNode();
+            //Move the model!
+            if (intersectedNode == translationDragPlane)
             {
-                bedTranslateXform.setTx(bedTranslateXform.getTx() + mouseDeltaX * modifierFactor
-                    * modifier * 0.3);  // -
-                bedTranslateXform.setTy(bedTranslateXform.getTy() + mouseDeltaY * modifierFactor
-                    * modifier * 0.3);  // -
-            } else if (event.isSecondaryButtonDown())
-            {
-                rotateCameraAroundAxes(-mouseDeltaY * modifierFactor * modifier * 2.0, mouseDeltaX
-                                       * modifierFactor * modifier * 2.0);
-            } else if (dragMode.get() == DragMode.TRANSLATING && event.isPrimaryButtonDown())
-            {
-                Node intersectedNode = event.getPickResult().getIntersectedNode();
-                //Move the model!
-                if (intersectedNode == translationDragPlane)
+                Point3D currentDragPosition = event.getPickResult().getIntersectedPoint();
+                if (lastDragPosition != null)
                 {
-                    Point3D currentDragPosition = event.getPickResult().getIntersectedPoint();
-                    if (lastDragPosition != null)
-                    {
-                        Point3D resultant = currentDragPosition.subtract(lastDragPosition);
+                    Point3D resultant = currentDragPosition.subtract(lastDragPosition);
 
-                        translateSelection(resultant.getX(), resultant.getZ());
-                    }
-                    lastDragPosition = currentDragPosition;
-                } else
-                {
-                    steno.error(
-                        "In translation drag mode but intersected with something other than translation drag plane");
+                    translateSelection(resultant.getX(), resultant.getZ());
                 }
-            } else if (dragMode.get() == DragMode.SCALING && event.isPrimaryButtonDown())
+                lastDragPosition = currentDragPosition;
+            } else
             {
-                Node intersectedNode = event.getPickResult().getIntersectedNode();
-                //Move the model!
-                if (intersectedNode != scaleDragPlane)
-                {
-                    steno.error(
-                        "In scale drag mode but intersected with something other than scale drag plane");
-                }
+                steno.error(
+                    "In translation drag mode but intersected with something other than translation drag plane");
             }
+        } else if (dragMode.get() == DragMode.SCALING && event.isPrimaryButtonDown())
+        {
+            Node intersectedNode = event.getPickResult().getIntersectedNode();
+            //Move the model!
+            if (intersectedNode != scaleDragPlane)
+            {
+                steno.error(
+                    "In scale drag mode but intersected with something other than scale drag plane");
+            }
+        }
     }
 
     private final EventHandler<MouseEvent> mouseEventHandler = event ->
@@ -377,9 +386,9 @@ public class ThreeDViewManager
 
         if (event.getEventType() == MouseEvent.MOUSE_PRESSED)
         {
-            
-            ThreeDViewManager.this.handleMousePressedEvent(event);
-            
+
+            handleMousePressedEvent(event);
+
         } else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED && dragMode.get()
             != DragMode.SCALING)
         {
@@ -962,10 +971,6 @@ public class ThreeDViewManager
         dragMode.removeListener(dragModeListener);
     }
 
-//    public PolarCamera getCamera()
-//    {
-//        return camera;
-//    }
     /**
      *
      * @param selectedNode
@@ -982,7 +987,6 @@ public class ThreeDViewManager
             {
                 deselectAllModels();
             }
-            selectedNode.setSelected(true);
             selectedModelContainers.addModelContainer(selectedNode);
         }
     }
@@ -1214,7 +1218,6 @@ public class ThreeDViewManager
     {
         if (pickedModel.isSelected())
         {
-            pickedModel.setSelected(false);
             selectedModelContainers.removeModelContainer(pickedModel);
         }
     }
