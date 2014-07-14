@@ -7,6 +7,7 @@ package celtech.modelcontrol;
 
 import celtech.configuration.PrintBed;
 import celtech.coreUI.visualisation.ApplicationMaterials;
+import celtech.coreUI.visualisation.ShapeProvider;
 import celtech.coreUI.visualisation.importers.FloatArrayList;
 import celtech.coreUI.visualisation.importers.IntegerArrayList;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
@@ -22,6 +23,7 @@ import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -58,7 +60,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class ModelContainer extends Group implements Serializable, Comparable
+public class ModelContainer extends Group implements Serializable, Comparable,  ShapeProvider
 {
 
     private static final long serialVersionUID = 1L;
@@ -104,7 +106,9 @@ public class ModelContainer extends Group implements Serializable, Comparable
     private ModelBounds lastTransformedBounds;
     private DoubleProperty cameraDistance;
     private SelectionHighlighter selectionHighlighter = null;
+    List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
     private final Set<Node> selectedMarkers = new HashSet<>();
+    
 
     /**
      *
@@ -224,11 +228,13 @@ public class ModelContainer extends Group implements Serializable, Comparable
         transformRotateYPreferred.setPivotZ(originalModelBounds.getCentreZ());
 
         lastTransformedBounds = calculateBoundsInParent();
+        notifyShapeChange();
 
     }
 
     private void initialise(String name)
     {
+        shapeChangeListeners = new ArrayList<>();
         steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
         printBed = PrintBed.getInstance();
 
@@ -552,6 +558,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
         dropToBedAndUpdateLastTransformedBounds();
         checkOffBed();
+        notifyShapeChange();
     }
 
     /**
@@ -573,6 +580,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
         dropToBedAndUpdateLastTransformedBounds();
         checkOffBed();
+        notifyShapeChange();
     }
 
     public double getRotationY()
@@ -999,6 +1007,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
         double newScale = width / currentWidth;
         setScale(getScale() * newScale);
+        notifyShapeChange();
     }
 
     /**
@@ -1014,6 +1023,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
         double newScale = height / currentHeight;
 
         setScale(getScale() * newScale);
+                notifyShapeChange();
     }
 
     /**
@@ -1030,6 +1040,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
         double newScale = depth / currentDepth;
 
         setScale(getScale() * newScale);
+                notifyShapeChange();
     }
 
     public void translateXTo(double xPosition)
@@ -1065,6 +1076,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
         updateLastTransformedBoundsForTranslateByX(deltaXPosition);
         checkOffBed();
+        notifyShapeChange();
     }
 
     public void translateZTo(double zPosition)
@@ -1102,6 +1114,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
         updateLastTransformedBoundsForTranslateByX(deltaZPosition);
         checkOffBed();
+        notifyShapeChange();
     }
 
     private void checkOffBed()
@@ -1392,6 +1405,7 @@ public class ModelContainer extends Group implements Serializable, Comparable
 
         dropToBedAndUpdateLastTransformedBounds();
         checkOffBed();
+        notifyShapeChange();
     }
 
     /**
@@ -1443,53 +1457,53 @@ public class ModelContainer extends Group implements Serializable, Comparable
         return preferredScale;
     }
 
+    @Override
     public double getCentreZ()
     {
-        return getTransformedBounds().getCentreZ();
+        return getLocalBounds().getCentreZ();
     }
 
+    @Override
     public double getCentreX()
     {
-        return getTransformedBounds().getCentreX();
+        return getLocalBounds().getCentreX();
     }
 
+    @Override
     public double getHeight()
     {
-        return getTransformedBounds().getHeight();
+        return getLocalBounds().getHeight();
     }
 
+    @Override
     public double getDepth()
     {
-        return getTransformedBounds().getDepth();
+        return getLocalBounds().getDepth();
     }
 
+    @Override
     public double getWidth()
     {
-        return getTransformedBounds().getWidth();
+        return getLocalBounds().getWidth();
     }
 
     public void addSelectionHighlighter()
     {
-        selectionHighlighter = new SelectionHighlighter(originalModelBounds, this.cameraDistance);
+        selectionHighlighter = new SelectionHighlighter(this, this.cameraDistance);
         getChildren().add(selectionHighlighter);
         selectedMarkers.add(selectionHighlighter);
-
-        System.out.println("add box");
-        Box box = new Box(10, 10, 10);
-        box.setTranslateY(-15);
-        getChildren().add(box);
-        selectedMarkers.add(box);
-
     }
 
     private void updateLastTransformedBoundsForTranslateByX(double deltaCentreX)
     {
         lastTransformedBounds.translateX(deltaCentreX);
+        notifyShapeChange();
     }
 
     private void updateLastTransformedBoundsForTranslateByZ(double deltaCentreZ)
     {
         lastTransformedBounds.translateZ(deltaCentreZ);
+        notifyShapeChange();
     }
 
     public void setCameraDistance(DoubleProperty cameraDistance)
@@ -1510,6 +1524,19 @@ public class ModelContainer extends Group implements Serializable, Comparable
                 for (Node selectedMarker : selectedMarkers)
         {
             selectedMarker.setVisible(false);
+        }
+    }
+
+    @Override
+    public void addShapeChangeListener(ShapeChangeListener listener)
+    {
+        shapeChangeListeners.add(listener);
+    }
+    
+    private void notifyShapeChange() {
+        for (ShapeChangeListener shapeChangeListener : shapeChangeListeners)
+        {
+            shapeChangeListener.shapeChanged(this);
         }
     }
 

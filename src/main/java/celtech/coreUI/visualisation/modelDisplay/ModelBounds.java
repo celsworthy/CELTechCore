@@ -5,6 +5,8 @@
  */
 package celtech.coreUI.visualisation.modelDisplay;
 
+import celtech.coreUI.visualisation.ShapeProvider.ShapeChangeListener;
+
 /**
  *
  * @author ianhudson
@@ -26,6 +28,8 @@ public class ModelBounds
     double centreX = 0;
     double centreY = 0;
     double centreZ = 0;
+    
+
 
     /**
      *
@@ -327,4 +331,5 @@ public class ModelBounds
         maxZ += deltaCentreZ;
         centreZ += deltaCentreZ;
     }
+
 }
