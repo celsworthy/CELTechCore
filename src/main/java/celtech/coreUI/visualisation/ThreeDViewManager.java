@@ -1228,7 +1228,7 @@ public class ThreeDViewManager
         return loadedModels;
     }
 
-    private void collideModels()
+    public void collideModels()
     {
         boolean[] collidedModels = new boolean[loadedModels.size()];
 

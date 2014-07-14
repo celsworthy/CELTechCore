@@ -433,7 +433,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                                 ApplicationMode.LAYOUT))).bindLoadedModels(
                                 projectTab.getThreeDViewManager());
                             menuStripController.bindSelectedModels(
-                                projectTab.getSelectionContainer());
+                                projectTab.getSelectionModel());
                             ((SettingsSidePanelController) sidePanelControllers.get(
                                 ApplicationMode.SETTINGS)).projectChanged(projectTab.getProject());
                         }
