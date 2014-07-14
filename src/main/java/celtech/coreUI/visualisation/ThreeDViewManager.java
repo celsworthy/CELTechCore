@@ -257,73 +257,60 @@ public class ThreeDViewManager
         }
     };
 
-    private final EventHandler<MouseEvent> mouseEventHandler = event ->
+    private void handleMousePressedEvent(MouseEvent event)
     {
-//        steno.info("Mouse event 3D " + event);
+        mousePosX = event.getSceneX();
+        mousePosY = event.getSceneY();
+        mouseOldX = event.getSceneX();
+        mouseOldY = event.getSceneY();
 
-        if (event.getEventType() == MouseEvent.MOUSE_PRESSED)
+        if (event.isPrimaryButtonDown())
         {
-//            dragStartX = event.getSceneX();
-//            dragStartY = event.getSceneY();
-            mousePosX = event.getSceneX();
-            mousePosY = event.getSceneY();
-            mouseOldX = event.getSceneX();
-            mouseOldY = event.getSceneY();
 
-            if (event.isPrimaryButtonDown())
+            pickResult = event.getPickResult();
+            pickedPoint = pickResult.getIntersectedPoint();
+
+            intersectedNode = pickResult.getIntersectedNode();
+            lastDragPosition = null;
+
+            translationDragPlane.setTranslateY(pickedPoint.getY());
+
+            Point3D bedXToS = bedTranslateXform.localToParent(pickedPoint);
+            scaleDragPlane.setTranslateX(bedXToS.getX());
+            scaleDragPlane.setTranslateY(bedXToS.getY());
+            scaleDragPlane.setTranslateZ(pickedPoint.getZ());
+
+            setDragMode(DragMode.TRANSLATING);
+
+            if (intersectedNode != null)
             {
-
-                pickResult = event.getPickResult();
-                pickedPoint = pickResult.getIntersectedPoint();
-
-                intersectedNode = pickResult.getIntersectedNode();
-                lastDragPosition = null;
-
-                translationDragPlane.setTranslateY(pickedPoint.getY());
-
-                Point3D bedXToS = bedTranslateXform.localToParent(pickedPoint);
-                scaleDragPlane.setTranslateX(bedXToS.getX());
-                scaleDragPlane.setTranslateY(bedXToS.getY());
-                scaleDragPlane.setTranslateZ(pickedPoint.getZ());
-
-//                if (selectionHighlighter.isScaleActive())
-//                {
-//                    setDragMode(DragMode.SCALING);
-//                    steno.info("Got a " + intersectedNode.toString());
-//                } else
-//                {
-                setDragMode(DragMode.TRANSLATING);
-//                }
-
-                if (intersectedNode != null)
+                if (intersectedNode instanceof MeshView)
                 {
-                    if (intersectedNode instanceof MeshView)
+                    Parent parent = intersectedNode.getParent();
+                    if (!(parent instanceof ModelContainer))
                     {
-                        Parent parent = intersectedNode.getParent();
-                        if (!(parent instanceof ModelContainer))
-                        {
-                            parent = parent.getParent();
-                        }
-
-                        ModelContainer pickedModel = (ModelContainer) parent;
-
-                        if (pickedModel.isSelected() == false)
-                        {
-                            selectModel(pickedModel, false);
-                        }
+                        parent = parent.getParent();
                     }
 
-                } else if (intersectedNode == subScene)
-                {
-                    deselectAllModels();
-                }
-            }
-//            recalculateCentre();
-        } else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED && dragMode.get()
-            != DragMode.SCALING)
-        {
+                    ModelContainer pickedModel = (ModelContainer) parent;
 
-            double modifier = 1.0;
+                    if (pickedModel.isSelected() == false)
+                    {
+                        boolean multiSelect = event.isControlDown();
+                        System.out.println("Control down: " + multiSelect);
+                        selectModel(pickedModel, multiSelect);
+                    }
+                }
+
+            } else if (intersectedNode == subScene)
+            {
+                deselectAllModels();
+            }
+        }
+    }
+    
+    private void handleMouseDragEvent(MouseEvent event) {
+         double modifier = 1.0;
             double modifierFactor = 0.3;
 
             if (event.isControlDown())
@@ -382,13 +369,26 @@ public class ThreeDViewManager
                         "In scale drag mode but intersected with something other than scale drag plane");
                 }
             }
-//            recalculateCentre();
+    }
+
+    private final EventHandler<MouseEvent> mouseEventHandler = event ->
+    {
+//        steno.info("Mouse event 3D " + event);
+
+        if (event.getEventType() == MouseEvent.MOUSE_PRESSED)
+        {
+            
+            ThreeDViewManager.this.handleMousePressedEvent(event);
+            
+        } else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED && dragMode.get()
+            != DragMode.SCALING)
+        {
+            handleMouseDragEvent(event);
 
         } else if (event.getEventType() == MouseEvent.MOUSE_RELEASED)
         {
             setDragMode(DragMode.IDLE);
             lastDragPosition = null;
-//            recalculateCentre();
         }
     };
 
