@@ -152,7 +152,7 @@ public class ProjectTab extends Tab
         nonEditableProjectNameField.getStyleClass().add("nonEditableProjectTab");
         editableProjectNameField.getStyleClass().add("editableProjectTab");
         editableProjectNameField.setDirectorySafeName(true);
-        editableProjectNameField.setRestrict("-_0-9a-zA-Z\\p{L}\\p{M}*+");
+        editableProjectNameField.setRestrict(" -_0-9a-zA-Z\\p{L}\\p{M}*+");
         editableProjectNameField.setMaxLength(25);
 
         setOnCloseRequest((Event t) ->
@@ -189,7 +189,7 @@ public class ProjectTab extends Tab
                             for (String extension : ApplicationConfiguration.getSupportedFileExtensions(
                                 project.getProjectMode()))
                             {
-                                if (file.getName().endsWith(extension))
+                                if (file.getName().toUpperCase().endsWith(extension.toUpperCase()))
                                 {
                                     extensionFound = true;
                                     break;
@@ -282,7 +282,7 @@ public class ProjectTab extends Tab
                 boolean success = false;
                 if (db.hasFiles())
                 {
-                    displayManager.loadExternalModels(db.getFiles());
+                    displayManager.loadExternalModels(db.getFiles(), true);
                 } else
                 {
                     steno.error("No files in dragboard");

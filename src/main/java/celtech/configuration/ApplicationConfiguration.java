@@ -861,7 +861,6 @@ public class ApplicationConfiguration
                 {
                     returnVal.add("*." + extension);
                 }
-                returnVal.add("*." + supportedProjectFileExtension);
                 break;
             case MESH:
                 for (String extension : supportedModelExtensions)
