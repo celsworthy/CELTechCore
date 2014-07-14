@@ -1162,7 +1162,7 @@ public class ThreeDViewManager
         {
             if (selectedModelContainers.isSelected(model))
             {
-                model.scale(newScale);
+                model.setScale(newScale);
             }
         }
         selectedModelContainers.updateSelectedValues();
@@ -1270,7 +1270,7 @@ public class ThreeDViewManager
         {
             if (model.isSelected())
             {
-                model.scale(delta * model.getScale());
+                model.setScale(delta * model.getScale());
             }
         }
         //recalculateSelectionBounds(false);

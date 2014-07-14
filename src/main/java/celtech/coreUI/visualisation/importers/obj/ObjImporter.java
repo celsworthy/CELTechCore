@@ -37,13 +37,10 @@ import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.importers.IntegerArrayList;
 import celtech.coreUI.visualisation.importers.FloatArrayList;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
-import celtech.coreUI.visualisation.importers.SmoothingGroups;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.modelLoader.ModelLoaderTask;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -55,9 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.collections.ObservableFloatArray;
 import javafx.geometry.BoundingBox;
-import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Material;
 import javafx.scene.paint.PhongMaterial;
@@ -123,9 +118,9 @@ public class ObjImporter
         return meshes.keySet();
     }
 
-    private Map<String, TriangleMesh> meshes = new HashMap<>();
-    private Map<String, Material> materials = new HashMap<>();
-    private List<Map<String, Material>> materialLibrary = new ArrayList<>();
+    private final Map<String, TriangleMesh> meshes = new HashMap<>();
+    private final Map<String, Material> materials = new HashMap<>();
+    private final List<Map<String, Material>> materialLibrary = new ArrayList<>();
     private String objFileUrl;
 
 //    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, ProjectTab targetProjectTab)
@@ -177,7 +172,6 @@ public class ObjImporter
             }
 
             ModelContainer modelContainer = new ModelContainer(modelFile.getName(), meshes);
-            BoundingBox bounds = (BoundingBox) modelContainer.getBoundsInLocal();
             boolean modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(modelContainer.getOriginalModelBounds());
 
             modelLoadResult = new ModelLoadResult(modelIsTooLarge, modelFileToLoad, modelFile.getName(), targetProjectTab, modelContainer);

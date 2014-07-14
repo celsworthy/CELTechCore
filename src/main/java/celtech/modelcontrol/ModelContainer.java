@@ -419,7 +419,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double relativeXSize = printableBoundingBox.getWidth() / printVolumeBounds.getWidth();
         double relativeYSize = printableBoundingBox.getHeight() / -printVolumeBounds.getHeight();
         double relativeZSize = printableBoundingBox.getDepth() / printVolumeBounds.getDepth();
-        steno.info("Relative sizes of model: X" + relativeXSize + " Y" + relativeYSize + " Z"
+        steno.info("Relative sizes of model: X " + relativeXSize + " Y " + relativeYSize + " Z "
             + relativeZSize);
 
         if (relativeXSize > relativeYSize && relativeXSize > relativeZSize)
@@ -449,7 +449,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             setScale(scaling);
         }
 
-//        centreObjectOnBed();
     }
 
     /**
@@ -761,16 +760,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         throws ObjectStreamException
     {
 
-    }
-
-    /**
-     *
-     * @param newScale
-     */
-    public void scale(double newScale)
-    {
-//        steno.info("About to scale to " + newScale + "\n" + this.toString());
-        setScale(newScale);
     }
 
     /**
