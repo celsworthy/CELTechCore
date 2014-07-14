@@ -5,8 +5,6 @@
  */
 package celtech.coreUI.visualisation.modelDisplay;
 
-import celtech.coreUI.visualisation.ShapeProvider.ShapeChangeListener;
-
 /**
  *
  * @author ianhudson

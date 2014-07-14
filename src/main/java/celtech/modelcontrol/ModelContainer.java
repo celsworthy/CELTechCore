@@ -26,10 +26,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -42,7 +40,6 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.shape.Box;
 import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.ObservableFaceArray;
@@ -249,7 +246,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformBedCentre.setX(bedCentreOffsetX);
         transformBedCentre.setY(bedCentreOffsetY);
         transformBedCentre.setZ(bedCentreOffsetZ);
-        System.out.println("Bed centre at X " + bedCentreOffsetX + " Z " + bedCentreOffsetZ);
     }
 
     /**
@@ -352,9 +348,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double newXPosition = xPosition - bedCentreOffsetX + getTransformedBounds().getWidth() / 2.0;
         double newZPosition = zPosition - bedCentreOffsetZ + getTransformedBounds().getHeight()
             / 2.0;
-        double deltaXPosition = newXPosition - getTransformedBounds().getCentreX();
-        double deltaZPosition = newZPosition - getTransformedBounds().getCentreX();
-        System.out.format("translate front left to %.2f %.2f\n", xPosition, zPosition);
+        double deltaXPosition = newXPosition - transformMoveToPreferred.getX();
+        double deltaZPosition = newZPosition - transformMoveToPreferred.getZ();
         transformMoveToPreferred.setX(newXPosition);
         transformMoveToPreferred.setZ(newZPosition);
         updateLastTransformedBoundsForTranslateByX(deltaXPosition);
@@ -1040,7 +1035,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public void translateXTo(double xPosition)
     {
         ModelBounds bounds = getTransformedBounds();
-        double deltaXPosition = xPosition - getTransformedBounds().getCentreX();
 
         double newMaxX = xPosition + bounds.getWidth() / 2;
         double newMinX = xPosition - bounds.getWidth() / 2;
@@ -1055,11 +1049,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             finalXPosition -= (newMaxX - printBed.getPrintVolumeMaximums().getX());
         }
 
-        double currentXPosition = bounds.getCentreX();
+        double currentXPosition = getTransformedCentreX();
         double requiredTranslation = finalXPosition - currentXPosition;
         transformMoveToPreferred.setX(transformMoveToPreferred.getX() + requiredTranslation);
 
-        updateLastTransformedBoundsForTranslateByX(deltaXPosition);
+        updateLastTransformedBoundsForTranslateByX(requiredTranslation);
         checkOffBed();
         notifyShapeChange();
     }
@@ -1071,7 +1065,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     {
         ModelBounds bounds = getTransformedBounds();
-        double deltaZPosition = zPosition - getTransformedBounds().getCentreZ();
 
         double newMaxZ = zPosition + bounds.getDepth() / 2;
         double newMinZ = zPosition - bounds.getDepth() / 2;
@@ -1086,11 +1079,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             finalZPosition -= (newMaxZ - printBed.getPrintVolumeMaximums().getZ());
         }
 
-        double currentZPosition = bounds.getCentreZ();
+        double currentZPosition = getTransformedCentreZ();
         double requiredTranslation = finalZPosition - currentZPosition;
         transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + requiredTranslation);
 
-        updateLastTransformedBoundsForTranslateByX(deltaZPosition);
+        updateLastTransformedBoundsForTranslateByZ(requiredTranslation);
         checkOffBed();
         notifyShapeChange();
     }
@@ -1535,9 +1528,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         for (ShapeChangeListener shapeChangeListener : shapeChangeListeners)
         {
-            System.out.println("shape changed");
-            System.out.println("preferred move is " + transformMoveToPreferred.getX() + " "
-                + transformMoveToPreferred.getZ());
             shapeChangeListener.shapeChanged(this);
         }
     }
