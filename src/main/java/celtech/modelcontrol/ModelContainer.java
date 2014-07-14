@@ -108,79 +108,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     /**
      *
-     */
-    public ModelContainer()
-    {
-        super();
-    }
-
-    /**
-     *
-     * @param name
-     */
-    public ModelContainer(String name)
-    {
-        super();
-        initialise(name);
-        initialiseTransforms();
-    }
-
-    /**
-     *
-     * @param name
-     * @param gcodeMeshData
-     * @param fileLines
-     */
-    public ModelContainer(String name, GCodeMeshData gcodeMeshData, ArrayList<String> fileLines)
-    {
-        super();
-        modelContentsType = ModelContentsEnumeration.GCODE;
-        initialise(name);
-        initialiseTransforms();
-        getChildren().add(gcodeMeshData.getAllParts());
-        this.gcodeMeshData = gcodeMeshData;
-
-        this.fileLines.addAll(fileLines);
-
-        linesOfGCode.set(fileLines.size());
-
-        selectedGCodeLineProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                highlightGCodeLine(t1.intValue());
-            }
-        });
-
-        minLayerVisible.set(0);
-        maxLayerVisible.set(gcodeMeshData.getReferencedArrays().size());
-
-        minLayerVisible.addListener(new ChangeListener<Number>()
-        {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                setMinVisibleLayer(t1.intValue());
-            }
-        });
-
-        maxLayerVisible.addListener(new ChangeListener<Number>()
-        {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                setMaxVisibleLayer(t1.intValue());
-            }
-        });
-
-        numberOfLayers.set(gcodeMeshData.getReferencedArrays().size());
-    }
-
-    /**
-     *
      * @param name
      * @param meshToAdd
      */
@@ -207,17 +134,68 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         initialiseTransforms();
     }
 
+    /**
+     *
+     * @param name
+     * @param gcodeMeshData
+     * @param fileLines
+     */
+    public ModelContainer(String name, GCodeMeshData gcodeMeshData, ArrayList<String> fileLines)
+    {
+        super();
+        modelContentsType = ModelContentsEnumeration.GCODE;
+        initialise(name);
+        initialiseTransforms();
+        setUpGCodeRelated(gcodeMeshData, fileLines);
+    }
+
+    private void setUpGCodeRelated(GCodeMeshData gcodeMeshData1, ArrayList<String> fileLines1)
+    {
+        getChildren().add(gcodeMeshData1.getAllParts());
+        this.gcodeMeshData = gcodeMeshData1;
+        this.fileLines.addAll(fileLines1);
+        linesOfGCode.set(fileLines1.size());
+        selectedGCodeLineProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                highlightGCodeLine(t1.intValue());
+            }
+        });
+        minLayerVisible.set(0);
+        maxLayerVisible.set(gcodeMeshData1.getReferencedArrays().size());
+        minLayerVisible.addListener(new ChangeListener<Number>()
+        {
+
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                setMinVisibleLayer(t1.intValue());
+            }
+        });
+        maxLayerVisible.addListener(new ChangeListener<Number>()
+        {
+
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                setMaxVisibleLayer(t1.intValue());
+            }
+        });
+        numberOfLayers.set(gcodeMeshData1.getReferencedArrays().size());
+    }
+
     private void initialiseTransforms()
     {
+        setBedCentreOffsetTransform();
+
         originalModelBounds = calculateBounds();
 
         double centreXOffset = -originalModelBounds.getCentreX();
         double centreYOffset = -originalModelBounds.getMaxY();
         double centreZOffset = -originalModelBounds.getCentreZ();
 
-        System.out.format("Move orig to centre offsets: %.2f %.2f %.2f \n", centreXOffset,
-                          centreYOffset,
-                          centreZOffset);
         transformMoveToCentre.setX(centreXOffset);
         transformMoveToCentre.setY(centreYOffset);
         transformMoveToCentre.setZ(centreZOffset);
@@ -225,7 +203,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformRotateYPreferred.setPivotX(originalModelBounds.getCentreX());
         transformRotateYPreferred.setPivotY(originalModelBounds.getCentreY());
         transformRotateYPreferred.setPivotZ(originalModelBounds.getCentreZ());
-        
+
         transformMoveToPreferred.setX(0);
         transformMoveToPreferred.setY(0);
         transformMoveToPreferred.setZ(0);
@@ -240,8 +218,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         shapeChangeListeners = new ArrayList<>();
         steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
         printBed = PrintBed.getInstance();
-
-        setBedCentreOffsetTransform();
 
         isSelected = new SimpleBooleanProperty(false);
         isOffBed = new SimpleBooleanProperty(false);
@@ -260,11 +236,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                                transformMoveToCentre, transformBedCentre,
                                transformRotateYPreferred, transformRotateSnapToGround,
                                transformScalePreferred);
-
-//        getTransforms().addAll(transformMoveToCentre, transformBedCentre,
-//                               transformMoveToPreferred,
-//                                                      transformRotateYPreferred, transformRotateSnapToGround,
-//                               transformScalePreferred);
     }
 
     /**
@@ -378,8 +349,18 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public void translateFrontLeftTo(double xPosition, double zPosition)
     {
+        double newXPosition = xPosition - bedCentreOffsetX + getTransformedBounds().getWidth() / 2.0;
+        double newZPosition = zPosition - bedCentreOffsetZ + getTransformedBounds().getHeight()
+            / 2.0;
+        double deltaXPosition = newXPosition - getTransformedBounds().getCentreX();
+        double deltaZPosition = newZPosition - getTransformedBounds().getCentreX();
         System.out.format("translate front left to %.2f %.2f\n", xPosition, zPosition);
-        translateTo(xPosition, zPosition);
+        transformMoveToPreferred.setX(newXPosition);
+        transformMoveToPreferred.setZ(newZPosition);
+        updateLastTransformedBoundsForTranslateByX(deltaXPosition);
+        updateLastTransformedBoundsForTranslateByZ(deltaZPosition);
+        checkOffBed();
+        notifyShapeChange();
     }
 
     /**
@@ -473,7 +454,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             setScale(scaling);
         }
 
-        centreObjectOnBed();
+//        centreObjectOnBed();
     }
 
     /**
@@ -1085,7 +1066,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     /**
      *
-     * @param z
      */
     public void translateZTo(double zPosition)
 
@@ -1556,8 +1536,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         for (ShapeChangeListener shapeChangeListener : shapeChangeListeners)
         {
             System.out.println("shape changed");
-            System.out.println("preferred move is " + transformMoveToPreferred.getX() +
-                " "  + transformMoveToPreferred.getZ());
+            System.out.println("preferred move is " + transformMoveToPreferred.getX() + " "
+                + transformMoveToPreferred.getZ());
             shapeChangeListener.shapeChanged(this);
         }
     }
