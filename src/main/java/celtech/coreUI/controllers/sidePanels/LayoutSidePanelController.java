@@ -19,7 +19,6 @@ import java.net.URL;
 import java.text.ParseException;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.DoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -113,7 +112,7 @@ public class LayoutSidePanelController implements Initializable,
     }
 
     /**
-     * Initializes the controller class.
+     * Initialises the controller class.
      *
      * @param url
      * @param rb
@@ -202,54 +201,29 @@ public class LayoutSidePanelController implements Initializable,
             }
         };
 
-        widthListener = new ChangeListener<Number>()
+        widthListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t,
-                Number t1)
-            {
-                widthTextField.doubleValueProperty().set(t1.doubleValue());
-            }
+            widthTextField.doubleValueProperty().set(t1.doubleValue());
         };
 
-        heightListener = new ChangeListener<Number>()
+        heightListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t,
-                Number t1)
-            {
-                heightTextField.doubleValueProperty().set(t1.doubleValue());
-            }
+            heightTextField.doubleValueProperty().set(t1.doubleValue());
         };
 
-        depthListener = new ChangeListener<Number>()
+        depthListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t,
-                Number t1)
-            {
-                depthTextField.doubleValueProperty().set(t1.doubleValue());
-            }
+            depthTextField.doubleValueProperty().set(t1.doubleValue());
         };
 
-        xAxisListener = new ChangeListener<Number>()
+        xAxisListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t,
-                Number t1)
-            {
-                xAxisTextField.doubleValueProperty().set(t1.doubleValue());
-            }
+            xAxisTextField.doubleValueProperty().set(t1.doubleValue());
         };
 
-        yAxisListener = new ChangeListener<Number>()
+        yAxisListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t,
-                Number t1)
-            {
-                yAxisTextField.doubleValueProperty().set(t1.doubleValue());
-            }
+            yAxisTextField.doubleValueProperty().set(t1.doubleValue());
         };
     }
 
@@ -571,10 +545,8 @@ public class LayoutSidePanelController implements Initializable,
                     }
             });
 
-        modelDataTableView.getColumns().addAll(modelNameColumn, scaleColumn,
-                                               rotationColumn);
-        modelDataTableView.getSelectionModel().setSelectionMode(
-            SelectionMode.MULTIPLE);
+        modelDataTableView.getColumns().addAll(modelNameColumn, scaleColumn, rotationColumn);
+        modelDataTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         modelDataTableView.setEditable(true);
         modelDataTableView.getSortOrder().add(modelNameColumn);
 

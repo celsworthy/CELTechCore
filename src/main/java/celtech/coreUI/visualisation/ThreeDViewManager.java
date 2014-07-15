@@ -917,7 +917,7 @@ public class ThreeDViewManager
 
             if (model.isSelected())
             {
-                ModelContainer modelCopy = model.clone();
+                ModelContainer modelCopy = model.makeCopy();
                 modelsToAdd.add(modelCopy);
             }
         }

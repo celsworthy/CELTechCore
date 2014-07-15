@@ -93,6 +93,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private final Translate transformBedCentre = new Translate(0, 0, 0);
 
     static int SNAP_FACE_INDEX_NOT_SELECTED = -1;
+    /**
+     * The index of the face that the user has requested face the bed.
+     */
     private int snapFaceIndex = SNAP_FACE_INDEX_NOT_SELECTED;
     /**
      * Property wrapper around the scale.
@@ -257,11 +260,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     *
+     * Make a copy of this ModelContainer and return it.
      * @return
      */
-    @Override
-    public ModelContainer clone()
+    public ModelContainer makeCopy()
     {
         MeshView newMeshView = new MeshView();
 
@@ -272,9 +274,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         ModelContainer copy = new ModelContainer(this.modelName.get(), newMeshView);
         copy.setScale(this.getScale());
-//        copy.setRotationX(this.getRotationX());
-//        copy.setRotationY(this.getRotationY());
-//        copy.setRotationZ(this.getRotationZ());
+        copy.setRotationY(this.getRotationY());
         return copy;
     }
 
@@ -1482,6 +1482,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         selectionHighlighter = new SelectionHighlighter(this);
         getChildren().add(selectionHighlighter);
         selectedMarkers.add(selectionHighlighter);
+        notifyShapeChange();
     }
 
     private void updateLastTransformedBoundsForTranslateByX(double deltaCentreX)
@@ -1518,6 +1519,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         shapeChangeListeners.add(listener);
     }
 
+    /**
+     * This method must be called at the end of any operation that changes one or more
+     * of the transforms.
+     */
     private void notifyShapeChange()
     {
         for (ShapeChangeListener shapeChangeListener : shapeChangeListeners)
