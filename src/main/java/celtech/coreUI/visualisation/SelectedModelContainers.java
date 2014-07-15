@@ -153,8 +153,8 @@ public class SelectedModelContainers
      */
     public class PrimarySelectedModelDetails
     {
-
-        ModelContainer boundModelContainer;
+ 
+       ModelContainer boundModelContainer;
 
         // initing values to -1 forces a change update when value first set to 0 (e.g. rotY)
         private final DoubleProperty width = new SimpleDoubleProperty(-1);

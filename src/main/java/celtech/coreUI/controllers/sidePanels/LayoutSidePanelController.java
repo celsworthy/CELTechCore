@@ -179,26 +179,17 @@ public class LayoutSidePanelController implements Initializable,
     private void setUpModelGeometryListeners()
     {
 
-        modelScaleChangeListener = new ChangeListener<Number>()
+        modelScaleChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t,
-                Number t1)
-            {
-                scaleTextField.setText(String.format(scaleFormat,
-                                                     t1.doubleValue() * 100));
-            }
+            scaleTextField.doubleValueProperty().set(t1.doubleValue() * 100);
+            scaleTextField.setText(String.format(scaleFormat,
+                                                 t1.doubleValue() * 100));
         };
 
-        modelRotationChangeListener = new ChangeListener<Number>()
+        modelRotationChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t,
-                Number t1)
-            {
-                rotationTextField.setText(String.format(rotationFormat, t1));
-            }
+            rotationTextField.doubleValueProperty().set(t1.doubleValue());
+            rotationTextField.setText(String.format(rotationFormat, t1));
         };
 
         widthListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
