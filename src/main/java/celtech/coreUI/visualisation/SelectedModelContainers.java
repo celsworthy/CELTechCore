@@ -35,9 +35,9 @@ public class SelectedModelContainers
     }
 
     /**
-     * Add the given modelContainer to the set of selected m#ModelContainers .
+     * Add the given modelContainer to the set of selected ModelContainers .
      */
-    public synchronized void addModelContainer(ModelContainer modelContainer)
+    public void addModelContainer(ModelContainer modelContainer)
     {
         modelContainers.add(modelContainer);
         modelContainer.setSelected(true);
@@ -52,7 +52,7 @@ public class SelectedModelContainers
     /**
      * Remove the given modelContainer from the set of selected m#ModelContainers .
      */
-    public synchronized void removeModelContainer(ModelContainer modelContainer)
+    public void removeModelContainer(ModelContainer modelContainer)
     {
         modelContainers.remove(modelContainer);
         modelContainer.setSelected(false);
@@ -77,7 +77,7 @@ public class SelectedModelContainers
     /**
      * Deselect all ModelContainers in the set of ModelContainers.
      */
-    public synchronized void deselectAllModels()
+    public void deselectAllModels()
     {
         Set<ModelContainer> allSelectedModelContainers = new HashSet<>(modelContainers);
         for (ModelContainer modelContainer : allSelectedModelContainers)

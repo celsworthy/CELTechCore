@@ -265,12 +265,10 @@ public class ThreeDViewManager
 
         if (event.isPrimaryButtonDown())
         {
-            System.out.println("Primary down");
             pickResult = event.getPickResult();
             pickedPoint = pickResult.getIntersectedPoint();
 
             intersectedNode = pickResult.getIntersectedNode();
-            System.out.println("intersected node is " + intersectedNode);
             lastDragPosition = null;
 
             translationDragPlane.setTranslateY(pickedPoint.getY());
@@ -293,7 +291,6 @@ public class ThreeDViewManager
                     }
 
                     ModelContainer pickedModel = (ModelContainer) parent;
-                    System.out.println("picked model is " + pickedModel);
 
                     if (pickedModel.isSelected() == false)
                     {
@@ -383,8 +380,6 @@ public class ThreeDViewManager
 
     private final EventHandler<MouseEvent> mouseEventHandler = event ->
     {
-//        System.out.println("Mouse event 3D " + event + " type " + event.getEventType());
-//        System.out.println("drag mode is " + dragMode.get());
 
         if (event.getEventType() == MouseEvent.MOUSE_PRESSED)
         {
@@ -1126,7 +1121,6 @@ public class ThreeDViewManager
      */
     public void resizeSelectionDepth(double depth)
     {
-        System.out.println("3DV set depth to " + depth);
         for (ModelContainer model : loadedModels)
         {
             if (selectedModelContainers.isSelected(model))
@@ -1146,7 +1140,6 @@ public class ThreeDViewManager
      */
     public void scaleSelection(double newScale)
     {
-        System.out.println("Scale selection to " + newScale);
         for (ModelContainer model : loadedModels)
         {
             if (selectedModelContainers.isSelected(model))
@@ -1166,7 +1159,6 @@ public class ThreeDViewManager
      */
     public void rotateSelection(double rotation)
     {
-        System.out.println("Rotate selection to " + rotation);
         for (ModelContainer model : loadedModels)
         {
             if (selectedModelContainers.isSelected(model))
@@ -1253,7 +1245,6 @@ public class ThreeDViewManager
      */
     public void deltaScaleSelection(double delta)
     {
-        System.out.println("delta scale selection " + delta);
         for (ModelContainer model : loadedModels)
         {
             if (model.isSelected())

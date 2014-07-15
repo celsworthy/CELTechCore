@@ -19,11 +19,11 @@ import java.net.URL;
 import java.text.ParseException;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.collections.SetChangeListener;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -505,7 +505,7 @@ public class LayoutSidePanelController implements Initializable,
 
         scaleColumn.setText(scaleLabelString);
         scaleColumn.setCellValueFactory(
-            new PropertyValueFactory<>("scale"));
+            new PropertyValueFactory<>("preferredScale"));
         scaleColumn.setMinWidth(60);
         scaleColumn.setPrefWidth(60);
         scaleColumn.setMaxWidth(60);
@@ -539,7 +539,7 @@ public class LayoutSidePanelController implements Initializable,
 
         rotationColumn.setText(rotationLabelString);
         rotationColumn.setCellValueFactory(
-            new PropertyValueFactory<>("rotationY"));
+            new PropertyValueFactory<>("preferredRotationY"));
         rotationColumn.setMinWidth(60);
         rotationColumn.setPrefWidth(60);
         rotationColumn.setMaxWidth(60);

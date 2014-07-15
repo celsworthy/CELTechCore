@@ -26,8 +26,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -92,8 +94,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     static int SNAP_FACE_INDEX_NOT_SELECTED = -1;
     private int snapFaceIndex = SNAP_FACE_INDEX_NOT_SELECTED;
-    private double preferredScale = 1;
-    private double preferredYRotation = 0;
+    /**
+     * Property wrapper around the scale.
+     */
+    private DoubleProperty preferredScale = new SimpleDoubleProperty(1);
+    /**
+     * Property wrapper around the rotationY.
+     */    
+    private DoubleProperty preferredRotationY = new SimpleDoubleProperty(0);
 
     private double bedCentreOffsetX;
     private double bedCentreOffsetY;
@@ -531,13 +539,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public void setScale(double scaleFactor)
     {
-        preferredScale = scaleFactor;
+        preferredScale.set(scaleFactor);
         transformScalePreferred.setPivotX(originalModelBounds.getCentreX());
         transformScalePreferred.setPivotY(originalModelBounds.getCentreY());
         transformScalePreferred.setPivotZ(originalModelBounds.getCentreZ());
-        transformScalePreferred.setX(preferredScale);
-        transformScalePreferred.setY(preferredScale);
-        transformScalePreferred.setZ(preferredScale);
+        transformScalePreferred.setX(preferredScale.get());
+        transformScalePreferred.setY(preferredScale.get());
+        transformScalePreferred.setZ(preferredScale.get());
 
         dropToBedAndUpdateLastTransformedBounds();
         checkOffBed();
@@ -550,7 +558,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public double getScale()
     {
-        return preferredScale;
+        return preferredScale.get();
     }
 
     /**
@@ -559,7 +567,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public void setRotationY(double value)
     {
-        preferredYRotation = value;
+        preferredRotationY.set(value);
         transformRotateYPreferred.setAngle(value);
 
         dropToBedAndUpdateLastTransformedBounds();
@@ -1325,7 +1333,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public double getTotalWidth()
     {
-        double totalwidth = originalModelBounds.getWidth() * preferredScale;
+        double totalwidth = originalModelBounds.getWidth() * preferredScale.get();
         return totalwidth;
     }
 
@@ -1335,7 +1343,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public double getTotalDepth()
     {
-        double totaldepth = originalModelBounds.getDepth() * preferredScale;
+        double totaldepth = originalModelBounds.getDepth() * preferredScale.get();
         return totaldepth;
     }
 
@@ -1414,11 +1422,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         lastTransformedBounds = calculateBoundsInParent();
     }
 
-    public double getPreferredScale()
-    {
-        return preferredScale;
-    }
-
     @Override
     public double getCentreZ()
     {
@@ -1449,7 +1452,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public double getScaledHeight()
     {
-        return getLocalBounds().getHeight() * preferredScale;
+        return getLocalBounds().getHeight() * preferredScale.get();
     }
 
     @Override
@@ -1460,7 +1463,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public double getScaledDepth()
     {
-        return getLocalBounds().getDepth() * preferredScale;
+        return getLocalBounds().getDepth() * preferredScale.get();
     }
 
     @Override
@@ -1471,7 +1474,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public double getScaledWidth()
     {
-        return getLocalBounds().getWidth() * preferredScale;
+        return getLocalBounds().getWidth() * preferredScale.get();
     }
 
     public void addSelectionHighlighter()
@@ -1522,5 +1525,44 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             shapeChangeListener.shapeChanged(this);
         }
     }
+
+    public double getPreferredScale()
+    {
+        return preferredScale.get();
+    }
+
+    /**
+     * @param preferredScale the preferredScale to set
+     */
+    public void setPreferredScale(double preferredScale)
+    {
+        this.preferredScale.set(preferredScale);
+        setScale(preferredScale);
+    }
+    
+    public DoubleProperty preferredScaleProperty() {
+        return preferredScale;
+    }
+
+    /**
+     * @return the preferredYRotation
+     */
+    public double getPreferredRotationY()
+    {
+        return preferredRotationY.get();
+    }
+
+    /**
+     * @param preferredYRotation the preferredYRotation to set
+     */
+    public void setPreferredRotationY(double preferredYRotation)
+    {
+        this.preferredRotationY.set(preferredYRotation);
+        setRotationY(preferredYRotation);
+    }
+    
+    public DoubleProperty preferredRotationYProperty() {
+        return preferredRotationY;
+    }    
 
 }
