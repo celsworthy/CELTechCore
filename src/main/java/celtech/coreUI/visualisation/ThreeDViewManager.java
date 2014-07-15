@@ -361,7 +361,6 @@ public class ThreeDViewManager
                 if (lastDragPosition != null)
                 {
                     Point3D resultant = currentDragPosition.subtract(lastDragPosition);
-                    System.out.println("drag translate " + selectedModelContainers.getModelContainersProperty().size() + " selected models");
                     translateSelection(resultant.getX(), resultant.getZ());
                 }
                 lastDragPosition = currentDragPosition;

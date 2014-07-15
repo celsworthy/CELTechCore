@@ -103,6 +103,7 @@ public class LayoutSidePanelController implements Initializable,
     private final String rotationFormat = "%.0f";
 
     private ListChangeListener selectionListener = null;
+    private boolean suppressModelDataTableViewNotifications = false;
 
     @FXML
     void changeToSettings(MouseEvent event)
@@ -146,35 +147,13 @@ public class LayoutSidePanelController implements Initializable,
             public void onChanged(
                 ListChangeListener.Change<? extends ModelContainer> change)
             {
-                try
+                suppressModelDataTableViewNotifications = true;
+                selectionModel.deselectAllModels();
+                for (ModelContainer modelContainer : modelDataTableView.getSelectionModel().getSelectedItems())
                 {
-                    while (change.next())
-                    {
-                        if (change.wasAdded())
-                        {
-                            for (ModelContainer modelContainer : change.getAddedSubList())
-                            {
-                                selectionModel.addModelContainer(modelContainer);
-                            }
-                        } else if (change.wasRemoved())
-                        {
-                            for (ModelContainer modelContainer : change.getRemoved())
-                            {
-                                selectionModel.removeModelContainer(modelContainer);
-                            }
-                        } else if (change.wasReplaced())
-                        {
-                            steno.info("Replaced: ");
-                        } else if (change.wasUpdated())
-                        {
-                            steno.info("Updated: ");
-                        }
-                    }
-                } catch (Exception ex)
-                {
-                    ex.printStackTrace();
-                    steno.error("Got exception handling model change event: " + ex);
+                    selectionModel.addModelContainer(modelContainer);
                 }
+                suppressModelDataTableViewNotifications = false;
             }
         };
 
@@ -183,6 +162,9 @@ public class LayoutSidePanelController implements Initializable,
 
         selectionContainerModelsListener = (SetChangeListener.Change<? extends ModelContainer> change) ->
         {
+            if (suppressModelDataTableViewNotifications) {
+                return;
+            }
             if (change.wasAdded())
             {
                 modelDataTableView.getSelectionModel().select(change.getElementAdded());
