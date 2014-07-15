@@ -15,7 +15,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 
 /**
- * The SelectionModel captures all required state about the currently selected objects.
+ * SelectedModelContainers captures all required state about the currently selected ModelContainers.
  *
  * @author tony
  */
@@ -34,6 +34,9 @@ public class SelectedModelContainers
         selectedModelContainersListeners = new HashSet<>();
     }
 
+    /**
+     * Add the given modelContainer to the set of selected m#ModelContainers .
+     */
     public synchronized void addModelContainer(ModelContainer modelContainer)
     {
         modelContainers.add(modelContainer);
@@ -46,6 +49,9 @@ public class SelectedModelContainers
         numModelsSelected.set(numModelsSelected.get() + 1);
     }
 
+    /**
+     * Remove the given modelContainer from the set of selected m#ModelContainers .
+     */
     public synchronized void removeModelContainer(ModelContainer modelContainer)
     {
         modelContainers.remove(modelContainer);
@@ -53,51 +59,98 @@ public class SelectedModelContainers
         for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
         {
             selectedModelContainersListener.whenRemoved(modelContainer);
-        }    
+        }
         numModelsSelected.set(numModelsSelected.get() - 1);
     }
 
+    /**
+     * Return if the given ModelContainer is selected or not.
+     *
+     * @param modelContainer
+     * @return
+     */
     public boolean isSelected(ModelContainer modelContainer)
     {
         return modelContainers.contains(modelContainer);
     }
-    
-    public synchronized void deselectAllModels() {
+
+    /**
+     * Deselect all ModelContainers in the set of ModelContainers.
+     */
+    public synchronized void deselectAllModels()
+    {
         Set<ModelContainer> allSelectedModelContainers = new HashSet<>(modelContainers);
         for (ModelContainer modelContainer : allSelectedModelContainers)
         {
             removeModelContainer(modelContainer);
         }
     }
+    
+    /**
+     * Return a copy of the set of selected models.
+     */
+    public Set<ModelContainer> getSelectedModelsSnapshot() {
+        return new HashSet<>(modelContainers);
+    }
 
-    public ReadOnlyIntegerProperty getNumModelsSelectedProperty() {
+    /**
+     * Return the number of selected ModelContainers as an observable number.
+     */
+    public ReadOnlyIntegerProperty getNumModelsSelectedProperty()
+    {
         return numModelsSelected;
     }
 
+    /**
+     * Return the details of the primary selected ModelContainer.
+     */
     public PrimarySelectedModelDetails getPrimarySelectedModelDetails()
     {
         return primarySelectedModelDetails;
     }
-    
+
     /**
      * Call this method when the transformed geometry of the selected model have changed.
      */
-    public void updateSelectedValues() {
+    public void updateSelectedValues()
+    {
         primarySelectedModelDetails.updateSelectedProperties();
     }
-    
-    public void addListener(SelectedModelContainersListener selectedModelContainersListener) {
+
+    /**
+     * Add a listener that will be notified whenever a ModelContainer is selected or deselected.
+     */
+    public void addListener(SelectedModelContainersListener selectedModelContainersListener)
+    {
         selectedModelContainersListeners.add(selectedModelContainersListener);
     }
-        
     
-    public interface SelectedModelContainersListener {
-        
+    /**
+     * Remove a listener that will be notified whenever a ModelContainer is selected or deselected.
+     */
+    public void removeListener(SelectedModelContainersListener selectedModelContainersListener)
+    {
+        selectedModelContainersListeners.remove(selectedModelContainersListener);
+    }    
+
+    public interface SelectedModelContainersListener
+    {
+
+        /**
+         * Called when a ModelContainer is selected.
+         */
         public void whenAdded(ModelContainer modelContainer);
-        
+
+        /**
+         * Called when a ModelContainer is removed.
+         */
         public void whenRemoved(ModelContainer modelContainer);
     }
 
+    /**
+     * PrimarySelectedModelDetails contains the details pertaining to the primary selected
+     * ModelContainer.
+     */
     public class PrimarySelectedModelDetails
     {
 
@@ -142,11 +195,11 @@ public class SelectedModelContainers
         {
             return centreZ;
         }
-        
+
         public DoubleProperty getCentreX()
         {
             return centreX;
-        }        
+        }
 
         public DoubleProperty getHeight()
         {

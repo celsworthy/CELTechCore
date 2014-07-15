@@ -19,7 +19,6 @@ import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelContentsEnumeration;
-import celtech.utils.Math.Packing.Block;
 import celtech.utils.Math.Packing.PackingThing;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,7 +26,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -39,7 +37,6 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Point2D;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.effect.Glow;
@@ -75,21 +72,21 @@ public class ProjectTab extends Tab
 
     final Rectangle testRect = new Rectangle(5, 5);
 
-    private final ChangeListener<Number> selectionContainerMoveListener = new ChangeListener<Number>()
-    {
-        @Override
-        public void changed(ObservableValue<? extends Number> ov, Number t,
-            Number t1)
-        {
-            Point2D reference = basePane.localToScreen(0, 0);
-//            double x = viewManager.getSelectionContainer().getScreenX()
-//                - reference.getX();
-//            double y = viewManager.getSelectionContainer().getScreenY()
-//                - reference.getY();
-//            gizmoXform.setTx(x);
-//            gizmoXform.setTy(y);
-        }
-    };
+//    private final ChangeListener<Number> selectionContainerMoveListener = new ChangeListener<Number>()
+//    {
+//        @Override
+//        public void changed(ObservableValue<? extends Number> ov, Number t,
+//            Number t1)
+//        {
+////            Point2D reference = basePane.localToScreen(0, 0);
+////            double x = viewManager.getSelectionContainer().getScreenX()
+////                - reference.getX();
+////            double y = viewManager.getSelectionContainer().getScreenY()
+////                - reference.getY();
+////            gizmoXform.setTx(x);
+////            gizmoXform.setTy(y);
+//        }
+//    };
 
     /**
      *
@@ -297,10 +294,6 @@ public class ProjectTab extends Tab
         });
 
         basePane.getChildren().add(viewManager.getSubScene());
-//        viewManager.getSelectionContainer().screenXProperty().addListener(
-//            selectionContainerMoveListener);
-//        viewManager.getSelectionContainer().screenYProperty().addListener(
-//            selectionContainerMoveListener);
 
         try
         {

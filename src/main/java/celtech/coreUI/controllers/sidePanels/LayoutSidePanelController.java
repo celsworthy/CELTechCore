@@ -87,10 +87,10 @@ public class LayoutSidePanelController implements Initializable,
     private final TableColumn rotationColumn = new TableColumn();
 
     private SelectedModelContainers selectionModel;
-    private SelectedModelContainersListener selectionContainerModelsListener = null;
+    private SelectedModelContainersListener tableViewSelectionListener = null;
     private final DisplayManager displayManager = DisplayManager.getInstance();
 
-    private ListChangeListener<ModelContainer> modelChangeListener = null;
+    private ListChangeListener<ModelContainer> loadedModelsChangeListener = null;
 
     private ChangeListener<Number> modelScaleChangeListener = null;
     private ChangeListener<Number> modelRotationChangeListener = null;
@@ -141,7 +141,7 @@ public class LayoutSidePanelController implements Initializable,
 
         setUpTableView(modelNameLabelString, scaleLabelString, rotationLabelString, languageBundle);
 
-        modelChangeListener = new ListChangeListener<ModelContainer>()
+        loadedModelsChangeListener = new ListChangeListener<ModelContainer>()
         {
 
             @Override
@@ -611,7 +611,7 @@ public class LayoutSidePanelController implements Initializable,
         modelDataTableView.getSelectionModel().getSelectedItems().addListener(
             selectionListener);
 
-        selectionContainerModelsListener = new SelectedModelContainersListener()
+        tableViewSelectionListener = new SelectedModelContainersListener()
         {
 
             @Override
@@ -620,7 +620,7 @@ public class LayoutSidePanelController implements Initializable,
                 if (suppressModelDataTableViewNotifications)
                 {
                     return;
-                }                
+                }
                 suppressModelDataTableViewNotifications = true;
                 modelDataTableView.getSelectionModel().select(modelContainer);
                 suppressModelDataTableViewNotifications = false;
@@ -632,7 +632,7 @@ public class LayoutSidePanelController implements Initializable,
                 if (suppressModelDataTableViewNotifications)
                 {
                     return;
-                }                
+                }
                 suppressModelDataTableViewNotifications = true;
                 int modelIndex = modelDataTableView.getItems().indexOf(modelContainer);
                 if (modelIndex != -1)
@@ -649,18 +649,24 @@ public class LayoutSidePanelController implements Initializable,
     }
 
     /**
-     *
+     * Bind the given viewManager to the controller's widgets. Unbind any widget tied to a previous
+     * viewManager.
      * @param viewManager
      */
     public void bindLoadedModels(final ThreeDViewManager viewManager)
     {
         ObservableList<ModelContainer> loadedModels = viewManager.getLoadedModels();
 
+        if (selectionModel != null)
+        {
+            selectionModel.removeListener(tableViewSelectionListener);
+        }
         selectionModel = viewManager.getSelectedModelContainers();
+        
         modelDataTableView.setItems(loadedModels);
-
-        selectionModel.addListener(selectionContainerModelsListener);
-
+        resetTableViewSelection(selectionModel);
+        selectionModel.addListener(tableViewSelectionListener);
+        
         SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails
             = selectionModel.getPrimarySelectedModelDetails();
         selectedModelDetails.getWidth().addListener(widthListener);
@@ -674,10 +680,10 @@ public class LayoutSidePanelController implements Initializable,
         selectedModelDetails.getRotationY().addListener(modelRotationChangeListener);
 
         selectedItemDetails.visibleProperty().bind(Bindings.lessThan(0,
-                                                                  selectionModel.getNumModelsSelectedProperty()));
+                                                                     selectionModel.getNumModelsSelectedProperty()));
         if (boundProject != null)
         {
-            boundProject.getLoadedModels().removeListener(modelChangeListener);
+            boundProject.getLoadedModels().removeListener(loadedModelsChangeListener);
         }
 
         if (boundModel != null)
@@ -693,7 +699,7 @@ public class LayoutSidePanelController implements Initializable,
             boundModel = boundProject.getLoadedModels().get(0);
         }
 
-        boundProject.getLoadedModels().addListener(modelChangeListener);
+        boundProject.getLoadedModels().addListener(loadedModelsChangeListener);
     }
 
     /**
@@ -703,5 +709,20 @@ public class LayoutSidePanelController implements Initializable,
     @Override
     public void configure(Initializable slideOutController)
     {
+    }
+
+    /**
+     * Reset the table view selection to the current selection in the viewManager, used
+     * when switching ProjectTabs.
+     */
+    private void resetTableViewSelection(SelectedModelContainers selectionModel)
+    {
+        suppressModelDataTableViewNotifications = true;
+        modelDataTableView.getSelectionModel().clearSelection();
+        for (ModelContainer modelContainer : selectionModel.getSelectedModelsSnapshot())
+        {
+            modelDataTableView.getSelectionModel().select(modelContainer);
+        }
+        suppressModelDataTableViewNotifications = false;
     }
 }
