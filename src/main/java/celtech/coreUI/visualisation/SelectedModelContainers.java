@@ -4,9 +4,13 @@
 package celtech.coreUI.visualisation;
 
 import celtech.modelcontrol.ModelContainer;
-import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 
@@ -20,24 +24,37 @@ public class SelectedModelContainers
 
     private final ObservableSet<ModelContainer> modelContainers;
     private final PrimarySelectedModelDetails primarySelectedModelDetails;
+    private final IntegerProperty numModelsSelected = new SimpleIntegerProperty(0);
+    private Set<SelectedModelContainersListener> selectedModelContainersListeners;
 
     public SelectedModelContainers()
     {
         modelContainers = FXCollections.observableSet();
         primarySelectedModelDetails = new PrimarySelectedModelDetails();
+        selectedModelContainersListeners = new HashSet<>();
     }
 
-    public void addModelContainer(ModelContainer modelContainer)
+    public synchronized void addModelContainer(ModelContainer modelContainer)
     {
         modelContainers.add(modelContainer);
         modelContainer.setSelected(true);
         primarySelectedModelDetails.setTo(modelContainer);
+        for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
+        {
+            selectedModelContainersListener.whenAdded(modelContainer);
+        }
+        numModelsSelected.set(numModelsSelected.get() + 1);
     }
 
-    public void removeModelContainer(ModelContainer modelContainer)
+    public synchronized void removeModelContainer(ModelContainer modelContainer)
     {
         modelContainers.remove(modelContainer);
         modelContainer.setSelected(false);
+        for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
+        {
+            selectedModelContainersListener.whenRemoved(modelContainer);
+        }    
+        numModelsSelected.set(numModelsSelected.get() - 1);
     }
 
     public boolean isSelected(ModelContainer modelContainer)
@@ -45,17 +62,16 @@ public class SelectedModelContainers
         return modelContainers.contains(modelContainer);
     }
     
-    public void deselectAllModels() {
-        for (ModelContainer modelContainer : modelContainers)
+    public synchronized void deselectAllModels() {
+        Set<ModelContainer> allSelectedModelContainers = new HashSet<>(modelContainers);
+        for (ModelContainer modelContainer : allSelectedModelContainers)
         {
-            modelContainer.setSelected(false);
+            removeModelContainer(modelContainer);
         }
-        modelContainers.removeAll(modelContainers);
     }
 
-    public ObservableSet<ModelContainer> getModelContainersProperty()
-    {
-        return modelContainers;
+    public ReadOnlyIntegerProperty getNumModelsSelectedProperty() {
+        return numModelsSelected;
     }
 
     public PrimarySelectedModelDetails getPrimarySelectedModelDetails()
@@ -68,6 +84,18 @@ public class SelectedModelContainers
      */
     public void updateSelectedValues() {
         primarySelectedModelDetails.updateSelectedProperties();
+    }
+    
+    public void addListener(SelectedModelContainersListener selectedModelContainersListener) {
+        selectedModelContainersListeners.add(selectedModelContainersListener);
+    }
+        
+    
+    public interface SelectedModelContainersListener {
+        
+        public void whenAdded(ModelContainer modelContainer);
+        
+        public void whenRemoved(ModelContainer modelContainer);
     }
 
     public class PrimarySelectedModelDetails

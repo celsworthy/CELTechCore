@@ -307,10 +307,10 @@ public class MenuStripController
         snapToGroundButton.disableProperty().unbind();
         distributeModelsButton.disableProperty().unbind();
 
-        deleteModelButton.disableProperty().bind(Bindings.isEmpty(
-            selectionModel.getModelContainersProperty()));
-        duplicateModelButton.disableProperty().bind(Bindings.isEmpty(
-            selectionModel.getModelContainersProperty()));
+        deleteModelButton.disableProperty().bind(Bindings.equal(0,
+            selectionModel.getNumModelsSelectedProperty()));
+        duplicateModelButton.disableProperty().bind(Bindings.equal(0,
+            selectionModel.getNumModelsSelectedProperty()));
         distributeModelsButton.setDisable(true);
 
         if (boundProject != null)
@@ -325,8 +325,8 @@ public class MenuStripController
 
         distributeModelsButton.disableProperty().bind(Bindings.isEmpty(
             boundProject.getLoadedModels()));
-        snapToGroundButton.disableProperty().bind(Bindings.isEmpty(
-            selectionModel.getModelContainersProperty()));
+        snapToGroundButton.disableProperty().bind(Bindings.equal(0,
+            selectionModel.getNumModelsSelectedProperty()));
 
         forwardButton.visibleProperty().unbind();
         forwardButton.visibleProperty().bind((applicationStatus.modeProperty().isEqualTo(

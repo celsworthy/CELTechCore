@@ -298,7 +298,7 @@ public class ThreeDViewManager
                     if (pickedModel.isSelected() == false)
                     {
                         boolean multiSelect = event.isControlDown();
-                        System.out.println("mouse click so select model");
+                        steno.info("mouse click so select model");
                         selectModel(pickedModel, multiSelect);
                     } else
                     {
@@ -310,7 +310,7 @@ public class ThreeDViewManager
                     }
                 } else if (true) //intersectedNode == subScene)
                 {
-                    System.out.println("deselect all models");
+                    steno.info("deselect all models");
                     selectedModelContainers.deselectAllModels();
                 }
 

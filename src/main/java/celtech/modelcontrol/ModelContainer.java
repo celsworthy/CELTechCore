@@ -585,11 +585,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 addSelectionHighlighter();
             }
             showSelectedMarkers();
-            System.out.println("show selmarker for " + getId());
+            steno.info("show selmarker for " + getId());
         } else
         {
             hideSelectedMarkers();
-            System.out.println("hide selmarker for " + getId());
+            steno.info("hide selmarker for " + getId());
         }
         isSelected.set(selected);
     }

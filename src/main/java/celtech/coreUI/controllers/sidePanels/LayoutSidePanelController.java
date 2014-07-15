@@ -12,6 +12,7 @@ import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.coreUI.visualisation.SelectedModelContainers;
+import celtech.coreUI.visualisation.SelectedModelContainers.SelectedModelContainersListener;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
 import java.net.URL;
@@ -86,7 +87,7 @@ public class LayoutSidePanelController implements Initializable,
     private final TableColumn rotationColumn = new TableColumn();
 
     private SelectedModelContainers selectionModel;
-    private SetChangeListener<ModelContainer> selectionContainerModelsListener = null;
+    private SelectedModelContainersListener selectionContainerModelsListener = null;
     private final DisplayManager displayManager = DisplayManager.getInstance();
 
     private ListChangeListener<ModelContainer> modelChangeListener = null;
@@ -140,49 +141,6 @@ public class LayoutSidePanelController implements Initializable,
 
         setUpTableView(modelNameLabelString, scaleLabelString, rotationLabelString, languageBundle);
 
-        selectionListener = new ListChangeListener<ModelContainer>()
-        {
-
-            @Override
-            public void onChanged(
-                ListChangeListener.Change<? extends ModelContainer> change)
-            {
-                suppressModelDataTableViewNotifications = true;
-                selectionModel.deselectAllModels();
-                for (ModelContainer modelContainer : modelDataTableView.getSelectionModel().getSelectedItems())
-                {
-                    selectionModel.addModelContainer(modelContainer);
-                }
-                suppressModelDataTableViewNotifications = false;
-            }
-        };
-
-        modelDataTableView.getSelectionModel().getSelectedItems().addListener(
-            selectionListener);
-
-        selectionContainerModelsListener = (SetChangeListener.Change<? extends ModelContainer> change) ->
-        {
-            if (suppressModelDataTableViewNotifications) {
-                return;
-            }
-            if (change.wasAdded())
-            {
-                modelDataTableView.getSelectionModel().select(change.getElementAdded());
-            } else if (change.wasRemoved())
-            {
-                ModelContainer removedContainer = change.getElementRemoved();
-                {
-                    int modelIndex = modelDataTableView.getItems().indexOf(
-                        removedContainer);
-                    if (modelIndex != -1)
-                    {
-                        modelDataTableView.getSelectionModel().clearSelection(
-                            modelIndex);
-                    }
-                }
-            }
-        };
-        
         modelChangeListener = new ListChangeListener<ModelContainer>()
         {
 
@@ -213,15 +171,15 @@ public class LayoutSidePanelController implements Initializable,
                     }
                 }
             }
-        };        
-        
+        };
+
         setUpModelGeometryListeners();
         setUpKeyPressListeners();
     }
 
     private void setUpModelGeometryListeners()
     {
-        
+
         modelScaleChangeListener = new ChangeListener<Number>()
         {
             @Override
@@ -243,7 +201,7 @@ public class LayoutSidePanelController implements Initializable,
                 rotationTextField.setText(String.format(rotationFormat, t1));
             }
         };
-        
+
         widthListener = new ChangeListener<Number>()
         {
             @Override
@@ -366,8 +324,7 @@ public class LayoutSidePanelController implements Initializable,
                 }
             }
         );
-        
-        
+
         widthTextField.setOnKeyPressed(
             new EventHandler<KeyEvent>()
             {
@@ -471,8 +428,7 @@ public class LayoutSidePanelController implements Initializable,
                 }
             }
         );
-        
-        
+
         xAxisTextField.setOnKeyPressed(
             (KeyEvent t) ->
             {
@@ -500,8 +456,7 @@ public class LayoutSidePanelController implements Initializable,
                         break;
                 }
             });
-        
-        
+
         yAxisTextField.setOnKeyPressed(
             new EventHandler<KeyEvent>()
             {
@@ -547,7 +502,7 @@ public class LayoutSidePanelController implements Initializable,
         modelNameColumn.setMinWidth(170);
         modelNameColumn.setMaxWidth(170);
         modelNameColumn.setEditable(false);
-        
+
         scaleColumn.setText(scaleLabelString);
         scaleColumn.setCellValueFactory(
             new PropertyValueFactory<>("scale"));
@@ -563,12 +518,12 @@ public class LayoutSidePanelController implements Initializable,
                 {
                     return new TableCell<ModelContainer, Double>()
                     {
-                        
+
                         @Override
                         protected void updateItem(Double item, boolean empty)
                         {
                             super.updateItem(item, empty);
-                            
+
                             if (!empty)
                             {
                                 // Use a SimpleDateFormat or similar in the format method
@@ -579,9 +534,9 @@ public class LayoutSidePanelController implements Initializable,
                             }
                         }
                     };
-                }
+                    }
             });
-        
+
         rotationColumn.setText(rotationLabelString);
         rotationColumn.setCellValueFactory(
             new PropertyValueFactory<>("rotationY"));
@@ -597,12 +552,12 @@ public class LayoutSidePanelController implements Initializable,
                 {
                     return new TableCell<ModelContainer, Double>()
                     {
-                        
+
                         @Override
                         protected void updateItem(Double item, boolean empty)
                         {
                             super.updateItem(item, empty);
-                            
+
                             if (!empty)
                             {
                                 // Use a SimpleDateFormat or similar in the format method
@@ -613,20 +568,84 @@ public class LayoutSidePanelController implements Initializable,
                             }
                         }
                     };
-                }
+                    }
             });
-        
+
         modelDataTableView.getColumns().addAll(modelNameColumn, scaleColumn,
-                                                                rotationColumn);
+                                               rotationColumn);
         modelDataTableView.getSelectionModel().setSelectionMode(
             SelectionMode.MULTIPLE);
         modelDataTableView.setEditable(true);
         modelDataTableView.getSortOrder().add(modelNameColumn);
-        
+
         Label noModelsLoadedPlaceholder = new Label();
         noModelsLoadedPlaceholder.setText(languageBundle.getString(
             "sidePanel_layout.noModelsLoaded"));
         modelDataTableView.setPlaceholder(noModelsLoadedPlaceholder);
+
+        setUpTableViewListeners();
+    }
+
+    private void setUpTableViewListeners()
+    {
+        selectionListener = new ListChangeListener<ModelContainer>()
+        {
+            @Override
+            public void onChanged(
+                ListChangeListener.Change<? extends ModelContainer> change)
+            {
+                if (suppressModelDataTableViewNotifications)
+                {
+                    return;
+                }
+                suppressModelDataTableViewNotifications = true;
+                selectionModel.deselectAllModels();
+                for (ModelContainer modelContainer : modelDataTableView.getSelectionModel().getSelectedItems())
+                {
+                    selectionModel.addModelContainer(modelContainer);
+                }
+                suppressModelDataTableViewNotifications = false;
+            }
+        };
+
+        modelDataTableView.getSelectionModel().getSelectedItems().addListener(
+            selectionListener);
+
+        selectionContainerModelsListener = new SelectedModelContainersListener()
+        {
+
+            @Override
+            public void whenAdded(ModelContainer modelContainer)
+            {
+                if (suppressModelDataTableViewNotifications)
+                {
+                    return;
+                }                
+                suppressModelDataTableViewNotifications = true;
+                modelDataTableView.getSelectionModel().select(modelContainer);
+                suppressModelDataTableViewNotifications = false;
+            }
+
+            @Override
+            public void whenRemoved(ModelContainer modelContainer)
+            {
+                if (suppressModelDataTableViewNotifications)
+                {
+                    return;
+                }                
+                suppressModelDataTableViewNotifications = true;
+                int modelIndex = modelDataTableView.getItems().indexOf(modelContainer);
+                if (modelIndex != -1)
+                {
+                    if (modelDataTableView.getSelectionModel().isSelected(modelIndex))
+                    {
+                        modelDataTableView.getSelectionModel().clearSelection(modelIndex);
+                    }
+                }
+                suppressModelDataTableViewNotifications = false;
+            }
+
+        };
     }
 
     /**
@@ -640,10 +659,10 @@ public class LayoutSidePanelController implements Initializable,
         selectionModel = viewManager.getSelectedModelContainers();
         modelDataTableView.setItems(loadedModels);
 
-        selectionModel.getModelContainersProperty().addListener(selectionContainerModelsListener);
+        selectionModel.addListener(selectionContainerModelsListener);
 
-        SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails = 
-                                    selectionModel.getPrimarySelectedModelDetails();
+        SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails
+            = selectionModel.getPrimarySelectedModelDetails();
         selectedModelDetails.getWidth().addListener(widthListener);
         selectedModelDetails.getHeight().addListener(heightListener);
         selectedModelDetails.getDepth().addListener(depthListener);
@@ -654,8 +673,8 @@ public class LayoutSidePanelController implements Initializable,
         selectedModelDetails.getScale().addListener(modelScaleChangeListener);
         selectedModelDetails.getRotationY().addListener(modelRotationChangeListener);
 
-        selectedItemDetails.visibleProperty().bind(Bindings.isNotEmpty(
-            selectionModel.getModelContainersProperty()));
+        selectedItemDetails.visibleProperty().bind(Bindings.lessThan(0,
+                                                                  selectionModel.getNumModelsSelectedProperty()));
         if (boundProject != null)
         {
             boundProject.getLoadedModels().removeListener(modelChangeListener);
