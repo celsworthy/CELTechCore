@@ -13,7 +13,6 @@ import celtech.coreUI.visualisation.importers.obj.ObjImporter;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelContentsEnumeration;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.ListIterator;
 import javafx.animation.AnimationTimer;
 import javafx.animation.Timeline;
@@ -294,10 +293,12 @@ public class ThreeDViewManager
                     }
 
                     ModelContainer pickedModel = (ModelContainer) parent;
+                    System.out.println("picked model is " + pickedModel);
 
                     if (pickedModel.isSelected() == false)
                     {
                         boolean multiSelect = event.isControlDown();
+                        System.out.println("mouse click so select model");
                         selectModel(pickedModel, multiSelect);
                     } else
                     {
@@ -309,8 +310,8 @@ public class ThreeDViewManager
                     }
                 } else if (true) //intersectedNode == subScene)
                 {
-                    System.out.println("deselect all");
-                    deselectAllModels();
+                    System.out.println("deselect all models");
+                    selectedModelContainers.deselectAllModels();
                 }
 
             }
@@ -319,6 +320,7 @@ public class ThreeDViewManager
 
     private void handleMouseDragEvent(MouseEvent event)
     {
+        
         double modifier = 1.0;
         double modifierFactor = 0.3;
 
@@ -359,7 +361,7 @@ public class ThreeDViewManager
                 if (lastDragPosition != null)
                 {
                     Point3D resultant = currentDragPosition.subtract(lastDragPosition);
-
+                    System.out.println("drag translate " + selectedModelContainers.getModelContainersProperty().size() + " selected models");
                     translateSelection(resultant.getX(), resultant.getZ());
                 }
                 lastDragPosition = currentDragPosition;
@@ -382,11 +384,11 @@ public class ThreeDViewManager
 
     private final EventHandler<MouseEvent> mouseEventHandler = event ->
     {
-//        steno.info("Mouse event 3D " + event);
+//        System.out.println("Mouse event 3D " + event + " type " + event.getEventType());
+//        System.out.println("drag mode is " + dragMode.get());
 
         if (event.getEventType() == MouseEvent.MOUSE_PRESSED)
         {
-
             handleMousePressedEvent(event);
 
         } else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED && dragMode.get()
@@ -413,7 +415,6 @@ public class ThreeDViewManager
             cameraDistance.set(z);
             bedTranslateXform.setTz(z);
         }
-//        recalculateCentre();
     };
     private final EventHandler<ZoomEvent> zoomEventHandler = event ->
     {
@@ -423,7 +424,6 @@ public class ThreeDViewManager
             double z = bedTranslateXform.getTz() / event.getZoomFactor();
             cameraDistance.set(z);
             bedTranslateXform.setTz(z);
-//            recalculateCentre();
         }
     };
     private final EventHandler<KeyEvent> keyEventHandler = event ->
@@ -980,28 +980,14 @@ public class ThreeDViewManager
     {
         if (selectedNode == null)
         {
-            deselectAllModels();
+            selectedModelContainers.deselectAllModels();
         } else if (selectedNode.isSelected() == false)
         {
             if (multiSelect == false)
             {
-                deselectAllModels();
+                selectedModelContainers.deselectAllModels();
             }
             selectedModelContainers.addModelContainer(selectedNode);
-        }
-    }
-
-    /**
-     *
-     */
-    public void deselectAllModels()
-    {
-        Iterator<ModelContainer> loadedModelIterator = loadedModels.iterator();
-        while (loadedModelIterator.hasNext())
-        {
-            ModelContainer model = loadedModelIterator.next();
-
-            deselectModel(model);
         }
     }
 

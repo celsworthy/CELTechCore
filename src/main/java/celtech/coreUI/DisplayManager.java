@@ -715,19 +715,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
      *
      * @param selectedModel
      */
-    public void selectModel(ModelContainer selectedModel)
-    {
-        Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
-        if (currentTab instanceof ProjectTab)
-        {
-            ((ProjectTab) currentTab).selectModel(selectedModel);
-        }
-    }
-
-    /**
-     *
-     * @param selectedModel
-     */
     public void deselectModel(ModelContainer selectedModel)
     {
         Tab currentTab = tabDisplaySelectionModel.getSelectedItem();

@@ -4,6 +4,7 @@
 package celtech.coreUI.visualisation;
 
 import celtech.modelcontrol.ModelContainer;
+import java.util.Collections;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
@@ -42,6 +43,14 @@ public class SelectedModelContainers
     public boolean isSelected(ModelContainer modelContainer)
     {
         return modelContainers.contains(modelContainer);
+    }
+    
+    public void deselectAllModels() {
+        for (ModelContainer modelContainer : modelContainers)
+        {
+            modelContainer.setSelected(false);
+        }
+        modelContainers.removeAll(modelContainers);
     }
 
     public ObservableSet<ModelContainer> getModelContainersProperty()

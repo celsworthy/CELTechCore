@@ -10,6 +10,7 @@ import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
 import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.PrintBed;
 import static celtech.coreUI.DeDuplicator.suggestNonDuplicateName;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.GCodeEditorPanelController;
@@ -397,18 +398,18 @@ public class ProjectTab extends Tab
     /**
      *
      * @param fullFilename
-     * @param modelGroup
+     * @param modelContainer
      */
-    public void addModelContainer(String fullFilename, ModelContainer modelGroup)
+    public void addModelContainer(String fullFilename, ModelContainer modelContainer)
     {
         steno.info("I am loading " + fullFilename);
         if (project.getProjectMode() == ProjectMode.NONE)
         {
-            switch (modelGroup.getModelContentsType())
+            switch (modelContainer.getModelContentsType())
             {
                 case GCODE:
                     project.setProjectMode(ProjectMode.GCODE);
-                    project.setProjectName(modelGroup.getModelName());
+                    project.setProjectName(modelContainer.getModelName());
                     project.setGCodeFilename(fullFilename);
                     viewManager.activateGCodeVisualisationMode();
                     break;
@@ -422,17 +423,17 @@ public class ProjectTab extends Tab
         }
 
         if ((project.getProjectMode() == ProjectMode.GCODE
-            && modelGroup.getModelContentsType()
+            && modelContainer.getModelContentsType()
             == ModelContentsEnumeration.GCODE)
             || (project.getProjectMode() == ProjectMode.MESH
-            && modelGroup.getModelContentsType()
+            && modelContainer.getModelContentsType()
             == ModelContentsEnumeration.MESH))
         {
-            viewManager.addModel(modelGroup);
-            displayManager.selectModel(modelGroup);
+            viewManager.addModel(modelContainer);
+            viewManager.selectModel(modelContainer, false);
         } else
         {
-            steno.warning("Discarded load of " + modelGroup.getModelName()
+            steno.warning("Discarded load of " + modelContainer.getModelName()
                 + " due to conflict with project type");
         }
     }
@@ -477,46 +478,15 @@ public class ProjectTab extends Tab
     public void autoLayout()
     {
         Collections.sort(viewManager.getLoadedModels());
-        PackingThing thing = new PackingThing(210, 150);
-
-        ArrayList<Block> blocks = new ArrayList<>();
+        PackingThing thing = new PackingThing((int) PrintBed.maxPrintableXSize,
+                                              (int) PrintBed.maxPrintableZSize);
 
         thing.reference(viewManager.getLoadedModels(), 10);
         thing.pack();
         thing.relocateBlocks();
-        
+
         viewManager.collideModels();
 
-//        viewManager.recalculateSelectionBounds(false);
-
-//        for (Block block : blocks)
-//        {
-//            System.out.println(">>>>>>>>>>");
-//            System.out.println("W:" + block.getW());
-//            System.out.println("H:" + block.getH());
-//            if (block.getFit() != null)
-//            {
-//                System.out.println("Fit X:" + block.getFit().getX());
-//                System.out.println("Fit Y:" + block.getFit().getY());
-//                System.out.println("Fit w:" + block.getFit().getW());
-//                System.out.println("Fit h:" + block.getFit().getH());
-//            }
-//            else
-//            {
-//                System.out.println("No fit");
-//            }
-//            block.relocate();
-//            System.out.println("<<<<<<<<<<");
-//        }
-    }
-
-    /**
-     *
-     * @param selectedModel
-     */
-    public void selectModel(ModelContainer selectedModel)
-    {
-        viewManager.selectModel(selectedModel, false);
     }
 
     /**
@@ -604,7 +574,6 @@ public class ProjectTab extends Tab
 //        gizmoXform.setTy(newPosition.getY());
 //        steno.info("New Y pos " + newPosition.getY() + " for " + screenY);
 //    }
-
     /**
      *
      * @param newMode
@@ -624,7 +593,7 @@ public class ProjectTab extends Tab
         }
     }
 
-  public SelectedModelContainers getSelectionModel()
+    public SelectedModelContainers getSelectionModel()
     {
         return viewManager.getSelectedModelContainers();
     }
