@@ -103,7 +103,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private DoubleProperty preferredScale = new SimpleDoubleProperty(1);
     /**
      * Property wrapper around the rotationY.
-     */    
+     */
     private DoubleProperty preferredRotationY = new SimpleDoubleProperty(0);
 
     private double bedCentreOffsetX;
@@ -261,6 +261,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     /**
      * Make a copy of this ModelContainer and return it.
+     *
      * @return
      */
     public ModelContainer makeCopy()
@@ -291,6 +292,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         updateLastTransformedBoundsForTranslateByX(xMove);
         updateLastTransformedBoundsForTranslateByZ(zMove);
+
+        keepOnBedXZ();
+
         checkOffBed();
 
 //        Bounds bounds = this.getBoundsInParent();
@@ -362,6 +366,43 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformMoveToPreferred.setZ(newZPosition);
         updateLastTransformedBoundsForTranslateByX(deltaXPosition);
         updateLastTransformedBoundsForTranslateByZ(deltaZPosition);
+        checkOffBed();
+        notifyShapeChange();
+    }
+
+    /**
+     * This method checks if the model is off the print bed and if so it adjusts the
+     * transformMoveToPreferred to bring it back to the nearest edge of the bed.
+     */
+    private void keepOnBedXZ()
+    {
+        double deltaX = 0;
+        
+        double minBedX = PrintBed.getPrintVolumeCentre().getX() - PrintBed.maxPrintableXSize / 2.0 + 1;
+        double maxBedX = PrintBed.getPrintVolumeCentre().getX() + PrintBed.maxPrintableXSize / 2.0 - 1;
+        if (getTransformedBounds().getMinX() < minBedX)
+        {
+            deltaX = - (getTransformedBounds().getMinX() - minBedX);
+            transformMoveToPreferred.setX(transformMoveToPreferred.getX() + deltaX);
+        } else if (getTransformedBounds().getMaxX() > maxBedX) {
+            deltaX = - (getTransformedBounds().getMaxX() - maxBedX);
+            transformMoveToPreferred.setX(transformMoveToPreferred.getX() + deltaX);
+        }
+        updateLastTransformedBoundsForTranslateByX(deltaX);
+        
+        double deltaZ = 0;
+        double minBedZ = PrintBed.getPrintVolumeCentre().getZ() - PrintBed.maxPrintableZSize / 2.0 + 1;
+        double maxBedZ = PrintBed.getPrintVolumeCentre().getZ() + PrintBed.maxPrintableZSize / 2.0 - 1;
+        if (getTransformedBounds().getMinZ() < minBedZ)
+        {
+            deltaZ = - (getTransformedBounds().getMinZ() - minBedZ);
+            transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + deltaZ);
+        } else if (getTransformedBounds().getMaxZ() > maxBedZ) {
+            deltaZ = - (getTransformedBounds().getMaxZ() - maxBedZ);
+            transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + deltaZ);
+        }
+        updateLastTransformedBoundsForTranslateByZ(deltaZ);
+        
         checkOffBed();
         notifyShapeChange();
     }
@@ -1520,8 +1561,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * This method must be called at the end of any operation that changes one or more
-     * of the transforms.
+     * This method must be called at the end of any operation that changes one or more of the
+     * transforms.
      */
     private void notifyShapeChange()
     {
@@ -1544,8 +1585,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         this.preferredScale.set(preferredScale);
         setScale(preferredScale);
     }
-    
-    public DoubleProperty preferredScaleProperty() {
+
+    public DoubleProperty preferredScaleProperty()
+    {
         return preferredScale;
     }
 
@@ -1565,9 +1607,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         this.preferredRotationY.set(preferredYRotation);
         setRotationY(preferredYRotation);
     }
-    
-    public DoubleProperty preferredRotationYProperty() {
+
+    public DoubleProperty preferredRotationYProperty()
+    {
         return preferredRotationY;
-    }    
+    }
 
 }
