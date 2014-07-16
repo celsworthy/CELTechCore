@@ -3098,13 +3098,14 @@ public class PrinterImpl implements Printer
      * @param printQuality
      * @param settings
      */
+    @Override
     public void printProject(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings)
     {
         if (filament != null)
         {
             try
             {
-                transmitSetTemperatures(filament.getNozzleTemperature(), filament.getNozzleTemperature(), filament.getFirstLayerBedTemperature(), filament.getBedTemperature(), filament.getAmbientTemperature());
+                transmitSetTemperatures(filament.getFirstLayerNozzleTemperature(), filament.getNozzleTemperature(), filament.getFirstLayerBedTemperature(), filament.getBedTemperature(), filament.getAmbientTemperature());
                 transmitSetFilamentInfo(filament.getFilamentDiameter(), filament.getFilamentMultiplier(), filament.getFeedRateMultiplier());
 
             } catch (RoboxCommsException ex)

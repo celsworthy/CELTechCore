@@ -14,8 +14,11 @@ public class Nozzle
     private double allowedTravelBeforeClose = 3;
 
     private double currentPosition = 0;
+    private double openOverVolume = -1;
     private double preejectionVolume = 0;
     private double ejectionVolume = 0;
+    private double openValueAtMidPoint = -1;
+    private double midPointPercent = 50;
     private double wipeVolume = 0;
     private double partialBMinimum = 0;
 
@@ -26,12 +29,15 @@ public class Nozzle
      * @param wipeVolume
      * @param partialBMinimum
      */
-    public Nozzle(int nozzleReferenceNumber, double preejectionVolume, double ejectionVolume, double wipeVolume, double partialBMinimum)
+    public Nozzle(int nozzleReferenceNumber, double openOverVolume, double preejectionVolume, double ejectionVolume, double wipeVolume, double openValueAtMidPoint, double midPointPercent, double partialBMinimum)
     {
         this.nozzleReferenceNumber = nozzleReferenceNumber;
+        this.openOverVolume = openOverVolume;
         this.preejectionVolume = preejectionVolume;
         this.ejectionVolume = ejectionVolume;
         this.wipeVolume = wipeVolume;
+        this.openValueAtMidPoint = openValueAtMidPoint;
+        this.midPointPercent = midPointPercent;
         this.partialBMinimum = partialBMinimum;
     }
 
@@ -118,5 +124,20 @@ public class Nozzle
     public double getPreejectionVolume()
     {
         return preejectionVolume;
+    }
+
+    public double getOpenAtMidPoint()
+    {
+        return openValueAtMidPoint;
+    }
+
+    public double getMidPointPercent()
+    {
+        return midPointPercent;
+    }
+
+    public double getOpenOverVolume()
+    {
+        return openOverVolume;
     }
 }

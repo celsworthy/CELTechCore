@@ -18,8 +18,8 @@
             <children>
                 <Label text="%sidePanel_settings.Profilename" />
                 <RestrictedTextField fx:id="profileNameField" 
-                forceUpperCase="false" directorySafeName="true"
-                maxLength="24" restrict="-_0-9a-zA-Z\p{L}\p{M}*+"/>
+                                     forceUpperCase="false" directorySafeName="true"
+                                     maxLength="24" restrict="-_0-9a-zA-Z\p{L}\p{M}*+"/>
             </children>
             <VBox.margin>
                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -71,6 +71,10 @@
                                 <Label minWidth="-1.0" text="%extrusion.brimWidth" GridPane.rowIndex="7" />
                                 <RestrictedNumberField allowedDecimalPlaces="0" maxLength="5" fx:id="brimWidth" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
                                 <ComboBox fx:id="fillPatternChoice" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                <Label text="%extrusion.dwellAwayFromPart" GridPane.rowIndex="8" />                                
+                                <CheckBox fx:id="dwellAwayFromPartEnabled" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                                <Label minWidth="-1.0" text="%extrusion.dwellTriggerTime" GridPane.rowIndex="9" />
+                                <RestrictedNumberField allowedDecimalPlaces="0" maxLength="5" fx:id="dwellTriggerTime" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="9" />
                             </children>
                         </GridPane>
                     </content>
