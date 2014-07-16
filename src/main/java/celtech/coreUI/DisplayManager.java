@@ -258,11 +258,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
             }
 
             projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
-            ((LayoutSlideOutPanelController) slideOutControllers.get(ApplicationMode.LAYOUT)).bindLoadedModels(
-                projectTab.getProject());
-            ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).bindLoadedModels(
-                projectTab.getThreeDViewManager());
-            menuStripController.bindSelectedModels(projectTab.getSelectionContainer());
+            ((LayoutSlideOutPanelController) slideOutControllers.get(ApplicationMode.LAYOUT)).bindLoadedModels(projectTab.getProject());
+            ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).bindLoadedModels(projectTab.getThreeDViewManager());
+            menuStripController.bindSelectedModels(projectTab);
             projectTab.setMode(newMode);
         } else if (newMode == ApplicationMode.SETTINGS)
         {
@@ -434,8 +432,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                             ((LayoutSidePanelController) (sidePanelControllers.get(
                                 ApplicationMode.LAYOUT))).bindLoadedModels(
                                 projectTab.getThreeDViewManager());
-                            menuStripController.bindSelectedModels(
-                                projectTab.getSelectionContainer());
+                            menuStripController.bindSelectedModels(projectTab);
                             ((SettingsSidePanelController) sidePanelControllers.get(
                                 ApplicationMode.SETTINGS)).projectChanged(projectTab.getProject());
                         }
@@ -700,7 +697,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             ((ProjectTab) currentTab).autoLayout();
         }
     }
-
+    
     /**
      *
      */
@@ -710,19 +707,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
         if (currentTab instanceof ProjectTab)
         {
             ((ProjectTab) currentTab).getThreeDViewManager().activateSnapToGround();
-        }
-    }
-
-    /**
-     *
-     * @param selectedModel
-     */
-    public void selectModel(ModelContainer selectedModel)
-    {
-        Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
-        if (currentTab instanceof ProjectTab)
-        {
-            ((ProjectTab) currentTab).selectModel(selectedModel);
         }
     }
 
@@ -795,6 +779,11 @@ public class DisplayManager implements EventHandler<KeyEvent>
                     case BACK_SPACE:
                         projectTab.deleteSelectedModels();
                         break;
+                    case A:
+                        if (event.isShortcutDown())
+                        {
+                            projectTab.selectAllModels();
+                        }
                     default:
                         break;
                 }

@@ -24,15 +24,14 @@ public class PrintBed
     // X is right
     // Y is down
     // Z is into the screen
-    private static final float maxPrintableXSize = 210;
-    private static final float maxPrintableZSize = 150;
+    public static final float maxPrintableXSize = 210;
+    public static final float maxPrintableZSize = 150;
     private static final float maxPrintableYSize = -100;
     private static final Point3D printVolumeMaximums = new Point3D(maxPrintableXSize, 0, maxPrintableZSize);
     private static final Point3D printVolumeMinimums = new Point3D(0, maxPrintableYSize, 0);
     private static final Point3D centre = new Point3D(maxPrintableXSize / 2, maxPrintableYSize / 2, maxPrintableZSize / 2);
     private static final Point3D centreZeroHeight = new Point3D(maxPrintableXSize / 2, 0, maxPrintableZSize / 2);
     private BoundingBox printVolumeBoundingBox = null;
-    private BoundingBox printBedBounds = null;
     private Stenographer steno = null;
 
     private PrintBed()
@@ -120,15 +119,6 @@ public class PrintBed
         return printVolumeBoundingBox;
     }
 
-    /**
-     *
-     * @return
-     */
-    public BoundingBox getBedBounds()
-    {
-        return printBedBounds;
-    }
-    
     /**
      *
      * @param bounds

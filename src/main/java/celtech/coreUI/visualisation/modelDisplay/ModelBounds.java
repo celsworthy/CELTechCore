@@ -26,6 +26,8 @@ public class ModelBounds
     double centreX = 0;
     double centreY = 0;
     double centreZ = 0;
+    
+
 
     /**
      *
@@ -50,17 +52,17 @@ public class ModelBounds
      * @param centreZ
      */
     public ModelBounds(double minX,
-            double maxX,
-            double minY,
-            double maxY,
-            double minZ,
-            double maxZ,
-            double width,
-            double height,
-            double depth,
-            double centreX,
-            double centreY,
-            double centreZ)
+        double maxX,
+        double minY,
+        double maxY,
+        double minZ,
+        double maxZ,
+        double width,
+        double height,
+        double depth,
+        double centreX,
+        double centreY,
+        double centreZ)
     {
         this.minX = minX;
         this.maxX = maxX;
@@ -296,20 +298,36 @@ public class ModelBounds
      *
      * @return
      */
+    @Override
     public String toString()
     {
-        return "Model bounds {MinX:" + minX
-                + " MaxX:" + maxX
-                + " MinY:" + minY
-                + " MaxY:" + maxY
-                + " MinZ:" + minZ
-                + " MaxZ:" + maxZ
-                + " W:" + width
-                + " H:" + height
-                + " D:" + depth
-                + " Centre X:" + centreX
-                + " Y:" + centreY
-                + " Z:" + centreZ
-                + "}";
+        return String.format("Model bounds {MinX: %.2f "
+            + " MaxX: %.2f \n"
+            + " MinY: %.2f "
+            + " MaxY: %.2f \n"
+            + " MinZ: %.2f "
+            + " MaxZ: %.2f \n"
+            + " W: %.2f "
+            + " H: %.2f "
+            + " D: %.2f \n"
+            + " Centre X: %.2f"
+            + " Y: %.2f"
+            + " Z: %.2f }", minX, maxX, minY, maxY, minZ, maxZ, width, height, depth, centreX,
+                             centreY, centreZ);
     }
+
+    public void translateX(double deltaCentreX)
+    {
+        minX += deltaCentreX;
+        maxX += deltaCentreX;
+        centreX += deltaCentreX;
+    }
+
+    public void translateZ(double deltaCentreZ)
+    {
+        minZ += deltaCentreZ;
+        maxZ += deltaCentreZ;
+        centreZ += deltaCentreZ;
+    }
+
 }
