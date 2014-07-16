@@ -16,6 +16,8 @@ public interface ShapeProvider
     public double getDepth();
 
     public double getCentreX();
+    
+    public double getCentreY();
 
     public double getCentreZ();
 

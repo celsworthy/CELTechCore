@@ -536,7 +536,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     *
+     * 
      * @param scaleFactor
      */
     public void setScale(double scaleFactor)
@@ -1401,6 +1401,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return getLocalBounds().getCentreZ();
     }
+    
+    @Override
+    public double getCentreY()
+    {
+        return getLocalBounds().getCentreY();
+    }    
 
     @Override
     public double getCentreX()

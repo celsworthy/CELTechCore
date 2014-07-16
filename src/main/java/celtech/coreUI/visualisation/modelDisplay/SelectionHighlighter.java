@@ -26,7 +26,6 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
 
     private final PhongMaterial greenMaterial = new PhongMaterial(Color.LIMEGREEN);
 
-    private final Xform selectionBox = new Xform(Xform.RotateOrder.XYZ);
     private Xform selectionBoxBackLeftTop = null;
     private Xform selectionBoxBackRightTop = null;
     private Xform selectionBoxFrontLeftTop = null;
@@ -47,8 +46,6 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
         this.setId(idString);
 
         buildSelectionBox();
-
-        getChildren().add(selectionBox);
 
         modelContainer.addShapeChangeListener(this);
 
@@ -72,10 +69,10 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
 
         selectionBoxFrontRightTop = generateSelectionCornerGroup(0, 0, 180);
 
-        selectionBox.getChildren().addAll(selectionBoxBackLeftBottom, selectionBoxBackRightBottom,
-                                          selectionBoxBackLeftTop, selectionBoxBackRightTop,
-                                          selectionBoxFrontLeftBottom, selectionBoxFrontRightBottom,
-                                          selectionBoxFrontLeftTop, selectionBoxFrontRightTop);
+        getChildren().addAll(selectionBoxBackLeftBottom, selectionBoxBackRightBottom,
+                             selectionBoxBackLeftTop, selectionBoxBackRightTop,
+                             selectionBoxFrontLeftBottom, selectionBoxFrontRightBottom,
+                             selectionBoxFrontLeftTop, selectionBoxFrontRightTop);
 
     }
 
@@ -84,23 +81,29 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
     {
         double halfWidth = shapeProvider.getWidth() / 2;
         double halfDepth = shapeProvider.getDepth() / 2;
+        double halfHeight = shapeProvider.getHeight() / 2;
         double minX = shapeProvider.getCentreX() - halfWidth;
         double maxX = shapeProvider.getCentreX() + halfWidth;
         double minZ = shapeProvider.getCentreZ() - halfDepth;
         double maxZ = shapeProvider.getCentreZ() + halfDepth;
-        double minY = -shapeProvider.getHeight();
+        double minY = shapeProvider.getCentreY() - halfHeight;
+        double maxY = shapeProvider.getCentreY() + halfHeight;
 
         selectionBoxBackLeftBottom.setTz(maxZ);
         selectionBoxBackLeftBottom.setTx(minX);
+        selectionBoxBackLeftBottom.setTy(maxY);
 
         selectionBoxBackRightBottom.setTz(maxZ);
         selectionBoxBackRightBottom.setTx(maxX);
+        selectionBoxBackRightBottom.setTy(maxY);
 
         selectionBoxFrontLeftBottom.setTz(minZ);
         selectionBoxFrontLeftBottom.setTx(minX);
+        selectionBoxFrontLeftBottom.setTy(maxY);
 
         selectionBoxFrontRightBottom.setTz(minZ);
         selectionBoxFrontRightBottom.setTx(maxX);
+        selectionBoxFrontRightBottom.setTy(maxY);
 
         selectionBoxBackLeftTop.setTz(maxZ);
         selectionBoxBackLeftTop.setTx(minX);
@@ -118,7 +121,6 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
         selectionBoxFrontRightTop.setTx(maxX);
         selectionBoxFrontRightTop.setTy(minY);
 
-        selectionBox.setPivot(shapeProvider.getCentreX(), 0, shapeProvider.getCentreZ());
     }
 
     private Xform generateSelectionCornerGroup(double xRotate, double yRotate, double zRotate)

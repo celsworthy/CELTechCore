@@ -60,7 +60,6 @@ public class ThreeDViewManager
         ThreeDViewManager.class.getName());
 
     private ObservableList<ModelContainer> loadedModels = null;
-//    private final SelectionContainer selectionContainer = new SelectionContainer();
     private final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
 
     private final PrintBed printBedData = PrintBed.getInstance();
