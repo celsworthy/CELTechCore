@@ -73,6 +73,8 @@ import javafx.scene.paint.Color;
 import libertysystems.configuration.Configuration;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.controlsfx.control.action.Action;
+import org.controlsfx.dialog.Dialogs;
 
 /**
  *
@@ -251,7 +253,10 @@ public class PrinterImpl implements Printer
 
     private RoboxCommsManager printerCommsManager = null;
 
-    private ErrorHandler errorHandler = null;
+    private static final Dialogs.CommandLink clearOnly = new Dialogs.CommandLink(DisplayManager.getLanguageBundle().getString("dialogs.error.clearOnly"), null);
+    private static final Dialogs.CommandLink clearAndContinue = new Dialogs.CommandLink(DisplayManager.getLanguageBundle().getString("dialogs.error.clearAndContinue"), null);
+    private static final Dialogs.CommandLink abortJob = new Dialogs.CommandLink(DisplayManager.getLanguageBundle().getString("dialogs.error.abortJob"), null);
+    private boolean errorDialogOnDisplay = false;
 
     /**
      *
@@ -270,7 +275,6 @@ public class PrinterImpl implements Printer
             @Override
             public void run()
             {
-                errorHandler = ErrorHandler.getInstance();
                 noSDDialog = new ModalDialog();
                 noSDDialog.setTitle(languageBundle.getString("dialogs.noSDCardTitle"));
                 noSDDialog.setMessage(languageBundle.getString("dialogs.noSDCardMessage"));
@@ -393,12 +397,12 @@ public class PrinterImpl implements Printer
     public String getPrinterUniqueID()
     {
         return printermodel.get()
-                + printeredition.get()
-                + printerweekOfManufacture.get()
-                + printeryearOfManufacture.get()
-                + printerpoNumber.get()
-                + printerserialNumber.get()
-                + printercheckByte.get();
+            + printeredition.get()
+            + printerweekOfManufacture.get()
+            + printeryearOfManufacture.get()
+            + printerpoNumber.get()
+            + printerserialNumber.get()
+            + printercheckByte.get();
     }
 
     /**
@@ -2073,6 +2077,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final StringProperty errorListProperty()
     {
         return errorList;
@@ -2082,8 +2087,9 @@ public class PrinterImpl implements Printer
      *
      * @param printerEvent
      */
+    @Override
     public void processRoboxEvent(RoboxEvent printerEvent)
-     {
+    {
         switch (printerEvent.getEventType())
         {
             case PRINTER_CONNECTED:
@@ -2094,6 +2100,63 @@ public class PrinterImpl implements Printer
                 break;
             case PRINTER_ACK:
                 AckResponse ackResponse = (AckResponse) printerEvent.getPayload();
+
+                if (ackResponse.isError() && !errorDialogOnDisplay)
+                {
+                    errorDialogOnDisplay = true;
+
+                    Action errorHandlingResponse = null;
+
+                    if (getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.IDLE
+                        && getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.ERROR)
+                    {
+                        Dialogs.create().title(DisplayManager.getLanguageBundle().getString("dialogs.error.errorEncountered"))
+                            .message(ackResponse.getErrorsAsString())
+                            .masthead(null)
+                            .showCommandLinks(clearAndContinue, clearAndContinue, abortJob);
+                    } else
+                    {
+                        Dialogs.create().title(DisplayManager.getLanguageBundle().getString("dialogs.error.errorEncountered"))
+                            .message(ackResponse.getErrorsAsString())
+                            .masthead(null)
+                            .showCommandLinks(clearOnly);
+                    }
+
+                    try
+                    {
+                        transmitResetErrors();
+                    } catch (RoboxCommsException ex)
+                    {
+                        steno.error("Couldn't reset errors after error detection");
+                    }
+
+                    if (errorHandlingResponse == clearAndContinue)
+                    {
+                        try
+                        {
+                            if (paused.get() == true)
+                            {
+                                transmitResumePrint();
+                            }
+                        } catch (RoboxCommsException ex)
+                        {
+                            steno.error("Couldn't reset errors and resume after error");
+                        }
+
+                    } else if (errorHandlingResponse == abortJob)
+                    {
+                        try
+                        {
+                            transmitAbortPrint();
+                        } catch (RoboxCommsException ex)
+                        {
+                            steno.error("Couldn't abort print after error");
+                        }
+                    }
+
+                    errorDialogOnDisplay = false;
+                }
+
                 setErrorsDetected(ackResponse.isError());
                 setSDCardError(ackResponse.isSdCardError());
                 setChunkSequenceError(ackResponse.isChunkSequenceError());
@@ -2104,6 +2167,7 @@ public class PrinterImpl implements Printer
                 setBadCommandError(ackResponse.isBadCommandError());
                 setEEPROMError(ackResponse.isHeadEepromError());
                 break;
+
             case PRINTER_STATUS_UPDATE:
                 StatusResponse statusResponse = (StatusResponse) printerEvent.getPayload();
 //                steno.info("Got:" + statusResponse.toString());
@@ -2136,7 +2200,8 @@ public class PrinterImpl implements Printer
                         bedTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(statusResponse.getBedTemperature());
                     }
 
-                    if (statusResponse.getNozzleTemperature() < ApplicationConfiguration.maxTempToDisplayOnGraph && statusResponse.getNozzleTemperature() > ApplicationConfiguration.minTempToDisplayOnGraph)
+                    if (statusResponse.getNozzleTemperature() < ApplicationConfiguration.maxTempToDisplayOnGraph && statusResponse.getNozzleTemperature()
+                        > ApplicationConfiguration.minTempToDisplayOnGraph)
                     {
                         nozzleTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(statusResponse.getNozzleTemperature());
                     }
@@ -2204,11 +2269,11 @@ public class PrinterImpl implements Printer
                 EEPROMState lastReelState = reelEEPROMStatus.get();
 
                 if (reelEEPROMStatus.get() != EEPROMState.PROGRAMMED
-                        && statusResponse.getReelEEPROMState() == EEPROMState.PROGRAMMED)
+                    && statusResponse.getReelEEPROMState() == EEPROMState.PROGRAMMED)
                 {
                     Filament.repairFilamentIfNecessary(this);
                 } else if (reelEEPROMStatus.get() != EEPROMState.NOT_PRESENT
-                        && statusResponse.getReelEEPROMState() == EEPROMState.NOT_PRESENT)
+                    && statusResponse.getReelEEPROMState() == EEPROMState.NOT_PRESENT)
                 {
                     loadedFilament.set(null);
                     reelFriendlyName.set(DisplayManager.getLanguageBundle().getString("smartReelProgrammer.noReelLoaded"));
@@ -2230,11 +2295,11 @@ public class PrinterImpl implements Printer
                 EEPROMState lastHeadState = headEEPROMStatus.get();
 
                 if (headEEPROMStatus.get() != EEPROMState.PROGRAMMED
-                        && statusResponse.getHeadEEPROMState() == EEPROMState.PROGRAMMED)
+                    && statusResponse.getHeadEEPROMState() == EEPROMState.PROGRAMMED)
                 {
                     Head.repairHeadIfNecessary(this);
                 } else if (headEEPROMStatus.get() != EEPROMState.NOT_PRESENT
-                        && statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PRESENT)
+                    && statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PRESENT)
                 {
                     attachedHead.set(null);
                     headType.set(null);
@@ -2273,11 +2338,6 @@ public class PrinterImpl implements Printer
                 setHeadXPosition(statusResponse.getHeadXPosition());
                 setHeadYPosition(statusResponse.getHeadYPosition());
                 setHeadZPosition(statusResponse.getHeadZPosition());
-
-                if (statusResponse.isPauseStatus())
-                {
-                    errorHandler.checkForErrors(this);
-                }
 
                 setWhyAreWeWaiting(statusResponse.getWhyAreWeWaitingState());
                 switch (statusResponse.getWhyAreWeWaitingState())
@@ -2771,8 +2831,8 @@ public class PrinterImpl implements Printer
      * @throws RoboxCommsException
      */
     public void transmitWriteReelEEPROM(String reelTypeCode, String reelUniqueID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
-            float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter,
-            float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament) throws RoboxCommsException
+        float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter,
+        float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament) throws RoboxCommsException
     {
         WriteReelEEPROM writeReelEEPROM = (WriteReelEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_REEL_EEPROM);
         writeReelEEPROM.populateEEPROM(reelTypeCode, reelUniqueID, reelFirstLayerNozzleTemperature, reelNozzleTemperature,
@@ -2828,10 +2888,10 @@ public class PrinterImpl implements Printer
      * @throws RoboxCommsException
      */
     public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature,
-            float thermistorBeta, float thermistorTCal,
-            float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset,
-            float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
-            float lastFilamentTemperature, float hourCounter) throws RoboxCommsException
+        float thermistorBeta, float thermistorTCal,
+        float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset,
+        float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
+        float lastFilamentTemperature, float hourCounter) throws RoboxCommsException
     {
         WriteHeadEEPROM writeHeadEEPROM = (WriteHeadEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_HEAD_EEPROM);
         writeHeadEEPROM.populateEEPROM(headTypeCode,
@@ -2919,7 +2979,8 @@ public class PrinterImpl implements Printer
      * @return
      * @throws RoboxCommsException
      */
-    public boolean transmitWritePrinterID(String model, String edition, String weekOfManufacture, String yearOfManufacture, String poNumber, String serialNumber, String checkByte, String printerFriendlyName, Color colour) throws RoboxCommsException
+    public boolean transmitWritePrinterID(String model, String edition, String weekOfManufacture, String yearOfManufacture, String poNumber, String serialNumber, String checkByte,
+        String printerFriendlyName, Color colour) throws RoboxCommsException
     {
         WritePrinterID writeIDCmd = (WritePrinterID) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_PRINTER_ID);
         writeIDCmd.setIDAndColour(model, edition, weekOfManufacture, yearOfManufacture, poNumber, serialNumber, checkByte, printerFriendlyName, colour);
@@ -3104,7 +3165,8 @@ public class PrinterImpl implements Printer
         {
             try
             {
-                transmitSetTemperatures(filament.getNozzleTemperature(), filament.getNozzleTemperature(), filament.getFirstLayerBedTemperature(), filament.getBedTemperature(), filament.getAmbientTemperature());
+                transmitSetTemperatures(filament.getNozzleTemperature(), filament.getNozzleTemperature(), filament.getFirstLayerBedTemperature(), filament.getBedTemperature(),
+                                        filament.getAmbientTemperature());
                 transmitSetFilamentInfo(filament.getFilamentDiameter(), filament.getFilamentMultiplier(), filament.getFeedRateMultiplier());
 
             } catch (RoboxCommsException ex)
