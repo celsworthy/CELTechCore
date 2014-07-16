@@ -151,6 +151,14 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         {
             fileWriter.flush();
         }
+
+        /**
+         * @return the numberOfLinesOutput
+         */
+        public int getNumberOfLinesOutput()
+        {
+            return numberOfLinesOutput;
+        }
     }
 
     /**
@@ -287,10 +295,9 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
          * than the line numbers for each layer after roboxisation. As a quick fix for now set the
          * line number of the last layer to the actual maximum line number.
          */
-        layerNumberToLineNumber.set(layerNumberToLineNumber.size() - 1,
-                                    outputWriter.numberOfLinesOutput);
+        layerNumberToLineNumber.set(layerNumberToLineNumber.size() - 1, outputWriter.getNumberOfLinesOutput());
         PrintJobStatistics roboxisedStatistics = new PrintJobStatistics(
-            outputWriter.numberOfLinesOutput,
+            outputWriter.getNumberOfLinesOutput(),
             volumeUsed, lineNumberOfFirstExtrusion,
             layerNumberToLineNumber, layerNumberToPredictedDuration);
 
@@ -1034,7 +1041,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
                                 layerIndex++;
                                 layerNumberToLineNumber.add(layerIndex,
-                                                            candidateevent.getLinesSoFar());
+                                                            outputWriter.getNumberOfLinesOutput());
                                 layerNumberToDistanceTravelled.add(layerIndex,
                                                                    distanceSoFarInLayer);
                                 layerNumberToPredictedDuration.add(layerIndex,

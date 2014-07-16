@@ -1430,7 +1430,7 @@ public class ThreeDViewManager
         return selectionContainer;
     }
 
-    private void collideModels()
+    public void collideModels()
     {
         boolean[] collidedModels = new boolean[loadedModels.size()];
 
