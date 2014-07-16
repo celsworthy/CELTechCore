@@ -299,6 +299,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         ModelContainer copy = new ModelContainer(this.modelName.get(), newMeshView);
         copy.setScale(this.getScale());
         copy.setRotationY(this.getRotationY());
+        copy.setSnapFaceIndex(snapFaceIndex);
         return copy;
     }
 
@@ -534,6 +535,25 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return modelName.get();
     }
+    
+    public void setSnapFaceIndex(int snapFaceIndex) {
+        this.snapFaceIndex = snapFaceIndex;
+
+        Vector3D faceNormal = getFaceNormal(snapFaceIndex);
+        Vector3D downVector = new Vector3D(0, 1, 0);
+
+        Rotation result = new Rotation(faceNormal, downVector);
+        Vector3D axis = result.getAxis();
+        double angleDegrees = result.getAngle() * RAD_TO_DEG;
+
+        transformRotateSnapToGround.setAxis(new Point3D(axis.getX(), axis.getY(), axis.getZ()));
+        transformRotateSnapToGround.setAngle(angleDegrees);
+        transformRotateSnapToGround.setPivotX(originalModelBounds.getCentreX());
+        transformRotateSnapToGround.setPivotY(originalModelBounds.getCentreY());
+        transformRotateSnapToGround.setPivotZ(originalModelBounds.getCentreZ());    
+        
+        dropToBedAndUpdateLastTransformedBounds();
+    }
 
     /**
      * 
@@ -729,7 +749,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         setRotationY(storedRotationY);
         if (storedSnapFaceIndex != SNAP_FACE_INDEX_NOT_SELECTED)
         {
-            rotateToMakeFaceParallelToGround(storedSnapFaceIndex);
+            snapToGround(storedSnapFaceIndex);
         }
         
         notifyShapeChange();
@@ -1330,24 +1350,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return getTotalWidth() + getTotalDepth();
     }
 
-    public void rotateToMakeFaceParallelToGround(int faceNumber)
+    public void snapToGround(int faceNumber)
     {
-        snapFaceIndex = faceNumber;
-
-        Vector3D faceNormal = getFaceNormal(faceNumber);
-        Vector3D downVector = new Vector3D(0, 1, 0);
-
-        Rotation result = new Rotation(faceNormal, downVector);
-        Vector3D axis = result.getAxis();
-        double angleDegrees = result.getAngle() * RAD_TO_DEG;
-
-        transformRotateSnapToGround.setAxis(new Point3D(axis.getX(), axis.getY(), axis.getZ()));
-        transformRotateSnapToGround.setAngle(angleDegrees);
-        transformRotateSnapToGround.setPivotX(originalModelBounds.getCentreX());
-        transformRotateSnapToGround.setPivotY(originalModelBounds.getCentreY());
-        transformRotateSnapToGround.setPivotZ(originalModelBounds.getCentreZ());
-
-        dropToBedAndUpdateLastTransformedBounds();
+        setSnapFaceIndex(faceNumber);
+        
         checkOffBed();
         notifyShapeChange();
     }

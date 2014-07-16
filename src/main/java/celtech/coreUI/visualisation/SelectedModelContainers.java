@@ -25,7 +25,7 @@ public class SelectedModelContainers
     private final ObservableSet<ModelContainer> modelContainers;
     private final PrimarySelectedModelDetails primarySelectedModelDetails;
     private final IntegerProperty numModelsSelected = new SimpleIntegerProperty(0);
-    private Set<SelectedModelContainersListener> selectedModelContainersListeners;
+    private final Set<SelectedModelContainersListener> selectedModelContainersListeners;
 
     public SelectedModelContainers()
     {
@@ -35,7 +35,7 @@ public class SelectedModelContainers
     }
 
     /**
-     * Add the given modelContainer to the set of selected ModelContainers .
+     * Add the given modelContainer to the set of selected ModelContainers.
      */
     public void addModelContainer(ModelContainer modelContainer)
     {
@@ -50,7 +50,7 @@ public class SelectedModelContainers
     }
 
     /**
-     * Remove the given modelContainer from the set of selected m#ModelContainers .
+     * Remove the given modelContainer from the set of selected ModelContainers.
      */
     public void removeModelContainer(ModelContainer modelContainer)
     {

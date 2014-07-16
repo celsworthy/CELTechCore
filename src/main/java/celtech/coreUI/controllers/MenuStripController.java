@@ -15,7 +15,10 @@ import celtech.configuration.EEPROMState;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.ErrorHandler;
+import celtech.coreUI.LayoutSubmode;
+import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.visualisation.SelectedModelContainers;
+import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.utils.PrinterUtils;
@@ -27,6 +30,7 @@ import java.util.ListIterator;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -183,23 +187,28 @@ public class MenuStripController
                     break;
             }
             modelFileChooser.getExtensionFilters().addAll(
-                    new FileChooser.ExtensionFilter(descriptionOfFile,
-                                                    ApplicationConfiguration.getSupportedFileExtensionWildcards(projectMode)));
-            
-            modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(DirectoryMemoryProperty.MODEL)));
-            
+                new FileChooser.ExtensionFilter(descriptionOfFile,
+                                                ApplicationConfiguration.getSupportedFileExtensionWildcards(
+                                                    projectMode)));
+
+            modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(
+                DirectoryMemoryProperty.MODEL)));
+
             List<File> files;
-            if (projectMode == ProjectMode.NONE || projectMode == ProjectMode.MESH) {
+            if (projectMode == ProjectMode.NONE || projectMode == ProjectMode.MESH)
+            {
                 files = modelFileChooser.showOpenMultipleDialog(displayManager.getMainStage());
-            } else {
+            } else
+            {
                 File file = modelFileChooser.showOpenDialog(displayManager.getMainStage());
                 files = new ArrayList<>();
-                if (file != null) {
+                if (file != null)
+                {
                     files.add(file);
                 }
             }
-            
-            if (! files.isEmpty())
+
+            if (files != null && !files.isEmpty())
             {
                 ApplicationConfiguration.setLastDirectory(
                     DirectoryMemoryProperty.MODEL,
@@ -230,7 +239,7 @@ public class MenuStripController
     @FXML
     void snapToGround(ActionEvent event)
     {
-        displayManager.rotateToMakePickedFaceParallelToGround();
+        displayManager.activateSnapToGround();
     }
 
     private Printer currentPrinter = null;
@@ -300,17 +309,23 @@ public class MenuStripController
      * @param selectionContainer The selection container associated with the currently displayed
      * project.
      */
-    public void bindSelectedModels(SelectedModelContainers selectionModel)
+    public void bindSelectedModels(ProjectTab projectTab)
     {
+        SelectedModelContainers selectionModel = projectTab.getSelectionModel();
+        ThreeDViewManager viewManager = projectTab.getThreeDViewManager();
+
         deleteModelButton.disableProperty().unbind();
         duplicateModelButton.disableProperty().unbind();
         snapToGroundButton.disableProperty().unbind();
         distributeModelsButton.disableProperty().unbind();
 
-        deleteModelButton.disableProperty().bind(Bindings.equal(0,
-            selectionModel.getNumModelsSelectedProperty()));
-        duplicateModelButton.disableProperty().bind(Bindings.equal(0,
-            selectionModel.getNumModelsSelectedProperty()));
+        BooleanBinding snapToGroundOrNoSelectedModels = 
+            Bindings.equal(LayoutSubmode.SNAP_TO_GROUND, viewManager.layoutSubmodeProperty()).or(
+                Bindings.equal(0, selectionModel.getNumModelsSelectedProperty()));
+        BooleanBinding snapToGround = 
+            Bindings.equal(LayoutSubmode.SNAP_TO_GROUND, viewManager.layoutSubmodeProperty());
+        deleteModelButton.disableProperty().bind(snapToGroundOrNoSelectedModels);
+        duplicateModelButton.disableProperty().bind(snapToGroundOrNoSelectedModels);
         distributeModelsButton.setDisable(true);
 
         if (boundProject != null)
@@ -319,14 +334,10 @@ public class MenuStripController
         }
 
         boundProject = displayManager.getCurrentlyVisibleProject();
-        addModelButton.disableProperty().bind(
-            Bindings.isNotEmpty(boundProject.getLoadedModels()).and(
-                boundProject.projectModeProperty().isEqualTo(ProjectMode.GCODE)));
+        addModelButton.disableProperty().bind(snapToGround);
 
-        distributeModelsButton.disableProperty().bind(Bindings.isEmpty(
-            boundProject.getLoadedModels()));
-        snapToGroundButton.disableProperty().bind(Bindings.equal(0,
-            selectionModel.getNumModelsSelectedProperty()));
+        distributeModelsButton.disableProperty().bind(snapToGroundOrNoSelectedModels);
+        snapToGroundButton.disableProperty().bind(snapToGround);
 
         forwardButton.visibleProperty().unbind();
         forwardButton.visibleProperty().bind((applicationStatus.modeProperty().isEqualTo(

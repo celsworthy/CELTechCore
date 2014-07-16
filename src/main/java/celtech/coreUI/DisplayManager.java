@@ -260,7 +260,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
             ((LayoutSlideOutPanelController) slideOutControllers.get(ApplicationMode.LAYOUT)).bindLoadedModels(projectTab.getProject());
             ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).bindLoadedModels(projectTab.getThreeDViewManager());
-            menuStripController.bindSelectedModels(projectTab.getSelectionModel());
+            menuStripController.bindSelectedModels(projectTab);
             projectTab.setMode(newMode);
         } else if (newMode == ApplicationMode.SETTINGS)
         {
@@ -432,8 +432,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                             ((LayoutSidePanelController) (sidePanelControllers.get(
                                 ApplicationMode.LAYOUT))).bindLoadedModels(
                                 projectTab.getThreeDViewManager());
-                            menuStripController.bindSelectedModels(
-                                projectTab.getSelectionModel());
+                            menuStripController.bindSelectedModels(projectTab);
                             ((SettingsSidePanelController) sidePanelControllers.get(
                                 ApplicationMode.SETTINGS)).projectChanged(projectTab.getProject());
                         }
@@ -702,12 +701,12 @@ public class DisplayManager implements EventHandler<KeyEvent>
     /**
      *
      */
-    public void rotateToMakePickedFaceParallelToGround()
+    public void activateSnapToGround()
     {
         Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
         if (currentTab instanceof ProjectTab)
         {
-            ((ProjectTab) currentTab).getThreeDViewManager().rotateToMakePickedFaceParallelToGround();
+            ((ProjectTab) currentTab).getThreeDViewManager().activateSnapToGround();
         }
     }
 
