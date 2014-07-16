@@ -118,7 +118,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public ModelContainer()
     {
         super();
-        System.out.println("Default MC constructor");
     }
 
     /**
@@ -596,11 +595,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 addSelectionHighlighter();
             }
             showSelectedMarkers();
-            steno.info("show selmarker for " + getId());
         } else
         {
             hideSelectedMarkers();
-            steno.info("hide selmarker for " + getId());
         }
         isSelected.set(selected);
     }
@@ -1091,6 +1088,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         lastTransformedBounds = calculateBoundsInParent();
     }
 
+    /**
+     * Calculate max/min X,Y,Z before the transforms have been applied (ie the original model
+     * dimensions before any transforms).
+     */    
     private ModelBounds calculateBounds()
     {
         TriangleMesh mesh = (TriangleMesh) getMeshView().getMesh();
@@ -1131,6 +1132,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                                newcentreZ);
     }
 
+    /**
+     * Calculate max/min X,Y,Z after the transforms have been applied (ie in the parent
+     * node).
+     */
     public ModelBounds calculateBoundsInParent()
     {
         TriangleMesh mesh = (TriangleMesh) getMeshView().getMesh();

@@ -181,41 +181,76 @@ public class LayoutSidePanelController implements Initializable,
 
         modelScaleChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            scaleTextField.doubleValueProperty().set(t1.doubleValue() * 100);
-            scaleTextField.setText(String.format(scaleFormat,
-                                                 t1.doubleValue() * 100));
+            populateScaleField(t1);
         };
 
         modelRotationChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            rotationTextField.doubleValueProperty().set(t1.doubleValue());
-            rotationTextField.setText(String.format(rotationFormat, t1));
+            populateRotationField(t1);
         };
 
         widthListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            widthTextField.doubleValueProperty().set(t1.doubleValue());
+            populateWidthField(t1);
         };
 
         heightListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            heightTextField.doubleValueProperty().set(t1.doubleValue());
+            populateHeightField(t1);
         };
 
         depthListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            depthTextField.doubleValueProperty().set(t1.doubleValue());
+            populateDepthField(t1);
         };
 
         xAxisListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            xAxisTextField.doubleValueProperty().set(t1.doubleValue());
+            populateXAxisField(t1);
         };
 
         yAxisListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            yAxisTextField.doubleValueProperty().set(t1.doubleValue());
+            populateYAxisField(t1);
         };
+    }
+
+    private void populateYAxisField(Number t1)
+    {
+        yAxisTextField.doubleValueProperty().set(t1.doubleValue());
+    }
+
+    private void populateXAxisField(Number t1)
+    {
+        xAxisTextField.doubleValueProperty().set(t1.doubleValue());
+    }
+
+    private void populateDepthField(Number t1)
+    {
+        depthTextField.doubleValueProperty().set(t1.doubleValue());
+    }
+
+    private void populateHeightField(Number t1)
+    {
+        heightTextField.doubleValueProperty().set(t1.doubleValue());
+    }
+
+    private void populateWidthField(Number t1)
+    {
+        widthTextField.doubleValueProperty().set(t1.doubleValue());
+    }
+
+    private void populateRotationField(Number t1)
+    {
+        rotationTextField.doubleValueProperty().set(t1.doubleValue());
+        rotationTextField.setText(String.format(rotationFormat, t1));
+    }
+
+    private void populateScaleField(Number t1)
+    {
+        scaleTextField.doubleValueProperty().set(t1.doubleValue() * 100);
+        scaleTextField.setText(String.format(scaleFormat,
+                                                 t1.doubleValue() * 100));
     }
 
     private void setUpKeyPressListeners()
@@ -641,6 +676,8 @@ public class LayoutSidePanelController implements Initializable,
 
         selectedModelDetails.getScale().addListener(modelScaleChangeListener);
         selectedModelDetails.getRotationY().addListener(modelRotationChangeListener);
+        
+        repopulate(selectedModelDetails);
 
         selectedItemDetails.visibleProperty().bind(Bindings.lessThan(0,
                                                                      selectionModel.getNumModelsSelectedProperty()));
@@ -687,5 +724,20 @@ public class LayoutSidePanelController implements Initializable,
             modelDataTableView.getSelectionModel().select(modelContainer);
         }
         suppressModelDataTableViewNotifications = false;
+    }
+
+    /**
+     * Repopulate the widgets for the given model details.
+     * @param selectedModelDetails 
+     */
+    private void repopulate(SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails)
+    {
+        populateScaleField(selectedModelDetails.getScale().get());
+        populateRotationField(selectedModelDetails.getRotationY().get());
+        populateWidthField(selectedModelDetails.getWidth().get());
+        populateHeightField(selectedModelDetails.getHeight().get());
+        populateDepthField(selectedModelDetails.getDepth().get());
+        populateXAxisField(selectedModelDetails.getCentreX().get());
+        populateYAxisField(selectedModelDetails.getCentreZ().get());
     }
 }
