@@ -385,14 +385,6 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
             {
                 printerStatus.add(printer);
                 printer.setPrinterConnected(true);
-                try
-                {
-                    printer.transmitReadHeadEEPROM();
-                    printer.transmitReadReelEEPROM();
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Couldn't request EEPROM data");
-                }
             }
         });
     }

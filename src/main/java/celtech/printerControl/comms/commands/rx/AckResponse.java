@@ -232,24 +232,24 @@ public class AckResponse extends RoboxRxPacket
     public boolean isError()
     {
         return sdCardError
-                || chunkSequenceError
-                || fileTooLargeError
-                || gcodeLineTooLongError
-                || usbRXError
-                || usbTXError
-                || badCommandError
-                || headEEPROMError
-                || badFirmwareFileError
-                || flashChecksumError
-                || gcodeBufferOverrunError
-                || fileReadClobbered
-                || maxGantryAdjustment
-                || reelEEPROMError
-                || eFilamentSlipError
-                || dFilamentSlipError
-                || nozzleFlushNeededError
-                || zTopSwitchError
-                || unknown_error_code;
+            || chunkSequenceError
+            || fileTooLargeError
+            || gcodeLineTooLongError
+            || usbRXError
+            || usbTXError
+            || badCommandError
+            || headEEPROMError
+            || badFirmwareFileError
+            || flashChecksumError
+            || gcodeBufferOverrunError
+            || fileReadClobbered
+            || maxGantryAdjustment
+            || reelEEPROMError
+            || eFilamentSlipError
+            || dFilamentSlipError
+            || nozzleFlushNeededError
+            || zTopSwitchError
+            || unknown_error_code;
     }
 
     /*
@@ -352,115 +352,60 @@ public class AckResponse extends RoboxRxPacket
         if (isSdCardError())
         {
             outputString.append("SD card error");
-            outputString.append("\n");
-        }
-
-        if (isChunkSequenceError())
+        } else if (isChunkSequenceError())
         {
             outputString.append("Chunk sequence error");
-            outputString.append("\n");
-        }
-
-        if (isFileTooLargeError())
+        } else if (isFileTooLargeError())
         {
             outputString.append("File too large error");
-            outputString.append("\n");
-        }
-
-        if (isGcodeLineTooLongError())
+        } else if (isGcodeLineTooLongError())
         {
             outputString.append("GCode line too long error");
-            outputString.append("\n");
-        }
-
-        if (isUsbRXError())
+        } else if (isUsbRXError())
         {
             outputString.append("USB RX error");
-            outputString.append("\n");
-        }
-
-        if (isUsbTXError())
+        } else if (isUsbTXError())
         {
             outputString.append("USB TX error");
-            outputString.append("\n");
-        }
-
-        if (isBadCommandError())
+        } else if (isBadCommandError())
         {
             outputString.append("Bad command error");
-            outputString.append("\n");
-        }
-
-        if (isHeadEepromError())
+        } else if (isHeadEepromError())
         {
             outputString.append("Head EEPROM error");
-            outputString.append("\n");
-        }
-
-        if (isBadFirmwareFileError())
+        } else if (isBadFirmwareFileError())
         {
             outputString.append("Bad firmware error");
-            outputString.append("\n");
-        }
-
-        if (isFlashChecksumError())
+        } else if (isFlashChecksumError())
         {
             outputString.append("Flash Checksum error");
-            outputString.append("\n");
-        }
-
-        if (isGCodeBufferOverrunError())
+        } else if (isGCodeBufferOverrunError())
         {
             outputString.append("GCode overrun error");
-            outputString.append("\n");
-        }
-
-        if (isFileReadClobbered())
+        } else if (isFileReadClobbered())
         {
             outputString.append("File read clobbered error");
-            outputString.append("\n");
-        }
-
-        if (isMaxGantryAdjustment())
+        } else if (isMaxGantryAdjustment())
         {
             outputString.append("Max gantry adjustment error");
-            outputString.append("\n");
-        }
-
-        if (isReelEEPROMError())
+        } else if (isReelEEPROMError())
         {
             outputString.append("Reel EEPROM error");
-            outputString.append("\n");
-        }
-
-        if (isEFilamentSlipError())
+        } else if (isEFilamentSlipError())
         {
             outputString.append("Extruder 1 filament slip error");
-            outputString.append("\n");
-        }
-
-        if (isDFilamentSlipError())
+        } else if (isDFilamentSlipError())
         {
             outputString.append("Extruder 2 filament slip error");
-            outputString.append("\n");
-        }
-
-        if (isNozzleFlushNeededError())
+        } else if (isNozzleFlushNeededError())
         {
             outputString.append("Nozzle flush required error");
-            outputString.append("\n");
-        }
-
-        if (isZTopSwitchError())
+        } else if (isZTopSwitchError())
         {
             outputString.append("Z top switch error");
-            outputString.append("\n");
-        }
-
-        if (isUnknown_Error_Code())
+        } else if (isUnknown_Error_Code())
         {
             outputString.append("Unknown error from printer");
-            outputString.append("\n");
         }
 
         return outputString.toString();
@@ -474,7 +419,7 @@ public class AckResponse extends RoboxRxPacket
     {
         StringBuilder outputString = new StringBuilder();
 
-        outputString.append(">>>>>>>>>>\n");
+        outputString.append("Error Report\n");
         outputString.append("Packet type:");
         outputString.append(getPacketType().name());
         outputString.append("\n");
@@ -511,6 +456,10 @@ public class AckResponse extends RoboxRxPacket
         outputString.append("Extruder 2 filament slip error: " + isDFilamentSlipError());
         outputString.append("\n");
         outputString.append("Nozzle flush required error: " + isNozzleFlushNeededError());
+        outputString.append("\n");
+        outputString.append("Z top switch error: " + isZTopSwitchError());
+        outputString.append("\n");
+        outputString.append("Unknown error: " + isUnknown_Error_Code());
         outputString.append("\n");
         outputString.append(">>>>>>>>>>\n");
 

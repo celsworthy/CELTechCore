@@ -49,11 +49,11 @@ public class Head implements Cloneable
     private final FloatProperty lastFilamentTemperature = new SimpleFloatProperty(0);
     private final FloatProperty headHours = new SimpleFloatProperty(0);
 
-    private static final float normalX1OffsetMin = 7;
-    private static final float normalX1OffsetMax = 7.3f;
+    private static final float normalX1OffsetMin = 6.8f;
+    private static final float normalX1OffsetMax = 7.5f;
 
-    private static final float normalX2OffsetMin = -7.3f;
-    private static final float normalX2OffsetMax = -7;
+    private static final float normalX2OffsetMin = -7.5f;
+    private static final float normalX2OffsetMax = -6.8f;
 
     private static final float normalYOffsetMin = -0.3f;
     private static final float normalYOffsetMax = 0.3f;
@@ -96,17 +96,17 @@ public class Head implements Cloneable
      * @param nozzle2_B_offset
      */
     public Head(String typeCode, String friendlyName,
-            float maximumTemperature,
-            float beta,
-            float tcal,
-            float nozzle1_X_offset,
-            float nozzle1_Y_offset,
-            float nozzle1_Z_offset,
-            float nozzle1_B_offset,
-            float nozzle2_X_offset,
-            float nozzle2_Y_offset,
-            float nozzle2_Z_offset,
-            float nozzle2_B_offset)
+        float maximumTemperature,
+        float beta,
+        float tcal,
+        float nozzle1_X_offset,
+        float nozzle1_Y_offset,
+        float nozzle1_Z_offset,
+        float nozzle1_B_offset,
+        float nozzle2_X_offset,
+        float nozzle2_Y_offset,
+        float nozzle2_Z_offset,
+        float nozzle2_B_offset)
     {
         this.typeCode.set(typeCode);
         this.friendlyName.set(friendlyName);
@@ -642,21 +642,21 @@ public class Head implements Cloneable
     public Head clone()
     {
         Head clone = new Head(
-                this.getTypeCode(),
-                this.getFriendlyName(),
-                this.getMaximumTemperature(),
-                this.getBeta(),
-                this.getTCal(),
-                this.getNozzle1XOffset(),
-                this.getNozzle1YOffset(),
-                this.getNozzle1ZOffset(),
-                this.getNozzle1BOffset(),
-                this.getNozzle2XOffset(),
-                this.getNozzle2YOffset(),
-                this.getNozzle2ZOffset(),
-                this.getNozzle2BOffset()
+            this.getTypeCode(),
+            this.getFriendlyName(),
+            this.getMaximumTemperature(),
+            this.getBeta(),
+            this.getTCal(),
+            this.getNozzle1XOffset(),
+            this.getNozzle1YOffset(),
+            this.getNozzle1ZOffset(),
+            this.getNozzle1BOffset(),
+            this.getNozzle2XOffset(),
+            this.getNozzle2YOffset(),
+            this.getNozzle2ZOffset(),
+            this.getNozzle2BOffset()
         );
-        
+
         clone.deriveZOverrunFromOffsets();
 
         return clone;
@@ -707,11 +707,11 @@ public class Head implements Cloneable
      */
     public static void repairHeadIfNecessary(Printer printer)
     {
-        if (ApplicationConfiguration.isAutoRepairHeads())
+        try
         {
-            try
+            HeadEEPROMDataResponse response = printer.transmitReadHeadEEPROM();
+            if (ApplicationConfiguration.isAutoRepairHeads())
             {
-                HeadEEPROMDataResponse response = printer.transmitReadHeadEEPROM();
                 // Check to see if the maximum temperature of the head matches our view
                 // If not, change the max value and prompt to calibrate
                 if (response != null)
@@ -828,7 +828,8 @@ public class Head implements Cloneable
                                     @Override
                                     public void run()
                                     {
-                                        Notifier.showInformationNotification(DisplayManager.getLanguageBundle().getString("notification.headSettingsUpdatedTitle"), DisplayManager.getLanguageBundle().getString("notification.noActionRequired"));
+                                        Notifier.showInformationNotification(DisplayManager.getLanguageBundle().getString("notification.headSettingsUpdatedTitle"),
+                                                                             DisplayManager.getLanguageBundle().getString("notification.noActionRequired"));
                                     }
                                 });
                             }
@@ -840,10 +841,10 @@ public class Head implements Cloneable
                         showCalibrationDialogue();
                     }
                 }
-            } catch (RoboxCommsException ex)
-            {
-                steno.error("Error from triggered read of Head EEPROM");
             }
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error from triggered read of Head EEPROM");
         }
     }
 
@@ -855,9 +856,9 @@ public class Head implements Cloneable
             public void run()
             {
                 Action calibrationResponse = Dialogs.create().title(DisplayManager.getLanguageBundle().getString("dialogs.headUpdateCalibrationRequiredTitle"))
-                        .message(DisplayManager.getLanguageBundle().getString("dialogs.headUpdateCalibrationRequiredInstruction"))
-                        .masthead(null)
-                        .showCommandLinks(okCalibrate, okCalibrate, dontCalibrate);
+                    .message(DisplayManager.getLanguageBundle().getString("dialogs.headUpdateCalibrationRequiredInstruction"))
+                    .masthead(null)
+                    .showCommandLinks(okCalibrate, okCalibrate, dontCalibrate);
 
                 if (calibrationResponse == okCalibrate)
                 {

@@ -652,6 +652,21 @@ public class RoboxProfile implements Serializable, Cloneable
     /**
      *
      */
+    protected ObservableList<FloatProperty> nozzle_close_at_midpoint = FXCollections.observableArrayList(new SimpleFloatProperty(-1), new SimpleFloatProperty(-1));
+
+    /**
+     *
+     */
+    protected ObservableList<FloatProperty> nozzle_close_midpoint_percent = FXCollections.observableArrayList(new SimpleFloatProperty(-1), new SimpleFloatProperty(-1));
+
+    /**
+     *
+     */
+    protected ObservableList<FloatProperty> nozzle_open_over_volume = FXCollections.observableArrayList(new SimpleFloatProperty(-1), new SimpleFloatProperty(-1));
+
+    /**
+     *
+     */
     public RoboxProfile()
     {
         this.LOCAL_numberFormatter.setMaximumFractionDigits(2);
@@ -2604,6 +2619,33 @@ public class RoboxProfile implements Serializable, Cloneable
     public StringProperty getProfileNameProperty()
     {
         return LOCAL_profileName;
+    }
+    
+    /**
+     *
+     * @return
+     */
+    public ObservableList<FloatProperty> getNozzle_close_at_midpoint()
+    {
+        return nozzle_close_at_midpoint;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public ObservableList<FloatProperty> getNozzle_close_midpoint_percent()
+    {
+        return nozzle_close_midpoint_percent;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public ObservableList<FloatProperty> getNozzle_open_over_volume()
+    {
+        return nozzle_open_over_volume;
     }
 
     /**

@@ -11,7 +11,6 @@ import celtech.configuration.HeaterMode;
 import celtech.configuration.PrintHead;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
-import celtech.coreUI.ErrorHandler;
 import celtech.coreUI.components.ModalDialog;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.GCodeConstants;
@@ -2110,13 +2109,13 @@ public class PrinterImpl implements Printer
                     if (getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.IDLE
                         && getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.ERROR)
                     {
-                        Dialogs.create().title(DisplayManager.getLanguageBundle().getString("dialogs.error.errorEncountered"))
+                        errorHandlingResponse = Dialogs.create().title(DisplayManager.getLanguageBundle().getString("dialogs.error.errorEncountered"))
                             .message(ackResponse.getErrorsAsString())
                             .masthead(null)
                             .showCommandLinks(clearAndContinue, clearAndContinue, abortJob);
                     } else
                     {
-                        Dialogs.create().title(DisplayManager.getLanguageBundle().getString("dialogs.error.errorEncountered"))
+                        errorHandlingResponse = Dialogs.create().title(DisplayManager.getLanguageBundle().getString("dialogs.error.errorEncountered"))
                             .message(ackResponse.getErrorsAsString())
                             .masthead(null)
                             .showCommandLinks(clearOnly);
@@ -2147,6 +2146,10 @@ public class PrinterImpl implements Printer
                     {
                         try
                         {
+                            if (paused.get() == false)
+                            {
+                                transmitPausePrint();
+                            }
                             transmitAbortPrint();
                         } catch (RoboxCommsException ex)
                         {
@@ -3159,16 +3162,15 @@ public class PrinterImpl implements Printer
      * @param printQuality
      * @param settings
      */
+    @Override
     public void printProject(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings)
     {
         if (filament != null)
         {
             try
             {
-                transmitSetTemperatures(filament.getNozzleTemperature(), filament.getNozzleTemperature(), filament.getFirstLayerBedTemperature(), filament.getBedTemperature(),
-                                        filament.getAmbientTemperature());
+                transmitSetTemperatures(filament.getFirstLayerNozzleTemperature(), filament.getNozzleTemperature(), filament.getFirstLayerBedTemperature(), filament.getBedTemperature(), filament.getAmbientTemperature());
                 transmitSetFilamentInfo(filament.getFilamentDiameter(), filament.getFilamentMultiplier(), filament.getFeedRateMultiplier());
-
             } catch (RoboxCommsException ex)
             {
                 steno.error("Failure to set temperatures prior to print");
