@@ -319,18 +319,6 @@ public class ThreeDViewManager
     private void handleMouseDragEvent(MouseEvent event)
     {
         
-        double modifier = 1.0;
-        double modifierFactor = 0.3;
-        
-        if (event.isControlDown())
-        {
-            modifier = 0.1;
-        }
-        if (event.isShiftDown())
-        {
-            modifier = 10.0;
-        }
-        
         mouseOldX = mousePosX;
         mouseOldY = mousePosY;
         mousePosX = event.getSceneX();
@@ -338,17 +326,14 @@ public class ThreeDViewManager
         mouseDeltaX = (mousePosX - mouseOldX); //*DELTA_MULTIPLIER;
         mouseDeltaY = (mousePosY - mouseOldY); //*DELTA_MULTIPLIER;
 
-        boolean alt = event.isAltDown();
-        if (alt && event.isSecondaryButtonDown())
+        boolean shortcut = event.isShortcutDown();
+        if (shortcut && event.isSecondaryButtonDown())
         {
-            bedTranslateXform.setTx(bedTranslateXform.getTx() + mouseDeltaX * modifierFactor
-                * modifier * 0.3);  // -
-            bedTranslateXform.setTy(bedTranslateXform.getTy() + mouseDeltaY * modifierFactor
-                * modifier * 0.3);  // -
+            bedTranslateXform.setTx(bedTranslateXform.getTx() + mouseDeltaX * 0.3);  // -
+            bedTranslateXform.setTy(bedTranslateXform.getTy() + mouseDeltaY * 0.3);  // -
         } else if (event.isSecondaryButtonDown())
         {
-            rotateCameraAroundAxes(-mouseDeltaY * modifierFactor * modifier * 2.0, mouseDeltaX
-                                   * modifierFactor * modifier * 2.0);
+            rotateCameraAroundAxes(-mouseDeltaY * 2.0, mouseDeltaX * 2.0);
         } else if (dragMode.get() == DragMode.TRANSLATING && event.isPrimaryButtonDown())
         {
             Node intersectedNode = event.getPickResult().getIntersectedNode();
@@ -583,7 +568,6 @@ public class ThreeDViewManager
     
     private Group buildBed()
     {
-        
         String bedOuterURL = CoreTest.class
             .getResource(ApplicationConfiguration.modelResourcePath + "bedOuter.obj").toExternalForm();
         String bedInnerURL = CoreTest.class.getResource(ApplicationConfiguration.modelResourcePath
@@ -593,29 +577,25 @@ public class ThreeDViewManager
         
         bedOuterMaterial.setSpecularColor(Color.WHITE);
         
-        bedOuterMaterial.setSpecularPower(
-            5.0);
+        bedOuterMaterial.setSpecularPower(5.0);
         
         PhongMaterial bedInnerMaterial = new PhongMaterial(Color.GREY);
         
         bedInnerMaterial.setSpecularColor(Color.WHITE);
         
-        bedInnerMaterial.setSpecularPower(
-            .1);
+        bedInnerMaterial.setSpecularPower(.1);
         
         Group bedParts = new Group();
         
         ObjImporter bedOuterImporter = new ObjImporter();
         ModelLoadResult bedOuterLoadResult = bedOuterImporter.loadFile(null, bedOuterURL, null);
         
-        bedParts.getChildren()
-            .addAll(bedOuterLoadResult.getModelContainer().getMeshes());
+        bedParts.getChildren().addAll(bedOuterLoadResult.getModelContainer().getMeshes());
         
         ObjImporter bedInnerImporter = new ObjImporter();
         ModelLoadResult bedInnerLoadResult = bedInnerImporter.loadFile(null, bedInnerURL, null);
         
-        bedParts.getChildren()
-            .addAll(bedInnerLoadResult.getModelContainer().getMeshes());
+        bedParts.getChildren().addAll(bedInnerLoadResult.getModelContainer().getMeshes());
         
         final Image roboxLogoImage = new Image(CoreTest.class.getResource(
             ApplicationConfiguration.imageResourcePath + "roboxLogo.png").toExternalForm());
@@ -625,8 +605,7 @@ public class ThreeDViewManager
         
         final Xform roboxLogoTransformNode = new Xform();
         
-        roboxLogoTransformNode.setRotateX(
-            -90);
+        roboxLogoTransformNode.setRotateX(-90);
         
         final double logoSide_mm = 100;
         double logoScale = logoSide_mm / roboxLogoImage.getWidth();
@@ -635,18 +614,13 @@ public class ThreeDViewManager
         
         roboxLogoTransformNode.setTz(logoSide_mm
             + PrintBed.getPrintVolumeCentre().getZ() / 2);
-        roboxLogoTransformNode.setTy(
-            -.25);
+        roboxLogoTransformNode.setTy(-.25);
         roboxLogoTransformNode.setTx(PrintBed.getPrintVolumeCentre().getX() / 2);
-        roboxLogoTransformNode.getChildren()
-            .add(roboxLogoView);
-        roboxLogoTransformNode.setId(
-            "LogoImage");
+        roboxLogoTransformNode.getChildren().add(roboxLogoView);
+        roboxLogoTransformNode.setId("LogoImage");
         
-        bedParts.getChildren()
-            .add(roboxLogoTransformNode);
-        bedParts.setMouseTransparent(
-            true);
+        bedParts.getChildren().add(roboxLogoTransformNode);
+        bedParts.setMouseTransparent(true);
         
         return bedParts;
     }
