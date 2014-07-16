@@ -87,7 +87,6 @@ public class ProjectTab extends Tab
 ////            gizmoXform.setTy(y);
 //        }
 //    };
-
     /**
      *
      * @param dispManagerRef
@@ -589,5 +588,10 @@ public class ProjectTab extends Tab
     public SelectedModelContainers getSelectionModel()
     {
         return viewManager.getSelectedModelContainers();
+    }
+
+    public void selectAllModels()
+    {
+        viewManager.selectAllModels();
     }
 }

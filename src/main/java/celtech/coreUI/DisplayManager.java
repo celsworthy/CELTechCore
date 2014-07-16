@@ -780,6 +780,11 @@ public class DisplayManager implements EventHandler<KeyEvent>
                     case BACK_SPACE:
                         projectTab.deleteSelectedModels();
                         break;
+                    case A:
+                        if (event.isShortcutDown())
+                        {
+                            projectTab.selectAllModels();
+                        }
                     default:
                         break;
                 }

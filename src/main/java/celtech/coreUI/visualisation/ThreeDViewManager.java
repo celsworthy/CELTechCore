@@ -37,7 +37,6 @@ import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.PickResult;
 import javafx.scene.input.ScrollEvent;
@@ -136,7 +135,7 @@ public class ThreeDViewManager
     private Node intersectedNode;
     private PickResult pickResult;
 
-    private final SelectedModelContainers selectedModelContainers;
+    private SelectedModelContainers selectedModelContainers = null;
 
 //    private final double settingsAnimationYAngle = 30;
 //    private final double settingsAnimationXAngle = 0;
@@ -265,6 +264,7 @@ public class ThreeDViewManager
 
         if (event.isPrimaryButtonDown())
         {
+           
             pickResult = event.getPickResult();
             pickedPoint = pickResult.getIntersectedPoint();
 
@@ -295,7 +295,6 @@ public class ThreeDViewManager
                     if (pickedModel.isSelected() == false)
                     {
                         boolean multiSelect = event.isControlDown();
-                        steno.info("mouse click so select model");
                         selectModel(pickedModel, multiSelect);
                     } else
                     {
@@ -307,7 +306,6 @@ public class ThreeDViewManager
                     }
                 } else if (true) //intersectedNode == subScene)
                 {
-                    steno.info("deselect all models");
                     selectedModelContainers.deselectAllModels();
                 }
 
@@ -317,7 +315,7 @@ public class ThreeDViewManager
 
     private void handleMouseDragEvent(MouseEvent event)
     {
-        
+
         double modifier = 1.0;
         double modifierFactor = 0.3;
 
@@ -420,158 +418,6 @@ public class ThreeDViewManager
             bedTranslateXform.setTz(z);
         }
     };
-    private final EventHandler<KeyEvent> keyEventHandler = event ->
-    {
-        /*
-         if (!Double.isNaN(event.getZoomFactor()) && event.getZoomFactor() > 0.8 && event.getZoomFactor() < 1.2) {
-         double z = cameraPosition.getZ()/event.getZoomFactor();
-         z = Math.max(z,-1000);
-         z = Math.min(z,0);
-         cameraPosition.setZ(z);
-         }
-         
-        
-         System.out.println("KeyEvent ...");
-         Timeline timeline = getTimeline();
-         Duration currentTime;
-         double CONTROL_MULTIPLIER = 0.1;
-         double SHIFT_MULTIPLIER = 0.1;
-         double ALT_MULTIPLIER = 0.5;
-         //System.out.println("--> handleKeyboard>handle");
-
-         // event.getEventType();
-         switch (event.getCode())
-         {
-         case F:
-         if (event.isControlDown())
-         {
-         //onButtonSave();
-         }
-         break;
-         case O:
-         if (event.isControlDown())
-         {
-         //onButtonLoad();
-         }
-         break;
-         case Z:
-         if (event.isShiftDown())
-         {
-         //                    rotationXform.ry.setAngle(0.0);
-         //                    rotationXform.rx.setAngle(0.0);
-         rotateCameraAroundXAxis.setAngle(0.0);
-         camera.setTranslateZ(-300.0);
-         }
-         translateCamera.setX(0.0);
-         translateCamera.setY(0.0);
-         break;
-            
-         case SPACE:
-         if (timelinePlaying) {
-         timeline.pause();
-         timelinePlaying = false;
-         }
-         else {
-         timeline.play();
-         timelinePlaying = true;
-         }
-         break;
-             
-         case UP:
-         if (event.isControlDown() && event.isShiftDown())
-         {
-         translateCamera.setY(translateCamera.getY() - 10.0 * CONTROL_MULTIPLIER);
-         } else if (event.isAltDown() && event.isShiftDown())
-         {
-         //                    rotationXform.rx.setAngle(rotationXform.rx.getAngle() - 10.0 * ALT_MULTIPLIER);
-         } else if (event.isControlDown())
-         {
-         translateCamera.setY(translateCamera.getY() - 1.0 * CONTROL_MULTIPLIER);
-         } else if (event.isAltDown())
-         {
-         //                    rotationXform.rx.setAngle(rotationXform.rx.getAngle() - 2.0 * ALT_MULTIPLIER);
-         } else if (event.isShiftDown())
-         {
-         double z = camera.getTranslateZ();
-         double newZ = z + 5.0 * SHIFT_MULTIPLIER;
-         camera.setTranslateZ(newZ);
-         }
-         break;
-         case DOWN:
-         if (event.isControlDown() && event.isShiftDown())
-         {
-         translateCamera.setY(translateCamera.getY() + 10.0 * CONTROL_MULTIPLIER);
-         } else if (event.isAltDown() && event.isShiftDown())
-         {
-         //                    rotationXform.rx.setAngle(rotationXform.rx.getAngle() + 10.0 * ALT_MULTIPLIER);
-         } else if (event.isControlDown())
-         {
-         translateCamera.setY(translateCamera.getY() + 1.0 * CONTROL_MULTIPLIER);
-         } else if (event.isAltDown())
-         {
-         //                    rotationXform.rx.setAngle(rotationXform.rx.getAngle() + 2.0 * ALT_MULTIPLIER);
-         } else if (event.isShiftDown())
-         {
-         double z = camera.getTranslateZ();
-         double newZ = z - 5.0 * SHIFT_MULTIPLIER;
-         camera.setTranslateZ(newZ);
-         }
-         break;
-         case RIGHT:
-         if (event.isControlDown() && event.isShiftDown())
-         {
-         translateCamera.setX(translateCamera.getX() + 10.0 * CONTROL_MULTIPLIER);
-         } else if (event.isAltDown() && event.isShiftDown())
-         {
-         //                    rotationXform.ry.setAngle(rotationXform.ry.getAngle() - 10.0 * ALT_MULTIPLIER);
-         } else if (event.isControlDown())
-         {
-         translateCamera.setX(translateCamera.getX() + 1.0 * CONTROL_MULTIPLIER);
-         } else if (event.isShiftDown())
-         {
-         currentTime = timeline.getCurrentTime();
-         timeline.jumpTo(Frame.frame(Math.round(Frame.toFrame(currentTime) / 10.0) * 10 + 10));
-         // timeline.jumpTo(Duration.seconds(currentTime.toSeconds() + ONE_FRAME));
-         } else if (event.isAltDown())
-         {
-         //                    rotationXform.ry.setAngle(rotationXform.ry.getAngle() - 2.0 * ALT_MULTIPLIER);
-         } else
-         {
-         currentTime = timeline.getCurrentTime();
-         timeline.jumpTo(Frame.frame(Frame.toFrame(currentTime) + 1));
-         // timeline.jumpTo(Duration.seconds(currentTime.toSeconds() + ONE_FRAME));
-         }
-         break;
-         case LEFT:
-         if (event.isControlDown() && event.isShiftDown())
-         {
-         translateCamera.setX(translateCamera.getX() - 10.0 * CONTROL_MULTIPLIER);
-         } else if (event.isAltDown() && event.isShiftDown())
-         {
-         //                    rotationXform.ry.setAngle(rotationXform.ry.getAngle() + 10.0 * ALT_MULTIPLIER);  // -
-         } else if (event.isControlDown())
-         {
-         translateCamera.setX(translateCamera.getX() - 1.0 * CONTROL_MULTIPLIER);
-         } else if (event.isShiftDown())
-         {
-         currentTime = timeline.getCurrentTime();
-         timeline.jumpTo(Frame.frame(Math.round(Frame.toFrame(currentTime) / 10.0) * 10 - 10));
-         // timeline.jumpTo(Duration.seconds(currentTime.toSeconds() - ONE_FRAME));
-         } else if (event.isAltDown())
-         {
-         //                    rotationXform.ry.setAngle(rotationXform.ry.getAngle() + 2.0 * ALT_MULTIPLIER);  // -
-         } else
-         {
-         currentTime = timeline.getCurrentTime();
-         timeline.jumpTo(Frame.frame(Frame.toFrame(currentTime) - 1));
-         // timeline.jumpTo(Duration.seconds(currentTime.toSeconds() - ONE_FRAME));
-         }
-         break;
-         }
-         //System.out.println(cameraXform.getTranslateX() + ", " + cameraXform.getTranslateY() + ", " + cameraXform.getTranslateZ());
-         */
-    };
-
 
     /*
      * Snap to ground
@@ -600,8 +446,6 @@ public class ThreeDViewManager
                 {
                     case SETTINGS:
                         subScene.removeEventHandler(MouseEvent.ANY, mouseEventHandler);
-                        subScene.removeEventHandler(KeyEvent.ANY, keyEventHandler);
-                        // subScene.addEventFilter(KeyEvent.ANY, keyEventHandler);
                         subScene.removeEventHandler(ZoomEvent.ANY, zoomEventHandler);
                         subScene.removeEventHandler(ScrollEvent.ANY, scrollEventHandler);
                         goToPreset(CameraPositionPreset.TOP);
@@ -609,8 +453,6 @@ public class ThreeDViewManager
                     default:
                         goToPreset(CameraPositionPreset.FRONT);
                         subScene.addEventHandler(MouseEvent.ANY, mouseEventHandler);
-                        subScene.addEventHandler(KeyEvent.ANY, keyEventHandler);
-                        // subScene.addEventFilter(KeyEvent.ANY, keyEventHandler);
                         subScene.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
                         subScene.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
                         break;
@@ -692,8 +534,6 @@ public class ThreeDViewManager
         applicationStatus.modeProperty().addListener(applicationModeListener);
 
         subScene.addEventHandler(MouseEvent.ANY, mouseEventHandler);
-        subScene.addEventHandler(KeyEvent.ANY, keyEventHandler);
-        // subScene.addEventFilter(KeyEvent.ANY, keyEventHandler);
         subScene.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
         subScene.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
 //
@@ -1603,5 +1443,13 @@ public class ThreeDViewManager
     public SelectedModelContainers getSelectedModelContainers()
     {
         return selectedModelContainers;
+    }
+
+    public void selectAllModels()
+    {
+        for (ModelContainer modelContainer : loadedModels)
+        {
+         selectedModelContainers.addModelContainer(modelContainer);
+        }
     }
 }
