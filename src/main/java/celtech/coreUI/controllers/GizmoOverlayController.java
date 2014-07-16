@@ -142,7 +142,7 @@ public class GizmoOverlayController implements Initializable
                                      rotationStarted = false;
                                  } else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED)
                                  {
-                                     double currentAngle = viewManager.rotateFromGizmo(event);
+                                     double currentAngle = 0;//viewManager.rotateFromGizmo(event);
                                      if (!rotationStarted)
                                      {
                                          startRotationLine.setVisible(true);
@@ -166,7 +166,7 @@ public class GizmoOverlayController implements Initializable
     {
         this.viewManager = viewManager;
         this.loadedModels = viewManager.getLoadedModels();
-        this.selectionContainer = viewManager.getSelectionContainer();
+        this.selectionContainer = null; //viewManager.getSelectionContainer();
 
         startRotationLine.setVisible(false);
         finishRotationLine.setVisible(false);
