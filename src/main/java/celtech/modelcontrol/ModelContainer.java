@@ -69,6 +69,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private BooleanProperty isSelected = null;
     private BooleanProperty isOffBed = null;
     private SimpleStringProperty modelName = null;
+    private int numberOfMeshes = 0;
     private ModelContentsEnumeration modelContentsType = ModelContentsEnumeration.MESH;
     //GCode only
     private final ObservableList<String> fileLines = FXCollections.observableArrayList();
@@ -82,15 +83,15 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private IntegerProperty minLayerVisible = new SimpleIntegerProperty(0);
 
     ModelBounds originalModelBounds;
-    // New AL
-    private final Scale transformScalePreferred = new Scale(1, 1, 1);
-    private final Rotate transformRotateSnapToGround = new Rotate(0, 0, 0);
-    private final Translate transformSnapToGroundYAdjust = new Translate(0, 0, 0);
+
+    private Scale transformScalePreferred;
+    private Rotate transformRotateSnapToGround;
+    private Translate transformSnapToGroundYAdjust;
     private static final Point3D Y_AXIS = new Point3D(0, 1, 0);
-    private final Rotate transformRotateYPreferred = new Rotate(0, 0, 0, 0, Y_AXIS);
-    private final Translate transformMoveToCentre = new Translate(0, 0, 0);
-    private final Translate transformMoveToPreferred = new Translate(0, 0, 0);
-    private final Translate transformBedCentre = new Translate(0, 0, 0);
+    private Rotate transformRotateYPreferred;
+    private Translate transformMoveToCentre;
+    private Translate transformMoveToPreferred;
+    private Translate transformBedCentre;
 
     static int SNAP_FACE_INDEX_NOT_SELECTED = -1;
     /**
@@ -100,11 +101,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     /**
      * Property wrapper around the scale.
      */
-    private DoubleProperty preferredScale = new SimpleDoubleProperty(1);
+    private DoubleProperty preferredScale;
     /**
      * Property wrapper around the rotationY.
      */
-    private DoubleProperty preferredRotationY = new SimpleDoubleProperty(0);
+    private DoubleProperty preferredRotationY;
 
     private double bedCentreOffsetX;
     private double bedCentreOffsetY;
@@ -112,7 +113,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private ModelBounds lastTransformedBounds;
     private SelectionHighlighter selectionHighlighter = null;
     List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
-    private final Set<Node> selectedMarkers = new HashSet<>();
+    private Set<Node> selectedMarkers;
+
+    public ModelContainer()
+    {
+        super();
+        System.out.println("Default MC constructor");
+    }
 
     /**
      *
@@ -124,6 +131,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         super();
         modelContentsType = ModelContentsEnumeration.MESH;
         getChildren().add(meshToAdd);
+        numberOfMeshes = 1;
         initialise(name);
         initialiseTransforms();
     }
@@ -138,6 +146,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         super();
         modelContentsType = ModelContentsEnumeration.MESH;
         getChildren().addAll(meshes);
+        numberOfMeshes = meshes.size();
         initialise(name);
         initialiseTransforms();
     }
@@ -152,6 +161,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         super();
         modelContentsType = ModelContentsEnumeration.GCODE;
+        numberOfMeshes = 0;
         initialise(name);
         initialiseTransforms();
         setUpGCodeRelated(gcodeMeshData, fileLines);
@@ -196,7 +206,20 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     private void initialiseTransforms()
     {
+        transformScalePreferred = new Scale(1, 1, 1);
+        transformRotateSnapToGround = new Rotate(0, 0, 0);
+        transformSnapToGroundYAdjust = new Translate(0, 0, 0);
+        transformRotateYPreferred = new Rotate(0, 0, 0, 0, Y_AXIS);
+        transformMoveToCentre = new Translate(0, 0, 0);
+        transformMoveToPreferred = new Translate(0, 0, 0);
+        transformBedCentre = new Translate(0, 0, 0);
+
         setBedCentreOffsetTransform();
+
+        getTransforms().addAll(transformSnapToGroundYAdjust, transformMoveToPreferred,
+                               transformMoveToCentre, transformBedCentre,
+                               transformRotateYPreferred, transformRotateSnapToGround,
+                               transformScalePreferred);
 
         originalModelBounds = calculateBounds();
 
@@ -217,6 +240,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformMoveToPreferred.setZ(0);
 
         lastTransformedBounds = calculateBoundsInParent();
+
         notifyShapeChange();
 
     }
@@ -238,12 +262,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         maxLayerVisible = new SimpleIntegerProperty(0);
         minLayerVisible = new SimpleIntegerProperty(0);
 
-        this.setId(name);
+        preferredScale = new SimpleDoubleProperty(1);
+        preferredRotationY = new SimpleDoubleProperty(0);
+        
+        selectedMarkers = new HashSet<>();
 
-        getTransforms().addAll(transformSnapToGroundYAdjust, transformMoveToPreferred,
-                               transformMoveToCentre, transformBedCentre,
-                               transformRotateYPreferred, transformRotateSnapToGround,
-                               transformScalePreferred);
+        this.setId(name);
     }
 
     /**
@@ -294,50 +318,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         updateLastTransformedBoundsForTranslateByZ(zMove);
 
         keepOnBedXZ();
-
         checkOffBed();
 
-//        Bounds bounds = this.getBoundsInParent();
-////        steno.info("BIP:" + bounds);
-////
-////        steno.info("xMove:" + xMove + " zMove:" + zMove);
-////        steno.info("Tran:" + getTranslateX() + ":" + getTranslateZ());
-//
-//        double newMaxX = bounds.getMaxX() + xMove;
-//        double newMinX = bounds.getMinX() + xMove;
-//        double newMaxZ = bounds.getMaxZ() + zMove;
-//        double newMinZ = bounds.getMinZ() + zMove;
-//
-//        double finalXMove = xMove;
-//        double finalZMove = zMove;
-//
-//        if (newMinX < 0)
-//        {
-//            finalXMove -= bounds.getMinX();
-//        }
-//
-//        if (newMinZ < 0)
-//        {
-//            finalZMove -= bounds.getMinZ();
-//        }
-//
-//        if (newMaxX > printBed.getPrintVolumeMaximums().getX())
-//        {
-//            finalXMove += printBed.getPrintVolumeMaximums().getX() - bounds.getMaxX();
-//        }
-//
-//        if (newMaxZ > printBed.getPrintVolumeMaximums().getZ())
-//        {
-//            finalZMove += printBed.getPrintVolumeMaximums().getZ() - bounds.getMaxZ();
-//        }
-//
-//        double currentX = transformMoveToPreferred.getX();
-//        double currentZ = transformMoveToPreferred.getZ();
-//
-//        transformMoveToPreferred.setX(finalXMove + currentX);
-//        transformMoveToPreferred.setZ(finalZMove + currentZ);
-//        centreX = transformMoveToPreferred.getX() + centreXOffset;
-//        centreZ = transformMoveToPreferred.getZ() + centreZOffset;
     }
 
     public ModelBounds getTransformedBounds()
@@ -377,32 +359,38 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void keepOnBedXZ()
     {
         double deltaX = 0;
-        
-        double minBedX = PrintBed.getPrintVolumeCentre().getX() - PrintBed.maxPrintableXSize / 2.0 + 1;
-        double maxBedX = PrintBed.getPrintVolumeCentre().getX() + PrintBed.maxPrintableXSize / 2.0 - 1;
+
+        double minBedX = PrintBed.getPrintVolumeCentre().getX() - PrintBed.maxPrintableXSize / 2.0
+            + 1;
+        double maxBedX = PrintBed.getPrintVolumeCentre().getX() + PrintBed.maxPrintableXSize / 2.0
+            - 1;
         if (getTransformedBounds().getMinX() < minBedX)
         {
-            deltaX = - (getTransformedBounds().getMinX() - minBedX);
+            deltaX = -(getTransformedBounds().getMinX() - minBedX);
             transformMoveToPreferred.setX(transformMoveToPreferred.getX() + deltaX);
-        } else if (getTransformedBounds().getMaxX() > maxBedX) {
-            deltaX = - (getTransformedBounds().getMaxX() - maxBedX);
+        } else if (getTransformedBounds().getMaxX() > maxBedX)
+        {
+            deltaX = -(getTransformedBounds().getMaxX() - maxBedX);
             transformMoveToPreferred.setX(transformMoveToPreferred.getX() + deltaX);
         }
         updateLastTransformedBoundsForTranslateByX(deltaX);
-        
+
         double deltaZ = 0;
-        double minBedZ = PrintBed.getPrintVolumeCentre().getZ() - PrintBed.maxPrintableZSize / 2.0 + 1;
-        double maxBedZ = PrintBed.getPrintVolumeCentre().getZ() + PrintBed.maxPrintableZSize / 2.0 - 1;
+        double minBedZ = PrintBed.getPrintVolumeCentre().getZ() - PrintBed.maxPrintableZSize / 2.0
+            + 1;
+        double maxBedZ = PrintBed.getPrintVolumeCentre().getZ() + PrintBed.maxPrintableZSize / 2.0
+            - 1;
         if (getTransformedBounds().getMinZ() < minBedZ)
         {
-            deltaZ = - (getTransformedBounds().getMinZ() - minBedZ);
+            deltaZ = -(getTransformedBounds().getMinZ() - minBedZ);
             transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + deltaZ);
-        } else if (getTransformedBounds().getMaxZ() > maxBedZ) {
-            deltaZ = - (getTransformedBounds().getMaxZ() - maxBedZ);
+        } else if (getTransformedBounds().getMaxZ() > maxBedZ)
+        {
+            deltaZ = -(getTransformedBounds().getMaxZ() - maxBedZ);
             transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + deltaZ);
         }
         updateLastTransformedBoundsForTranslateByZ(deltaZ);
-        
+
         checkOffBed();
         notifyShapeChange();
     }
@@ -415,32 +403,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         translateXTo(xPosition);
         translateZTo(zPosition);
 
-//        double newMaxX = xPosition + bounds.getWidth() / 2;
-//        double newMinX = xPosition - bounds.getWidth() / 2;
-//        double newMaxZ = zPosition + bounds.getDepth() / 2;
-//        double newMinZ = zPosition - bounds.getDepth() / 2;
-//
-//        double finalXPosition = xPosition;
-//        double finalZPosition = zPosition;
-//
-//        if (newMinX < 0)
-//        {
-//            finalXPosition += -newMinX;
-//        } else if (newMaxX > printBed.getPrintVolumeMaximums().getX())
-//        {
-//            finalXPosition -= (newMaxX - printBed.getPrintVolumeMaximums().getX());
-//        }
-//
-//        if (newMinZ < 0)
-//        {
-//            finalZPosition += -newMinZ;
-//        } else if (newMaxZ > printBed.getPrintVolumeMaximums().getZ())
-//        {
-//            finalZPosition -= (newMaxZ - printBed.getPrintVolumeMaximums().getZ());
-//        }
-//
-//        transformMoveToPreferred.setX(finalXPosition);
-//        transformMoveToPreferred.setX(finalZPosition);
         checkOffBed();
 
     }
@@ -664,147 +626,116 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void writeObject(ObjectOutputStream out)
         throws IOException
     {
-//        out.writeUTF(modelName.get());
-//
-//        out.writeObject(modelContentsType);
-//
-//        if (modelContentsType == ModelContentsEnumeration.MESH)
-//        {
-//            out.writeInt(numberOfMeshes);
-//
+        out.writeUTF(modelName.get());
+
+        out.writeObject(modelContentsType);
+
+        if (modelContentsType == ModelContentsEnumeration.MESH)
+        {
+            out.writeInt(numberOfMeshes);
+
+            for (Node node : getChildren())
+            {
+                if (node instanceof MeshView)
+                {
+                    MeshView mesh = (MeshView) node;
+                    TriangleMesh triMesh = (TriangleMesh) mesh.getMesh();
+
+                    int[] smoothingGroups = triMesh.getFaceSmoothingGroups().toArray(null);
+                    out.writeObject(smoothingGroups);
+
+                    int[] faces = triMesh.getFaces().toArray(null);
+                    out.writeObject(faces);
+
+                    float[] points = triMesh.getPoints().toArray(null);
+                    out.writeObject(points);
+                }
+            }
+        } else
+        {
+//            out.writeInt(getChildren().size());
 //            for (Node node : getChildren())
 //            {
-//                MeshView mesh = (MeshView) node;
-//                TriangleMesh triMesh = (TriangleMesh) mesh.getMesh();
-//
-//                int[] smoothingGroups = triMesh.getFaceSmoothingGroups().toArray(null);
-//                out.writeObject(smoothingGroups);
-//
-//                int[] faces = triMesh.getFaces().toArray(null);
-//                out.writeObject(faces);
-//
-//                float[] points = triMesh.getPoints().toArray(null);
-//                out.writeObject(points);
+//                out.writeObject(node);
 //            }
-//        } else
-//        {
-////            out.writeInt(getChildren().size());
-////            for (Node node : getChildren())
-////            {
-////                out.writeObject(node);
-////            }
-//        }
-//
-////        steno.info("Pivot is " + this.getPivot());
-//
-//        double translationX = getTx();
-//        double translationY = getTy();
-//        double translationZ = getTz();
-//        double storedscale = scale.get();
-//        double xrot = getRotationX();
-//        double yrot = getRotationY();
-//        double zrot = getRotationZ();
-//
-//        out.writeDouble(translationX);
-//        out.writeDouble(translationY);
-//        out.writeDouble(translationZ);
-//        out.writeDouble(storedscale);
-//        out.writeDouble(xrot);
-//        out.writeDouble(yrot);
-//        out.writeDouble(zrot);
-//
-//        out.writeDouble(centreX);
-//        out.writeDouble(centreY);
-//        out.writeDouble(centreZ);
-//        out.writeDouble(centreXOffset);
-//        out.writeDouble(centreYOffset);
-//        out.writeDouble(centreZOffset);
+        }
+
+        out.writeDouble(transformMoveToPreferred.getX());
+        out.writeDouble(transformMoveToPreferred.getZ());
+        out.writeDouble(getScale());
+        out.writeDouble(getRotationY());
+        out.writeInt(snapFaceIndex);
     }
 
     private void readObject(ObjectInputStream in)
         throws IOException, ClassNotFoundException
     {
-//        String modelName = in.readUTF();
-//
-//        modelContentsType = (ModelContentsEnumeration) in.readObject();
-//
-//        if (modelContentsType == ModelContentsEnumeration.MESH)
-//        {
-//            numberOfMeshes = in.readInt();
-//
-//            for (int i = 0; i < numberOfMeshes; i++)
+        String modelName = in.readUTF();
+
+        modelContentsType = (ModelContentsEnumeration) in.readObject();
+
+        if (modelContentsType == ModelContentsEnumeration.MESH)
+        {
+            numberOfMeshes = in.readInt();
+
+            for (int i = 0; i < numberOfMeshes; i++)
+            {
+                int[] smoothingGroups = (int[]) in.readObject();
+                int[] faces = (int[]) in.readObject();
+                float[] points = (float[]) in.readObject();
+
+                TriangleMesh triMesh = new TriangleMesh();
+
+                FloatArrayList texCoords = new FloatArrayList();
+                texCoords.add(0f);
+                texCoords.add(0f);
+
+                triMesh.getPoints().addAll(points);
+                triMesh.getTexCoords().addAll(texCoords.toFloatArray());
+                triMesh.getFaces().addAll(faces);
+                triMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
+
+                MeshView newMesh = new MeshView(triMesh);
+                newMesh.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+                newMesh.setCullFace(CullFace.BACK);
+                newMesh.setId(modelName + "_mesh");
+
+                getChildren().add(newMesh);
+            }
+
+        } else
+        {
+//            int numNodes = in.readInt();
+//            
+//            for (int i = 0; i < numNodes; i++)
 //            {
-//                int[] smoothingGroups = (int[]) in.readObject();
-//                int[] faces = (int[]) in.readObject();
-//                float[] points = (float[]) in.readObject();
-//
-//                TriangleMesh triMesh = new TriangleMesh();
-//
-//                FloatArrayList texCoords = new FloatArrayList();
-//                texCoords.add(0f);
-//                texCoords.add(0f);
-//
-//                triMesh.getPoints().addAll(points);
-//                triMesh.getTexCoords().addAll(texCoords.toFloatArray());
-//                triMesh.getFaces().addAll(faces);
-//                triMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
-//
-//                MeshView newMesh = new MeshView(triMesh);
-//                newMesh.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
-//                newMesh.setCullFace(CullFace.BACK);
-//                newMesh.setId(modelName + "_mesh");
-//
-//                getChildren().add(newMesh);
+//                Node node = (Node)in.readObject();
+//                getChildren().add(node);
 //            }
-//
-//        } else
-//        {
-////            int numNodes = in.readInt();
-////            
-////            for (int i = 0; i < numNodes; i++)
-////            {
-////                Node node = (Node)in.readObject();
-////                getChildren().add(node);
-////            }
-//        }
-////        this.getTransforms().clear();
-////        this.getTransforms().addAll(new Xform(RotateOrder.XYZ).getTransforms());
-//
-//        initialiseObject(modelName);
-//
-//        double translationX = in.readDouble();
-//        double translationY = in.readDouble();
-//        double translationZ = in.readDouble();
-//        double storedscale = in.readDouble();
-//        double xrot = in.readDouble();
-//        double yrot = in.readDouble();
-//        double zrot = in.readDouble();
-//        double xCentre = in.readDouble();
-//        double yCentre = in.readDouble();
-//        double zCentre = in.readDouble();
-//        double offsetX = in.readDouble();
-//        double offsetY = in.readDouble();
-//        double offsetZ = in.readDouble();
-//
-//        centreXOffset = offsetX;
-//        centreYOffset = offsetY;
-//        centreZOffset = offsetZ;
-//
-//        configureModelOnLoad();
-//
-//        double loadedPositionX = translationX;
-//        double loadedPositionZ = translationZ - offsetZ;
-//
-//        translateTo(xCentre, zCentre);
-//
-////        centreX = xCentre;
-////        centreY = yCentre;
-////        centreZ = zCentre;
-//        scale(storedscale);
-//
-//        setRotateX(xrot);
-//        setRotateY(yrot);
-//        setRotateZ(zrot);
+        }
+//        this.getTransforms().clear();
+//        this.getTransforms().addAll(new Xform(RotateOrder.XYZ).getTransforms());
+
+        initialise(modelName);
+
+        double storedX = in.readDouble();
+        double storedZ = in.readDouble();
+        double storedScale = in.readDouble();
+        double storedRotationY = in.readDouble();
+        int storedSnapFaceIndex = in.readInt();
+
+        initialiseTransforms();
+        
+        transformMoveToPreferred.setX(storedX);
+        transformMoveToPreferred.setZ(storedZ);
+        setScale(storedScale);
+        setRotationY(storedRotationY);
+        if (storedSnapFaceIndex != SNAP_FACE_INDEX_NOT_SELECTED)
+        {
+            rotateToMakeFaceParallelToGround(storedSnapFaceIndex);
+        }
+        
+        notifyShapeChange();
     }
 
     private void readObjectNoData()
@@ -1346,10 +1277,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     *
-     * @param o
-     * @return
-     * @throws ClassCastException
+     * This compareTo implementation compares based on the overall size of the model.
      */
     @Override
     public int compareTo(Object o) throws ClassCastException
