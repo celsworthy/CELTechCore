@@ -484,8 +484,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
         scene = new Scene(root, ApplicationConfiguration.DEFAULT_WIDTH,
                           ApplicationConfiguration.DEFAULT_HEIGHT);
 
-        scene.getStylesheets()
-            .add("/celtech/resources/css/JMetroDarkTheme.css");
+        scene.getStylesheets().add("/celtech/resources/css/JMetroDarkTheme.css");
 //        root.setStyle("-fx-font-family: FreeMono;");
         String primaryFontFamily = primaryFont.getFamily();
         root.setStyle("-fx-font-family: " + primaryFontFamily + ";");

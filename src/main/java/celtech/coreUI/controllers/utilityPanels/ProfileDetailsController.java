@@ -55,6 +55,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
     private int lastNozzleSelected = 0;
+    private BooleanProperty nameEditable = new SimpleBooleanProperty(false);
 
     @FXML
     private VBox container;
@@ -354,6 +355,9 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        nameEditable.set(false);
+        isMutable.set(true);
+        
         applicationStatus = ApplicationStatus.getInstance();
         displayManager = DisplayManager.getInstance();
         settingsScreenState = SettingsScreenState.getInstance();
@@ -362,7 +366,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         notEditingOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable));
         immutableOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable.not()));
 
-        profileNameField.disableProperty().bind(isMutable.not());
+        profileNameField.disableProperty().bind(nameEditable.not());
         coolingGrid.disableProperty().bind(isMutable.not());
         extrusionGrid.disableProperty().bind(isMutable.not());
         perimeterNozzleChoice.disableProperty().bind(isMutable.not());
@@ -778,5 +782,10 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     public String getProfileName()
     {
         return profileNameField.getText();
+    }
+
+    public void setNameEditable(boolean editable)
+    {
+        nameEditable.set(editable);
     }
 }
