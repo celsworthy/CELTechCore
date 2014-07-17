@@ -39,14 +39,17 @@ public class SelectedModelContainers
      */
     public void addModelContainer(ModelContainer modelContainer)
     {
-        modelContainers.add(modelContainer);
-        modelContainer.setSelected(true);
-        primarySelectedModelDetails.setTo(modelContainer);
-        for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
+        if (!modelContainers.contains(modelContainer))
         {
-            selectedModelContainersListener.whenAdded(modelContainer);
+            modelContainers.add(modelContainer);
+            modelContainer.setSelected(true);
+            primarySelectedModelDetails.setTo(modelContainer);
+            for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
+            {
+                selectedModelContainersListener.whenAdded(modelContainer);
+            }
+            numModelsSelected.set(numModelsSelected.get() + 1);
         }
-        numModelsSelected.set(numModelsSelected.get() + 1);
     }
 
     /**
@@ -54,13 +57,17 @@ public class SelectedModelContainers
      */
     public void removeModelContainer(ModelContainer modelContainer)
     {
-        modelContainers.remove(modelContainer);
-        modelContainer.setSelected(false);
-        for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
+        if (modelContainers.contains(modelContainer))
         {
-            selectedModelContainersListener.whenRemoved(modelContainer);
+            modelContainers.remove(modelContainer);
+            numModelsSelected.set(numModelsSelected.get() - 1);
+            modelContainer.setSelected(false);
+            for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
+            {
+                selectedModelContainersListener.whenRemoved(modelContainer);
+            }
         }
-        numModelsSelected.set(numModelsSelected.get() - 1);
+
     }
 
     /**
@@ -85,11 +92,12 @@ public class SelectedModelContainers
             removeModelContainer(modelContainer);
         }
     }
-    
+
     /**
      * Return a copy of the set of selected models.
      */
-    public Set<ModelContainer> getSelectedModelsSnapshot() {
+    public Set<ModelContainer> getSelectedModelsSnapshot()
+    {
         return new HashSet<>(modelContainers);
     }
 
@@ -124,14 +132,14 @@ public class SelectedModelContainers
     {
         selectedModelContainersListeners.add(selectedModelContainersListener);
     }
-    
+
     /**
      * Remove a listener that will be notified whenever a ModelContainer is selected or deselected.
      */
     public void removeListener(SelectedModelContainersListener selectedModelContainersListener)
     {
         selectedModelContainersListeners.remove(selectedModelContainersListener);
-    }    
+    }
 
     public interface SelectedModelContainersListener
     {
@@ -153,8 +161,8 @@ public class SelectedModelContainers
      */
     public class PrimarySelectedModelDetails
     {
- 
-       ModelContainer boundModelContainer;
+
+        ModelContainer boundModelContainer;
 
         // initing values to -1 forces a change update when value first set to 0 (e.g. rotY)
         private final DoubleProperty width = new SimpleDoubleProperty(-1);

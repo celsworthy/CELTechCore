@@ -686,19 +686,7 @@ public class ThreeDViewManager
      */
     public void deleteSelectedModels()
     {
-        ListIterator<ModelContainer> modelIterator = loadedModels.listIterator();
-        ArrayList<ModelContainer> modelsToRemove = new ArrayList<>();
-        while (modelIterator.hasNext())
-        {
-            ModelContainer model = modelIterator.next();
-
-            if (model.isSelected())
-            {
-                modelsToRemove.add(model);
-            }
-        }
-
-        for (ModelContainer chosenModel : modelsToRemove)
+        for (ModelContainer chosenModel : selectedModelContainers.getSelectedModelsSnapshot())
         {
             selectedModelContainers.removeModelContainer(chosenModel);
             loadedModels.remove(chosenModel);
@@ -713,23 +701,9 @@ public class ThreeDViewManager
      */
     public void copySelectedModels()
     {
-        ArrayList<ModelContainer> modelsToAdd = new ArrayList<>();
-
-        ListIterator<ModelContainer> modelIterator = loadedModels.listIterator();
-        while (modelIterator.hasNext())
+        for (ModelContainer model : selectedModelContainers.getSelectedModelsSnapshot())
         {
-            ModelContainer model = modelIterator.next();
-
-            if (model.isSelected())
-            {
-                ModelContainer modelCopy = model.makeCopy();
-                modelsToAdd.add(modelCopy);
-            }
-        }
-
-        for (ModelContainer model : modelsToAdd)
-        {
-            addModel(model);
+            addModel(model.makeCopy());
         }
         collideModels();
     }
