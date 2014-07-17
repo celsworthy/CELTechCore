@@ -250,7 +250,7 @@ public class LayoutSidePanelController implements Initializable,
     {
         scaleTextField.doubleValueProperty().set(t1.doubleValue() * 100);
         scaleTextField.setText(String.format(scaleFormat,
-                                                 t1.doubleValue() * 100));
+                                             t1.doubleValue() * 100));
     }
 
     private void setUpKeyPressListeners()
@@ -649,6 +649,7 @@ public class LayoutSidePanelController implements Initializable,
     /**
      * Bind the given viewManager to the controller's widgets. Unbind any widget tied to a previous
      * viewManager.
+     *
      * @param viewManager
      */
     public void bindLoadedModels(final ThreeDViewManager viewManager)
@@ -660,11 +661,11 @@ public class LayoutSidePanelController implements Initializable,
             selectionModel.removeListener(tableViewSelectionListener);
         }
         selectionModel = viewManager.getSelectedModelContainers();
-        
+
         modelDataTableView.setItems(loadedModels);
         resetTableViewSelection(selectionModel);
         selectionModel.addListener(tableViewSelectionListener);
-        
+
         SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails
             = selectionModel.getPrimarySelectedModelDetails();
         selectedModelDetails.getWidth().addListener(widthListener);
@@ -676,11 +677,11 @@ public class LayoutSidePanelController implements Initializable,
 
         selectedModelDetails.getScale().addListener(modelScaleChangeListener);
         selectedModelDetails.getRotationY().addListener(modelRotationChangeListener);
-        
+
         repopulate(selectedModelDetails);
 
-        selectedItemDetails.visibleProperty().bind(Bindings.lessThan(0,
-                                                                     selectionModel.getNumModelsSelectedProperty()));
+        selectedItemDetails.visibleProperty().bind(
+            Bindings.lessThan(0, selectionModel.getNumModelsSelectedProperty()));
         if (boundProject != null)
         {
             boundProject.getLoadedModels().removeListener(loadedModelsChangeListener);
@@ -712,8 +713,8 @@ public class LayoutSidePanelController implements Initializable,
     }
 
     /**
-     * Reset the table view selection to the current selection in the viewManager, used
-     * when switching ProjectTabs.
+     * Reset the table view selection to the current selection in the viewManager, used when
+     * switching ProjectTabs.
      */
     private void resetTableViewSelection(SelectedModelContainers selectionModel)
     {
@@ -728,7 +729,8 @@ public class LayoutSidePanelController implements Initializable,
 
     /**
      * Repopulate the widgets for the given model details.
-     * @param selectedModelDetails 
+     *
+     * @param selectedModelDetails
      */
     private void repopulate(SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails)
     {

@@ -107,6 +107,11 @@ public class Xform extends Group
         super();
         getTransforms().addAll(t, rz, ry, rx, s);
     }
+    
+    public Xform(RotateOrder rotateOrder, String id) {
+        this(rotateOrder);
+        setId(id);
+    }
 
     /**
      *
@@ -470,7 +475,7 @@ public class Xform extends Group
     @Override
     public String toString()
     {
-        return "t = ("
+        return "XForm t = ("
                 + t.getX() + ", "
                 + t.getY() + ", "
                 + t.getZ() + ")  "
