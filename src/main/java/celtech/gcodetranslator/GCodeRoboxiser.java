@@ -561,8 +561,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             {
                 RetractEvent retractEvent = (RetractEvent) event;
 
-                totalExtrudedVolume += retractEvent.getE();
-
                 if (triggerCloseFromRetract == true && currentNozzle.getState()
                     != NozzleState.CLOSED)
                 {
@@ -570,18 +568,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 }
 
                 resetMeasuringThing();
-                if (mixExtruderOutputs)
-                {
-                    double eValue = retractEvent.getE() * currentEMixValue;
-                    double dValue = retractEvent.getE() * currentDMixValue;
-                    retractEvent.setE(eValue);
-                    retractEvent.setD(dValue);
-                    autoUnretractEValue += -eValue;
-                    autoUnretractDValue += -dValue;
-                } else
-                {
-                    autoUnretractEValue += -retractEvent.getE();
-                }
             } else if (event instanceof UnretractEvent)
             {
                 UnretractEvent unretractEvent = (UnretractEvent) event;
@@ -747,7 +733,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                     }
                 }
 
-                if (totalExtrusionForPath > currentNozzle.getOpenOverVolume()
+                if (totalExtrusionForPath >= currentNozzle.getOpenOverVolume()
                     + currentNozzle.getPreejectionVolume()
                     + currentNozzle.getEjectionVolume()
                     + currentNozzle.getWipeVolume())
