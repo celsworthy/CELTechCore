@@ -702,6 +702,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     {
         dataToUse.setMutable(true);
         profileDetailsController.updateProfileData(dataToUse);
+        profileDetailsController.setNameEditable(true);
         int response = createProfileDialogue.show();
         if (response == saveProfileAction)
         {

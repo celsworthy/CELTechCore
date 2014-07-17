@@ -315,6 +315,7 @@ public class MenuStripController
         SelectedModelContainers selectionModel = projectTab.getSelectionModel();
         ThreeDViewManager viewManager = projectTab.getThreeDViewManager();
 
+        addModelButton.disableProperty().unbind();
         deleteModelButton.disableProperty().unbind();
         duplicateModelButton.disableProperty().unbind();
         snapToGroundButton.disableProperty().unbind();
@@ -323,6 +324,9 @@ public class MenuStripController
         BooleanBinding snapToGroundOrNoSelectedModels = 
             Bindings.equal(LayoutSubmode.SNAP_TO_GROUND, viewManager.layoutSubmodeProperty()).or(
                 Bindings.equal(0, selectionModel.getNumModelsSelectedProperty()));
+        BooleanBinding snapToGroundOrNoLoadedModels = 
+            Bindings.equal(LayoutSubmode.SNAP_TO_GROUND, viewManager.layoutSubmodeProperty()).or(
+                Bindings.isEmpty(viewManager.getLoadedModels()));        
         BooleanBinding snapToGround = 
             Bindings.equal(LayoutSubmode.SNAP_TO_GROUND, viewManager.layoutSubmodeProperty());
         BooleanBinding noLoadedModels = Bindings.isEmpty(viewManager.getLoadedModels());
@@ -338,7 +342,7 @@ public class MenuStripController
         boundProject = displayManager.getCurrentlyVisibleProject();
         addModelButton.disableProperty().bind(snapToGround);
 
-        distributeModelsButton.disableProperty().bind(snapToGroundOrNoSelectedModels);
+        distributeModelsButton.disableProperty().bind(snapToGroundOrNoLoadedModels);
         snapToGroundButton.disableProperty().bind(noLoadedModels);
 
         forwardButton.visibleProperty().unbind();
