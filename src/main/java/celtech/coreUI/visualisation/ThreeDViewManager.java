@@ -12,8 +12,6 @@ import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.coreUI.visualisation.importers.obj.ObjImporter;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelContentsEnumeration;
-import java.util.ArrayList;
-import java.util.ListIterator;
 import javafx.animation.AnimationTimer;
 import javafx.animation.Timeline;
 import javafx.beans.property.DoubleProperty;

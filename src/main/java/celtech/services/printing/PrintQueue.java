@@ -460,6 +460,9 @@ public class PrintQueue implements ControllableService
             layerNumberToPredictedDuration, layerNumberToLineNumber);
         
         progressNumLayers.set(layerNumberToLineNumber.size());
+        primaryProgressPercent.unbind();
+        primaryProgressPercent.set(0);
+        progressETC.set(etcCalculator.getETCPredicted(0));
         etcAvailable.set(true);
     }
 
