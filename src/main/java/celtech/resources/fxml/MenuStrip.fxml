@@ -673,7 +673,7 @@
                         </Group>                    
                     </graphic>
                 </Button>
-                <Button fx:id="snapToGroundButton" mnemonicParsing="false" onAction="#snapToGround" styleClass="borderlessGraphicButton" stylesheets="@../css/JMetroDarkTheme.css" text="Button">
+                <ToggleButton fx:id="snapToGroundButton" id="snapToGroundButton" mnemonicParsing="false" onAction="#snapToGround" styleClass="borderlessGraphicButton" stylesheets="@../css/JMetroDarkTheme.css" >
                     <graphic>
                         <Group>
                             <children>
@@ -687,7 +687,7 @@
                             </children>
                         </Group>                   
                     </graphic>
-                </Button>
+                </ToggleButton>
             </children>
         </HBox>
     </center>

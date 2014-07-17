@@ -263,7 +263,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         preferredScale = new SimpleDoubleProperty(1);
         preferredRotationY = new SimpleDoubleProperty(0);
-        
+
         selectedMarkers = new HashSet<>();
 
         this.setId(name);
@@ -535,28 +535,31 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return modelName.get();
     }
-    
-    public void setSnapFaceIndex(int snapFaceIndex) {
+
+    public void setSnapFaceIndex(int snapFaceIndex)
+    {
         this.snapFaceIndex = snapFaceIndex;
+        if (snapFaceIndex != SNAP_FACE_INDEX_NOT_SELECTED)
+        {
+            Vector3D faceNormal = getFaceNormal(snapFaceIndex);
+            Vector3D downVector = new Vector3D(0, 1, 0);
 
-        Vector3D faceNormal = getFaceNormal(snapFaceIndex);
-        Vector3D downVector = new Vector3D(0, 1, 0);
+            Rotation result = new Rotation(faceNormal, downVector);
+            Vector3D axis = result.getAxis();
+            double angleDegrees = result.getAngle() * RAD_TO_DEG;
 
-        Rotation result = new Rotation(faceNormal, downVector);
-        Vector3D axis = result.getAxis();
-        double angleDegrees = result.getAngle() * RAD_TO_DEG;
+            transformRotateSnapToGround.setAxis(new Point3D(axis.getX(), axis.getY(), axis.getZ()));
+            transformRotateSnapToGround.setAngle(angleDegrees);
+            transformRotateSnapToGround.setPivotX(originalModelBounds.getCentreX());
+            transformRotateSnapToGround.setPivotY(originalModelBounds.getCentreY());
+            transformRotateSnapToGround.setPivotZ(originalModelBounds.getCentreZ());
 
-        transformRotateSnapToGround.setAxis(new Point3D(axis.getX(), axis.getY(), axis.getZ()));
-        transformRotateSnapToGround.setAngle(angleDegrees);
-        transformRotateSnapToGround.setPivotX(originalModelBounds.getCentreX());
-        transformRotateSnapToGround.setPivotY(originalModelBounds.getCentreY());
-        transformRotateSnapToGround.setPivotZ(originalModelBounds.getCentreZ());    
-        
-        dropToBedAndUpdateLastTransformedBounds();
+            dropToBedAndUpdateLastTransformedBounds();
+        }
     }
 
     /**
-     * 
+     *
      * @param scaleFactor
      */
     public void setScale(double scaleFactor)
@@ -742,7 +745,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         int storedSnapFaceIndex = in.readInt();
 
         initialiseTransforms();
-        
+
         transformMoveToPreferred.setX(storedX);
         transformMoveToPreferred.setZ(storedZ);
         setScale(storedScale);
@@ -751,7 +754,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         {
             snapToGround(storedSnapFaceIndex);
         }
-        
+
         notifyShapeChange();
     }
 
@@ -1111,7 +1114,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     /**
      * Calculate max/min X,Y,Z before the transforms have been applied (ie the original model
      * dimensions before any transforms).
-     */    
+     */
     private ModelBounds calculateBounds()
     {
         TriangleMesh mesh = (TriangleMesh) getMeshView().getMesh();
@@ -1153,8 +1156,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * Calculate max/min X,Y,Z after the transforms have been applied (ie in the parent
-     * node).
+     * Calculate max/min X,Y,Z after the transforms have been applied (ie in the parent node).
      */
     public ModelBounds calculateBoundsInParent()
     {
@@ -1353,7 +1355,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public void snapToGround(int faceNumber)
     {
         setSnapFaceIndex(faceNumber);
-        
+
         checkOffBed();
         notifyShapeChange();
     }
@@ -1407,12 +1409,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return getLocalBounds().getCentreZ();
     }
-    
+
     @Override
     public double getCentreY()
     {
         return getLocalBounds().getCentreY();
-    }    
+    }
 
     @Override
     public double getCentreX()

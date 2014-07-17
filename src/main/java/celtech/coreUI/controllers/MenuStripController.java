@@ -38,6 +38,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import libertysystems.stenographer.Stenographer;
@@ -93,7 +94,7 @@ public class MenuStripController
     private Button distributeModelsButton;
 
     @FXML
-    private Button snapToGroundButton;
+    private ToggleButton snapToGroundButton;
 
     @FXML
     void forwardPressed(ActionEvent event)
@@ -324,6 +325,7 @@ public class MenuStripController
                 Bindings.equal(0, selectionModel.getNumModelsSelectedProperty()));
         BooleanBinding snapToGround = 
             Bindings.equal(LayoutSubmode.SNAP_TO_GROUND, viewManager.layoutSubmodeProperty());
+        BooleanBinding noLoadedModels = Bindings.isEmpty(viewManager.getLoadedModels());
         deleteModelButton.disableProperty().bind(snapToGroundOrNoSelectedModels);
         duplicateModelButton.disableProperty().bind(snapToGroundOrNoSelectedModels);
         distributeModelsButton.setDisable(true);
@@ -337,11 +339,20 @@ public class MenuStripController
         addModelButton.disableProperty().bind(snapToGround);
 
         distributeModelsButton.disableProperty().bind(snapToGroundOrNoSelectedModels);
-        snapToGroundButton.disableProperty().bind(snapToGround);
+        snapToGroundButton.disableProperty().bind(noLoadedModels);
 
         forwardButton.visibleProperty().unbind();
         forwardButton.visibleProperty().bind((applicationStatus.modeProperty().isEqualTo(
             ApplicationMode.LAYOUT).and(Bindings.isNotEmpty(boundProject.getLoadedModels())).or(
                 applicationStatus.modeProperty().isEqualTo(ApplicationMode.STATUS))));
+        
+        ChangeListener<LayoutSubmode> whenSubModeChanges =
+            (ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode oldMode, LayoutSubmode newMode) ->
+        {
+            if (oldMode.equals(LayoutSubmode.SNAP_TO_GROUND) && newMode.equals(LayoutSubmode.SELECT)) {
+                snapToGroundButton.setSelected(false);
+            }
+        };
+        viewManager.layoutSubmodeProperty().addListener(whenSubModeChanges);        
     }
 }
