@@ -45,8 +45,8 @@
                     </padding>
                 </Separator>
             
-                <Label text="Current firmware version" GridPane.halignment="RIGHT" GridPane.rowIndex="12" />
-                <TextField fx:id="currentFirmwareField" editable="false" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="12" />
+                <Label text="%maintenancePanel.firmwareCurrentVersion" GridPane.halignment="RIGHT" GridPane.rowIndex="12" />
+                <Label fx:id="currentFirmwareField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="12" />
                 <Button fx:id="loadFirmwareGCodeMacroButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#loadFirmware" text="Load firmware" GridPane.columnSpan="2" GridPane.rowIndex="13" />
             </children>
             <columnConstraints>

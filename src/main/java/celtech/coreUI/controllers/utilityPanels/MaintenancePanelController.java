@@ -40,7 +40,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
+import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -134,7 +134,7 @@ public class MaintenancePanelController implements Initializable
     private GCodeMacroButton T0CleanButton;
 
     @FXML
-    private TextField currentFirmwareField;
+    private Label currentFirmwareField;
 
     @FXML
     private GCodeMacroButton LevelGantryButton;
@@ -361,7 +361,9 @@ public class MaintenancePanelController implements Initializable
                 firmwareUpdateProgress = new ProgressDialog(firmwareLoadService);
             }
         });
-
+        
+        currentFirmwareField.setStyle("-fx-font-weight: bold;");
+        
         gcodeFileChooser.setTitle(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodeFileChooserTitle"));
         gcodeFileChooser.getExtensionFilters()
                 .addAll(
