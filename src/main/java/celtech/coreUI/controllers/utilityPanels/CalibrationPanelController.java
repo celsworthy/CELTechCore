@@ -8,8 +8,8 @@ package celtech.coreUI.controllers.utilityPanels;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
-import celtech.coreUI.controllers.CalibrationNozzleBPageController;
-import celtech.coreUI.controllers.CalibrationNozzleOffsetPageController;
+import celtech.coreUI.controllers.panels.CalibrationNozzleBInsetPanelController;
+import celtech.coreUI.controllers.panels.CalibrationNozzleOffsetInsetPanelController;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -40,9 +40,9 @@ public class CalibrationPanelController implements Initializable
     private ResourceBundle i18nBundle = null;
 
     private Stage needleValvecalibrationStage = null;
-    private CalibrationNozzleBPageController needleValveCalibrationController = null;
+    private CalibrationNozzleBInsetPanelController needleValveCalibrationController = null;
     private Stage offsetCalibrationStage = null;
-    private CalibrationNozzleOffsetPageController nozzleOffsetCalibrationController = null;
+    private CalibrationNozzleOffsetInsetPanelController nozzleOffsetCalibrationController = null;
 
     @FXML
     void calibrateB(ActionEvent event)
@@ -56,7 +56,7 @@ public class CalibrationPanelController implements Initializable
             try
             {
                 Parent dialogBoxScreen = (Parent) needleValveCalibrationLoader.load();
-                needleValveCalibrationController = (CalibrationNozzleBPageController) needleValveCalibrationLoader.getController();
+                needleValveCalibrationController = (CalibrationNozzleBInsetPanelController) needleValveCalibrationLoader.getController();
                 Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
                 dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
                 needleValvecalibrationStage.setScene(dialogScene);
@@ -91,7 +91,7 @@ public class CalibrationPanelController implements Initializable
             try
             {
                 Parent dialogBoxScreen = (Parent) nozzleOffsetCalibrationLoader.load();
-                nozzleOffsetCalibrationController = (CalibrationNozzleOffsetPageController) nozzleOffsetCalibrationLoader.getController();
+                nozzleOffsetCalibrationController = (CalibrationNozzleOffsetInsetPanelController) nozzleOffsetCalibrationLoader.getController();
                 Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
                 dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
                 offsetCalibrationStage.setScene(dialogScene);

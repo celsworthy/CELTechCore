@@ -16,23 +16,31 @@ public enum ApplicationMode
     /**
      *
      */
-    STATUS("printerStatus"),
-
-    /**
-     *
-     */
-    LAYOUT("layout"),
-
-    /**
-     *
-     */
-    SETTINGS("settings");
+    STATUS("printerStatus", null),
     
-    private final String contentFXMLPrefix;
+    NOZZLE_OPEN_CALIBRATION("printerStatus", "CalibrationNozzleB"),
+    NOZZLE_OFFSET_CALIBRATION("printerStatus", "CalibrationNozzleOffset"),
+    PURGE("printerStatus", "purge"),
 
-    private ApplicationMode(String contentFXMLPrefix)
+    ABOUT("printerStatus", "about"),
+    PREFERENCES_TOP_LEVEL("printerStatus", "preferencesTop"),
+    /**
+     *
+     */
+    LAYOUT("layout", null),
+
+    /**
+     *
+     */
+    SETTINGS("settings", null);
+    
+    private final String sidePanelFXMLPrefix;
+    private final String insetPanelFXMLPrefix;
+
+    private ApplicationMode(String sidePanelFXMLPrefix, String insetPanelFXMLPrefix)
     {
-        this.contentFXMLPrefix = contentFXMLPrefix;
+        this.sidePanelFXMLPrefix = sidePanelFXMLPrefix;
+        this.insetPanelFXMLPrefix = insetPanelFXMLPrefix;
     }
 
     /**
@@ -41,7 +49,7 @@ public enum ApplicationMode
      */
     public String getSidePanelFXMLName()
     {
-        return ApplicationConfiguration.fxmlSidePanelResourcePath + contentFXMLPrefix + "SidePanel" + ".fxml";
+        return ApplicationConfiguration.fxmlPanelResourcePath + sidePanelFXMLPrefix + "SidePanel" + ".fxml";
     }
 
     /**
@@ -50,6 +58,16 @@ public enum ApplicationMode
      */
     public String getSlideOutFXMLName()
     {
-        return ApplicationConfiguration.fxmlSidePanelResourcePath + contentFXMLPrefix + "SlideOutPanel" + ".fxml";
+        return ApplicationConfiguration.fxmlPanelResourcePath + sidePanelFXMLPrefix + "SlideOutPanel" + ".fxml";
     }
+    
+        /**
+     *
+     * @return
+     */
+    public String getInsetPanelFXMLName()
+    {
+        return ApplicationConfiguration.fxmlPanelResourcePath + insetPanelFXMLPrefix + "InsetPanel" + ".fxml";
+    }
+
 }

@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.*?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
 <?import javafx.scene.shape.*?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
-    <children>
+<fx:root type="celtech.coreUI.components.buttons.LoadModelButton" styleClass="borderlessGraphicButton" stylesheets="@../../css/JMetroDarkTheme.css" text="" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+    <graphic>
         <Group>
             <children>
                 <SVGPath fill="#FFFFFF" content="M54.001,24.332c0,9.63-6.114,18.57-14.987,22.243c-9.091,3.763-19.593,1.354-26.358-5.724c-6.77-7.081-8.607-17.721-4.436-26.603c4.093-8.718,13.31-14.356,22.953-13.88C43.661,0.981,54.001,11.844,54.001,24.332zM51.794,24.364c0-9.686-6.705-18.365-16.012-20.978c-9.414-2.638-19.639,1.675-24.58,10.036c-4.996,8.454-3.529,19.42,3.439,26.328c6.787,6.729,17.326,8.385,25.734,3.757C47.305,39.693,51.794,32.288,51.794,24.364z"/>
@@ -19,5 +22,5 @@
                 <Rectangle layoutX="38.43" layoutY="35.764" fill="#FFFFFF" width="10.629" height="1.793"/>
             </children>
         </Group>
-    </children>
-</VBox>
+    </graphic>
+</fx:root>

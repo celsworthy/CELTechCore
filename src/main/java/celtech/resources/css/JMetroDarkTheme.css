@@ -1279,3 +1279,11 @@ table-view .column-header-background {
     -fx-border-radius: 0, 0;
     -fx-border-insets: 1 1 1 1, 0;
 }
+
+.about-panel{
+    -fx-background-color: blue_colour;
+}
+
+.about-text{
+    -fx-fill: white;
+}

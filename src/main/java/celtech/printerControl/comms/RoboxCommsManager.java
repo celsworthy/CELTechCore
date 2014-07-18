@@ -10,7 +10,6 @@ import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
-import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.events.RoboxEvent;
 import celtech.printerControl.comms.events.RoboxEventProducer;
@@ -144,7 +143,7 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
     @Override
     public void run()
     {
-//        enableNullPrinter(true);
+        enableNullPrinter(true);
 
         while (keepRunning)
         {
