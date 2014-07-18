@@ -2118,7 +2118,7 @@ public class PrinterImpl implements Printer
                         errorHandlingResponse = Dialogs.create().title(DisplayManager.getLanguageBundle().getString("dialogs.error.errorEncountered"))
                             .message(ackResponse.getErrorsAsString())
                             .masthead(null)
-                            .showCommandLinks(clearOnly);
+                            .showCommandLinks(clearOnly, clearOnly);
                     }
 
                     try

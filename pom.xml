@@ -37,7 +37,7 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-                        <plugin>
+            <plugin>
                 <groupId>external.atlassian.jgitflow</groupId>
                 <artifactId>jgitflow-maven-plugin</artifactId>
                 <version>1.0-m1</version>                
@@ -87,7 +87,7 @@
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
             <version>1.9.13</version>
-	</dependency>        
+        </dependency>        
         <dependency>
             <groupId>LeapMotion</groupId>
             <artifactId>LeapJava</artifactId>
@@ -137,6 +137,11 @@
             <artifactId>junit</artifactId>
             <version>4.10</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jfxtras</groupId>
+            <artifactId>jfxtras-controls</artifactId>
+            <version>8.0-r1</version>
         </dependency>
     </dependencies>
     

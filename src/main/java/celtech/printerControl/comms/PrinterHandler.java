@@ -657,8 +657,6 @@ public class PrinterHandler extends Thread
                                 AckResponse ackResponse = (AckResponse) receivedPacket;
                                 if (ackResponse.isError())
                                 {
-                                    steno.error("Got errors in response: " + ackResponse.toString());
-                                    
                                     RoboxCommsException exception = null;
                                     if (ackResponse.isSdCardError())
                                     {

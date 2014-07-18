@@ -678,17 +678,26 @@ public class Head implements Cloneable
                 String receivedTypeCode = response.getTypeCode();
 
                 Head referenceHead = HeadContainer.getHeadByID(response.getTypeCode());
+                Head headToWrite = null;
 
-                if (referenceHead != null)
+                if (referenceHead == null)
                 {
-                    Head headToWrite = referenceHead.clone();
+                    steno.warning("Request to soft reset head of unknown type - using default head settings");
+                    headToWrite = HeadContainer.getCompleteHeadList().get(0).clone();
+                } else
+                {
+                    headToWrite = referenceHead.clone();
+                }
+
+                if (headToWrite != null)
+                {
                     headToWrite.setUniqueID(response.getUniqueID());
                     headToWrite.setHeadHours(response.getHeadHours());
                     headToWrite.setLastFilamentTemperature(response.getLastFilamentTemperature());
 
                     printer.transmitWriteHeadEEPROM(headToWrite);
                     printer.transmitReadHeadEEPROM();
-                    steno.info("Updated head data at user request for " + receivedTypeCode);
+                    steno.info("Updated head data at user request for " + headToWrite.getTypeCode());
                     showCalibrationDialogue();
                 }
             } else
