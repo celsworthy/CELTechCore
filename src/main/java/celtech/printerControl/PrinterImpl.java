@@ -3179,7 +3179,6 @@ public class PrinterImpl implements Printer
 
         try
         {
-            transmitDirectGCode(GCodeConstants.goToTargetFirstLayerNozzleTemperature, true);
             transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperature, true);
         } catch (RoboxCommsException ex)
         {
