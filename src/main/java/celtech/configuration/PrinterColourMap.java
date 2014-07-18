@@ -15,7 +15,6 @@ import javafx.scene.paint.Color;
  */
 public class PrinterColourMap
 {
-
     private static PrinterColourMap instance = null;
     private static HashMap<Color, Color> colourMap = new HashMap<>();
 
@@ -28,7 +27,7 @@ public class PrinterColourMap
         colourMap.put(Color.web("#006400"), Color.web("#007F00"));
         colourMap.put(Color.web("#640000"), Color.web("#7F0000"));
         colourMap.put(Color.web("#643214"), Color.web("#FF7F7F"));
-        colourMap.put(Color.web("#64641E"), Color.web("#7FFF7F"));
+        colourMap.put(Color.web("#34FF10"), Color.web("#7FFF7F"));
         colourMap.put(Color.web("#7F6EFF"), Color.web("#7F7FFF"));
         colourMap.put(Color.web("#7FFF00"), Color.web("#7FFF00"));
         colourMap.put(Color.web("#00FF00"), Color.web("#00FF00"));
@@ -42,6 +41,10 @@ public class PrinterColourMap
         colourMap.put(Color.web("#FFC800"), Color.web("#FFFF00"));
     }
 
+    /**
+     *
+     * @return
+     */
     public static PrinterColourMap getInstance()
     {
         if (instance == null)
@@ -52,11 +55,21 @@ public class PrinterColourMap
         return instance;
     }
 
+    /**
+     *
+     * @param colour
+     * @return
+     */
     public Color printerToDisplayColour(Color colour)
     {
         return colourMap.get(colour);
     }
 
+    /**
+     *
+     * @param colour
+     * @return
+     */
     public Color displayToPrinterColour(Color colour)
     {
         Color printerColour = null;

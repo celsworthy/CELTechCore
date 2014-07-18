@@ -15,26 +15,46 @@ public class TravelEvent extends GCodeParseEvent
     private double x;
     private double y;
 
+    /**
+     *
+     * @return
+     */
     public double getX()
     {
         return x;
     }
 
+    /**
+     *
+     * @param x
+     */
     public void setX(double x)
     {
         this.x = x;
     }
 
+    /**
+     *
+     * @return
+     */
     public double getY()
     {
         return y;
     }
 
+    /**
+     *
+     * @param y
+     */
     public void setY(double y)
     {
         this.y = y;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String renderForOutput()
     {

@@ -10,8 +10,6 @@
 package celtech.coreUI.components;
 
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.Filament;
-import celtech.configuration.FilamentContainer;
 import celtech.configuration.PrintProfileContainer;
 import celtech.coreUI.DisplayManager;
 import celtech.services.slicer.RoboxProfile;
@@ -21,7 +19,6 @@ import javafx.scene.control.ListCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
-import javafx.scene.shape.Rectangle;
 
 /**
  *
@@ -36,6 +33,9 @@ public class ProfileChoiceListCell extends ListCell<RoboxProfile>
     private ImageView padlock = new ImageView();
     private final Label createNewProfileLabel = new Label();
     
+    /**
+     *
+     */
     public ProfileChoiceListCell()
     {
         if (padlockImage == null)

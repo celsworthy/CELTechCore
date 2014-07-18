@@ -8,9 +8,21 @@ import javafx.scene.shape.TriangleMesh;
  */
 public abstract class SymbolicPointArray {
     final TriangleMesh tmesh = new TriangleMesh();
+
+    /**
+     *
+     */
     final public float[] data;
+
+    /**
+     *
+     */
     final public int numPoints;
     
+    /**
+     *
+     * @param data
+     */
     protected SymbolicPointArray(float[] data) {
         this.data = data;
         this.numPoints = data.length/tmesh.getPointElementSize();

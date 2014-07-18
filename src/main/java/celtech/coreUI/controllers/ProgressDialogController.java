@@ -54,6 +54,11 @@ public class ProgressDialogController implements Initializable
         serviceBeingMonitored.cancelRun();
     }
     
+    /**
+     *
+     * @param service
+     * @param stage
+     */
     public void configure(ControllableService service, final Stage stage)
     {
         serviceBeingMonitored = service;
@@ -114,6 +119,8 @@ public class ProgressDialogController implements Initializable
 
     /**
      * Initializes the controller class.
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)

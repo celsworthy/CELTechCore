@@ -97,14 +97,6 @@ public class CalibrationPanelController implements Initializable
                 offsetCalibrationStage.setScene(dialogScene);
                 offsetCalibrationStage.initOwner(DisplayManager.getMainStage());
                 offsetCalibrationStage.initModality(Modality.WINDOW_MODAL);
-                offsetCalibrationStage.setOnCloseRequest(new EventHandler<WindowEvent>()
-                {
-                    @Override
-                    public void handle(WindowEvent event)
-                    {
-                        nozzleOffsetCalibrationController.cancelCalibrationAction();
-                    }
-                });
             } catch (IOException ex)
             {
                 steno.error("Couldn't load nozzle offset calibration FXML");
@@ -116,6 +108,8 @@ public class CalibrationPanelController implements Initializable
 
     /**
      * Initializes the controller class.
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)

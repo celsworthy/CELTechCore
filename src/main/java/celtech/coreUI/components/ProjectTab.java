@@ -9,17 +9,16 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
 import celtech.appManager.ProjectMode;
-import celtech.appManager.UndoBuffer;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.PrintBed;
+import static celtech.coreUI.DeDuplicator.suggestNonDuplicateName;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.GCodeEditorPanelController;
 import celtech.coreUI.visualisation.CameraPositionPreset;
-import celtech.coreUI.visualisation.SelectionContainer;
+import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
-import celtech.coreUI.visualisation.Xform;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelContentsEnumeration;
-import celtech.utils.Math.Packing.Block;
 import celtech.utils.Math.Packing.PackingThing;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,9 +26,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -38,19 +37,14 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Point2D;
 import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
-import javafx.scene.control.TextField;
 import javafx.scene.effect.Glow;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import libertysystems.stenographer.Stenographer;
@@ -63,46 +57,62 @@ import libertysystems.stenographer.StenographerFactory;
 public class ProjectTab extends Tab
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(ProjectTab.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        ProjectTab.class.getName());
 
-    private final HBox nonEditableTab = new HBox();
     private final Label nonEditableProjectNameField = new Label();
-    private final TextField editableProjectNameField = new TextField();
+    private final RestrictedTextField editableProjectNameField = new RestrictedTextField();
     private Project project = null;
     private AnchorPane basePane = null;
-    private UndoBuffer undoBuffer = new UndoBuffer();
     private ThreeDViewManager viewManager = null;
     private DisplayManager displayManager = null;
-    private ProjectManager projectManager = ProjectManager.getInstance();
+    private final ProjectManager projectManager = ProjectManager.getInstance();
     private boolean titleBeingEdited = false;
-    private Xform gizmoXform = new Xform(Xform.RotateOrder.YXZ);
-    private AnchorPane gizmoOverlay = null;
-    private final Menu projectMenu = new Menu();
-    private final MenuItem projectMenuItem = new MenuItem();
+//    private Xform gizmoXform = new Xform(Xform.RotateOrder.YXZ);
 
     final Rectangle testRect = new Rectangle(5, 5);
 
-    private ChangeListener<Number> selectionContainerMoveListener = new ChangeListener<Number>()
-    {
-        @Override
-        public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-        {
-            Point2D reference = basePane.localToScreen(0, 0);
-            double x = viewManager.getSelectionContainer().getScreenX() - reference.getX();
-            double y = viewManager.getSelectionContainer().getScreenY() - reference.getY();
-            gizmoXform.setTx(x);
-            gizmoXform.setTy(y);
-        }
-    };
-
-    public ProjectTab(DisplayManager dispManagerRef, ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty)
+//    private final ChangeListener<Number> selectionContainerMoveListener = new ChangeListener<Number>()
+//    {
+//        @Override
+//        public void changed(ObservableValue<? extends Number> ov, Number t,
+//            Number t1)
+//        {
+////            Point2D reference = basePane.localToScreen(0, 0);
+////            double x = viewManager.getSelectionContainer().getScreenX()
+////                - reference.getX();
+////            double y = viewManager.getSelectionContainer().getScreenY()
+////                - reference.getY();
+////            gizmoXform.setTx(x);
+////            gizmoXform.setTy(y);
+//        }
+//    };
+    /**
+     *
+     * @param dispManagerRef
+     * @param tabDisplayWidthProperty
+     * @param tabDisplayHeightProperty
+     */
+    public ProjectTab(DisplayManager dispManagerRef,
+        ReadOnlyDoubleProperty tabDisplayWidthProperty,
+        ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
         displayManager = dispManagerRef;
         project = new Project();
         initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
     }
 
-    public ProjectTab(DisplayManager dispManagerRef, String projectName, ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty) throws ProjectNotLoadedException
+    /**
+     *
+     * @param dispManagerRef
+     * @param projectName
+     * @param tabDisplayWidthProperty
+     * @param tabDisplayHeightProperty
+     * @throws ProjectNotLoadedException
+     */
+    public ProjectTab(DisplayManager dispManagerRef, String projectName,
+        ReadOnlyDoubleProperty tabDisplayWidthProperty,
+        ReadOnlyDoubleProperty tabDisplayHeightProperty) throws ProjectNotLoadedException
     {
         project = ProjectManager.loadProject(projectName);
 
@@ -117,20 +127,30 @@ public class ProjectTab extends Tab
         }
     }
 
-    public ProjectTab(DisplayManager dispManagerRef, Project inboundProject, ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty)
+    /**
+     *
+     * @param dispManagerRef
+     * @param inboundProject
+     * @param tabDisplayWidthProperty
+     * @param tabDisplayHeightProperty
+     */
+    public ProjectTab(DisplayManager dispManagerRef, Project inboundProject,
+        ReadOnlyDoubleProperty tabDisplayWidthProperty,
+        ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
         project = inboundProject;
         displayManager = dispManagerRef;
         initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
     }
 
-    private void initialise(ReadOnlyDoubleProperty tabDisplayWidthProperty, ReadOnlyDoubleProperty tabDisplayHeightProperty)
+    private void initialise(ReadOnlyDoubleProperty tabDisplayWidthProperty,
+        ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
-//        projectMenu.getItems().add(projectMenuItem);
-//        nonEditableTab.getChildren().add(nonEditableProjectNameField);
-//        nonEditableTab.getChildren().add(projectMenu);
         nonEditableProjectNameField.getStyleClass().add("nonEditableProjectTab");
         editableProjectNameField.getStyleClass().add("editableProjectTab");
+        editableProjectNameField.setDirectorySafeName(true);
+        editableProjectNameField.setRestrict(" -_0-9a-zA-Z\\p{L}\\p{M}*+");
+        editableProjectNameField.setMaxLength(25);
 
         setOnCloseRequest((Event t) ->
         {
@@ -140,7 +160,9 @@ public class ProjectTab extends Tab
             steno.info("Completed save");
         });
 
-        viewManager = new ThreeDViewManager(project.getLoadedModels(), tabDisplayWidthProperty, tabDisplayHeightProperty);
+        viewManager = new ThreeDViewManager(project.getLoadedModels(),
+                                            tabDisplayWidthProperty,
+                                            tabDisplayHeightProperty);
 //        camera = viewManager.getCamera();
 
         basePane = new AnchorPane();
@@ -161,9 +183,10 @@ public class ProjectTab extends Tab
                         for (File file : fileList)
                         {
                             boolean extensionFound = false;
-                            for (String extension : ApplicationConfiguration.getSupportedFileExtensions(project.getProjectMode()))
+                            for (String extension : ApplicationConfiguration.getSupportedFileExtensions(
+                                project.getProjectMode()))
                             {
-                                if (file.getName().endsWith(extension))
+                                if (file.getName().toUpperCase().endsWith(extension.toUpperCase()))
                                 {
                                     extensionFound = true;
                                     break;
@@ -205,7 +228,8 @@ public class ProjectTab extends Tab
                         for (File file : fileList)
                         {
                             boolean extensionFound = false;
-                            for (String extension : ApplicationConfiguration.getSupportedFileExtensions(project.getProjectMode()))
+                            for (String extension : ApplicationConfiguration.getSupportedFileExtensions(
+                                project.getProjectMode()))
                             {
                                 if (file.getName().endsWith(extension))
                                 {
@@ -255,7 +279,7 @@ public class ProjectTab extends Tab
                 boolean success = false;
                 if (db.hasFiles())
                 {
-                    displayManager.loadExternalModels(db.getFiles());
+                    displayManager.loadExternalModels(db.getFiles(), true);
                 } else
                 {
                     steno.error("No files in dragboard");
@@ -270,56 +294,17 @@ public class ProjectTab extends Tab
 
         basePane.getChildren().add(viewManager.getSubScene());
 
-//        try
-//        {
-//            URL layoutControlsURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "GizmoOverlay.fxml");
-//            FXMLLoader gizmoOverlayLoader = new FXMLLoader(layoutControlsURL, DisplayManager.getLanguageBundle());
-//            gizmoOverlay = (AnchorPane) gizmoOverlayLoader.load();
-//            GizmoOverlayController gizmoOverlayController = gizmoOverlayLoader.getController();
-//            gizmoOverlayController.configure(viewManager);
-//            viewManager.associateGizmoOverlayController(gizmoOverlayController);
-//
-//            gizmoOverlay.setRotationAxis(MathUtils.xAxis);
-//            gizmoOverlay.setRotate(90);
-//            gizmoXform.getChildren().add(gizmoOverlay);
-//            gizmoOverlay.setPickOnBounds(false);
-//            basePane.getChildren().add(gizmoXform);
-//
-//            gizmoXform.setRotateX(viewManager.demandedCameraRotationXProperty().get());
-//            gizmoXform.setRotateY(viewManager.demandedCameraRotationYProperty().get());
-//
-//            viewManager.demandedCameraRotationXProperty().addListener(new ChangeListener<Number>()
-//            {
-//                @Override
-//                public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
-//                {
-//                    gizmoXform.setRotateX(newValue.doubleValue());
-//                }
-//            });
-//
-//            viewManager.demandedCameraRotationYProperty().addListener(new ChangeListener<Number>()
-//            {
-//                @Override
-//                public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
-//                {
-//                    gizmoXform.setRotateY(newValue.doubleValue());
-//                }
-//            });
-//
-//        } catch (IOException ex)
-//        {
-//            steno.error("Failed to load 3d Gizmo:" + ex);
-//        }
-        viewManager.getSelectionContainer().screenXProperty().addListener(selectionContainerMoveListener);
-        viewManager.getSelectionContainer().screenYProperty().addListener(selectionContainerMoveListener);
-
         try
         {
-            URL gcodeEditorURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "GCodeEditorPanel.fxml");
-            FXMLLoader gcodeEditorLoader = new FXMLLoader(gcodeEditorURL, DisplayManager.getLanguageBundle());
+            URL gcodeEditorURL = getClass().getResource(
+                ApplicationConfiguration.fxmlResourcePath
+                + "GCodeEditorPanel.fxml");
+            FXMLLoader gcodeEditorLoader = new FXMLLoader(gcodeEditorURL,
+                                                          DisplayManager.getLanguageBundle());
             StackPane gcodeEditor = (StackPane) gcodeEditorLoader.load();
             GCodeEditorPanelController gcodeEditorController = gcodeEditorLoader.getController();
-            gcodeEditorController.configure(viewManager.getLoadedModels(), project);
+            gcodeEditorController.configure(viewManager.getLoadedModels(),
+                                            project);
             AnchorPane.setTopAnchor(gcodeEditor, 30.0);
             AnchorPane.setRightAnchor(gcodeEditor, 0.0);
 
@@ -332,13 +317,16 @@ public class ProjectTab extends Tab
         this.setContent(basePane);
 
         this.setGraphic(nonEditableProjectNameField);
-        nonEditableProjectNameField.textProperty().bind(project.projectNameProperty());
+        nonEditableProjectNameField.textProperty().bind(
+            project.projectNameProperty());
 
         nonEditableProjectNameField.setOnMouseClicked((MouseEvent event) ->
         {
-            if (event.getClickCount() == 2 && project.getProjectMode() != ProjectMode.GCODE)
+            if (event.getClickCount() == 2 && project.getProjectMode()
+                != ProjectMode.GCODE)
             {
-                editableProjectNameField.setText(nonEditableProjectNameField.getText());
+                editableProjectNameField.setText(
+                    nonEditableProjectNameField.getText());
                 setGraphic(editableProjectNameField);
                 editableProjectNameField.selectAll();
                 editableProjectNameField.requestFocus();
@@ -346,17 +334,19 @@ public class ProjectTab extends Tab
             }
         });
 
-        editableProjectNameField.focusedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+        editableProjectNameField.focusedProperty().addListener(
+            new ChangeListener<Boolean>()
             {
-                if (t1.booleanValue() == false)
+                @Override
+                public void changed(ObservableValue<? extends Boolean> ov,
+                    Boolean t, Boolean t1)
                 {
-                    switchToNonEditableTitle();
+                    if (t1.booleanValue() == false)
+                    {
+                        switchToNonEditableTitle();
+                    }
                 }
-            }
-        });
+            });
 
         editableProjectNameField.setOnAction((ActionEvent event) ->
         {
@@ -370,35 +360,48 @@ public class ProjectTab extends Tab
         if (titleBeingEdited == true)
         {
             projectManager.projectClosed(project);
-            project.setProjectName(editableProjectNameField.getText());
+            String newProjectName = editableProjectNameField.getText();
+            Set<String> currentProjectNames = projectManager.getOpenAndAvailableProjectNames();
+            newProjectName = suggestNonDuplicateName(newProjectName, currentProjectNames);
+            project.setProjectName(newProjectName);
             projectManager.projectOpened(project);
             setGraphic(nonEditableProjectNameField);
             titleBeingEdited = false;
         }
     }
 
+    /**
+     *
+     * @param projectToLoad
+     */
     public void addProjectContainer(File projectToLoad)
     {
         nonEditableProjectNameField.textProperty().unbind();
         nonEditableProjectNameField.setText("");
 
         project = ProjectManager.loadProject(projectToLoad);
-        nonEditableProjectNameField.textProperty().bind(project.projectNameProperty());
+        nonEditableProjectNameField.textProperty().bind(
+            project.projectNameProperty());
         viewManager.setLoadedModels(project.getLoadedModels());
 
         projectManager.projectOpened(project);
     }
 
-    public void addModelContainer(String fullFilename, ModelContainer modelGroup)
+    /**
+     *
+     * @param fullFilename
+     * @param modelContainer
+     */
+    public void addModelContainer(String fullFilename, ModelContainer modelContainer)
     {
         steno.info("I am loading " + fullFilename);
         if (project.getProjectMode() == ProjectMode.NONE)
         {
-            switch (modelGroup.getModelContentsType())
+            switch (modelContainer.getModelContentsType())
             {
                 case GCODE:
                     project.setProjectMode(ProjectMode.GCODE);
-                    project.setProjectName(modelGroup.getModelName());
+                    project.setProjectName(modelContainer.getModelName());
                     project.setGCodeFilename(fullFilename);
                     viewManager.activateGCodeVisualisationMode();
                     break;
@@ -411,81 +414,76 @@ public class ProjectTab extends Tab
             }
         }
 
-        if ((project.getProjectMode() == ProjectMode.GCODE && modelGroup.getModelContentsType() == ModelContentsEnumeration.GCODE)
-                || (project.getProjectMode() == ProjectMode.MESH && modelGroup.getModelContentsType() == ModelContentsEnumeration.MESH))
+        if ((project.getProjectMode() == ProjectMode.GCODE
+            && modelContainer.getModelContentsType()
+            == ModelContentsEnumeration.GCODE)
+            || (project.getProjectMode() == ProjectMode.MESH
+            && modelContainer.getModelContentsType()
+            == ModelContentsEnumeration.MESH))
         {
-            viewManager.addModel(modelGroup);
-            displayManager.selectModel(modelGroup);
+            viewManager.addModel(modelContainer);
+            viewManager.selectModel(modelContainer, false);
         } else
         {
-            steno.warning("Discarded load of " + modelGroup.getModelName() + " due to conflict with project type");
+            steno.warning("Discarded load of " + modelContainer.getModelName()
+                + " due to conflict with project type");
         }
     }
 
+    /**
+     *
+     * @param modelMesh
+     */
     public void removeModel(ModelContainer modelMesh)
     {
         viewManager.removeModel(modelMesh);
     }
 
+    /**
+     *
+     */
     public void deleteSelectedModels()
     {
         viewManager.deleteSelectedModels();
     }
 
+    /**
+     *
+     */
     public void copySelectedModels()
     {
         viewManager.copySelectedModels();
     }
 
-    public SelectionContainer getSelectionContainer()
-    {
-        return viewManager.getSelectionContainer();
-    }
-
+    /**
+     *
+     * @return
+     */
     public ObservableList<ModelContainer> getLoadedModels()
     {
         return viewManager.getLoadedModels();
     }
 
+    /**
+     *
+     */
     public void autoLayout()
     {
         Collections.sort(viewManager.getLoadedModels());
-        PackingThing thing = new PackingThing(210, 150);
-
-        ArrayList<Block> blocks = new ArrayList<>();
+        PackingThing thing = new PackingThing((int) PrintBed.maxPrintableXSize,
+                                              (int) PrintBed.maxPrintableZSize);
 
         thing.reference(viewManager.getLoadedModels(), 10);
         thing.pack();
         thing.relocateBlocks();
 
-        viewManager.recalculateSelectionBounds(false);
+        viewManager.collideModels();
 
-//        for (Block block : blocks)
-//        {
-//            System.out.println(">>>>>>>>>>");
-//            System.out.println("W:" + block.getW());
-//            System.out.println("H:" + block.getH());
-//            if (block.getFit() != null)
-//            {
-//                System.out.println("Fit X:" + block.getFit().getX());
-//                System.out.println("Fit Y:" + block.getFit().getY());
-//                System.out.println("Fit w:" + block.getFit().getW());
-//                System.out.println("Fit h:" + block.getFit().getH());
-//            }
-//            else
-//            {
-//                System.out.println("No fit");
-//            }
-//            block.relocate();
-//            System.out.println("<<<<<<<<<<");
-//        }
     }
 
-    public void selectModel(ModelContainer selectedModel)
-    {
-        viewManager.selectModel(selectedModel, false);
-    }
-
+    /**
+     *
+     */
     public void saveProject()
     {
         //Only save if there are some models and we aren't showing a GCODE project ...
@@ -496,7 +494,11 @@ public class ProjectTab extends Tab
             {
                 try
                 {
-                    ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(project.getProjectHeader().getProjectPath() + File.separator + project.getProjectName() + ApplicationConfiguration.projectFileExtension));
+                    ObjectOutputStream out = new ObjectOutputStream(
+                        new FileOutputStream(
+                            project.getProjectHeader().getProjectPath()
+                            + File.separator + project.getProjectName()
+                            + ApplicationConfiguration.projectFileExtension));
                     out.writeObject(project);
                     out.close();
                 } catch (FileNotFoundException ex)
@@ -504,7 +506,9 @@ public class ProjectTab extends Tab
                     steno.error("Failed to save project state");
                 } catch (IOException ex)
                 {
-                    steno.error("Couldn't write project state to file for project " + project.getUUID());
+                    steno.error(
+                        "Couldn't write project state to file for project "
+                        + project.getUUID());
                 }
             }
         }
@@ -512,40 +516,60 @@ public class ProjectTab extends Tab
         viewManager.shutdown();
     }
 
+    /**
+     *
+     * @return
+     */
     public ThreeDViewManager getThreeDViewManager()
     {
         return viewManager;
     }
 
+    /**
+     *
+     * @return
+     */
     public Project getProject()
     {
         return project;
     }
 
-    public void switchToPresetCameraView(CameraPositionPreset cameraPositionPreset)
+    /**
+     *
+     * @param cameraPositionPreset
+     */
+    public void switchToPresetCameraView(
+        CameraPositionPreset cameraPositionPreset)
     {
 //        viewManager.getCamera().gotoPreset(cameraPositionPreset);
     }
 
+    /**
+     *
+     * @param selectedModel
+     */
     public void deselectModel(ModelContainer selectedModel)
     {
         viewManager.deselectModel(selectedModel);
     }
 
-    private void recentreGizmoX(int screenX)
-    {
-        Point2D newPosition = basePane.screenToLocal(screenX, 0);
-        gizmoXform.setTx(newPosition.getX());
-        steno.info("New X pos " + newPosition.getX() + " for " + screenX);
-    }
-
-    private void recentreGizmoY(int screenY)
-    {
-        Point2D newPosition = basePane.screenToLocal(0, screenY);
-        gizmoXform.setTy(newPosition.getY());
-        steno.info("New Y pos " + newPosition.getY() + " for " + screenY);
-    }
-
+//    private void recentreGizmoX(int screenX)
+//    {
+//        Point2D newPosition = basePane.screenToLocal(screenX, 0);
+//        gizmoXform.setTx(newPosition.getX());
+//        steno.info("New X pos " + newPosition.getX() + " for " + screenX);
+//    }
+//
+//    private void recentreGizmoY(int screenY)
+//    {
+//        Point2D newPosition = basePane.screenToLocal(0, screenY);
+//        gizmoXform.setTy(newPosition.getY());
+//        steno.info("New Y pos " + newPosition.getY() + " for " + screenY);
+//    }
+    /**
+     *
+     * @param newMode
+     */
     public void setMode(ApplicationMode newMode)
     {
         switch (newMode)
@@ -559,5 +583,15 @@ public class ProjectTab extends Tab
                 viewManager.startSettingsAnimation();
                 break;
         }
+    }
+
+    public SelectedModelContainers getSelectionModel()
+    {
+        return viewManager.getSelectedModelContainers();
+    }
+
+    public void selectAllModels()
+    {
+        viewManager.selectAllModels();
     }
 }

@@ -22,6 +22,16 @@ public class SliceResult
     private Printer printerToUse = null;
     private boolean success = false;
 
+    /**
+     *
+     * @param printJobUUID
+     * @param project
+     * @param filament
+     * @param printQuality
+     * @param settings
+     * @param printerToUse
+     * @param success
+     */
     public SliceResult(String printJobUUID, Project project, FilamentContainer filament, PrintQualityEnumeration printQuality, RoboxProfile settings, Printer printerToUse, boolean success)
     {
         this.printJobUUID = printJobUUID;
@@ -33,41 +43,73 @@ public class SliceResult
         this.success = success;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getPrintJobUUID()
     {
         return printJobUUID;
     }
 
+    /**
+     *
+     * @return
+     */
     public Project getProject()
     {
         return project;
     }
 
+    /**
+     *
+     * @return
+     */
     public FilamentContainer getFilament()
     {
         return filament;
     }
 
+    /**
+     *
+     * @return
+     */
     public PrintQualityEnumeration getPrintQuality()
     {
         return printQuality;
     }
 
+    /**
+     *
+     * @return
+     */
     public RoboxProfile getSettings()
     {
         return settings;
     }
 
+    /**
+     *
+     * @return
+     */
     public Printer getPrinterToUse()
     {
         return printerToUse;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isSuccess()
     {
         return success;
     }
 
+    /**
+     *
+     * @param success
+     */
     public void setSuccess(boolean success)
     {
         this.success = success;

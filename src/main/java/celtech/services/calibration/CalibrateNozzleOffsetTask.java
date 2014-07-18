@@ -38,11 +38,20 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
     private Pattern zDeltaPattern = Pattern.compile(".*(?<offset>[\\-0-9.]+).*");
     private Matcher zDeltaMatcher = null;
 
+    /**
+     *
+     * @param desiredState
+     */
     public CalibrateNozzleOffsetTask(NozzleOffsetCalibrationState desiredState)
     {
         this.desiredState = desiredState;
     }
 
+    /**
+     *
+     * @param desiredState
+     * @param nozzleNumber
+     */
     public CalibrateNozzleOffsetTask(NozzleOffsetCalibrationState desiredState, int nozzleNumber)
     {
         this.desiredState = desiredState;
@@ -64,21 +73,24 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
                 try
                 {
                     printerToUse.transmitStoredGCode("Home_all");
-                    steno.info("Status " + printerToUse.getPrintQueue().getPrintStatus());
-                    PrinterUtils.waitOnMacroFinished(printerToUse, this);
-                    StatusResponse response = printerToUse.transmitStatusRequest();
-                    printerToUse.transmitDirectGCode("M104", false);
-                    if (response.getNozzleHeaterMode() == HeaterMode.FIRST_LAYER)
+                    if (PrinterUtils.waitOnMacroFinished(printerToUse, this) == false)
                     {
-                        waitUntilNozzleReaches(printerToUse.getNozzleFirstLayerTargetTemperature(), 5);
-                    } else
-                    {
-                        waitUntilNozzleReaches(printerToUse.getNozzleTargetTemperature(), 5);
-                    }
-                    waitOnBusy();
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchOnHeadLEDs, false);
+                        StatusResponse response = printerToUse.transmitStatusRequest();
+                        printerToUse.transmitDirectGCode("M104", false);
+                        if (response.getNozzleHeaterMode() == HeaterMode.FIRST_LAYER)
+                        {
+                            waitUntilNozzleReaches(printerToUse.getNozzleFirstLayerTargetTemperature(), 5);
+                        } else
+                        {
+                            waitUntilNozzleReaches(printerToUse.getNozzleTargetTemperature(), 5);
+                        }
 
-                    success = true;
+                        if (PrinterUtils.waitOnBusy(printerToUse, this) == false)
+                        {
+                            printerToUse.transmitDirectGCode(GCodeConstants.switchOnHeadLEDs, false);
+                            success = true;
+                        }
+                    }
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in nozzle offset calibration - mode=" + desiredState.name());
@@ -104,17 +116,17 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
                         for (int i = 0; i < 3; i++)
                         {
                             printerToUse.transmitDirectGCode("T0", false);
-                            waitOnBusy();
+                            PrinterUtils.waitOnBusy(printerToUse, this);
                             printerToUse.transmitDirectGCode("G28 Z", false);
-                            waitOnBusy();
+                            PrinterUtils.waitOnBusy(printerToUse, this);
                             printerToUse.transmitDirectGCode("G0 Z5", false);
-                            waitOnBusy();
+                            PrinterUtils.waitOnBusy(printerToUse, this);
                             printerToUse.transmitDirectGCode("T1", false);
-                            waitOnBusy();
+                            PrinterUtils.waitOnBusy(printerToUse, this);
                             printerToUse.transmitDirectGCode("G28 Z?", false);
-                            waitOnBusy();
+                            PrinterUtils.waitOnBusy(printerToUse, this);
                             printerToUse.transmitDirectGCode("G0 Z5", false);
-                            waitOnBusy();
+                            PrinterUtils.waitOnBusy(printerToUse, this);
                             String measurementString = printerToUse.transmitDirectGCode("M113", false);
                             measurementString = measurementString.replaceFirst("Zdelta:", "").replaceFirst("\nok", "");
                             try
@@ -158,14 +170,11 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
                     }
 
                     printerToUse.transmitDirectGCode("T0", false);
-                    waitOnBusy();
+                    PrinterUtils.waitOnBusy(printerToUse, this);
 
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in nozzle offset calibration - mode=" + desiredState.name());
-                } catch (InterruptedException ex)
-                {
-                    steno.error("Interrrupted during nozzle offset calibration - mode=" + desiredState.name());
                 }
                 break;
         }
@@ -179,7 +188,7 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
         try
         {
             printerToUse.transmitDirectGCode("M909 S4", false);
-            waitOnBusy();
+            PrinterUtils.waitOnBusy(printerToUse, this);
 
             printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
 
@@ -192,7 +201,7 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
             while (errors.isEFilamentSlipError() == false && isCancelled() == false)
             {
                 printerToUse.transmitDirectGCode("G0 E10", false);
-                waitOnBusy();
+                PrinterUtils.waitOnBusy(printerToUse, this);
 
                 errors = printerToUse.transmitReportErrors();
             }
@@ -200,34 +209,15 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
             printerToUse.transmitResetErrors();
 
             printerToUse.transmitDirectGCode("M909 S70", false);
-            waitOnBusy();
+            PrinterUtils.waitOnBusy(printerToUse, this);
 
             success = true;
         } catch (RoboxCommsException ex)
         {
             steno.error("Error in needle valve priming - mode=" + desiredState.name());
-        } catch (InterruptedException ex)
-        {
-            steno.error("Interrrupted during needle valve priming - mode=" + desiredState.name());
         }
+        
         return success;
-    }
-
-    private void waitOnBusy() throws InterruptedException
-    {
-        try
-        {
-            StatusResponse response = printerToUse.transmitStatusRequest();
-
-            while (response.isBusyStatus() == true && isCancelled() == false)
-            {
-                Thread.sleep(100);
-                response = printerToUse.transmitStatusRequest();
-            }
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error requesting status");
-        }
     }
 
     private void waitUntilNozzleReaches(int temperature, int tolerance) throws InterruptedException
@@ -241,6 +231,10 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
         }
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public boolean cancelRun()
     {

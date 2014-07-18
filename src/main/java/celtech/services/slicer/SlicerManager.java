@@ -20,6 +20,9 @@ public class SlicerManager
     private Stenographer steno = null;
     private static String applicationDirectory = null;
 
+    /**
+     *
+     */
     public SlicerManager()
     {
 //        this.application = application;
@@ -28,6 +31,12 @@ public class SlicerManager
         applicationDirectory = ApplicationConfiguration.getCommonApplicationDirectory();
     }
 
+    /**
+     *
+     * @param stlFilename
+     * @param gcodeFilename
+     * @param configFilename
+     */
     public void sliceModel(String stlFilename, String gcodeFilename, String configFilename)
     {
         if (configFilename == null)

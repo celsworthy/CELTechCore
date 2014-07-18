@@ -28,66 +28,117 @@ public class JogButton extends Button
     private final BooleanProperty useG1 = new SimpleBooleanProperty(false);
     private final IntegerProperty feedRate = new SimpleIntegerProperty(0);
 
+    /**
+     *
+     * @param value
+     */
     public void setAxis(AxisSpecifier value)
     {
         axis.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public AxisSpecifier getAxis()
     {
         return axis.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public ObjectProperty<AxisSpecifier> getAxisProperty()
     {
         return axis;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setDistance(float value)
     {
         distance.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public float getDistance()
     {
         return distance.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public FloatProperty getDistanceProperty()
     {
         return distance;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setUseG1(boolean value)
     {
         useG1.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean getUseG1()
     {
         return useG1.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public BooleanProperty getUseG1Property()
     {
         return useG1;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setFeedRate(int value)
     {
         feedRate.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public int getFeedRate()
     {
         return feedRate.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public IntegerProperty getFeedRateProperty()
     {
         return feedRate;
     }
 
+    /**
+     *
+     */
     public JogButton()
     {
         getStyleClass().add("jog-button");

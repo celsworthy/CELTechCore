@@ -54,6 +54,10 @@ public class ErrorHandler
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public static ErrorHandler getInstance()
     {
         if (instance == null)
@@ -64,6 +68,10 @@ public class ErrorHandler
         return instance;
     }
 
+    /**
+     *
+     * @param printer
+     */
     public void checkForErrors(Printer printer)
     {
         //Check for errors and open a Dialog if there are any present
@@ -72,17 +80,32 @@ public class ErrorHandler
             steno.trace("Requesting errors from printer");
             AckResponse errors = printer.transmitReportErrors();
             steno.trace("Errors are:\n" + errors.toString());
-            if (errors.isError() && !errors.isNozzleFlushNeededError())
+            if (errors.isError())
             {
-                if (errorDialog.isShowing() == false)
+                if (errors.isNozzleFlushNeededError()
+                        || errors.isReelEEPROMError()
+                        || errors.isHeadEepromError()
+                        || errors.isDFilamentSlipError()
+                        || errors.isEFilamentSlipError())
                 {
-                    genericErrorPopupController.populateErrorList(errors);
-                    errorDialog.show();
                     steno.info("Resetting errors");
                     printer.transmitResetErrors();
                     if (printer.getPaused() == true)
                     {
                         printer.resumePrint();
+                    }
+                } else
+                {
+                    if (errorDialog.isShowing() == false)
+                    {
+                        genericErrorPopupController.populateErrorList(errors);
+                        errorDialog.show();
+                        steno.info("Resetting errors");
+                        printer.transmitResetErrors();
+                        if (printer.getPaused() == true)
+                        {
+                            printer.resumePrint();
+                        }
                     }
                 }
             }

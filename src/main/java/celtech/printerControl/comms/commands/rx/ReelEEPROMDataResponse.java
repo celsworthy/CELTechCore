@@ -1,7 +1,7 @@
 package celtech.printerControl.comms.commands.rx;
 
+import celtech.utils.FixedDecimalFloatFormat;
 import java.io.UnsupportedEncodingException;
-import java.text.NumberFormat;
 import java.text.ParseException;
 
 /**
@@ -12,7 +12,6 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
 {
 
     private final String charsetToUse = "US-ASCII";
-    private NumberFormat numberFormatter = NumberFormat.getNumberInstance();
 
     private final int decimalFloatFormatBytes = 8;
     private final int materialTypeCodeBytes = 16;
@@ -30,16 +29,26 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
     private float reelFeedRateMultiplier;
     private float reelRemainingFilament;
 
+    /**
+     *
+     */
     public ReelEEPROMDataResponse()
     {
         super(RxPacketTypeEnum.REEL_EEPROM_DATA, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {
         boolean success = false;
 
+        FixedDecimalFloatFormat decimalFloatFormatter = new FixedDecimalFloatFormat();
+        
         try
         {
             int byteOffset = 1;
@@ -55,7 +64,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
 
             try
             {
-                reelFirstLayerNozzleTemperature = numberFormatter.parse(firstLayerNozzleTempString.trim()).intValue();
+                reelFirstLayerNozzleTemperature = decimalFloatFormatter.parse(firstLayerNozzleTempString.trim()).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse first layer nozzle temperature - " + firstLayerNozzleTempString);
@@ -66,7 +75,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
 
             try
             {
-                reelNozzleTemperature = numberFormatter.parse(printNozzleTempString.trim()).intValue();
+                reelNozzleTemperature = decimalFloatFormatter.parse(printNozzleTempString.trim()).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse nozzle temperature - " + printNozzleTempString);
@@ -77,7 +86,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
 
             try
             {
-                reelFirstLayerBedTemperature = numberFormatter.parse(firstLayerBedTempString.trim()).intValue();
+                reelFirstLayerBedTemperature = decimalFloatFormatter.parse(firstLayerBedTempString.trim()).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse first layer bed temperature - " + firstLayerBedTempString);
@@ -88,7 +97,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
 
             try
             {
-                reelBedTemperature = numberFormatter.parse(bedTempString.trim()).intValue();
+                reelBedTemperature = decimalFloatFormatter.parse(bedTempString.trim()).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse bed temperature - " + bedTempString);
@@ -99,7 +108,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
 
             try
             {
-                reelAmbientTemperature = numberFormatter.parse(ambientTempString.trim()).intValue();
+                reelAmbientTemperature = decimalFloatFormatter.parse(ambientTempString.trim()).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse ambient temperature - " + ambientTempString);
@@ -110,7 +119,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
 
             try
             {
-                reelFilamentDiameter = numberFormatter.parse(filamentDiameterString.trim()).floatValue();
+                reelFilamentDiameter = decimalFloatFormatter.parse(filamentDiameterString.trim()).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse filament diameter - " + filamentDiameterString);
@@ -121,7 +130,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
 
             try
             {
-                reelFilamentMultiplier = numberFormatter.parse(filamentMultiplierString.trim()).floatValue();
+                reelFilamentMultiplier = decimalFloatFormatter.parse(filamentMultiplierString.trim()).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse max extrusion rate - " + filamentMultiplierString);
@@ -132,7 +141,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
 
             try
             {
-                reelFeedRateMultiplier = numberFormatter.parse(feedRateMultiplierString.trim()).floatValue();
+                reelFeedRateMultiplier = decimalFloatFormatter.parse(feedRateMultiplierString.trim()).floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse extrusion multiplier - " + feedRateMultiplierString);
@@ -145,7 +154,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
 
             try
             {
-                reelRemainingFilament = numberFormatter.parse(remainingLengthString.trim()).intValue();
+                reelRemainingFilament = decimalFloatFormatter.parse(remainingLengthString.trim()).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse remaining length - " + remainingLengthString);
@@ -160,6 +169,10 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
         return success;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString()
     {
@@ -176,56 +189,100 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
         return outputString.toString();
     }
 
+    /**
+     *
+     * @return
+     */
     public String getReelTypeCode()
     {
         return reelTypeCode;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getReelUniqueID()
     {
         return reelUniqueID;
     }
 
-    public int getReelFirstLayerNozzleTemperature()
+    /**
+     *
+     * @return
+     */
+    public int getFirstLayerNozzleTemperature()
     {
         return reelFirstLayerNozzleTemperature;
     }
 
-    public int getReelNozzleTemperature()
+    /**
+     *
+     * @return
+     */
+    public int getNozzleTemperature()
     {
         return reelNozzleTemperature;
     }
 
-    public int getReelFirstLayerBedTemperature()
+    /**
+     *
+     * @return
+     */
+    public int getFirstLayerBedTemperature()
     {
         return reelFirstLayerBedTemperature;
     }
 
-    public int getReelBedTemperature()
+    /**
+     *
+     * @return
+     */
+    public int getBedTemperature()
     {
         return reelBedTemperature;
     }
 
-    public int getReelAmbientTemperature()
+    /**
+     *
+     * @return
+     */
+    public int getAmbientTemperature()
     {
         return reelAmbientTemperature;
     }
 
-    public float getReelFilamentDiameter()
+    /**
+     *
+     * @return
+     */
+    public float getFilamentDiameter()
     {
         return reelFilamentDiameter;
     }
 
-    public float getReelFilamentMultiplier()
+    /**
+     *
+     * @return
+     */
+    public float getFilamentMultiplier()
     {
         return reelFilamentMultiplier;
     }
 
-    public float getReelFeedRateMultiplier()
+    /**
+     *
+     * @return
+     */
+    public float getFeedRateMultiplier()
     {
         return reelFeedRateMultiplier;
     }
 
+    /**
+     *
+     * @return
+     */
     public float getReelRemainingFilament()
     {
         return reelRemainingFilament;

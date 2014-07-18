@@ -5,27 +5,22 @@
  */
 package celtech.services.purge;
 
-import celtech.appManager.ApplicationMode;
-import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
-import celtech.configuration.HeaterMode;
-import celtech.coreUI.controllers.StatusScreenState;
+import celtech.coreUI.DisplayManager;
 import celtech.printerControl.Printer;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
-import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.services.ControllableService;
-import celtech.services.calibration.*;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
 import celtech.utils.PrinterUtils;
-import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.controlsfx.dialog.Dialogs;
 
 /**
  *
@@ -40,12 +35,31 @@ public class PurgeTask extends Task<Void> implements ControllableService
     private PrintQualityEnumeration printQuality = null;
     private RoboxProfile settings = null;
     private Printer printerToUse = null;
+    private String macroName = null;
 
+    /**
+     *
+     * @param printerToUse
+     */
     public PurgeTask(Printer printerToUse)
     {
         this.printerToUse = printerToUse;
     }
 
+    public PurgeTask(Printer printerToUse, String macroName)
+    {
+        this.printerToUse = printerToUse;
+        this.macroName = macroName;
+    }
+
+    /**
+     *
+     * @param project
+     * @param filament
+     * @param printQuality
+     * @param settings
+     * @param printerToUse
+     */
     public PurgeTask(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings, Printer printerToUse)
     {
         this.project = project;
@@ -73,14 +87,14 @@ public class PurgeTask extends Task<Void> implements ControllableService
                                                                        savedHeadData.getNozzle2YOffset(),
                                                                        savedHeadData.getNozzle2ZOffset(),
                                                                        savedHeadData.getNozzle2BOffset(),
-                                                                       (float) (printerToUse.getReelNozzleTemperature().get()),
+                                                                       (float) (printerToUse.getNozzleTargetTemperature()),
                                                                        savedHeadData.getHeadHours());
         if (ackResponse.isNozzleFlushNeededError())
         {
             printerToUse.transmitResetErrors();
         }
 
-        printerToUse.transmitStoredGCode("Purge Material");
+        printerToUse.transmitStoredGCode("Purge Material", false);
         PrinterUtils.waitOnMacroFinished(printerToUse, this);
 
         if (project != null)
@@ -90,7 +104,29 @@ public class PurgeTask extends Task<Void> implements ControllableService
                 @Override
                 public void run()
                 {
+                    Dialogs.create()
+                            .owner(null)
+                            .title(DisplayManager.getLanguageBundle().getString("dialogs.clearBedTitle"))
+                            .masthead(null)
+                            .message(DisplayManager.getLanguageBundle().getString("dialogs.clearBedInstruction"))
+                            .showWarning();
                     printerToUse.printProject(project, filament, printQuality, settings);
+                }
+            });
+        } else if (macroName != null)
+        {
+            Platform.runLater(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    Dialogs.create()
+                            .owner(null)
+                            .title(DisplayManager.getLanguageBundle().getString("dialogs.clearBedTitle"))
+                            .masthead(null)
+                            .message(DisplayManager.getLanguageBundle().getString("dialogs.clearBedInstruction"))
+                            .showWarning();
+                    printerToUse.getPrintQueue().printGCodeFile(GCodeMacros.getFilename(macroName), true);
                 }
             });
         }
@@ -98,6 +134,10 @@ public class PurgeTask extends Task<Void> implements ControllableService
         return null;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public boolean cancelRun()
     {

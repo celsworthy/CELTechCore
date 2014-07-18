@@ -35,17 +35,28 @@ public class ProgressDialog
     private ProgressDialogController dialogController = null;
     private StackPane dialogBoxContainer = null;
 
+    /**
+     *
+     */
     public ProgressDialog()
     {
         setupDialog();
     }
 
+    /**
+     *
+     * @param service
+     */
     public ProgressDialog(ControllableService service)
     {
         setupDialog();
         dialogController.configure(service, dialogStage);
     }
 
+    /**
+     *
+     * @param service
+     */
     public void associateControllableService(ControllableService service)
     {
         dialogController.configure(service, dialogStage);
@@ -73,11 +84,21 @@ public class ProgressDialog
         }
     }
 
+    /**
+     *
+     * @param eventType
+     * @param eventHandler
+     */
     public void addKeyHandler(EventType<KeyEvent> eventType, EventHandler<KeyEvent> eventHandler)
     {
         dialogBoxContainer.addEventHandler(eventType, eventHandler);
     }
 
+    /**
+     *
+     * @param eventType
+     * @param eventHandler
+     */
     public void removeKeyHandler(EventType<KeyEvent> eventType, EventHandler<KeyEvent> eventHandler)
     {
         dialogBoxContainer.removeEventHandler(eventType, eventHandler);

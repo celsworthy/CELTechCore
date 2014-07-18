@@ -30,18 +30,33 @@ public class Notifier
                 .owner(DisplayManager.getMainStage());
     }
 
+    /**
+     *
+     * @param title
+     * @param message
+     */
     public static void showInformationNotification(String title, String message)
     {
         steno.info("Info Notification: " + title + " : " + message);
         createNotification(title, message).showInformation();
     }
 
+    /**
+     *
+     * @param title
+     * @param message
+     */
     public static void showWarningNotification(String title, String message)
     {
         steno.info("Warning Notification: " + title + " : " + message);
         createNotification(title, message).showWarning();
     }
 
+    /**
+     *
+     * @param title
+     * @param message
+     */
     public static void showErrorNotification(String title, String message)
     {
         steno.info("Error Notification: " + title + " : " + message);

@@ -9,8 +9,10 @@ import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.visualisation.importers.obj.ObjImporter;
 import celtech.coreUI.visualisation.importers.stl.STLImporter;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
-import celtech.coreUI.visualisation.importers.gcode.GCodeImporter;
 import celtech.coreUI.visualisation.importers.gcode.GCodeImporterLines;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -24,21 +26,22 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author ianhudson
  */
-public class ModelLoaderTask extends Task<ModelLoadResult>
+public class ModelLoaderTask extends Task<ModelLoadResults>
 {
 
     private Stenographer steno = StenographerFactory.getStenographer(ModelLoaderTask.class.getName());
 
-    private String modelFileToLoad = null;
-    private String shortModelName = null;
+    private final List<File> modelFilesToLoad;
     private ProjectTab targetProjectTab = null;
     private ResourceBundle languageBundle = null;
-    private DoubleProperty percentProgress = new SimpleDoubleProperty();
+    private final DoubleProperty percentProgress = new SimpleDoubleProperty();
+    private final boolean relayout;
 
-    public ModelLoaderTask(String modelFileToLoad, String shortModelName, ProjectTab targetProjectTab)
+    public ModelLoaderTask(List<File> modelFilesToLoad, ProjectTab targetProjectTab,
+        boolean relayout)
     {
-        this.modelFileToLoad = modelFileToLoad;
-        this.shortModelName = shortModelName;
+        this.modelFilesToLoad = modelFilesToLoad;
+        this.relayout = relayout;
         this.targetProjectTab = targetProjectTab;
         languageBundle = DisplayManager.getLanguageBundle();
 
@@ -53,33 +56,45 @@ public class ModelLoaderTask extends Task<ModelLoadResult>
     }
 
     @Override
-    protected ModelLoadResult call() throws Exception
+    protected ModelLoadResults call() throws Exception
     {
-        ModelLoadResult modelLoadResult = null;
-        
-        steno.debug("About to load " + modelFileToLoad);
+        List<ModelLoadResult> modelLoadResultList = new ArrayList<>();
+
         updateTitle(languageBundle.getString("dialogs.loadModelTitle"));
-        updateMessage(languageBundle.getString("dialogs.gcodeLoadMessagePrefix") + shortModelName);
-        updateProgress(0, 100);
 
-        if (modelFileToLoad.endsWith("obj") || modelFileToLoad.endsWith("OBJ"))
+        for (File modelFileToLoad : modelFilesToLoad)
         {
-            ObjImporter reader = new ObjImporter();
-            modelLoadResult = reader.loadFile(this, "file:///" + modelFileToLoad, targetProjectTab);
-        } else if (modelFileToLoad.endsWith("stl") || modelFileToLoad.endsWith("STL"))
-        {
-            STLImporter reader = new STLImporter();
-            modelLoadResult = reader.loadFile(this, modelFileToLoad, targetProjectTab, percentProgress);
-        }
-        else if (modelFileToLoad.endsWith("gcode") || modelFileToLoad.endsWith("GCODE"))
-        {
-            GCodeImporterLines reader = new GCodeImporterLines();
-            modelLoadResult = reader.loadFile(this, modelFileToLoad, targetProjectTab, percentProgress);
+            ModelLoadResult modelLoadResult = null;
+            String modelFilePath = modelFileToLoad.getAbsolutePath();
+            updateMessage(languageBundle.getString("dialogs.gcodeLoadMessagePrefix")
+                + modelFileToLoad.getName());
+            updateProgress(0, 100);
+            if (modelFilePath.toUpperCase().endsWith("OBJ"))
+            {
+                ObjImporter reader = new ObjImporter();
+                modelLoadResult = reader.loadFile(this, "file:///" + modelFilePath,
+                                                  targetProjectTab);
+            } else if (modelFilePath.toUpperCase().endsWith("STL"))
+            {
+                STLImporter reader = new STLImporter();
+                modelLoadResult = reader.loadFile(this, modelFilePath, targetProjectTab,
+                                                  percentProgress);
+            } else if (modelFilePath.toUpperCase().endsWith("GCODE"))
+            {
+                GCodeImporterLines reader = new GCodeImporterLines();
+                modelLoadResult = reader.loadFile(this, modelFilePath, targetProjectTab,
+                                                  percentProgress);
+            }
+            modelLoadResultList.add(modelLoadResult);
         }
 
-        return modelLoadResult;
+        return new ModelLoadResults(modelLoadResultList, relayout);
     }
-    
+
+    /**
+     *
+     * @param message
+     */
     public void updateMessageText(String message)
     {
         updateMessage(message);

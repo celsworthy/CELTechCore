@@ -27,6 +27,7 @@ public class MaterialChoiceListCell extends ListCell<Filament>
 
     private final static String LIST_CELL_STYLE_CLASS = "material-choice-list-cell";
     private final GridPane grid = new GridPane();
+    private final GridPane alternateGrid = new GridPane();
     private final Rectangle colourRectangle = new Rectangle(15, 15);
     private final Label name = new Label();
     private final Label remainingFilament = new Label();
@@ -34,6 +35,9 @@ public class MaterialChoiceListCell extends ListCell<Filament>
     private final ImageView padlock = new ImageView();
     private final Label createNewFilamentLabel = new Label();
 
+    /**
+     *
+     */
     public MaterialChoiceListCell()
     {
         if (padlockImage == null)
@@ -44,6 +48,9 @@ public class MaterialChoiceListCell extends ListCell<Filament>
 
         createNewFilamentLabel.setText(DisplayManager.getLanguageBundle().getString("sidePanel_settings.createNewMaterial"));
         createNewFilamentLabel.setAlignment(Pos.CENTER);
+        
+        alternateGrid.add(createNewFilamentLabel, 1, 1);
+        alternateGrid.getStyleClass().add(LIST_CELL_STYLE_CLASS);
 
         grid.add(colourRectangle, 1, 1);
         grid.add(padlock, 2, 1);
@@ -87,7 +94,14 @@ public class MaterialChoiceListCell extends ListCell<Filament>
             {
                 //Remaining filament is in mm - we want to display it in metres
                 remainingFilament.textProperty().bind(filament.getRemainingFilamentProperty().divide(1000).asString("%.1fm"));
+                remainingFilament.setVisible(true);
             }
+            else
+            {
+                remainingFilament.textProperty().unbind();
+                remainingFilament.setVisible(false);
+            }
+                 
             setGraphic(grid);
         }
     }

@@ -15,12 +15,20 @@ import celtech.printerControl.comms.commands.exceptions.InvalidCommandByteExcept
 public class RoboxRxPacketFactory
 {
 
+    /**
+     *
+     */
     public final static byte commandByteMask = (byte) 0x80;
 
     private RoboxRxPacketFactory()
     {
     }
 
+    /**
+     *
+     * @param packetType
+     * @return
+     */
     public static RoboxRxPacket createPacket(RxPacketTypeEnum packetType)
     {
         RoboxRxPacket returnVal = null;
@@ -51,7 +59,7 @@ public class RoboxRxPacketFactory
                     returnVal = new GCodeDataResponse();
                     break;
                 case LIST_FILES_RESPONSE:
-                    returnVal = new ListFilesResponse();
+                    returnVal = new ListFilesResponseImpl();
                     break;
                 default:
                     break;
@@ -61,6 +69,14 @@ public class RoboxRxPacketFactory
         return returnVal;
     }
 
+    /**
+     *
+     * @param inputBytes
+     * @return
+     * @throws InvalidCommandByteException
+     * @throws UnableToGenerateRoboxPacketException
+     * @throws UnknownPacketTypeException
+     */
     public static RoboxRxPacket createPacket(byte[] inputBytes) throws InvalidCommandByteException, UnableToGenerateRoboxPacketException, UnknownPacketTypeException
     {
         RoboxRxPacket returnVal = null;
@@ -112,7 +128,7 @@ public class RoboxRxPacketFactory
                     returnVal = gcodeDataResponse;
                     break;
                 case LIST_FILES_RESPONSE:
-                    ListFilesResponse listFilesResponse = new ListFilesResponse();
+                    ListFilesResponse listFilesResponse = new ListFilesResponseImpl();
                     listFilesResponse.populatePacket(inputBytes);
                     returnVal = listFilesResponse;
                     break;

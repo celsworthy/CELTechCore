@@ -10,5 +10,29 @@ package celtech.utils.gcode.representation;
  */
 public enum MovementType
 {
-    TRAVEL, UNRETRACT, RETRACT, EXTRUDE, EXTRUDE_SUPPORT;
+
+    /**
+     *
+     */
+    TRAVEL,
+
+    /**
+     *
+     */
+    UNRETRACT,
+
+    /**
+     *
+     */
+    RETRACT,
+
+    /**
+     *
+     */
+    EXTRUDE,
+
+    /**
+     *
+     */
+    EXTRUDE_SUPPORT;
 }

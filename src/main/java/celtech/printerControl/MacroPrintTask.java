@@ -34,6 +34,13 @@ public class MacroPrintTask extends Task<String>
     private String portName = null;
     private ResourceBundle i18nBundle = null;
 
+    /**
+     *
+     * @param macroData
+     * @param printer
+     * @param commsManager
+     * @param portName
+     */
     public MacroPrintTask(ArrayList<String> macroData, Printer printer, RoboxCommsManager commsManager, String portName)
     {
         this.macroData = macroData;

@@ -19,6 +19,10 @@ import java.util.List;
 public class ClassInspector
 {
 
+    /**
+     *
+     * @param c
+     */
     public static void inspect(Class<?> c)
     {
 

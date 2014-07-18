@@ -22,6 +22,13 @@ public class GCodeLoadResult
     private ArrayList<String> fileLines = new ArrayList<>();
     private GCodeMeshData gcodeMeshData = null;
 
+    /**
+     *
+     * @param modelIsTooLarge
+     * @param filename
+     * @param gcodeMeshData
+     * @param fileLines
+     */
     public GCodeLoadResult(boolean modelIsTooLarge, String filename, GCodeMeshData gcodeMeshData, ArrayList<String> fileLines)
     {
         this.modelTooLargeForPrintbed = modelIsTooLarge;
@@ -30,21 +37,37 @@ public class GCodeLoadResult
         this.fileLines.addAll(0, fileLines);
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isModelTooLarge()
     {
         return modelTooLargeForPrintbed;
     }
     
+    /**
+     *
+     * @return
+     */
     public String getModelFilename()
     {
         return filename;
     }
     
+    /**
+     *
+     * @return
+     */
     public GCodeMeshData getGCodeMeshData()
     {
         return gcodeMeshData;
     }
     
+    /**
+     *
+     * @return
+     */
     public ArrayList<String> getFileLines()
     {
         return fileLines;

@@ -51,6 +51,13 @@ public class SubdivisionMesh extends PolygonMesh {
         SMOOTH_ALL
     }
     
+    /**
+     *
+     * @param originalMesh
+     * @param subdivisionLevel
+     * @param boundaryMode
+     * @param mapBorderMode
+     */
     public SubdivisionMesh(PolygonMesh originalMesh, int subdivisionLevel, BoundaryMode boundaryMode, MapBorderMode mapBorderMode) {
         this.originalMesh = originalMesh;
         setSubdivisionLevelForced(subdivisionLevel);
@@ -133,34 +140,62 @@ public class SubdivisionMesh extends PolygonMesh {
         meshDirty = true;
     }
     
+    /**
+     *
+     * @return
+     */
     public PolygonMesh getOriginalMesh() {
         return originalMesh;
     }
     
+    /**
+     *
+     * @return
+     */
     public int getSubdivisionLevel() {
         return subdivisionLevel;
     }
 
+    /**
+     *
+     * @param subdivisionLevel
+     */
     public void setSubdivisionLevel(int subdivisionLevel) {
         if (subdivisionLevel != this.subdivisionLevel) {
             setSubdivisionLevelForced(subdivisionLevel);
         }
     }
     
+    /**
+     *
+     * @return
+     */
     public SubdivisionMesh.BoundaryMode getBoundaryMode() {
         return boundaryMode;
     }
 
+    /**
+     *
+     * @param boundaryMode
+     */
     public void setBoundaryMode(SubdivisionMesh.BoundaryMode boundaryMode) {
         if (boundaryMode != this.boundaryMode) {
             setBoundaryModeForced(boundaryMode);
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public SubdivisionMesh.MapBorderMode getMapBorderMode() {
         return mapBorderMode;
     }
 
+    /**
+     *
+     * @param mapBorderMode
+     */
     public void setMapBorderMode(SubdivisionMesh.MapBorderMode mapBorderMode) {
         if (mapBorderMode != this.mapBorderMode) {
             setMapBorderModeForced(mapBorderMode);

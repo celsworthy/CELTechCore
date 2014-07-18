@@ -12,5 +12,14 @@ package celtech.coreUI.visualisation.importers;
  */
 public enum ModelLoadResultType
 {
-    Mesh, GroupedParts
+
+    /**
+     *
+     */
+    Mesh,
+
+    /**
+     *
+     */
+    GroupedParts
 }

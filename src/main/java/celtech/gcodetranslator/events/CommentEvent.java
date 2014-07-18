@@ -6,6 +6,11 @@ package celtech.gcodetranslator.events;
  */
 public class CommentEvent extends GCodeParseEvent
 {
+
+    /**
+     *
+     * @return
+     */
     @Override
     public String renderForOutput()
     {

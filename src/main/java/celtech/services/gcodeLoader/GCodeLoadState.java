@@ -10,5 +10,14 @@ package celtech.services.gcodeLoader;
  */
 public enum GCodeLoadState
 {
-    IDLE, FOUND_G0_G1
+
+    /**
+     *
+     */
+    IDLE,
+
+    /**
+     *
+     */
+    FOUND_G0_G1
 }

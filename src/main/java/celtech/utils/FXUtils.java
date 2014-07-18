@@ -14,6 +14,10 @@ import javafx.util.StringConverter;
 public class FXUtils
 {
 
+    /**
+     *
+     * @return
+     */
     public static StringConverter<Integer> getIntConverter()
     {
         return new StringConverter<Integer>()
@@ -40,6 +44,11 @@ public class FXUtils
         };
     }
 
+    /**
+     *
+     * @param decimalPlaces
+     * @return
+     */
     public static StringConverter<Float> getFloatConverter(int decimalPlaces)
     {
         String formatString = "%." + decimalPlaces + "f";

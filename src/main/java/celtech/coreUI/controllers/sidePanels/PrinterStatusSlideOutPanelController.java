@@ -206,6 +206,9 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
         
     }
 
+    /**
+     *
+     */
     @Override
     public void slideIn()
     {

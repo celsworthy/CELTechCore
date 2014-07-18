@@ -12,7 +12,20 @@ package celtech.configuration;
 public enum PrinterEdition
 {
 
-    Kickstarter("KS", "Kickstarter Edition");
+    /**
+     *
+     */
+    Kickstarter("KS", "Kickstarter Edition"),
+    /**
+     *
+     */
+    TradeSample(
+            "TS", "Trade Sample"),
+    /**
+     *
+     */
+    FirstEdition(
+            "FE", "First Edition");
 
     private String codeName;
     private String friendlyName;
@@ -23,11 +36,19 @@ public enum PrinterEdition
         this.friendlyName = friendlyName;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getCodeName()
     {
         return codeName;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getFriendlyName()
     {
         return friendlyName;

@@ -12,5 +12,23 @@ package celtech.configuration;
 public enum DirectoryMemoryProperty
 {
 
-    MODEL, FIRMWARE, MACRO, GCODE
+    /**
+     *
+     */
+    MODEL,
+
+    /**
+     *
+     */
+    FIRMWARE,
+
+    /**
+     *
+     */
+    MACRO,
+
+    /**
+     *
+     */
+    GCODE
 }

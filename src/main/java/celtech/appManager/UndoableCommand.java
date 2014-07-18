@@ -12,5 +12,19 @@ package celtech.appManager;
  */
 public enum UndoableCommand
 {
-    TRANSLATE, SCALE, ROTATE
+
+    /**
+     *
+     */
+    TRANSLATE,
+
+    /**
+     *
+     */
+    SCALE,
+
+    /**
+     *
+     */
+    ROTATE
 }

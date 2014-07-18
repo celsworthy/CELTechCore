@@ -12,16 +12,28 @@ public class GCodeMacroButton extends Button
 {
     private StringProperty macroName = new SimpleStringProperty("");
     
+    /**
+     *
+     * @param value
+     */
     public void setMacroName(String value)
     {
         macroName.set(value);
     }
     
+    /**
+     *
+     * @return
+     */
     public String getMacroName()
     {
         return macroName.get();
     }
     
+    /**
+     *
+     * @return
+     */
     public StringProperty macroNameProperty()
     {
         return macroName;

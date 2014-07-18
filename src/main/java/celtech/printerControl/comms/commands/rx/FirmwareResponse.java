@@ -5,7 +5,6 @@
 package celtech.printerControl.comms.commands.rx;
 
 import java.io.UnsupportedEncodingException;
-import java.text.NumberFormat;
 
 /**
  *
@@ -19,23 +18,37 @@ public class FirmwareResponse extends RoboxRxPacket
     private final int firmwareRevisionBytes = 8;
     private int firmwareRevisionInt = 0;
 
-    private NumberFormat numberFormatter = NumberFormat.getNumberInstance();
-
+    /**
+     *
+     * @return
+     */
     public String getFirmwareRevision()
     {
         return firmwareRevision;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getFirmwareRevisionInt()
     {
         return firmwareRevisionInt;
     }
 
+    /**
+     *
+     */
     public FirmwareResponse()
     {
         super(RxPacketTypeEnum.FIRMWARE_RESPONSE, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {
@@ -59,6 +72,10 @@ public class FirmwareResponse extends RoboxRxPacket
         return success;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString()
     {

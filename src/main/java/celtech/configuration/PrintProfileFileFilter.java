@@ -15,6 +15,12 @@ import java.io.FileFilter;
  */
 public class PrintProfileFileFilter implements FileFilter
 {
+
+    /**
+     *
+     * @param pathname
+     * @return
+     */
     @Override
     public boolean accept(File pathname)
     {

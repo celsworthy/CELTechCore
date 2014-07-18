@@ -8,16 +8,28 @@ public class LayerChangeEvent extends GCodeParseEvent
 {
     private double z;
 
+    /**
+     *
+     * @return
+     */
     public double getZ()
     {
         return z;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setZ(double value)
     {
         this.z = value;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String renderForOutput()
     {

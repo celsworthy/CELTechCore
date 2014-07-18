@@ -11,5 +11,34 @@ package celtech.coreUI.visualisation;
  */
 public enum DragMode
 {
-    IDLE, SCALING, TRANSLATING, X_CONSTRAINED_TRANSLATE, Z_CONSTRAINED_TRANSLATE, ROTATE
+
+    /**
+     *
+     */
+    IDLE,
+
+    /**
+     *
+     */
+    SCALING,
+
+    /**
+     *
+     */
+    TRANSLATING,
+
+    /**
+     *
+     */
+    X_CONSTRAINED_TRANSLATE,
+
+    /**
+     *
+     */
+    Z_CONSTRAINED_TRANSLATE,
+
+    /**
+     *
+     */
+    ROTATE
 }

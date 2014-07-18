@@ -7,8 +7,8 @@ package celtech.services.modelLoader;
 import celtech.coreUI.components.ProjectTab;
 import celtech.services.ControllableService;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import java.io.File;
+import java.util.List;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 
@@ -16,57 +16,47 @@ import javafx.concurrent.Task;
  *
  * @author ianhudson
  */
-public class ModelLoaderService extends Service<ModelLoadResult> implements ControllableService
+public class ModelLoaderService extends Service<ModelLoadResults> implements
+    ControllableService
 {
 
-    private StringProperty modelFileToLoad = new SimpleStringProperty();
-    private StringProperty shortModelName = new SimpleStringProperty();
+    private List<File> modelFilesToLoad;
     private ProjectTab targetProjectTab = null;
+    private boolean relayout;
 
-    public final void setModelFileToLoad(String value)
+    /**
+     *
+     * @param value
+     */
+    public final void setModelFilesToLoad(List<File> modelFiles, boolean relayout)
     {
-        modelFileToLoad.set(value);
-    }
-
-    public final String getModelFileToLoad()
-    {
-        return modelFileToLoad.get();
-    }
-
-    public final StringProperty modelFileToLoadProperty()
-    {
-        return modelFileToLoad;
-    }
-
-    public final void setShortModelName(String value)
-    {
-        shortModelName.set(value);
-    }
-
-    public final String getShortModelName()
-    {
-        return shortModelName.get();
-    }
-
-    public final StringProperty shortModelNameProperty()
-    {
-        return shortModelName;
+        modelFilesToLoad = modelFiles;
+        this.relayout = relayout;
     }
 
     @Override
-    protected Task<ModelLoadResult> createTask()
+    protected Task<ModelLoadResults> createTask()
     {
-        return new ModelLoaderTask(getModelFileToLoad(), getShortModelName(), targetProjectTab);
+        return new ModelLoaderTask(modelFilesToLoad, targetProjectTab, relayout);
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public boolean cancelRun()
     {
         return cancel();
     }
 
+    /**
+     *
+     * @param targetProjectTab
+     */
     public void setTargetTab(ProjectTab targetProjectTab)
     {
         this.targetProjectTab = targetProjectTab;
     }
+
 }

@@ -32,6 +32,10 @@ public class ApplicationMaterials
     private static final PhongMaterial travelMaterial = new PhongMaterial(Color.LIGHTGREEN);
     private static final PhongMaterial pickedGCodeMaterial = new PhongMaterial(Color.GOLDENROD);
 
+    /**
+     *
+     * @return
+     */
     public static PhongMaterial getDefaultModelMaterial()
     {
         defaultModelMaterial.setSpecularColor(roboxBlue);
@@ -39,51 +43,93 @@ public class ApplicationMaterials
         return defaultModelMaterial;
     }
 
+    /**
+     *
+     * @return
+     */
     public static PhongMaterial getSelectedModelMaterial()
     {
         return selectedModelMaterial;
     }
 
+    /**
+     *
+     * @return
+     */
     public static PhongMaterial getCollidedModelMaterial()
     {
         return collidedModelMaterial;
     }
 
+    /**
+     *
+     * @return
+     */
     public static PhongMaterial getCollidedSelectedModelMaterial()
     {
         return collidedSelectedModelMaterial;
     }
     
+    /**
+     *
+     * @return
+     */
     public static PhongMaterial getOffBedModelMaterial()
     {
         return offBedModelMaterial;
     }
 
+    /**
+     *
+     * @return
+     */
     public static Material getExtrusionMaterial()
     {
         return extrusionMaterial;
     }
 
+    /**
+     *
+     * @return
+     */
     public static Material getRetractMaterial()
     {
         return retractMaterial;
     }
 
+    /**
+     *
+     * @return
+     */
     public static Material getUnretractMaterial()
     {
         return unretractMaterial;
     }
 
+    /**
+     *
+     * @return
+     */
     public static Material getSupportMaterial()
     {
         return supportMaterial;
     }
 
+    /**
+     *
+     * @return
+     */
     public static Material getTravelMaterial()
     {
         return travelMaterial;
     }
 
+    /**
+     *
+     * @param movementType
+     * @param selected
+     * @return
+     */
     public static Material getGCodeMaterial(MovementType movementType, boolean selected)
     {
         Material returnVal = extrusionMaterial;

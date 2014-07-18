@@ -6,14 +6,14 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PrintProfileContainer;
 import celtech.coreUI.DisplayManager;
+import celtech.coreUI.components.RestrictedNumberField;
+import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.controllers.popups.PopupCommandReceiver;
 import celtech.coreUI.controllers.popups.PopupCommandTransmitter;
 import celtech.services.slicer.RoboxProfile;
-import celtech.utils.FXUtils;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -30,21 +30,17 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.TextField;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.util.StringConverter;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.control.textfield.CustomTextField;
 
 /**
  * FXML Controller class
@@ -58,15 +54,17 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private SettingsScreenState settingsScreenState = null;
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
+    private int lastNozzleSelected = 0;
+    private BooleanProperty nameEditable = new SimpleBooleanProperty(false);
 
     @FXML
     private VBox container;
 
     @FXML
-    private TextField fillDensity;
+    private RestrictedNumberField fillDensity;
 
     @FXML
-    private TextField slowFanIfLayerTimeBelow;
+    private RestrictedNumberField slowFanIfLayerTimeBelow;
 
     @FXML
     private ToggleButton nozzle2Button;
@@ -81,37 +79,49 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private GridPane supportGrid;
 
     @FXML
-    private TextField enableFanIfLayerTimeBelow;
+    private RestrictedNumberField enableFanIfLayerTimeBelow;
 
     @FXML
     private CheckBox enableAutoCooling;
 
     @FXML
-    private TextField solidInfillSpeed;
+    private RestrictedNumberField solidInfillSpeed;
+
+    @FXML
+    private Label nozzlePreejectionVolumeLabel;
 
     @FXML
     private Label nozzleEjectionVolumeLabel;
 
     @FXML
-    private TextField nozzlePartialOpen;
+    private RestrictedNumberField nozzlePartialOpen;
+
+    @FXML
+    private HBox nozzlePreejectionVolumeHBox;
 
     @FXML
     private HBox nozzleEjectionVolumeHBox;
 
     @FXML
-    private TextField supportOverhangThreshold;
+    private RestrictedNumberField supportOverhangThreshold;
 
     @FXML
     private ComboBox<String> fillNozzleChoice;
 
     @FXML
-    private TextField nozzleEjectionVolume;
+    private RestrictedNumberField nozzlePreejectionVolume;
+
+    @FXML
+    private RestrictedNumberField nozzleEjectionVolume;
 
     @FXML
     private Label nozzleWipeVolumeLabel;
 
     @FXML
-    private TextField solidLayers;
+    private RestrictedNumberField solidLayersTop;
+
+    @FXML
+    private RestrictedNumberField solidLayersBottom;
 
     @FXML
     private CheckBox supportMaterialEnabled;
@@ -120,16 +130,16 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private ComboBox<String> supportNozzleChoice;
 
     @FXML
-    private TextField numberOfPerimeters;
+    private RestrictedNumberField numberOfPerimeters;
 
     @FXML
-    private TextField topSolidInfillSpeed;
+    private RestrictedNumberField topSolidInfillSpeed;
 
     @FXML
     private Button deleteProfileButton;
 
     @FXML
-    private TextField perimeterSpeed;
+    private RestrictedNumberField perimeterSpeed;
 
     @FXML
     private GridPane coolingGrid;
@@ -141,16 +151,19 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private Label supportInterfaceNozzleChoiceLabel;
 
     @FXML
-    private TextField gapFillSpeed;
+    private RestrictedNumberField gapFillSpeed;
 
     @FXML
-    private CustomTextField profileNameField;
+    private RestrictedTextField profileNameField;
 
     @FXML
-    private TextField retractLength;
+    private RestrictedNumberField retractLength;
 
     @FXML
     private HBox retractLengthHBox;
+
+    @FXML
+    private Label retractLengthLabel;
 
     @FXML
     private ComboBox<String> supportInterfaceNozzleChoice;
@@ -162,37 +175,37 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private Label perimeterNozzleChoiceLabel;
 
     @FXML
-    private TextField supportMaterialSpeed;
+    private RestrictedNumberField supportMaterialSpeed;
 
     @FXML
-    private TextField brimWidth;
+    private RestrictedNumberField brimWidth;
 
     @FXML
-    private TextField infillSpeed;
+    private RestrictedNumberField infillSpeed;
 
     @FXML
     private Button cancelButton;
 
     @FXML
-    private TextField nozzleWipeVolume;
+    private RestrictedNumberField nozzleWipeVolume;
 
     @FXML
-    private TextField minPrintSpeed;
+    private RestrictedNumberField minPrintSpeed;
 
     @FXML
     private ToggleButton nozzle1Button;
 
     @FXML
-    private TextField minFanSpeed;
+    private RestrictedNumberField minFanSpeed;
 
     @FXML
-    private TextField infillEveryN;
+    private RestrictedNumberField infillEveryN;
 
     @FXML
     private Button saveButton;
 
     @FXML
-    private TextField forcedSupportLayers;
+    private RestrictedNumberField forcedSupportLayers;
 
     @FXML
     private Label fillNozzleChoiceLabel;
@@ -210,13 +223,13 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private ComboBox<String> perimeterNozzleChoice;
 
     @FXML
-    private TextField supportPatternSpacing;
+    private RestrictedNumberField supportPatternSpacing;
 
     @FXML
-    private TextField smallPerimeterSpeed;
+    private RestrictedNumberField smallPerimeterSpeed;
 
     @FXML
-    private TextField maxFanSpeed;
+    private RestrictedNumberField maxFanSpeed;
 
     @FXML
     private HBox editingOptions;
@@ -225,16 +238,19 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private Label nozzlePartialOpenLabel;
 
     @FXML
-    private TextField disableFanForFirstNLayers;
+    private RestrictedNumberField disableFanForFirstNLayers;
 
     @FXML
     private HBox nozzleWipeVolumeHBox;
 
     @FXML
-    private TextField retractSpeed;
+    private RestrictedNumberField retractSpeed;
 
     @FXML
     private HBox retractSpeedHBox;
+
+    @FXML
+    private Label retractSpeedLabel;
 
     @FXML
     private HBox nozzlePartialOpenHBox;
@@ -243,48 +259,49 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private ComboBox<String> supportPattern;
 
     @FXML
-    private TextField bridgesFanSpeed;
+    private RestrictedNumberField bridgesFanSpeed;
 
     @FXML
     private HBox immutableOptions;
 
     @FXML
-    private TextField bridgesSpeed;
+    private RestrictedNumberField bridgesSpeed;
 
     @FXML
-    private TextField layerHeight;
+    private RestrictedNumberField layerHeight;
 
     @FXML
     private GridPane extrusionGrid;
 
     @FXML
-    private TextField externalPerimeterSpeed;
+    private RestrictedNumberField externalPerimeterSpeed;
 
     @FXML
-    private TextField supportPatternAngle;
+    private RestrictedNumberField supportPatternAngle;
 
     @FXML
     void saveData(ActionEvent event)
     {
-        final RoboxProfile profileToSave = getProfileData();
-        PrintProfileContainer.saveProfile(profileToSave);
+        updateSettingsFromGUI(workingProfile);
+        saveNozzleParametersToWorkingProfile();
+        if (commandReceiver != null)
+        {
+            commandReceiver.triggerSave(workingProfile);
+        }
         isDirty.set(false);
     }
 
     @FXML
     void cancelEdit(ActionEvent event)
     {
-        if (lastSettings != null)
-        {
-            updateProfileData(lastSettings);
-        }
+        bindToNewSettings(masterProfile);
+        isDirty.set(false);
     }
 
     @FXML
     void deleteProfile(ActionEvent event)
     {
-        final RoboxProfile profileToSave = getProfileData();
-        PrintProfileContainer.deleteProfile(profileToSave.getProfileName());
+        PrintProfileContainer.deleteProfile(masterProfile.getProfileName());
     }
 
     @FXML
@@ -305,16 +322,15 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private final BooleanProperty isMutable = new SimpleBooleanProperty(false);
     private final BooleanProperty showButtons = new SimpleBooleanProperty(true);
 
-    private final StringConverter intConverter = FXUtils.getIntConverter();
-    private final StringConverter floatConverter = FXUtils.getFloatConverter(2);
-
     private final ObservableList<String> nozzleOptions = FXCollections.observableArrayList(new String("0.3mm"), new String("0.8mm"));
     private final ObservableList<String> fillPatternOptions = FXCollections.observableArrayList(new String("rectilinear"), new String("line"), new String("concentric"), new String("honeycomb"));
     private final ObservableList<String> supportPatternOptions = FXCollections.observableArrayList(new String("rectilinear"), new String("rectilinear grid"), new String("honeycomb"));
 
     private ChangeListener<Toggle> nozzleSelectionListener = null;
 
-    private RoboxProfile lastSettings = null;
+    private RoboxProfile masterProfile = null;
+    private RoboxProfile workingProfile = null;
+    private RoboxProfile lastBoundProfile = null;
 
     private int boundToNozzle = -1;
 
@@ -323,34 +339,34 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         isDirty.set(true);
     };
 
+    private final ChangeListener<Boolean> dirtyBooleanListener = (ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1) ->
+    {
+        isDirty.set(true);
+    };
+
     private PopupCommandReceiver commandReceiver = null;
 
     /**
      * Initializes the controller class.
+     *
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        nameEditable.set(false);
+        isMutable.set(true);
+        
         applicationStatus = ApplicationStatus.getInstance();
         displayManager = DisplayManager.getInstance();
         settingsScreenState = SettingsScreenState.getInstance();
 
-        profileNameField.setRight(redcrossHolder);
-        profileNameField.getRight().visibleProperty().bind(profileNameInvalid.and(isDirty));
-
-//        profileNameField.addEventHandler(KeyEvent.KEY_TYPED, new EventHandler<KeyEvent>() {
-//
-//            @Override
-//            public void handle(KeyEvent event)
-//            {
-//                    validateProfileName();
-//            }
-//        });
         editingOptions.visibleProperty().bind(isDirty.and(showButtons).and(isMutable));
         notEditingOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable));
         immutableOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable.not()));
 
-        profileNameField.disableProperty().bind(isMutable.not());
+        profileNameField.disableProperty().bind(nameEditable.not());
         coolingGrid.disableProperty().bind(isMutable.not());
         extrusionGrid.disableProperty().bind(isMutable.not());
         perimeterNozzleChoice.disableProperty().bind(isMutable.not());
@@ -361,6 +377,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         supportNozzleChoiceLabel.disableProperty().bind(isMutable.not());
         supportInterfaceNozzleChoice.disableProperty().bind(isMutable.not());
         supportInterfaceNozzleChoiceLabel.disableProperty().bind(isMutable.not());
+        nozzlePreejectionVolumeLabel.disableProperty().bind(isMutable.not());
+        nozzlePreejectionVolumeHBox.disableProperty().bind(isMutable.not());
         nozzleEjectionVolumeLabel.disableProperty().bind(isMutable.not());
         nozzleEjectionVolumeHBox.disableProperty().bind(isMutable.not());
         nozzleWipeVolumeLabel.disableProperty().bind(isMutable.not());
@@ -368,9 +386,11 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         nozzlePartialOpenLabel.disableProperty().bind(isMutable.not());
         nozzlePartialOpenHBox.disableProperty().bind(isMutable.not());
         retractLength.disableProperty().bind(isMutable.not());
+        retractLengthLabel.disableProperty().bind(isMutable.not());
         retractLengthHBox.disableProperty().bind(isMutable.not());
         retractSpeed.disableProperty().bind(isMutable.not());
         retractSpeedHBox.disableProperty().bind(isMutable.not());
+        retractSpeedLabel.disableProperty().bind(isMutable.not());
         supportGrid.disableProperty().bind(isMutable.not());
         speedGrid.disableProperty().bind(isMutable.not());
 
@@ -389,8 +409,10 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
                     if (newNozzle != boundToNozzle)
                     {
+                        saveNozzleParametersToWorkingProfile();
                         unbindNozzleParameters();
-                        bindNozzleParameters(newNozzle);
+                        bindNozzleParameters(newNozzle, lastBoundProfile);
+                        lastNozzleSelected = newNozzle;
                     }
                 }
             }
@@ -440,16 +462,15 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         fillDensity.textProperty().addListener(dirtyStringListener);
         slowFanIfLayerTimeBelow.textProperty().addListener(dirtyStringListener);
         enableFanIfLayerTimeBelow.textProperty().addListener(dirtyStringListener);
-        enableAutoCooling.textProperty().addListener(dirtyStringListener);
         solidInfillSpeed.textProperty().addListener(dirtyStringListener);
         supportMaterialEnabled.textProperty().addListener(dirtyStringListener);
         supportOverhangThreshold.textProperty().addListener(dirtyStringListener);
-        solidLayers.textProperty().addListener(dirtyStringListener);
+        solidLayersTop.textProperty().addListener(dirtyStringListener);
+        solidLayersBottom.textProperty().addListener(dirtyStringListener);
         numberOfPerimeters.textProperty().addListener(dirtyStringListener);
         topSolidInfillSpeed.textProperty().addListener(dirtyStringListener);
         perimeterSpeed.textProperty().addListener(dirtyStringListener);
         gapFillSpeed.textProperty().addListener(dirtyStringListener);
-        retractLength.textProperty().addListener(dirtyStringListener);
         fillPatternChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
         supportMaterialSpeed.textProperty().addListener(dirtyStringListener);
         brimWidth.textProperty().addListener(dirtyStringListener);
@@ -462,12 +483,20 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         smallPerimeterSpeed.textProperty().addListener(dirtyStringListener);
         maxFanSpeed.textProperty().addListener(dirtyStringListener);
         disableFanForFirstNLayers.textProperty().addListener(dirtyStringListener);
-        retractSpeed.textProperty().addListener(dirtyStringListener);
         bridgesFanSpeed.textProperty().addListener(dirtyStringListener);
         bridgesSpeed.textProperty().addListener(dirtyStringListener);
         layerHeight.textProperty().addListener(dirtyStringListener);
         externalPerimeterSpeed.textProperty().addListener(dirtyStringListener);
         supportPatternAngle.textProperty().addListener(dirtyStringListener);
+
+        supportMaterialEnabled.selectedProperty().addListener(dirtyBooleanListener);
+        enableAutoCooling.selectedProperty().addListener(dirtyBooleanListener);
+
+        perimeterNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
+        fillNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
+        supportNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
+        supportInterfaceNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
+        supportPattern.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
 
         isDirty.addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
         {
@@ -487,16 +516,18 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         });
     }
 
-    private void bindNozzleParameters(int nozzleNumber)
+    private void bindNozzleParameters(int nozzleNumber, RoboxProfile newSettings)
     {
         boundToNozzle = nozzleNumber;
 
-        Bindings.bindBidirectional(nozzleEjectionVolume.textProperty(), lastSettings.getNozzle_ejection_volume().get(nozzleNumber), floatConverter);
-        Bindings.bindBidirectional(nozzleWipeVolume.textProperty(), lastSettings.getNozzle_wipe_volume().get(nozzleNumber), floatConverter);
-        Bindings.bindBidirectional(nozzlePartialOpen.textProperty(), lastSettings.getNozzle_partial_b_minimum().get(nozzleNumber), floatConverter);
-        Bindings.bindBidirectional(retractLength.textProperty(), lastSettings.retract_lengthProperty().get(nozzleNumber), floatConverter);
-        Bindings.bindBidirectional(retractSpeed.textProperty(), lastSettings.retract_speedProperty().get(nozzleNumber), intConverter);
+        nozzlePreejectionVolume.floatValueProperty().set(newSettings.getNozzle_preejection_volume().get(nozzleNumber).get());
+        nozzleEjectionVolume.floatValueProperty().set(newSettings.getNozzle_ejection_volume().get(nozzleNumber).get());
+        nozzleWipeVolume.floatValueProperty().set(newSettings.getNozzle_wipe_volume().get(nozzleNumber).get());
+        nozzlePartialOpen.floatValueProperty().set(newSettings.getNozzle_partial_b_minimum().get(nozzleNumber).get());
+        retractLength.floatValueProperty().set(newSettings.retract_lengthProperty().get(nozzleNumber).get());
+        retractSpeed.intValueProperty().set(newSettings.retract_speedProperty().get(nozzleNumber).get());
 
+        nozzlePreejectionVolume.textProperty().addListener(dirtyStringListener);
         nozzleEjectionVolume.textProperty().addListener(dirtyStringListener);
         nozzleWipeVolume.textProperty().addListener(dirtyStringListener);
         nozzlePartialOpen.textProperty().addListener(dirtyStringListener);
@@ -504,21 +535,38 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         retractSpeed.textProperty().addListener(dirtyStringListener);
     }
 
+    private void saveNozzleParametersToWorkingProfile()
+    {
+        if (boundToNozzle != -1)
+        {
+            workingProfile.getNozzle_preejection_volume().get(boundToNozzle).set(nozzlePreejectionVolume.floatValueProperty().get());
+            workingProfile.getNozzle_ejection_volume().get(boundToNozzle).set(nozzleEjectionVolume.floatValueProperty().get());
+            workingProfile.getNozzle_wipe_volume().get(boundToNozzle).set(nozzleWipeVolume.floatValueProperty().get());
+            workingProfile.getNozzle_partial_b_minimum().get(boundToNozzle).set(nozzlePartialOpen.floatValueProperty().get());
+            workingProfile.retract_lengthProperty().get(boundToNozzle).set(retractLength.floatValueProperty().get());
+            workingProfile.retract_speedProperty().get(boundToNozzle).set(retractSpeed.intValueProperty().get());
+        }
+    }
+
     private void unbindNozzleParameters()
     {
         if (boundToNozzle != -1)
         {
+            if (lastBoundProfile != null)
+            {
+                lastBoundProfile.getNozzle_preejection_volume().get(boundToNozzle).set(nozzlePreejectionVolume.floatValueProperty().get());
+                lastBoundProfile.getNozzle_ejection_volume().get(boundToNozzle).set(nozzleEjectionVolume.floatValueProperty().get());
+                lastBoundProfile.getNozzle_wipe_volume().get(boundToNozzle).set(nozzleWipeVolume.floatValueProperty().get());
+                lastBoundProfile.getNozzle_partial_b_minimum().get(boundToNozzle).set(nozzlePartialOpen.floatValueProperty().get());
+                lastBoundProfile.retract_lengthProperty().get(boundToNozzle).set(retractLength.floatValueProperty().get());
+                lastBoundProfile.retract_speedProperty().get(boundToNozzle).set(retractSpeed.intValueProperty().get());
+            }
+            nozzlePreejectionVolume.textProperty().removeListener(dirtyStringListener);
             nozzleEjectionVolume.textProperty().removeListener(dirtyStringListener);
             nozzleWipeVolume.textProperty().removeListener(dirtyStringListener);
             nozzlePartialOpen.textProperty().removeListener(dirtyStringListener);
             retractLength.textProperty().removeListener(dirtyStringListener);
             retractSpeed.textProperty().removeListener(dirtyStringListener);
-
-            Bindings.unbindBidirectional(nozzleEjectionVolume.textProperty(), lastSettings.getNozzle_ejection_volume().get(boundToNozzle));
-            Bindings.unbindBidirectional(nozzleWipeVolume.textProperty(), lastSettings.getNozzle_wipe_volume().get(boundToNozzle));
-            Bindings.unbindBidirectional(nozzlePartialOpen.textProperty(), lastSettings.getNozzle_partial_b_minimum().get(boundToNozzle));
-            Bindings.unbindBidirectional(retractLength.textProperty(), lastSettings.retract_lengthProperty().get(boundToNozzle));
-            Bindings.unbindBidirectional(retractSpeed.textProperty(), lastSettings.retract_speedProperty().get(boundToNozzle));
         }
 
         boundToNozzle = -1;
@@ -526,161 +574,169 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
     private void bindToNewSettings(RoboxProfile newSettings)
     {
-        if (lastSettings != null)
+        if (lastBoundProfile != null)
         {
-            //Nozzle independent custom settings
-            Bindings.unbindBidirectional(layerHeight.textProperty(), lastSettings.getLayer_height());
-
-            lastSettings.perimeter_nozzleProperty().unbind();
-            lastSettings.getPerimeter_extrusion_width().unbind();
-
-            lastSettings.infill_nozzleProperty().unbind();
-            lastSettings.getInfill_extrusion_width().unbind();
-            lastSettings.getSolid_infill_extrusion_width().unbind();
-
-            lastSettings.getExtrusion_width().unbind();
-            lastSettings.getTop_infill_extrusion_width().unbind();
-            lastSettings.getSupport_material_extrusion_width().unbind();
-
-            lastSettings.support_material_nozzleProperty().unbind();
-
-            Bindings.unbindBidirectional(lastSettings.support_materialProperty(), supportMaterialEnabled.selectedProperty());
-
-            Bindings.unbindBidirectional(fillDensity.textProperty(), lastSettings.fill_densityProperty());
-
-            Bindings.unbindBidirectional(fillPatternChoice.valueProperty(), lastSettings.fill_patternProperty());
-            Bindings.unbindBidirectional(infillEveryN.textProperty(), lastSettings.infill_every_layersProperty());
-
-            Bindings.unbindBidirectional(supportOverhangThreshold.textProperty(), lastSettings.support_material_thresholdProperty());
-            Bindings.unbindBidirectional(forcedSupportLayers.textProperty(), lastSettings.support_material_enforce_layersProperty());
-
-            Bindings.unbindBidirectional(supportPattern.valueProperty(), lastSettings.support_material_patternProperty());
-
-            Bindings.unbindBidirectional(supportPatternSpacing.textProperty(), lastSettings.support_material_spacingProperty());
-            Bindings.unbindBidirectional(supportPatternAngle.textProperty(), lastSettings.support_material_angleProperty());
-
-            Bindings.unbindBidirectional(numberOfPerimeters.textProperty(), lastSettings.perimetersProperty());
-
-            Bindings.unbindBidirectional(perimeterSpeed.textProperty(), lastSettings.perimeter_speedProperty());
-
-            Bindings.unbindBidirectional(smallPerimeterSpeed.textProperty(), lastSettings.small_perimeter_speedProperty());
-            Bindings.unbindBidirectional(externalPerimeterSpeed.textProperty(), lastSettings.external_perimeter_speedProperty());
-            Bindings.unbindBidirectional(infillSpeed.textProperty(), lastSettings.infill_speedProperty());
-            Bindings.unbindBidirectional(solidInfillSpeed.textProperty(), lastSettings.solid_infill_speedProperty());
-            Bindings.unbindBidirectional(topSolidInfillSpeed.textProperty(), lastSettings.top_solid_infill_speedProperty());
-            Bindings.unbindBidirectional(supportMaterialSpeed.textProperty(), lastSettings.support_material_speedProperty());
-            Bindings.unbindBidirectional(bridgesSpeed.textProperty(), lastSettings.bridge_speedProperty());
-            Bindings.unbindBidirectional(gapFillSpeed.textProperty(), lastSettings.gap_fill_speedProperty());
-
-            Bindings.unbindBidirectional(solidLayers.textProperty(), lastSettings.top_solid_layersProperty());
-            lastSettings.bottom_solid_layersProperty().unbind();
-
-            Bindings.unbindBidirectional(brimWidth.textProperty(), lastSettings.getBrim_width());
-
-            Bindings.unbindBidirectional(enableAutoCooling.textProperty(), lastSettings.getCooling());
-            Bindings.unbindBidirectional(minFanSpeed.textProperty(), lastSettings.getMin_fan_speed());
-            Bindings.unbindBidirectional(maxFanSpeed.textProperty(), lastSettings.getMax_fan_speed());
-            Bindings.unbindBidirectional(bridgesFanSpeed.textProperty(), lastSettings.getBridge_fan_speed());
-            Bindings.unbindBidirectional(disableFanForFirstNLayers.textProperty(), lastSettings.getDisable_fan_first_layers());
-            Bindings.unbindBidirectional(enableFanIfLayerTimeBelow.textProperty(), lastSettings.getFan_below_layer_time());
-            Bindings.unbindBidirectional(slowFanIfLayerTimeBelow.textProperty(), lastSettings.getSlowdown_below_layer_time());
-            Bindings.unbindBidirectional(minPrintSpeed.textProperty(), lastSettings.getMin_print_speed());
-
             unbindNozzleParameters();
         }
 
         profileNameField.setText(newSettings.getProfileName());
 
-        Bindings.bindBidirectional(layerHeight.textProperty(), newSettings.getLayer_height(), floatConverter);
+        updateGUIFromSettings(newSettings);
 
-        perimeterNozzleChoice.getSelectionModel().select(newSettings.perimeter_nozzleProperty().get() - 1);
-        newSettings.perimeter_nozzleProperty().bind(perimeterNozzleChoice.getSelectionModel().selectedIndexProperty().add(1));
-//        newSettings.getPerimeter_extrusion_width().bind(newSettings.getExtrusion_width());
+        if (lastNozzleSelected == 0)
+        {
+            nozzle1Button.setSelected(true);
+        } else if (lastNozzleSelected == 1)
+        {
+            nozzle2Button.setSelected(true);
+        }
 
-        fillNozzleChoice.getSelectionModel().select(newSettings.infill_nozzleProperty().get() - 1);
-        newSettings.infill_nozzleProperty().bind(fillNozzleChoice.getSelectionModel().selectedIndexProperty().add(1));
-//        newSettings.getInfill_extrusion_width().bind(...);
-//        newSettings.getSolid_infill_extrusion_width().bind(...);
+        bindNozzleParameters(lastNozzleSelected, newSettings);
 
-//        newSettings.getExtrusion_width().bind(
-//        ...);
-//            newSettings.getTop_infill_extrusion_width().bind(
-//        ...);
-//            newSettings.getSupport_material_extrusion_width().bind(
-//        ...);
-        supportNozzleChoice.getSelectionModel().select(newSettings.support_material_nozzleProperty().get() - 1);
-        newSettings.support_material_nozzleProperty().bind(supportNozzleChoice.getSelectionModel().selectedIndexProperty().add(1));
-
-        supportInterfaceNozzleChoice.getSelectionModel().select(newSettings.support_material_interface_nozzleProperty().get() - 1);
-        newSettings.support_material_interface_nozzleProperty().bind(supportInterfaceNozzleChoice.getSelectionModel().selectedIndexProperty().add(1));
-
-        Bindings.bindBidirectional(newSettings.support_materialProperty(), supportMaterialEnabled.selectedProperty());
-
-        Bindings.bindBidirectional(fillDensity.textProperty(), newSettings.fill_densityProperty(), floatConverter);
-
-        Bindings.bindBidirectional(fillPatternChoice.valueProperty(), newSettings.fill_patternProperty());
-        Bindings.bindBidirectional(infillEveryN.textProperty(), newSettings.infill_every_layersProperty(), intConverter);
-
-        Bindings.bindBidirectional(supportOverhangThreshold.textProperty(), newSettings.support_material_thresholdProperty(), intConverter);
-        Bindings.bindBidirectional(forcedSupportLayers.textProperty(), newSettings.support_material_enforce_layersProperty(), intConverter);
-
-        Bindings.bindBidirectional(supportPattern.valueProperty(), newSettings.support_material_patternProperty());
-
-        Bindings.bindBidirectional(supportPatternSpacing.textProperty(), newSettings.support_material_spacingProperty(), floatConverter);
-        Bindings.bindBidirectional(supportPatternAngle.textProperty(), newSettings.support_material_angleProperty(), intConverter);
-
-        Bindings.bindBidirectional(numberOfPerimeters.textProperty(), newSettings.perimetersProperty(), intConverter);
-
-        Bindings.bindBidirectional(perimeterSpeed.textProperty(), newSettings.perimeter_speedProperty(), intConverter);
-
-        Bindings.bindBidirectional(smallPerimeterSpeed.textProperty(), newSettings.small_perimeter_speedProperty(), intConverter);
-        Bindings.bindBidirectional(externalPerimeterSpeed.textProperty(), newSettings.external_perimeter_speedProperty(), intConverter);
-        Bindings.bindBidirectional(infillSpeed.textProperty(), newSettings.infill_speedProperty(), intConverter);
-        Bindings.bindBidirectional(solidInfillSpeed.textProperty(), newSettings.solid_infill_speedProperty(), intConverter);
-        Bindings.bindBidirectional(topSolidInfillSpeed.textProperty(), newSettings.top_solid_infill_speedProperty(), intConverter);
-        Bindings.bindBidirectional(supportMaterialSpeed.textProperty(), newSettings.support_material_speedProperty(), intConverter);
-        Bindings.bindBidirectional(bridgesSpeed.textProperty(), newSettings.bridge_speedProperty(), intConverter);
-        Bindings.bindBidirectional(gapFillSpeed.textProperty(), newSettings.gap_fill_speedProperty(), intConverter);
-
-        Bindings.bindBidirectional(solidLayers.textProperty(), newSettings.top_solid_layersProperty(), intConverter);
-        newSettings.bottom_solid_layersProperty().bind(newSettings.top_solid_layersProperty());
-
-        Bindings.bindBidirectional(brimWidth.textProperty(), newSettings.getBrim_width(), intConverter);
-
-        Bindings.bindBidirectional(enableAutoCooling.selectedProperty(), newSettings.getCooling());
-        Bindings.bindBidirectional(minFanSpeed.textProperty(), newSettings.getMin_fan_speed(), intConverter);
-        Bindings.bindBidirectional(maxFanSpeed.textProperty(), newSettings.getMax_fan_speed(), intConverter);
-        Bindings.bindBidirectional(bridgesFanSpeed.textProperty(), newSettings.getBridge_fan_speed(), intConverter);
-        Bindings.bindBidirectional(disableFanForFirstNLayers.textProperty(), newSettings.getDisable_fan_first_layers(), intConverter);
-        Bindings.bindBidirectional(enableFanIfLayerTimeBelow.textProperty(), newSettings.getFan_below_layer_time(), intConverter);
-        Bindings.bindBidirectional(slowFanIfLayerTimeBelow.textProperty(), newSettings.getSlowdown_below_layer_time(), intConverter);
-        Bindings.bindBidirectional(minPrintSpeed.textProperty(), newSettings.getMin_print_speed(), intConverter);
-
-        //Switch to nozzle 1 data by default
-        nozzle1Button.setSelected(true);
-
-        lastSettings = newSettings;
-
-        bindNozzleParameters(0);
+        lastBoundProfile = newSettings;
     }
 
+    private void updateGUIFromSettings(RoboxProfile newSettings)
+    {
+        // Extrusion tab
+        layerHeight.floatValueProperty().set(newSettings.getLayer_height().get());
+        fillDensity.floatValueProperty().set(newSettings.fill_densityProperty().get());
+        fillPatternChoice.valueProperty().set(newSettings.fill_patternProperty().get());
+        infillEveryN.intValueProperty().set(newSettings.infill_every_layersProperty().get());
+        solidLayersTop.intValueProperty().set(newSettings.top_solid_layersProperty().get());
+        solidLayersBottom.intValueProperty().set(newSettings.bottom_solid_layersProperty().get());
+        numberOfPerimeters.intValueProperty().set(newSettings.perimetersProperty().get());
+        brimWidth.intValueProperty().set(newSettings.getBrim_width().get());
+
+        //Nozzle tab
+        perimeterNozzleChoice.getSelectionModel().select(newSettings.perimeter_nozzleProperty().get() - 1);
+        fillNozzleChoice.getSelectionModel().select(newSettings.infill_nozzleProperty().get() - 1);
+        supportNozzleChoice.getSelectionModel().select(newSettings.support_material_nozzleProperty().get() - 1);
+        supportInterfaceNozzleChoice.getSelectionModel().select(newSettings.support_material_interface_nozzleProperty().get() - 1);
+
+        //Support tab
+        supportMaterialEnabled.selectedProperty().set(newSettings.support_materialProperty().get());
+        supportOverhangThreshold.intValueProperty().set(newSettings.support_material_thresholdProperty().get());
+        forcedSupportLayers.intValueProperty().set(newSettings.support_material_enforce_layersProperty().get());
+        supportPattern.valueProperty().set(newSettings.support_material_patternProperty().get());
+        supportPatternSpacing.floatValueProperty().set(newSettings.support_material_spacingProperty().get());
+        supportPatternAngle.intValueProperty().set(newSettings.support_material_angleProperty().get());
+
+        //Speed tab
+        perimeterSpeed.intValueProperty().set(newSettings.perimeter_speedProperty().get());
+        smallPerimeterSpeed.intValueProperty().set(newSettings.small_perimeter_speedProperty().get());
+        externalPerimeterSpeed.intValueProperty().set(newSettings.external_perimeter_speedProperty().get());
+        infillSpeed.intValueProperty().set(newSettings.infill_speedProperty().get());
+        solidInfillSpeed.intValueProperty().set(newSettings.solid_infill_speedProperty().get());
+        topSolidInfillSpeed.intValueProperty().set(newSettings.top_solid_infill_speedProperty().get());
+        supportMaterialSpeed.intValueProperty().set(newSettings.support_material_speedProperty().get());
+        bridgesSpeed.intValueProperty().set(newSettings.bridge_speedProperty().get());
+        gapFillSpeed.intValueProperty().set(newSettings.gap_fill_speedProperty().get());
+
+        //Cooling tab
+        enableAutoCooling.selectedProperty().set(newSettings.getCooling().get());
+        minFanSpeed.intValueProperty().set(newSettings.getMin_fan_speed().get());
+        maxFanSpeed.intValueProperty().set(newSettings.getMax_fan_speed().get());
+        bridgesFanSpeed.intValueProperty().set(newSettings.getBridge_fan_speed().get());
+        disableFanForFirstNLayers.intValueProperty().set(newSettings.getDisable_fan_first_layers().get());
+        enableFanIfLayerTimeBelow.intValueProperty().set(newSettings.getFan_below_layer_time().get());
+        slowFanIfLayerTimeBelow.intValueProperty().set(newSettings.getSlowdown_below_layer_time().get());
+        minPrintSpeed.intValueProperty().set(newSettings.getMin_print_speed().get());
+    }
+
+    private void updateSettingsFromGUI(RoboxProfile settingsToUpdate)
+    {
+        // Extrusion tab
+        settingsToUpdate.getLayer_height().set(layerHeight.floatValueProperty().get());
+        settingsToUpdate.fill_densityProperty().set(fillDensity.floatValueProperty().get());
+        settingsToUpdate.fill_patternProperty().set(fillPatternChoice.valueProperty().get());
+        settingsToUpdate.infill_every_layersProperty().set(infillEveryN.intValueProperty().get());
+        settingsToUpdate.top_solid_layersProperty().set(solidLayersTop.intValueProperty().get());
+        settingsToUpdate.bottom_solid_layersProperty().set(solidLayersBottom.intValueProperty().get());
+        settingsToUpdate.perimetersProperty().set(numberOfPerimeters.intValueProperty().get());
+        settingsToUpdate.getBrim_width().set(brimWidth.intValueProperty().get());
+
+        //Nozzle tab
+        settingsToUpdate.perimeter_nozzleProperty().set(perimeterNozzleChoice.getSelectionModel().getSelectedIndex() + 1);
+        settingsToUpdate.infill_nozzleProperty().set(fillNozzleChoice.getSelectionModel().getSelectedIndex() + 1);
+        settingsToUpdate.support_material_nozzleProperty().set(supportNozzleChoice.getSelectionModel().getSelectedIndex() + 1);
+        settingsToUpdate.support_material_interface_nozzleProperty().set(supportInterfaceNozzleChoice.getSelectionModel().getSelectedIndex() + 1);
+
+        //Support tab
+        settingsToUpdate.support_materialProperty().set(supportMaterialEnabled.selectedProperty().get());
+        settingsToUpdate.support_material_thresholdProperty().set(supportOverhangThreshold.intValueProperty().get());
+        settingsToUpdate.support_material_enforce_layersProperty().set(forcedSupportLayers.intValueProperty().get());
+        settingsToUpdate.support_material_patternProperty().set(supportPattern.valueProperty().get());
+        settingsToUpdate.support_material_spacingProperty().set(supportPatternSpacing.floatValueProperty().get());
+        settingsToUpdate.support_material_angleProperty().set(supportPatternAngle.intValueProperty().get());
+
+        //Speed tab
+        settingsToUpdate.perimeter_speedProperty().set(perimeterSpeed.intValueProperty().get());
+        settingsToUpdate.small_perimeter_speedProperty().set(smallPerimeterSpeed.intValueProperty().get());
+        settingsToUpdate.external_perimeter_speedProperty().set(externalPerimeterSpeed.intValueProperty().get());
+        settingsToUpdate.infill_speedProperty().set(infillSpeed.intValueProperty().get());
+        settingsToUpdate.solid_infill_speedProperty().set(solidInfillSpeed.intValueProperty().get());
+        settingsToUpdate.top_solid_infill_speedProperty().set(topSolidInfillSpeed.intValueProperty().get());
+        settingsToUpdate.support_material_speedProperty().set(supportMaterialSpeed.intValueProperty().get());
+        settingsToUpdate.bridge_speedProperty().set(bridgesSpeed.intValueProperty().get());
+        settingsToUpdate.gap_fill_speedProperty().set(gapFillSpeed.intValueProperty().get());
+
+        //Cooling tab
+        settingsToUpdate.getCooling().set(enableAutoCooling.selectedProperty().get());
+        settingsToUpdate.getMin_fan_speed().set(minFanSpeed.intValueProperty().get());
+        settingsToUpdate.getMax_fan_speed().set(maxFanSpeed.intValueProperty().get());
+        settingsToUpdate.getBridge_fan_speed().set(bridgesFanSpeed.intValueProperty().get());
+        settingsToUpdate.getDisable_fan_first_layers().set(disableFanForFirstNLayers.intValueProperty().get());
+        settingsToUpdate.getFan_below_layer_time().set(enableFanIfLayerTimeBelow.intValueProperty().get());
+        settingsToUpdate.getSlowdown_below_layer_time().set(slowFanIfLayerTimeBelow.intValueProperty().get());
+        settingsToUpdate.getMin_print_speed().set(minPrintSpeed.intValueProperty().get());
+    }
+
+    /**
+     *
+     * @param settings
+     */
     public void updateProfileData(RoboxProfile settings)
     {
-        bindToNewSettings(settings);
-        isMutable.set(settings.isMutable());
-        isDirty.set(false);
+        if (settings == null)
+        {
+            container.setVisible(false);
+        } else
+        {
+            masterProfile = settings;
+
+            workingProfile = masterProfile.clone();
+
+            container.setVisible(true);
+            bindToNewSettings(workingProfile);
+            isMutable.set(settings.isMutable());
+            isDirty.set(false);
+        }
     }
 
+    /**
+     *
+     * @return
+     */
     public RoboxProfile getProfileData()
     {
-        return lastSettings;
+        updateSettingsFromGUI(workingProfile);
+        return workingProfile;
     }
 
+    /**
+     *
+     * @param show
+     */
     public void showButtons(boolean show)
     {
         showButtons.set(show);
     }
 
+    /**
+     *
+     * @param receiver
+     */
     @Override
     public void provideReceiver(PopupCommandReceiver receiver)
     {
@@ -710,13 +766,26 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         profileNameInvalid.set(invalid);
     }
 
+    /**
+     *
+     * @return
+     */
     public ReadOnlyBooleanProperty getProfileNameInvalidProperty()
     {
         return profileNameInvalid;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getProfileName()
     {
         return profileNameField.getText();
+    }
+
+    public void setNameEditable(boolean editable)
+    {
+        nameEditable.set(editable);
     }
 }

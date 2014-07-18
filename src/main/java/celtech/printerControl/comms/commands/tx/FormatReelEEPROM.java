@@ -11,11 +11,19 @@ package celtech.printerControl.comms.commands.tx;
 public class FormatReelEEPROM extends RoboxTxPacket
 {
 
+    /**
+     *
+     */
     public FormatReelEEPROM()
     {
         super(TxPacketTypeEnum.FORMAT_REEL_EEPROM, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {

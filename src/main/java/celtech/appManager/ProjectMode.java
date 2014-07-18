@@ -12,5 +12,19 @@ package celtech.appManager;
  */
 public enum ProjectMode
 {
-    NONE, GCODE, MESH
+
+    /**
+     *
+     */
+    NONE,
+
+    /**
+     *
+     */
+    GCODE,
+
+    /**
+     *
+     */
+    MESH
 }

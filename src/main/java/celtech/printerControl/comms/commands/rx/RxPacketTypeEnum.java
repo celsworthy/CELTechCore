@@ -10,13 +10,45 @@ package celtech.printerControl.comms.commands.rx;
  */
 public enum RxPacketTypeEnum
 {
+
+    /**
+     *
+     */
     STATUS_RESPONSE((byte)0xE1, 166, false, 0),
+
+    /**
+     *
+     */
     FIRMWARE_RESPONSE((byte)0xE4, 9, false, 0),
+
+    /**
+     *
+     */
     ACK_WITH_ERRORS((byte)0xE3, 33, false, 0),
+
+    /**
+     *
+     */
     PRINTER_ID_RESPONSE((byte)0xE5, 257, false, 0),
+
+    /**
+     *
+     */
     REEL_EEPROM_DATA((byte)0xE6, 193, false, 0),
+
+    /**
+     *
+     */
     HEAD_EEPROM_DATA((byte)0xE2, 193, false, 0),
+
+    /**
+     *
+     */
     GCODE_RESPONSE((byte)0xE7, 5, true, 4),
+
+    /**
+     *
+     */
     LIST_FILES_RESPONSE((byte)0xE0, 3, true, 2);
     
     private final byte commandByte;
@@ -32,26 +64,47 @@ public enum RxPacketTypeEnum
         this.lengthFieldSize = lengthFieldSize;
     }
     
+    /**
+     *
+     * @return
+     */
     public byte getCommandByte()
     {
         return commandByte;
     }   
     
+    /**
+     *
+     * @return
+     */
     public int getPacketSize()
     {
         return packetSize;
     }
     
+    /**
+     *
+     * @return
+     */
     public boolean containsLengthField()
     {
         return containsLengthField;
     }
     
+    /**
+     *
+     * @return
+     */
     public int getLengthFieldSize()
     {
         return lengthFieldSize;
     }
     
+    /**
+     *
+     * @param commandByte
+     * @return
+     */
     public static RxPacketTypeEnum getEnumForCommand(byte commandByte)
     {
         RxPacketTypeEnum returnVal = null;

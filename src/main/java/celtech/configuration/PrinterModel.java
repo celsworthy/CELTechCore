@@ -12,6 +12,9 @@ package celtech.configuration;
 public enum PrinterModel
 {
 
+    /**
+     *
+     */
     Robox("RBX01", "Robox version 1");
 
     private String codeName;
@@ -23,11 +26,19 @@ public enum PrinterModel
         this.friendlyName = friendlyName;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getCodeName()
     {
         return codeName;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getFriendlyName()
     {
         return friendlyName;
@@ -55,6 +66,11 @@ public enum PrinterModel
 //        return printHead;
 //    }
     
+    /**
+     *
+     * @return
+     */
+        
     @Override
     public String toString()
     {

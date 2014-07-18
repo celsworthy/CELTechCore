@@ -14,16 +14,28 @@ public class RetractDuringExtrusionEvent extends TravelEvent
 {
     private double e;
 
+    /**
+     *
+     * @return
+     */
     public double getE()
     {
         return e;
     }
 
+    /**
+     *
+     * @param e
+     */
     public void setE(double e)
     {
         this.e = e;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String renderForOutput()
     {

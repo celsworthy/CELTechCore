@@ -12,11 +12,19 @@ package celtech.printerControl.comms.commands.tx;
 public class ReadPrinterID extends RoboxTxPacket
 {
 
+    /**
+     *
+     */
     public ReadPrinterID()
     {
         super(TxPacketTypeEnum.READ_PRINTER_ID, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {

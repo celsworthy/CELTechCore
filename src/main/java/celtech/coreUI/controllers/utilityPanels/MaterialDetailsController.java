@@ -1,22 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.CoreTest;
@@ -24,11 +5,11 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
 import celtech.configuration.MaterialType;
-import celtech.coreUI.components.RestrictedTextField;
+import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.controllers.popups.PopupCommandReceiver;
 import celtech.coreUI.controllers.popups.PopupCommandTransmitter;
-import celtech.utils.FXUtils;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -46,7 +27,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.util.StringConverter;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.controlsfx.control.textfield.CustomTextField;
@@ -58,75 +38,78 @@ import org.controlsfx.control.textfield.CustomTextField;
  */
 public class MaterialDetailsController implements Initializable, PopupCommandTransmitter
 {
-
+    
     private final Stenographer steno = StenographerFactory.getStenographer(MaterialDetailsController.class.getName());
     private PopupCommandReceiver commandReceiver = null;
-
+    
     @FXML
     private VBox container;
-
+    
     @FXML
-    private RestrictedTextField bedTemperature;
-
+    private RestrictedNumberField bedTemperature;
+    
     @FXML
     private HBox notEditingOptions;
-
+    
     @FXML
-    private RestrictedTextField firstLayerBedTemperature;
-
+    private RestrictedNumberField firstLayerBedTemperature;
+    
     @FXML
-    private RestrictedTextField nozzleTemperature;
-
+    private RestrictedNumberField nozzleTemperature;
+    
     @FXML
     private HBox editingOptions;
-
+    
     @FXML
-    private RestrictedTextField ambientTemperature;
-
+    private RestrictedNumberField ambientTemperature;
+    
     @FXML
     private Button saveAsButton;
-
+    
     @FXML
     private ColorPicker colour;
-
+    
     @FXML
-    private RestrictedTextField firstLayerNozzleTemperature;
-
+    private RestrictedNumberField firstLayerNozzleTemperature;
+    
     @FXML
     private Button cancelButton;
-
+    
     @FXML
     private ComboBox<MaterialType> material;
-
+    
     @FXML
-    private RestrictedTextField filamentDiameter;
-
+    private RestrictedNumberField filamentDiameter;
+    
     @FXML
     private HBox immutableOptions;
-
+    
     @FXML
-    private RestrictedTextField feedRateMultiplier;
-
+    private RestrictedNumberField feedRateMultiplier;
+    
     @FXML
     private Button deleteProfileButton;
-
+    
     @FXML
     private CustomTextField name;
-
+    
     @FXML
     private Button saveButton;
-
+    
     @FXML
-    private RestrictedTextField filamentMultiplier;
-
+    private RestrictedNumberField filamentMultiplier;
+    
     @FXML
     void saveData(ActionEvent event)
     {
         final Filament filamentToSave = getMaterialData();
-        FilamentContainer.saveFilament(filamentToSave);
+        if (commandReceiver != null)
+        {
+            commandReceiver.triggerSave(filamentToSave);
+        }
         isDirty.set(false);
     }
-
+    
     @FXML
     void cancelEdit(ActionEvent event)
     {
@@ -135,14 +118,14 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
             updateMaterialData(lastFilamentUpdate);
         }
     }
-
+    
     @FXML
     void deleteProfile(ActionEvent event)
     {
         final Filament filamentToDelete = getMaterialData();
         FilamentContainer.deleteFilament(filamentToDelete);
     }
-
+    
     @FXML
     void launchSaveAsDialogue(ActionEvent event)
     {
@@ -151,14 +134,11 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
             commandReceiver.triggerSaveAs(this);
         }
     }
-
+    
     private final BooleanProperty isDirty = new SimpleBooleanProperty(false);
     private final BooleanProperty isMutable = new SimpleBooleanProperty(false);
     private final BooleanProperty showButtons = new SimpleBooleanProperty(true);
-
-    private final StringConverter<Integer> intConverter = FXUtils.getIntConverter();
-    private final StringConverter<Float> floatConverter = FXUtils.getFloatConverter(2);
-
+    
     private final ChangeListener<String> dirtyStringListener = new ChangeListener<String>()
     {
         @Override
@@ -167,7 +147,7 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
             isDirty.set(true);
         }
     };
-
+    
     private final ChangeListener<MaterialType> dirtyMaterialTypeListener = new ChangeListener<MaterialType>()
     {
         @Override
@@ -176,15 +156,18 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
             isDirty.set(true);
         }
     };
-
+    
     private Filament lastFilamentUpdate = null;
-
+    
     private BooleanProperty materialNameInvalid = new SimpleBooleanProperty(true);
     private final Image redcrossImage = new Image(CoreTest.class.getResource(ApplicationConfiguration.imageResourcePath + "redcross.png").toExternalForm());
     private final ImageView redcrossHolder = new ImageView(redcrossImage);
 
     /**
      * Initializes the controller class.
+     *
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
@@ -199,11 +182,11 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
                 validateMaterialName();
             }
         });
-
+        
         editingOptions.visibleProperty().bind(isDirty.and(showButtons).and(isMutable));
         notEditingOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable));
         immutableOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable.not()));
-
+        
         bedTemperature.disableProperty().bind(isMutable.not());
         firstLayerNozzleTemperature.disableProperty().bind(isMutable.not());
         colour.disableProperty().bind(isMutable.not());
@@ -215,12 +198,12 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
         name.disableProperty().bind(isMutable.not());
         nozzleTemperature.disableProperty().bind(isMutable.not());
         ambientTemperature.disableProperty().bind(isMutable.not());
-
+        
         for (MaterialType materialType : MaterialType.values())
         {
             material.getItems().add(materialType);
         }
-
+        
         bedTemperature.textProperty().addListener(dirtyStringListener);
         firstLayerNozzleTemperature.textProperty().addListener(dirtyStringListener);
         colour.valueProperty().asString().addListener(dirtyStringListener);
@@ -234,20 +217,28 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
         ambientTemperature.textProperty().addListener(dirtyStringListener);
     }
 
+    /**
+     *
+     * @param filament
+     */
     public void updateMaterialData(Filament filament)
     {
-        if (filament != null)
+        if (filament == null)
         {
+            container.setVisible(false);
+        } else
+        {
+            container.setVisible(true);
             name.setText(filament.getFriendlyFilamentName());
             material.getSelectionModel().select(filament.getMaterial());
-            filamentDiameter.setText(floatConverter.toString(filament.getDiameter()));
-            filamentMultiplier.setText(floatConverter.toString(filament.getFilamentMultiplier()));
-            feedRateMultiplier.setText(floatConverter.toString(filament.getFeedRateMultiplier()));
-            ambientTemperature.setText(intConverter.toString(filament.getAmbientTemperature()));
-            firstLayerBedTemperature.setText(intConverter.toString(filament.getFirstLayerBedTemperature()));
-            bedTemperature.setText(intConverter.toString(filament.getBedTemperature()));
-            firstLayerNozzleTemperature.setText(intConverter.toString(filament.getFirstLayerNozzleTemperature()));
-            nozzleTemperature.setText(intConverter.toString(filament.getNozzleTemperature()));
+            filamentDiameter.floatValueProperty().set(filament.getFilamentDiameter());
+            filamentMultiplier.floatValueProperty().set(filament.getFilamentMultiplier());
+            feedRateMultiplier.floatValueProperty().set(filament.getFeedRateMultiplier());
+            ambientTemperature.intValueProperty().set(filament.getAmbientTemperature());
+            firstLayerBedTemperature.intValueProperty().set(filament.getFirstLayerBedTemperature());
+            bedTemperature.intValueProperty().set(filament.getBedTemperature());
+            firstLayerNozzleTemperature.intValueProperty().set(filament.getFirstLayerNozzleTemperature());
+            nozzleTemperature.intValueProperty().set(filament.getNozzleTemperature());
             colour.setValue(filament.getDisplayColour());
             isMutable.set(filament.isMutable());
             isDirty.set(false);
@@ -255,30 +246,44 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
         lastFilamentUpdate = filament;
     }
 
+    /**
+     *
+     * @return
+     */
     public Filament getMaterialData()
     {
-        return new Filament(
-                name.getText(),
-                material.getSelectionModel().getSelectedItem(),
-                null,
-                floatConverter.fromString(filamentDiameter.getText()),
-                floatConverter.fromString(filamentMultiplier.getText()),
-                floatConverter.fromString(feedRateMultiplier.getText()),
-                intConverter.fromString(ambientTemperature.getText()),
-                intConverter.fromString(firstLayerBedTemperature.getText()),
-                intConverter.fromString(bedTemperature.getText()),
-                intConverter.fromString(firstLayerNozzleTemperature.getText()),
-                intConverter.fromString(nozzleTemperature.getText()),
-                colour.getValue(),
-                isMutable.get()
-        );
+        Filament filamentToReturn = null;
+        
+        try
+        {
+            filamentToReturn = new Filament(
+                    name.getText(),
+                    material.getSelectionModel().getSelectedItem(),
+                    null,
+                    filamentDiameter.getAsFloat(),
+                    filamentMultiplier.getAsFloat(),
+                    feedRateMultiplier.getAsFloat(),
+                    ambientTemperature.getAsInt(),
+                    firstLayerBedTemperature.getAsInt(),
+                    bedTemperature.getAsInt(),
+                    firstLayerNozzleTemperature.getAsInt(),
+                    nozzleTemperature.getAsInt(),
+                    colour.getValue(),
+                    isMutable.get()
+            );
+        } catch (ParseException ex)
+        {
+            steno.error("Error parsing filament data : " + ex);
+        }
+        
+        return filamentToReturn;
     }
-
+    
     private void validateMaterialName()
     {
         boolean invalid = false;
         String profileNameText = name.getText();
-
+        
         if (profileNameText.equals(""))
         {
             invalid = true;
@@ -297,16 +302,28 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
         materialNameInvalid.set(invalid);
     }
 
+    /**
+     *
+     * @param show
+     */
     public void showButtons(boolean show)
     {
         showButtons.set(show);
     }
 
+    /**
+     *
+     * @return
+     */
     public ReadOnlyBooleanProperty getProfileNameInvalidProperty()
     {
         return materialNameInvalid;
     }
 
+    /**
+     *
+     * @param receiver
+     */
     @Override
     public void provideReceiver(PopupCommandReceiver receiver)
     {

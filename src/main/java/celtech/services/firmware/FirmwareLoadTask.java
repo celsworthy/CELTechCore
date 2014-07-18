@@ -25,15 +25,35 @@ import libertysystems.stenographer.StenographerFactory;
 public class FirmwareLoadTask extends Task<Integer>
 {
 
+    /**
+     *
+     */
     public static final int SDCARD_ERROR = -1;
+
+    /**
+     *
+     */
     public static final int SUCCESS = 0;
+
+    /**
+     *
+     */
     public static final int FILE_ERROR = -2;
+
+    /**
+     *
+     */
     public static final int OTHER_ERROR = -3;
 
     private String firmwareFileToLoad = null;
     private final Stenographer steno = StenographerFactory.getStenographer(this.getClass().getName());
     private Printer printerToUpdate = null;
 
+    /**
+     *
+     * @param firmwareFileToLoad
+     * @param printerToUpdate
+     */
     public FirmwareLoadTask(String firmwareFileToLoad, Printer printerToUpdate)
     {
         this.firmwareFileToLoad = firmwareFileToLoad;

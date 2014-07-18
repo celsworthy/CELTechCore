@@ -2,24 +2,14 @@
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
  */
 package celtech.configuration;
 
 import celtech.services.slicer.RoboxProfile;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
@@ -39,13 +29,31 @@ public class PrintProfileContainer
     private static final ObservableList<RoboxProfile> userProfileList = FXCollections.observableArrayList();
     private static final ObservableList<RoboxProfile> completeProfileList = FXCollections.observableArrayList();
     private static final ObservableMap<String, RoboxProfile> profileMap = FXCollections.observableHashMap();
+
+    /**
+     *
+     */
     public static final RoboxProfile createNewProfile = new RoboxProfile();
+
+    /**
+     * Return a read-only set of current profile names
+     * @return 
+     */
+    public static Set<String> getProfileNames()
+    {
+        return Collections.unmodifiableSet(profileMap.keySet());
+    }
 
     private PrintProfileContainer()
     {
         loadProfileData();
     }
 
+    /**
+     *
+     * @param profileName
+     * @return
+     */
     public static String constructFilePath(String profileName)
     {
         return ApplicationConfiguration.getUserPrintProfileDirectory() + profileName + ApplicationConfiguration.printProfileFileExtension;
@@ -87,12 +95,20 @@ public class PrintProfileContainer
         return profileList;
     }
 
+    /**
+     *
+     * @param settingsToSave
+     */
     public static void saveProfile(RoboxProfile settingsToSave)
     {
         settingsToSave.writeToFile(constructFilePath(settingsToSave.getProfileName()));
         loadProfileData();
     }
 
+    /**
+     *
+     * @param profileName
+     */
     public static void deleteProfile(String profileName)
     {
         File profileToDelete = new File(constructFilePath(profileName));
@@ -100,6 +116,10 @@ public class PrintProfileContainer
         loadProfileData();
     }
 
+    /**
+     *
+     * @return
+     */
     public static PrintProfileContainer getInstance()
     {
         if (instance == null)
@@ -110,6 +130,11 @@ public class PrintProfileContainer
         return instance;
     }
 
+    /**
+     *
+     * @param profileName
+     * @return
+     */
     public static RoboxProfile getSettingsByProfileName(String profileName)
     {
         if (instance == null)
@@ -120,6 +145,10 @@ public class PrintProfileContainer
         return profileMap.get(profileName);
     }
 
+    /**
+     *
+     * @return
+     */
     public static ObservableList<RoboxProfile> getCompleteProfileList()
     {
         if (instance == null)
@@ -130,6 +159,10 @@ public class PrintProfileContainer
         return completeProfileList;
     }
 
+    /**
+     *
+     * @return
+     */
     public static ObservableList<RoboxProfile> getUserProfileList()
     {
         if (instance == null)

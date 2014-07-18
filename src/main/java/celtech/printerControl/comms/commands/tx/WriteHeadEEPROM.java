@@ -4,6 +4,7 @@
  */
 package celtech.printerControl.comms.commands.tx;
 
+import celtech.utils.FixedDecimalFloatFormat;
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -13,11 +14,32 @@ import java.io.UnsupportedEncodingException;
 public class WriteHeadEEPROM extends RoboxTxPacket
 {
 
+    /**
+     *
+     */
     public WriteHeadEEPROM()
     {
         super(TxPacketTypeEnum.WRITE_HEAD_EEPROM, false, false);
     }
 
+    /**
+     *
+     * @param headTypeCode
+     * @param headUniqueID
+     * @param maximumTemperature
+     * @param thermistorBeta
+     * @param thermistorTCal
+     * @param nozzle1XOffset
+     * @param nozzle1YOffset
+     * @param nozzle1ZOffset
+     * @param nozzle1BOffset
+     * @param nozzle2XOffset
+     * @param nozzle2YOffset
+     * @param nozzle2ZOffset
+     * @param nozzle2BOffset
+     * @param lastFilamentTemperature
+     * @param hourCounter
+     */
     public void populateEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature,
             float thermistorBeta, float thermistorTCal,
             float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset,
@@ -26,27 +48,33 @@ public class WriteHeadEEPROM extends RoboxTxPacket
     {
         StringBuilder payload = new StringBuilder();
 
+        FixedDecimalFloatFormat decimalFloatFormatter = new FixedDecimalFloatFormat();
+
         payload.append(String.format("%1$-16s", headTypeCode));
         payload.append(String.format("%1$-24s", headUniqueID));
-        payload.append(String.format("%08.2f", maximumTemperature));
-        payload.append(String.format("%08.2f", thermistorBeta));
-        payload.append(String.format("%08.2f", thermistorTCal));
-        payload.append(String.format("%08.2f", nozzle1XOffset));
-        payload.append(String.format("%08.2f", nozzle1YOffset));
-        payload.append(String.format("%08.2f", nozzle1ZOffset));
-        payload.append(String.format("%08.2f", nozzle1BOffset));
+        payload.append(decimalFloatFormatter.format(maximumTemperature));
+        payload.append(decimalFloatFormatter.format(thermistorBeta));
+        payload.append(decimalFloatFormatter.format(thermistorTCal));
+        payload.append(decimalFloatFormatter.format(nozzle1XOffset));
+        payload.append(decimalFloatFormatter.format(nozzle1YOffset));
+        payload.append(decimalFloatFormatter.format(nozzle1ZOffset));
+        payload.append(decimalFloatFormatter.format(nozzle1BOffset));
         payload.append(String.format("%1$16s", " "));
-        payload.append(String.format("%08.2f", nozzle2XOffset));
-        payload.append(String.format("%08.2f", nozzle2YOffset));
-        payload.append(String.format("%08.2f", nozzle2ZOffset));
-        payload.append(String.format("%08.2f", nozzle2BOffset));
+        payload.append(decimalFloatFormatter.format(nozzle2XOffset));
+        payload.append(decimalFloatFormatter.format(nozzle2YOffset));
+        payload.append(decimalFloatFormatter.format(nozzle2ZOffset));
+        payload.append(decimalFloatFormatter.format(nozzle2BOffset));
         payload.append(String.format("%1$32s", " "));
-        payload.append(String.format("%08.2f", lastFilamentTemperature));
-        payload.append(String.format("%08.2f", hourCounter));
+        payload.append(decimalFloatFormatter.format(lastFilamentTemperature));
+        payload.append(decimalFloatFormatter.format(hourCounter));
 
         this.setMessagePayload(payload.toString());
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public byte[] toByteArray()
     {
@@ -95,6 +123,11 @@ public class WriteHeadEEPROM extends RoboxTxPacket
         return outputArray;
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {

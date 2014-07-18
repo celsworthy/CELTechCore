@@ -27,6 +27,10 @@ public class StandardEffects
     private static Glow glowEffect = new Glow();
     private static DropShadow dropShadowEffect = new DropShadow();
 
+    /**
+     *
+     * @return
+     */
     public static Effect getMouseEnteredEffect()
     {
         dropShadowEffect.setWidth(30);
@@ -36,31 +40,58 @@ public class StandardEffects
         return dropShadowEffect;
     }
     
+    /**
+     *
+     * @return
+     */
     public static Effect getDropShadowEffect()
     {
         return dropShadowEffect;
     }
 
+    /**
+     *
+     * @return
+     */
     public static Effect getButtonPressEffect()
     {
         return glowEffect;
     }
 
+    /**
+     *
+     * @param node
+     */
     public static void disableEffect(Node node)
     {
         node.setOpacity(0.5);
     }
 
+    /**
+     *
+     * @param node
+     */
     public static void enableEffect(Node node)
     {
         node.setOpacity(1);
     }
     
+    /**
+     *
+     * @return
+     */
     public static Effect defaultGlow()
     {
         return glowEffect;
     }
 
+    /**
+     *
+     * @param throbColour
+     * @param objectToThrob
+     * @param throbDuration
+     * @return
+     */
     public static FillTransition getThrobFillEffect(Color throbColour, final Shape objectToThrob, double throbDuration)
     {
         final Color originalColour = (Color) objectToThrob.getFill();
@@ -72,6 +103,13 @@ public class StandardEffects
         return transition;
     }
 
+    /**
+     *
+     * @param throbColour
+     * @param objectToThrob
+     * @param throbDuration
+     * @return
+     */
     public static StrokeTransition getThrobStrokeEffect(Color throbColour, final Shape objectToThrob, double throbDuration)
     {
         final Color originalColour = (Color) objectToThrob.getStroke();
@@ -83,6 +121,10 @@ public class StandardEffects
         return transition;
     }
 
+    /**
+     *
+     * @param object
+     */
     public static void setDefaultStroke(final Shape object)
     {
         object.setStroke(Color.WHITE);

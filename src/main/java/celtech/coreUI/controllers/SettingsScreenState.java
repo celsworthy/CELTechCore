@@ -36,6 +36,10 @@ public class SettingsScreenState
 
     }
 
+    /**
+     *
+     * @return
+     */
     public static SettingsScreenState getInstance()
     {
         if (instance == null)
@@ -45,61 +49,109 @@ public class SettingsScreenState
         return instance;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setSelectedPrinter(Printer value)
     {
         selectedPrinter.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public Printer getSelectedPrinter()
     {
         return selectedPrinter.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public ObjectProperty<Printer> selectedPrinterProperty()
     {
         return selectedPrinter;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setFilament(Filament value)
     {
         selectedFilament.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public Filament getFilament()
     {
         return selectedFilament.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public ObjectProperty<Filament> filamentProperty()
     {
         return selectedFilament;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setSettings(RoboxProfile value)
     {
         settings.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public RoboxProfile getSettings()
     {
         return settings.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public ObjectProperty<RoboxProfile> getSettingsProperty()
     {
         return settings;
     }
 
+    /**
+     *
+     * @param value
+     */
     public void setPrintQuality(PrintQualityEnumeration value)
     {
         printQuality.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public PrintQualityEnumeration getPrintQuality()
     {
         return printQuality.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public ObjectProperty<PrintQualityEnumeration> printQualityProperty()
     {
         return printQuality;

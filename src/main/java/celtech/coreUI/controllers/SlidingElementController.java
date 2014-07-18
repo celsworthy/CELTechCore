@@ -33,6 +33,9 @@ public class SlidingElementController
     private final Rectangle clippingRectangle = new Rectangle();
     private Pane paneToSlide = null;
 
+    /**
+     *
+     */
     public SlidingElementController()
     {
         hideSidebar = new Transition()
@@ -67,12 +70,20 @@ public class SlidingElementController
         };
     }
 
+    /**
+     *
+     * @param paneToSlide
+     * @param directionToSlide
+     */
     public void configurePanel(Pane paneToSlide, SlidingComponentDirection directionToSlide)
     {
         this.paneToSlide = paneToSlide;
         this.directionToSlide = directionToSlide;
     }
 
+    /**
+     *
+     */
     public void toggleSlide()
     {
         if (slidIn)
@@ -84,18 +95,28 @@ public class SlidingElementController
         }
     }
 
+    /**
+     *
+     */
     public void slideIn()
     {
         slideMenuPanel(0.0);
         hidden = true;
     }
 
+    /**
+     *
+     */
     public void slideOut()
     {
         slideMenuPanel(1.0);
         hidden = false;
     }
 
+    /**
+     *
+     * @param amountToShow
+     */
     public void slideMenuPanel(double amountToShow)
     {
         if (amountToShow < minimumToShow)
@@ -160,17 +181,29 @@ public class SlidingElementController
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isHidden()
     {
         return hidden;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isSliding()
     {
         return showSidebar.statusProperty().get() != Animation.Status.STOPPED
                 || hideSidebar.statusProperty().get() != Animation.Status.STOPPED;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean startSlidingOut()
     {
         if (hideSidebar.statusProperty().get() == Animation.Status.STOPPED)
@@ -184,6 +217,10 @@ public class SlidingElementController
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean startSlidingIn()
     {
         if (showSidebar.statusProperty().get() == Animation.Status.STOPPED)
@@ -197,11 +234,22 @@ public class SlidingElementController
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isSlidIn()
     {
         return slidIn;
     }
 
+    /**
+     *
+     * @param panelWidth
+     * @param panelHeight
+     * @param panelLayoutMinX
+     * @param panelLayoutMinY
+     */
     public void setDimensions(double panelWidth, double panelHeight, double panelLayoutMinX, double panelLayoutMinY)
     {
         this.panelWidth = panelWidth;

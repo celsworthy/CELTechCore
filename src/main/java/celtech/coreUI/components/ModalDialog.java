@@ -33,11 +33,18 @@ public class ModalDialog
     private Stage dialogStage = null;
     private ModalDialogController dialogController = null;
 
+    /**
+     *
+     * @param windowTitle
+     */
     public ModalDialog(String windowTitle)
     {
         initialise(windowTitle);
     }
 
+    /**
+     *
+     */
     public ModalDialog()
     {
         initialise(null);
@@ -75,26 +82,49 @@ public class ModalDialog
         }
     }
 
+    /**
+     *
+     * @param title
+     */
     public void setTitle(String title)
     {
         dialogController.setDialogTitle(title);
     }
 
+    /**
+     *
+     * @param message
+     */
     public void setMessage(String message)
     {
         dialogController.setDialogMessage(message);
     }
 
+    /**
+     *
+     * @param text
+     * @return
+     */
     public int addButton(String text)
     {
         return dialogController.addButton(text);
     }
 
+    /**
+     *
+     * @param text
+     * @param disabler
+     * @return
+     */
     public int addButton(String text, ReadOnlyBooleanProperty disabler)
     {
         return dialogController.addButton(text, disabler);
     }
 
+    /**
+     *
+     * @return
+     */
     public int show()
     {
         dialogStage.showAndWait();
@@ -102,16 +132,27 @@ public class ModalDialog
         return dialogController.getButtonValue();
     }
 
+    /**
+     *
+     */
     public void close()
     {
         dialogStage.hide();
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isShowing()
     {
         return dialogStage.isShowing();
     }
 
+    /**
+     *
+     * @param content
+     */
     public void setContent(Node content)
     {
         dialogController.setContent(content);

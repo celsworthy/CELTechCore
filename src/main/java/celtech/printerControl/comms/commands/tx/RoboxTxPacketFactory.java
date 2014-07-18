@@ -15,12 +15,20 @@ import celtech.printerControl.comms.commands.exceptions.InvalidCommandByteExcept
 public class RoboxTxPacketFactory
 {
 
+    /**
+     *
+     */
     public final static byte commandByteMask = (byte) 0x80;
 
     private RoboxTxPacketFactory()
     {
     }
 
+    /**
+     *
+     * @param packetType
+     * @return
+     */
     public static RoboxTxPacket createPacket(TxPacketTypeEnum packetType)
     {
         RoboxTxPacket returnVal = null;
@@ -115,6 +123,14 @@ public class RoboxTxPacketFactory
         return returnVal;
     }
 
+    /**
+     *
+     * @param inputBytes
+     * @return
+     * @throws InvalidCommandByteException
+     * @throws UnableToGenerateRoboxPacketException
+     * @throws UnknownPacketTypeException
+     */
     public static RoboxTxPacket createPacket(byte[] inputBytes) throws InvalidCommandByteException, UnableToGenerateRoboxPacketException, UnknownPacketTypeException
     {
         RoboxTxPacket returnVal = null;

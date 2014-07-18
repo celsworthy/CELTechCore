@@ -22,7 +22,6 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
-import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
@@ -129,6 +128,11 @@ public class GCodeEditorPanelController extends SlidingElementController impleme
 
     }
 
+    /**
+     *
+     * @param modelList
+     * @param project
+     */
     public void configure(ObservableList<ModelContainer> modelList, Project project)
     {
         gcodeEditParent.visibleProperty().bind(project.projectModeProperty().isEqualTo(ProjectMode.GCODE));

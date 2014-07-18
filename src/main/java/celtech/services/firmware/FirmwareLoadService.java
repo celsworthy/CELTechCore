@@ -21,16 +21,28 @@ public class FirmwareLoadService extends Service<Integer> implements Controllabl
     private StringProperty firmwareFileToLoad = new SimpleStringProperty();
     private Printer printerToUse = null;
 
+    /**
+     *
+     * @param value
+     */
     public final void setFirmwareFileToLoad(String value)
     {
         firmwareFileToLoad.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public final String getFirmwareFileToLoad()
     {
         return firmwareFileToLoad.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public final StringProperty firmwareFileToLoadProperty()
     {
         return firmwareFileToLoad;
@@ -42,12 +54,20 @@ public class FirmwareLoadService extends Service<Integer> implements Controllabl
         return new FirmwareLoadTask(getFirmwareFileToLoad(), printerToUse);
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public boolean cancelRun()
     {
         return cancel();
     }
 
+    /**
+     *
+     * @param printerToUse
+     */
     public void setPrinterToUse(Printer printerToUse)
     {
         this.printerToUse = printerToUse;

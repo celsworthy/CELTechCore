@@ -14,13 +14,34 @@ import javafx.beans.property.ReadOnlyStringProperty;
  */
 public interface ControllableService
 {
+
+    /**
+     *
+     * @return
+     */
     public ReadOnlyStringProperty titleProperty();
 
+    /**
+     *
+     * @return
+     */
     public boolean cancelRun();
 
+    /**
+     *
+     * @return
+     */
     public ReadOnlyBooleanProperty runningProperty();
 
+    /**
+     *
+     * @return
+     */
     public ReadOnlyStringProperty messageProperty();
 
+    /**
+     *
+     * @return
+     */
     public ReadOnlyDoubleProperty progressProperty();
 }

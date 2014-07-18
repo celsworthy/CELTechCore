@@ -15,6 +15,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import libertysystems.stenographer.Stenographer;
@@ -28,7 +31,7 @@ public class ProjectManager implements Savable, Serializable
 {
 
     private static ProjectManager instance = null;
-    private static ArrayList<Project> openProjects = new ArrayList<>();
+    private static List<Project> openProjects = new ArrayList<>();
     private final static String projectFileName = "projects.dat";
     private final static Stenographer steno = StenographerFactory.getStenographer(ProjectManager.class.getName());
     private final static ProjectFileFilter fileFilter = new ProjectFileFilter();
@@ -38,6 +41,10 @@ public class ProjectManager implements Savable, Serializable
 
     }
 
+    /**
+     *
+     * @return
+     */
     public static ProjectManager getInstance()
     {
         if (instance == null)
@@ -75,7 +82,14 @@ public class ProjectManager implements Savable, Serializable
             {
                 String projectName = reader.readUTF();
                 Project project = loadProject(projectName);
-                pm.projectOpened(project);
+                if (project != null)
+                {
+                    pm.projectOpened(project);
+                }
+                else
+                {
+                    steno.warning("Project Manager tried to load " + projectName + " but it couldn't be opened");
+                }
             }
             reader.close();
         } catch (IOException ex)
@@ -85,12 +99,22 @@ public class ProjectManager implements Savable, Serializable
         return pm;
     }
 
+    /**
+     *
+     * @param projectName
+     * @return
+     */
     public static Project loadProject(String projectName)
     {
         File projectFile = new File(projectName);
         return loadProject(projectFile);
     }
 
+    /**
+     *
+     * @param projectFile
+     * @return
+     */
     public static Project loadProject(File projectFile)
     {
         Project loadedProject = null;
@@ -114,6 +138,10 @@ public class ProjectManager implements Savable, Serializable
         return loadedProject;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public boolean saveState()
     {
@@ -139,21 +167,39 @@ public class ProjectManager implements Savable, Serializable
         return savedSuccessfully;
     }
 
+    /**
+     *
+     * @param project
+     */
     public void projectOpened(Project project)
     {
-        openProjects.add(project);
+        if (! openProjects.contains(project)) {
+            openProjects.add(project);
+        }
     }
 
+    /**
+     *
+     * @param project
+     */
     public void projectClosed(Project project)
     {
         openProjects.remove(project);
     }
 
-    public ArrayList<Project> getLoadedModels()
+    /**
+     *
+     * @return
+     */
+    public List<Project> getOpenProjects()
     {
         return openProjects;
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<Project> getAvailableProjects()
     {
         ObservableList<Project> availableProjects = FXCollections.observableArrayList();
@@ -178,6 +224,19 @@ public class ProjectManager implements Savable, Serializable
             }
         }
         return availableProjects;
+    }
+    
+    public Set<String> getOpenAndAvailableProjectNames() {
+        Set<String> openAndAvailableProjectNames = new HashSet<>();
+        for (Project project : openProjects)
+        {
+            openAndAvailableProjectNames.add(project.getProjectName());
+        }
+        for (Project project : getAvailableProjects())
+        {
+            openAndAvailableProjectNames.add(project.getProjectName());
+        }
+        return openAndAvailableProjectNames;
     }
 
 }

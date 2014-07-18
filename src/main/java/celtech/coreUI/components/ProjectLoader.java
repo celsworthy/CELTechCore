@@ -33,6 +33,9 @@ public class ProjectLoader
     private Stage dialogStage = null;
     private ProjectLoaderController dialogController = null;
 
+    /**
+     *
+     */
     public ProjectLoader()
     {
         dialogStage = new Stage(StageStyle.TRANSPARENT);
@@ -57,6 +60,10 @@ public class ProjectLoader
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public int show()
     {
         dialogController.repopulateProjects();
@@ -65,6 +72,10 @@ public class ProjectLoader
         return dialogController.getButtonValue();
     }
 
+    /**
+     *
+     * @return
+     */
     public Project getSelectedProject()
     {
         return dialogController.getSelectedProject();

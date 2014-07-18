@@ -33,6 +33,10 @@ package celtech.coreUI.visualisation;
 
 import javafx.util.Duration;
 
+/**
+ *
+ * @author Ian
+ */
 public class Frame extends Duration {
 
     static double FPS = 24.0;
@@ -51,22 +55,47 @@ public class Frame extends Duration {
         super(millis);
     }
     
+    /**
+     *
+     * @param frame
+     * @return
+     */
     public static Duration frame(int frame) {
         return Duration.seconds(frame / FPS + EPSILON);
     }
     
+    /**
+     *
+     * @param frame
+     * @return
+     */
     public static Duration frame(long frame) {
         return Duration.seconds(frame / FPS + EPSILON);
     }
     
+    /**
+     *
+     * @param tion
+     * @return
+     */
     public static long toFrame(Duration tion) {
         return Math.round(tion.toSeconds() * FPS);
     }
 
+    /**
+     *
+     * @param tion
+     * @return
+     */
     public static int toFrameAsInt(Duration tion) {
         return (int) Math.round(tion.toSeconds() * FPS);
     }
     
+    /**
+     *
+     * @param tion
+     * @return
+     */
     public static double toFrameAsDouble(Duration tion) {
         return (tion.toSeconds() * FPS);
     }

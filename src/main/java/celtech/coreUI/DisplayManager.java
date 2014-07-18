@@ -2,14 +2,10 @@
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
  */
 package celtech.coreUI;
 
-import celtech.CoreTest;
+import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
@@ -17,7 +13,6 @@ import celtech.appManager.ProjectManager;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
-import celtech.coreUI.components.ProjectNotLoadedException;
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.components.SlideoutAndProjectHolder;
 import celtech.coreUI.controllers.InfoScreenIndicatorController;
@@ -25,19 +20,20 @@ import celtech.coreUI.controllers.MenuStripController;
 import celtech.coreUI.controllers.PrinterStatusPageController;
 import celtech.coreUI.controllers.sidePanels.LayoutSidePanelController;
 import celtech.coreUI.controllers.sidePanels.LayoutSlideOutPanelController;
+import celtech.coreUI.controllers.sidePanels.SettingsSidePanelController;
 import celtech.coreUI.controllers.sidePanels.SidePanelManager;
-import celtech.coreUI.visualisation.CameraPositionPreset;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
+import celtech.services.modelLoader.ModelLoadResults;
 import celtech.services.modelLoader.ModelLoaderService;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -53,7 +49,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
 import javafx.scene.control.SingleSelectionModel;
@@ -68,7 +63,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import libertysystems.configuration.Configuration;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.controlsfx.control.action.Action;
@@ -82,31 +76,23 @@ import org.controlsfx.dialog.Dialogs.CommandLink;
 public class DisplayManager implements EventHandler<KeyEvent>
 {
 
-    private static Stenographer steno = StenographerFactory.getStenographer(DisplayManager.class.getName());
-    private static ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
-    private static ProjectManager projectManager = ProjectManager.getInstance();
-    private static Configuration configuration = null;
+    private static final Stenographer steno = StenographerFactory.getStenographer(
+        DisplayManager.class.getName());
+    private static final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
+    private static final ProjectManager projectManager = ProjectManager.getInstance();
 
-    private static ResourceBundle i18nBundle = null;
-    /*
-    
-     */
     private static DisplayManager instance = null;
     private static Stage mainStage = null;
     private static Scene scene = null;
-    /*
-     *
-     */
+
     private static AnchorPane root = null;
     private HBox mainHolder = null;
     private StackPane sidePanelContainer = null;
-    private AnchorPane modeSelectionControl = null;
-    private final HashMap<ApplicationMode, HBox> sidePanels = new HashMap<>();
-    private final HashMap<ApplicationMode, HBox> slideOutPanels = new HashMap<>();
-    private final SlideoutAndProjectHolder rhPanel = new SlideoutAndProjectHolder();
-    private final HBox emptyHBox = new HBox();
-    private final HashMap<ApplicationMode, SidePanelManager> sidePanelControllers = new HashMap<>();
-    private final HashMap<ApplicationMode, Initializable> slideOutControllers = new HashMap<>();
+    private final Map<ApplicationMode, HBox> sidePanels = new HashMap<>();
+    private final Map<ApplicationMode, HBox> slideOutPanels = new HashMap<>();
+    private SlideoutAndProjectHolder rhPanel;
+    private final Map<ApplicationMode, SidePanelManager> sidePanelControllers = new HashMap<>();
+    private final Map<ApplicationMode, Initializable> slideOutControllers = new HashMap<>();
     private static TabPane tabDisplay = null;
     private MenuStripController menuStripController = null;
     private static SingleSelectionModel<Tab> tabDisplaySelectionModel = null;
@@ -127,91 +113,110 @@ public class DisplayManager implements EventHandler<KeyEvent>
     /*
      * GCode model loading
      */
-    private ArrayList<String> gcodeFileLinesBacking = new ArrayList<String>();
-    private ObservableList<String> gcodeFileLines = FXCollections.observableArrayList();
+    private final ObservableList<String> gcodeFileLines = FXCollections.observableArrayList();
     /*
      * GCode-related
      */
     private final IntegerProperty layersInGCode = new SimpleIntegerProperty(0);
     private final BooleanProperty noGCodeLoaded = new SimpleBooleanProperty(true);
 
-    private AnchorPane statusAnchor = null;
-    private HBox statusSubContainer = null;
-    private VBox supplementaryStatusControlContainer = null;
-    private Parent gcodeEntrySlideout = null;
-
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
+
+    /**
+     * The primary font used throughout the GUI, at various font sizes
+     */
+    private final Font primaryFont;
+
+    private Locale usersLocale = null;
 
     private DisplayManager()
     {
+        usersLocale = Locale.getDefault();
 
-        Locale appLocale = Locale.getDefault();
-        appLocale = Locale.forLanguageTag(ApplicationConfiguration.getApplicationLanguage());
-
-        Font.loadFont(CoreTest.class.getResource(ApplicationConfiguration.fontResourcePath + "SourceSansPro-Light.ttf").toExternalForm(), 10);
-        i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData", appLocale);
+        String primaryFontLocation = DisplayManager.class.getResource(
+            ApplicationConfiguration.fontResourcePath
+            + "SourceSansPro-Light.ttf").toExternalForm();
+        primaryFont = Font.loadFont(primaryFontLocation, 10);
 
         modelLoadDialog = new ProgressDialog(modelLoaderService);
 
-        CommandLink dontLoadModel = new Dialogs.CommandLink(i18nBundle.getString("dialogs.ModelTooLargeNo"), null);
-        CommandLink shrinkModel = new Dialogs.CommandLink(i18nBundle.getString("dialogs.ShrinkModelToFit"), null);
-
         modelLoaderService.setOnSucceeded((WorkerStateEvent t) ->
         {
-            ModelLoadResult loadResult = (ModelLoadResult) modelLoaderService.getValue();
+            whenModelLoadSucceeded();
+        });
+    }
 
+    private void whenModelLoadSucceeded()
+    {
+        CommandLink dontLoadModel = new Dialogs.CommandLink(getLanguageBundle().getString(
+            "dialogs.ModelTooLargeNo"), null);
+        CommandLink shrinkModel = new Dialogs.CommandLink(getLanguageBundle().getString(
+            "dialogs.ShrinkModelToFit"), null);
+
+        ModelLoadResults loadResults = modelLoaderService.getValue();
+        if (loadResults.getResults().isEmpty())
+        {
+            return;
+        }
+        ModelLoadResult firstResult = loadResults.getResults().get(0);
+        boolean projectIsEmpty = firstResult.getTargetProjectTab().getLoadedModels().isEmpty();
+        for (ModelLoadResult loadResult : loadResults.getResults())
+        {
             if (loadResult != null)
             {
                 if (loadResult.isModelTooLarge())
                 {
-
-                    Action tooBigResponse = Dialogs.create().title(i18nBundle.getString("dialogs.ModelTooLargeTitle"))
-                            .message(i18nBundle.getString("dialogs.ModelTooLargeDescription"))
-                            .masthead(null)
-                            .showCommandLinks(shrinkModel, shrinkModel, dontLoadModel);
+                    Action tooBigResponse = Dialogs.create().title(getLanguageBundle().getString(
+                        "dialogs.ModelTooLargeTitle"))
+                        .message(loadResult.getModelFilename() + ": "
+                            + getLanguageBundle().getString("dialogs.ModelTooLargeDescription"))
+                        .masthead(null)
+                        .showCommandLinks(shrinkModel, shrinkModel, dontLoadModel);
 
                     if (tooBigResponse == shrinkModel)
                     {
                         ModelContainer modelContainer = loadResult.getModelContainer();
                         modelContainer.shrinkToFitBed();
-                        loadResult.getTargetProjectTab().addModelContainer(loadResult.getFullFilename(), modelContainer);
+                        loadResult.getTargetProjectTab().addModelContainer(
+                            loadResult.getFullFilename(),
+                            modelContainer);
                     }
-//                    else if (buttonPressed == modelCutToSize)
-//                    {
-//                        ModelContainer modelContainer = loadResult.getModelContainer();
-//                        ArrayList<ModelContainer> cutPieces = modelContainer.cutToSize();
-//                        for (ModelContainer model : cutPieces)
-//                        {
-//                            loadResult.getTargetProjectTab().addModelContainer(model.getModelName(), model);
-//                        }
-//                    }
                 } else
                 {
                     ModelContainer modelContainer = loadResult.getModelContainer();
-                    loadResult.getTargetProjectTab().addModelContainer(loadResult.getFullFilename(), modelContainer);
+                    loadResult.getTargetProjectTab().addModelContainer(loadResult.getFullFilename(),
+                                                                       modelContainer);
                 }
             } else
             {
                 steno.error("Error whilst attempting to load model");
             }
-        });
+        }
+        if (loadResults.isRelayout() && projectIsEmpty && loadResults.getResults().size() > 1)
+        {
+            autoLayout();
+        }
+
     }
 
     private void loadProjectsAtStartup()
     {
         // Load up any projects that were open last time we shut down....
         ProjectManager pm = ProjectManager.getInstance();
-        ArrayList<Project> preloadedProjects = pm.getLoadedModels();
+        List<Project> preloadedProjects = pm.getOpenProjects();
         for (Project project : preloadedProjects)
         {
-            ProjectTab newProjectTab = new ProjectTab(instance, project, tabDisplay.widthProperty(), tabDisplay.heightProperty());
+            ProjectTab newProjectTab = new ProjectTab(instance, project, tabDisplay.widthProperty(),
+                                                      tabDisplay.heightProperty());
             tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
         }
     }
 
-    private void switchPagesForMode(ApplicationMode oldMode, ApplicationMode newMode)
+    private void switchPagesForMode(ApplicationMode oldMode,
+        ApplicationMode newMode)
     {
-        infoScreenIndicatorController.setSelected(newMode == ApplicationMode.STATUS);
+        infoScreenIndicatorController.setSelected(newMode
+            == ApplicationMode.STATUS);
 
         // Remove the existing side panel
         if (oldMode != null)
@@ -231,13 +236,15 @@ public class DisplayManager implements EventHandler<KeyEvent>
             //Create a tab if one doesnt already exist
             if (tabDisplay.getTabs().size() <= 1)
             {
-                projectTab = new ProjectTab(this, tabDisplay.widthProperty(), tabDisplay.heightProperty());
+                projectTab = new ProjectTab(this, tabDisplay.widthProperty(),
+                                            tabDisplay.heightProperty());
                 tabDisplay.getTabs().add(projectTab);
                 tabDisplaySelectionModel.select(projectTab);
             } else
             {
                 //Switch tabs if necessary
-                if (tabDisplaySelectionModel.getSelectedItem() instanceof ProjectTab == false)
+                if (tabDisplaySelectionModel.getSelectedItem() instanceof ProjectTab
+                    == false)
                 {
                     //Select the second tab (first is always status)
                     if (lastLayoutTab != null)
@@ -253,7 +260,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
             ((LayoutSlideOutPanelController) slideOutControllers.get(ApplicationMode.LAYOUT)).bindLoadedModels(projectTab.getProject());
             ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).bindLoadedModels(projectTab.getThreeDViewManager());
-            menuStripController.bindSelectedModels(projectTab.getSelectionContainer());
+            menuStripController.bindSelectedModels(projectTab);
             projectTab.setMode(newMode);
         } else if (newMode == ApplicationMode.SETTINGS)
         {
@@ -265,6 +272,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public static DisplayManager getInstance()
     {
         if (instance == null)
@@ -275,11 +286,21 @@ public class DisplayManager implements EventHandler<KeyEvent>
         return instance;
     }
 
+    /**
+     *
+     * @param mainStage
+     * @param applicationName
+     */
     public void configureDisplayManager(Stage mainStage, String applicationName)
     {
+        rhPanel = new SlideoutAndProjectHolder();
+
         this.mainStage = mainStage;
-        mainStage.setTitle(applicationName + " - " + ApplicationConfiguration.getApplicationVersion());
-        ApplicationConfiguration.setTitleAndVersion(i18nBundle.getString("application.title") + " - " + ApplicationConfiguration.getApplicationVersion());
+        mainStage.setTitle(applicationName + " - "
+            + ApplicationConfiguration.getApplicationVersion());
+        ApplicationConfiguration.setTitleAndVersion(getLanguageBundle().getString(
+            "application.title")
+            + " - " + ApplicationConfiguration.getApplicationVersion());
 
         root = new AnchorPane();
         mainHolder = new HBox();
@@ -298,7 +319,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             {
                 URL fxmlFileName = getClass().getResource(mode.getSidePanelFXMLName());
                 steno.debug("About to load side panel fxml: " + fxmlFileName);
-                FXMLLoader sidePanelLoader = new FXMLLoader(fxmlFileName, i18nBundle);
+                FXMLLoader sidePanelLoader = new FXMLLoader(fxmlFileName, getLanguageBundle());
                 HBox sidePanel = (HBox) sidePanelLoader.load();
                 SidePanelManager sidePanelController = sidePanelLoader.getController();
                 sidePanel.setId(mode.name());
@@ -309,15 +330,17 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 ex.printStackTrace();
                 sidePanels.put(mode, null);
                 sidePanelControllers.put(mode, null);
-                steno.error("Couldn't load side panel for mode:" + mode + ". " + ex);
+                steno.error("Couldn't load side panel for mode:" + mode + ". "
+                    + ex);
                 System.out.println("Exception: " + ex.getMessage());
             }
 
             try
             {
                 URL fxmlSlideOutFileName = getClass().getResource(mode.getSlideOutFXMLName());
-                steno.debug("About to load slideout fxml: " + fxmlSlideOutFileName);
-                FXMLLoader slideOutLoader = new FXMLLoader(fxmlSlideOutFileName, i18nBundle);
+                steno.debug("About to load slideout fxml: "
+                    + fxmlSlideOutFileName);
+                FXMLLoader slideOutLoader = new FXMLLoader(fxmlSlideOutFileName, getLanguageBundle());
                 HBox slideOut = (HBox) slideOutLoader.load();
                 Initializable slideOutController = slideOutLoader.getController();
                 slideOutPanels.put(mode, slideOut);
@@ -327,7 +350,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
             {
                 slideOutPanels.put(mode, null);
                 slideOutControllers.put(mode, null);
-                steno.error("Couldn't load slideout panel for mode:" + mode + ". " + ex);
+                steno.error("Couldn't load slideout panel for mode:" + mode
+                    + ". " + ex + " : " + ex.getCause());
                 System.out.println("Exception: " + ex.getMessage());
             }
         }
@@ -357,14 +381,18 @@ public class DisplayManager implements EventHandler<KeyEvent>
         // The printer status tab will always be visible - the page is static
         try
         {
-            FXMLLoader printerStatusPageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "PrinterStatusPage.fxml"), i18nBundle);
+            FXMLLoader printerStatusPageLoader = new FXMLLoader(getClass().getResource(
+                ApplicationConfiguration.fxmlResourcePath
+                + "PrinterStatusPage.fxml"), getLanguageBundle());
             AnchorPane printerStatusPage = printerStatusPageLoader.load();
             PrinterStatusPageController printerStatusPageController = printerStatusPageLoader.getController();
             printerStatusPageController.configure(rhPanel.getProjectTabPaneHolder());
 
             printerStatusTab = new Tab();
-            printerStatusTab.setText(i18nBundle.getString("printerStatusTabTitle"));
-            FXMLLoader printerStatusPageLabelLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "infoScreenIndicator.fxml"), i18nBundle);
+            printerStatusTab.setText(getLanguageBundle().getString("printerStatusTabTitle"));
+            FXMLLoader printerStatusPageLabelLoader = new FXMLLoader(getClass().getResource(
+                ApplicationConfiguration.fxmlResourcePath
+                + "infoScreenIndicator.fxml"), getLanguageBundle());
             VBox printerStatusLabelGroup = printerStatusPageLabelLoader.load();
             infoScreenIndicatorController = printerStatusPageLabelLoader.getController();
             printerStatusTab.setGraphic(printerStatusLabelGroup);
@@ -377,46 +405,50 @@ public class DisplayManager implements EventHandler<KeyEvent>
             addPageTab.setClosable(false);
             tabDisplay.getTabs().add(addPageTab);
 
-            tabDisplaySelectionModel.selectedItemProperty().addListener((ObservableValue<? extends Tab> ov, Tab lastTab, Tab newTab) ->
-            {
-                if (newTab == addPageTab)
+            tabDisplaySelectionModel.selectedItemProperty().addListener(
+                (ObservableValue<? extends Tab> ov, Tab lastTab, Tab newTab) ->
                 {
-                    ProjectTab projectTab = new ProjectTab(instance, tabDisplay.widthProperty(), tabDisplay.heightProperty());
-                    tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, projectTab);
-                    tabDisplaySelectionModel.select(projectTab);
-                } else if (newTab instanceof ProjectTab)
-                {
-                    if (applicationStatus.getMode() != ApplicationMode.LAYOUT)
+                    if (newTab == addPageTab)
                     {
-                        applicationStatus.setMode(ApplicationMode.LAYOUT);
-                    }
+                        ProjectTab projectTab = new ProjectTab(instance, tabDisplay.widthProperty(),
+                                                               tabDisplay.heightProperty());
+                        tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, projectTab);
+                        tabDisplaySelectionModel.select(projectTab);
+                    } else if (newTab instanceof ProjectTab)
+                    {
+                        if (applicationStatus.getMode() != ApplicationMode.LAYOUT)
+                        {
+                            applicationStatus.setMode(ApplicationMode.LAYOUT);
+                        }
 
-                    if (lastTab instanceof ProjectTab)
-                    {
-                        ((ProjectTab) lastTab).setMode(ApplicationMode.LAYOUT);
-                    }
+                        if (lastTab instanceof ProjectTab)
+                        {
+                            ((ProjectTab) lastTab).setMode(ApplicationMode.LAYOUT);
+                        }
 
-                    if (lastTab != newTab)
+                        if (lastTab != newTab)
+                        {
+                            ProjectTab projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
+                            ((LayoutSidePanelController) (sidePanelControllers.get(
+                                ApplicationMode.LAYOUT))).bindLoadedModels(
+                                projectTab.getThreeDViewManager());
+                            menuStripController.bindSelectedModels(projectTab);
+                            ((SettingsSidePanelController) sidePanelControllers.get(
+                                ApplicationMode.SETTINGS)).projectChanged(projectTab.getProject());
+                        }
+                    } else
                     {
-                        ProjectTab projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
-                        ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).bindLoadedModels(projectTab.getThreeDViewManager());
-                        menuStripController.bindSelectedModels(projectTab.getSelectionContainer());
-//                        ((SettingsSidePanelController) (sidePanels.get(ApplicationMode.SETTINGS).getSidePanelController())).bindLoadedModels(projectTab.getProject());
-//                        ((SettingsSidePanelController) (sidePanelControllers.get(ApplicationMode.SETTINGS))).bindLoadedModels(projectTab.getProject());
+                        if (lastTab instanceof ProjectTab)
+                        {
+                            lastLayoutTab = lastTab;
+                        }
+                        //Must have clicked on the status tab
+                        if (applicationStatus.getMode() != ApplicationMode.STATUS)
+                        {
+                            applicationStatus.setMode(ApplicationMode.STATUS);
+                        }
                     }
-                } else
-                {
-                    if (lastTab instanceof ProjectTab)
-                    {
-                        lastLayoutTab = lastTab;
-                    }
-                    //Must have clicked on the status tab
-                    if (applicationStatus.getMode() != ApplicationMode.STATUS)
-                    {
-                        applicationStatus.setMode(ApplicationMode.STATUS);
-                    }
-                }
-            });
+                });
 
             rhPanel.populateProjectDisplay(tabDisplay);
         } catch (IOException ex)
@@ -424,17 +456,19 @@ public class DisplayManager implements EventHandler<KeyEvent>
             steno.error("Failed to load printer status page:" + ex);
         }
 
-        applicationStatus.modeProperty().addListener((ObservableValue<? extends ApplicationMode> ov, ApplicationMode oldMode, ApplicationMode newMode) ->
-        {
-            switchPagesForMode(oldMode, newMode);
-        });
+        applicationStatus.modeProperty().addListener(
+            (ObservableValue<? extends ApplicationMode> ov, ApplicationMode oldMode, ApplicationMode newMode) ->
+            {
+                switchPagesForMode(oldMode, newMode);
+            });
 
         applicationStatus.setMode(ApplicationMode.STATUS);
 
         try
         {
-            URL menuStripURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "MenuStrip.fxml");
-            FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, i18nBundle);
+            URL menuStripURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath
+                + "MenuStrip.fxml");
+            FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, getLanguageBundle());
             BorderPane menuStripControls = (BorderPane) menuStripLoader.load();
             menuStripController = menuStripLoader.getController();
             menuStripControls.prefWidthProperty().bind(rhPanel.widthProperty());
@@ -447,10 +481,13 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         projectLoader = new ProjectLoader();
 
-        scene = new Scene(root, ApplicationConfiguration.DEFAULT_WIDTH, ApplicationConfiguration.DEFAULT_HEIGHT);
+        scene = new Scene(root, ApplicationConfiguration.DEFAULT_WIDTH,
+                          ApplicationConfiguration.DEFAULT_HEIGHT);
 
-        scene.getStylesheets()
-                .add("/celtech/resources/css/JMetroDarkTheme.css");
+        scene.getStylesheets().add("/celtech/resources/css/JMetroDarkTheme.css");
+//        root.setStyle("-fx-font-family: FreeMono;");
+        String primaryFontFamily = primaryFont.getFamily();
+        root.setStyle("-fx-font-family: " + primaryFontFamily + ";");
 
         // Camera required to allow 2D shapes to be rotated in 3D in the '2D' UI
         PerspectiveCamera controlOverlaycamera = new PerspectiveCamera(false);
@@ -464,14 +501,22 @@ public class DisplayManager implements EventHandler<KeyEvent>
         root.layout();
     }
 
+    /**
+     *
+     * @return
+     */
     public static Stage getMainStage()
     {
         return mainStage;
     }
 
+    /**
+     *
+     * @return
+     */
     public static ResourceBundle getLanguageBundle()
     {
-        return i18nBundle;
+        return Lookup.getApplicationEnvironment().getLanguageBundle();
     }
 
     private void addGCode(Group gCodeParts)
@@ -482,21 +527,38 @@ public class DisplayManager implements EventHandler<KeyEvent>
     /* 
      * GCode display controls
      */
+    /**
+     *
+     * @param equalsIgnoreCase
+     */
     public void showGCodeTravel(boolean equalsIgnoreCase)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    /**
+     *
+     * @param equalsIgnoreCase
+     */
     public void showGCodeRetracts(boolean equalsIgnoreCase)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    /**
+     *
+     * @param equalsIgnoreCase
+     */
     public void showGCodeSupport(boolean equalsIgnoreCase)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    /**
+     *
+     * @param intValue
+     * @param i
+     */
     public void changeVisibleGCodeLayers(int intValue, int i)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -505,63 +567,90 @@ public class DisplayManager implements EventHandler<KeyEvent>
     /*
     
      */
+    /**
+     *
+     * @return
+     */
     public ObservableList<String> gcodeFileLinesProperty()
     {
         return gcodeFileLines;
     }
 
+    /**
+     *
+     * @param value
+     */
     public final void setLayersInGCode(int value)
     {
         layersInGCode.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public final int getLayersInGCode()
     {
         return layersInGCode.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public final IntegerProperty layersInGCodeProperty()
     {
         return layersInGCode;
     }
 
+    /**
+     *
+     * @return
+     */
     public final BooleanProperty noGCodeLoadedProperty()
     {
         return noGCodeLoaded;
     }
 
+    /**
+     * Load each model in modelsToLoad, do not lay them out on the bed. ,
+     *
+     * @param modelsToLoad
+     */
     public void loadExternalModels(List<File> modelsToLoad)
     {
-        //Load the first one for the moment - we should deal with multiple loads in all cases
-        loadExternalModel(modelsToLoad.get(0));
+        loadExternalModels(modelsToLoad, false);
     }
 
-    public void loadExternalModel(File modelToLoad)
+    /**
+     * Load each model in modelsToLoad and then optionally lay them out on the bed. If there are
+     * already models loaded in the project then do not relayout even if relayout=true;
+     */
+    public void loadExternalModels(List<File> modelsToLoad, boolean relayout)
     {
-        if (!modelLoaderService.isRunning() && tabDisplaySelectionModel.selectedItemProperty().get() instanceof ProjectTab)
+        if (!modelLoaderService.isRunning()
+            && tabDisplaySelectionModel.selectedItemProperty().get() instanceof ProjectTab)
         {
-            String modelNameToLoad = modelToLoad.getName();
-            if (modelNameToLoad.endsWith(ApplicationConfiguration.projectFileExtension))
-            {
-                ProjectTab currentProjectTab = ((ProjectTab) (tabDisplaySelectionModel.selectedItemProperty().get()));
-                currentProjectTab.addProjectContainer(modelToLoad);
-                tabDisplaySelectionModel.select(currentProjectTab);
-            } else
-            {
-                modelLoaderService.reset();
-                modelLoaderService.setModelFileToLoad(modelToLoad.getAbsolutePath());
-                modelLoaderService.setShortModelName(modelNameToLoad);
-                modelLoaderService.setTargetTab((ProjectTab) (tabDisplaySelectionModel.selectedItemProperty().get()));
-                modelLoaderService.start();
-            }
+            modelLoaderService.reset();
+            modelLoaderService.setModelFilesToLoad(modelsToLoad, relayout);
+            modelLoaderService.setTargetTab(
+                (ProjectTab) (tabDisplaySelectionModel.selectedItemProperty().get()));
+            modelLoaderService.start();
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public ReadOnlyBooleanProperty modelLoadingProperty()
     {
         return modelLoaderService.runningProperty();
     }
 
+    /**
+     *
+     */
     public void shutdown()
     {
         projectManager.saveState();
@@ -572,6 +661,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
         });
     }
 
+    /**
+     *
+     */
     public void deleteSelectedModels()
     {
         Tab currentTab = tabDisplaySelectionModel.selectedItemProperty().get();
@@ -581,6 +673,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
+    /**
+     *
+     */
     public void copySelectedModels()
     {
         Tab currentTab = tabDisplaySelectionModel.selectedItemProperty().get();
@@ -590,6 +685,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
+    /**
+     *
+     */
     public void autoLayout()
     {
         Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
@@ -598,7 +696,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
             ((ProjectTab) currentTab).autoLayout();
         }
     }
-
+    
+    /**
+     *
+     */
     public void activateSnapToGround()
     {
         Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
@@ -608,15 +709,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
-    public void selectModel(ModelContainer selectedModel)
-    {
-        Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
-        if (currentTab instanceof ProjectTab)
-        {
-            ((ProjectTab) currentTab).selectModel(selectedModel);
-        }
-    }
-
+    /**
+     *
+     * @param selectedModel
+     */
     public void deselectModel(ModelContainer selectedModel)
     {
         Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
@@ -626,6 +722,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public ThreeDViewManager getCurrentlyVisibleViewManager()
     {
         Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
@@ -638,6 +738,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public Project getCurrentlyVisibleProject()
     {
         Project projectToReturn = null;
@@ -671,8 +775,14 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 switch (event.getCode())
                 {
                     case DELETE:
+                    case BACK_SPACE:
                         projectTab.deleteSelectedModels();
                         break;
+                    case A:
+                        if (event.isShortcutDown())
+                        {
+                            projectTab.selectAllModels();
+                        }
                     default:
                         break;
                 }
@@ -680,6 +790,11 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
+    /**
+     *
+     * @param mode
+     * @return
+     */
     public VBox getSidePanelSlideOutHandle(ApplicationMode mode)
     {
         HBox slideOut = slideOutPanels.get(mode);
@@ -688,7 +803,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         for (Node subNode : slideOut.getChildren())
         {
-            if (subNode.getId().equalsIgnoreCase("Container") && subNode instanceof VBox)
+            if (subNode.getId().equalsIgnoreCase("Container")
+                && subNode instanceof VBox)
             {
                 container = (VBox) subNode;
                 break;
@@ -697,11 +813,34 @@ public class DisplayManager implements EventHandler<KeyEvent>
         return container;
     }
 
+    /**
+     *
+     */
     public void slideOutAdvancedPanel()
     {
         if (rhPanel.isSlidIn() && rhPanel.isSliding() == false)
         {
             rhPanel.startSlidingOut();
         }
+    }
+
+    public Locale getApplicationLocale()
+    {
+        return Lookup.getApplicationEnvironment().getAppLocale();
+    }
+
+    public Locale getUsersLocale()
+    {
+        return usersLocale;
+    }
+
+    /**
+     * Return the font family name of the primary font used in the GUI
+     *
+     * @return
+     */
+    public String getPrimaryFontFamily()
+    {
+        return primaryFont.getFamily();
     }
 }

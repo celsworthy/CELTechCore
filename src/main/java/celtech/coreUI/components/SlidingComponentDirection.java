@@ -12,5 +12,24 @@ package celtech.coreUI.components;
  */
 public enum SlidingComponentDirection
 {
-    IN_FROM_LEFT, IN_FROM_RIGHT, DOWN_FROM_TOP, UP_FROM_BOTTOM;
+
+    /**
+     *
+     */
+    IN_FROM_LEFT,
+
+    /**
+     *
+     */
+    IN_FROM_RIGHT,
+
+    /**
+     *
+     */
+    DOWN_FROM_TOP,
+
+    /**
+     *
+     */
+    UP_FROM_BOTTOM;
 }

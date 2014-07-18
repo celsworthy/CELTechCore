@@ -32,6 +32,9 @@ public class PrinterStatusListCell extends ListCell<Printer>
     private final static PrinterColourMap colourMap = PrinterColourMap.getInstance();
     private ChangeListener<Color> printerColourChangeListener = null;
     
+    /**
+     *
+     */
     public PrinterStatusListCell()
     {
         printerColourChangeListener = new ChangeListener<Color>()

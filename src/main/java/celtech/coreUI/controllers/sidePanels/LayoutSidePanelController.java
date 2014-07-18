@@ -9,11 +9,14 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.coreUI.DisplayManager;
+import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.coreUI.visualisation.SelectionContainer;
+import celtech.coreUI.visualisation.SelectedModelContainers;
+import celtech.coreUI.visualisation.SelectedModelContainers.SelectedModelContainersListener;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
@@ -28,13 +31,11 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
-import javafx.util.StringConverter;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -43,53 +44,52 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class LayoutSidePanelController implements Initializable, SidePanelManager
+public class LayoutSidePanelController implements Initializable,
+    SidePanelManager
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(LayoutSidePanelController.class.getName());
+    private Stenographer steno = StenographerFactory.getStenographer(
+        LayoutSidePanelController.class.getName());
     private Project boundProject = null;
     private ModelContainer boundModel = null;
     private StatusScreenState statusScreenState = null;
 
     @FXML
-    private TextField widthTextField;
+    private RestrictedNumberField widthTextField;
 
     @FXML
-    private TextField depthTextField;
+    private RestrictedNumberField depthTextField;
 
     @FXML
     private VBox selectedItemDetails;
 
     @FXML
-    private TextField xAxisTextField;
+    private RestrictedNumberField xAxisTextField;
 
     @FXML
-    private TextField scaleTextField;
+    private RestrictedNumberField scaleTextField;
 
     @FXML
-    private TextField heightTextField;
+    private RestrictedNumberField heightTextField;
 
     @FXML
-    private TextField yAxisTextField;
+    private RestrictedNumberField yAxisTextField;
 
     @FXML
-    private TextField rotationTextField;
+    private RestrictedNumberField rotationTextField;
 
     @FXML
     private TableView<ModelContainer> modelDataTableView;
 
-    private TableColumn modelNameColumn = new TableColumn();
-    private TableColumn scaleColumn = new TableColumn();
-    private TableColumn rotationColumn = new TableColumn();
+    private final TableColumn modelNameColumn = new TableColumn();
+    private final TableColumn scaleColumn = new TableColumn();
+    private final TableColumn rotationColumn = new TableColumn();
 
-    private SelectionContainer selectionContainer = null;
-    private ListChangeListener<ModelContainer> selectionContainerModelsListener = null;
-    private ChangeListener<ModelContainer> selectedItemListener = null;
-    private DisplayManager displayManager = DisplayManager.getInstance();
+    private SelectedModelContainers selectionModel;
+    private SelectedModelContainersListener tableViewSelectionListener = null;
+    private final DisplayManager displayManager = DisplayManager.getInstance();
 
-    private StringConverter doubleTwoDigitsConverter = null;
-    private StringConverter doubleOneDigitConverter = null;
-    private ListChangeListener<ModelContainer> modelChangeListener = null;
+    private ListChangeListener<ModelContainer> loadedModelsChangeListener = null;
 
     private ChangeListener<Number> modelScaleChangeListener = null;
     private ChangeListener<Number> modelRotationChangeListener = null;
@@ -103,6 +103,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private final String rotationFormat = "%.0f";
 
     private ListChangeListener selectionListener = null;
+    private boolean suppressModelDataTableViewNotifications = false;
 
     @FXML
     void changeToSettings(MouseEvent event)
@@ -111,7 +112,10 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     }
 
     /**
-     * Initializes the controller class.
+     * Initialises the controller class.
+     *
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
@@ -119,9 +123,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         statusScreenState = StatusScreenState.getInstance();
 
         ResourceBundle languageBundle = DisplayManager.getLanguageBundle();
-        String modelNameLabelString = languageBundle.getString("sidePanel_layout.ModelNameLabel");
-        String scaleLabelString = languageBundle.getString("sidePanel_layout.ScaleLabel");
-        String rotationLabelString = languageBundle.getString("sidePanel_layout.RotationLabel");
+        String modelNameLabelString = languageBundle.getString(
+            "sidePanel_layout.ModelNameLabel");
+        String scaleLabelString = languageBundle.getString(
+            "sidePanel_layout.ScaleLabel");
+        String rotationLabelString = languageBundle.getString(
+            "sidePanel_layout.RotationLabel");
 
         scaleTextField.setText("-");
         rotationTextField.setText("-");
@@ -131,485 +138,14 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         xAxisTextField.setText("-");
         yAxisTextField.setText("-");
 
-        doubleTwoDigitsConverter = new StringConverter<Double>()
-        {
-            @Override
-            public String toString(Double t)
-            {
-                return String.format("%.2f", t);
-            }
+        setUpTableView(modelNameLabelString, scaleLabelString, rotationLabelString, languageBundle);
 
-            @Override
-            public Double fromString(String string)
-            {
-                return Double.valueOf(string);
-            }
-        };
-
-        doubleOneDigitConverter = new StringConverter<Double>()
-        {
-            @Override
-            public String toString(Double t)
-            {
-                return String.format("%.1f", t);
-            }
-
-            @Override
-            public Double fromString(String string)
-            {
-                return Double.valueOf(string);
-            }
-        };
-
-        modelNameColumn.setText(modelNameLabelString);
-        modelNameColumn.setCellValueFactory(new PropertyValueFactory<ModelContainer, String>("modelName"));
-        modelNameColumn.setMinWidth(170);
-        modelNameColumn.setMaxWidth(170);
-        modelNameColumn.setEditable(false);
-
-        scaleColumn.setText(scaleLabelString);
-        scaleColumn.setCellValueFactory(new PropertyValueFactory<ModelContainer, Double>("scale"));
-        scaleColumn.setMinWidth(60);
-        scaleColumn.setPrefWidth(60);
-        scaleColumn.setMaxWidth(60);
-        scaleColumn.setCellFactory(new Callback<TableColumn<ModelContainer, Double>, TableCell<ModelContainer, Double>>()
-        {
-            @Override
-            public TableCell<ModelContainer, Double> call(TableColumn<ModelContainer, Double> param)
-            {
-                return new TableCell<ModelContainer, Double>()
-                {
-
-                    @Override
-                    protected void updateItem(Double item, boolean empty)
-                    {
-                        super.updateItem(item, empty);
-
-                        if (!empty)
-                        {
-                            // Use a SimpleDateFormat or similar in the format method
-                            setText(String.format("%.0f%%", item * 100));
-                        } else
-                        {
-                            setText(null);
-                        }
-                    }
-                };
-            }
-        });
-
-        rotationColumn.setText(rotationLabelString);
-        rotationColumn.setCellValueFactory(new PropertyValueFactory<ModelContainer, Double>("rotationY"));
-        rotationColumn.setMinWidth(60);
-        rotationColumn.setPrefWidth(60);
-        rotationColumn.setMaxWidth(60);
-        rotationColumn.setCellFactory(new Callback<TableColumn<ModelContainer, Double>, TableCell<ModelContainer, Double>>()
-        {
-            @Override
-            public TableCell<ModelContainer, Double> call(TableColumn<ModelContainer, Double> param)
-            {
-                return new TableCell<ModelContainer, Double>()
-                {
-
-                    @Override
-                    protected void updateItem(Double item, boolean empty)
-                    {
-                        super.updateItem(item, empty);
-
-                        if (!empty)
-                        {
-                            // Use a SimpleDateFormat or similar in the format method
-                            setText(String.format("%.0fº", item));
-                        } else
-                        {
-                            setText(null);
-                        }
-                    }
-                };
-            }
-        });
-
-        modelDataTableView.getColumns().addAll(modelNameColumn, scaleColumn, rotationColumn);
-        modelDataTableView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        modelDataTableView.setEditable(true);
-        modelDataTableView.getSortOrder().add(modelNameColumn);
-
-        Label noModelsLoadedPlaceholder = new Label();
-        noModelsLoadedPlaceholder.setText(languageBundle.getString("sidePanel_layout.noModelsLoaded"));
-        modelDataTableView.setPlaceholder(noModelsLoadedPlaceholder);
-
-        modelScaleChangeListener = new ChangeListener<Number>()
+        loadedModelsChangeListener = new ListChangeListener<ModelContainer>()
         {
 
             @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                scaleTextField.setText(String.format(scaleFormat, t1.doubleValue() * 100));
-            }
-        };
-
-        modelRotationChangeListener = new ChangeListener<Number>()
-        {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                rotationTextField.setText(String.format(rotationFormat, t1));
-            }
-        };
-
-        selectionListener = new ListChangeListener<ModelContainer>()
-        {
-
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends ModelContainer> change)
-            {
-                ModelContainer changedModel = null;
-                while (change.next())
-                {
-                    if (change.wasAdded())
-                    {
-                        for (ModelContainer additem : change.getAddedSubList())
-                        {
-                            displayManager.selectModel(additem);
-                            changedModel = additem;
-                        }
-                    } else if (change.wasRemoved())
-                    {
-                        for (ModelContainer additem : change.getRemoved())
-                        {
-                            displayManager.deselectModel(additem);
-                        }
-                    } else if (change.wasReplaced())
-                    {
-                        steno.info("Replaced: ");
-                    } else if (change.wasUpdated())
-                    {
-                        steno.info("Updated: ");
-                    }
-                }
-            }
-        };
-
-        modelDataTableView.getSelectionModel().getSelectedItems().addListener(selectionListener);
-
-        selectionContainerModelsListener = (ListChangeListener.Change<? extends ModelContainer> change) ->
-        {
-            while (change.next())
-            {
-                if (change.wasAdded())
-                {
-                    for (ModelContainer additem : change.getAddedSubList())
-                    {
-                        modelDataTableView.getSelectionModel().select(additem);
-                    }
-                } else if (change.wasRemoved())
-                {
-                    for (ModelContainer additem : change.getRemoved())
-                    {
-                        int modelIndex = modelDataTableView.getItems().indexOf(additem);
-                        if (modelIndex != -1)
-                        {
-                            modelDataTableView.getSelectionModel().clearSelection(modelIndex);
-                        }
-                    }
-                } else if (change.wasReplaced())
-                {
-                    steno.info("Replaced: ");
-                } else if (change.wasUpdated())
-                {
-                    steno.info("Updated: ");
-                }
-            }
-        };
-
-        scaleTextField.setOnKeyPressed(
-                new EventHandler<KeyEvent>()
-                {
-
-                    @Override
-                    public void handle(KeyEvent t
-                    )
-                    {
-                        switch (t.getCode())
-                        {
-                            case ENTER:
-                            case TAB:
-                                displayManager.getCurrentlyVisibleViewManager().scaleSelection(Double.valueOf(scaleTextField.getText()) / 100);
-                                break;
-                            case DECIMAL:
-                            case BACK_SPACE:
-                            case LEFT:
-                            case RIGHT:
-                                break;
-                            default:
-                                t.consume();
-                                break;
-                        }
-                    }
-                }
-        );
-
-        scaleTextField.focusedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-            {
-                if (newValue == false)
-                {
-                    displayManager.getCurrentlyVisibleViewManager().scaleSelection(Double.valueOf(scaleTextField.getText()) / 100);
-                }
-            }
-        });
-
-        rotationTextField.setOnKeyPressed(
-                new EventHandler<KeyEvent>()
-                {
-
-                    @Override
-                    public void handle(KeyEvent t
-                    )
-                    {
-                        switch (t.getCode())
-                        {
-                            case ENTER:
-                            case TAB:
-                                displayManager.getCurrentlyVisibleViewManager().rotateSelection(Double.valueOf(rotationTextField.getText()));
-                                break;
-                            case DECIMAL:
-                            case BACK_SPACE:
-                            case LEFT:
-                            case RIGHT:
-                                break;
-                            default:
-                                t.consume();
-                                break;
-                        }
-                    }
-                }
-        );
-
-        rotationTextField.focusedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-            {
-                if (newValue == false)
-                {
-                    displayManager.getCurrentlyVisibleViewManager().rotateSelection(Double.valueOf(rotationTextField.getText()));
-                }
-            }
-        });
-
-        widthTextField.setOnKeyPressed(
-                new EventHandler<KeyEvent>()
-                {
-
-                    @Override
-                    public void handle(KeyEvent t
-                    )
-                    {
-                        switch (t.getCode())
-                        {
-                            case ENTER:
-                            case TAB:
-                                displayManager.getCurrentlyVisibleViewManager().resizeSelectionWidth(Double.valueOf(widthTextField.getText()));
-                                break;
-                            case DECIMAL:
-                            case BACK_SPACE:
-                            case LEFT:
-                            case RIGHT:
-                                break;
-                            default:
-                                t.consume();
-                                break;
-                        }
-                    }
-                }
-        );
-
-        widthTextField.focusedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-            {
-                if (newValue == false)
-                {
-                    displayManager.getCurrentlyVisibleViewManager().resizeSelectionWidth(Double.valueOf(widthTextField.getText()));
-                }
-            }
-        });
-
-        heightTextField.setOnKeyPressed(
-                new EventHandler<KeyEvent>()
-                {
-
-                    @Override
-                    public void handle(KeyEvent t
-                    )
-                    {
-                        switch (t.getCode())
-                        {
-                            case ENTER:
-                            case TAB:
-                                displayManager.getCurrentlyVisibleViewManager().resizeSelectionHeight(Double.valueOf(heightTextField.getText()));
-                                break;
-                            case DECIMAL:
-                            case BACK_SPACE:
-                            case LEFT:
-                            case RIGHT:
-                                break;
-                            default:
-                                t.consume();
-                                break;
-                        }
-                    }
-                }
-        );
-
-        heightTextField.focusedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-            {
-                if (newValue == false)
-                {
-                    displayManager.getCurrentlyVisibleViewManager().resizeSelectionHeight(Double.valueOf(heightTextField.getText()));
-                }
-            }
-        });
-
-        depthTextField.setOnKeyPressed(
-                new EventHandler<KeyEvent>()
-                {
-
-                    @Override
-                    public void handle(KeyEvent t
-                    )
-                    {
-                        switch (t.getCode())
-                        {
-                            case ENTER:
-                            case TAB:
-                                displayManager.getCurrentlyVisibleViewManager().resizeSelectionDepth(Double.valueOf(depthTextField.getText()));
-                                break;
-                            case DECIMAL:
-                            case BACK_SPACE:
-                            case LEFT:
-                            case RIGHT:
-                                break;
-                            default:
-                                t.consume();
-                                break;
-                        }
-                    }
-                }
-        );
-
-        depthTextField.focusedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-            {
-                if (newValue == false)
-                {
-                    displayManager.getCurrentlyVisibleViewManager().resizeSelectionDepth(Double.valueOf(depthTextField.getText()));
-                }
-            }
-        });
-
-        xAxisTextField.setOnKeyPressed(
-                new EventHandler<KeyEvent>()
-                {
-
-                    @Override
-                    public void handle(KeyEvent t
-                    )
-                    {
-                        switch (t.getCode())
-                        {
-                            case ENTER:
-                            case TAB:
-                                displayManager.getCurrentlyVisibleViewManager().translateSelectionXTo(Double.valueOf(xAxisTextField.getText()));
-                                break;
-                            case DECIMAL:
-                            case BACK_SPACE:
-                            case LEFT:
-                            case RIGHT:
-                                break;
-                            default:
-                                t.consume();
-                                break;
-                        }
-                    }
-                }
-        );
-
-        xAxisTextField.focusedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-            {
-                if (newValue == false)
-                {
-                    ThreeDViewManager viewManager = displayManager.getCurrentlyVisibleViewManager();
-                    if (viewManager != null)
-                    {
-                        viewManager.translateSelectionXTo(Double.valueOf(xAxisTextField.getText()));
-                    }
-
-                }
-            }
-        });
-
-        yAxisTextField.setOnKeyPressed(
-                new EventHandler<KeyEvent>()
-                {
-
-                    @Override
-                    public void handle(KeyEvent t
-                    )
-                    {
-                        switch (t.getCode())
-                        {
-                            case ENTER:
-                            case TAB:
-                                displayManager.getCurrentlyVisibleViewManager().translateSelectionZTo(Double.valueOf(yAxisTextField.getText()));
-                                break;
-                            case DECIMAL:
-                            case BACK_SPACE:
-                            case LEFT:
-                            case RIGHT:
-                                break;
-                            default:
-                                t.consume();
-                                break;
-                        }
-                    }
-                }
-        );
-
-        yAxisTextField.focusedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-            {
-                if (newValue == false)
-                {
-                    ThreeDViewManager viewManager = displayManager.getCurrentlyVisibleViewManager();
-                    if (viewManager != null)
-                    {
-                        viewManager.translateSelectionZTo(Double.valueOf(yAxisTextField.getText()));
-                    }
-                }
-            }
-        });
-
-        modelChangeListener = new ListChangeListener<ModelContainer>()
-        {
-
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends ModelContainer> change)
+            public void onChanged(
+                ListChangeListener.Change<? extends ModelContainer> change)
             {
                 while (change.next())
                 {
@@ -636,107 +172,519 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             }
         };
 
-        widthListener = new ChangeListener<Number>()
+        setUpModelGeometryListeners();
+        setUpKeyPressListeners();
+    }
+
+    private void setUpModelGeometryListeners()
+    {
+
+        modelScaleChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                widthTextField.setText(doubleOneDigitConverter.toString(t1));
-            }
+            populateScaleField(t1);
         };
 
-        heightListener = new ChangeListener<Number>()
+        modelRotationChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                heightTextField.setText(doubleOneDigitConverter.toString(t1));
-            }
+            populateRotationField(t1);
         };
 
-        depthListener = new ChangeListener<Number>()
+        widthListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                depthTextField.setText(doubleOneDigitConverter.toString(t1));
-            }
+            populateWidthField(t1);
         };
 
-        xAxisListener = new ChangeListener<Number>()
+        heightListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                xAxisTextField.setText(doubleOneDigitConverter.toString(t1));
-            }
+            populateHeightField(t1);
         };
 
-        yAxisListener = new ChangeListener<Number>()
+        depthListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                yAxisTextField.setText(doubleOneDigitConverter.toString(t1));
-            }
+            populateDepthField(t1);
+        };
+
+        xAxisListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
+        {
+            populateXAxisField(t1);
+        };
+
+        yAxisListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
+        {
+            populateYAxisField(t1);
         };
     }
 
+    private void populateYAxisField(Number t1)
+    {
+        yAxisTextField.doubleValueProperty().set(t1.doubleValue());
+    }
+
+    private void populateXAxisField(Number t1)
+    {
+        xAxisTextField.doubleValueProperty().set(t1.doubleValue());
+    }
+
+    private void populateDepthField(Number t1)
+    {
+        depthTextField.doubleValueProperty().set(t1.doubleValue());
+    }
+
+    private void populateHeightField(Number t1)
+    {
+        heightTextField.doubleValueProperty().set(t1.doubleValue());
+    }
+
+    private void populateWidthField(Number t1)
+    {
+        widthTextField.doubleValueProperty().set(t1.doubleValue());
+    }
+
+    private void populateRotationField(Number t1)
+    {
+        rotationTextField.doubleValueProperty().set(t1.doubleValue());
+        rotationTextField.setText(String.format(rotationFormat, t1));
+    }
+
+    private void populateScaleField(Number t1)
+    {
+        scaleTextField.doubleValueProperty().set(t1.doubleValue() * 100);
+        scaleTextField.setText(String.format(scaleFormat,
+                                             t1.doubleValue() * 100));
+    }
+
+    private void setUpKeyPressListeners()
+    {
+        scaleTextField.setOnKeyPressed(
+            new EventHandler<KeyEvent>()
+            {
+
+                @Override
+                public void handle(KeyEvent t
+                )
+                {
+                    switch (t.getCode())
+                    {
+                        case ENTER:
+                        case TAB:
+                            try
+                            {
+                                displayManager.getCurrentlyVisibleViewManager().scaleSelection(
+                                    scaleTextField.getAsDouble() / 100.0);
+                            } catch (ParseException ex)
+                            {
+                                steno.warning("Error converting scale "
+                                    + scaleTextField.getText());
+                            }
+                            break;
+                        case DECIMAL:
+                        case BACK_SPACE:
+                        case LEFT:
+                        case RIGHT:
+                            break;
+                        default:
+                            t.consume();
+                            break;
+                    }
+                }
+            }
+        );
+
+        rotationTextField.setOnKeyPressed(
+            new EventHandler<KeyEvent>()
+            {
+
+                @Override
+                public void handle(KeyEvent t
+                )
+                {
+                    switch (t.getCode())
+                    {
+                        case ENTER:
+                        case TAB:
+                            try
+                            {
+                                displayManager.getCurrentlyVisibleViewManager().rotateSelection(
+                                    rotationTextField.getAsDouble());
+                            } catch (ParseException ex)
+                            {
+                                steno.warning("Error converting rotation "
+                                    + rotationTextField.getText());
+                            }
+                            break;
+                        case DECIMAL:
+                        case BACK_SPACE:
+                        case LEFT:
+                        case RIGHT:
+                            break;
+                        default:
+                            t.consume();
+                            break;
+                    }
+                }
+            }
+        );
+
+        widthTextField.setOnKeyPressed(
+            new EventHandler<KeyEvent>()
+            {
+
+                @Override
+                public void handle(KeyEvent t
+                )
+                {
+                    switch (t.getCode())
+                    {
+                        case ENTER:
+                        case TAB:
+                            try
+                            {
+                                displayManager.getCurrentlyVisibleViewManager().resizeSelectionWidth(
+                                    widthTextField.getAsDouble());
+                            } catch (ParseException ex)
+                            {
+                                steno.warning("Error converting width "
+                                    + widthTextField.getText());
+                            }
+                            break;
+                        case DECIMAL:
+                        case BACK_SPACE:
+                        case LEFT:
+                        case RIGHT:
+                            break;
+                        default:
+                            t.consume();
+                            break;
+                    }
+                }
+            }
+        );
+
+        heightTextField.setOnKeyPressed(
+            new EventHandler<KeyEvent>()
+            {
+
+                @Override
+                public void handle(KeyEvent t
+                )
+                {
+                    switch (t.getCode())
+                    {
+                        case ENTER:
+                        case TAB:
+                            try
+                            {
+                                displayManager.getCurrentlyVisibleViewManager().resizeSelectionHeight(
+                                    heightTextField.getAsDouble());
+                            } catch (ParseException ex)
+                            {
+                                steno.warning("Error converting height "
+                                    + heightTextField.getText());
+                            }
+                            break;
+                        case DECIMAL:
+                        case BACK_SPACE:
+                        case LEFT:
+                        case RIGHT:
+                            break;
+                        default:
+                            t.consume();
+                            break;
+                    }
+                }
+            }
+        );
+
+        depthTextField.setOnKeyPressed(
+            new EventHandler<KeyEvent>()
+            {
+                @Override
+                public void handle(KeyEvent t
+                )
+                {
+                    switch (t.getCode())
+                    {
+                        case ENTER:
+                        case TAB:
+                            try
+                            {
+                                displayManager.getCurrentlyVisibleViewManager().resizeSelectionDepth(
+                                    depthTextField.getAsDouble());
+                            } catch (ParseException ex)
+                            {
+                                steno.error("Error parsing depth string " + ex
+                                    + " : " + ex.getMessage());
+                            }
+                            break;
+                        case DECIMAL:
+                        case BACK_SPACE:
+                        case LEFT:
+                        case RIGHT:
+                            break;
+                        default:
+                            t.consume();
+                            break;
+                    }
+                }
+            }
+        );
+
+        xAxisTextField.setOnKeyPressed(
+            (KeyEvent t) ->
+            {
+                switch (t.getCode())
+                {
+                    case ENTER:
+                    case TAB:
+                        try
+                        {
+                            displayManager.getCurrentlyVisibleViewManager().translateSelectionXTo(
+                                xAxisTextField.getAsDouble());
+                        } catch (ParseException ex)
+                        {
+                            steno.error("Error parsing x translate string " + ex
+                                + " : " + ex.getMessage());
+                        }
+                        break;
+                    case DECIMAL:
+                    case BACK_SPACE:
+                    case LEFT:
+                    case RIGHT:
+                        break;
+                    default:
+                        t.consume();
+                        break;
+                }
+            });
+
+        yAxisTextField.setOnKeyPressed(
+            new EventHandler<KeyEvent>()
+            {
+
+                @Override
+                public void handle(KeyEvent t
+                )
+                {
+                    switch (t.getCode())
+                    {
+                        case ENTER:
+                        case TAB:
+                            try
+                            {
+                                displayManager.getCurrentlyVisibleViewManager().translateSelectionZTo(
+                                    yAxisTextField.getAsDouble());
+                            } catch (ParseException ex)
+                            {
+                                steno.error("Error parsing y translate string "
+                                    + ex + " : " + ex.getMessage());
+                            }
+                            break;
+                        case DECIMAL:
+                        case BACK_SPACE:
+                        case LEFT:
+                        case RIGHT:
+                            break;
+                        default:
+                            t.consume();
+                            break;
+                    }
+                }
+            }
+        );
+    }
+
+    private void setUpTableView(String modelNameLabelString, String scaleLabelString,
+        String rotationLabelString, ResourceBundle languageBundle)
+    {
+        modelNameColumn.setText(modelNameLabelString);
+        modelNameColumn.setCellValueFactory(
+            new PropertyValueFactory<>("modelName"));
+        modelNameColumn.setMinWidth(170);
+        modelNameColumn.setMaxWidth(170);
+        modelNameColumn.setEditable(false);
+
+        scaleColumn.setText(scaleLabelString);
+        scaleColumn.setCellValueFactory(
+            new PropertyValueFactory<>("preferredScale"));
+        scaleColumn.setMinWidth(60);
+        scaleColumn.setPrefWidth(60);
+        scaleColumn.setMaxWidth(60);
+        scaleColumn.setCellFactory(
+            new Callback<TableColumn<ModelContainer, Double>, TableCell<ModelContainer, Double>>()
+            {
+                @Override
+                public TableCell<ModelContainer, Double> call(
+                    TableColumn<ModelContainer, Double> param)
+                {
+                    return new TableCell<ModelContainer, Double>()
+                    {
+
+                        @Override
+                        protected void updateItem(Double item, boolean empty)
+                        {
+                            super.updateItem(item, empty);
+
+                            if (!empty)
+                            {
+                                // Use a SimpleDateFormat or similar in the format method
+                                setText(String.format("%.0f%%", item * 100));
+                            } else
+                            {
+                                setText(null);
+                            }
+                        }
+                    };
+                    }
+            });
+
+        rotationColumn.setText(rotationLabelString);
+        rotationColumn.setCellValueFactory(
+            new PropertyValueFactory<>("preferredRotationY"));
+        rotationColumn.setMinWidth(60);
+        rotationColumn.setPrefWidth(60);
+        rotationColumn.setMaxWidth(60);
+        rotationColumn.setCellFactory(
+            new Callback<TableColumn<ModelContainer, Double>, TableCell<ModelContainer, Double>>()
+            {
+                @Override
+                public TableCell<ModelContainer, Double> call(
+                    TableColumn<ModelContainer, Double> param)
+                {
+                    return new TableCell<ModelContainer, Double>()
+                    {
+
+                        @Override
+                        protected void updateItem(Double item, boolean empty)
+                        {
+                            super.updateItem(item, empty);
+
+                            if (!empty)
+                            {
+                                // Use a SimpleDateFormat or similar in the format method
+                                setText(String.format("%.0f°", item));
+                            } else
+                            {
+                                setText(null);
+                            }
+                        }
+                    };
+                    }
+            });
+
+        modelDataTableView.getColumns().addAll(modelNameColumn, scaleColumn, rotationColumn);
+        modelDataTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        modelDataTableView.setEditable(true);
+        modelDataTableView.getSortOrder().add(modelNameColumn);
+
+        Label noModelsLoadedPlaceholder = new Label();
+        noModelsLoadedPlaceholder.setText(languageBundle.getString(
+            "sidePanel_layout.noModelsLoaded"));
+        modelDataTableView.setPlaceholder(noModelsLoadedPlaceholder);
+
+        setUpTableViewListeners();
+    }
+
+    private void setUpTableViewListeners()
+    {
+        selectionListener = new ListChangeListener<ModelContainer>()
+        {
+            @Override
+            public void onChanged(
+                ListChangeListener.Change<? extends ModelContainer> change)
+            {
+                if (suppressModelDataTableViewNotifications)
+                {
+                    return;
+                }
+                suppressModelDataTableViewNotifications = true;
+                selectionModel.deselectAllModels();
+                for (ModelContainer modelContainer : modelDataTableView.getSelectionModel().getSelectedItems())
+                {
+                    selectionModel.addModelContainer(modelContainer);
+                }
+                suppressModelDataTableViewNotifications = false;
+            }
+        };
+
+        modelDataTableView.getSelectionModel().getSelectedItems().addListener(
+            selectionListener);
+
+        tableViewSelectionListener = new SelectedModelContainersListener()
+        {
+
+            @Override
+            public void whenAdded(ModelContainer modelContainer)
+            {
+                if (suppressModelDataTableViewNotifications)
+                {
+                    return;
+                }
+                suppressModelDataTableViewNotifications = true;
+                modelDataTableView.getSelectionModel().select(modelContainer);
+                suppressModelDataTableViewNotifications = false;
+            }
+
+            @Override
+            public void whenRemoved(ModelContainer modelContainer)
+            {
+                if (suppressModelDataTableViewNotifications)
+                {
+                    return;
+                }
+                suppressModelDataTableViewNotifications = true;
+                int modelIndex = modelDataTableView.getItems().indexOf(modelContainer);
+                if (modelIndex != -1)
+                {
+                    if (modelDataTableView.getSelectionModel().isSelected(modelIndex))
+                    {
+                        modelDataTableView.getSelectionModel().clearSelection(modelIndex);
+                    }
+                }
+                suppressModelDataTableViewNotifications = false;
+            }
+
+        };
+    }
+
+    /**
+     * Bind the given viewManager to the controller's widgets. Unbind any widget tied to a previous
+     * viewManager.
+     *
+     * @param viewManager
+     */
     public void bindLoadedModels(final ThreeDViewManager viewManager)
     {
         ObservableList<ModelContainer> loadedModels = viewManager.getLoadedModels();
 
-        if (selectionContainer != null)
+        if (selectionModel != null)
         {
-            selectionContainer.selectedModelsProperty().removeListener(selectionContainerModelsListener);
-            selectionContainer.widthProperty().removeListener(widthListener);
-            selectionContainer.heightProperty().removeListener(heightListener);
-            selectionContainer.depthProperty().removeListener(depthListener);
-            selectionContainer.centreXProperty().removeListener(xAxisListener);
-            selectionContainer.centreZProperty().removeListener(yAxisListener);
-            selectionContainer.scaleProperty().removeListener(modelScaleChangeListener);
-            selectionContainer.rotationYProperty().removeListener(modelRotationChangeListener);
-            selectedItemDetails.visibleProperty().unbind();
+            selectionModel.removeListener(tableViewSelectionListener);
         }
-
-        selectionContainer = viewManager.getSelectionContainer();
+        selectionModel = viewManager.getSelectedModelContainers();
 
         modelDataTableView.setItems(loadedModels);
+        resetTableViewSelection(selectionModel);
+        selectionModel.addListener(tableViewSelectionListener);
 
-        selectionContainer.selectedModelsProperty().addListener(selectionContainerModelsListener);
+        SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails
+            = selectionModel.getPrimarySelectedModelDetails();
+        selectedModelDetails.getWidth().addListener(widthListener);
+        selectedModelDetails.getHeight().addListener(heightListener);
+        selectedModelDetails.getDepth().addListener(depthListener);
 
-        if (selectionContainer.selectedModelsProperty().size() > 0)
-        {
-            widthTextField.setText(doubleOneDigitConverter.toString(selectionContainer.getWidth()));
-            heightTextField.setText(doubleOneDigitConverter.toString(selectionContainer.getHeight()));
-            depthTextField.setText(doubleOneDigitConverter.toString(selectionContainer.getDepth()));
-            xAxisTextField.setText(doubleOneDigitConverter.toString(selectionContainer.getCentreX()));
-            yAxisTextField.setText(doubleOneDigitConverter.toString(selectionContainer.getCentreZ()));
-            scaleTextField.setText(String.format(scaleFormat, selectionContainer.getScale() * 100));
-            rotationTextField.setText(String.format(rotationFormat, selectionContainer.getRotationY()));
-        } else
-        {
-            widthTextField.setText("-");
-            heightTextField.setText("-");
-            depthTextField.setText("-");
-            xAxisTextField.setText("-");
-            yAxisTextField.setText("-");
-            scaleTextField.setText("-");
-            rotationTextField.setText("-");
-        }
+        selectedModelDetails.getCentreX().addListener(xAxisListener);
+        selectedModelDetails.getCentreZ().addListener(yAxisListener);
 
-        selectedItemDetails.visibleProperty().bind(Bindings.isNotEmpty(selectionContainer.selectedModelsProperty()));
-        selectionContainer.centreXProperty().addListener(xAxisListener);
-        selectionContainer.centreZProperty().addListener(yAxisListener);
-        selectionContainer.widthProperty().addListener(widthListener);
-        selectionContainer.heightProperty().addListener(heightListener);
-        selectionContainer.depthProperty().addListener(depthListener);
-        selectionContainer.scaleProperty().addListener(modelScaleChangeListener);
-        selectionContainer.rotationYProperty().addListener(modelRotationChangeListener);
+        selectedModelDetails.getScale().addListener(modelScaleChangeListener);
+        selectedModelDetails.getRotationY().addListener(modelRotationChangeListener);
 
+        repopulate(selectedModelDetails);
+
+        selectedItemDetails.visibleProperty().bind(
+            Bindings.lessThan(0, selectionModel.getNumModelsSelectedProperty()));
         if (boundProject != null)
         {
-            boundProject.getLoadedModels().removeListener(modelChangeListener);
+            boundProject.getLoadedModels().removeListener(loadedModelsChangeListener);
         }
 
         if (boundModel != null)
@@ -752,11 +700,46 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             boundModel = boundProject.getLoadedModels().get(0);
         }
 
-        boundProject.getLoadedModels().addListener(modelChangeListener);
+        boundProject.getLoadedModels().addListener(loadedModelsChangeListener);
     }
 
+    /**
+     *
+     * @param slideOutController
+     */
     @Override
     public void configure(Initializable slideOutController)
     {
+    }
+
+    /**
+     * Reset the table view selection to the current selection in the viewManager, used when
+     * switching ProjectTabs.
+     */
+    private void resetTableViewSelection(SelectedModelContainers selectionModel)
+    {
+        suppressModelDataTableViewNotifications = true;
+        modelDataTableView.getSelectionModel().clearSelection();
+        for (ModelContainer modelContainer : selectionModel.getSelectedModelsSnapshot())
+        {
+            modelDataTableView.getSelectionModel().select(modelContainer);
+        }
+        suppressModelDataTableViewNotifications = false;
+    }
+
+    /**
+     * Repopulate the widgets for the given model details.
+     *
+     * @param selectedModelDetails
+     */
+    private void repopulate(SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails)
+    {
+        populateScaleField(selectedModelDetails.getScale().get());
+        populateRotationField(selectedModelDetails.getRotationY().get());
+        populateWidthField(selectedModelDetails.getWidth().get());
+        populateHeightField(selectedModelDetails.getHeight().get());
+        populateDepthField(selectedModelDetails.getDepth().get());
+        populateXAxisField(selectedModelDetails.getCentreX().get());
+        populateYAxisField(selectedModelDetails.getCentreZ().get());
     }
 }

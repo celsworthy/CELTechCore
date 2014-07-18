@@ -7,10 +7,10 @@ package celtech.printerControl.comms;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.MachineType;
 import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
-import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.events.RoboxEvent;
 import celtech.printerControl.comms.events.RoboxEventProducer;
@@ -33,8 +33,7 @@ import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
- * @author Ian Hudson
- * @ Liberty Systems Limited
+ * @author Ian Hudson @ Liberty Systems Limited
  */
 public class RoboxCommsManager extends Thread implements PrinterControlInterface
 {
@@ -47,8 +46,8 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
     private String roboxDetectorCommand = null;
     private final String printerToSearchFor = "Robox";
 
-    private final String roboxVendorID = "16d0";
-    private final String roboxProductID = "081b";
+    private final String roboxVendorID = "16D0";
+    private final String roboxProductID = "081B";
 
     private final String notConnectedString = "NOT_CONNECTED";
     private InputStream inputStream = null;
@@ -83,7 +82,7 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
         switch (machineType)
         {
             case WINDOWS:
-                roboxDetectorCommand = roboxDetectorWindows + " " + printerToSearchFor;
+                roboxDetectorCommand = roboxDetectorWindows + " " + roboxVendorID + " " + roboxProductID;
                 break;
             case MAC:
                 roboxDetectorCommand = roboxDetectorMac + " " + printerToSearchFor;
@@ -99,11 +98,20 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public static RoboxCommsManager getInstance()
     {
         return instance;
     }
 
+    /**
+     *
+     * @param pathToBinaries
+     * @return
+     */
     public static RoboxCommsManager getInstance(String pathToBinaries)
     {
         if (instance == null)
@@ -114,6 +122,12 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
         return instance;
     }
 
+    /**
+     *
+     * @param pathToBinaries
+     * @param suppressPrinterIDCheck
+     * @return
+     */
     public static RoboxCommsManager getInstance(String pathToBinaries, boolean suppressPrinterIDCheck)
     {
         if (instance == null)
@@ -124,6 +138,9 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
         return instance;
     }
 
+    /**
+     *
+     */
     @Override
     public void run()
     {
@@ -151,7 +168,7 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
                         steno.info("Adding new printer on " + port);
                         PrinterHandler newPrinterHandler = new PrinterHandler(this, port, suppressPrinterIDChecks, sleepBetweenStatusChecks);
                         pendingPrinterConnections.put(port, newPrinterHandler);
-                        Printer newPrinter = new Printer(port, this);
+                        Printer newPrinter = new PrinterImpl(port, this);
                         pendingPrinters.put(port, newPrinter);
                         newPrinterHandler.setPrinterToUse(newPrinter);
 
@@ -170,6 +187,9 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
 
     }
 
+    /**
+     *
+     */
     public void shutdown()
     {
         for (Printer printer : printerStatus)
@@ -248,6 +268,13 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
         return ports;
     }
 
+    /**
+     *
+     * @param printerName
+     * @param gcodePacket
+     * @return
+     * @throws RoboxCommsException
+     */
     public RoboxRxPacket submitForWrite(String printerName, RoboxTxPacket gcodePacket) throws RoboxCommsException
     {
         RoboxRxPacket response = null;
@@ -280,6 +307,11 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
         return response;
     }
 
+    /**
+     *
+     * @param portName
+     * @param event
+     */
     @Override
     public void publishEvent(String portName, RoboxEvent event)
     {
@@ -332,6 +364,10 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
         }
     }
 
+    /**
+     *
+     * @param portName
+     */
     @Override
     public void printerConnected(String portName)
     {
@@ -349,18 +385,14 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
             {
                 printerStatus.add(printer);
                 printer.setPrinterConnected(true);
-                try
-                {
-                    printer.transmitReadHeadEEPROM();
-                    printer.transmitReadReelEEPROM();
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Couldn't request EEPROM data");
-                }
             }
         });
     }
 
+    /**
+     *
+     * @param portName
+     */
     @Override
     public void failedToConnect(String portName)
     {
@@ -368,6 +400,10 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
         pendingPrinters.remove(portName);
     }
 
+    /**
+     *
+     * @param portName
+     */
     @Override
     public void disconnected(String portName)
     {
@@ -377,16 +413,29 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
         activePrinterConnections.remove(portName);
     }
 
+    /**
+     *
+     * @return
+     */
     public ObservableList<Printer> getPrintStatusList()
     {
         return printerStatus;
     }
 
+    /**
+     *
+     * @param sleepValue
+     */
     public void setSleepBetweenStatusChecks(int sleepValue)
     {
         sleepBetweenStatusChecks = sleepValue;
     }
 
+    /**
+     *
+     * @param connectedPrinter
+     * @param sleepMillis
+     */
     public void setSleepBetweenStatusChecks(Printer connectedPrinter, int sleepMillis)
     {
         if (connectedPrinter != null)
@@ -404,12 +453,16 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
         }
     }
 
+    /**
+     *
+     * @param enable
+     */
     public void enableNullPrinter(boolean enable)
     {
 
         if (nullPrinter == null)
         {
-            nullPrinter = new Printer(nullPrinterString, this);
+            nullPrinter = new PrinterImpl(nullPrinterString, this);
         }
 
         if (enable)

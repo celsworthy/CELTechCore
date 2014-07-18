@@ -1,11 +1,14 @@
 package celtech.coreUI.controllers.sidePanels;
 
+import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
+import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
 import celtech.configuration.MaterialType;
 import celtech.configuration.PrintProfileContainer;
+import static celtech.coreUI.DeDuplicator.suggestNonDuplicateName;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.MaterialChoiceListCell;
 import celtech.coreUI.components.ModalDialog;
@@ -20,6 +23,7 @@ import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
 import celtech.utils.SystemUtils;
 import java.net.URL;
+import java.util.Collection;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -60,8 +64,16 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
 
+    private boolean suppressQualityOverrideTriggers = false;
+
     @FXML
-    private ComboBox<Printer> printerChooser;
+    private Label materialLabel;
+
+    @FXML
+    private Label printQualityLabel;
+
+    @FXML
+    private Slider brimSlider;
 
     @FXML
     private ComboBox<Filament> materialChooser;
@@ -70,25 +82,31 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private ComboBox<RoboxProfile> customProfileChooser;
 
     @FXML
-    private Label customSettingsLabel;
+    private RadioButton noSupportRadioButton;
 
     @FXML
     private Slider qualityChooser;
 
     @FXML
-    private VBox supportVBox;
+    private Label customSettingsLabel;
 
     @FXML
     private VBox customProfileVBox;
 
     @FXML
-    private ToggleGroup supportMaterialGroup;
+    private ComboBox<Printer> printerChooser;
 
     @FXML
-    private RadioButton noSupportRadioButton;
+    private Slider fillDensitySlider;
 
     @FXML
     private RadioButton autoSupportRadioButton;
+
+    @FXML
+    private ToggleGroup supportMaterialGroup;
+
+    @FXML
+    private VBox nonCustomProfileVBox;
 
     @FXML
     void go(MouseEvent event)
@@ -110,6 +128,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     private Printer currentPrinter = null;
     private Filament currentlyLoadedFilament = null;
+    private Filament lastFilamentSelected = null;
 
     private VBox createMaterialPage = null;
     private ModalDialog createMaterialDialogue = null;
@@ -121,6 +140,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private ModalDialog createProfileDialogue = null;
     private int saveProfileAction = 0;
     private int cancelProfileSaveAction = 0;
+    private RoboxProfile lastCustomProfileSelected = null;
 
     private SettingsSlideOutPanelController slideOutController = null;
 
@@ -129,6 +149,9 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     /**
      * Initializes the controller class.
+     *
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
@@ -198,85 +221,33 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 return (double) selectedQuality.getEnumPosition();
             }
         });
+        // Hack to force slider font, don't know why we need this
+        String primaryFontFamily = displayManager.getPrimaryFontFamily();
+        qualityChooser.setStyle("-fx-tick-label-font-family: " + primaryFontFamily + ";");
 
         settingsScreenState.setPrintQuality(PrintQualityEnumeration.DRAFT);
         settingsScreenState.setSettings(draftSettings);
-        if (draftSettings.support_materialProperty().get() == true)
-        {
-            autoSupportRadioButton.selectedProperty().set(true);
-        } else
-        {
-            noSupportRadioButton.selectedProperty().set(true);
-        }
+
+        setupQualityOverrideControls(settingsScreenState.getSettings());
+
+        printQualityUpdate(PrintQualityEnumeration.DRAFT);
 
         qualityChooser.valueProperty().addListener(new ChangeListener<Number>()
         {
             @Override
             public void changed(ObservableValue<? extends Number> ov, Number lastQualityValue, Number newQualityValue)
             {
-                if (newQualityValue != lastQualityValue)
+                if (lastQualityValue != newQualityValue)
                 {
-                    DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-                    slideOutController.showProfileTab();
+                    PrintQualityEnumeration quality = PrintQualityEnumeration.fromEnumPosition(newQualityValue.intValue());
+
+                    printQualityUpdate(quality);
                 }
-
-                PrintQualityEnumeration quality = PrintQualityEnumeration.fromEnumPosition(newQualityValue.intValue());
-                settingsScreenState.setPrintQuality(quality);
-
-                RoboxProfile settings = null;
-
-                switch (quality)
-                {
-                    case DRAFT:
-                        settings = draftSettings;
-                        break;
-                    case NORMAL:
-                        settings = normalSettings;
-                        break;
-                    case FINE:
-                        settings = fineSettings;
-                        break;
-                    case CUSTOM:
-                        if (newQualityValue != lastQualityValue)
-                        {
-                            displayManager.slideOutAdvancedPanel();
-                        }
-                        customProfileChooser.getSelectionModel().selectFirst();
-                        settings = customSettings;
-                        break;
-                    default:
-                        break;
-                }
-
-                if (settings != null)
-                {
-                    if (settings.support_materialProperty().get() == true)
-                    {
-                        autoSupportRadioButton.selectedProperty().set(true);
-                    } else
-                    {
-                        noSupportRadioButton.selectedProperty().set(true);
-                    }
-                }
-
-                slideOutController.updateProfileData(settings);
-                settingsScreenState.setSettings(settings);
             }
         });
 
-        qualityChooser.setValue(PrintQualityEnumeration.DRAFT.getEnumPosition());
-
-        customProfileVBox.visibleProperty().bind(qualityChooser.valueProperty().isEqualTo(PrintQualityEnumeration.CUSTOM.getEnumPosition()));
-
         Callback<ListView<RoboxProfile>, ListCell<RoboxProfile>> profileChooserCellFactory
-                = new Callback<ListView<RoboxProfile>, ListCell<RoboxProfile>>()
-                {
-                    @Override
-                    public ListCell<RoboxProfile> call(ListView<RoboxProfile> list)
-                    {
-                        return new ProfileChoiceListCell();
-                    }
-                };
+                = (ListView<RoboxProfile> list) -> new ProfileChoiceListCell();
 
         customProfileChooser.setCellFactory(profileChooserCellFactory);
         customProfileChooser.setButtonCell(profileChooserCellFactory.call(null));
@@ -291,8 +262,13 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             {
                 if (oldValue != newValue)
                 {
-                    displayManager.slideOutAdvancedPanel();
+                    if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
+                    {
+                        displayManager.slideOutAdvancedPanel();
+                    }
                     slideOutController.showProfileTab();
+
+                    lastCustomProfileSelected = newValue;
                 }
 
                 if (newValue == PrintProfileContainer.createNewProfile)
@@ -300,15 +276,17 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     showCreateProfileDialogue(draftSettings.clone());
                 } else if (newValue != null)
                 {
-                    slideOutController.updateProfileData(newValue);
-                    customSettings = newValue;
-//                    if (PrintQualityEnumeration.fromEnumPosition((int) qualityChooser.getValue()) == PrintQualityEnumeration.CUSTOM)
-//                    {
+                    if (settingsScreenState.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
+                    {
+                        slideOutController.updateProfileData(newValue);
                         settingsScreenState.setSettings(newValue);
-//                    }
-                } else if (newValue == null)
+                        DisplayManager.getInstance().getCurrentlyVisibleProject().setCustomProfileName(newValue.getProfileName());
+                    }
+                    customSettings = newValue;
+                } else if (newValue == null && settingsScreenState.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
                 {
-                    customProfileChooser.getSelectionModel().selectFirst();
+                    slideOutController.updateProfileData(null);
+                    customSettings = null;
                 }
             }
         });
@@ -426,7 +404,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 };
 
         materialChooser.setCellFactory(materialChooserCellFactory);
-        materialChooser.setButtonCell(materialChooserCellFactory.call(null));
+        materialChooser.setButtonCell(new MaterialChoiceListCell());
         materialChooser.setItems(availableFilaments);
 
         materialChooser.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Filament>()
@@ -436,12 +414,33 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             {
                 if (oldValue != newValue)
                 {
-                    slideOutController.showMaterialTab();
+                    if (slideOutController != null)
+                    {
+                        slideOutController.showMaterialTab();
+                    }
+                    lastFilamentSelected = newValue;
                 }
 
-                if (!inhibitMaterialSelection)
+                if (inhibitMaterialSelection == false)
                 {
-                    updateSelectedFilament(newValue);
+                    if (newValue == FilamentContainer.createNewFilament)
+                    {
+                        showCreateMaterialDialogue();
+                    } else if (newValue == null || currentPrinter == null || newValue == currentPrinter.loadedFilamentProperty().get())
+                    {
+                        if (slideOutController != null)
+                        {
+                            slideOutController.updateFilamentData(newValue);
+                        }
+                        settingsScreenState.setFilament(null);
+                    } else
+                    {
+                        if (slideOutController != null)
+                        {
+                            slideOutController.updateFilamentData(newValue);
+                        }
+                        settingsScreenState.setFilament(newValue);
+                    }
                 }
             }
         }
@@ -458,68 +457,107 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             }
         };
 
-        supportVBox.visibleProperty()
+        nonCustomProfileVBox.visibleProperty()
                 .bind(qualityChooser.valueProperty().isNotEqualTo(PrintQualityEnumeration.CUSTOM.getEnumPosition()));
 
         supportMaterialGroup.selectedToggleProperty()
                 .addListener(new ChangeListener<Toggle>()
                         {
                             @Override
-                            public void changed(ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue
-                            )
+                            public void changed(ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue)
                             {
-                                if (newValue != oldValue)
+                                if (suppressQualityOverrideTriggers == false)
                                 {
-                                    DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-                                }
+                                    if (newValue != oldValue)
+                                    {
+                                        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+                                    }
 
-                                if (newValue == noSupportRadioButton)
-                                {
-                                    settingsScreenState.getSettings().setSupport_material(false);
-                                } else if (newValue == autoSupportRadioButton)
-                                {
-                                    settingsScreenState.getSettings().setSupport_material(true);
+                                    if (newValue == noSupportRadioButton)
+                                    {
+                                        settingsScreenState.getSettings().setSupport_material(false);
+                                    } else if (newValue == autoSupportRadioButton)
+                                    {
+                                        settingsScreenState.getSettings().setSupport_material(true);
+                                    }
                                 }
                             }
                 }
                 );
 
+        fillDensitySlider.valueProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            {
+                if (suppressQualityOverrideTriggers == false)
+                {
+                    if (newValue != oldValue)
+                    {
+                        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+                    }
+
+                    settingsScreenState.getSettings().setFill_density(newValue.floatValue() / 100.0f);
+                }
+            }
+        });
+
+        brimSlider.valueProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            {
+                if (suppressQualityOverrideTriggers == false)
+                {
+                    if (newValue != oldValue)
+                    {
+                        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+                    }
+
+                    settingsScreenState.getSettings().getBrim_width().setValue(newValue.intValue());
+                }
+            }
+        });
+
         updateFilamentList();
     }
 
-    private void updateSelectedFilament(Filament newValue)
+    private void setupQualityOverrideControls(RoboxProfile settings)
     {
-        if (newValue == FilamentContainer.createNewFilament)
+        if (settings.support_materialProperty().get() == true)
         {
-            showCreateMaterialDialogue();
-        } else if (newValue == null || currentPrinter == null || newValue == currentPrinter.loadedFilamentProperty().get())
-        {
-            slideOutController.updateFilamentData(newValue);
-            settingsScreenState.setFilament(null);
+            autoSupportRadioButton.selectedProperty().set(true);
         } else
         {
-            slideOutController.updateFilamentData(newValue);
-            settingsScreenState.setFilament(newValue);
+            noSupportRadioButton.selectedProperty().set(true);
         }
+
+        fillDensitySlider.setValue(settings.fill_densityProperty().get() * 100.0);
+        brimSlider.setValue(settings.getBrim_width().get());
     }
 
     private void updateProfileList()
     {
-        RoboxProfile selectedProfile = customProfileChooser.getSelectionModel().getSelectedItem();
+        RoboxProfile currentSelection = customProfileChooser.getSelectionModel().getSelectedItem();
 
         availableProfiles.clear();
         availableProfiles.addAll(PrintProfileContainer.getUserProfileList());
         availableProfiles.add(PrintProfileContainer.createNewProfile);
 
-        if (selectedProfile != null)
+        if (currentSelection != null && availableProfiles.contains(currentSelection) && currentSelection != PrintProfileContainer.createNewProfile)
         {
-            customProfileChooser.getSelectionModel().select(selectedProfile);
+            customProfileChooser.getSelectionModel().select(currentSelection);
+        } else if (customProfileChooser.getItems().size() > 1)
+        {
+            // Only pick the first element if there is something to select
+            // If size == 1 then we only have the Create new filament entry
+            customProfileChooser.getSelectionModel().selectFirst();
         }
     }
 
     private void updateFilamentList()
     {
-        boolean selectCurrentFilament = false;
+        Filament currentSelection = materialChooser.getSelectionModel().getSelectedItem();
 
         availableFilaments.clear();
 
@@ -530,6 +568,16 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         availableFilaments.addAll(FilamentContainer.getUserFilamentList());
         availableFilaments.add(FilamentContainer.createNewFilament);
+
+        if (currentSelection != null && availableFilaments.contains(currentSelection) && currentSelection != FilamentContainer.createNewFilament)
+        {
+            materialChooser.getSelectionModel().select(currentSelection);
+        } else if (materialChooser.getItems().size() > 1)
+        {
+            // Only pick the first element if there is something to select
+            // If size == 1 then we only have the Create new filament entry
+            materialChooser.getSelectionModel().selectFirst();
+        }
     }
 
     private void populatePrinterChooser()
@@ -540,12 +588,15 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         }
     }
 
+    /**
+     *
+     * @param slideOutController
+     */
     @Override
     public void configure(Initializable slideOutController)
     {
         this.slideOutController = (SettingsSlideOutPanelController) slideOutController;
         this.slideOutController.provideReceiver(this);
-        this.slideOutController.updateProfileData(draftSettings);
         this.slideOutController.updateFilamentData(settingsScreenState.getFilament());
         updateFilamentList();
         if (availableFilaments.size() > 1)
@@ -553,14 +604,27 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             materialChooser.getSelectionModel().selectFirst();
         }
         updateProfileList();
+        this.slideOutController.updateProfileData(draftSettings);
     }
 
+    /**
+     *
+     * @param source
+     */
     @Override
     public void triggerSaveAs(Object source)
     {
         if (source instanceof MaterialDetailsController)
         {
-            Filament clonedFilament = settingsScreenState.getFilament().clone();
+            Filament clonedFilament = null;
+            if (settingsScreenState.getFilament() != null)
+            {
+                clonedFilament = settingsScreenState.getFilament().clone();
+            } else
+            {
+                // We must be trying to save the loaded filament...
+                clonedFilament = currentlyLoadedFilament.clone();
+            }
             String originalFilamentName = clonedFilament.getFriendlyFilamentName();
             String filename = SystemUtils.getIncrementalFilenameOnly(ApplicationConfiguration.getUserFilamentDirectory(), originalFilamentName, ApplicationConfiguration.filamentFileExtension);
             clonedFilament.setFriendlyFilamentName(filename);
@@ -579,56 +643,192 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         }
     }
 
-    private int showCreateMaterialDialogue()
+    /**
+     *
+     * @param source
+     */
+    @Override
+    public void triggerSave(Object profile)
     {
-        int response = createMaterialDialogue.show();
-        if (response == saveMaterialAction)
+        if (profile instanceof Filament)
         {
-            Filament filamentToSave = materialDetailsController.getMaterialData();
+            Filament filamentToSave = (Filament) profile;
+
             FilamentContainer.saveFilament(filamentToSave);
-
-//            String profileNameToSave = profileDetailsController.getProfileName();
-//            SlicerSettings settingsToSave = profileDetailsController.getProfileData();
-//            settingsToSave.getProfileNameProperty().set(profileNameToSave);
-//            PrintProfileContainer.saveProfile(settingsToSave);
-//            updateProfileList();
-//            for (SlicerSettings settings : availableProfiles)
-//            {
-//                if (settings.getProfileName().equals(profileNameToSave))
-//                {
-//                    customProfileChooser.getSelectionModel().select(settings);
-//                    break;
-//                }
-//            }
-//            qualityChooser.adjustValue(PrintQualityEnumeration.CUSTOM.getEnumPosition());
+            Filament chosenFilament = FilamentContainer.getFilamentByID(filamentToSave.getReelID());
+            materialChooser.getSelectionModel().select(chosenFilament);
+        } else if (profile instanceof RoboxProfile)
+        {
+            RoboxProfile profiletoSave = (RoboxProfile) profile;
+            PrintProfileContainer.saveProfile(profiletoSave);
+            selectPrintProfileByName(profiletoSave.getProfileName());
         }
+    }
 
-        return response;
+    private void showCreateMaterialDialogue()
+    {
+        Platform.runLater(new Runnable()
+        {
+
+            @Override
+            public void run()
+            {
+                int response = createMaterialDialogue.show();
+                if (response == saveMaterialAction)
+                {
+                    Filament filamentToSave = materialDetailsController.getMaterialData();
+                    FilamentContainer.saveFilament(filamentToSave);
+
+                    Filament chosenFilament = FilamentContainer.getFilamentByID(filamentToSave.getReelID());
+                    materialChooser.getSelectionModel().select(chosenFilament);
+                } else
+                {
+                    if (lastFilamentSelected != null)
+                    {
+                        if (lastFilamentSelected == FilamentContainer.createNewFilament)
+                        {
+                            materialChooser.getSelectionModel().clearSelection();
+                        } else
+                        {
+                            materialChooser.getSelectionModel().select(lastFilamentSelected);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     private int showCreateProfileDialogue(RoboxProfile dataToUse)
     {
         dataToUse.setMutable(true);
         profileDetailsController.updateProfileData(dataToUse);
+        profileDetailsController.setNameEditable(true);
         int response = createProfileDialogue.show();
         if (response == saveProfileAction)
         {
             String profileNameToSave = profileDetailsController.getProfileName();
             RoboxProfile settingsToSave = profileDetailsController.getProfileData();
+            Collection<String> profileNames = PrintProfileContainer.getProfileNames();
+            profileNameToSave = suggestNonDuplicateName(profileNameToSave, profileNames);
             settingsToSave.getProfileNameProperty().set(profileNameToSave);
             PrintProfileContainer.saveProfile(settingsToSave);
             updateProfileList();
-            for (RoboxProfile settings : availableProfiles)
+            selectPrintProfileByName(profileNameToSave);
+            qualityChooser.adjustValue(PrintQualityEnumeration.CUSTOM.getEnumPosition());
+        } else
+        {
+            if (lastCustomProfileSelected != null)
             {
-                if (settings.getProfileName().equals(profileNameToSave))
+                if (lastCustomProfileSelected == PrintProfileContainer.createNewProfile)
                 {
-                    customProfileChooser.getSelectionModel().select(settings);
-                    break;
+                    customProfileChooser.getSelectionModel().clearSelection();
+                } else
+                {
+                    customProfileChooser.getSelectionModel().select(lastCustomProfileSelected);
                 }
             }
-            qualityChooser.adjustValue(PrintQualityEnumeration.CUSTOM.getEnumPosition());
         }
 
         return response;
     }
+
+    private void selectPrintProfileByName(String profileNameToSave)
+    {
+        for (RoboxProfile settings : availableProfiles)
+        {
+            if (settings.getProfileName().equals(profileNameToSave))
+            {
+                customProfileChooser.getSelectionModel().select(settings);
+                break;
+            }
+        }
+    }
+
+    public void projectChanged(Project project)
+    {
+        if (project.getPrintQuality() != null)
+        {
+            if (project.getPrintQuality() != settingsScreenState.getPrintQuality())
+            {
+                qualityChooser.setValue(project.getPrintQuality().getEnumPosition());
+            }
+        }
+
+        if (project.getCustomProfileName() != null)
+        {
+            if (customSettings == null || project.getCustomProfileName().equals(customSettings.getProfileName()) == false)
+            {
+                RoboxProfile chosenProfile = PrintProfileContainer.getSettingsByProfileName(project.getCustomProfileName());
+                customProfileChooser.getSelectionModel().select(chosenProfile);
+            }
+        }
+
+    }
+
+    private void printQualityUpdate(PrintQualityEnumeration quality)
+    {
+        DisplayManager displayManager = DisplayManager.getInstance();
+        Project currentlyVisibleProject = null;
+
+        if (displayManager != null)
+        {
+            currentlyVisibleProject = displayManager.getCurrentlyVisibleProject();
+        }
+
+        settingsScreenState.setPrintQuality(quality);
+
+        RoboxProfile settings = null;
+
+        switch (quality)
+        {
+            case DRAFT:
+                settings = draftSettings;
+                customProfileVBox.setVisible(false);
+                break;
+            case NORMAL:
+                settings = normalSettings;
+                customProfileVBox.setVisible(false);
+                break;
+            case FINE:
+                settings = fineSettings;
+                customProfileVBox.setVisible(false);
+                break;
+            case CUSTOM:
+                if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
+                {
+                    displayManager.slideOutAdvancedPanel();
+                }
+                settings = customSettings;
+                customProfileVBox.setVisible(true);
+                break;
+            default:
+                break;
+        }
+
+        if (settings != null)
+        {
+            suppressQualityOverrideTriggers = true;
+            setupQualityOverrideControls(settings);
+            suppressQualityOverrideTriggers = false;
+
+            if (currentlyVisibleProject != null)
+            {
+                currentlyVisibleProject.setPrintQuality(quality);
+            }
+        }
+
+        if (slideOutController != null)
+        {
+            slideOutController.updateProfileData(settings);
+            slideOutController.showProfileTab();
+        }
+
+        if (currentlyVisibleProject != null)
+        {
+            currentlyVisibleProject.projectModified();
+        }
+
+        settingsScreenState.setSettings(settings);
+    }
+
 }

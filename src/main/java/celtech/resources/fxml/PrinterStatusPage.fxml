@@ -61,7 +61,7 @@
                         </ImageView>
                     </graphic>
                 </Button>
-                <JogButton fx:id="extruder_minus100" axis="E" distance="-240.0" useG1="true" feedRate="100" onAction="#jogButton" translateX="-301.0">
+                <JogButton fx:id="extruder_minus100" axis="E" distance="-240.0" feedRate="300" onAction="#jogButton" translateX="-301.0" useG1="true">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -70,7 +70,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="extruder_minus20" axis="E" distance="-48.0" useG1="true" feedRate="100" onAction="#jogButton" translateX="-256.0">
+                <JogButton fx:id="extruder_minus20" axis="E" distance="-48.0" feedRate="300" onAction="#jogButton" translateX="-256.0" useG1="true">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -79,7 +79,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="extruder_minus5" axis="E" distance="-12.0" useG1="true" feedRate="100" onAction="#jogButton" translateX="-229.0">
+                <JogButton fx:id="extruder_minus5" axis="E" distance="-12.0" feedRate="300" onAction="#jogButton" translateX="-229.0" useG1="true">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -88,7 +88,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="extruder_plus100" axis="E" distance="240.0" useG1="true" feedRate="100" onAction="#jogButton" translateX="-200.0" translateY="100.0">
+                <JogButton fx:id="extruder_plus100" axis="E" distance="240.0" feedRate="300" onAction="#jogButton" translateX="-200.0" translateY="100.0" useG1="true">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -97,7 +97,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="extruder_plus20" axis="E" distance="48.0" useG1="true" feedRate="100" onAction="#jogButton" translateX="-245.0" translateY="100.0">
+                <JogButton fx:id="extruder_plus20" axis="E" distance="48.0" feedRate="300" onAction="#jogButton" translateX="-245.0" translateY="100.0" useG1="true">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -106,7 +106,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="extruder_plus5" axis="E" distance="12.0" useG1="true" feedRate="100" onAction="#jogButton" translateX="-271.0" translateY="100.0">
+                <JogButton fx:id="extruder_plus5" axis="E" distance="12.0" feedRate="300" onAction="#jogButton" translateX="-271.0" translateY="100.0" useG1="true">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -115,7 +115,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton axis="X" distance="-100.0" onAction="#jogButton" translateX="-11.0" translateY="66.0" fx:id="x_minus100">
+                <JogButton axis="X" distance="-100.0" onAction="#jogButton" translateX="-55.0" translateY="66.0" fx:id="x_minus100">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -124,7 +124,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton axis="X" distance="-10.0" onAction="#jogButton" translateX="43.0" translateY="66.0" fx:id="x_minus10">
+                <JogButton axis="X" distance="-10.0" onAction="#jogButton" translateX="-2.0" translateY="66.0" fx:id="x_minus10">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -133,7 +133,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton axis="X" distance="-1.0" onAction="#jogButton" translateX="75.0" translateY="66.0" fx:id="x_minus1">
+                <JogButton axis="X" distance="-1.0" onAction="#jogButton" translateX="30.0" translateY="66.0" fx:id="x_minus1">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -142,7 +142,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton axis="X" distance="100.0" onAction="#jogButton" translateX="189.0" translateY="66.0" fx:id="x_plus100">
+                <JogButton axis="X" distance="100.0" onAction="#jogButton" translateX="144.0" translateY="66.0" fx:id="x_plus100">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -151,7 +151,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton axis="X" distance="10.0" onAction="#jogButton" translateX="136.0" translateY="66.0" fx:id="x_plus10">
+                <JogButton axis="X" distance="10.0" onAction="#jogButton" translateX="92.0" translateY="66.0" fx:id="x_plus10">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -160,7 +160,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton axis="X" distance="1.0" onAction="#jogButton" translateX="104.0" translateY="66.0" fx:id="x_plus1">
+                <JogButton axis="X" distance="1.0" onAction="#jogButton" translateX="60.0" translateY="66.0" fx:id="x_plus1">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -223,7 +223,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="z_minus10" axis="Z" distance="-10.0" onAction="#jogButton" translateX="-114.0" translateY="-20.0">
+                <JogButton fx:id="z_minus10" axis="Z" distance="-10.0" onAction="#jogButton" translateX="-114.0" translateY="-1.0">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -232,7 +232,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="z_minus1" axis="Z" distance="-1.0" onAction="#jogButton" translateX="-115.0" translateY="-60.0">
+                <JogButton fx:id="z_minus1" axis="Z" distance="-1.0" onAction="#jogButton" translateX="-115.0" translateY="-40.0">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -241,7 +241,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="z_minus0_1" axis="Z" distance="-0.1" onAction="#jogButton" translateX="-115.0" translateY="-79.0">
+                <JogButton fx:id="z_minus0_1" axis="Z" distance="-0.1" onAction="#jogButton" translateX="-115.0" translateY="-59.0">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -250,7 +250,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="z_plus10" axis="Z" distance="10.0" onAction="#jogButton" translateX="-116.0" translateY="-158.0">
+                <JogButton fx:id="z_plus10" axis="Z" distance="10.0" onAction="#jogButton" translateX="-116.0" translateY="-138.0">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -259,7 +259,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="z_plus1" axis="Z" distance="1.0" onAction="#jogButton" translateX="-115.0" translateY="-114.0">
+                <JogButton fx:id="z_plus1" axis="Z" distance="1.0" onAction="#jogButton" translateX="-115.0" translateY="-94.0">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -268,7 +268,7 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <JogButton fx:id="z_plus0_1" axis="Z" distance="0.1" onAction="#jogButton" translateX="-115.0" translateY="-95.0">
+                <JogButton fx:id="z_plus0_1" axis="Z" distance="0.1" onAction="#jogButton" translateX="-115.0" translateY="-75.0">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -277,20 +277,11 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <Button id="ejectReelButton" fx:id="yHomeButton" contentDisplay="GRAPHIC_ONLY" layoutX="328.0" layoutY="294.0" mnemonicParsing="false" onAction="#homeY" scaleX="0.8" scaleY="0.8" styleClass="jog-button" text="YHome" translateX="-114.0" translateY="65.0">
+                <Button fx:id="homeButton" contentDisplay="GRAPHIC_ONLY" layoutX="328.0" layoutY="294.0" mnemonicParsing="false" onAction="#home" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="Home" translateX="-116.0" translateY="55.0">
                     <graphic>
                         <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
                             <image>
-                                <Image url="@../images/advancedHomeAndJog/Y%20Home%20-%20Icons.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button id="ejectReelButton" contentDisplay="GRAPHIC_ONLY" layoutX="335.0" layoutY="313.0" mnemonicParsing="false" onAction="#homeX" scaleX="0.8" scaleY="0.8" styleClass="jog-button" text="XHome" translateX="-70.0" translateY="65.0" fx:id="xHomeButton">
-                    <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
-                            <image>
-                                <Image url="@../images/advancedHomeAndJog/X%20Home%20-%20Icons.png" />
+                                <Image url="@../images/home_button.png" />
                             </image>
                         </ImageView>
                     </graphic>
@@ -322,15 +313,6 @@
                         </ImageView>
                     </graphic>
                 </Button>
-                <Button id="ejectReelButton" fx:id="zHomeButton" contentDisplay="GRAPHIC_ONLY" layoutX="335.0" layoutY="313.0" mnemonicParsing="false" onAction="#homeZ" scaleX="0.8" scaleY="0.8" styleClass="jog-button" text="ZHome" translateX="-112.0" translateY="30.0">
-                    <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
-                            <image>
-                                <Image url="@../images/advancedHomeAndJog/Z%20Home%20-%20Icons.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
             </children>
         </StackPane>
         <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="55.0" prefWidth="-1.0" spacing="10.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="120.0">
@@ -351,32 +333,59 @@
         </VBox>
         <VBox id="VBox" fx:id="progressGroup" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="120.0" prefWidth="500.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
             <children>
-                <Text id="progressText" fx:id="progressTitle" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" translateY="0.0" />
-                <StackPane id="StackPane">
-                    <children>
-                        <ProgressBar fx:id="progressBar" prefHeight="30.0" prefWidth="500.0" progress="0.0" translateY="0.0">
-                            <effect>
-                                <InnerShadow />
-                            </effect>
-                        </ProgressBar>
-                        <Text id="progressText" fx:id="progressPercent" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" translateY="0.0" />
-                    </children>
-                </StackPane>
-                <StackPane id="StackPane" >
-                    <children>
-                        <Text id="progressText" fx:id="progressMessage" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="labelText" text="Text" translateY="0.0" />
-                        <StackPane id="StackPane" layoutX="10.0" layoutY="55.0">
-                            <children>
-                                <ProgressBar fx:id="secondProgressBar" prefHeight="30.0" prefWidth="500.0" progress="0.0" translateY="0.0">
-                                    <effect>
-                                        <InnerShadow />
-                                    </effect>
-                                </ProgressBar>
-                                <Text id="progressText" fx:id="secondProgressPercent" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" translateY="0.0" />
-                            </children>
-                        </StackPane>
-                    </children> 
-                </StackPane>
+            <GridPane maxWidth="503.0" prefHeight="90.0" prefWidth="503.0">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+              </columnConstraints>
+              <rowConstraints>
+                  <RowConstraints maxHeight="21.0" minHeight="0.0" prefHeight="18.0" vgrow="SOMETIMES" />
+                  <RowConstraints maxHeight="30.0" minHeight="3.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints maxHeight="5.0" minHeight="5.0" prefHeight="5.0" vgrow="SOMETIMES" />
+                  <RowConstraints maxHeight="44.0" minHeight="0.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <Text fx:id="progressMessage" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="3" />
+                        <Text fx:id="progressTitle" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" GridPane.columnIndex="2" GridPane.halignment="CENTER" />
+                  <ProgressBar fx:id="progressBar" prefHeight="30.0" prefWidth="500.0" progress="0.0" GridPane.columnSpan="5" GridPane.halignment="CENTER" GridPane.rowIndex="1">
+                     <effect>
+                        <InnerShadow />
+                     </effect>
+                  </ProgressBar>
+                  <Text fx:id="progressLayers" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" GridPane.rowIndex="1">
+                     <GridPane.margin>
+                        <Insets left="10.0" />
+                     </GridPane.margin>
+                  </Text>
+                  <Text fx:id="progressETC" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" GridPane.columnIndex="4" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
+                     <GridPane.margin>
+                        <Insets right="10.0" />
+                     </GridPane.margin>
+                  </Text>
+                      <Text fx:id="progressPercent" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
+                  <ProgressBar fx:id="secondProgressBar" prefHeight="30.0" prefWidth="500.0" progress="0.0" GridPane.columnSpan="5" GridPane.rowIndex="3">
+                     <effect>
+                        <InnerShadow />
+                     </effect>
+                  </ProgressBar>
+                  <Text id="progressText" fx:id="secondProgressPercent" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="3" />
+                  <Text fx:id="progressLayerLabel" strokeType="OUTSIDE" strokeWidth="0.0" text="Text">
+                     <GridPane.margin>
+                        <Insets left="10.0" />
+                     </GridPane.margin>
+                  </Text>
+                  <Text fx:id="progressETCLabel" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" GridPane.columnIndex="4" GridPane.halignment="RIGHT">
+                     <GridPane.margin>
+                        <Insets right="10.0" />
+                     </GridPane.margin>
+                  </Text>
+               </children>
+            </GridPane>
+                <StackPane id="StackPane" />
+                <StackPane id="StackPane" />
             </children>
         </VBox>
         <HBox fx:id="printControlButtons" alignment="TOP_RIGHT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="70.0" prefWidth="-1.0" spacing="5.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">

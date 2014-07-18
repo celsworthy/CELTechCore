@@ -37,13 +37,10 @@ import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.importers.IntegerArrayList;
 import celtech.coreUI.visualisation.importers.FloatArrayList;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
-import celtech.coreUI.visualisation.importers.SmoothingGroups;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.modelLoader.ModelLoaderTask;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -55,9 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.collections.ObservableFloatArray;
 import javafx.geometry.BoundingBox;
-import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Material;
 import javafx.scene.paint.PhongMaterial;
@@ -114,14 +109,18 @@ public class ObjImporter
     private static float scale = 1;
     private static boolean flatXZ = false;
 
+    /**
+     *
+     * @return
+     */
     public Set<String> getMeshes()
     {
         return meshes.keySet();
     }
 
-    private Map<String, TriangleMesh> meshes = new HashMap<>();
-    private Map<String, Material> materials = new HashMap<>();
-    private List<Map<String, Material>> materialLibrary = new ArrayList<>();
+    private final Map<String, TriangleMesh> meshes = new HashMap<>();
+    private final Map<String, Material> materials = new HashMap<>();
+    private final List<Map<String, Material>> materialLibrary = new ArrayList<>();
     private String objFileUrl;
 
 //    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, ProjectTab targetProjectTab)
@@ -144,7 +143,15 @@ public class ObjImporter
 //    {
 //        read(inputStream);
 //    }
-    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, ProjectTab targetProjectTab)
+
+    /**
+     *
+     * @param parentTask
+     * @param modelFileToLoad
+     * @param targetProjectTab
+     * @return
+     */
+        public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, ProjectTab targetProjectTab)
     {
         this.parentTask = parentTask;
         this.objFileUrl = modelFileToLoad;
@@ -165,7 +172,6 @@ public class ObjImporter
             }
 
             ModelContainer modelContainer = new ModelContainer(modelFile.getName(), meshes);
-            BoundingBox bounds = (BoundingBox) modelContainer.getBoundsInLocal();
             boolean modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(modelContainer.getOriginalModelBounds());
 
             modelLoadResult = new ModelLoadResult(modelIsTooLarge, modelFileToLoad, modelFile.getName(), targetProjectTab, modelContainer);
@@ -181,26 +187,49 @@ public class ObjImporter
         return modelLoadResult;
     }
 
+    /**
+     *
+     * @return
+     */
     public TriangleMesh getMesh()
     {
         return meshes.values().iterator().next();
     }
 
+    /**
+     *
+     * @return
+     */
     public Material getMaterial()
     {
         return materials.values().iterator().next();
     }
 
+    /**
+     *
+     * @param key
+     * @return
+     */
     public TriangleMesh getMesh(String key)
     {
         return meshes.get(key);
     }
 
+    /**
+     *
+     * @param key
+     * @return
+     */
     public Material getMaterial(String key)
     {
         return materials.get(key);
     }
 
+    /**
+     *
+     * @param key
+     * @return
+     */
     public MeshView buildMeshView(String key)
     {
         MeshView meshView = new MeshView();
@@ -216,11 +245,19 @@ public class ObjImporter
         return meshView;
     }
 
+    /**
+     *
+     * @param debug
+     */
     public static void setDebug(boolean debug)
     {
         ObjImporter.debug = debug;
     }
 
+    /**
+     *
+     * @param scale
+     */
     public static void setScale(float scale)
     {
         ObjImporter.scale = scale;
@@ -546,6 +583,10 @@ public class ObjImporter
         smoothingGroupsStart = smoothingGroups.length;
     }
 
+    /**
+     *
+     * @param flatXZ
+     */
     public static void setFlatXZ(boolean flatXZ)
     {
         ObjImporter.flatXZ = flatXZ;

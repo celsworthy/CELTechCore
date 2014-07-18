@@ -30,16 +30,33 @@ public class SystemUtils
 
     private static Stenographer steno = StenographerFactory.getStenographer(SystemUtils.class.getName());
 
+    /**
+     *
+     * @return
+     */
     public static String generate16DigitID()
     {
         return UUID.randomUUID().toString().replaceAll("-", "").substring(0, 16);
     }
 
+    /**
+     *
+     * @param doubleA
+     * @param doubleB
+     * @param tolerance
+     * @return
+     */
     public static boolean isDoubleSame(double doubleA, double doubleB, double tolerance)
     {
         return Math.abs(doubleA - doubleB) < tolerance;
     }
 
+    /**
+     *
+     * @param inputString
+     * @return
+     * @throws InvalidChecksumException
+     */
     public static char generateUPSModulo10Checksum(String inputString) throws InvalidChecksumException
     {
         int sum = 0;
@@ -204,6 +221,12 @@ public class SystemUtils
         return Character.forDigit(sum, 10);
     }
 
+    /**
+     *
+     * @param inputString
+     * @return
+     * @throws InvalidChecksumException
+     */
     public static char generateModulo10Checksum(String inputString) throws InvalidChecksumException
     {
         boolean weighter = false;
@@ -275,6 +298,12 @@ public class SystemUtils
 
     }
 
+    /**
+     *
+     * @param aFile
+     * @param commentCharacter
+     * @return
+     */
     public static int countLinesInFile(File aFile, String commentCharacter)
     {
         LineNumberReader reader = null;
@@ -311,6 +340,11 @@ public class SystemUtils
         }
     }
 
+    /**
+     *
+     * @param aFile
+     * @return
+     */
     public static int countLinesInFile(File aFile)
     {
         LineNumberReader reader = null;
@@ -337,6 +371,13 @@ public class SystemUtils
         }
     }
 
+    /**
+     *
+     * @param directory
+     * @param filename
+     * @param fileextension
+     * @return
+     */
     public static String getIncrementalFilenameOnly(String directory, String filename, String fileextension)
     {
         String chosenFilename = null;
@@ -368,6 +409,12 @@ public class SystemUtils
         return chosenFilename;
     }
 
+    /**
+     *
+     * @param image
+     * @return
+     * @throws IOException
+     */
     public static javafx.scene.image.Image createImage(java.awt.Image image) throws IOException
     {
         if (!(image instanceof RenderedImage))
@@ -387,6 +434,11 @@ public class SystemUtils
         return new javafx.scene.image.Image(in);
     }
     
+    /**
+     *
+     * @param gcode
+     * @return
+     */
     public static String cleanGCodeForTransmission(String gcode)
     {
         return gcode.trim().replaceFirst(";.*$", "").replaceFirst("\\s+$", "");

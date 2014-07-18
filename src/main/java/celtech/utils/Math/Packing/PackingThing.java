@@ -19,12 +19,24 @@ public class PackingThing
     private final ArrayList<Block> blocks = new ArrayList<>();
     private BinNode rootNode = new BinNode(0, 0, 0, 0);
 
+    /**
+     *
+     * @param availableWidth
+     * @param availableHeight
+     */
     public PackingThing(int availableWidth, int availableHeight)
     {
         rootNode.setW(availableWidth);
         rootNode.setH(availableHeight);
     }
 
+    /**
+     *
+     * @param root
+     * @param w
+     * @param h
+     * @return
+     */
     public BinNode findNode(BinNode root, int w, int h)
     {
         if (root.used)
@@ -44,6 +56,13 @@ public class PackingThing
         }
     }
 
+    /**
+     *
+     * @param node
+     * @param w
+     * @param h
+     * @return
+     */
     public BinNode splitNode(BinNode node, int w, int h)
     {
         node.used = true;
@@ -52,6 +71,9 @@ public class PackingThing
         return node;
     }
 
+    /**
+     *
+     */
     public void pack()
     {
         blocks.stream().forEach((block) ->
@@ -64,6 +86,11 @@ public class PackingThing
         });
     }
 
+    /**
+     *
+     * @param loadedModels
+     * @param padding
+     */
     public void reference(ObservableList<ModelContainer> loadedModels, int padding)
     {
         blocks.clear();
@@ -73,11 +100,11 @@ public class PackingThing
         });
     }
 
+    /**
+     *
+     */
     public void relocateBlocks()
     {
-        blocks.stream().forEach((block) ->
-        {
-            block.relocate();
-        });
+        blocks.stream().forEach(Block::relocate);
     }
 }

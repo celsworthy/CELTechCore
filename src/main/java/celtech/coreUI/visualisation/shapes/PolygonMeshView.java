@@ -61,8 +61,23 @@ public class PolygonMeshView extends Parent {
      * @defaultValue null
      */
     private ObjectProperty<PolygonMesh> meshProperty;
+
+    /**
+     *
+     * @return
+     */
     public PolygonMesh getMesh() { return meshProperty().get(); }
+
+    /**
+     *
+     * @param mesh
+     */
     public void setMesh(PolygonMesh mesh) { meshProperty().set(mesh);}
+
+    /**
+     *
+     * @return
+     */
     public ObjectProperty<PolygonMesh> meshProperty() { 
         if (meshProperty == null) {
             meshProperty = new SimpleObjectProperty<PolygonMesh>();
@@ -95,8 +110,23 @@ public class PolygonMeshView extends Parent {
      * @defaultValue DrawMode.FILL
      */
     private ObjectProperty<DrawMode> drawMode;
+
+    /**
+     *
+     * @param value
+     */
     public final void setDrawMode(DrawMode value) { drawModeProperty().set(value); }
+
+    /**
+     *
+     * @return
+     */
     public final DrawMode getDrawMode() { return drawMode == null ? DrawMode.FILL : drawMode.get(); }
+
+    /**
+     *
+     * @return
+     */
     public final ObjectProperty<DrawMode> drawModeProperty() {
         if (drawMode == null) {
             drawMode = new SimpleObjectProperty<DrawMode>(PolygonMeshView.this, "drawMode", DrawMode.FILL) {
@@ -116,8 +146,23 @@ public class PolygonMeshView extends Parent {
      * @defaultValue CullFace.BACK
      */
     private ObjectProperty<CullFace> cullFace;
+
+    /**
+     *
+     * @param value
+     */
     public final void setCullFace(CullFace value) { cullFaceProperty().set(value); }
+
+    /**
+     *
+     * @return
+     */
     public final CullFace getCullFace() { return cullFace == null ? CullFace.BACK : cullFace.get(); }
+
+    /**
+     *
+     * @return
+     */
     public final ObjectProperty<CullFace> cullFaceProperty() {
         if (cullFace == null) {
             cullFace = new SimpleObjectProperty<CullFace>(PolygonMeshView.this, "cullFace", CullFace.BACK) {
@@ -137,8 +182,23 @@ public class PolygonMeshView extends Parent {
      * @defaultValue null
      */
     private ObjectProperty<Material> materialProperty = new SimpleObjectProperty<Material>();
+
+    /**
+     *
+     * @return
+     */
     public Material getMaterial() { return materialProperty.get(); }
+
+    /**
+     *
+     * @param material
+     */
     public void setMaterial(Material material) { materialProperty.set(material); }
+
+    /**
+     *
+     * @return
+     */
     public ObjectProperty<Material> materialProperty() { return materialProperty; }
 
     /**
@@ -147,8 +207,23 @@ public class PolygonMeshView extends Parent {
      * @defaultValue 0
      */
     private SimpleIntegerProperty subdivisionLevelProperty;
+
+    /**
+     *
+     * @param subdivisionLevel
+     */
     public void setSubdivisionLevel(int subdivisionLevel) { subdivisionLevelProperty().set(subdivisionLevel); }
+
+    /**
+     *
+     * @return
+     */
     public int getSubdivisionLevel() { return subdivisionLevelProperty == null ? 0 : subdivisionLevelProperty.get(); }
+
+    /**
+     *
+     * @return
+     */
     public SimpleIntegerProperty subdivisionLevelProperty() { 
         if (subdivisionLevelProperty == null) {
             subdivisionLevelProperty = new SimpleIntegerProperty(getSubdivisionLevel()) {
@@ -182,8 +257,23 @@ public class PolygonMeshView extends Parent {
      * @defaultValue BoundaryMode.CREASE_EDGES
      */
     private SimpleObjectProperty<BoundaryMode> boundaryMode;
+
+    /**
+     *
+     * @param boundaryMode
+     */
     public void setBoundaryMode(BoundaryMode boundaryMode) { boundaryModeProperty().set(boundaryMode); }
+
+    /**
+     *
+     * @return
+     */
     public BoundaryMode getBoundaryMode() { return boundaryMode == null ? BoundaryMode.CREASE_EDGES : boundaryMode.get(); }
+
+    /**
+     *
+     * @return
+     */
     public SimpleObjectProperty<BoundaryMode> boundaryModeProperty() {
         if (boundaryMode == null) {
             boundaryMode = new SimpleObjectProperty<BoundaryMode>(getBoundaryMode()) {
@@ -206,8 +296,23 @@ public class PolygonMeshView extends Parent {
      * @defaultValue MapBorderMode.NOT_SMOOTH
      */
     private SimpleObjectProperty<MapBorderMode> mapBorderMode;
+
+    /**
+     *
+     * @param mapBorderMode
+     */
     public void setMapBorderMode(MapBorderMode mapBorderMode) { mapBorderModeProperty().set(mapBorderMode); }
+
+    /**
+     *
+     * @return
+     */
     public MapBorderMode getMapBorderMode() { return mapBorderMode == null ? MapBorderMode.NOT_SMOOTH : mapBorderMode.get(); }
+
+    /**
+     *
+     * @return
+     */
     public SimpleObjectProperty<MapBorderMode> mapBorderModeProperty() { 
         if (mapBorderMode == null) {
             mapBorderMode = new SimpleObjectProperty<MapBorderMode>(getMapBorderMode()) {
@@ -227,11 +332,19 @@ public class PolygonMeshView extends Parent {
     // =========================================================================
     // CONSTRUCTORS
 
+    /**
+     *
+     */
+    
     public PolygonMeshView() {
         meshView.materialProperty().bind(materialProperty());
         getChildren().add(meshView);
     }
 
+    /**
+     *
+     * @param mesh
+     */
     public PolygonMeshView(PolygonMesh mesh) {
         this();
         setMesh(mesh);

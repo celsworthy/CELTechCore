@@ -21,11 +21,19 @@ public class GCodeDataResponse extends RoboxRxPacket
 
     private String gCodeResponse = "";
 
+    /**
+     *
+     */
     public GCodeDataResponse()
     {
         super(RxPacketTypeEnum.GCODE_RESPONSE, false, false);
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {
@@ -54,6 +62,10 @@ public class GCodeDataResponse extends RoboxRxPacket
         return success;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString()
     {
@@ -70,6 +82,10 @@ public class GCodeDataResponse extends RoboxRxPacket
         return outputString.toString();
     }
 
+    /**
+     *
+     * @return
+     */
     public String getGCodeResponse()
     {
         return gCodeResponse;

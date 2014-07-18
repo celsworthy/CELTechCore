@@ -29,6 +29,10 @@ public class ApplicationStatus
     {
     }
 
+    /**
+     *
+     * @return
+     */
     public static ApplicationStatus getInstance()
     {
         if (instance == null)
@@ -39,41 +43,73 @@ public class ApplicationStatus
         return instance;
     }
 
+    /**
+     *
+     * @param newMode
+     */
     public void setMode(ApplicationMode newMode)
     {
         currentMode.setValue(newMode);
     }
 
+    /**
+     *
+     * @return
+     */
     public final ApplicationMode getMode()
     {
         return currentMode.getValue();
     }
     
+    /**
+     *
+     * @return
+     */
     public final ObjectProperty<ApplicationMode> modeProperty()
     {
         return currentMode;
     }
 
+    /**
+     *
+     * @param isExpertMode
+     */
     public void setExpertMode(boolean isExpertMode)
     {
         expertMode = isExpertMode;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isExpertMode()
     {
         return expertMode;
     }
 
+    /**
+     *
+     * @param value
+     */
     public final void setAverageTimePerFrame(double value)
     {
         averageTimePerFrameProperty.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public final double getAverageTimePerFrame()
     {
         return averageTimePerFrameProperty.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public final DoubleProperty averageTimePerFrameProperty()
     {
         return averageTimePerFrameProperty;

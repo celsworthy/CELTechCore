@@ -6,6 +6,7 @@
 
 package celtech.gcodetranslator;
 
+
 /**
  *
  * @author Ian
@@ -13,38 +14,44 @@ package celtech.gcodetranslator;
 public class RoboxiserResult
 {
     private boolean success = false;
-    private double predictedDuration = 0.0;
-    private double volumeUsed = 0.0;
-
+    private PrintJobStatistics printJobStatistics;
+    
+    /**
+     *
+     * @return
+     */
     public boolean isSuccess()
     {
         return success;
     }
 
+    /**
+     *
+     * @param success
+     */
     public void setSuccess(boolean success)
     {
         this.success = success;
     }
 
-    public double getPredictedDuration()
+    /**
+     * @return the roboxisedStatistics
+     */
+    public PrintJobStatistics getPrintJobStatistics()
     {
-        return predictedDuration;
+        return printJobStatistics;
     }
 
-    public void setPredictedDuration(double predictedDuration)
+    /**
+     * @param roboxisedStatistics the roboxisedStatistics to set
+     */
+    public void setRoboxisedStatistics(
+        PrintJobStatistics roboxisedStatistics)
     {
-        this.predictedDuration = predictedDuration;
+        this.printJobStatistics = roboxisedStatistics;
     }
 
-    public double getVolumeUsed()
-    {
-        return volumeUsed;
-    }
-
-    public void setVolumeUsed(double volumeUsed)
-    {
-        this.volumeUsed = volumeUsed;
-    }
+   
     
     
 }

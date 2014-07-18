@@ -30,6 +30,10 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
     private boolean printUsingSDCard = true;
     private boolean isMacro = false;
     
+    /**
+     *
+     * @param printerToUse
+     */
     public void setPrinterToUse(Printer printerToUse)
     {
         this.printerToUse = printerToUse;
@@ -40,51 +44,91 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
         return printerToUse;
     }
 
+    /**
+     *
+     * @param value
+     */
     public final void setModelFileToPrint(String value)
     {
         modelFileToPrint.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public final String getModelFileToPrint()
     {
         return modelFileToPrint.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public final StringProperty modelFileToPrintProperty()
     {
         return modelFileToPrint;
     }
 
+    /**
+     *
+     * @param value
+     */
     public final void setCurrentPrintJobID(String value)
     {
         currentPrintJobID.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public final String getCurrentPrintJobID()
     {
         return currentPrintJobID.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public final StringProperty currentPrintJobIDProperty()
     {
         return currentPrintJobID;
     }
 
+    /**
+     *
+     * @param value
+     */
     public final void setLinesInGCodeFile(int value)
     {
         linesInGCodeFile.set(value);
     }
 
+    /**
+     *
+     * @return
+     */
     public final int getLinesInGCodeFile()
     {
         return linesInGCodeFile.get();
     }
 
+    /**
+     *
+     * @return
+     */
     public final IntegerProperty linesInGCodeFileProperty()
     {
         return linesInGCodeFile;
     }
     
+    /**
+     *
+     * @param useSDCard
+     */
     public void setPrintUsingSDCard(boolean useSDCard)
     {
         printUsingSDCard = useSDCard;
@@ -96,6 +140,10 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
         return new GCodePrinterTask(getPrinterToUse(), getModelFileToPrint(), getCurrentPrintJobID(), linesInGCodeFileProperty(), printUsingSDCard, isMacro);
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public boolean cancelRun()
     {

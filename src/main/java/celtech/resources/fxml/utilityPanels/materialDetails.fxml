@@ -45,39 +45,39 @@
                 <ColorPicker fx:id="colour" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                 <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="3"> 
                     <children>
-                        <RestrictedTextField fx:id="filamentDiameter" forceUpperCase="true" maxLength="4" prefColumnCount="4" restrict="0-9." />
+                        <RestrictedNumberField fx:id="filamentDiameter" allowedDecimalPlaces="2" maxLength="4" prefColumnCount="4" />
                         <Label text="%misc.mm" />
                     </children>
                 </HBox>
-                <RestrictedTextField fx:id="filamentMultiplier" forceUpperCase="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefWidth="60.0" restrict="0-9." GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="4" />
-                <RestrictedTextField fx:id="feedRateMultiplier" forceUpperCase="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefWidth="60.0" restrict="0-9." GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="5" />
+                <RestrictedNumberField fx:id="filamentMultiplier" maxLength="4" allowedDecimalPlaces="2" maxWidth="-Infinity" prefColumnCount="4" prefWidth="60.0" GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="4" />
+                <RestrictedNumberField fx:id="feedRateMultiplier" allowedDecimalPlaces="2"  maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefWidth="60.0" GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="5" />
                 <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6"> 
                     <children>
-                        <RestrictedTextField fx:id="firstLayerBedTemperature" forceUpperCase="true" maxLength="3" prefColumnCount="4" restrict="0-9" />
+                        <RestrictedNumberField fx:id="firstLayerBedTemperature" maxLength="3" prefColumnCount="4" />
                         <Label text="%misc.degreesC" />
                     </children>
                 </HBox>
                 <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="7"> 
                     <children>
-                        <RestrictedTextField fx:id="bedTemperature" forceUpperCase="true" maxLength="3" prefColumnCount="4" restrict="0-9" />
+                        <RestrictedNumberField fx:id="bedTemperature" maxLength="3" prefColumnCount="4" />
                         <Label text="%misc.degreesC" />
                     </children>
                 </HBox>
                 <HBox fillHeight="false" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="8"> 
                     <children>
-                        <RestrictedTextField fx:id="firstLayerNozzleTemperature" forceUpperCase="true" maxLength="3" prefColumnCount="4" restrict="0-9" />
+                        <RestrictedNumberField fx:id="firstLayerNozzleTemperature" maxLength="3" prefColumnCount="4" />
                         <Label text="%misc.degreesC" />
                     </children>
                 </HBox>
                 <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="9"> 
                     <children>
-                        <RestrictedTextField fx:id="nozzleTemperature" forceUpperCase="true" maxLength="3" prefColumnCount="4" restrict="0-9" />
+                        <RestrictedNumberField fx:id="nozzleTemperature" maxLength="3" prefColumnCount="4" />
                         <Label text="%misc.degreesC" />
                     </children>
                 </HBox>
                 <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="10"> 
                     <children>
-                        <RestrictedTextField fx:id="ambientTemperature" forceUpperCase="true" maxLength="3" prefColumnCount="4" restrict="0-9" />
+                        <RestrictedNumberField fx:id="ambientTemperature" maxLength="3" prefColumnCount="4" />
                         <Label text="%misc.degreesC" />
                     </children>
                 </HBox>

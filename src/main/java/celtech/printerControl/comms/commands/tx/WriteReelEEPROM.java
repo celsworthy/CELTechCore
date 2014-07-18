@@ -4,6 +4,7 @@
  */
 package celtech.printerControl.comms.commands.tx;
 
+import celtech.utils.FixedDecimalFloatFormat;
 import java.io.UnsupportedEncodingException;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -17,29 +18,48 @@ public class WriteReelEEPROM extends RoboxTxPacket
 
     private Stenographer steno = StenographerFactory.getStenographer(WriteReelEEPROM.class.getName());
 
+    /**
+     *
+     */
     public WriteReelEEPROM()
     {
         super(TxPacketTypeEnum.WRITE_REEL_EEPROM, false, false);
     }
 
+    /**
+     *
+     * @param reelTypeCode
+     * @param reelUniqueID
+     * @param reelFirstLayerNozzleTemperature
+     * @param reelNozzleTemperature
+     * @param reelFirstLayerBedTemperature
+     * @param reelBedTemperature
+     * @param reelAmbientTemperature
+     * @param reelFilamentDiameter
+     * @param reelFilamentMultiplier
+     * @param reelFeedRateMultiplier
+     * @param reelRemainingFilament
+     */
     public void populateEEPROM(String reelTypeCode, String reelUniqueID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
             float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter,
             float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament)
     {
         StringBuilder payload = new StringBuilder();
 
+        FixedDecimalFloatFormat decimalFloatFormatter = new FixedDecimalFloatFormat();
+
         payload.append(String.format("%1$-16s", reelTypeCode));
         payload.append(String.format("%1$-24s", reelUniqueID));
-        payload.append(String.format("%08.2f", reelFirstLayerNozzleTemperature));
-        payload.append(String.format("%08.2f", reelNozzleTemperature));
-        payload.append(String.format("%08.2f", reelFirstLayerBedTemperature));
-        payload.append(String.format("%08.2f", reelBedTemperature));
-        payload.append(String.format("%08.2f", reelAmbientTemperature));
-        payload.append(String.format("%08.2f", reelFilamentDiameter));
-        payload.append(String.format("%08.2f", reelFilamentMultiplier));
-        payload.append(String.format("%08.2f", reelFeedRateMultiplier));
+        payload.append(decimalFloatFormatter.format(reelFirstLayerNozzleTemperature));
+        payload.append(decimalFloatFormatter.format(reelNozzleTemperature));
+        payload.append(decimalFloatFormatter.format(reelFirstLayerBedTemperature));
+        payload.append(decimalFloatFormatter.format(reelBedTemperature));
+        payload.append(decimalFloatFormatter.format(reelAmbientTemperature));
+        payload.append(decimalFloatFormatter.format(reelFilamentDiameter));
+        payload.append(decimalFloatFormatter.format(reelFilamentMultiplier));
+        payload.append(decimalFloatFormatter.format(reelFeedRateMultiplier));
         payload.append(String.format("%1$80s", " "));
-        String remainingFilamentValue = String.format("%08.2f", reelRemainingFilament);
+        String remainingFilamentValue = decimalFloatFormatter.format(reelRemainingFilament);
         if (remainingFilamentValue.length() > 8)
         {
             String oldValue = remainingFilamentValue;
@@ -51,6 +71,10 @@ public class WriteReelEEPROM extends RoboxTxPacket
         this.setMessagePayload(payload.toString());
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public byte[] toByteArray()
     {
@@ -99,6 +123,11 @@ public class WriteReelEEPROM extends RoboxTxPacket
         return outputArray;
     }
 
+    /**
+     *
+     * @param byteData
+     * @return
+     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {

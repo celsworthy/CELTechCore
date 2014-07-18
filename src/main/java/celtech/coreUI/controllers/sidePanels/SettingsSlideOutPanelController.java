@@ -25,6 +25,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.Toggle;
+import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -57,6 +58,12 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
     @FXML
     private ProfileDetailsController profileDetailsController;
 
+    @FXML
+    private VBox profileData;
+
+    @FXML
+    private VBox materialData;
+
     private StringConverter intConverter = FXUtils.getIntConverter();
     private StringConverter floatConverter = FXUtils.getFloatConverter(2);
     private StringConverter booleanConverter = null;
@@ -84,6 +91,9 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
 
     /**
      * Initializes the controller class.
+     *
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
@@ -92,27 +102,32 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
         displayManager = DisplayManager.getInstance();
 
         settingsScreenState = SettingsScreenState.getInstance();
-
-//        profileData.visibleProperty().bind(showProfileData);
+        
+        showMaterialTab();
     }
 
+    /**
+     *
+     * @param filament
+     */
     public void updateFilamentData(Filament filament)
     {
         materialDetailsController.updateMaterialData(filament);
     }
 
+    /**
+     *
+     * @param settings
+     */
     public void updateProfileData(RoboxProfile settings)
     {
-        if (settings == null)
-        {
-            showProfileData.set(false);
-        } else
-        {
-            showProfileData.set(true);
-            profileDetailsController.updateProfileData(settings);
-        }
+        profileDetailsController.updateProfileData(settings);
     }
 
+    /**
+     *
+     * @param receiver
+     */
     @Override
     public void provideReceiver(PopupCommandReceiver receiver)
     {
@@ -120,11 +135,17 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
         materialDetailsController.provideReceiver(receiver);
     }
 
+    /**
+     *
+     */
     public void showMaterialTab()
     {
         detailedSettingsTabPane.getSelectionModel().select(materialTab);
     }
 
+    /**
+     *
+     */
     public void showProfileTab()
     {
         detailedSettingsTabPane.getSelectionModel().select(profileTab);

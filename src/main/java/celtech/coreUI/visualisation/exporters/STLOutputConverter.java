@@ -36,6 +36,11 @@ public class STLOutputConverter
     private String printJobUUID = null;
     private String tempModelFilenameWithPath = null;
     
+    /**
+     *
+     * @param project
+     * @param printJobUUID
+     */
     public STLOutputConverter(Project project, String printJobUUID)
     {
         steno = StenographerFactory.getStenographer(this.getClass().getName());
@@ -47,6 +52,9 @@ public class STLOutputConverter
         fFile = new File(tempModelFilenameWithPath);
     }
 
+    /**
+     *
+     */
     public void outputSTLFile()
     {
         DataOutputStream dataOutput = null;

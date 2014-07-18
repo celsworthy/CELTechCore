@@ -23,6 +23,7 @@ import celtech.services.firmware.FirmwareLoadService;
 import celtech.services.firmware.FirmwareLoadTask;
 import celtech.services.printing.GCodePrintResult;
 import celtech.services.printing.GCodePrintService;
+import celtech.utils.PrinterUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -39,7 +40,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
+import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -58,7 +59,7 @@ import libertysystems.stenographer.StenographerFactory;
 public class MaintenancePanelController implements Initializable
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(MaintenancePanelController.class.getName());
+    private static final Stenographer steno = StenographerFactory.getStenographer(MaintenancePanelController.class.getName());
     private Printer connectedPrinter = null;
     private ResourceBundle i18nBundle = null;
 
@@ -66,10 +67,10 @@ public class MaintenancePanelController implements Initializable
     private final FirmwareLoadService firmwareLoadService = new FirmwareLoadService();
     private FileChooser firmwareFileChooser = new FileChooser();
 
-    private Stage needleValvecalibrationStage = null;
-    private CalibrationNozzleBPageController needleValveCalibrationController = null;
-    private Stage offsetCalibrationStage = null;
-    private CalibrationNozzleOffsetPageController nozzleOffsetCalibrationController = null;
+    private static Stage needleValvecalibrationStage = null;
+    private static CalibrationNozzleBPageController needleValveCalibrationController = null;
+    private static Stage offsetCalibrationStage = null;
+    private static CalibrationNozzleOffsetPageController nozzleOffsetCalibrationController = null;
 
     private ProgressDialog gcodeUpdateProgress = null;
     private FileChooser gcodeFileChooser = new FileChooser();
@@ -80,7 +81,16 @@ public class MaintenancePanelController implements Initializable
         @Override
         public void changed(ObservableValue<? extends PrinterStatusEnumeration> observable, PrinterStatusEnumeration oldValue, PrinterStatusEnumeration newValue)
         {
-            setPrintSensitiveButtonVisibility(newValue);
+            setButtonVisibility();
+        }
+    };
+
+    private ChangeListener<Boolean> filamentLoadedListener = new ChangeListener<Boolean>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+        {
+            setButtonVisibility();
         }
     };
 
@@ -91,7 +101,7 @@ public class MaintenancePanelController implements Initializable
     private GCodeMacroButton YTestButton;
 
     @FXML
-    private GCodeMacroButton PurgeMaterialButton;
+    private Button PurgeMaterialButton;
 
     @FXML
     private Button loadFirmwareGCodeMacroButton;
@@ -124,7 +134,7 @@ public class MaintenancePanelController implements Initializable
     private GCodeMacroButton T0CleanButton;
 
     @FXML
-    private TextField currentFirmwareField;
+    private Label currentFirmwareField;
 
     @FXML
     private GCodeMacroButton LevelGantryButton;
@@ -148,6 +158,27 @@ public class MaintenancePanelController implements Initializable
                 try
                 {
                     connectedPrinter.transmitStoredGCode(macroName);
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error sending macro : " + macroName);
+                }
+            }
+        }
+    }
+
+    @FXML
+    void macroButtonPressNoPurgeCheck(ActionEvent event)
+    {
+        if (event.getSource() instanceof GCodeMacroButton)
+        {
+            GCodeMacroButton button = (GCodeMacroButton) event.getSource();
+            String macroName = button.getMacroName();
+
+            if (macroName != null)
+            {
+                try
+                {
+                    connectedPrinter.transmitStoredGCode(macroName, false);
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error sending macro : " + macroName);
@@ -192,12 +223,16 @@ public class MaintenancePanelController implements Initializable
     @FXML
     void calibrateB(ActionEvent event)
     {
+        calibrateBAction();
+    }
 
+    public static void calibrateBAction()
+    {
         if (needleValvecalibrationStage == null)
         {
-            needleValvecalibrationStage = new Stage(StageStyle.UTILITY);
+            needleValvecalibrationStage = new Stage(StageStyle.UNDECORATED);
             URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "CalibrationNozzleBPage.fxml");
-            FXMLLoader needleValveCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, i18nBundle);
+            FXMLLoader needleValveCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, DisplayManager.getLanguageBundle());
             try
             {
                 Parent dialogBoxScreen = (Parent) needleValveCalibrationLoader.load();
@@ -228,11 +263,16 @@ public class MaintenancePanelController implements Initializable
     void calibrateZOffset(ActionEvent event)
     {
 
+        calibrateZOffsetAction();
+    }
+
+    public static void calibrateZOffsetAction()
+    {
         if (offsetCalibrationStage == null)
         {
-            offsetCalibrationStage = new Stage(StageStyle.UTILITY);
+            offsetCalibrationStage = new Stage(StageStyle.UNDECORATED);
             URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "CalibrationNozzleOffsetPage.fxml");
-            FXMLLoader nozzleOffsetCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, i18nBundle);
+            FXMLLoader nozzleOffsetCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, DisplayManager.getLanguageBundle());
             try
             {
                 Parent dialogBoxScreen = (Parent) nozzleOffsetCalibrationLoader.load();
@@ -242,14 +282,6 @@ public class MaintenancePanelController implements Initializable
                 offsetCalibrationStage.setScene(dialogScene);
                 offsetCalibrationStage.initOwner(DisplayManager.getMainStage());
                 offsetCalibrationStage.initModality(Modality.WINDOW_MODAL);
-                offsetCalibrationStage.setOnCloseRequest(new EventHandler<WindowEvent>()
-                {
-                    @Override
-                    public void handle(WindowEvent event)
-                    {
-                        nozzleOffsetCalibrationController.cancelCalibrationAction();
-                    }
-                });
             } catch (IOException ex)
             {
                 steno.error("Couldn't load nozzle offset calibration FXML");
@@ -300,8 +332,20 @@ public class MaintenancePanelController implements Initializable
         }
     }
 
+    @FXML
+    void purge(ActionEvent event)
+    {
+        if (connectedPrinter != null)
+        {
+            PrinterUtils.runPurge(connectedPrinter);
+        }
+    }
+
     /**
      * Initializes the controller class.
+     *
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
@@ -317,7 +361,9 @@ public class MaintenancePanelController implements Initializable
                 firmwareUpdateProgress = new ProgressDialog(firmwareLoadService);
             }
         });
-
+        
+        currentFirmwareField.setStyle("-fx-font-weight: bold;");
+        
         gcodeFileChooser.setTitle(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodeFileChooserTitle"));
         gcodeFileChooser.getExtensionFilters()
                 .addAll(
@@ -415,42 +461,45 @@ public class MaintenancePanelController implements Initializable
                 {
                     readFirmwareVersion();
                     connectedPrinter.printerStatusProperty().addListener(printerStatusListener);
-                    setPrintSensitiveButtonVisibility(connectedPrinter.getPrinterStatus());
+                    connectedPrinter.Filament1LoadedProperty().addListener(filamentLoadedListener);
+                    connectedPrinter.Filament2LoadedProperty().addListener(filamentLoadedListener);
+                    setButtonVisibility();
                 }
             }
         });
     }
 
-    private void setPrintSensitiveButtonVisibility(PrinterStatusEnumeration status)
+    private void setButtonVisibility()
     {
-        boolean visible = status != PrinterStatusEnumeration.IDLE;
+        boolean printingdisabled = connectedPrinter.getPrinterStatus() != PrinterStatusEnumeration.IDLE;
+        boolean noFilamentOrPrintingdisabled = printingdisabled || (connectedPrinter.getFilament1Loaded() == false && connectedPrinter.getFilament2Loaded() == false);
 
-        YTestButton.setDisable(visible);
+        YTestButton.setDisable(printingdisabled);
 
-        PurgeMaterialButton.setDisable(visible);
+        PurgeMaterialButton.setDisable(noFilamentOrPrintingdisabled);
 
-        T1CleanButton.setDisable(visible);
+        T1CleanButton.setDisable(noFilamentOrPrintingdisabled);
 
-        EjectStuckMaterialButton.setDisable(visible);
+        EjectStuckMaterialButton.setDisable(noFilamentOrPrintingdisabled);
 
-        SpeedTestButton.setDisable(visible);
+        SpeedTestButton.setDisable(printingdisabled);
 
-        CalibrateOffsetButton.setDisable(visible);
+        CalibrateOffsetButton.setDisable(noFilamentOrPrintingdisabled);
 
-        sendGCodeStreamGCodeMacroButton.setDisable(visible);
+        sendGCodeStreamGCodeMacroButton.setDisable(printingdisabled);
 
-        CalibrateBButton.setDisable(visible);
+        CalibrateBButton.setDisable(noFilamentOrPrintingdisabled);
 
-        XTestButton.setDisable(visible);
+        XTestButton.setDisable(printingdisabled);
 
-        Level_YButton.setDisable(visible);
+        Level_YButton.setDisable(printingdisabled);
 
-        T0CleanButton.setDisable(visible);
+        T0CleanButton.setDisable(noFilamentOrPrintingdisabled);
 
-        LevelGantryButton.setDisable(visible);
+        LevelGantryButton.setDisable(printingdisabled);
 
-        sendGCodeSDGCodeMacroButton.setDisable(visible);
+        sendGCodeSDGCodeMacroButton.setDisable(printingdisabled);
 
-        ZTestButton.setDisable(visible);
+        ZTestButton.setDisable(printingdisabled);
     }
 }

@@ -29,6 +29,10 @@ public class TaskController
     {
     }
 
+    /**
+     *
+     * @return
+     */
     public static TaskController getInstance()
     {
         if (instance == null)
@@ -39,6 +43,10 @@ public class TaskController
         return instance;
     }
 
+    /**
+     *
+     * @param task
+     */
     public void manageTask(Task task)
     {
         taskList.add(task);
@@ -62,11 +70,18 @@ public class TaskController
         });
     }
 
+    /**
+     *
+     * @param task
+     */
     public void removeTask(Task task)
     {
         taskList.remove(task);
     }
 
+    /**
+     *
+     */
     public void shutdownAllManagedTasks()
     {
         isShuttingDown = true;
@@ -79,11 +94,19 @@ public class TaskController
         }
     }
     
+    /**
+     *
+     * @return
+     */
     public int getNumberOfManagedTasks()
     {
         return taskList.size();
     }
     
+    /**
+     *
+     * @return
+     */
     public static boolean isShuttingDown()
     {
         return isShuttingDown;
