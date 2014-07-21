@@ -703,9 +703,10 @@ public class Head implements Cloneable
                 } else
                 {
                     Head headToWrite = HeadContainer.getCompleteHeadList().get(0).clone();
-                    headToWrite.setUniqueID(response.getUniqueID());
-                    headToWrite.setHeadHours(response.getHeadHours());
-                    headToWrite.setLastFilamentTemperature(response.getLastFilamentTemperature());
+                    String typeCode = headToWrite.getTypeCode();
+                    String idToCreate = typeCode + SystemUtils.generate16DigitID().substring(typeCode.length());
+                    headToWrite.setUniqueID(idToCreate);
+                    headToWrite.setLastFilamentTemperature(10);
 
                     printer.transmitWriteHeadEEPROM(headToWrite);
                     printer.transmitReadHeadEEPROM();
