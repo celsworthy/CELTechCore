@@ -96,17 +96,17 @@ public class Head implements Cloneable
      * @param nozzle2_B_offset
      */
     public Head(String typeCode, String friendlyName,
-            float maximumTemperature,
-            float beta,
-            float tcal,
-            float nozzle1_X_offset,
-            float nozzle1_Y_offset,
-            float nozzle1_Z_offset,
-            float nozzle1_B_offset,
-            float nozzle2_X_offset,
-            float nozzle2_Y_offset,
-            float nozzle2_Z_offset,
-            float nozzle2_B_offset)
+        float maximumTemperature,
+        float beta,
+        float tcal,
+        float nozzle1_X_offset,
+        float nozzle1_Y_offset,
+        float nozzle1_Z_offset,
+        float nozzle1_B_offset,
+        float nozzle2_X_offset,
+        float nozzle2_Y_offset,
+        float nozzle2_Z_offset,
+        float nozzle2_B_offset)
     {
         this.typeCode.set(typeCode);
         this.friendlyName.set(friendlyName);
@@ -642,21 +642,21 @@ public class Head implements Cloneable
     public Head clone()
     {
         Head clone = new Head(
-                this.getTypeCode(),
-                this.getFriendlyName(),
-                this.getMaximumTemperature(),
-                this.getBeta(),
-                this.getTCal(),
-                this.getNozzle1XOffset(),
-                this.getNozzle1YOffset(),
-                this.getNozzle1ZOffset(),
-                this.getNozzle1BOffset(),
-                this.getNozzle2XOffset(),
-                this.getNozzle2YOffset(),
-                this.getNozzle2ZOffset(),
-                this.getNozzle2BOffset()
+            this.getTypeCode(),
+            this.getFriendlyName(),
+            this.getMaximumTemperature(),
+            this.getBeta(),
+            this.getTCal(),
+            this.getNozzle1XOffset(),
+            this.getNozzle1YOffset(),
+            this.getNozzle1ZOffset(),
+            this.getNozzle1BOffset(),
+            this.getNozzle2XOffset(),
+            this.getNozzle2YOffset(),
+            this.getNozzle2ZOffset(),
+            this.getNozzle2BOffset()
         );
-        
+
         clone.deriveZOverrunFromOffsets();
 
         return clone;
@@ -666,13 +666,23 @@ public class Head implements Cloneable
      *
      * @param printer
      */
-    public static void softResetHead(Printer printer)
+    public static void hardResetHead(Printer printer)
     {
+        if (printer.getHeadEEPROMStatus() == EEPROMState.NOT_PROGRAMMED)
+        {
+            try
+            {
+                printer.transmitFormatHeadEEPROM();
+            } catch (RoboxCommsException ex)
+            {
+                steno.error("Error formatting head");
+            }
+        }
+
         try
         {
             HeadEEPROMDataResponse response = printer.transmitReadHeadEEPROM();
 
-            //We will only write defaults if we can tell what this head is...
             if (response != null)
             {
                 String receivedTypeCode = response.getTypeCode();
@@ -690,14 +700,25 @@ public class Head implements Cloneable
                     printer.transmitReadHeadEEPROM();
                     steno.info("Updated head data at user request for " + receivedTypeCode);
                     showCalibrationDialogue();
+                } else
+                {
+                    Head headToWrite = HeadContainer.getCompleteHeadList().get(0).clone();
+                    headToWrite.setUniqueID(response.getUniqueID());
+                    headToWrite.setHeadHours(response.getHeadHours());
+                    headToWrite.setLastFilamentTemperature(response.getLastFilamentTemperature());
+
+                    printer.transmitWriteHeadEEPROM(headToWrite);
+                    printer.transmitReadHeadEEPROM();
+                    steno.info("Updated head data at user request - type code could not be determined");
+                    showCalibrationDialogue();
                 }
             } else
             {
-                steno.warning("Request to soft reset head of unknown type");
+                steno.warning("Request to hard reset head failed");
             }
         } catch (RoboxCommsException ex)
         {
-            steno.error("Error during soft reset of head");
+            steno.error("Error during hard reset of head");
         }
     }
 
@@ -828,7 +849,8 @@ public class Head implements Cloneable
                                     @Override
                                     public void run()
                                     {
-                                        Notifier.showInformationNotification(DisplayManager.getLanguageBundle().getString("notification.headSettingsUpdatedTitle"), DisplayManager.getLanguageBundle().getString("notification.noActionRequired"));
+                                        Notifier.showInformationNotification(DisplayManager.getLanguageBundle().getString("notification.headSettingsUpdatedTitle"), DisplayManager.getLanguageBundle().
+                                                                             getString("notification.noActionRequired"));
                                     }
                                 });
                             }
@@ -855,9 +877,9 @@ public class Head implements Cloneable
             public void run()
             {
                 Action calibrationResponse = Dialogs.create().title(DisplayManager.getLanguageBundle().getString("dialogs.headUpdateCalibrationRequiredTitle"))
-                        .message(DisplayManager.getLanguageBundle().getString("dialogs.headUpdateCalibrationRequiredInstruction"))
-                        .masthead(null)
-                        .showCommandLinks(okCalibrate, okCalibrate, dontCalibrate);
+                    .message(DisplayManager.getLanguageBundle().getString("dialogs.headUpdateCalibrationRequiredInstruction"))
+                    .masthead(null)
+                    .showCommandLinks(okCalibrate, okCalibrate, dontCalibrate);
 
                 if (calibrationResponse == okCalibrate)
                 {
