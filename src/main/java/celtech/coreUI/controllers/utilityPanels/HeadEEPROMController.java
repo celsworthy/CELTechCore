@@ -105,6 +105,14 @@ public class HeadEEPROMController implements Initializable
     private Float nozzle2ZOffsetCalculated;
 
     @FXML
+    void resetToDefaults(ActionEvent event)
+    {
+        String headId = headTypeCode.getText();
+        Head currentStandardHead = HeadContainer.getHeadByID(headId);
+        updateOffsetFieldsForHead(currentStandardHead);
+    }
+
+    @FXML
     /**
      * Write the values from the text fields onto the actual head. If the unique id is already
      * stored on the head then do not overwrite it.
@@ -115,10 +123,11 @@ public class HeadEEPROMController implements Initializable
         {
             HeadEEPROMDataResponse headDataResponse = connectedPrinter.transmitReadHeadEEPROM();
             String uniqueId = headDataResponse.getUniqueID();
-            if (uniqueId.length() == 0) {
+            if (uniqueId.length() == 0)
+            {
                 uniqueId = headUniqueID.getText();
             }
-            String headTypeCodeText =  headTypeCode.getText();
+            String headTypeCodeText = headTypeCode.getText();
             Float headMaxTemperatureVal = Float.valueOf(headMaxTemperature.getText());
             Float headThermistorBetaVal = Float.valueOf(headThermistorBeta.getText());
             Float headThermistorTCalVal = Float.valueOf(headThermistorTCal.getText());
@@ -131,7 +140,7 @@ public class HeadEEPROMController implements Initializable
             Float lastFilamentTemperatureVal = Float.valueOf(lastFilamentTemperature.getText());
             Float headHourCounterVal = Float.valueOf(headHourCounter.getText());
             connectedPrinter.transmitWriteHeadEEPROM(
-               headTypeCodeText, uniqueId, headMaxTemperatureVal, headThermistorBetaVal,
+                headTypeCodeText, uniqueId, headMaxTemperatureVal, headThermistorBetaVal,
                 headThermistorTCalVal, nozzle1XOffsetVal, nozzle1YOffsetVal,
                 nozzle1ZOffsetCalculated, nozzle1BOffsetVal,
                 nozzle2XOffsetVal, nozzle2YOffsetVal,
@@ -245,9 +254,11 @@ public class HeadEEPROMController implements Initializable
             public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
             {
                 updateFieldsFromAttachedHead();
-                if (headUniqueID.getText().length() == 0) {
+                if (headUniqueID.getText().length() == 0)
+                {
                     headUniqueID.setDisable(false);
-                } else {
+                } else
+                {
                     headUniqueID.setDisable(true);
                 }
             }
@@ -365,30 +376,44 @@ public class HeadEEPROMController implements Initializable
 
     private void updateFieldsFromSelectedHead()
     {
-        Head selectedHead = (Head) (headTypeCombo.getSelectionModel().selectedItemProperty().get());
+        Head selectedHead = getSelectedHead();
         if (selectedHead != null)
         {
             headTypeCode.setText(selectedHead.getTypeCode());
             headMaxTemperature.setText(String.format("%.0f", selectedHead.getMaximumTemperature()));
             headThermistorBeta.setText(String.format("%.2f", selectedHead.getBeta()));
             headThermistorTCal.setText(String.format("%.2f", selectedHead.getTCal()));
-            nozzle1BOffset.setText(String.format("%.2f", selectedHead.getNozzle1BOffset()));
-            nozzle1XOffset.setText(String.format("%.2f", selectedHead.getNozzle1XOffset()));
-            nozzle1YOffset.setText(String.format("%.2f", selectedHead.getNozzle1YOffset()));
-            nozzle1ZOffsetCalculated = selectedHead.getNozzle1ZOffset();
-//            nozzle1ZOffset.setText(String.format("%.2f", selectedHead.getNozzle1ZOffset()));
-            nozzle2BOffset.setText(String.format("%.2f", selectedHead.getNozzle2BOffset()));
-            nozzle2XOffset.setText(String.format("%.2f", selectedHead.getNozzle2XOffset()));
-            nozzle2YOffset.setText(String.format("%.2f", selectedHead.getNozzle2YOffset()));
-            nozzle2ZOffsetCalculated = selectedHead.getNozzle2ZOffset();
-//            nozzle2ZOffset.setText(String.format("%.2f", selectedHead.getNozzle2ZOffset()));
             lastFilamentTemperature.setText(String.format("%.0f",
                                                           selectedHead.getLastFilamentTemperature()));
             headHourCounter.setText(String.format("%.2f", selectedHead.getHeadHours()));
-            selectedHead.deriveZOverrunFromOffsets();
-            nozzle1ZOverrun.setText(String.format("%.2f", selectedHead.getNozzle1ZOverrun()));
-            nozzle2ZOverrun.setText(String.format("%.2f", selectedHead.getNozzle2ZOverrun()));
+            updateOffsetFieldsForHead(selectedHead);
         }
+    }
+
+    private void updateOffsetFieldsForHead(Head selectedHead)
+    {
+        nozzle1BOffset.setText(String.format("%.2f", selectedHead.getNozzle1BOffset()));
+        nozzle1XOffset.setText(String.format("%.2f", selectedHead.getNozzle1XOffset()));
+        nozzle1YOffset.setText(String.format("%.2f", selectedHead.getNozzle1YOffset()));
+        nozzle1ZOffsetCalculated = selectedHead.getNozzle1ZOffset();
+//            nozzle1ZOffset.setText(String.format("%.2f", selectedHead.getNozzle1ZOffset()));
+        nozzle2BOffset.setText(String.format("%.2f", selectedHead.getNozzle2BOffset()));
+        nozzle2XOffset.setText(String.format("%.2f", selectedHead.getNozzle2XOffset()));
+        nozzle2YOffset.setText(String.format("%.2f", selectedHead.getNozzle2YOffset()));
+        nozzle2ZOffsetCalculated = selectedHead.getNozzle2ZOffset();
+//            nozzle2ZOffset.setText(String.format("%.2f", selectedHead.getNozzle2ZOffset()));
+        selectedHead.deriveZOverrunFromOffsets();
+        nozzle1ZOverrun.setText(String.format("%.2f", selectedHead.getNozzle1ZOverrun()));
+        nozzle2ZOverrun.setText(String.format("%.2f", selectedHead.getNozzle2ZOverrun()));
+    }
+
+    /**
+     * Get the standard head details for the selected head type.
+     */
+    private Head getSelectedHead()
+    {
+        Head selectedHead = (Head) (headTypeCombo.getSelectionModel().selectedItemProperty().get());
+        return selectedHead;
     }
 
     private void updateFieldsFromAttachedHead()
