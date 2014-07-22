@@ -10,77 +10,62 @@
     <children>
         <VBox alignment="CENTER" spacing="5" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-                <GridPane fx:id="headEEPROMControls" hgap="5" vgap="5">
+                <GridPane fx:id="headEEPROMControls">
                     <columnConstraints>
-                        <ColumnConstraints halignment="RIGHT" percentWidth="25.0" />
-                        <ColumnConstraints percentWidth="25.0" />
-                        <ColumnConstraints percentWidth="25.0" />
-                        <ColumnConstraints percentWidth="25.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints />
                     </columnConstraints>
                     <rowConstraints>
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                  <RowConstraints minHeight="10.0" prefHeight="30.0" />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />                                            
                     </rowConstraints>
                     <children>
-                        <Label text="Head type code" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
-                        <ComboBox fx:id="headTypeCombo" prefWidth="200.0" GridPane.columnIndex="2" GridPane.columnSpan="2" /> 
-                        <RestrictedTextField fx:id="headTypeCode" disable="true" editable="false" forceUpperCase="true" maxLength="16" prefWidth="120.0" restrict="A-Z0-9_\-" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-
-                        <Label text="Unique ID" GridPane.columnSpan="2" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
-                        <RestrictedTextField id="uniqueID" fx:id="headUniqueID" forceUpperCase="true" maxLength="24" prefWidth="200.0" restrict="A-Z0-9" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.rowIndex="1" />
-
-                        <Label text="Maximum Temperature" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="3" />
-                        <RestrictedTextField fx:id="headMaxTemperature" maxLength="8" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="2" GridPane.columnSpan="1" GridPane.rowIndex="3" />
+                        <ComboBox fx:id="headTypeCombo" prefHeight="25.0" prefWidth="348.0" GridPane.columnIndex="1" GridPane.columnSpan="2" />
+                        <RestrictedTextField fx:id="headTypeCode" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <RestrictedTextField id="uniqueID" fx:id="headUniqueID" forceUpperCase="true" maxLength="24" prefHeight="25.0" restrict="A-Z0-9" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2" />
+                        <RestrictedTextField fx:id="headHourCounter" maxLength="8" restrict="0-9.\-" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <RestrictedTextField fx:id="headMaxTemperature" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                        <RestrictedTextField fx:id="lastFilamentTemperature" editable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                        <RestrictedTextField fx:id="headThermistorBeta" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                        <RestrictedTextField fx:id="headThermistorTCal" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="7" />
                                         
-                        <Label text="Last filament temperature" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="4" />
-                        <RestrictedTextField fx:id="lastFilamentTemperature" editable="true" maxLength="8" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="2" GridPane.rowIndex="4" />
+                        <Label alignment="CENTER" text="%printerStatus.Nozzle2ControlLabel" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.rowIndex="8" />
 
-                        <Label text="Thermistor Beta" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="5" />
-                        <RestrictedTextField fx:id="headThermistorBeta" maxLength="8" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="2" GridPane.rowIndex="5" />
-
-                        <Label text="Thermistor tcal" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="6" />
-                        <RestrictedTextField fx:id="headThermistorTCal" maxLength="8" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="2" GridPane.rowIndex="6" />
-
-                        <Label text="%printerStatus.Nozzle1ControlLabel" GridPane.columnIndex="1" GridPane.columnSpan="1" GridPane.rowIndex="7" />
-                        <RestrictedTextField fx:id="nozzle1XOffset" maxLength="8" prefWidth="70.0" restrict="0-9.\-" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-                        <RestrictedTextField fx:id="nozzle1YOffset" maxLength="8" prefWidth="70.0" restrict="0-9.\-" GridPane.columnIndex="1" GridPane.rowIndex="9" />
-                                        
-                        <HBox GridPane.columnIndex="0" GridPane.rowIndex="11" />
-                        <HBox GridPane.columnIndex="1" GridPane.rowIndex="11" />
-                                        
-                        <Label text="B" GridPane.columnIndex="0" GridPane.rowIndex="12" />
-                        <RestrictedTextField fx:id="nozzle1BOffset" maxLength="8" prefWidth="70.0" restrict="0-9.\-" GridPane.columnIndex="1" GridPane.rowIndex="12" />
-                                        
-                        <Label alignment="CENTER" text="%printerStatus.Nozzle2ControlLabel" GridPane.columnIndex="2" GridPane.columnSpan="1" GridPane.rowIndex="7" />
-                        <RestrictedTextField fx:id="nozzle2XOffset" maxLength="8" prefWidth="70.0" restrict="0-9.\-" GridPane.columnIndex="2" GridPane.rowIndex="8" />
-                        <RestrictedTextField fx:id="nozzle2YOffset" maxLength="8" prefWidth="70.0" restrict="0-9.\-" GridPane.columnIndex="2" GridPane.rowIndex="9" />
-
-                        <HBox GridPane.columnIndex="2" GridPane.rowIndex="11" />
-                        <HBox GridPane.columnIndex="3" GridPane.rowIndex="11" />
-                        <RestrictedTextField fx:id="nozzle2BOffset" maxLength="8" prefWidth="70.0" restrict="0-9.\-" GridPane.columnIndex="2" GridPane.rowIndex="12" />
-                                        
-                        <Label text="Hour counter" GridPane.columnSpan="2" GridPane.rowIndex="2" />
-                        <RestrictedTextField fx:id="headHourCounter" maxLength="8" prefWidth="70.0" restrict="0-9.\-" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-                        <Button maxWidth="1000" mnemonicParsing="false" onAction="#writeHeadConfig" text="Write" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="14" />
-                  <Label text="X" GridPane.rowIndex="8" />
-                  <Label text="Y" GridPane.rowIndex="9" />
-                  <RestrictedTextField fx:id="nozzle1ZOverrun" GridPane.columnIndex="1" GridPane.rowIndex="10" />
-                  <RestrictedTextField fx:id="nozzle2ZOverrun" GridPane.columnIndex="2" GridPane.rowIndex="10" />
-                  <Label text="Z" GridPane.rowIndex="10" />
-
+                        <Label text="%printerStatus.Nozzle1ControlLabel" GridPane.columnIndex="1" GridPane.columnSpan="1" GridPane.rowIndex="8" />
+                        <RestrictedTextField fx:id="nozzle1XOffset" maxLength="8" restrict="0-9.\-" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                        <RestrictedTextField fx:id="nozzle2XOffset" maxLength="8" restrict="0-9.\-" GridPane.columnIndex="2" GridPane.rowIndex="9" />
+                        <RestrictedTextField fx:id="nozzle1YOffset" maxLength="8" restrict="0-9.\-" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+                        <RestrictedTextField fx:id="nozzle2YOffset" maxLength="8" restrict="0-9.\-" GridPane.columnIndex="2" GridPane.rowIndex="10" />
+                        <RestrictedTextField fx:id="nozzle1ZOverrun" GridPane.columnIndex="1" GridPane.rowIndex="11" />
+                        <RestrictedTextField fx:id="nozzle2ZOverrun" GridPane.columnIndex="2" GridPane.rowIndex="11" />
+                        <RestrictedTextField fx:id="nozzle1BOffset" maxLength="8" restrict="0-9.\-" GridPane.columnIndex="1" GridPane.rowIndex="12" />
+                        <RestrictedTextField fx:id="nozzle2BOffset" maxLength="8" restrict="0-9.\-" GridPane.columnIndex="2" GridPane.rowIndex="12" />
+                        <Button maxWidth="1000" mnemonicParsing="false" onAction="#writeHeadConfig" text="Write" GridPane.columnSpan="3" GridPane.rowIndex="13" />
+                        <Label text="Head Type" GridPane.halignment="RIGHT" />
+                        <Label text="Unique Id" GridPane.halignment="RIGHT" GridPane.rowIndex="2" />
+                        <Label text="Hour Counter" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
+                        <Label text="Max Temp" GridPane.halignment="RIGHT" GridPane.rowIndex="4" />
+                        <Label text="Last Fil Temp" GridPane.halignment="RIGHT" GridPane.rowIndex="5" />
+                        <Label text="Therm Beta" GridPane.halignment="RIGHT" GridPane.rowIndex="6" />
+                        <Label text="Therm Tcal" GridPane.halignment="RIGHT" GridPane.rowIndex="7" />
+                        <Label text=" X" GridPane.halignment="RIGHT" GridPane.rowIndex="9" />
+                        <Label text=" Y" GridPane.halignment="RIGHT" GridPane.rowIndex="10" />
+                        <Label text=" Z" GridPane.halignment="RIGHT" GridPane.rowIndex="11" />
+                        <Label text=" B" GridPane.halignment="RIGHT" GridPane.rowIndex="12" />
                     </children>
                 </GridPane>
                 
