@@ -14,6 +14,7 @@ import celtech.coreUI.components.RestrictedTextField;
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
@@ -100,24 +101,42 @@ public class HeadEEPROMController implements Initializable
 
     private ModalDialog eepromCommsError = null;
 
-    private Float nozzle1ZOffset;
-    private Float nozzle2ZOffset;
+    private Float nozzle1ZOffsetCalculated;
+    private Float nozzle2ZOffsetCalculated;
 
     @FXML
+    /**
+     * Write the values from the text fields onto the actual head. If the unique id is already
+     * stored on the head then do not overwrite it.
+     */
     void writeHeadConfig(ActionEvent event)
     {
         try
         {
+            HeadEEPROMDataResponse headDataResponse = connectedPrinter.transmitReadHeadEEPROM();
+            String uniqueId = headDataResponse.getUniqueID();
+            if (uniqueId.length() == 0) {
+                uniqueId = headUniqueID.getText();
+            }
+            String headTypeCodeText =  headTypeCode.getText();
+            Float headMaxTemperatureVal = Float.valueOf(headMaxTemperature.getText());
+            Float headThermistorBetaVal = Float.valueOf(headThermistorBeta.getText());
+            Float headThermistorTCalVal = Float.valueOf(headThermistorTCal.getText());
+            Float nozzle1XOffsetVal = Float.valueOf(nozzle1XOffset.getText());
+            Float nozzle1YOffsetVal = Float.valueOf(nozzle1YOffset.getText());
+            Float nozzle1BOffsetVal = Float.valueOf(nozzle1BOffset.getText());
+            Float nozzle2XOffsetVal = Float.valueOf(nozzle2XOffset.getText());
+            Float nozzle2YOffsetVal = Float.valueOf(nozzle2YOffset.getText());
+            Float nozzle2BOffsetVal = Float.valueOf(nozzle2BOffset.getText());
+            Float lastFilamentTemperatureVal = Float.valueOf(lastFilamentTemperature.getText());
+            Float headHourCounterVal = Float.valueOf(headHourCounter.getText());
             connectedPrinter.transmitWriteHeadEEPROM(
-                headTypeCode.getText(), headUniqueID.getText(), Float.valueOf(
-                    headMaxTemperature.getText()), Float.valueOf(headThermistorBeta.getText()),
-                Float.valueOf(headThermistorTCal.getText()), Float.valueOf(nozzle1XOffset.getText()),
-                Float.valueOf(nozzle1YOffset.getText()), nozzle1ZOffset,
-                Float.valueOf(nozzle1BOffset.getText()),
-                Float.valueOf(nozzle2XOffset.getText()), Float.valueOf(nozzle2YOffset.getText()),
-                nozzle2ZOffset, Float.valueOf(nozzle2BOffset.getText()),
-                Float.valueOf(lastFilamentTemperature.getText()),
-                Float.valueOf(headHourCounter.getText()));
+               headTypeCodeText, uniqueId, headMaxTemperatureVal, headThermistorBetaVal,
+                headThermistorTCalVal, nozzle1XOffsetVal, nozzle1YOffsetVal,
+                nozzle1ZOffsetCalculated, nozzle1BOffsetVal,
+                nozzle2XOffsetVal, nozzle2YOffsetVal,
+                nozzle2ZOffsetCalculated, nozzle2BOffsetVal,
+                lastFilamentTemperatureVal, headHourCounterVal);
         } catch (RoboxCommsException ex)
         {
             steno.error("Error writing reel EEPROM");
@@ -225,7 +244,12 @@ public class HeadEEPROMController implements Initializable
             @Override
             public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
             {
-                updateHeadFieldsFromAttachedHead();
+                updateFieldsFromAttachedHead();
+                if (headUniqueID.getText().length() == 0) {
+                    headUniqueID.setDisable(false);
+                } else {
+                    headUniqueID.setDisable(true);
+                }
             }
         };
 
@@ -259,8 +283,8 @@ public class HeadEEPROMController implements Initializable
                     temporaryHead.setNozzle1_Z_overrun(nozzle1OverrunValue);
                     temporaryHead.setNozzle2_Z_overrun(nozzle2OverrunValue);
                     temporaryHead.deriveZOffsetsFromOverrun();
-                    nozzle1ZOffset = temporaryHead.getNozzle1ZOffset();
-                    nozzle2ZOffset = temporaryHead.getNozzle2ZOffset();
+                    nozzle1ZOffsetCalculated = temporaryHead.getNozzle1ZOffset();
+                    nozzle2ZOffsetCalculated = temporaryHead.getNozzle2ZOffset();
 //                    nozzle1ZOffset.setText(String.format("%.2f", temporaryHead.getNozzle1ZOffset()));
 //                    nozzle2ZOffset.setText(String.format("%.2f", temporaryHead.getNozzle2ZOffset()));
                 } catch (NumberFormatException ex)
@@ -282,8 +306,8 @@ public class HeadEEPROMController implements Initializable
                     temporaryHead.setNozzle1_Z_overrun(nozzle1OverrunValue);
                     temporaryHead.setNozzle2_Z_overrun(nozzle2OverrunValue);
                     temporaryHead.deriveZOffsetsFromOverrun();
-                    nozzle1ZOffset = temporaryHead.getNozzle1ZOffset();
-                    nozzle2ZOffset = temporaryHead.getNozzle2ZOffset();
+                    nozzle1ZOffsetCalculated = temporaryHead.getNozzle1ZOffset();
+                    nozzle2ZOffsetCalculated = temporaryHead.getNozzle2ZOffset();
 //                    nozzle1ZOffset.setText(String.format("%.2f", temporaryHead.getNozzle1ZOffset()));
 //                    nozzle2ZOffset.setText(String.format("%.2f", temporaryHead.getNozzle2ZOffset()));
                 } catch (NumberFormatException ex)
@@ -299,7 +323,7 @@ public class HeadEEPROMController implements Initializable
             @Override
             public void changed(ObservableValue ov, Object t, Object t1)
             {
-                updateHeadFieldsFromSelectedHead();
+                updateFieldsFromSelectedHead();
             }
         });
 
@@ -339,7 +363,7 @@ public class HeadEEPROMController implements Initializable
         }
     }
 
-    private void updateHeadFieldsFromSelectedHead()
+    private void updateFieldsFromSelectedHead()
     {
         Head selectedHead = (Head) (headTypeCombo.getSelectionModel().selectedItemProperty().get());
         if (selectedHead != null)
@@ -351,12 +375,12 @@ public class HeadEEPROMController implements Initializable
             nozzle1BOffset.setText(String.format("%.2f", selectedHead.getNozzle1BOffset()));
             nozzle1XOffset.setText(String.format("%.2f", selectedHead.getNozzle1XOffset()));
             nozzle1YOffset.setText(String.format("%.2f", selectedHead.getNozzle1YOffset()));
-            nozzle1ZOffset = selectedHead.getNozzle1ZOffset();
+            nozzle1ZOffsetCalculated = selectedHead.getNozzle1ZOffset();
 //            nozzle1ZOffset.setText(String.format("%.2f", selectedHead.getNozzle1ZOffset()));
             nozzle2BOffset.setText(String.format("%.2f", selectedHead.getNozzle2BOffset()));
             nozzle2XOffset.setText(String.format("%.2f", selectedHead.getNozzle2XOffset()));
             nozzle2YOffset.setText(String.format("%.2f", selectedHead.getNozzle2YOffset()));
-            nozzle2ZOffset = selectedHead.getNozzle2ZOffset();
+            nozzle2ZOffsetCalculated = selectedHead.getNozzle2ZOffset();
 //            nozzle2ZOffset.setText(String.format("%.2f", selectedHead.getNozzle2ZOffset()));
             lastFilamentTemperature.setText(String.format("%.0f",
                                                           selectedHead.getLastFilamentTemperature()));
@@ -367,7 +391,7 @@ public class HeadEEPROMController implements Initializable
         }
     }
 
-    private void updateHeadFieldsFromAttachedHead()
+    private void updateFieldsFromAttachedHead()
     {
         headTypeCode.setText(connectedPrinter.getHeadTypeCode().get().trim());
         headTypeCombo.getSelectionModel().select(connectedPrinter.attachedHeadProperty().get());
@@ -384,12 +408,12 @@ public class HeadEEPROMController implements Initializable
         nozzle1BOffset.setText(String.format("%.2f", connectedPrinter.getHeadNozzle1BOffset().get()));
         nozzle1XOffset.setText(String.format("%.2f", connectedPrinter.getHeadNozzle1XOffset().get()));
         nozzle1YOffset.setText(String.format("%.2f", connectedPrinter.getHeadNozzle1YOffset().get()));
-        nozzle1ZOffset = connectedPrinter.getHeadNozzle1ZOffset().get();
+        nozzle1ZOffsetCalculated = connectedPrinter.getHeadNozzle1ZOffset().get();
 //        nozzle1ZOffset.setText(String.format("%.2f", connectedPrinter.getHeadNozzle1ZOffset().get()));
         nozzle2BOffset.setText(String.format("%.2f", connectedPrinter.getHeadNozzle2BOffset().get()));
         nozzle2XOffset.setText(String.format("%.2f", connectedPrinter.getHeadNozzle2XOffset().get()));
         nozzle2YOffset.setText(String.format("%.2f", connectedPrinter.getHeadNozzle2YOffset().get()));
-        nozzle2ZOffset = connectedPrinter.getHeadNozzle2ZOffset().get();
+        nozzle2ZOffsetCalculated = connectedPrinter.getHeadNozzle2ZOffset().get();
 //        nozzle2ZOffset.setText(String.format("%.2f", connectedPrinter.getHeadNozzle2ZOffset().get()));
 
         connectedPrinter.attachedHeadProperty().get().deriveZOverrunFromOffsets();

@@ -35,13 +35,13 @@
                     </rowConstraints>
                     <children>
                         <ComboBox fx:id="headTypeCombo" prefHeight="25.0" prefWidth="348.0" GridPane.columnIndex="1" GridPane.columnSpan="2" />
-                        <RestrictedTextField fx:id="headTypeCode" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                        <RestrictedTextField id="uniqueID" fx:id="headUniqueID" forceUpperCase="true" maxLength="24" prefHeight="25.0" restrict="A-Z0-9" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2" />
-                        <RestrictedTextField fx:id="headHourCounter" maxLength="8" restrict="0-9.\-" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                        <RestrictedTextField fx:id="headMaxTemperature" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                        <RestrictedTextField fx:id="lastFilamentTemperature" editable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                        <RestrictedTextField fx:id="headThermistorBeta" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                        <RestrictedTextField fx:id="headThermistorTCal" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                        <RestrictedTextField fx:id="headTypeCode" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <RestrictedTextField id="uniqueID" fx:id="headUniqueID" disable="true" forceUpperCase="true" maxLength="24" prefHeight="25.0" restrict="A-Z0-9" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2" />
+                        <RestrictedTextField fx:id="headHourCounter" disable="true" maxLength="8" restrict="0-9.\-" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <RestrictedTextField fx:id="headMaxTemperature" disable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                        <RestrictedTextField fx:id="lastFilamentTemperature" disable="true" editable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                        <RestrictedTextField fx:id="headThermistorBeta" disable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                        <RestrictedTextField fx:id="headThermistorTCal" disable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="7" />
                                         
                         <Label alignment="CENTER" text="%printerStatus.Nozzle2ControlLabel" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.rowIndex="8" />
 
