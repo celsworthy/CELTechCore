@@ -6,11 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import celtech.coreUI.components.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" 
-            styleClass="sidePanel" id="Content" minHeight="0.0" minWidth="0.0"
-            prefHeight="-1" prefWidth="-1" 
-            fx:controller="celtech.coreUI.controllers.utilityPanels.HeadEEPROMController"
-            >
+<AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="-1" prefWidth="-1" styleClass="sidePanel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.HeadEEPROMController">
     <children>
         <VBox alignment="CENTER" spacing="5" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
@@ -32,17 +28,18 @@
                         <RowConstraints />
                         <RowConstraints />
                         <RowConstraints />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" />
                         <RowConstraints />
                         <RowConstraints />
                         <RowConstraints />
                         <RowConstraints />                                            
                     </rowConstraints>
                     <children>
-                        <Label text="Head type code" />
-                        <ComboBox fx:id="headTypeCombo" prefWidth="200.0" GridPane.columnIndex="1" GridPane.columnSpan="2" /> 
+                        <Label text="Head type code" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
+                        <ComboBox fx:id="headTypeCombo" prefWidth="200.0" GridPane.columnIndex="2" GridPane.columnSpan="2" /> 
                         <RestrictedTextField fx:id="headTypeCode" disable="true" editable="false" forceUpperCase="true" maxLength="16" prefWidth="120.0" restrict="A-Z0-9_\-" GridPane.columnIndex="3" GridPane.rowIndex="1" />
 
-                        <Label text="Unique ID" GridPane.columnSpan="2" GridPane.rowIndex="1" />
+                        <Label text="Unique ID" GridPane.columnSpan="2" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
                         <RestrictedTextField id="uniqueID" fx:id="headUniqueID" forceUpperCase="true" maxLength="24" prefWidth="200.0" restrict="A-Z0-9" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.rowIndex="1" />
 
                         <Label text="Maximum Temperature" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="3" />
@@ -57,53 +54,32 @@
                         <Label text="Thermistor tcal" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="6" />
                         <RestrictedTextField fx:id="headThermistorTCal" maxLength="8" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="2" GridPane.rowIndex="6" />
 
-                        <Label text="%printerStatus.Nozzle1ControlLabel" GridPane.columnIndex="0" GridPane.columnSpan="1" GridPane.rowIndex="7" />
-                                        
-                        <Label text="X" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+                        <Label text="%printerStatus.Nozzle1ControlLabel" GridPane.columnIndex="1" GridPane.columnSpan="1" GridPane.rowIndex="7" />
                         <RestrictedTextField fx:id="nozzle1XOffset" maxLength="8" prefWidth="70.0" restrict="0-9.\-" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-                                        
-                        <Label text="Y" GridPane.columnIndex="0" GridPane.rowIndex="9" />
                         <RestrictedTextField fx:id="nozzle1YOffset" maxLength="8" prefWidth="70.0" restrict="0-9.\-" GridPane.columnIndex="1" GridPane.rowIndex="9" />
                                         
-                        <HBox GridPane.columnIndex="0" GridPane.rowIndex="10">
-                            <children>
-                                <Label text="Z" />
-                            </children>
-                        </HBox>
-                        <HBox GridPane.columnIndex="1" GridPane.rowIndex="10">
-                            <children>
-                                <RestrictedTextField fx:id="nozzle1ZOverrun" maxLength="8" prefWidth="50.0" restrict="0-9.\-" />
-                            </children>
-                        </HBox>
+                        <HBox GridPane.columnIndex="0" GridPane.rowIndex="11" />
+                        <HBox GridPane.columnIndex="1" GridPane.rowIndex="11" />
                                         
-                        <Label text="B" GridPane.columnIndex="0" GridPane.rowIndex="11" />
-                        <RestrictedTextField fx:id="nozzle1BOffset" maxLength="8" prefWidth="70.0" restrict="0-9.\-" GridPane.columnIndex="1" GridPane.rowIndex="11" />
+                        <Label text="B" GridPane.columnIndex="0" GridPane.rowIndex="12" />
+                        <RestrictedTextField fx:id="nozzle1BOffset" maxLength="8" prefWidth="70.0" restrict="0-9.\-" GridPane.columnIndex="1" GridPane.rowIndex="12" />
                                         
                         <Label alignment="CENTER" text="%printerStatus.Nozzle2ControlLabel" GridPane.columnIndex="2" GridPane.columnSpan="1" GridPane.rowIndex="7" />
+                        <RestrictedTextField fx:id="nozzle2XOffset" maxLength="8" prefWidth="70.0" restrict="0-9.\-" GridPane.columnIndex="2" GridPane.rowIndex="8" />
+                        <RestrictedTextField fx:id="nozzle2YOffset" maxLength="8" prefWidth="70.0" restrict="0-9.\-" GridPane.columnIndex="2" GridPane.rowIndex="9" />
 
-                        <Label text="X" GridPane.columnIndex="2" GridPane.rowIndex="8" />
-                        <RestrictedTextField fx:id="nozzle2XOffset" maxLength="8" prefWidth="70.0" restrict="0-9.\-" GridPane.columnIndex="3" GridPane.rowIndex="8" />
-
-                        <Label text="Y" GridPane.columnIndex="2" GridPane.rowIndex="9" />
-                        <RestrictedTextField fx:id="nozzle2YOffset" maxLength="8" prefWidth="70.0" restrict="0-9.\-" GridPane.columnIndex="3" GridPane.rowIndex="9" />
-
-                        <HBox GridPane.columnIndex="2" GridPane.rowIndex="10">
-                            <children>
-                                <Label text="Z" />
-                            </children>
-                        </HBox>
-                        <HBox GridPane.columnIndex="3" GridPane.rowIndex="10">
-                            <children>
-                                <RestrictedTextField fx:id="nozzle2ZOverrun" maxLength="8" prefWidth="50.0" restrict="0-9.\-" />
-                            </children>
-                        </HBox>
-
-                        <Label text="B" GridPane.columnIndex="2" GridPane.rowIndex="11" />
-                        <RestrictedTextField fx:id="nozzle2BOffset" maxLength="8" prefWidth="70.0" restrict="0-9.\-" GridPane.columnIndex="3" GridPane.rowIndex="11" />
+                        <HBox GridPane.columnIndex="2" GridPane.rowIndex="11" />
+                        <HBox GridPane.columnIndex="3" GridPane.rowIndex="11" />
+                        <RestrictedTextField fx:id="nozzle2BOffset" maxLength="8" prefWidth="70.0" restrict="0-9.\-" GridPane.columnIndex="2" GridPane.rowIndex="12" />
                                         
                         <Label text="Hour counter" GridPane.columnSpan="2" GridPane.rowIndex="2" />
                         <RestrictedTextField fx:id="headHourCounter" maxLength="8" prefWidth="70.0" restrict="0-9.\-" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-                        <Button maxWidth="1000" mnemonicParsing="false" onAction="#writeHeadConfig" text="Write" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="13" />
+                        <Button maxWidth="1000" mnemonicParsing="false" onAction="#writeHeadConfig" text="Write" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="14" />
+                  <Label text="X" GridPane.rowIndex="8" />
+                  <Label text="Y" GridPane.rowIndex="9" />
+                  <RestrictedTextField fx:id="nozzle1ZOverrun" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+                  <RestrictedTextField fx:id="nozzle2ZOverrun" GridPane.columnIndex="2" GridPane.rowIndex="10" />
+                  <Label text="Z" GridPane.rowIndex="10" />
 
                     </children>
                 </GridPane>

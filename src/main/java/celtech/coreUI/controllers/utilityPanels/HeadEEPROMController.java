@@ -11,7 +11,6 @@ import celtech.configuration.HeadContainer;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -25,7 +24,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -40,60 +38,68 @@ public class HeadEEPROMController implements Initializable
     Stenographer steno = StenographerFactory.getStenographer(HeadEEPROMController.class.getName());
 
     @FXML
-    private ComboBox headTypeCombo;
+    private RestrictedTextField nozzle2ZOverrun;
 
     @FXML
-    private TextField headHourCounter;
+    private RestrictedTextField headThermistorTCal;
 
     @FXML
-    private TextField headMaxTemperature;
+    private RestrictedTextField headThermistorBeta;
 
     @FXML
     private RestrictedTextField lastFilamentTemperature;
 
     @FXML
-    private TextField headThermistorBeta;
+    private RestrictedTextField nozzle1ZOverrun;
 
     @FXML
-    private TextField headThermistorTCal;
+    private RestrictedTextField headMaxTemperature;
 
     @FXML
-    private TextField headTypeCode;
+    private RestrictedTextField nozzle2XOffset;
 
     @FXML
-    private TextField headUniqueID;
+    private RestrictedTextField nozzle1YOffset;
 
     @FXML
-    private TextField nozzle1BOffset;
+    private RestrictedTextField nozzle2YOffset;
 
     @FXML
-    private TextField nozzle1XOffset;
+    private RestrictedTextField nozzle1XOffset;
 
     @FXML
-    private TextField nozzle1YOffset;
+    private RestrictedTextField headHourCounter;
 
     @FXML
-    private TextField nozzle1ZOverrun;
+    private RestrictedTextField nozzle2BOffset;
 
     @FXML
-    private TextField nozzle2BOffset;
+    private RestrictedTextField headUniqueID;
 
     @FXML
-    private TextField nozzle2XOffset;
+    private RestrictedTextField headTypeCode;
 
     @FXML
-    private TextField nozzle2YOffset;
+    private RestrictedTextField nozzle1BOffset;
 
     @FXML
-    private TextField nozzle2ZOverrun;
+    private ComboBox headTypeCombo;
 
     @FXML
     private GridPane headEEPROMControls;
 
-
 //    private BooleanProperty fastUpdates = new SimpleBooleanProperty(false);
     private Head temporaryHead = null;
-    
+
+    private ObservableList<Printer> printerStatusList = null;
+    //We'll only deal with the first printer we find.
+    private Printer connectedPrinter = null;
+
+    private ChangeListener<EEPROMState> headAttachListener = null;
+    private ChangeListener<Boolean> headDataChangeListener = null;
+
+    private ModalDialog eepromCommsError = null;
+
     private Float nozzle1ZOffset;
     private Float nozzle2ZOffset;
 
@@ -122,38 +128,6 @@ public class HeadEEPROMController implements Initializable
         readHeadConfig(event);
     }
 
-    @FXML
-    void resetHeadConfig(ActionEvent event)
-    {
-        updateHeadFieldsFromSelectedHead();
-        try
-        {
-            connectedPrinter.transmitWriteHeadEEPROM(
-                headTypeCode.getText(), headUniqueID.getText(),
-                Float.valueOf(headMaxTemperature.getText()),
-                Float.valueOf(headThermistorBeta.getText()),
-                Float.valueOf(headThermistorTCal.getText()),
-                Float.valueOf(nozzle1XOffset.getText()),
-                Float.valueOf(nozzle1YOffset.getText()),
-                nozzle1ZOffset,
-                Float.valueOf(nozzle1BOffset.getText()),
-                Float.valueOf(nozzle2XOffset.getText()),
-                Float.valueOf(nozzle2YOffset.getText()),
-                nozzle2ZOffset,
-                Float.valueOf(nozzle2BOffset.getText()),
-                Float.valueOf(lastFilamentTemperature.getText()),
-                Float.valueOf(headHourCounter.getText()));
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error writing head EEPROM");
-            eepromCommsError.setMessage(DisplayManager.getLanguageBundle().getString(
-                "eeprom.headWriteError"));
-            eepromCommsError.show();
-        }
-        readHeadConfig(event);
-    }
-
-    @FXML
     void readHeadConfig(ActionEvent event)
     {
         try
@@ -168,23 +142,6 @@ public class HeadEEPROMController implements Initializable
         }
     }
 
-    @FXML
-    void formatHeadEEPROM(ActionEvent event)
-    {
-        try
-        {
-            connectedPrinter.transmitFormatHeadEEPROM();
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error formatting head EEPROM");
-            eepromCommsError.setMessage(DisplayManager.getLanguageBundle().getString(
-                "eeprom.headWriteError"));
-            eepromCommsError.show();
-        }
-        readHeadConfig(null);
-    }
-
-    @FXML
     void readPrinterID(ActionEvent event)
     {
         try
@@ -196,19 +153,6 @@ public class HeadEEPROMController implements Initializable
         }
     }
 
-    private ObservableList<Printer> printerStatusList = null;
-    //We'll only deal with the first printer we find.
-    private Printer connectedPrinter = null;
-
-    private ChangeListener<EEPROMState> headAttachListener = null;
-    private ChangeListener<Boolean> headDataChangeListener = null;
-    private ChangeListener<Boolean> printerIDDataChangeListener = null;
-
-    private StatusScreenState statusScreenState = null;
-    private ModalDialog eepromCommsError = null;
-
-    private RoboxCommsManager commsManager = null;
-
     /**
      * Initializes the controller class.
      */
@@ -216,8 +160,6 @@ public class HeadEEPROMController implements Initializable
     public void initialize(URL url, ResourceBundle rb)
     {
         temporaryHead = HeadContainer.getCompleteHeadList().get(0);
-        statusScreenState = StatusScreenState.getInstance();
-        commsManager = RoboxCommsManager.getInstance();
 
         eepromCommsError = new ModalDialog();
         eepromCommsError.setTitle(DisplayManager.getLanguageBundle().getString("eeprom.error"));
@@ -278,16 +220,6 @@ public class HeadEEPROMController implements Initializable
             }
         };
 
-//        reelDataChangeListener = new ChangeListener<Boolean>()
-//        {
-//            @Override
-//            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
-//            {
-//                materialTypeCombo.getSelectionModel().clearSelection();
-//                updateFilamentList();
-//                updateReelFieldsFromLoadedReel();
-//            }
-//        };
         headDataChangeListener = new ChangeListener<Boolean>()
         {
             @Override
@@ -362,7 +294,6 @@ public class HeadEEPROMController implements Initializable
         });
 
         headTypeCombo.setItems(HeadContainer.getCompleteHeadList());
-
         headTypeCombo.getSelectionModel().selectedItemProperty().addListener(new ChangeListener()
         {
             @Override
@@ -380,8 +311,6 @@ public class HeadEEPROMController implements Initializable
         {
 
             connectedPrinter.getHeadDataChangedToggle().removeListener(headDataChangeListener);
-            connectedPrinter.getPrinterIDDataChangedToggle().removeListener(
-                printerIDDataChangeListener);
 
             headEEPROMControls.visibleProperty().unbind();
 
@@ -400,7 +329,6 @@ public class HeadEEPROMController implements Initializable
         {
             connectedPrinter = printer;
             connectedPrinter.getHeadDataChangedToggle().addListener(headDataChangeListener);
-            connectedPrinter.getPrinterIDDataChangedToggle().addListener(printerIDDataChangeListener);
 
             headEEPROMControls.visibleProperty().bind(
                 connectedPrinter.headEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
