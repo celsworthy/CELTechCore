@@ -361,13 +361,13 @@ public class MaintenancePanelController implements Initializable
                 firmwareUpdateProgress = new ProgressDialog(firmwareLoadService);
             }
         });
-        
+
         currentFirmwareField.setStyle("-fx-font-weight: bold;");
-        
+
         gcodeFileChooser.setTitle(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodeFileChooserTitle"));
         gcodeFileChooser.getExtensionFilters()
-                .addAll(
-                        new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodeFileDescription"), "*.gcode"));
+            .addAll(
+                new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodeFileDescription"), "*.gcode"));
 
         gcodePrintService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
         {
@@ -401,8 +401,8 @@ public class MaintenancePanelController implements Initializable
 
         firmwareFileChooser.setTitle(DisplayManager.getLanguageBundle().getString("maintenancePanel.firmwareFileChooserTitle"));
         firmwareFileChooser.getExtensionFilters()
-                .addAll(
-                        new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString("maintenancePanel.firmwareFileDescription"), "*.bin"));
+            .addAll(
+                new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString("maintenancePanel.firmwareFileDescription"), "*.bin"));
 
         firmwareLoadService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
         {
@@ -471,8 +471,16 @@ public class MaintenancePanelController implements Initializable
 
     private void setButtonVisibility()
     {
-        boolean printingdisabled = connectedPrinter.getPrinterStatus() != PrinterStatusEnumeration.IDLE;
+        boolean printingdisabled = false;
         boolean noFilamentOrPrintingdisabled = printingdisabled || (connectedPrinter.getFilament1Loaded() == false && connectedPrinter.getFilament2Loaded() == false);
+
+        if (connectedPrinter == null)
+        {
+            printingdisabled = true;
+        } else
+        {
+            printingdisabled = connectedPrinter.getPrinterStatus() != PrinterStatusEnumeration.IDLE;
+        }
 
         YTestButton.setDisable(printingdisabled);
 

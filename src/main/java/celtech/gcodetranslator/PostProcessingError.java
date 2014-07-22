@@ -10,9 +10,9 @@ package celtech.gcodetranslator;
  *
  * @author Ian
  */
-class NozzleCloseSettingsError extends PostProcessingError
+class PostProcessingError extends Exception
 {
-    public NozzleCloseSettingsError(String exceptionInformation)
+    public PostProcessingError(String exceptionInformation)
     {
         super(exceptionInformation);
     }
