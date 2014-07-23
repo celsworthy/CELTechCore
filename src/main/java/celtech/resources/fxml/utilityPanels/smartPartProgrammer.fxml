@@ -18,17 +18,12 @@
                 <Separator prefWidth="200.0" />
                 <Label layoutX="74.0" layoutY="10.0" text="%smartreelProgrammer.chooseMaterial" />
                 <ComboBox fx:id="materialSelector" prefWidth="250.0" />
-                <Button fx:id="programReelButton" mnemonicParsing="false" onAction="#programReel" text="%smartreelProgrammer.programReel" /><Separator prefWidth="200.0">
-<VBox.margin>
-<Insets bottom="5.0" top="5.0" />
-</VBox.margin></Separator>
+                <Button fx:id="programReelButton" mnemonicParsing="false" onAction="#programReel" text="%smartreelProgrammer.programReel" />
 <HBox alignment="CENTER" layoutX="10.0" layoutY="10.0" spacing="5.0">
 <children>
-<Label layoutX="74.0" layoutY="10.0" text="%smartheadProgrammer.currentHead" />
 <Label fx:id="currentHeadTitle" />
 </children>
 </HBox>
-<Button fx:id="resetHeadButton" layoutX="71.0" layoutY="109.0" mnemonicParsing="false" onAction="#resetHeadToDefaults" text="%smartheadProgrammer.resetHead" />
             </children>
         </VBox>
     </children>

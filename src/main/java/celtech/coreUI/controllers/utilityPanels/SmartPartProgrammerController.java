@@ -59,27 +59,6 @@ public class SmartPartProgrammerController implements Initializable
         }
     };
 
-    private ChangeListener<Head> headChangeListener = new ChangeListener<Head>()
-    {
-        @Override
-        public void changed(ObservableValue<? extends Head> observable, Head oldValue, Head newValue)
-        {
-            if (connectedPrinter != null)
-            {
-                setupSmartHeadDisplay(connectedPrinter.getReelEEPROMStatus());
-            }
-        }
-    };
-
-    private ChangeListener<EEPROMState> headEEPROMStateChangeListener = new ChangeListener<EEPROMState>()
-    {
-        @Override
-        public void changed(ObservableValue<? extends EEPROMState> observable, EEPROMState oldValue, EEPROMState newValue)
-        {
-            setupSmartHeadDisplay(newValue);
-        }
-    };
-
     private void setupSmartReelDisplay(EEPROMState newValue)
     {
         switch (newValue)
@@ -102,28 +81,6 @@ public class SmartPartProgrammerController implements Initializable
         }
     }
 
-    private void setupSmartHeadDisplay(EEPROMState newValue)
-    {
-        switch (newValue)
-        {
-            case NOT_PRESENT:
-                currentHeadTitle.setText(DisplayManager.getLanguageBundle().getString("sidePanel_printerStatus.headNotAttached"));
-                break;
-            case NOT_PROGRAMMED:
-                currentHeadTitle.setText(DisplayManager.getLanguageBundle().getString("smartheadProgrammer.headNotFormatted"));
-                break;
-            case PROGRAMMED:
-                if (connectedPrinter.attachedHeadProperty().get() != null)
-                {
-                    currentHeadTitle.setText(connectedPrinter.attachedHeadProperty().get().getFriendlyName());
-                } else
-                {
-                    currentHeadTitle.setText(DisplayManager.getLanguageBundle().getString("smartheadProgrammer.unknownHead"));
-                }
-                break;
-        }
-    }
-
     @FXML
     private Label currentReelTitle;
 
@@ -132,12 +89,6 @@ public class SmartPartProgrammerController implements Initializable
 
     @FXML
     private Button programReelButton;
-
-    @FXML
-    private Button resetHeadButton;
-
-    @FXML
-    private Label currentHeadTitle;
 
     @FXML
     void programReel(ActionEvent event)
@@ -201,8 +152,6 @@ public class SmartPartProgrammerController implements Initializable
                 {
                     connectedPrinter.reelEEPROMStatusProperty().removeListener(reelEEPROMStateChangeListener);
                     connectedPrinter.reelDataChangedProperty().removeListener(reelDataChangeListener);
-                    connectedPrinter.headEEPROMStatusProperty().removeListener(headEEPROMStateChangeListener);
-                    connectedPrinter.attachedHeadProperty().removeListener(headChangeListener);
                 }
 
                 if (newPrinter == null)
@@ -212,16 +161,12 @@ public class SmartPartProgrammerController implements Initializable
                     materialSelector.getSelectionModel().clearSelection();
                     materialSelector.disableProperty().unbind();
                     materialSelector.setDisable(true);
-                    resetHeadButton.disableProperty().unbind();
                 } else
                 {
                     programReelButton.disableProperty().bind(newPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PRESENT).or(materialSelector.getSelectionModel().selectedItemProperty().isNull()));
                     materialSelector.disableProperty().bind(newPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PRESENT));
                     newPrinter.reelEEPROMStatusProperty().addListener(reelEEPROMStateChangeListener);
                     newPrinter.reelDataChangedProperty().addListener(reelDataChangeListener);
-                    resetHeadButton.disableProperty().bind(newPrinter.headEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PRESENT));
-                    newPrinter.headEEPROMStatusProperty().addListener(headEEPROMStateChangeListener);
-                    newPrinter.attachedHeadProperty().addListener(headChangeListener);
                 }
 
                 connectedPrinter = newPrinter;

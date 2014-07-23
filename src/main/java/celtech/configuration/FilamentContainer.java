@@ -35,9 +35,6 @@ public class FilamentContainer
     private static final ObservableList<Filament> completeFilamentList = FXCollections.observableArrayList();
     private static final ObservableMap<String, Filament> completeFilamentMap = FXCollections.observableHashMap();
 
-    /**
-     *
-     */
     public static final Filament createNewFilament = new Filament(null, null, null,
                                                                   0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, false);
     

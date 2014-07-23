@@ -1535,5 +1535,10 @@ public interface Printer
      * @param reelNozzleTemperature
      */
     public void transmitWriteMaterialTemperatureToHeadEEPROM(int reelNozzleTemperature);
+
+    /**
+     * Return if the filament on the reel is mutable (is a Robox predefined filament or not)
+     */
+    public BooleanProperty getReelFilamentIsMutable();
     
 }

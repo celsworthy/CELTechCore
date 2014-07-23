@@ -19,6 +19,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.Pane;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -33,6 +34,8 @@ public class ReelDataPanelController implements Initializable
     private final Stenographer steno = StenographerFactory.getStenographer(ReelDataPanelController.class.getName());
     private Printer connectedPrinter = null;
     private StatusScreenState statusScreenState = null;
+    
+    @FXML Pane reelContainer;
 
     @FXML
     private RestrictedTextField reelFirstLayerBedTemperature;
@@ -124,6 +127,13 @@ public class ReelDataPanelController implements Initializable
         @Override
         public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
         {
+            
+           if  (connectedPrinter.getReelFilamentIsMutable().get()) {
+               reelContainer.disableProperty().set(false);
+           } else {
+               reelContainer.disableProperty().set(true);
+           }
+            
             reelTypeCode.setText(connectedPrinter.getReelTypeCode().get());
             reelUniqueID.setText(connectedPrinter.getReelUniqueID().get());
             reelAmbientTemperature.setText(String.format("%d", connectedPrinter.getReelAmbientTemperature().get()));
@@ -169,17 +179,7 @@ public class ReelDataPanelController implements Initializable
     {
         if (connectedPrinter != null)
         {
-            reelTypeCode.visibleProperty().unbind();
-            reelUniqueID.visibleProperty().unbind();
-            reelFilamentDiameter.visibleProperty().unbind();
-            reelFilamentMultiplier.visibleProperty().unbind();
-            reelFeedRateMultiplier.visibleProperty().unbind();
-            reelFirstLayerBedTemperature.visibleProperty().unbind();
-            reelBedTemperature.visibleProperty().unbind();
-            reelFirstLayerNozzleTemperature.visibleProperty().unbind();
-            reelNozzleTemperature.visibleProperty().unbind();
-            reelAmbientTemperature.visibleProperty().unbind();
-            reelRemainingFilament.visibleProperty().unbind();
+            reelContainer.visibleProperty().unbind();
 
             connectedPrinter.reelDataChangedProperty().removeListener(reelDataChangeListener);
 
@@ -195,21 +195,10 @@ public class ReelDataPanelController implements Initializable
         {
             connectedPrinter = printer;
 
-            reelTypeCode.visibleProperty().bind(connectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
-            reelUniqueID.visibleProperty().bind(connectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
-            reelFilamentDiameter.visibleProperty().bind(connectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
-            reelFilamentMultiplier.visibleProperty().bind(connectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
-            reelFeedRateMultiplier.visibleProperty().bind(connectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
-            reelFirstLayerBedTemperature.visibleProperty().bind(connectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
-            reelBedTemperature.visibleProperty().bind(connectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
-            reelFirstLayerNozzleTemperature.visibleProperty().bind(connectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
-            reelNozzleTemperature.visibleProperty().bind(connectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
-            reelAmbientTemperature.visibleProperty().bind(connectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
-            reelRemainingFilament.visibleProperty().bind(connectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
+            reelContainer.visibleProperty().bind(connectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
 
             connectedPrinter.reelDataChangedProperty().addListener(reelDataChangeListener);
 
-//            reelReadConfig.visibleProperty().bind(connectedPrinter.reelEEPROMStatusProperty().isNotEqualTo(EEPROMState.NOT_PRESENT));
             reelWriteConfig.visibleProperty().bind(connectedPrinter.reelEEPROMStatusProperty().isNotEqualTo(EEPROMState.NOT_PRESENT));
         }
     }

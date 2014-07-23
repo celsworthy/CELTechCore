@@ -87,6 +87,8 @@ public class PrinterImpl implements Printer
     private String whyAreWeWaiting_cooling = null;
     private String whyAreWeWaiting_heatingBed = null;
     private String whyAreWeWaiting_heatingNozzle = null;
+    
+    private final static String USER_FILAMENT_PREFIX = "U";
 
     private final BooleanProperty printerIDDataChangedToggle = new SimpleBooleanProperty(false);
     private final StringProperty printermodel = new SimpleStringProperty("");
@@ -207,6 +209,7 @@ public class PrinterImpl implements Printer
     private final Filament temporaryFilament = new Filament(null, null, null,
                                                       0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, false);
     private final BooleanProperty reelDataChangedToggle = new SimpleBooleanProperty(false);
+    private final BooleanProperty reelFilamentIsMutable = new SimpleBooleanProperty(false);
     private final IntegerProperty reelAmbientTemperature = new SimpleIntegerProperty(0);
     private final IntegerProperty reelBedTemperature = new SimpleIntegerProperty(0);
     private final IntegerProperty reelFirstLayerBedTemperature = new SimpleIntegerProperty(0);
@@ -267,6 +270,7 @@ public class PrinterImpl implements Printer
     private static final Dialogs.CommandLink abortJob = new Dialogs.CommandLink(
         DisplayManager.getLanguageBundle().getString("dialogs.error.abortJob"), null);
     private boolean errorDialogOnDisplay = false;
+    
 
     /**
      *
@@ -2329,7 +2333,7 @@ public class PrinterImpl implements Printer
                                 "dialogs.error.errorEncountered"))
                             .message(ackResponse.getErrorsAsString())
                             .masthead(null)
-                            .showCommandLinks(clearOnly);
+                            .showCommandLinks(clearOnly, clearOnly);
                     }
 
                     try
@@ -2516,6 +2520,7 @@ public class PrinterImpl implements Printer
                     reelFeedRateMultiplier.set(0);
                     reelRemainingFilament.set(0);
                     reelFilamentDiameter.set(0);
+                    reelFilamentIsMutable.set(false);
                     reelDataChangedToggle.set(!reelDataChangedToggle.get());
                 }
 
@@ -2645,6 +2650,7 @@ public class PrinterImpl implements Printer
                         temporaryFilament.setNozzleTemperature(reelResponse.getNozzleTemperature());
                         temporaryFilament.setFirstLayerNozzleTemperature(
                             reelResponse.getFirstLayerNozzleTemperature());
+                        temporaryFilament.setMutable(reelResponse.getReelTypeCode().startsWith(USER_FILAMENT_PREFIX));
                         temporaryFilament.setFilamentMultiplier(reelResponse.getFilamentMultiplier());
                         temporaryFilament.setFeedRateMultiplier(reelResponse.getFeedRateMultiplier());
                         temporaryFilament.setRemainingFilament(
@@ -2664,6 +2670,7 @@ public class PrinterImpl implements Printer
                         "sidePanel_settings.filamentUnknown"));
                     loadedFilament.set(null);
                 }
+                
                 reelUniqueID.set(reelResponse.getReelUniqueID());
                 reelAmbientTemperature.set(reelResponse.getAmbientTemperature());
                 reelBedTemperature.set(reelResponse.getBedTemperature());
@@ -2674,6 +2681,7 @@ public class PrinterImpl implements Printer
                 reelFeedRateMultiplier.set(reelResponse.getFeedRateMultiplier());
                 reelRemainingFilament.set(reelResponse.getReelRemainingFilament());
                 reelFilamentDiameter.set(reelResponse.getFilamentDiameter());
+                reelFilamentIsMutable.set(reelTypeCode.get().startsWith(USER_FILAMENT_PREFIX));
                 reelDataChangedToggle.set(!reelDataChangedToggle.get());
                 break;
             case HEAD_EEPROM_DATA:
@@ -3564,5 +3572,10 @@ public class PrinterImpl implements Printer
     public void transmitWriteMaterialTemperatureToHeadEEPROM(int reelNozzleTemperature)
     {
 
+    }
+    
+    @Override
+    public BooleanProperty getReelFilamentIsMutable() {
+        return reelFilamentIsMutable;
     }
 }
