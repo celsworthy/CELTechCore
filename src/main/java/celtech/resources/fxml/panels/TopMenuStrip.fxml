@@ -9,7 +9,7 @@
     <children>
         <HBox alignment="CENTER_RIGHT" pickOnBounds="false" styleClass="menubar">
             <children>
-                <AboutButton fx:id="aboutButton" onAction="#aboutPressed" />
+                <HelpButton fx:id="helpButton" onAction="#helpPressed" />
                 <PreferencesButton fx:id="preferencesButton" onAction="#preferencesPressed" />
             </children>  
             <padding>

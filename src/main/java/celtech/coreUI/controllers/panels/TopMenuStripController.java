@@ -34,7 +34,7 @@ public class TopMenuStripController
     }
 
     @FXML
-    void aboutPressed(ActionEvent event)
+    void helpPressed(ActionEvent event)
     {
         applicationStatus.setMode(ApplicationMode.ABOUT);
     }

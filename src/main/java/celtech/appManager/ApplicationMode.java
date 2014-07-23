@@ -17,23 +17,22 @@ public enum ApplicationMode
      *
      */
     STATUS("printerStatus", null),
-    
     NOZZLE_OPEN_CALIBRATION("printerStatus", "CalibrationNozzleB"),
     NOZZLE_OFFSET_CALIBRATION("printerStatus", "CalibrationNozzleOffset"),
     PURGE("printerStatus", "purge"),
-
     ABOUT("printerStatus", "about"),
+    SYSTEM_INFORMATION("printerStatus", "systemInformation"),
     PREFERENCES_TOP_LEVEL("printerStatus", "preferencesTop"),
     /**
      *
      */
     LAYOUT("layout", null),
-
+    ADD_MODEL("layout", "loadModel"),
     /**
      *
      */
     SETTINGS("settings", null);
-    
+
     private final String sidePanelFXMLPrefix;
     private final String insetPanelFXMLPrefix;
 
@@ -60,8 +59,8 @@ public enum ApplicationMode
     {
         return ApplicationConfiguration.fxmlPanelResourcePath + sidePanelFXMLPrefix + "SlideOutPanel" + ".fxml";
     }
-    
-        /**
+
+    /**
      *
      * @return
      */

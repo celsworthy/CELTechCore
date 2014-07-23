@@ -13,12 +13,12 @@ import javafx.scene.control.Button;
  *
  * @author Ian
  */
-public class AboutButton extends Button
+public class AddToProjectButton extends Button
 {
-    public AboutButton()
+    public AddToProjectButton()
     {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
-            "/celtech/resources/fxml/buttons/aboutButton.fxml"));
+            "/celtech/resources/fxml/buttons/addToProjectButton.fxml"));
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
 

@@ -23,7 +23,7 @@ import javafx.scene.control.Label;
  *
  * @author Ian
  */
-public class AboutPanelController implements Initializable
+public class SystemInformationPanelController implements Initializable
 {
 
     private SettingsScreenState settingsScreenState = null;
@@ -51,13 +51,13 @@ public class AboutPanelController implements Initializable
     @FXML
     private void okPressed(ActionEvent event)
     {
-        ApplicationStatus.getInstance().returnToLastMode();
+        ApplicationStatus.getInstance().setMode(ApplicationMode.STATUS);
     }
 
     @FXML
     private void systemInformationPressed(ActionEvent event)
     {
-        ApplicationStatus.getInstance().setMode(ApplicationMode.SYSTEM_INFORMATION);        
+        ApplicationStatus.getInstance().setMode(ApplicationMode.ABOUT);        
     }
     
     @Override
