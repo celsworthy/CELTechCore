@@ -471,8 +471,10 @@ public class MaintenancePanelController implements Initializable
 
     private void setButtonVisibility()
     {
-        boolean printingdisabled = connectedPrinter.getPrinterStatus() != PrinterStatusEnumeration.IDLE;
-        boolean noFilamentOrPrintingdisabled = printingdisabled || (connectedPrinter.getFilament1Loaded() == false && connectedPrinter.getFilament2Loaded() == false);
+        boolean printingdisabled = connectedPrinter == null || 
+                        connectedPrinter.getPrinterStatus() != PrinterStatusEnumeration.IDLE;
+        boolean noFilamentOrPrintingdisabled = printingdisabled ||
+            (connectedPrinter.getFilament1Loaded() == false && connectedPrinter.getFilament2Loaded() == false);
 
         YTestButton.setDisable(printingdisabled);
 

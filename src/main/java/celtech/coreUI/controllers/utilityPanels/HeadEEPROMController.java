@@ -25,7 +25,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -87,7 +87,8 @@ public class HeadEEPROMController implements Initializable
     private ComboBox headTypeCombo;
 
     @FXML
-    private GridPane headEEPROMControls;
+    private VBox headFullContainer;
+    
 
 //    private BooleanProperty fastUpdates = new SimpleBooleanProperty(false);
     private Head temporaryHead = null;
@@ -187,6 +188,7 @@ public class HeadEEPROMController implements Initializable
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        try {
         temporaryHead = HeadContainer.getCompleteHeadList().get(0);
 
         eepromCommsError = new ModalDialog();
@@ -337,6 +339,9 @@ public class HeadEEPROMController implements Initializable
                 updateFieldsFromSelectedHead();
             }
         });
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
 
     }
 
@@ -347,7 +352,7 @@ public class HeadEEPROMController implements Initializable
 
             connectedPrinter.getHeadDataChangedToggle().removeListener(headDataChangeListener);
 
-            headEEPROMControls.visibleProperty().unbind();
+            headFullContainer.visibleProperty().unbind();
 
             connectedPrinter.headEEPROMStatusProperty().removeListener(headAttachListener);
 
@@ -365,7 +370,7 @@ public class HeadEEPROMController implements Initializable
             connectedPrinter = printer;
             connectedPrinter.getHeadDataChangedToggle().addListener(headDataChangeListener);
 
-            headEEPROMControls.visibleProperty().bind(
+            headFullContainer.visibleProperty().bind(
                 connectedPrinter.headEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
 
             connectedPrinter.headEEPROMStatusProperty().addListener(headAttachListener);

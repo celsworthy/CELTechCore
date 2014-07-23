@@ -41,16 +41,10 @@ public class ReelDataPanelController implements Initializable
     private RestrictedTextField reelAmbientTemperature;
 
     @FXML
-    private Button reelReadConfig;
-
-    @FXML
     private RestrictedTextField reelFilamentDiameter;
 
     @FXML
     private RestrictedTextField reelRemainingFilament;
-
-    @FXML
-    private Button reelFormatButton;
 
     @FXML
     private TextField reelTypeCode;
@@ -189,7 +183,6 @@ public class ReelDataPanelController implements Initializable
 
             connectedPrinter.reelDataChangedProperty().removeListener(reelDataChangeListener);
 
-            reelReadConfig.visibleProperty().unbind();
             reelWriteConfig.visibleProperty().unbind();
 
             connectedPrinter = null;
