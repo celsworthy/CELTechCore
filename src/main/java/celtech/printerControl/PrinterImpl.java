@@ -8,6 +8,7 @@ import celtech.configuration.FilamentContainer;
 import celtech.configuration.Head;
 import celtech.configuration.HeadContainer;
 import celtech.configuration.HeaterMode;
+import celtech.configuration.MaterialType;
 import celtech.configuration.PrintHead;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
@@ -3077,8 +3078,8 @@ public class PrinterImpl implements Printer
                                        filament.getFeedRateMultiplier(),
                                        filament.getRemainingFilament(),
                                        filament.getFriendlyFilamentName(),
-                                       filament.getMaterial().getFriendlyName(),
-                                       filament.getDisplayColour().hashCode());
+                                       filament.getMaterial(),
+                                       filament.getDisplayColour());
         return (AckResponse) printerCommsManager.submitForWrite(portName, writeReelEEPROM);
     }
 
@@ -3102,7 +3103,7 @@ public class PrinterImpl implements Printer
         float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature,
         float reelFilamentDiameter,
         float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament,
-        String friendlyName, String materialName, int displayColourHashCode) throws RoboxCommsException
+        String friendlyName, MaterialType materialType, Color displayColour) throws RoboxCommsException
     {
         WriteReelEEPROM writeReelEEPROM = (WriteReelEEPROM) RoboxTxPacketFactory.createPacket(
             TxPacketTypeEnum.WRITE_REEL_EEPROM);
@@ -3112,7 +3113,7 @@ public class PrinterImpl implements Printer
                                        reelAmbientTemperature, reelFilamentDiameter,
                                        reelFilamentMultiplier, reelFeedRateMultiplier,
                                        reelRemainingFilament,
-                                       friendlyName, materialName, displayColourHashCode);
+                                       friendlyName, materialType, displayColour);
         printerCommsManager.submitForWrite(portName, writeReelEEPROM);
     }
 

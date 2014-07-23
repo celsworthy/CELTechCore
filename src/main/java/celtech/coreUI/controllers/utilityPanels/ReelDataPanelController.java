@@ -6,6 +6,7 @@
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.configuration.EEPROMState;
+import celtech.configuration.MaterialType;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
@@ -20,6 +21,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -107,7 +109,7 @@ public class ReelDataPanelController implements Initializable
                 Float.valueOf(reelFilamentDiameter.getText()),
                 Float.valueOf(reelFilamentMultiplier.getText()), Float.valueOf(
                     reelFeedRateMultiplier.getText()), remainingFilament,
-                    reelFilamentName.getText(), "XYZ", 0);
+                    reelFilamentName.getText(), MaterialType.Nylon, Color.ALICEBLUE);
 
         } catch (RoboxCommsException ex)
         {

@@ -119,8 +119,8 @@ public class SmartPartProgrammerController implements Initializable
                                                      selectedFilament.getFeedRateMultiplier(),
                                                      remainingFilament,
                                                      selectedFilament.getFriendlyFilamentName(),
-                                                     selectedFilament.getMaterial().getFriendlyName(),
-                                                     selectedFilament.getDisplayColour().hashCode());
+                                                     selectedFilament.getMaterial(),
+                                                     selectedFilament.getDisplayColour());
 
             connectedPrinter.transmitReadReelEEPROM();
         } catch (RoboxCommsException ex)

@@ -151,6 +151,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
             
             String encodedFriendlyName = new String(byteData, byteOffset, FRIENDLY_NAME_LENGTH, charsetToUse);
             reelFriendlyName = StringToBase64Encoder.decode(encodedFriendlyName);
+            byteOffset += FRIENDLY_NAME_LENGTH;
             
             byteOffset += REEL_EEPROM_PADDING_LENGTH;
 

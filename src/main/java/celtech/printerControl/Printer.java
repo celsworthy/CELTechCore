@@ -8,6 +8,7 @@ import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.Head;
 import celtech.configuration.HeaterMode;
+import celtech.configuration.MaterialType;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
@@ -1344,7 +1345,7 @@ public interface Printer
     public void transmitWriteReelEEPROM(String reelTypeCode, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
             float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter,
             float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament,
-            String friendlyName, String materialName, int displayColourHashCode) throws RoboxCommsException;
+            String friendlyName, MaterialType materialType, Color displayColour) throws RoboxCommsException;
 
     /**
      *

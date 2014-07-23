@@ -4,9 +4,11 @@
  */
 package celtech.printerControl.comms.commands.tx;
 
+import celtech.configuration.MaterialType;
 import celtech.printerControl.comms.commands.StringToBase64Encoder;
 import celtech.utils.FixedDecimalFloatFormat;
 import java.io.UnsupportedEncodingException;
+import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -35,7 +37,7 @@ public class WriteReelEEPROM extends RoboxTxPacket
     public void populateEEPROM(String filamentID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
             float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter,
             float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament,
-            String friendlyName, String materialName, int displayColourHashCode)
+            String friendlyName, MaterialType materialType, Color displayColour)
     {
         StringBuilder payload = new StringBuilder();
 
