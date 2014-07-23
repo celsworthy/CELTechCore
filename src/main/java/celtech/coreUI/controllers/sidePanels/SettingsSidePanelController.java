@@ -655,7 +655,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             Filament filamentToSave = (Filament) profile;
 
             FilamentContainer.saveFilament(filamentToSave);
-            Filament chosenFilament = FilamentContainer.getFilamentByID(filamentToSave.getReelID());
+            Filament chosenFilament = FilamentContainer.getFilamentByID(filamentToSave.getFilamentID());
             materialChooser.getSelectionModel().select(chosenFilament);
         } else if (profile instanceof RoboxProfile)
         {
@@ -679,7 +679,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     Filament filamentToSave = materialDetailsController.getMaterialData();
                     FilamentContainer.saveFilament(filamentToSave);
 
-                    Filament chosenFilament = FilamentContainer.getFilamentByID(filamentToSave.getReelID());
+                    Filament chosenFilament = FilamentContainer.getFilamentByID(filamentToSave.getFilamentID());
                     materialChooser.getSelectionModel().select(chosenFilament);
                 } else
                 {

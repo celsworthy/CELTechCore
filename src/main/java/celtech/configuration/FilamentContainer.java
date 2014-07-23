@@ -187,14 +187,14 @@ public class FilamentContainer
             
             filamentProperties.setProperty(nameProperty, filament.getFriendlyFilamentName());
             filamentProperties.setProperty(materialProperty, filament.getMaterial().getFriendlyName());
-            if (filament.getReelID() == null)
+            if (filament.getFilamentID() == null)
             {
                 String userReelID = Filament.generateUserReelID();
-                filament.setReelID(userReelID);
+                filament.setFilamentID(userReelID);
                 filamentProperties.setProperty(reelIDProperty, userReelID);
             } else
             {
-                filamentProperties.setProperty(reelIDProperty, filament.getReelID());
+                filamentProperties.setProperty(reelIDProperty, filament.getFilamentID());
             }
             filamentProperties.setProperty(diameterProperty, floatConverter.toString(filament.getFilamentDiameter()));
             filamentProperties.setProperty(filamentMultiplierProperty, floatConverter.toString(filament.getFilamentMultiplier()));

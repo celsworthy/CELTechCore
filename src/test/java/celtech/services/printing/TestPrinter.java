@@ -1092,13 +1092,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public StringProperty getReelTypeCode()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public StringProperty getReelUniqueID()
+    public StringProperty getReelFilamentID()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -1307,7 +1301,8 @@ public class TestPrinter implements Printer
             float reelFirstLayerBedTemperature, float reelBedTemperature,
             float reelAmbientTemperature, float reelFilamentDiameter,
             float reelFilamentMultiplier, float reelFeedRateMultiplier,
-            float reelRemainingFilament) throws RoboxCommsException
+            float reelRemainingFilament,
+            String friendlyName, String materialName, int displayColourHashCode) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }

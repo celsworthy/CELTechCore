@@ -31,11 +31,16 @@ import libertysystems.stenographer.StenographerFactory;
 public class ReelDataPanelController implements Initializable
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(ReelDataPanelController.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        ReelDataPanelController.class.getName());
     private Printer connectedPrinter = null;
     private StatusScreenState statusScreenState = null;
+
+    @FXML
+    Pane reelContainer;
     
-    @FXML Pane reelContainer;
+    @FXML
+    private RestrictedTextField reelFilamentName;
 
     @FXML
     private RestrictedTextField reelFirstLayerBedTemperature;
@@ -50,7 +55,7 @@ public class ReelDataPanelController implements Initializable
     private RestrictedTextField reelRemainingFilament;
 
     @FXML
-    private TextField reelTypeCode;
+    private TextField filamentID;
 
     @FXML
     private RestrictedTextField reelNozzleTemperature;
@@ -69,13 +74,14 @@ public class ReelDataPanelController implements Initializable
 
     @FXML
     private Button reelWriteConfig;
-    
+
     @FXML
-    private Button saveFilamentAs;    
-    
+    private Button saveFilamentAs;
+
     @FXML
-    void filamentSaveAs(ActionEvent event)    {
-        
+    void filamentSaveAs(ActionEvent event)
+    {
+
     }
 
     @FXML
@@ -93,9 +99,15 @@ public class ReelDataPanelController implements Initializable
                 steno.error("Error parsing filament parameters");
             }
 
-            connectedPrinter.transmitWriteReelEEPROM(reelTypeCode.getText(), Float.valueOf(reelFirstLayerNozzleTemperature.getText()), Float.valueOf(reelNozzleTemperature.getText()),
-                                                     Float.valueOf(reelFirstLayerBedTemperature.getText()), Float.valueOf(reelBedTemperature.getText()), Float.valueOf(reelAmbientTemperature.getText()), Float.valueOf(reelFilamentDiameter.getText()),
-                                                     Float.valueOf(reelFilamentMultiplier.getText()), Float.valueOf(reelFeedRateMultiplier.getText()), remainingFilament);
+            connectedPrinter.transmitWriteReelEEPROM(
+                filamentID.getText(), Float.valueOf(reelFirstLayerNozzleTemperature.getText()),
+                Float.valueOf(reelNozzleTemperature.getText()),
+                Float.valueOf(reelFirstLayerBedTemperature.getText()), Float.valueOf(
+                    reelBedTemperature.getText()), Float.valueOf(reelAmbientTemperature.getText()),
+                Float.valueOf(reelFilamentDiameter.getText()),
+                Float.valueOf(reelFilamentMultiplier.getText()), Float.valueOf(
+                    reelFeedRateMultiplier.getText()), remainingFilament,
+                    reelFilamentName.getText(), "XYZ", 0);
 
         } catch (RoboxCommsException ex)
         {
@@ -130,25 +142,40 @@ public class ReelDataPanelController implements Initializable
     private ChangeListener<Boolean> reelDataChangeListener = new ChangeListener<Boolean>()
     {
         @Override
-        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue,
+            Boolean newValue)
         {
-            
-           if  (connectedPrinter.getReelFilamentIsMutable().get()) {
-               reelContainer.disableProperty().set(false);
-           } else {
-               reelContainer.disableProperty().set(true);
-           }
-            
-            reelTypeCode.setText(connectedPrinter.getReelTypeCode().get());
-            reelAmbientTemperature.setText(String.format("%d", connectedPrinter.getReelAmbientTemperature().get()));
-            reelFirstLayerBedTemperature.setText(String.format("%d", connectedPrinter.getReelFirstLayerBedTemperature().get()));
-            reelBedTemperature.setText(String.format("%d", connectedPrinter.getReelBedTemperature().get()));
-            reelFirstLayerNozzleTemperature.setText(String.format("%d", connectedPrinter.getReelFirstLayerNozzleTemperature().get()));
-            reelNozzleTemperature.setText(String.format("%d", connectedPrinter.getReelNozzleTemperature().get()));
-            reelFilamentMultiplier.setText(String.format("%.2f", connectedPrinter.getReelFilamentMultiplier().get()));
-            reelFeedRateMultiplier.setText(String.format("%.2f", connectedPrinter.getReelFeedRateMultiplier().get()));
-            reelRemainingFilament.setText(String.format("%.0f", connectedPrinter.getReelRemainingFilament().get()));
-            reelFilamentDiameter.setText(String.format("%.2f", connectedPrinter.getReelFilamentDiameter().get()));
+
+            if (connectedPrinter.getReelFilamentIsMutable().get())
+            {
+                reelContainer.disableProperty().set(false);
+                reelWriteConfig.disableProperty().set(false);
+            } else
+            {
+                reelContainer.disableProperty().set(true);
+                reelWriteConfig.disableProperty().set(true);
+            }
+
+            filamentID.setText(connectedPrinter.getReelFilamentID().get());
+            reelAmbientTemperature.setText(String.format("%d",
+                                                         connectedPrinter.getReelAmbientTemperature().get()));
+            reelFirstLayerBedTemperature.setText(String.format("%d",
+                                                               connectedPrinter.getReelFirstLayerBedTemperature().get()));
+            reelBedTemperature.setText(String.format("%d",
+                                                     connectedPrinter.getReelBedTemperature().get()));
+            reelFirstLayerNozzleTemperature.setText(String.format("%d",
+                                                                  connectedPrinter.getReelFirstLayerNozzleTemperature().get()));
+            reelNozzleTemperature.setText(String.format("%d",
+                                                        connectedPrinter.getReelNozzleTemperature().get()));
+            reelFilamentMultiplier.setText(String.format("%.2f",
+                                                         connectedPrinter.getReelFilamentMultiplier().get()));
+            reelFeedRateMultiplier.setText(String.format("%.2f",
+                                                         connectedPrinter.getReelFeedRateMultiplier().get()));
+            reelRemainingFilament.setText(String.format("%.0f",
+                                                        connectedPrinter.getReelRemainingFilament().get()));
+            reelFilamentDiameter.setText(String.format("%.2f",
+                                                       connectedPrinter.getReelFilamentDiameter().get()));
+            reelFilamentName.setText(connectedPrinter.getReelFriendlyName());
         }
     };
     /*
@@ -160,23 +187,25 @@ public class ReelDataPanelController implements Initializable
     {
         statusScreenState = StatusScreenState.getInstance();
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
-        {
-
-            @Override
-            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
+        statusScreenState.currentlySelectedPrinterProperty().addListener(
+            new ChangeListener<Printer>()
             {
-                if (connectedPrinter != null)
-                {
-                    unbindFromPrinter(connectedPrinter);
-                }
 
-                if (newValue != null)
+                @Override
+                public void changed(ObservableValue<? extends Printer> observable, Printer oldValue,
+                    Printer newValue)
                 {
-                    bindToPrinter(newValue);
+                    if (connectedPrinter != null)
+                    {
+                        unbindFromPrinter(connectedPrinter);
+                    }
+
+                    if (newValue != null)
+                    {
+                        bindToPrinter(newValue);
+                    }
                 }
-            }
-        });
+            });
     }
 
     private void unbindFromPrinter(Printer printer)
@@ -188,6 +217,7 @@ public class ReelDataPanelController implements Initializable
             connectedPrinter.reelDataChangedProperty().removeListener(reelDataChangeListener);
 
             reelWriteConfig.visibleProperty().unbind();
+            saveFilamentAs.visibleProperty().unbind();
 
             connectedPrinter = null;
         }
@@ -199,11 +229,15 @@ public class ReelDataPanelController implements Initializable
         {
             connectedPrinter = printer;
 
-            reelContainer.visibleProperty().bind(connectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
+            reelContainer.visibleProperty().bind(
+                connectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
 
             connectedPrinter.reelDataChangedProperty().addListener(reelDataChangeListener);
 
-            reelWriteConfig.visibleProperty().bind(connectedPrinter.reelEEPROMStatusProperty().isNotEqualTo(EEPROMState.NOT_PRESENT));
+            reelWriteConfig.visibleProperty().bind(
+                connectedPrinter.reelEEPROMStatusProperty().isNotEqualTo(EEPROMState.NOT_PRESENT));
+            saveFilamentAs.visibleProperty().bind(
+                connectedPrinter.reelEEPROMStatusProperty().isNotEqualTo(EEPROMState.NOT_PRESENT));
         }
     }
 }

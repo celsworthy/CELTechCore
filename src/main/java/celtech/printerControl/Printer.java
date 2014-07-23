@@ -1068,13 +1068,7 @@ public interface Printer
      *
      * @return
      */
-    public StringProperty getReelTypeCode();
-
-    /**
-     *
-     * @return
-     */
-    public StringProperty getReelUniqueID();
+    public StringProperty getReelFilamentID();
 
     /*
      *
@@ -1349,7 +1343,8 @@ public interface Printer
      */
     public void transmitWriteReelEEPROM(String reelTypeCode, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
             float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter,
-            float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament) throws RoboxCommsException;
+            float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament,
+            String friendlyName, String materialName, int displayColourHashCode) throws RoboxCommsException;
 
     /**
      *

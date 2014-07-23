@@ -1,5 +1,8 @@
 package celtech.printerControl.comms.commands.rx;
 
+import celtech.printerControl.comms.commands.StringToBase64Encoder;
+import static celtech.printerControl.comms.commands.tx.WriteReelEEPROM.FRIENDLY_NAME_LENGTH;
+import static celtech.printerControl.comms.commands.tx.WriteReelEEPROM.REEL_EEPROM_PADDING_LENGTH;
 import celtech.utils.FixedDecimalFloatFormat;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
@@ -17,8 +20,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
     private final int materialTypeCodeBytes = 16;
     private final int uniqueIDBytes = 24;
 
-    private String reelTypeCode;
-    private String reelUniqueID;
+    private String reelFilamentID;
     private int reelFirstLayerNozzleTemperature;
     private int reelNozzleTemperature;
     private int reelFirstLayerBedTemperature;
@@ -28,6 +30,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
     private float reelFilamentMultiplier;
     private float reelFeedRateMultiplier;
     private float reelRemainingFilament;
+    private String reelFriendlyName;
 
     /**
      *
@@ -53,10 +56,9 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
         {
             int byteOffset = 1;
 
-            reelTypeCode = (new String(byteData, byteOffset, materialTypeCodeBytes, charsetToUse)).trim();
+            reelFilamentID = (new String(byteData, byteOffset, materialTypeCodeBytes, charsetToUse)).trim();
             byteOffset += materialTypeCodeBytes;
 
-            reelUniqueID = (new String(byteData, byteOffset, uniqueIDBytes, charsetToUse)).trim();
             byteOffset += uniqueIDBytes;
 
             String firstLayerNozzleTempString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
@@ -146,8 +148,11 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
             {
                 steno.error("Couldn't parse extrusion multiplier - " + feedRateMultiplierString);
             }
-
-            byteOffset += 80;
+            
+            String encodedFriendlyName = new String(byteData, byteOffset, FRIENDLY_NAME_LENGTH, charsetToUse);
+            reelFriendlyName = StringToBase64Encoder.decode(encodedFriendlyName);
+            
+            byteOffset += REEL_EEPROM_PADDING_LENGTH;
 
             String remainingLengthString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
@@ -193,18 +198,13 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
      *
      * @return
      */
-    public String getReelTypeCode()
+    public String getReelFilamentID()
     {
-        return reelTypeCode;
+        return reelFilamentID;
     }
-
-    /**
-     *
-     * @return
-     */
-    public String getReelUniqueID()
-    {
-        return reelUniqueID;
+    
+    public String getReelFriendlyName() {
+        return reelFriendlyName;
     }
 
     /**

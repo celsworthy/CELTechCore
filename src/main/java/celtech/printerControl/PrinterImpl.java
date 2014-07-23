@@ -219,8 +219,7 @@ public class PrinterImpl implements Printer
     private final FloatProperty reelFeedRateMultiplier = new SimpleFloatProperty(0);
     private final FloatProperty reelFilamentMultiplier = new SimpleFloatProperty(0);
     private final FloatProperty reelRemainingFilament = new SimpleFloatProperty(0);
-    private final StringProperty reelTypeCode = new SimpleStringProperty("unknown");
-    private final StringProperty reelUniqueID = new SimpleStringProperty("unknown");
+    private final StringProperty reelFilamentID = new SimpleStringProperty("unknown");
 
     private final BooleanProperty NozzleHomed = new SimpleBooleanProperty(false);
     private final BooleanProperty LidOpen = new SimpleBooleanProperty(false);
@@ -2039,24 +2038,11 @@ public class PrinterImpl implements Printer
      * @return
      */
     @Override
-    public StringProperty getReelTypeCode()
+    public StringProperty getReelFilamentID()
     {
-        return reelTypeCode;
+        return reelFilamentID;
     }
 
-    /**
-     *
-     * @return
-     */
-    @Override
-    public StringProperty getReelUniqueID()
-    {
-        return reelUniqueID;
-    }
-
-    /*
-     *
-     */
     /**
      *
      * @return
@@ -2510,7 +2496,6 @@ public class PrinterImpl implements Printer
                     loadedFilament.set(null);
                     reelFriendlyName.set(DisplayManager.getLanguageBundle().getString(
                         "smartReelProgrammer.noReelLoaded"));
-                    reelUniqueID.set(null);
                     reelAmbientTemperature.set(0);
                     reelBedTemperature.set(0);
                     reelFirstLayerBedTemperature.set(0);
@@ -2629,17 +2614,17 @@ public class PrinterImpl implements Printer
                 break;
             case REEL_EEPROM_DATA:
                 ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) printerEvent.getPayload();
-                reelTypeCode.set(reelResponse.getReelTypeCode());
+                reelFilamentID.set(reelResponse.getReelFilamentID());
                 try
                 {
                     Filament loadedFilamentCandidate = FilamentContainer.getFilamentByID(
-                        reelTypeCode.get());
+                        reelFilamentID.get());
                     if (loadedFilamentCandidate != null)
                     {
                         temporaryFilament.setFriendlyFilamentName(
                             loadedFilamentCandidate.getFriendlyFilamentName());
                         temporaryFilament.setMaterial(loadedFilamentCandidate.getMaterial());
-                        temporaryFilament.setReelID(reelResponse.getReelTypeCode());
+                        temporaryFilament.setFilamentID(reelResponse.getReelFilamentID());
                         temporaryFilament.setDisplayColour(
                             loadedFilamentCandidate.getDisplayColour());
                         temporaryFilament.setAmbientTemperature(reelResponse.getAmbientTemperature());
@@ -2649,7 +2634,7 @@ public class PrinterImpl implements Printer
                         temporaryFilament.setNozzleTemperature(reelResponse.getNozzleTemperature());
                         temporaryFilament.setFirstLayerNozzleTemperature(
                             reelResponse.getFirstLayerNozzleTemperature());
-                        temporaryFilament.setMutable(reelResponse.getReelTypeCode().startsWith(USER_FILAMENT_PREFIX));
+                        temporaryFilament.setMutable(reelResponse.getReelFilamentID().startsWith(USER_FILAMENT_PREFIX));
                         temporaryFilament.setFilamentMultiplier(reelResponse.getFilamentMultiplier());
                         temporaryFilament.setFeedRateMultiplier(reelResponse.getFeedRateMultiplier());
                         temporaryFilament.setRemainingFilament(
@@ -2670,7 +2655,7 @@ public class PrinterImpl implements Printer
                     loadedFilament.set(null);
                 }
                 
-                reelUniqueID.set(reelResponse.getReelUniqueID());
+                reelFriendlyName.set(reelResponse.getReelFriendlyName());
                 reelAmbientTemperature.set(reelResponse.getAmbientTemperature());
                 reelBedTemperature.set(reelResponse.getBedTemperature());
                 reelFirstLayerBedTemperature.set(reelResponse.getFirstLayerBedTemperature());
@@ -2680,7 +2665,7 @@ public class PrinterImpl implements Printer
                 reelFeedRateMultiplier.set(reelResponse.getFeedRateMultiplier());
                 reelRemainingFilament.set(reelResponse.getReelRemainingFilament());
                 reelFilamentDiameter.set(reelResponse.getFilamentDiameter());
-                reelFilamentIsMutable.set(reelTypeCode.get().startsWith(USER_FILAMENT_PREFIX));
+                reelFilamentIsMutable.set(reelFilamentID.get().startsWith(USER_FILAMENT_PREFIX));
                 reelDataChangedToggle.set(!reelDataChangedToggle.get());
                 break;
             case HEAD_EEPROM_DATA:
@@ -3081,7 +3066,7 @@ public class PrinterImpl implements Printer
     {
         WriteReelEEPROM writeReelEEPROM = (WriteReelEEPROM) RoboxTxPacketFactory.createPacket(
             TxPacketTypeEnum.WRITE_REEL_EEPROM);
-        writeReelEEPROM.populateEEPROM(filament.getReelID(),
+        writeReelEEPROM.populateEEPROM(filament.getFilamentID(),
                                        filament.getFirstLayerNozzleTemperature(),
                                        filament.getNozzleTemperature(),
                                        filament.getFirstLayerBedTemperature(),
@@ -3090,14 +3075,16 @@ public class PrinterImpl implements Printer
                                        filament.getFilamentDiameter(),
                                        filament.getFilamentMultiplier(),
                                        filament.getFeedRateMultiplier(),
-                                       filament.getRemainingFilament());
+                                       filament.getRemainingFilament(),
+                                       filament.getFriendlyFilamentName(),
+                                       filament.getMaterial().getFriendlyName(),
+                                       filament.getDisplayColour().hashCode());
         return (AckResponse) printerCommsManager.submitForWrite(portName, writeReelEEPROM);
     }
 
     /**
      *
      * @param filamentID
-     * @param reelUniqueID
      * @param reelFirstLayerNozzleTemperature
      * @param reelNozzleTemperature
      * @param reelFirstLayerBedTemperature
@@ -3114,7 +3101,8 @@ public class PrinterImpl implements Printer
         float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
         float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature,
         float reelFilamentDiameter,
-        float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament) throws RoboxCommsException
+        float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament,
+        String friendlyName, String materialName, int displayColourHashCode) throws RoboxCommsException
     {
         WriteReelEEPROM writeReelEEPROM = (WriteReelEEPROM) RoboxTxPacketFactory.createPacket(
             TxPacketTypeEnum.WRITE_REEL_EEPROM);
@@ -3123,7 +3111,8 @@ public class PrinterImpl implements Printer
                                        reelFirstLayerBedTemperature, reelBedTemperature,
                                        reelAmbientTemperature, reelFilamentDiameter,
                                        reelFilamentMultiplier, reelFeedRateMultiplier,
-                                       reelRemainingFilament);
+                                       reelRemainingFilament,
+                                       friendlyName, materialName, displayColourHashCode);
         printerCommsManager.submitForWrite(portName, writeReelEEPROM);
     }
 

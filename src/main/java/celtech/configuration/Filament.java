@@ -97,7 +97,7 @@ public class Filament implements Serializable, Cloneable
 
     public Filament(ReelEEPROMDataResponse response)
     {
-        this.filamentID.set(response.getReelTypeCode());
+        this.filamentID.set(response.getReelFilamentID());
         this.diameter.set(response.getFilamentDiameter());
         this.filamentMultiplier.set(response.getFilamentMultiplier());
         this.feedRateMultiplier.set(response.getFeedRateMultiplier());
@@ -139,7 +139,7 @@ public class Filament implements Serializable, Cloneable
      *
      * @return
      */
-    public String getReelID()
+    public String getFilamentID()
     {
         return filamentID.get();
     }
@@ -148,7 +148,7 @@ public class Filament implements Serializable, Cloneable
      *
      * @return
      */
-    public StringProperty getReelIDProperty()
+    public StringProperty getFilamentIDProperty()
     {
         return filamentID;
     }
@@ -364,7 +364,7 @@ public class Filament implements Serializable, Cloneable
      *
      * @param value
      */
-    public void setReelID(String value)
+    public void setFilamentID(String value)
     {
         this.filamentID.set(value);
     }
@@ -544,7 +544,7 @@ public class Filament implements Serializable, Cloneable
     {
         Filament clone = new Filament(this.getFriendlyFilamentName(),
                                       this.getMaterial(),
-                                      this.getReelID(),
+                                      this.getFilamentID(),
                                       this.getFilamentDiameter(),
                                       this.getFilamentMultiplier(),
                                       this.getFeedRateMultiplier(),
@@ -570,7 +570,7 @@ public class Filament implements Serializable, Cloneable
 
                 if (response != null)
                 {
-                    String receivedTypeCode = response.getReelTypeCode();
+                    String receivedTypeCode = response.getReelFilamentID();
 
                     // If we recognise a Robox filament check that it has the right settings 
                     if (receivedTypeCode != null)

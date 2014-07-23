@@ -108,7 +108,7 @@ public class SmartPartProgrammerController implements Initializable
                 remainingFilament = connectedPrinter.getReelRemainingFilament().get();
             }
 
-            connectedPrinter.transmitWriteReelEEPROM(selectedFilament.getReelID(),
+            connectedPrinter.transmitWriteReelEEPROM(selectedFilament.getFilamentID(),
                                                      selectedFilament.getFirstLayerNozzleTemperature(),
                                                      selectedFilament.getNozzleTemperature(),
                                                      selectedFilament.getFirstLayerBedTemperature(),
@@ -117,7 +117,10 @@ public class SmartPartProgrammerController implements Initializable
                                                      selectedFilament.getFilamentDiameter(),
                                                      selectedFilament.getFilamentMultiplier(),
                                                      selectedFilament.getFeedRateMultiplier(),
-                                                     remainingFilament);
+                                                     remainingFilament,
+                                                     selectedFilament.getFriendlyFilamentName(),
+                                                     selectedFilament.getMaterial().getFriendlyName(),
+                                                     selectedFilament.getDisplayColour().hashCode());
 
             connectedPrinter.transmitReadReelEEPROM();
         } catch (RoboxCommsException ex)
