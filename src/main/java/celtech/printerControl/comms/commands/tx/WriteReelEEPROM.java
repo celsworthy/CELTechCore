@@ -28,7 +28,7 @@ public class WriteReelEEPROM extends RoboxTxPacket
 
     /**
      *
-     * @param reelTypeCode
+     * @param filamentID
      * @param reelUniqueID
      * @param reelFirstLayerNozzleTemperature
      * @param reelNozzleTemperature
@@ -40,7 +40,7 @@ public class WriteReelEEPROM extends RoboxTxPacket
      * @param reelFeedRateMultiplier
      * @param reelRemainingFilament
      */
-    public void populateEEPROM(String reelTypeCode, String reelUniqueID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
+    public void populateEEPROM(String filamentID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
             float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter,
             float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament)
     {
@@ -48,8 +48,8 @@ public class WriteReelEEPROM extends RoboxTxPacket
 
         FixedDecimalFloatFormat decimalFloatFormatter = new FixedDecimalFloatFormat();
 
-        payload.append(String.format("%1$-16s", reelTypeCode));
-        payload.append(String.format("%1$-24s", reelUniqueID));
+        payload.append(String.format("%1$-16s", filamentID));
+        payload.append(String.format("%1$-24s", " "));
         payload.append(decimalFloatFormatter.format(reelFirstLayerNozzleTemperature));
         payload.append(decimalFloatFormatter.format(reelNozzleTemperature));
         payload.append(decimalFloatFormatter.format(reelFirstLayerBedTemperature));

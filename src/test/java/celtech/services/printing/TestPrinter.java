@@ -1302,7 +1302,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void transmitWriteReelEEPROM(String reelTypeCode, String reelUniqueID,
+    public void transmitWriteReelEEPROM(String reelTypeCode, 
             float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
             float reelFirstLayerBedTemperature, float reelBedTemperature,
             float reelAmbientTemperature, float reelFilamentDiameter,

@@ -183,7 +183,7 @@ public class HeadEEPROMController implements Initializable
     }
 
     /**
-     * Initializes the controller class.
+     * Initialises the controller class.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
@@ -358,7 +358,6 @@ public class HeadEEPROMController implements Initializable
 
             connectedPrinter = null;
 
-//            configurationPage.setVisible(false);
         }
 
     }
@@ -375,7 +374,6 @@ public class HeadEEPROMController implements Initializable
 
             connectedPrinter.headEEPROMStatusProperty().addListener(headAttachListener);
 
-//            configurationPage.setVisible(true);
         }
     }
 

@@ -65,13 +65,18 @@ public class ReelDataPanelController implements Initializable
     private RestrictedTextField reelFilamentMultiplier;
 
     @FXML
-    private RestrictedTextField reelUniqueID;
-
-    @FXML
     private RestrictedTextField reelBedTemperature;
 
     @FXML
     private Button reelWriteConfig;
+    
+    @FXML
+    private Button saveFilamentAs;    
+    
+    @FXML
+    void filamentSaveAs(ActionEvent event)    {
+        
+    }
 
     @FXML
     void writeReelConfig(ActionEvent event)
@@ -88,7 +93,7 @@ public class ReelDataPanelController implements Initializable
                 steno.error("Error parsing filament parameters");
             }
 
-            connectedPrinter.transmitWriteReelEEPROM(reelTypeCode.getText(), reelUniqueID.getText(), Float.valueOf(reelFirstLayerNozzleTemperature.getText()), Float.valueOf(reelNozzleTemperature.getText()),
+            connectedPrinter.transmitWriteReelEEPROM(reelTypeCode.getText(), Float.valueOf(reelFirstLayerNozzleTemperature.getText()), Float.valueOf(reelNozzleTemperature.getText()),
                                                      Float.valueOf(reelFirstLayerBedTemperature.getText()), Float.valueOf(reelBedTemperature.getText()), Float.valueOf(reelAmbientTemperature.getText()), Float.valueOf(reelFilamentDiameter.getText()),
                                                      Float.valueOf(reelFilamentMultiplier.getText()), Float.valueOf(reelFeedRateMultiplier.getText()), remainingFilament);
 
@@ -135,7 +140,6 @@ public class ReelDataPanelController implements Initializable
            }
             
             reelTypeCode.setText(connectedPrinter.getReelTypeCode().get());
-            reelUniqueID.setText(connectedPrinter.getReelUniqueID().get());
             reelAmbientTemperature.setText(String.format("%d", connectedPrinter.getReelAmbientTemperature().get()));
             reelFirstLayerBedTemperature.setText(String.format("%d", connectedPrinter.getReelFirstLayerBedTemperature().get()));
             reelBedTemperature.setText(String.format("%d", connectedPrinter.getReelBedTemperature().get()));

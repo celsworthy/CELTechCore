@@ -2642,7 +2642,6 @@ public class PrinterImpl implements Printer
                         temporaryFilament.setReelID(reelResponse.getReelTypeCode());
                         temporaryFilament.setDisplayColour(
                             loadedFilamentCandidate.getDisplayColour());
-                        temporaryFilament.setUniqueID(reelResponse.getReelUniqueID());
                         temporaryFilament.setAmbientTemperature(reelResponse.getAmbientTemperature());
                         temporaryFilament.setBedTemperature(reelResponse.getBedTemperature());
                         temporaryFilament.setFirstLayerBedTemperature(
@@ -3083,7 +3082,6 @@ public class PrinterImpl implements Printer
         WriteReelEEPROM writeReelEEPROM = (WriteReelEEPROM) RoboxTxPacketFactory.createPacket(
             TxPacketTypeEnum.WRITE_REEL_EEPROM);
         writeReelEEPROM.populateEEPROM(filament.getReelID(),
-                                       filament.getUniqueID(),
                                        filament.getFirstLayerNozzleTemperature(),
                                        filament.getNozzleTemperature(),
                                        filament.getFirstLayerBedTemperature(),
@@ -3098,7 +3096,7 @@ public class PrinterImpl implements Printer
 
     /**
      *
-     * @param reelTypeCode
+     * @param filamentID
      * @param reelUniqueID
      * @param reelFirstLayerNozzleTemperature
      * @param reelNozzleTemperature
@@ -3112,7 +3110,7 @@ public class PrinterImpl implements Printer
      * @throws RoboxCommsException
      */
     @Override
-    public void transmitWriteReelEEPROM(String reelTypeCode, String reelUniqueID,
+    public void transmitWriteReelEEPROM(String filamentID,
         float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
         float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature,
         float reelFilamentDiameter,
@@ -3120,7 +3118,7 @@ public class PrinterImpl implements Printer
     {
         WriteReelEEPROM writeReelEEPROM = (WriteReelEEPROM) RoboxTxPacketFactory.createPacket(
             TxPacketTypeEnum.WRITE_REEL_EEPROM);
-        writeReelEEPROM.populateEEPROM(reelTypeCode, reelUniqueID, reelFirstLayerNozzleTemperature,
+        writeReelEEPROM.populateEEPROM(filamentID, reelFirstLayerNozzleTemperature,
                                        reelNozzleTemperature,
                                        reelFirstLayerBedTemperature, reelBedTemperature,
                                        reelAmbientTemperature, reelFilamentDiameter,

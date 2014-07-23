@@ -1347,7 +1347,7 @@ public interface Printer
      * @param reelRemainingFilament
      * @throws RoboxCommsException
      */
-    public void transmitWriteReelEEPROM(String reelTypeCode, String reelUniqueID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
+    public void transmitWriteReelEEPROM(String reelTypeCode, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
             float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter,
             float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament) throws RoboxCommsException;
 

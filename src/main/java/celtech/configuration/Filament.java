@@ -34,8 +34,7 @@ public class Filament implements Serializable, Cloneable
     private final BooleanProperty mutable = new SimpleBooleanProperty(false);
     private final StringProperty friendlyFilamentName = new SimpleStringProperty("");
     private final ObjectProperty<MaterialType> material = new SimpleObjectProperty();
-    private final StringProperty reelID = new SimpleStringProperty();
-    private final StringProperty uniqueID = new SimpleStringProperty("");
+    private final StringProperty filamentID = new SimpleStringProperty();
 
     private final FloatProperty diameter = new SimpleFloatProperty(0);
     private final FloatProperty filamentMultiplier = new SimpleFloatProperty(0);
@@ -83,7 +82,7 @@ public class Filament implements Serializable, Cloneable
     {
         this.friendlyFilamentName.set(friendlyFilamentName);
         this.material.set(material);
-        this.reelID.set(reelID);
+        this.filamentID.set(reelID);
         this.diameter.set(diameter);
         this.filamentMultiplier.set(filamentMultiplier);
         this.feedRateMultiplier.set(feedRateMultiplier);
@@ -98,7 +97,7 @@ public class Filament implements Serializable, Cloneable
 
     public Filament(ReelEEPROMDataResponse response)
     {
-        this.reelID.set(response.getReelTypeCode());
+        this.filamentID.set(response.getReelTypeCode());
         this.diameter.set(response.getFilamentDiameter());
         this.filamentMultiplier.set(response.getFilamentMultiplier());
         this.feedRateMultiplier.set(response.getFeedRateMultiplier());
@@ -107,7 +106,6 @@ public class Filament implements Serializable, Cloneable
         this.requiredBedTemperature.set(response.getBedTemperature());
         this.requiredFirstLayerNozzleTemperature.set(response.getFirstLayerNozzleTemperature());
         this.requiredNozzleTemperature.set(response.getNozzleTemperature());
-        this.uniqueID.set(response.getReelUniqueID());
     }
 
     /**
@@ -143,7 +141,7 @@ public class Filament implements Serializable, Cloneable
      */
     public String getReelID()
     {
-        return reelID.get();
+        return filamentID.get();
     }
 
     /**
@@ -152,25 +150,7 @@ public class Filament implements Serializable, Cloneable
      */
     public StringProperty getReelIDProperty()
     {
-        return reelID;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public StringProperty getUniqueIDProperty()
-    {
-        return uniqueID;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public String getUniqueID()
-    {
-        return uniqueID.get();
+        return filamentID;
     }
 
     /**
@@ -386,16 +366,7 @@ public class Filament implements Serializable, Cloneable
      */
     public void setReelID(String value)
     {
-        this.reelID.set(value);
-    }
-
-    /**
-     *
-     * @param value
-     */
-    public void setUniqueID(String value)
-    {
-        this.uniqueID.set(value);
+        this.filamentID.set(value);
     }
 
     /**
@@ -534,9 +505,9 @@ public class Filament implements Serializable, Cloneable
         String prefix = null;
         String displayName = friendlyFilamentName.get() + " " + material.get();
 
-        if (reelID.get() != null)
+        if (filamentID.get() != null)
         {
-            if (reelID.get().startsWith("RBX"))
+            if (filamentID.get().startsWith("RBX"))
             {
                 prefix = "Robox® ";
             }

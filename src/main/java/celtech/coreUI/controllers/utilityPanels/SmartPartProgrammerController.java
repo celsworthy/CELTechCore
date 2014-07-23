@@ -109,7 +109,6 @@ public class SmartPartProgrammerController implements Initializable
             }
 
             connectedPrinter.transmitWriteReelEEPROM(selectedFilament.getReelID(),
-                                                     selectedFilament.getUniqueID(),
                                                      selectedFilament.getFirstLayerNozzleTemperature(),
                                                      selectedFilament.getNozzleTemperature(),
                                                      selectedFilament.getFirstLayerBedTemperature(),
