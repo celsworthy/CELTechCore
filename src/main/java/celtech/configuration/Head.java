@@ -666,47 +666,64 @@ public class Head implements Cloneable
      *
      * @param printer
      */
-    public static void softResetHead(Printer printer)
+    public static void hardResetHead(Printer printer)
     {
+        if (printer.getHeadEEPROMStatus() == EEPROMState.NOT_PROGRAMMED)
+        {
+            try
+            {
+                printer.transmitFormatHeadEEPROM();
+            } catch (RoboxCommsException ex)
+            {
+                steno.error("Error formatting head");
+            }
+        }
+
         try
         {
             HeadEEPROMDataResponse response = printer.transmitReadHeadEEPROM();
 
-            //We will only write defaults if we can tell what this head is...
             if (response != null)
             {
                 String receivedTypeCode = response.getTypeCode();
 
-                Head referenceHead = HeadContainer.getHeadByID(response.getTypeCode());
-                Head headToWrite = null;
-
-                if (referenceHead == null)
+                Head referenceHead = null;
+                if (receivedTypeCode != null)
                 {
-                    steno.warning("Request to soft reset head of unknown type - using default head settings");
-                    headToWrite = HeadContainer.getCompleteHeadList().get(0).clone();
-                } else
-                {
-                    headToWrite = referenceHead.clone();
+                    referenceHead = HeadContainer.getHeadByID(response.getTypeCode());
                 }
-
-                if (headToWrite != null)
+                
+                if (referenceHead != null)
                 {
+                    Head headToWrite = referenceHead.clone();
                     headToWrite.setUniqueID(response.getUniqueID());
                     headToWrite.setHeadHours(response.getHeadHours());
                     headToWrite.setLastFilamentTemperature(response.getLastFilamentTemperature());
 
                     printer.transmitWriteHeadEEPROM(headToWrite);
                     printer.transmitReadHeadEEPROM();
-                    steno.info("Updated head data at user request for " + headToWrite.getTypeCode());
+                    steno.info("Updated head data at user request for " + receivedTypeCode);
+                    showCalibrationDialogue();
+                } else
+                {
+                    Head headToWrite = HeadContainer.getCompleteHeadList().get(0).clone();
+                    String typeCode = headToWrite.getTypeCode();
+                    String idToCreate = typeCode + SystemUtils.generate16DigitID().substring(typeCode.length());
+                    headToWrite.setUniqueID(idToCreate);
+                    headToWrite.setLastFilamentTemperature(10);
+
+                    printer.transmitWriteHeadEEPROM(headToWrite);
+                    printer.transmitReadHeadEEPROM();
+                    steno.info("Updated head data at user request - type code could not be determined");
                     showCalibrationDialogue();
                 }
             } else
             {
-                steno.warning("Request to soft reset head of unknown type");
+                steno.warning("Request to hard reset head failed");
             }
         } catch (RoboxCommsException ex)
         {
-            steno.error("Error during soft reset of head");
+            steno.error("Error during hard reset of head");
         }
     }
 
