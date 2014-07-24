@@ -19,10 +19,14 @@ public class ColourStringConverter
                                                 ColourStringConverter.class.getName());
 
     /**
-     * Convert the RGB elements of a colour to a UTF8 string.
+     * Convert the RGB elements of a colour to a UTF8 string. If null is passed then return
+     * the value for Color.WHITE.
      */
     public static String colourToString(Color colour)
     {
+        if (colour == null) {
+            colour = Color.WHITE;
+        }
         int redValue = (int) (255 * colour.getRed());
         String redString = String.format("%02X", redValue);
         int greenValue = (int) (255 * colour.getGreen());

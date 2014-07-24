@@ -202,7 +202,9 @@ public class FilamentContainer
     }
 
     /**
-     *
+     * Save the given filament to file, using the friendly name and material type as file name.
+     * If a filament already exists of the same filamentID but different file name 
+     * then delete that file.
      * @param filament
      * @return
      */
@@ -240,12 +242,12 @@ public class FilamentContainer
                                              (int) (filament.getDisplayColour().getBlue() * 255));
             filamentProperties.setProperty(displayColourProperty, webColour);
             
-            String filename = constructFilePath(filament);
+            String newFilename = constructFilePath(filament);
             Optional<String> previousFileName = getCurrentFileNameForFilamentID(filament.getFilamentID());
             
-            File filamentFile = new File(filename);
+            File filamentFile = new File(newFilename);
             filamentProperties.store(new FileOutputStream(filamentFile), "Robox data");
-            if (previousFileName.isPresent()) {
+            if (previousFileName.isPresent() && ! previousFileName.get().equals(newFilename)) {
                 Files.delete(Paths.get(previousFileName.get()));
             }
             loadFilamentData();

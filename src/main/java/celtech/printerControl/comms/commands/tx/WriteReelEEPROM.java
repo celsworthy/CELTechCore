@@ -73,7 +73,11 @@ public class WriteReelEEPROM extends RoboxTxPacket
             friendlyNameEncoded = "";
         }
         payload.append(formatString(friendlyNameEncoded, FRIENDLY_NAME_LENGTH));
-        payload.append(EnumStringConverter.intToString(materialType.ordinal()));
+        String materialTypeInt = EnumStringConverter.intToString(0);
+        if (materialType != null) {
+            materialTypeInt = EnumStringConverter.intToString(materialType.ordinal());
+        }
+        payload.append(materialTypeInt);
 
         String paddedBlanks = formatString(" ", REEL_EEPROM_PADDING_LENGTH);
         payload.append(paddedBlanks);
