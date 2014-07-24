@@ -948,7 +948,9 @@ public class PrinterStatusPageController implements Initializable
     {
         try
         {
-            printerToUse.transmitDirectGCode(GCodeConstants.selectNozzle + nozzleNumber, true);
+            printerToUse.transmitDirectGCode(GCodeConstants.selectNozzle
+                + nozzleNumber,
+                                             true);
         } catch (RoboxCommsException ex)
         {
             steno.error("Error selecting nozzle");

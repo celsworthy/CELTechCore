@@ -1000,6 +1000,7 @@ table-view .column-header-background {
 
 .menubar{
     -fx-background-color: black;
+    -fx-padding: 5px;
 }
 
 .sidePanel{
@@ -1280,13 +1281,36 @@ table-view .column-header-background {
     -fx-border-insets: 1 1 1 1, 0;
 }
 
-.about-panel{
+.blue-inset-panel{
     -fx-background-color: blue_colour;
 }
 
-.about-text{
+.blue-inset-panel-text{
     -fx-fill: white;
 }
+
+.inset-panel{
+    -fx-background-color: light_grey;
+    -fx-padding: 20px;
+}
+
+.inset-panel-text{
+    -fx-fill: white;
+}
+
+.inset-panel-menu{
+    -fx-background-color: light_grey;
+}
+
+.inset-panel-menu-title{
+    -fx-fill: white;
+    -fx-font-size:28pt;
+}
+
+.inset-panel-menu-item{
+    -fx-fill: white;
+}
+
 // TODO: Remove when custom control for menu strip introduced
 
 #snapToGroundButton {

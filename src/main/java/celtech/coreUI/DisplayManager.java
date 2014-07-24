@@ -409,7 +409,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
         slideoutAndProjectHolder.setPrefSize(-1, -1);
         slideoutAndProjectHolder.getStyleClass().add("master-details-pane");
         HBox.setHgrow(slideoutAndProjectHolder, Priority.ALWAYS);
-
+        
         HBox.setHgrow(rhPanel, Priority.ALWAYS);
 
         try
@@ -755,7 +755,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             ((ProjectTab) currentTab).autoLayout();
         }
     }
-
+    
     /**
      *
      */

@@ -8,9 +8,6 @@ package celtech.coreUI.controllers.panels;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
-import celtech.appManager.ProjectMode;
-import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.DirectoryMemoryProperty;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
@@ -22,13 +19,8 @@ import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.utils.PrinterUtils;
-import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
 import java.util.ResourceBundle;
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
@@ -40,7 +32,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.HBox;
-import javafx.stage.FileChooser;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -55,9 +46,7 @@ public class LayoutStatusMenuStripController
     private SettingsScreenState settingsScreenState = null;
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
-    private final FileChooser modelFileChooser = new FileChooser();
     private Project boundProject = null;
-    private ResourceBundle i18nBundle = null;
     private PrinterUtils printerUtils = null;
 
     @FXML
@@ -151,69 +140,7 @@ public class LayoutStatusMenuStripController
     @FXML
     void addModel(ActionEvent event)
     {
-        Platform.runLater(() ->
-        {
-            ListIterator iterator = modelFileChooser.getExtensionFilters().listIterator();
-
-            while (iterator.hasNext())
-            {
-                iterator.next();
-                iterator.remove();
-            }
-
-            ProjectMode projectMode = ProjectMode.NONE;
-
-            if (displayManager.getCurrentlyVisibleProject() != null)
-            {
-                projectMode = displayManager.getCurrentlyVisibleProject().getProjectMode();
-            }
-
-            String descriptionOfFile = null;
-
-            switch (projectMode)
-            {
-                case NONE:
-                    descriptionOfFile = i18nBundle.getString("dialogs.anyFileChooserDescription");
-                    break;
-                case MESH:
-                    descriptionOfFile = i18nBundle.getString("dialogs.meshFileChooserDescription");
-                    break;
-                case GCODE:
-                    descriptionOfFile = i18nBundle.getString("dialogs.gcodeFileChooserDescription");
-                    break;
-                default:
-                    break;
-            }
-            modelFileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter(descriptionOfFile,
-                                                ApplicationConfiguration.getSupportedFileExtensionWildcards(
-                                                    projectMode)));
-
-            modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(
-                DirectoryMemoryProperty.MODEL)));
-
-            List<File> files;
-            if (projectMode == ProjectMode.NONE || projectMode == ProjectMode.MESH)
-            {
-                files = modelFileChooser.showOpenMultipleDialog(displayManager.getMainStage());
-            } else
-            {
-                File file = modelFileChooser.showOpenDialog(displayManager.getMainStage());
-                files = new ArrayList<>();
-                if (file != null)
-                {
-                    files.add(file);
-                }
-            }
-
-            if (files != null && !files.isEmpty())
-            {
-                ApplicationConfiguration.setLastDirectory(
-                    DirectoryMemoryProperty.MODEL,
-                    files.get(0).getParentFile().getAbsolutePath());
-                displayManager.loadExternalModels(files, true);
-            }
-        });
+        applicationStatus.setMode(ApplicationMode.ADD_MODEL);
     }
 
     @FXML
@@ -250,7 +177,6 @@ public class LayoutStatusMenuStripController
     void initialize()
     {
         displayManager = DisplayManager.getInstance();
-        i18nBundle = DisplayManager.getLanguageBundle();
         applicationStatus = ApplicationStatus.getInstance();
         settingsScreenState = SettingsScreenState.getInstance();
         printerUtils = PrinterUtils.getInstance();
@@ -287,25 +213,14 @@ public class LayoutStatusMenuStripController
                 }
             }
         });
-
-        layoutButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
-            ApplicationMode.LAYOUT));
-
-        modelFileChooser.setTitle(i18nBundle.getString("dialogs.modelFileChooser"));
-        modelFileChooser.getExtensionFilters().addAll(
-            new FileChooser.ExtensionFilter(i18nBundle.getString(
-                    "dialogs.modelFileChooserDescription"),
-                                            ApplicationConfiguration.getSupportedFileExtensionWildcards(
-                                                ProjectMode.NONE)));
-
+        
+        layoutButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LAYOUT));
     }
 
     /**
-     * Binds button disabled properties to the selection container This disables and enables buttons
-     * depending on whether a model is selected
+     * Binds button disabled properties to the selection container This disables and enables buttons depending on whether a model is selected
      *
-     * @param selectionContainer The selection container associated with the currently displayed
-     * project.
+     * @param selectionContainer The selection container associated with the currently displayed project.
      */
     public void bindSelectedModels(ProjectTab projectTab)
     {
