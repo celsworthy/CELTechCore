@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import celtech.coreUI.components.buttons.* ?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.shape.*?>
+
+<BorderPane styleClass="menubar" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.LayoutStatusMenuStripController">
+    <right>
+        <StackPane>
+            <children>
+                <ForwardButton fx:id="forwardButton" onAction="#forwardPressed"/>
+                <PrintButton fx:id="printButton" onAction="#printPressed"/>
+            </children>
+        </StackPane>
+    </right>
+    <left>
+        <BackwardButton fx:id="backwardButton" onAction="#backwardPressed"/>
+    </left>
+    <center>
+        <HBox fx:id="layoutButtonHBox" alignment="CENTER">
+            <children>
+                <LoadModelButton fx:id="addModelButton" onAction="#addModel" />
+                <DeleteModelButton fx:id="deleteModelButton" onAction="#deleteModel" />
+                <CopyModelButton fx:id="duplicateModelButton" onAction="#copyModel" />
+                <SnapToGroundButton fx:id="snapToGroundButton" onAction="#snapToGround" />
+                <LayoutModelButton fx:id="distributeModelsButton" onAction="#autoLayoutModels" />
+            </children>
+        </HBox>
+    </center>
+</BorderPane>

@@ -8,6 +8,7 @@ import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.Head;
 import celtech.configuration.HeaterMode;
+import celtech.configuration.PauseStatus;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
@@ -480,19 +481,19 @@ public interface Printer
      *
      * @param value
      */
-    public void setPaused(boolean value);
+    public void setPauseStatus(PauseStatus value);
 
     /**
      *
      * @return
      */
-    public boolean getPaused();
+    public PauseStatus getPauseStatus();
 
     /**
      *
      * @return
      */
-    public BooleanProperty pausedProperty();
+    public ObjectProperty<PauseStatus> pauseStatusProperty();
 
     /**
      *

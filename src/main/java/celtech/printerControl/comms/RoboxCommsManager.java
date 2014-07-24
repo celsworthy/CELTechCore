@@ -144,7 +144,7 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
     @Override
     public void run()
     {
-//        enableNullPrinter(true);
+        enableNullPrinter(true);
 
         while (keepRunning)
         {

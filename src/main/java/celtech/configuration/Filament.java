@@ -593,10 +593,10 @@ public class Filament implements Serializable, Cloneable
     {
         try
         {
+            ReelEEPROMDataResponse response = printer.transmitReadReelEEPROM();
+
             if (ApplicationConfiguration.isAutoRepairReels())
             {
-                ReelEEPROMDataResponse response = printer.transmitReadReelEEPROM();
-
                 if (response != null)
                 {
                     String receivedTypeCode = response.getReelTypeCode();

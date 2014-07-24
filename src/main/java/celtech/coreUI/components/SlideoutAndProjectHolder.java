@@ -14,6 +14,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
@@ -106,6 +107,8 @@ public class SlideoutAndProjectHolder extends HBox
         slideButton.disableProperty().bind(panelToSlide.isNull());
 
         getChildren().addAll(slideOutHolder, slideButton, projectTabPaneHolder);
+        
+        HBox.setHgrow(projectTabPaneHolder, Priority.ALWAYS);
     }
 
     /**

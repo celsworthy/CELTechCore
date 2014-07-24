@@ -19,11 +19,12 @@ public class ApplicationStatus
 {
 
     private static ApplicationStatus instance = null;
-    private ObjectProperty<ApplicationMode> currentMode = new SimpleObjectProperty<ApplicationMode>(null);
-    private StringProperty modeStringProperty = new SimpleStringProperty();
-    private StringProperty modeDisplayStringProperty = new SimpleStringProperty();
+    private final ObjectProperty<ApplicationMode> currentMode = new SimpleObjectProperty<ApplicationMode>(null);
+    private final StringProperty modeStringProperty = new SimpleStringProperty();
+    private final StringProperty modeDisplayStringProperty = new SimpleStringProperty();
     private boolean expertMode = false;
-    private DoubleProperty averageTimePerFrameProperty = new SimpleDoubleProperty(0);
+    private final DoubleProperty averageTimePerFrameProperty = new SimpleDoubleProperty(0);
+    private static ApplicationMode lastMode = null;
 
     private ApplicationStatus()
     {
@@ -49,6 +50,7 @@ public class ApplicationStatus
      */
     public void setMode(ApplicationMode newMode)
     {
+        lastMode = currentMode.get();
         currentMode.setValue(newMode);
     }
 
@@ -113,5 +115,13 @@ public class ApplicationStatus
     public final DoubleProperty averageTimePerFrameProperty()
     {
         return averageTimePerFrameProperty;
+    }
+    
+    public void returnToLastMode()
+    {
+        if (lastMode != null)
+        {
+            setMode(lastMode);
+        }
     }
 }

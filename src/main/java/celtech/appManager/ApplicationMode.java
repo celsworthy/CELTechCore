@@ -16,23 +16,30 @@ public enum ApplicationMode
     /**
      *
      */
-    STATUS("printerStatus"),
-
+    STATUS("printerStatus", null),
+    NOZZLE_OPEN_CALIBRATION("printerStatus", "CalibrationNozzleB"),
+    NOZZLE_OFFSET_CALIBRATION("printerStatus", "CalibrationNozzleOffset"),
+    PURGE("printerStatus", "purge"),
+    ABOUT("printerStatus", "about"),
+    SYSTEM_INFORMATION("printerStatus", "systemInformation"),
+    PREFERENCES_TOP_LEVEL("printerStatus", "preferencesTop"),
     /**
      *
      */
-    LAYOUT("layout"),
-
+    LAYOUT("layout", null),
+    ADD_MODEL("layout", "loadModel"),
     /**
      *
      */
-    SETTINGS("settings");
-    
-    private final String contentFXMLPrefix;
+    SETTINGS("settings", null);
 
-    private ApplicationMode(String contentFXMLPrefix)
+    private final String sidePanelFXMLPrefix;
+    private final String insetPanelFXMLPrefix;
+
+    private ApplicationMode(String sidePanelFXMLPrefix, String insetPanelFXMLPrefix)
     {
-        this.contentFXMLPrefix = contentFXMLPrefix;
+        this.sidePanelFXMLPrefix = sidePanelFXMLPrefix;
+        this.insetPanelFXMLPrefix = insetPanelFXMLPrefix;
     }
 
     /**
@@ -41,7 +48,7 @@ public enum ApplicationMode
      */
     public String getSidePanelFXMLName()
     {
-        return ApplicationConfiguration.fxmlSidePanelResourcePath + contentFXMLPrefix + "SidePanel" + ".fxml";
+        return ApplicationConfiguration.fxmlPanelResourcePath + sidePanelFXMLPrefix + "SidePanel" + ".fxml";
     }
 
     /**
@@ -50,6 +57,16 @@ public enum ApplicationMode
      */
     public String getSlideOutFXMLName()
     {
-        return ApplicationConfiguration.fxmlSidePanelResourcePath + contentFXMLPrefix + "SlideOutPanel" + ".fxml";
+        return ApplicationConfiguration.fxmlPanelResourcePath + sidePanelFXMLPrefix + "SlideOutPanel" + ".fxml";
     }
+
+    /**
+     *
+     * @return
+     */
+    public String getInsetPanelFXMLName()
+    {
+        return ApplicationConfiguration.fxmlPanelResourcePath + insetPanelFXMLPrefix + "InsetPanel" + ".fxml";
+    }
+
 }
