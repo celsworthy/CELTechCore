@@ -31,7 +31,7 @@ public class WriteReelEEPROMTest
         float reelRemainingFilament = 99;
         String friendlyName = "NAME1";
         MaterialType materialType = MaterialType.ABS;
-        Color displayColour = Color.AQUA;
+        Color displayColour = Color.RED;
         WriteReelEEPROM instance = new WriteReelEEPROM();
         instance.populateEEPROM(filamentID, reelFirstLayerNozzleTemperature, reelNozzleTemperature,
                                 reelFirstLayerBedTemperature, reelBedTemperature,
@@ -40,7 +40,8 @@ public class WriteReelEEPROMTest
                                 materialType, displayColour);
         String bufferString = instance.messagePayload;
         assertEquals(192, bufferString.length());
-        assertEquals("ABCDEF                                        11      22      33      44      55      66      77      88TkFNRTE=                                                                              99", bufferString);
+        System.out.println(bufferString);
+        assertEquals("ABCDEF          FF0000                        11      22      33      44      55      66      77      88TkFNRTE=                      A                                                       99", bufferString);
     }
     
     @Test
@@ -58,7 +59,7 @@ public class WriteReelEEPROMTest
         float reelRemainingFilament = 99;
         String friendlyName = "سلام";
         MaterialType materialType = MaterialType.Nylon;
-        Color displayColour = Color.AZURE;
+        Color displayColour = Color.BLUE;
         WriteReelEEPROM instance = new WriteReelEEPROM();
         instance.populateEEPROM(filamentID, reelFirstLayerNozzleTemperature, reelNozzleTemperature,
                                 reelFirstLayerBedTemperature, reelBedTemperature,
@@ -67,7 +68,8 @@ public class WriteReelEEPROMTest
                                 materialType, displayColour);
         String bufferString = instance.messagePayload;
         assertEquals(192, bufferString.length());
-        assertEquals("ABCABC                                        11      22      33      44      55      66      77      882LPZhNin2YU=                                                                          99", bufferString);
+        System.out.println(bufferString);
+        assertEquals("ABCABC          0000FF                        11      22      33      44      55      66      77      882LPZhNin2YU=                  C                                                       99", bufferString);
     }    
 
   

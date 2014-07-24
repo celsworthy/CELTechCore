@@ -19,9 +19,10 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.ColorPicker;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -73,6 +74,12 @@ public class ReelDataPanelController implements Initializable
 
     @FXML
     private RestrictedTextField reelBedTemperature;
+    
+    @FXML
+    private ComboBox<MaterialType> reelMaterialType;
+    
+    @FXML
+    private ColorPicker reelDisplayColor;
 
     @FXML
     private Button reelWriteConfig;
@@ -109,7 +116,9 @@ public class ReelDataPanelController implements Initializable
                 Float.valueOf(reelFilamentDiameter.getText()),
                 Float.valueOf(reelFilamentMultiplier.getText()), Float.valueOf(
                     reelFeedRateMultiplier.getText()), remainingFilament,
-                    reelFilamentName.getText(), MaterialType.Nylon, Color.ALICEBLUE);
+                    reelFilamentName.getText(), 
+                    reelMaterialType.getSelectionModel().getSelectedItem(), 
+                    reelDisplayColor.getValue());
 
         } catch (RoboxCommsException ex)
         {
@@ -178,6 +187,9 @@ public class ReelDataPanelController implements Initializable
             reelFilamentDiameter.setText(String.format("%.2f",
                                                        connectedPrinter.getReelFilamentDiameter().get()));
             reelFilamentName.setText(connectedPrinter.getReelFriendlyName());
+            MaterialType reelMaterialTypeVal = connectedPrinter.getReelMaterialType();
+            reelMaterialType.getSelectionModel().select(reelMaterialTypeVal);
+            reelDisplayColor.setValue(connectedPrinter.getReelDisplayColour());
         }
     };
     /*
@@ -187,6 +199,11 @@ public class ReelDataPanelController implements Initializable
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        for (MaterialType materialType : MaterialType.values())
+        {
+            reelMaterialType.getItems().add(materialType);
+        }
+        
         statusScreenState = StatusScreenState.getInstance();
 
         statusScreenState.currentlySelectedPrinterProperty().addListener(

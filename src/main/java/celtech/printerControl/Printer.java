@@ -1010,6 +1010,10 @@ public interface Printer
      * @return
      */
     public String getReelFriendlyName();
+    
+    public MaterialType getReelMaterialType();
+    
+    public Color getReelDisplayColour();
 
     /**
      *

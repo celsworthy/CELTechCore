@@ -175,6 +175,8 @@ public class PrinterImpl implements Printer
     private final ObjectProperty<EEPROMState> reelEEPROMStatus = new SimpleObjectProperty<>(
         EEPROMState.NOT_PRESENT);
     private final StringProperty reelFriendlyName = new SimpleStringProperty();
+    private MaterialType reelMaterialType;
+    private Color reelDisplayColour;
 
     /*
      * Head parameters  - consider moving to a separate object?
@@ -1943,6 +1945,16 @@ public class PrinterImpl implements Printer
     {
         return reelFriendlyName.get();
     }
+    
+    @Override
+    public MaterialType getReelMaterialType() {
+        return reelMaterialType;
+    }
+    
+    @Override
+    public Color getReelDisplayColour() {
+        return reelDisplayColour;
+    }
 
     /**
      *
@@ -2657,6 +2669,8 @@ public class PrinterImpl implements Printer
                 }
                 
                 reelFriendlyName.set(reelResponse.getReelFriendlyName());
+                reelMaterialType = reelResponse.getReelMaterialType();
+                reelDisplayColour = reelResponse.getReelDisplayColour();
                 reelAmbientTemperature.set(reelResponse.getAmbientTemperature());
                 reelBedTemperature.set(reelResponse.getBedTemperature());
                 reelFirstLayerBedTemperature.set(reelResponse.getFirstLayerBedTemperature());
