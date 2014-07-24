@@ -4,6 +4,7 @@
  */
 package celtech.printerControl.comms.commands.tx;
 
+import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
 import celtech.printerControl.comms.commands.PrinterIDDataStructure;
 import celtech.printerControl.comms.commands.StringToBase64Encoder;
 import java.io.UnsupportedEncodingException;
@@ -86,16 +87,7 @@ public class WritePrinterID extends RoboxTxPacket
                                      printerFriendlyName));
         payload.append(secondPad);
 
-        int redValue = (int) (255 * colour.getRed());
-        String redString = String.format("%02X", redValue);
-        int greenValue = (int) (255 * colour.getGreen());
-        String greenString = String.format("%02X", greenValue);
-        int blueValue = (int) (255 * colour.getBlue());
-        String blueString = String.format("%02X", blueValue);
-
-        payload.append(redString);
-        payload.append(greenString);
-        payload.append(blueString);
+        payload.append(colourToString(colour));
 
         steno.info("Outputting string of length " + payload.length());
         this.setMessagePayload(payload.toString());

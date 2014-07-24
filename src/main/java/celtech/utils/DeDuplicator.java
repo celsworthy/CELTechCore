@@ -1,7 +1,7 @@
 /*
  * Copyright 2014 CEL UK
  */
-package celtech.coreUI;
+package celtech.utils;
 
 import java.util.Collection;
 

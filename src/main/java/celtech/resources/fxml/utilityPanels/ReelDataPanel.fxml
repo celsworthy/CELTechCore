@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import celtech.coreUI.components.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" maxWidth="1E308" styleClass="sidePanel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.ReelDataPanelController">
+    <children>         
+        <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <GridPane fx:id="reelContainer">
+                    <columnConstraints>
+                  <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="130.0" />
+                        <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" />
+                        <ColumnConstraints fillWidth="false" halignment="LEFT" />
+                  <ColumnConstraints fillWidth="false" halignment="LEFT" minWidth="10.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="10.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                    <children>
+                        <Label text="Filament ID" GridPane.rowIndex="1" />
+                        <Label text="Colour" GridPane.rowIndex="4" />
+                        <Label text="Material" GridPane.rowIndex="3" />
+                        <Label text="Name" GridPane.rowIndex="2" />                        
+                        <Label text="Diameter" GridPane.columnIndex="2" GridPane.rowIndex="8" />
+                        <Label text="Multiplier" GridPane.columnIndex="2" GridPane.rowIndex="9" />
+                        <Label text="Feed rt mult" GridPane.columnIndex="2" GridPane.rowIndex="10" />
+                        <Label text="First layer bed" GridPane.rowIndex="7" />
+                        <Label text="Bed" GridPane.rowIndex="8" />
+                        <Label text="First layer nozzle" GridPane.rowIndex="9" />
+                        <Label text="Nozzle" GridPane.rowIndex="10" />
+                        <Label text="Ambient" GridPane.rowIndex="11" />
+                        <Label text="Remaining" GridPane.columnIndex="2" GridPane.rowIndex="11" /> 
+                        <TextField fx:id="filamentID" disable="true" editable="false" prefWidth="140.0" styleClass="RestrictedTextField" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1" />
+                        <RestrictedTextField fx:id="reelFilamentName" forceUpperCase="false" maxLength="20" prefWidth="140.0" restrict="-_' 0-9\p{L}\p{M}*+" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2" />
+                        <RestrictedTextField fx:id="reelFilamentDiameter" maxLength="4" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="8" />
+                        <RestrictedTextField fx:id="reelFilamentMultiplier" maxLength="4" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="9" />
+                        <RestrictedTextField fx:id="reelFeedRateMultiplier" maxLength="4" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="10" />
+                        <RestrictedTextField fx:id="reelFirstLayerBedTemperature" maxLength="4" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                        <RestrictedTextField fx:id="reelBedTemperature" maxLength="8" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                        <RestrictedTextField id="firstLayerNozzleTemperature" fx:id="reelFirstLayerNozzleTemperature" maxLength="4" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                        <RestrictedTextField fx:id="reelNozzleTemperature" maxLength="4" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+                        <RestrictedTextField fx:id="reelAmbientTemperature" maxLength="8" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="11" />
+                        <RestrictedTextField fx:id="reelRemainingFilament" maxLength="8" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="11" />
+                  <ComboBox fx:id="reelMaterialType" maxHeight="25.0" prefWidth="150.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" />
+                  <ColorPicker fx:id="reelDisplayColor" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="4" />
+                  <Label text="Temp" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="5" GridPane.valignment="BOTTOM" />
+                  <Label text="Filament " GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="5" GridPane.valignment="BOTTOM" />
+                  <Separator prefWidth="100.0" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="6" />
+                  <Separator prefWidth="100.0" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="6" />
+                    </children>
+                </GridPane>
+                <HBox alignment="CENTER" prefHeight="-1.0" prefWidth="-1.0" spacing="10">
+                    <children>
+                        <Button fx:id="reelWriteConfig" mnemonicParsing="false" onAction="#writeReelConfig" text="Write To Reel" />
+                        <Button fx:id="saveFilamentAs" mnemonicParsing="false" onAction="#filamentSaveAs" text="Save As Filament..." />
+                    </children>
+                </HBox>
+                <fx:include source="/celtech/resources/fxml/utilityPanels/smartPartProgrammer.fxml"/>
+            </children>
+              
+        </VBox>                   
+    </children>
+</AnchorPane>

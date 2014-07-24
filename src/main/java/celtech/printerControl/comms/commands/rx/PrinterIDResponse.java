@@ -4,6 +4,7 @@
  */
 package celtech.printerControl.comms.commands.rx;
 
+import static celtech.printerControl.comms.commands.ColourStringConverter.stringToColor;
 import celtech.printerControl.comms.commands.PrinterIDDataStructure;
 import celtech.printerControl.comms.commands.StringToBase64Encoder;
 import celtech.printerControl.comms.commands.tx.WritePrinterID;
@@ -93,29 +94,11 @@ public class PrinterIDResponse extends RoboxRxPacket
 
             byteOffset += WritePrinterID.BYTES_FOR_SECOND_PAD;
 
-            try
-            {
-                String redDigits = new String(byteData, byteOffset, PrinterIDDataStructure.colourBytes, charsetToUse);
-                int redIntValue = Integer.parseInt(redDigits, 16);
-                double redValue = (double) redIntValue / 255;
-                byteOffset += PrinterIDDataStructure.colourBytes;
+            String colourDigits = new String(byteData, byteOffset, 
+                PrinterIDDataStructure.colourBytes * 3, charsetToUse);
+            byteOffset += PrinterIDDataStructure.colourBytes * 3;
 
-                String greenDigits = new String(byteData, byteOffset, PrinterIDDataStructure.colourBytes, charsetToUse);
-                int greenIntValue = Integer.parseInt(greenDigits, 16);
-                double greenValue = (double) greenIntValue / 255;
-                byteOffset += PrinterIDDataStructure.colourBytes;
-
-                String blueDigits = new String(byteData, byteOffset, PrinterIDDataStructure.colourBytes, charsetToUse);
-                int blueIntValue = Integer.parseInt(blueDigits, 16);
-                double blueValue = (double) blueIntValue / 255;
-                byteOffset += PrinterIDDataStructure.colourBytes;
-
-                printerColour = new Color(redValue, greenValue, blueValue, 1);
-            } catch (NumberFormatException ex)
-            {
-                steno.error("Failed to convert colour information");
-                printerColour = Color.WHITE;
-            }
+            printerColour = stringToColor(colourDigits);
 
             success = true;
 
