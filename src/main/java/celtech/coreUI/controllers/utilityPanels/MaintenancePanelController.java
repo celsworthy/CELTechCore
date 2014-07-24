@@ -42,7 +42,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
+import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -83,7 +83,16 @@ public class MaintenancePanelController implements Initializable
         @Override
         public void changed(ObservableValue<? extends PrinterStatusEnumeration> observable, PrinterStatusEnumeration oldValue, PrinterStatusEnumeration newValue)
         {
-            setPrintSensitiveButtonVisibility(newValue);
+            setButtonVisibility();
+        }
+    };
+
+    private ChangeListener<Boolean> filamentLoadedListener = new ChangeListener<Boolean>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+        {
+            setButtonVisibility();
         }
     };
 
@@ -127,7 +136,7 @@ public class MaintenancePanelController implements Initializable
     private GCodeMacroButton T0CleanButton;
 
     @FXML
-    private TextField currentFirmwareField;
+    private Label currentFirmwareField;
 
     @FXML
     private GCodeMacroButton LevelGantryButton;
@@ -223,7 +232,7 @@ public class MaintenancePanelController implements Initializable
     {
         if (needleValvecalibrationStage == null)
         {
-            needleValvecalibrationStage = new Stage(StageStyle.UTILITY);
+            needleValvecalibrationStage = new Stage(StageStyle.UNDECORATED);
             URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "CalibrationNozzleBPage.fxml");
             FXMLLoader needleValveCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, DisplayManager.getLanguageBundle());
             try
@@ -263,7 +272,7 @@ public class MaintenancePanelController implements Initializable
     {
         if (offsetCalibrationStage == null)
         {
-            offsetCalibrationStage = new Stage(StageStyle.UTILITY);
+            offsetCalibrationStage = new Stage(StageStyle.UNDECORATED);
             URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "CalibrationNozzleOffsetPage.fxml");
             FXMLLoader nozzleOffsetCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, DisplayManager.getLanguageBundle());
             try
@@ -275,14 +284,6 @@ public class MaintenancePanelController implements Initializable
                 offsetCalibrationStage.setScene(dialogScene);
                 offsetCalibrationStage.initOwner(DisplayManager.getMainStage());
                 offsetCalibrationStage.initModality(Modality.WINDOW_MODAL);
-                offsetCalibrationStage.setOnCloseRequest(new EventHandler<WindowEvent>()
-                {
-                    @Override
-                    public void handle(WindowEvent event)
-                    {
-                        nozzleOffsetCalibrationController.cancelCalibrationAction();
-                    }
-                });
             } catch (IOException ex)
             {
                 steno.error("Couldn't load nozzle offset calibration FXML");
@@ -363,10 +364,12 @@ public class MaintenancePanelController implements Initializable
             }
         });
 
+        currentFirmwareField.setStyle("-fx-font-weight: bold;");
+
         gcodeFileChooser.setTitle(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodeFileChooserTitle"));
         gcodeFileChooser.getExtensionFilters()
-                .addAll(
-                        new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodeFileDescription"), "*.gcode"));
+            .addAll(
+                new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodeFileDescription"), "*.gcode"));
 
         gcodePrintService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
         {
@@ -400,8 +403,8 @@ public class MaintenancePanelController implements Initializable
 
         firmwareFileChooser.setTitle(DisplayManager.getLanguageBundle().getString("maintenancePanel.firmwareFileChooserTitle"));
         firmwareFileChooser.getExtensionFilters()
-                .addAll(
-                        new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString("maintenancePanel.firmwareFileDescription"), "*.bin"));
+            .addAll(
+                new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString("maintenancePanel.firmwareFileDescription"), "*.bin"));
 
         firmwareLoadService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
         {
@@ -460,42 +463,53 @@ public class MaintenancePanelController implements Initializable
                 {
                     readFirmwareVersion();
                     connectedPrinter.printerStatusProperty().addListener(printerStatusListener);
-                    setPrintSensitiveButtonVisibility(connectedPrinter.getPrinterStatus());
+                    connectedPrinter.Filament1LoadedProperty().addListener(filamentLoadedListener);
+                    connectedPrinter.Filament2LoadedProperty().addListener(filamentLoadedListener);
+                    setButtonVisibility();
                 }
             }
         });
     }
 
-    private void setPrintSensitiveButtonVisibility(PrinterStatusEnumeration status)
+    private void setButtonVisibility()
     {
-        boolean visible = status != PrinterStatusEnumeration.IDLE;
+        boolean printingdisabled = false;
+        boolean noFilamentOrPrintingdisabled = printingdisabled || (connectedPrinter.getFilament1Loaded() == false && connectedPrinter.getFilament2Loaded() == false);
 
-        YTestButton.setDisable(visible);
+        if (connectedPrinter == null)
+        {
+            printingdisabled = true;
+        } else
+        {
+            printingdisabled = connectedPrinter.getPrinterStatus() != PrinterStatusEnumeration.IDLE;
+        }
 
-        PurgeMaterialButton.setDisable(visible);
+        YTestButton.setDisable(printingdisabled);
 
-        T1CleanButton.setDisable(visible);
+        PurgeMaterialButton.setDisable(noFilamentOrPrintingdisabled);
 
-        EjectStuckMaterialButton.setDisable(visible);
+        T1CleanButton.setDisable(noFilamentOrPrintingdisabled);
 
-        SpeedTestButton.setDisable(visible);
+        EjectStuckMaterialButton.setDisable(noFilamentOrPrintingdisabled);
 
-        CalibrateOffsetButton.setDisable(visible);
+        SpeedTestButton.setDisable(printingdisabled);
 
-        sendGCodeStreamGCodeMacroButton.setDisable(visible);
+        CalibrateOffsetButton.setDisable(noFilamentOrPrintingdisabled);
 
-        CalibrateBButton.setDisable(visible);
+        sendGCodeStreamGCodeMacroButton.setDisable(printingdisabled);
 
-        XTestButton.setDisable(visible);
+        CalibrateBButton.setDisable(noFilamentOrPrintingdisabled);
 
-        Level_YButton.setDisable(visible);
+        XTestButton.setDisable(printingdisabled);
 
-        T0CleanButton.setDisable(visible);
+        Level_YButton.setDisable(printingdisabled);
 
-        LevelGantryButton.setDisable(visible);
+        T0CleanButton.setDisable(noFilamentOrPrintingdisabled);
 
-        sendGCodeSDGCodeMacroButton.setDisable(visible);
+        LevelGantryButton.setDisable(printingdisabled);
 
-        ZTestButton.setDisable(visible);
+        sendGCodeSDGCodeMacroButton.setDisable(printingdisabled);
+
+        ZTestButton.setDisable(printingdisabled);
     }
 }

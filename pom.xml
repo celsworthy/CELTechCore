@@ -84,6 +84,11 @@
     </build>
     <dependencies>
         <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+            <version>1.9.13</version>
+        </dependency>        
+        <dependency>
             <groupId>LeapMotion</groupId>
             <artifactId>LeapJava</artifactId>
             <version>1.0.9.8391</version>
@@ -132,6 +137,11 @@
             <artifactId>junit</artifactId>
             <version>4.10</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jfxtras</groupId>
+            <artifactId>jfxtras-controls</artifactId>
+            <version>8.0-r1</version>
         </dependency>
         <dependency>
             <groupId>com.github.junrar</groupId>

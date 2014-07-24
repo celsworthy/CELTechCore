@@ -162,18 +162,19 @@
                             <children>
                                 <Label text="%sidePanel_layout.ScaleLabel" GridPane.columnIndex="0" />
                                 <Label text="%sidePanel_layout.RotationLabel" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                                <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                    <children>
-                                        <RestrictedNumberField fx:id="rotationTextField" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" text="-" />
-                                        <Label text="º" />
-                                    </children>
-                                </HBox>
                                 <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="1">
                                     <children>
                                         <RestrictedNumberField fx:id="scaleTextField" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" text="-" />
                                         <Label text="\%" />
                                     </children>
                                 </HBox>
+                                <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                    <children>
+                                        <RestrictedNumberField fx:id="rotationTextField" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" text="-" />
+                                        <Label text="°" />
+                                    </children>
+                                </HBox>
+                                
                             </children>
                             <columnConstraints>
                                 <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" percentWidth="50.0" />

@@ -12,10 +12,14 @@ public class Nozzle
     private double closedPosition = 0;
     private double openPosition = 1;
     private double allowedTravelBeforeClose = 3;
-    
+
     private double currentPosition = 0;
+    private double openOverVolume = -1;
+    private double preejectionVolume = 0;
     private double ejectionVolume = 0;
-    private double wipeVolume = 0;    
+    private double openValueAtMidPoint = -1;
+    private double midPointPercent = 50;
+    private double wipeVolume = 0;
     private double partialBMinimum = 0;
 
     /**
@@ -25,11 +29,15 @@ public class Nozzle
      * @param wipeVolume
      * @param partialBMinimum
      */
-    public Nozzle(int nozzleReferenceNumber, double ejectionVolume, double wipeVolume, double partialBMinimum)
+    public Nozzle(int nozzleReferenceNumber, double openOverVolume, double preejectionVolume, double ejectionVolume, double wipeVolume, double openValueAtMidPoint, double midPointPercent, double partialBMinimum)
     {
         this.nozzleReferenceNumber = nozzleReferenceNumber;
+        this.openOverVolume = openOverVolume;
+        this.preejectionVolume = preejectionVolume;
         this.ejectionVolume = ejectionVolume;
         this.wipeVolume = wipeVolume;
+        this.openValueAtMidPoint = openValueAtMidPoint;
+        this.midPointPercent = midPointPercent;
         this.partialBMinimum = partialBMinimum;
     }
 
@@ -41,7 +49,7 @@ public class Nozzle
     {
         return state;
     }
-    
+
     /**
      *
      * @return
@@ -50,7 +58,7 @@ public class Nozzle
     {
         return nozzleReferenceNumber;
     }
-    
+
     /**
      *
      * @return
@@ -59,7 +67,7 @@ public class Nozzle
     {
         return ejectionVolume;
     }
-    
+
     /**
      *
      * @return
@@ -68,7 +76,7 @@ public class Nozzle
     {
         return wipeVolume;
     }
-        
+
     /**
      *
      * @return
@@ -88,7 +96,7 @@ public class Nozzle
         state = NozzleState.CLOSED;
         return currentPosition;
     }
-    
+
     /**
      *
      * @return
@@ -99,7 +107,7 @@ public class Nozzle
         state = NozzleState.OPEN;
         return currentPosition;
     }
-    
+
     /**
      *
      * @return
@@ -107,5 +115,29 @@ public class Nozzle
     public double getAllowedTravelBeforeClose()
     {
         return allowedTravelBeforeClose;
+    }
+
+    /**
+     * The preejection factor represents the volume prior to nozzle close during which there is no extrusion
+     * @return 
+     */
+    public double getPreejectionVolume()
+    {
+        return preejectionVolume;
+    }
+
+    public double getOpenAtMidPoint()
+    {
+        return openValueAtMidPoint;
+    }
+
+    public double getMidPointPercent()
+    {
+        return midPointPercent;
+    }
+
+    public double getOpenOverVolume()
+    {
+        return openOverVolume;
     }
 }

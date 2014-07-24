@@ -105,9 +105,6 @@ public class PackingThing
      */
     public void relocateBlocks()
     {
-        blocks.stream().forEach((block) ->
-        {
-            block.relocate();
-        });
+        blocks.stream().forEach(Block::relocate);
     }
 }

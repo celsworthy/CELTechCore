@@ -67,19 +67,19 @@ public class Filament implements Serializable, Cloneable
      * @param mutable
      */
     public Filament(
-            String friendlyFilamentName,
-            MaterialType material,
-            String reelID,
-            float diameter,
-            float filamentMultiplier,
-            float feedRateMultiplier,
-            int requiredAmbientTemperature,
-            int requiredFirstLayerBedTemperature,
-            int requiredBedTemperature,
-            int requiredFirstLayerNozzleTemperature,
-            int requiredNozzleTemperature,
-            Color displayColour,
-            boolean mutable)
+        String friendlyFilamentName,
+        MaterialType material,
+        String reelID,
+        float diameter,
+        float filamentMultiplier,
+        float feedRateMultiplier,
+        int requiredAmbientTemperature,
+        int requiredFirstLayerBedTemperature,
+        int requiredBedTemperature,
+        int requiredFirstLayerNozzleTemperature,
+        int requiredNozzleTemperature,
+        Color displayColour,
+        boolean mutable)
     {
         this.friendlyFilamentName.set(friendlyFilamentName);
         this.material.set(material);
@@ -591,12 +591,12 @@ public class Filament implements Serializable, Cloneable
 
     public static void repairFilamentIfNecessary(Printer printer)
     {
-        if (ApplicationConfiguration.isAutoRepairReels())
+        try
         {
-            try
-            {
-                ReelEEPROMDataResponse response = printer.transmitReadReelEEPROM();
+            ReelEEPROMDataResponse response = printer.transmitReadReelEEPROM();
 
+            if (ApplicationConfiguration.isAutoRepairReels())
+            {
                 if (response != null)
                 {
                     String receivedTypeCode = response.getReelTypeCode();
@@ -672,7 +672,8 @@ public class Filament implements Serializable, Cloneable
                                     @Override
                                     public void run()
                                     {
-                                        Notifier.showInformationNotification(DisplayManager.getLanguageBundle().getString("notification.reelDataUpdatedTitle"), DisplayManager.getLanguageBundle().getString("notification.noActionRequired"));
+                                        Notifier.showInformationNotification(DisplayManager.getLanguageBundle().getString("notification.reelDataUpdatedTitle"),
+                                                                             DisplayManager.getLanguageBundle().getString("notification.noActionRequired"));
                                     }
                                 });
 
@@ -683,10 +684,10 @@ public class Filament implements Serializable, Cloneable
                         }
                     }
                 }
-            } catch (RoboxCommsException ex)
-            {
-                steno.error("Error from triggered read of Reel EEPROM");
             }
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error from triggered read of Reel EEPROM");
         }
     }
 }

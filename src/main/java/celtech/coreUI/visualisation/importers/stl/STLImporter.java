@@ -46,7 +46,8 @@ import libertysystems.stenographer.StenographerFactory;
 public class STLImporter
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(STLImporter.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        STLImporter.class.getName());
     private STLLoadState loadState = STLLoadState.IDLE;
     private TriangleMesh meshToOutput = null;
     private ModelLoaderTask parentTask = null;
@@ -68,7 +69,8 @@ public class STLImporter
      * @param percentProgressProperty
      * @return
      */
-    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, ProjectTab targetProjectTab, DoubleProperty percentProgressProperty)
+    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad,
+        ProjectTab targetProjectTab, DoubleProperty percentProgressProperty)
     {
         this.parentTask = parentTask;
         this.percentProgressProperty = percentProgressProperty;
@@ -112,7 +114,8 @@ public class STLImporter
                 }
             } catch (STLFileParsingException ex)
             {
-                steno.error("File parsing exception whilst processing " + modelFile.getName() + " : " + ex + " on line " + lineNumber);
+                steno.error("File parsing exception whilst processing " + modelFile.getName()
+                    + " : " + ex + " on line " + lineNumber);
             } finally
             {
                 //ensure the underlying stream is always closed
@@ -128,7 +131,7 @@ public class STLImporter
 
         steno.info("loaded and processing mesh");
 
-        if (!parentTask.isCancelled())
+        if (parentTask == null || (!parentTask.isCancelled()))
         {
             MeshView meshView = new MeshView();
 
@@ -157,7 +160,9 @@ public class STLImporter
             steno.info("Model orig bounds are : " + originalBounds);
             modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(originalBounds);
 
-            ModelLoadResult result = new ModelLoadResult(modelIsTooLarge, modelFileToLoad, modelFile.getName(), targetProjectTab, modelContainer);
+            ModelLoadResult result = new ModelLoadResult(modelIsTooLarge, modelFileToLoad,
+                                                         modelFile.getName(), targetProjectTab,
+                                                         modelContainer);
             steno.info("Done");
             return result;
         } else
@@ -229,7 +234,8 @@ public class STLImporter
             }
         } catch (IOException ex)
         {
-            steno.error("Failed to determine whether " + stlFile.getName() + " was binary or ascii." + ex.toString());
+            steno.error("Failed to determine whether " + stlFile.getName() + " was binary or ascii."
+                + ex.toString());
         }
 
         return fileIsBinary;
@@ -279,7 +285,7 @@ public class STLImporter
 
             for (int facetNum = 0; facetNum < numberOfFacets; facetNum++)
             {
-                if (parentTask.isCancelled())
+                if ((parentTask != null) && parentTask.isCancelled())
                 {
                     break;
                 }
@@ -310,13 +316,15 @@ public class STLImporter
                     inputVertexY = vertexYArray[vertexNumber];
                     inputVertexZ = vertexZArray[vertexNumber];
 
-                    int baseIndex = (facetNum * POINTS_PER_TRIANGLE) + (vertexNumber * POINTS_PER_VERTEX);
+                    int baseIndex = (facetNum * POINTS_PER_TRIANGLE) + (vertexNumber
+                        * POINTS_PER_VERTEX);
 
                     points[baseIndex] = inputVertexX;
                     points[baseIndex + 1] = -inputVertexZ;
                     points[baseIndex + 2] = inputVertexY;
 
-                    int faceIndex = (facetNum * FACE_INDICES_PER_TRIANGLE) + (vertexNumber * FACE_INDICES_PER_VERTEX);
+                    int faceIndex = (facetNum * FACE_INDICES_PER_TRIANGLE) + (vertexNumber
+                        * FACE_INDICES_PER_VERTEX);
                     faces[faceIndex] = (facetNum * POINTS_PER_VERTEX) + vertexNumber;
                     faces[faceIndex + 1] = 0;
                 }
@@ -345,8 +353,8 @@ public class STLImporter
             triangleMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
 
             steno.info("The mesh contains " + triangleMesh.getPoints().size()
-                    + " points, " + triangleMesh.getTexCoords().size() + " tex coords and "
-                    + triangleMesh.getFaces().size() + " faces");
+                + " points, " + triangleMesh.getTexCoords().size() + " tex coords and "
+                + triangleMesh.getFaces().size() + " faces");
 
         } catch (FileNotFoundException ex)
         {
@@ -367,7 +375,8 @@ public class STLImporter
      * @param facetVertices
      * @throws STLFileParsingException
      */
-    protected void processASCIILine(String aLine, ArrayList<MetaTriangle> inputTriangles, HashMap<Long, Point3D> hashedVertices, Point3D[] facetVertices) throws STLFileParsingException
+    protected void processASCIILine(String aLine, ArrayList<MetaTriangle> inputTriangles,
+        HashMap<Long, Point3D> hashedVertices, Point3D[] facetVertices) throws STLFileParsingException
     {
         int vertexCounter = 0;
         //Get rid of the leading and trailing spaces
@@ -447,7 +456,8 @@ public class STLImporter
                     {
                         if (vertexGroupCount != 3)
                         {
-                            throw new STLFileParsingException("Loop ended with less than 3 vertices - not a triangle!");
+                            throw new STLFileParsingException(
+                                "Loop ended with less than 3 vertices - not a triangle!");
                         } else
                         {
                             loadState = STLLoadState.LOOP_ENDED;
@@ -459,7 +469,8 @@ public class STLImporter
 
                         if (vertexGroupCount > 2)
                         {
-                            throw new STLFileParsingException("Found shape with more than 3 vertices - not a triangle!");
+                            throw new STLFileParsingException(
+                                "Found shape with more than 3 vertices - not a triangle!");
                         }
 
                         float vertexX = scanner.nextFloat();
@@ -528,7 +539,8 @@ public class STLImporter
 
         try
         {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(modelFile)));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(
+                modelFile)));
 
             FloatArrayList points = new FloatArrayList();
             IntegerArrayList faces = new IntegerArrayList();
@@ -538,7 +550,7 @@ public class STLImporter
             String line = null;
 
             while ((line = reader.readLine()) != null
-                    && !parentTask.isCancelled())
+                && !parentTask.isCancelled())
             {
 
                 if (line.trim().startsWith("vertex"))
@@ -601,15 +613,16 @@ public class STLImporter
             triangleMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
 
             steno.info("The mesh contains " + triangleMesh.getPoints().size()
-                    + " points, " + triangleMesh.getTexCoords().size() + " tex coords and "
-                    + triangleMesh.getFaces().size() + " faces");
+                + " points, " + triangleMesh.getTexCoords().size() + " tex coords and "
+                + triangleMesh.getFaces().size() + " faces");
 
         } catch (FileNotFoundException ex)
         {
             steno.error("Failed to open STL file " + modelFile.getAbsolutePath() + " for reading");
         } catch (IOException ex)
         {
-            steno.error("IO Exception on line " + lineNumber + " when reading STL file " + modelFile.getAbsolutePath());
+            steno.error("IO Exception on line " + lineNumber + " when reading STL file "
+                + modelFile.getAbsolutePath());
         }
 
         return triangleMesh;

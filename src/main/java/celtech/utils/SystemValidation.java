@@ -13,8 +13,8 @@ import libertysystems.stenographer.StenographerFactory;
 import org.controlsfx.dialog.Dialogs;
 
 /**
- * The SystemValidation class houses functions that validate the host system such as 3D
- * support.
+ * The SystemValidation class houses functions that validate the host system
+ * such as 3D support.
  *
  * @author tony
  */
@@ -44,20 +44,43 @@ public class SystemValidation
     }
 
     /**
-     * Check that 3D is supported on this machine and if not then exit the application.
+     * Check that 3D is supported on this machine and if not then exit the
+     * application.
      */
     public static void check3DSupported(ResourceBundle i18nBundle)
     {
-        if (!Platform.isSupported(ConditionalFeature.SCENE3D))
+        boolean checkForScene3D = true;
+
+        String forceGPU = System.getProperty("prism.forceGPU");
+
+        if (forceGPU != null)
         {
-            Dialogs.create()
-                    .owner(null)
-                    .title(i18nBundle.getString("dialogs.fatalErrorNo3DSupport"))
-                    .masthead(null)
-                    .message(i18nBundle.getString("dialogs.automakerErrorNo3DSupport"))
-                    .showError();
-            steno.error("Closing down due to lack of required 3D support.");
-            Platform.exit();
+            if (forceGPU.equalsIgnoreCase("true"))
+            {
+                checkForScene3D = false;
+            }
+        }
+
+        if (checkForScene3D == true)
+        {
+            if (!Platform.isSupported(ConditionalFeature.SCENE3D))
+            {
+                Platform.runLater(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        Dialogs.create()
+                                .owner(null)
+                                .title(i18nBundle.getString("dialogs.fatalErrorNo3DSupport"))
+                                .masthead(null)
+                                .message(i18nBundle.getString("dialogs.automakerErrorNo3DSupport"))
+                                .showError();
+                        steno.error("Closing down due to lack of required 3D support.");
+                        Platform.exit();
+                    }
+                });
+            }
         }
     }
 

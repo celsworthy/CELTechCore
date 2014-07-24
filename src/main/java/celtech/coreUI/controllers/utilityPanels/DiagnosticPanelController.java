@@ -7,15 +7,12 @@ package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
-import celtech.printerControl.comms.RoboxCommsManager;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 
 /**

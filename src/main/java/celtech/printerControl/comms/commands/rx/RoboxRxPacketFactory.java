@@ -59,7 +59,7 @@ public class RoboxRxPacketFactory
                     returnVal = new GCodeDataResponse();
                     break;
                 case LIST_FILES_RESPONSE:
-                    returnVal = new ListFilesResponse();
+                    returnVal = new ListFilesResponseImpl();
                     break;
                 default:
                     break;
@@ -128,7 +128,7 @@ public class RoboxRxPacketFactory
                     returnVal = gcodeDataResponse;
                     break;
                 case LIST_FILES_RESPONSE:
-                    ListFilesResponse listFilesResponse = new ListFilesResponse();
+                    ListFilesResponse listFilesResponse = new ListFilesResponseImpl();
                     listFilesResponse.populatePacket(inputBytes);
                     returnVal = listFilesResponse;
                     break;

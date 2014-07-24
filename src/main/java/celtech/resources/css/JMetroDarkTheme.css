@@ -1310,3 +1310,28 @@ table-view .column-header-background {
 .inset-panel-menu-item{
     -fx-fill: white;
 }
+
+// TODO: Remove when custom control for menu strip introduced
+
+#snapToGroundButton {
+    -fx-padding: 0 0 0 0;
+    -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
+    -fx-background-radius: 50;
+    -fx-content-display: graphic-only;
+    -fx-border-color: transparent;
+}
+
+#snapToGroundButton:focused {
+    -fx-border-color: transparent;
+}
+
+#snapToGroundButton:pressed .graphic {
+    -fx-fill: black;   
+}
+
+#snapToGroundButton:disabled, #snapToGroundButton:default:disabled
+{
+    -fx-opacity: 0.4;
+    -fx-background-color: #1d1d1d;
+    -fx-text-fill: white;
+}

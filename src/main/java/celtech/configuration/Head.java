@@ -39,28 +39,34 @@ public class Head implements Cloneable
     private final FloatProperty nozzle1_X_offset = new SimpleFloatProperty(0);
     private final FloatProperty nozzle1_Y_offset = new SimpleFloatProperty(0);
     private final FloatProperty nozzle1_Z_offset = new SimpleFloatProperty(0);
+    private final FloatProperty nozzle1_Z_overrun = new SimpleFloatProperty(0);
     private final FloatProperty nozzle1_B_offset = new SimpleFloatProperty(0);
     private final FloatProperty nozzle2_X_offset = new SimpleFloatProperty(0);
     private final FloatProperty nozzle2_Y_offset = new SimpleFloatProperty(0);
     private final FloatProperty nozzle2_Z_offset = new SimpleFloatProperty(0);
+    private final FloatProperty nozzle2_Z_overrun = new SimpleFloatProperty(0);
     private final FloatProperty nozzle2_B_offset = new SimpleFloatProperty(0);
     private final FloatProperty lastFilamentTemperature = new SimpleFloatProperty(0);
     private final FloatProperty headHours = new SimpleFloatProperty(0);
 
-    private static final float normalX1OffsetMin = 7;
-    private static final float normalX1OffsetMax = 7.3f;
+    private static final float normalX1OffsetMin = 6.8f;
+    private static final float normalX1OffsetMax = 7.5f;
 
-    private static final float normalX2OffsetMin = -7.3f;
-    private static final float normalX2OffsetMax = -7;
+    private static final float normalX2OffsetMin = -7.5f;
+    private static final float normalX2OffsetMax = -6.8f;
 
     private static final float normalYOffsetMin = -0.3f;
     private static final float normalYOffsetMax = 0.3f;
 
-    private static final float normalZ1OffsetMin = -1.2f;
-    private static final float normalZ1OffsetMax = 1.2f;
+    public static final float normalZ1OffsetMin = -1.2f;
+    public static final float normalZ1OffsetMax = 1.2f;
+    public static final float normalZ1OverrunMin = 0f;
+    public static final float normalZ1OverrunMax = 1.2f;
 
-    private static final float normalZ2OffsetMin = -1.2f;
-    private static final float normalZ2OffsetMax = 1.2f;
+    public static final float normalZ2OffsetMin = -1.2f;
+    public static final float normalZ2OffsetMax = 1.2f;
+    public static final float normalZ2OverrunMin = 0f;
+    public static final float normalZ2OverrunMax = 1.2f;
 
     private static final float normalB1OffsetMin = 0.7f;
     private static final float normalB1OffsetMax = 2f;
@@ -90,17 +96,17 @@ public class Head implements Cloneable
      * @param nozzle2_B_offset
      */
     public Head(String typeCode, String friendlyName,
-            float maximumTemperature,
-            float beta,
-            float tcal,
-            float nozzle1_X_offset,
-            float nozzle1_Y_offset,
-            float nozzle1_Z_offset,
-            float nozzle1_B_offset,
-            float nozzle2_X_offset,
-            float nozzle2_Y_offset,
-            float nozzle2_Z_offset,
-            float nozzle2_B_offset)
+        float maximumTemperature,
+        float beta,
+        float tcal,
+        float nozzle1_X_offset,
+        float nozzle1_Y_offset,
+        float nozzle1_Z_offset,
+        float nozzle1_B_offset,
+        float nozzle2_X_offset,
+        float nozzle2_Y_offset,
+        float nozzle2_Z_offset,
+        float nozzle2_B_offset)
     {
         this.typeCode.set(typeCode);
         this.friendlyName.set(friendlyName);
@@ -115,6 +121,7 @@ public class Head implements Cloneable
         this.nozzle2_Y_offset.set(nozzle2_Y_offset);
         this.nozzle2_Z_offset.set(nozzle2_Z_offset);
         this.nozzle2_B_offset.set(nozzle2_B_offset);
+        deriveZOverrunFromOffsets();
     }
 
     /**
@@ -137,6 +144,7 @@ public class Head implements Cloneable
         this.nozzle2_Z_offset.set(response.getNozzle2ZOffset());
         this.nozzle2_B_offset.set(response.getNozzle2BOffset());
         this.uniqueID.set(response.getUniqueID());
+        deriveZOverrunFromOffsets();
     }
 
     /**
@@ -386,6 +394,33 @@ public class Head implements Cloneable
      *
      * @return
      */
+    public FloatProperty getNozzle1_Z_overrunProperty()
+    {
+        return nozzle1_Z_overrun;
+    }
+
+    /**
+     *
+     * @param value
+     */
+    public void setNozzle1_Z_overrun(float value)
+    {
+        nozzle1_Z_overrun.set(value);
+    }
+
+    /**
+     *
+     * @return
+     */
+    public float getNozzle1ZOverrun()
+    {
+        return nozzle1_Z_overrun.get();
+    }
+
+    /**
+     *
+     * @return
+     */
     public FloatProperty getNozzle1_B_offsetProperty()
     {
         return nozzle1_B_offset;
@@ -494,6 +529,33 @@ public class Head implements Cloneable
      *
      * @return
      */
+    public FloatProperty getNozzle2_Z_overrunProperty()
+    {
+        return nozzle2_Z_overrun;
+    }
+
+    /**
+     *
+     * @param value
+     */
+    public void setNozzle2_Z_overrun(float value)
+    {
+        nozzle2_Z_overrun.set(value);
+    }
+
+    /**
+     *
+     * @return
+     */
+    public float getNozzle2ZOverrun()
+    {
+        return nozzle2_Z_overrun.get();
+    }
+
+    /**
+     *
+     * @return
+     */
     public FloatProperty getNozzle2_B_offsetProperty()
     {
         return nozzle2_B_offset;
@@ -580,20 +642,22 @@ public class Head implements Cloneable
     public Head clone()
     {
         Head clone = new Head(
-                this.getTypeCode(),
-                this.getFriendlyName(),
-                this.getMaximumTemperature(),
-                this.getBeta(),
-                this.getTCal(),
-                this.getNozzle1XOffset(),
-                this.getNozzle1YOffset(),
-                this.getNozzle1ZOffset(),
-                this.getNozzle1BOffset(),
-                this.getNozzle2XOffset(),
-                this.getNozzle2YOffset(),
-                this.getNozzle2ZOffset(),
-                this.getNozzle2BOffset()
+            this.getTypeCode(),
+            this.getFriendlyName(),
+            this.getMaximumTemperature(),
+            this.getBeta(),
+            this.getTCal(),
+            this.getNozzle1XOffset(),
+            this.getNozzle1YOffset(),
+            this.getNozzle1ZOffset(),
+            this.getNozzle1BOffset(),
+            this.getNozzle2XOffset(),
+            this.getNozzle2YOffset(),
+            this.getNozzle2ZOffset(),
+            this.getNozzle2BOffset()
         );
+
+        clone.deriveZOverrunFromOffsets();
 
         return clone;
     }
@@ -602,36 +666,64 @@ public class Head implements Cloneable
      *
      * @param printer
      */
-    public static void softResetHead(Printer printer)
+    public static void hardResetHead(Printer printer)
     {
+        if (printer.getHeadEEPROMStatus() == EEPROMState.NOT_PROGRAMMED)
+        {
+            try
+            {
+                printer.transmitFormatHeadEEPROM();
+            } catch (RoboxCommsException ex)
+            {
+                steno.error("Error formatting head");
+            }
+        }
+
         try
         {
             HeadEEPROMDataResponse response = printer.transmitReadHeadEEPROM();
 
-            //We will only write defaults if we can tell what this head is...
             if (response != null)
             {
                 String receivedTypeCode = response.getTypeCode();
 
-                Head referenceHead = HeadContainer.getHeadByID(response.getTypeCode());
+                Head referenceHead = null;
+                if (receivedTypeCode != null)
+                {
+                    referenceHead = HeadContainer.getHeadByID(response.getTypeCode());
+                }
+                
+                if (referenceHead != null)
+                {
+                    Head headToWrite = referenceHead.clone();
+                    headToWrite.setUniqueID(response.getUniqueID());
+                    headToWrite.setHeadHours(response.getHeadHours());
+                    headToWrite.setLastFilamentTemperature(response.getLastFilamentTemperature());
 
-                Head headToWrite = referenceHead.clone();
-                headToWrite.setUniqueID(response.getUniqueID());
-                headToWrite.setHeadHours(response.getHeadHours());
-                headToWrite.setLastFilamentTemperature(response.getLastFilamentTemperature());
+                    printer.transmitWriteHeadEEPROM(headToWrite);
+                    printer.transmitReadHeadEEPROM();
+                    steno.info("Updated head data at user request for " + receivedTypeCode);
+                    showCalibrationDialogue();
+                } else
+                {
+                    Head headToWrite = HeadContainer.getCompleteHeadList().get(0).clone();
+                    String typeCode = headToWrite.getTypeCode();
+                    String idToCreate = typeCode + SystemUtils.generate16DigitID().substring(typeCode.length());
+                    headToWrite.setUniqueID(idToCreate);
+                    headToWrite.setLastFilamentTemperature(10);
 
-                printer.transmitWriteHeadEEPROM(headToWrite);
-                printer.transmitReadHeadEEPROM();
-                steno.info("Updated head data at user request for " + receivedTypeCode);
-                showCalibrationDialogue();
-            }
-            else
+                    printer.transmitWriteHeadEEPROM(headToWrite);
+                    printer.transmitReadHeadEEPROM();
+                    steno.info("Updated head data at user request - type code could not be determined");
+                    showCalibrationDialogue();
+                }
+            } else
             {
-                steno.warning("Request to soft reset head of unknown type");
+                steno.warning("Request to hard reset head failed");
             }
         } catch (RoboxCommsException ex)
         {
-            steno.error("Error during soft reset of head");
+            steno.error("Error during hard reset of head");
         }
     }
 
@@ -641,11 +733,11 @@ public class Head implements Cloneable
      */
     public static void repairHeadIfNecessary(Printer printer)
     {
-        if (ApplicationConfiguration.isAutoRepairHeads())
+        try
         {
-            try
+            HeadEEPROMDataResponse response = printer.transmitReadHeadEEPROM();
+            if (ApplicationConfiguration.isAutoRepairHeads())
             {
-                HeadEEPROMDataResponse response = printer.transmitReadHeadEEPROM();
                 // Check to see if the maximum temperature of the head matches our view
                 // If not, change the max value and prompt to calibrate
                 if (response != null)
@@ -762,7 +854,8 @@ public class Head implements Cloneable
                                     @Override
                                     public void run()
                                     {
-                                        Notifier.showInformationNotification(DisplayManager.getLanguageBundle().getString("notification.headSettingsUpdatedTitle"), DisplayManager.getLanguageBundle().getString("notification.noActionRequired"));
+                                        Notifier.showInformationNotification(DisplayManager.getLanguageBundle().getString("notification.headSettingsUpdatedTitle"),
+                                                                             DisplayManager.getLanguageBundle().getString("notification.noActionRequired"));
                                     }
                                 });
                             }
@@ -774,10 +867,10 @@ public class Head implements Cloneable
                         showCalibrationDialogue();
                     }
                 }
-            } catch (RoboxCommsException ex)
-            {
-                steno.error("Error from triggered read of Head EEPROM");
             }
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error from triggered read of Head EEPROM");
         }
     }
 
@@ -789,9 +882,9 @@ public class Head implements Cloneable
             public void run()
             {
                 Action calibrationResponse = Dialogs.create().title(DisplayManager.getLanguageBundle().getString("dialogs.headUpdateCalibrationRequiredTitle"))
-                        .message(DisplayManager.getLanguageBundle().getString("dialogs.headUpdateCalibrationRequiredInstruction"))
-                        .masthead(null)
-                        .showCommandLinks(okCalibrate, okCalibrate, dontCalibrate);
+                    .message(DisplayManager.getLanguageBundle().getString("dialogs.headUpdateCalibrationRequiredInstruction"))
+                    .masthead(null)
+                    .showCommandLinks(okCalibrate, okCalibrate, dontCalibrate);
 
                 if (calibrationResponse == okCalibrate)
                 {
@@ -800,5 +893,33 @@ public class Head implements Cloneable
                 }
             }
         });
+    }
+
+    public void deriveZOverrunFromOffsets()
+    {
+        float nozzle1Offset = getNozzle1ZOffset();
+        float nozzle2Offset = getNozzle2ZOffset();
+
+        float delta = nozzle2Offset - nozzle1Offset;
+        float halfdelta = delta / 2;
+
+        float nozzle1Overrun = -(nozzle1Offset + halfdelta);
+        float nozzle2Overrun = nozzle1Overrun + delta;
+
+        nozzle1_Z_overrun.set(nozzle1Overrun);
+        nozzle2_Z_overrun.set(nozzle2Overrun);
+    }
+
+    public void deriveZOffsetsFromOverrun()
+    {
+        float nozzle1OverrunValue = nozzle1_Z_overrun.get();
+        float nozzle2OverrunValue = nozzle2_Z_overrun.get();
+        float offsetAverage = -nozzle1OverrunValue;
+        float delta = (nozzle2OverrunValue - nozzle1OverrunValue) / 2;
+        float nozzle1Offset = offsetAverage - delta;
+        float nozzle2Offset = offsetAverage + delta;
+
+        nozzle1_Z_offset.set(nozzle1Offset);
+        nozzle2_Z_offset.set(nozzle2Offset);
     }
 }

@@ -434,6 +434,11 @@ public class RoboxProfile implements Serializable, Cloneable
     /**
      *
      */
+    protected ObservableList<FloatProperty> nozzle_preejection_volume = FXCollections.observableArrayList(new SimpleFloatProperty(0f), new SimpleFloatProperty(0f));
+
+    /**
+     *
+     */
     protected ObservableList<FloatProperty> nozzle_ejection_volume = FXCollections.observableArrayList(new SimpleFloatProperty(0.5f), new SimpleFloatProperty(0.5f));
 
     /**
@@ -444,12 +449,12 @@ public class RoboxProfile implements Serializable, Cloneable
     /**
      *
      */
-    protected FloatProperty fill_density = new SimpleFloatProperty(0.4f); //DONE
+    protected FloatProperty fill_density = new SimpleFloatProperty(0.4f);
 
     /**
      *
      */
-    protected StringProperty fill_pattern = new SimpleStringProperty("rectilinear"); //DONE
+    protected StringProperty fill_pattern = new SimpleStringProperty("rectilinear");
 
     /**
      *
@@ -643,6 +648,21 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      */
     protected IntegerProperty support_material_interface_speed = new SimpleIntegerProperty(40);
+
+    /**
+     *
+     */
+    protected ObservableList<FloatProperty> nozzle_close_at_midpoint = FXCollections.observableArrayList(new SimpleFloatProperty(-1), new SimpleFloatProperty(-1));
+
+    /**
+     *
+     */
+    protected ObservableList<FloatProperty> nozzle_close_midpoint_percent = FXCollections.observableArrayList(new SimpleFloatProperty(-1), new SimpleFloatProperty(-1));
+
+    /**
+     *
+     */
+    protected ObservableList<FloatProperty> nozzle_open_over_volume = FXCollections.observableArrayList(new SimpleFloatProperty(-1), new SimpleFloatProperty(-1));
 
     /**
      *
@@ -1186,6 +1206,15 @@ public class RoboxProfile implements Serializable, Cloneable
     public ObservableList<FloatProperty> getNozzle_ejection_volume()
     {
         return nozzle_ejection_volume;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public ObservableList<FloatProperty> getNozzle_preejection_volume()
+    {
+        return nozzle_preejection_volume;
     }
 
     /**
@@ -2591,6 +2620,33 @@ public class RoboxProfile implements Serializable, Cloneable
     {
         return LOCAL_profileName;
     }
+    
+    /**
+     *
+     * @return
+     */
+    public ObservableList<FloatProperty> getNozzle_close_at_midpoint()
+    {
+        return nozzle_close_at_midpoint;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public ObservableList<FloatProperty> getNozzle_close_midpoint_percent()
+    {
+        return nozzle_close_midpoint_percent;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public ObservableList<FloatProperty> getNozzle_open_over_volume()
+    {
+        return nozzle_open_over_volume;
+    }
 
     /**
      *
@@ -2696,6 +2752,17 @@ public class RoboxProfile implements Serializable, Cloneable
                             {
                                 StringProperty property = (StringProperty) observableListGet.invoke(field.get(this), elementCounter);
                                 property.set(element);
+                            } else if (fieldContentClass.equals(BooleanProperty.class))
+                            {
+                                BooleanProperty property = (BooleanProperty) observableListGet.invoke(field.get(this), elementCounter);
+
+                                if (element.equalsIgnoreCase("1"))
+                                {
+                                    property.set(true);
+                                } else
+                                {
+                                    property.set(false);
+                                }
                             }
 
                             elementCounter++;
@@ -2992,6 +3059,10 @@ public class RoboxProfile implements Serializable, Cloneable
         out.writeInt(infill_acceleration.get());
         out.writeInt(bridge_acceleration.get());
         out.writeInt(default_acceleration.get());
+        for (FloatProperty nozzlePreejectionVolumeProp : nozzle_preejection_volume)
+        {
+            out.writeFloat(nozzlePreejectionVolumeProp.get());
+        }
         for (FloatProperty nozzleEjectionVolumeProp : nozzle_ejection_volume)
         {
             out.writeFloat(nozzleEjectionVolumeProp.get());
@@ -3130,6 +3201,7 @@ public class RoboxProfile implements Serializable, Cloneable
         bridge_acceleration = new SimpleIntegerProperty(in.readInt());
         default_acceleration = new SimpleIntegerProperty(in.readInt());
 
+        nozzle_preejection_volume = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
         nozzle_ejection_volume = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
         nozzle_partial_b_minimum = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));
         nozzle_wipe_volume = FXCollections.observableArrayList(new SimpleFloatProperty(in.readFloat()), new SimpleFloatProperty(in.readFloat()));

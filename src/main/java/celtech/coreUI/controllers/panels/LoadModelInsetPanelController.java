@@ -20,7 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.ResourceBundle;
 import java.util.zip.ZipEntry;
@@ -108,16 +110,32 @@ public class LoadModelInsetPanelController implements Initializable
             }
             modelFileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter(descriptionOfFile,
-                                                ApplicationConfiguration.getSupportedFileExtensionWildcards(projectMode)));
+                                                ApplicationConfiguration.getSupportedFileExtensionWildcards(
+                                                    projectMode)));
 
-            modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(DirectoryMemoryProperty.MODEL)));
+            modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(
+                DirectoryMemoryProperty.MODEL)));
 
-            final File file = modelFileChooser.showOpenDialog(displayManager.getMainStage());
-
-            if (file != null)
+            List<File> files;
+            if (projectMode == ProjectMode.NONE || projectMode == ProjectMode.MESH)
             {
-                ApplicationConfiguration.setLastDirectory(DirectoryMemoryProperty.MODEL, file.getParentFile().getAbsolutePath());
-                displayManager.loadExternalModel(file);
+                files = modelFileChooser.showOpenMultipleDialog(displayManager.getMainStage());
+            } else
+            {
+                File file = modelFileChooser.showOpenDialog(displayManager.getMainStage());
+                files = new ArrayList<>();
+                if (file != null)
+                {
+                    files.add(file);
+                }
+            }
+
+            if (files != null && !files.isEmpty())
+            {
+                ApplicationConfiguration.setLastDirectory(
+                    DirectoryMemoryProperty.MODEL,
+                    files.get(0).getParentFile().getAbsolutePath());
+                displayManager.loadExternalModels(files, true);
             }
         });
     }
@@ -211,13 +229,15 @@ public class LoadModelInsetPanelController implements Initializable
                     try
                     {
                         final Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                        final List<File> filesToLoad = new ArrayList<>();
                         while (entries.hasMoreElements())
                         {
                             final ZipEntry entry = entries.nextElement();
                             final String tempTargetname = ApplicationConfiguration.getUserStorageDirectory() + File.separator + entry.getName();
                             writeStreamToFile(zipFile.getInputStream(entry), tempTargetname);
-                            displayManager.loadExternalModel(new File(tempTargetname));
+                            filesToLoad.add(new File(tempTargetname));
                         }
+                        displayManager.loadExternalModels(filesToLoad);
                     } finally
                     {
                         zipFile.close();

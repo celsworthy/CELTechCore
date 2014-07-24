@@ -78,6 +78,30 @@ public class FixedDecimalFloatFormatTest
         FixedDecimalFloatFormat formatter = new FixedDecimalFloatFormat();
         String result = formatter.format(999999999.99);
     }
+    
+     /**
+     * Test truncation during format (double)
+     */
+    @Test
+    public void testFormatDoubleRoundingUp()
+    {
+        System.out.println("FixedDecimalFloatFormat format double rounding up");
+        FixedDecimalFloatFormat formatter = new FixedDecimalFloatFormat();
+        String result = formatter.format(999999.999999999);
+        assertEquals(" 1000000", result);
+    }
+
+     /**
+     * Test truncation during format (double)
+     */
+    @Test
+    public void testFormatDoubleRoundingDown()
+    {
+        System.out.println("FixedDecimalFloatFormat format double rounding down");
+        FixedDecimalFloatFormat formatter = new FixedDecimalFloatFormat();
+        String result = formatter.format(999999.00000001);
+        assertEquals("  999999", result);
+    }
 
     /**
      * Test of format handling, of class FixedDecimalFloatFormat.

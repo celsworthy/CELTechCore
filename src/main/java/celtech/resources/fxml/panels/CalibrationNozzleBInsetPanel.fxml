@@ -58,7 +58,7 @@
                                         <Button fx:id="startCalibrationButton" layoutX="5.0" mnemonicParsing="false" onAction="#startCalibration" text="%calibrationPanel.startCalibration" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
                                     </children>
                                 </HBox>
-                                <HBox alignment="CENTER_RIGHT" pickOnBounds="false">
+                                <HBox alignment="CENTER_LEFT" pickOnBounds="false">
                                     <children>
                                         <Button fx:id="cancelCalibrationButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#cancelCalibration" text="%calibrationPanel.cancelCalibration">
                                             <StackPane.margin>
@@ -67,6 +67,15 @@
                                         </Button>
                                     </children>
                                 </HBox>
+<HBox alignment="CENTER_RIGHT" layoutX="10.0" layoutY="10.0" pickOnBounds="false">
+<children>
+<Button fx:id="saveSettingsButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#closeWindow" text="%calibrationPanel.saveSettings">
+<StackPane.margin>
+<Insets />
+</StackPane.margin>
+</Button>
+</children>
+</HBox>
                             </children>
                         </StackPane>
                     </children>

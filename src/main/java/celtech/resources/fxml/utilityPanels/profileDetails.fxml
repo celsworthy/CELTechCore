@@ -5,14 +5,21 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.textfield.*?>
+<?import celtech.coreUI.components.RestrictedTextField?>
 <?import celtech.coreUI.components.RestrictedNumberField?>
 
-<VBox fx:id="container" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="380.0" spacing="5.0" styleClass="slideOutPanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.ProfileDetailsController">
+<VBox fx:id="container" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" 
+      maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="380.0" 
+      spacing="5.0" styleClass="slideOutPanel" stylesheets="@../../css/JMetroDarkTheme.css"
+      xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="celtech.coreUI.controllers.utilityPanels.ProfileDetailsController">
     <children>
         <HBox alignment="TOP_CENTER" spacing="5.0">
             <children>
                 <Label text="%sidePanel_settings.Profilename" />
-                <CustomTextField fx:id="profileNameField" />
+                <RestrictedTextField fx:id="profileNameField" 
+                                     forceUpperCase="false" directorySafeName="true"
+                                     maxLength="24" restrict="-_0-9a-zA-Z\p{L}\p{M}*+"/>
             </children>
             <VBox.margin>
                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -64,6 +71,10 @@
                                 <Label minWidth="-1.0" text="%extrusion.brimWidth" GridPane.rowIndex="7" />
                                 <RestrictedNumberField allowedDecimalPlaces="0" maxLength="5" fx:id="brimWidth" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
                                 <ComboBox fx:id="fillPatternChoice" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                <Label text="%extrusion.dwellAwayFromPart" GridPane.rowIndex="8" />                                
+                                <CheckBox fx:id="dwellAwayFromPartEnabled" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                                <Label minWidth="-1.0" text="%extrusion.dwellTriggerTime" GridPane.rowIndex="9" />
+                                <RestrictedNumberField allowedDecimalPlaces="0" maxLength="5" fx:id="dwellTriggerTime" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="9" />
                             </children>
                         </GridPane>
                     </content>
@@ -80,35 +91,42 @@
                                 <ComboBox fx:id="supportNozzleChoice" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                 <Label fx:id="supportInterfaceNozzleChoiceLabel" text="%extrusion.supportInterfaceNozzle" GridPane.rowIndex="3" />
                                 <ComboBox fx:id="supportInterfaceNozzleChoice" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                                <Label fx:id="nozzleEjectionVolumeLabel" minWidth="95.0" text="%nozzle.ejectionVolume" GridPane.rowIndex="5" />
-                                <HBox fx:id="nozzleEjectionVolumeHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                <Label fx:id="nozzlePreejectionVolumeLabel" minWidth="95.0" text="%nozzle.preejectionVolume" GridPane.rowIndex="5" />
+                                <HBox fx:id="nozzlePreejectionVolumeHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                    <children>
+                                        <RestrictedNumberField allowedDecimalPlaces="2" maxLength="5" fx:id="nozzlePreejectionVolume" prefWidth="50.0" />
+                                        <Label text="%misc.mm3" />
+                                    </children>
+                                </HBox>
+                                <Label fx:id="nozzleEjectionVolumeLabel" minWidth="95.0" text="%nozzle.ejectionVolume" GridPane.rowIndex="6" />
+                                <HBox fx:id="nozzleEjectionVolumeHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
                                     <children>
                                         <RestrictedNumberField allowedDecimalPlaces="2" maxLength="5" fx:id="nozzleEjectionVolume" prefWidth="50.0" />
                                         <Label text="%misc.mm3" />
                                     </children>
                                 </HBox>
-                                <Label fx:id="nozzleWipeVolumeLabel" minWidth="95.0" text="%nozzle.wipeVolume" GridPane.rowIndex="6" />
-                                <HBox fx:id="nozzleWipeVolumeHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                                <Label fx:id="nozzleWipeVolumeLabel" minWidth="95.0" text="%nozzle.wipeVolume" GridPane.rowIndex="7" />
+                                <HBox fx:id="nozzleWipeVolumeHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
                                     <children>
                                         <RestrictedNumberField allowedDecimalPlaces="2" maxLength="5" fx:id="nozzleWipeVolume" prefWidth="50.0" />
                                         <Label text="%misc.mm3" />
                                     </children>
                                 </HBox>
-                                <Label fx:id="nozzlePartialOpenLabel" minWidth="95.0" text="%nozzle.partialOpenValue" GridPane.rowIndex="7" />
-                                <HBox fx:id="nozzlePartialOpenHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                                <Label fx:id="nozzlePartialOpenLabel" minWidth="95.0" text="%nozzle.partialOpenValue" GridPane.rowIndex="8" />
+                                <HBox fx:id="nozzlePartialOpenHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="8">
                                     <children>
                                         <RestrictedNumberField allowedDecimalPlaces="1" maxLength="5" fx:id="nozzlePartialOpen" prefWidth="50.0" />
                                     </children>
                                 </HBox>
-                                <Label fx:id="retractLengthLabel" minWidth="95.0" text="%extrusion.retractLength" GridPane.columnIndex="0" GridPane.rowIndex="8" />
-                                <HBox fx:id="retractLengthHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="8">
+                                <Label fx:id="retractLengthLabel" minWidth="95.0" text="%extrusion.retractLength" GridPane.columnIndex="0" GridPane.rowIndex="9" />
+                                <HBox fx:id="retractLengthHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="9">
                                     <children>
                                         <RestrictedNumberField allowedDecimalPlaces="1" maxLength="5" fx:id="retractLength" prefWidth="50.0" />
                                         <Label text="%misc.mm" />
                                     </children>
                                 </HBox>
-                                <Label fx:id="retractSpeedLabel" minWidth="95.0" text="%extrusion.retractSpeed" GridPane.columnIndex="0" GridPane.rowIndex="9" />
-                                <HBox fx:id="retractSpeedHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="9">
+                                <Label fx:id="retractSpeedLabel" minWidth="95.0" text="%extrusion.retractSpeed" GridPane.columnIndex="0" GridPane.rowIndex="10" />
+                                <HBox fx:id="retractSpeedHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="10">
                                     <children>
                                         <RestrictedNumberField allowedDecimalPlaces="0" maxLength="5" fx:id="retractSpeed" prefWidth="50.0" />
                                         <Label text="%misc.mmpersec" />

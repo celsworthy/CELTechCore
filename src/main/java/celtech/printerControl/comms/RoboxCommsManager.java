@@ -7,6 +7,7 @@ package celtech.printerControl.comms;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.MachineType;
 import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterImpl;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
@@ -167,7 +168,7 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
                         steno.info("Adding new printer on " + port);
                         PrinterHandler newPrinterHandler = new PrinterHandler(this, port, suppressPrinterIDChecks, sleepBetweenStatusChecks);
                         pendingPrinterConnections.put(port, newPrinterHandler);
-                        Printer newPrinter = new Printer(port, this);
+                        Printer newPrinter = new PrinterImpl(port, this);
                         pendingPrinters.put(port, newPrinter);
                         newPrinterHandler.setPrinterToUse(newPrinter);
 
@@ -384,14 +385,6 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
             {
                 printerStatus.add(printer);
                 printer.setPrinterConnected(true);
-                try
-                {
-                    printer.transmitReadHeadEEPROM();
-                    printer.transmitReadReelEEPROM();
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Couldn't request EEPROM data");
-                }
             }
         });
     }
@@ -469,7 +462,7 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
 
         if (nullPrinter == null)
         {
-            nullPrinter = new Printer(nullPrinterString, this);
+            nullPrinter = new PrinterImpl(nullPrinterString, this);
         }
 
         if (enable)

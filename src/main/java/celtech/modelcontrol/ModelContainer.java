@@ -2,21 +2,17 @@
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
  */
 package celtech.modelcontrol;
 
 import celtech.configuration.PrintBed;
 import celtech.coreUI.visualisation.ApplicationMaterials;
-import celtech.coreUI.visualisation.Xform;
+import celtech.coreUI.visualisation.ShapeProvider;
 import celtech.coreUI.visualisation.importers.FloatArrayList;
 import celtech.coreUI.visualisation.importers.IntegerArrayList;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
-import celtech.utils.Math.MathUtils;
-import celtech.utils.Math.PolarCoordinate;
+import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
+import static celtech.utils.Math.MathUtils.RAD_TO_DEG;
 import celtech.utils.gcode.representation.GCodeElement;
 import celtech.utils.gcode.representation.GCodeMeshData;
 import celtech.utils.gcode.representation.MovementType;
@@ -26,6 +22,9 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
@@ -47,16 +46,20 @@ import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
+import javafx.scene.transform.Rotate;
+import javafx.scene.transform.Scale;
+import javafx.scene.transform.Translate;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class ModelContainer extends Xform implements Serializable, Comparable
+public class ModelContainer extends Group implements Serializable, Comparable, ShapeProvider
 {
 
     private static final long serialVersionUID = 1L;
@@ -66,14 +69,10 @@ public class ModelContainer extends Xform implements Serializable, Comparable
     private BooleanProperty isSelected = null;
     private BooleanProperty isOffBed = null;
     private SimpleStringProperty modelName = null;
-    private DoubleProperty scale = null;
-    private DoubleProperty rotationX = null;
-    private DoubleProperty rotationY = null;
-    private DoubleProperty rotationZ = null;
     private int numberOfMeshes = 0;
     private ModelContentsEnumeration modelContentsType = ModelContentsEnumeration.MESH;
     //GCode only
-    private ObservableList<String> fileLines = FXCollections.observableArrayList();
+    private final ObservableList<String> fileLines = FXCollections.observableArrayList();
     private GCodeMeshData gcodeMeshData = null;
     private GCodeElement lastSelectedPart = null;
     private IntegerProperty selectedGCodeLine = new SimpleIntegerProperty(0);
@@ -82,35 +81,73 @@ public class ModelContainer extends Xform implements Serializable, Comparable
     private IntegerProperty numberOfLayers = new SimpleIntegerProperty(0);
     private IntegerProperty maxLayerVisible = new SimpleIntegerProperty(0);
     private IntegerProperty minLayerVisible = new SimpleIntegerProperty(0);
-    private ModelBounds originalModelBounds = new ModelBounds();
-    private double centreX = 0;
-    private double centreY = 0;
-    private double centreZ = 0;
-    private double centreXOffset = 0;
-    private double centreYOffset = 0;
-    private double centreZOffset = 0;
-    private MeshView attachedMeshView = null;
-    private Rotation currentRotation = new Rotation(RotationOrder.XYZ, 0, 0, 0);
 
-    private DoubleProperty height = new SimpleDoubleProperty(0);
+    ModelBounds originalModelBounds;
 
+    private Scale transformScalePreferred;
+    private Rotate transformRotateSnapToGround;
+    private Translate transformSnapToGroundYAdjust;
+    private static final Point3D Y_AXIS = new Point3D(0, 1, 0);
+    private Rotate transformRotateYPreferred;
+    private Translate transformMoveToCentre;
+    private Translate transformMoveToPreferred;
+    private Translate transformBedCentre;
+
+    static int SNAP_FACE_INDEX_NOT_SELECTED = -1;
     /**
-     *
+     * The index of the face that the user has requested face the bed.
      */
+    private int snapFaceIndex = SNAP_FACE_INDEX_NOT_SELECTED;
+    /**
+     * Property wrapper around the scale.
+     */
+    private DoubleProperty preferredScale;
+    /**
+     * Property wrapper around the rotationY.
+     */
+    private DoubleProperty preferredRotationY;
+
+    private double bedCentreOffsetX;
+    private double bedCentreOffsetY;
+    private double bedCentreOffsetZ;
+    private ModelBounds lastTransformedBounds;
+    private SelectionHighlighter selectionHighlighter = null;
+    List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
+    private Set<Node> selectedMarkers;
+
     public ModelContainer()
     {
-        super(RotateOrder.XYZ);
+        super();
     }
 
     /**
      *
      * @param name
+     * @param meshToAdd
      */
-    public ModelContainer(String name)
+    public ModelContainer(String name, MeshView meshToAdd)
     {
-        super(RotateOrder.XYZ);
-        initialiseObject(name);
-        configureModelOnLoad();
+        super();
+        modelContentsType = ModelContentsEnumeration.MESH;
+        getChildren().add(meshToAdd);
+        numberOfMeshes = 1;
+        initialise(name);
+        initialiseTransforms();
+    }
+
+    /**
+     *
+     * @param name
+     * @param meshes
+     */
+    public ModelContainer(String name, ArrayList<MeshView> meshes)
+    {
+        super();
+        modelContentsType = ModelContentsEnumeration.MESH;
+        getChildren().addAll(meshes);
+        numberOfMeshes = meshes.size();
+        initialise(name);
+        initialiseTransforms();
     }
 
     /**
@@ -121,32 +158,30 @@ public class ModelContainer extends Xform implements Serializable, Comparable
      */
     public ModelContainer(String name, GCodeMeshData gcodeMeshData, ArrayList<String> fileLines)
     {
-        super(RotateOrder.XYZ);
+        super();
         modelContentsType = ModelContentsEnumeration.GCODE;
-        initialiseObject(name);
-        configureModelOnLoad();
-        getChildren().add(gcodeMeshData.getAllParts());
-        this.gcodeMeshData = gcodeMeshData;
         numberOfMeshes = 0;
+        initialise(name);
+        initialiseTransforms();
+        setUpGCodeRelated(gcodeMeshData, fileLines);
+    }
 
-//        steno.info("Got " + gcodeMeshData.getReferencedArrays().size() + " layers and " + gcodeMeshData.getReferencedElements() + " elements");
-        this.fileLines.addAll(fileLines);
-
-        linesOfGCode.set(fileLines.size());
-
+    private void setUpGCodeRelated(GCodeMeshData gcodeMeshData1, ArrayList<String> fileLines1)
+    {
+        getChildren().add(gcodeMeshData1.getAllParts());
+        this.gcodeMeshData = gcodeMeshData1;
+        this.fileLines.addAll(fileLines1);
+        linesOfGCode.set(fileLines1.size());
         selectedGCodeLineProperty().addListener(new ChangeListener<Number>()
         {
             @Override
             public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
             {
-//                steno.info("Changed from " + t.intValue() + " to " + t1.intValue());
                 highlightGCodeLine(t1.intValue());
             }
         });
-
         minLayerVisible.set(0);
-        maxLayerVisible.set(gcodeMeshData.getReferencedArrays().size());
-
+        maxLayerVisible.set(gcodeMeshData1.getReferencedArrays().size());
         minLayerVisible.addListener(new ChangeListener<Number>()
         {
 
@@ -156,7 +191,6 @@ public class ModelContainer extends Xform implements Serializable, Comparable
                 setMinVisibleLayer(t1.intValue());
             }
         });
-
         maxLayerVisible.addListener(new ChangeListener<Number>()
         {
 
@@ -166,78 +200,58 @@ public class ModelContainer extends Xform implements Serializable, Comparable
                 setMaxVisibleLayer(t1.intValue());
             }
         });
-
-        numberOfLayers.set(gcodeMeshData.getReferencedArrays().size());
+        numberOfLayers.set(gcodeMeshData1.getReferencedArrays().size());
     }
 
-    /**
-     *
-     * @param name
-     * @param meshToAdd
-     */
-    public ModelContainer(String name, MeshView meshToAdd)
+    private void initialiseTransforms()
     {
-        super(RotateOrder.XYZ);
+        transformScalePreferred = new Scale(1, 1, 1);
+        transformRotateSnapToGround = new Rotate(0, 0, 0);
+        transformSnapToGroundYAdjust = new Translate(0, 0, 0);
+        transformRotateYPreferred = new Rotate(0, 0, 0, 0, Y_AXIS);
+        transformMoveToCentre = new Translate(0, 0, 0);
+        transformMoveToPreferred = new Translate(0, 0, 0);
+        transformBedCentre = new Translate(0, 0, 0);
 
-        modelContentsType = ModelContentsEnumeration.MESH;
-        getChildren().add(meshToAdd);
-        initialiseObject(name);
-        configureModelOnLoad();
-        numberOfMeshes = 1;
+        setBedCentreOffsetTransform();
+
+        getTransforms().addAll(transformSnapToGroundYAdjust, transformMoveToPreferred,
+                               transformMoveToCentre, transformBedCentre,
+                               transformRotateYPreferred, transformRotateSnapToGround,
+                               transformScalePreferred);
+
+        originalModelBounds = calculateBounds();
+
+        double centreXOffset = -originalModelBounds.getCentreX();
+        double centreYOffset = -originalModelBounds.getMaxY();
+        double centreZOffset = -originalModelBounds.getCentreZ();
+
+        transformMoveToCentre.setX(centreXOffset);
+        transformMoveToCentre.setY(centreYOffset);
+        transformMoveToCentre.setZ(centreZOffset);
+
+        transformRotateYPreferred.setPivotX(originalModelBounds.getCentreX());
+        transformRotateYPreferred.setPivotY(originalModelBounds.getCentreY());
+        transformRotateYPreferred.setPivotZ(originalModelBounds.getCentreZ());
+
+        transformMoveToPreferred.setX(0);
+        transformMoveToPreferred.setY(0);
+        transformMoveToPreferred.setZ(0);
+
+        lastTransformedBounds = calculateBoundsInParent();
+
+        notifyShapeChange();
+
     }
 
-    /**
-     *
-     * @param name
-     * @param meshes
-     */
-    public ModelContainer(String name, ArrayList<MeshView> meshes)
+    private void initialise(String name)
     {
-        super(RotateOrder.XYZ);
-
-        modelContentsType = ModelContentsEnumeration.MESH;
-        getChildren().addAll(meshes);
-        initialiseObject(name);
-        configureModelOnLoad();
-        numberOfMeshes = meshes.size();
-    }
-
-    private void configureModelOnLoad()
-    {
-        calculateBounds();
-        centreX = 0;
-        centreY = 0;
-        centreZ = 0;
-        centreXOffset = originalModelBounds.getCentreX();
-        centreYOffset = originalModelBounds.getCentreY();
-        centreZOffset = originalModelBounds.getCentreZ();
-        setTx(centreXOffset);
-        setTz(centreZOffset);
-        setTy(-originalModelBounds.getMaxY());
-
-        this.s.setPivotX(centreXOffset);
-        this.s.setPivotY(originalModelBounds.getMaxY());
-        this.s.setPivotZ(centreZOffset);
-
-        this.ry.setPivotX(centreXOffset);
-        this.ry.setPivotY(originalModelBounds.getMaxY());
-        this.ry.setPivotZ(centreZOffset);
-
-//        steno.info("Bounds are " + originalModelBounds);
-    }
-
-    private void initialiseObject(String name)
-    {
+        shapeChangeListeners = new ArrayList<>();
         steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
         printBed = PrintBed.getInstance();
 
         isSelected = new SimpleBooleanProperty(false);
         isOffBed = new SimpleBooleanProperty(false);
-        scale = new SimpleDoubleProperty(1);
-        currentRotation = new Rotation(RotationOrder.XYZ, 0, 0, 0);
-        rotationX = new SimpleDoubleProperty(0);
-        rotationY = new SimpleDoubleProperty(0);
-        rotationZ = new SimpleDoubleProperty(0);
 
         modelName = new SimpleStringProperty(name);
         selectedGCodeLine = new SimpleIntegerProperty(0);
@@ -246,15 +260,34 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         numberOfLayers = new SimpleIntegerProperty(0);
         maxLayerVisible = new SimpleIntegerProperty(0);
         minLayerVisible = new SimpleIntegerProperty(0);
+
+        preferredScale = new SimpleDoubleProperty(1);
+        preferredRotationY = new SimpleDoubleProperty(0);
+
+        selectedMarkers = new HashSet<>();
+
         this.setId(name);
     }
 
     /**
+     * Set transformBedCentre according to the position of the centre of the bed.
+     */
+    private void setBedCentreOffsetTransform()
+    {
+        bedCentreOffsetX = PrintBed.getPrintVolumeCentreZeroHeight().getX();
+        bedCentreOffsetY = PrintBed.getPrintVolumeCentreZeroHeight().getY();
+        bedCentreOffsetZ = PrintBed.getPrintVolumeCentreZeroHeight().getZ();
+        transformBedCentre.setX(bedCentreOffsetX);
+        transformBedCentre.setY(bedCentreOffsetY);
+        transformBedCentre.setZ(bedCentreOffsetZ);
+    }
+
+    /**
+     * Make a copy of this ModelContainer and return it.
      *
      * @return
      */
-    @Override
-    public ModelContainer clone()
+    public ModelContainer makeCopy()
     {
         MeshView newMeshView = new MeshView();
 
@@ -265,28 +298,9 @@ public class ModelContainer extends Xform implements Serializable, Comparable
 
         ModelContainer copy = new ModelContainer(this.modelName.get(), newMeshView);
         copy.setScale(this.getScale());
-        copy.setRotationX(this.getRotationX());
         copy.setRotationY(this.getRotationY());
-        copy.setRotationZ(this.getRotationZ());
+        copy.setSnapFaceIndex(snapFaceIndex);
         return copy;
-    }
-
-    /**
-     *
-     * @param xMove
-     */
-    public void translateX(double xMove)
-    {
-        translateBy(xMove, 0);
-    }
-
-    /**
-     *
-     * @param zMove
-     */
-    public void translateZ(double zMove)
-    {
-        translateBy(0, zMove);
     }
 
     /**
@@ -296,49 +310,26 @@ public class ModelContainer extends Xform implements Serializable, Comparable
      */
     public void translateBy(double xMove, double zMove)
     {
-        Bounds bounds = this.getBoundsInParent();
-//        steno.info("BIP:" + bounds);
-//
-//        steno.info("xMove:" + xMove + " zMove:" + zMove);
-//        steno.info("Tran:" + getTranslateX() + ":" + getTranslateZ());
 
-        double newMaxX = bounds.getMaxX() + xMove;
-        double newMinX = bounds.getMinX() + xMove;
-        double newMaxZ = bounds.getMaxZ() + zMove;
-        double newMinZ = bounds.getMinZ() + zMove;
+        transformMoveToPreferred.setX(transformMoveToPreferred.getX() + xMove);
+        transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + zMove);
 
-        double finalXMove = xMove;
-        double finalZMove = zMove;
+        updateLastTransformedBoundsForTranslateByX(xMove);
+        updateLastTransformedBoundsForTranslateByZ(zMove);
 
-        if (newMinX < 0)
-        {
-            finalXMove -= bounds.getMinX();
-        }
-
-        if (newMinZ < 0)
-        {
-            finalZMove -= bounds.getMinZ();
-        }
-
-        if (newMaxX > printBed.getPrintVolumeMaximums().getX())
-        {
-            finalXMove += printBed.getPrintVolumeMaximums().getX() - bounds.getMaxX();
-        }
-
-        if (newMaxZ > printBed.getPrintVolumeMaximums().getZ())
-        {
-            finalZMove += printBed.getPrintVolumeMaximums().getZ() - bounds.getMaxZ();
-        }
-
-        double currentX = getTx();
-        double currentZ = getTz();
-
-        setTx(finalXMove + currentX);
-        setTz(finalZMove + currentZ);
-
-        centreX = getTx() + centreXOffset;
-        centreZ = getTz() + centreZOffset;
+        keepOnBedXZ();
         checkOffBed();
+
+    }
+
+    public ModelBounds getTransformedBounds()
+    {
+        return lastTransformedBounds;
+    }
+
+    public ModelBounds getLocalBounds()
+    {
+        return originalModelBounds;
     }
 
     /**
@@ -348,59 +339,72 @@ public class ModelContainer extends Xform implements Serializable, Comparable
      */
     public void translateFrontLeftTo(double xPosition, double zPosition)
     {
-        Bounds bounds = this.getBoundsInParent();
-        translateTo(xPosition + bounds.getWidth() / 2, zPosition + bounds.getDepth() / 2);
+        double newXPosition = xPosition - bedCentreOffsetX + getTransformedBounds().getWidth() / 2.0;
+        double newZPosition = zPosition - bedCentreOffsetZ + getTransformedBounds().getHeight()
+            / 2.0;
+        double deltaXPosition = newXPosition - transformMoveToPreferred.getX();
+        double deltaZPosition = newZPosition - transformMoveToPreferred.getZ();
+        transformMoveToPreferred.setX(newXPosition);
+        transformMoveToPreferred.setZ(newZPosition);
+        updateLastTransformedBoundsForTranslateByX(deltaXPosition);
+        updateLastTransformedBoundsForTranslateByZ(deltaZPosition);
+        checkOffBed();
+        notifyShapeChange();
     }
 
     /**
-     *
-     * @param xPosition
-     * @param zPosition
+     * This method checks if the model is off the print bed and if so it adjusts the
+     * transformMoveToPreferred to bring it back to the nearest edge of the bed.
+     */
+    private void keepOnBedXZ()
+    {
+        double deltaX = 0;
+
+        double minBedX = PrintBed.getPrintVolumeCentre().getX() - PrintBed.maxPrintableXSize / 2.0
+            + 1;
+        double maxBedX = PrintBed.getPrintVolumeCentre().getX() + PrintBed.maxPrintableXSize / 2.0
+            - 1;
+        if (getTransformedBounds().getMinX() < minBedX)
+        {
+            deltaX = -(getTransformedBounds().getMinX() - minBedX);
+            transformMoveToPreferred.setX(transformMoveToPreferred.getX() + deltaX);
+        } else if (getTransformedBounds().getMaxX() > maxBedX)
+        {
+            deltaX = -(getTransformedBounds().getMaxX() - maxBedX);
+            transformMoveToPreferred.setX(transformMoveToPreferred.getX() + deltaX);
+        }
+        updateLastTransformedBoundsForTranslateByX(deltaX);
+
+        double deltaZ = 0;
+        double minBedZ = PrintBed.getPrintVolumeCentre().getZ() - PrintBed.maxPrintableZSize / 2.0
+            + 1;
+        double maxBedZ = PrintBed.getPrintVolumeCentre().getZ() + PrintBed.maxPrintableZSize / 2.0
+            - 1;
+        if (getTransformedBounds().getMinZ() < minBedZ)
+        {
+            deltaZ = -(getTransformedBounds().getMinZ() - minBedZ);
+            transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + deltaZ);
+        } else if (getTransformedBounds().getMaxZ() > maxBedZ)
+        {
+            deltaZ = -(getTransformedBounds().getMaxZ() - maxBedZ);
+            transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + deltaZ);
+        }
+        updateLastTransformedBoundsForTranslateByZ(deltaZ);
+
+        checkOffBed();
+        notifyShapeChange();
+    }
+
+    /**
+     * Move the CENTRE of the object to the desired x,z position.
      */
     public void translateTo(double xPosition, double zPosition)
     {
-        //Move the CENTRE of the object to the desired point
-
-        Bounds bounds = this.getBoundsInParent();
-//        steno.info("BIP:" + bounds);
-//
-//        steno.info("xMove:" + xMove + " zMove:" + zMove);
-//        steno.info("Tran:" + getTranslateX() + ":" + getTranslateZ());
-
-        double newMaxX = xPosition + bounds.getWidth() / 2;
-        double newMinX = xPosition - bounds.getWidth() / 2;
-        double newMaxZ = zPosition + bounds.getDepth() / 2;
-        double newMinZ = zPosition - bounds.getDepth() / 2;
-
-        double finalXPosition = xPosition;
-        double finalZPosition = zPosition;
-
-        double xNudge = 0;
-        double zNudge = 0;
-
-        if (newMinX < 0)
-        {
-            finalXPosition += -newMinX;
-        } else if (newMaxX > printBed.getPrintVolumeMaximums().getX())
-        {
-            finalXPosition -= (newMaxX - printBed.getPrintVolumeMaximums().getX());
-        }
-
-        if (newMinZ < 0)
-        {
-            finalZPosition += -newMinZ;
-        } else if (newMaxZ > printBed.getPrintVolumeMaximums().getZ())
-        {
-            finalZPosition -= (newMaxZ - printBed.getPrintVolumeMaximums().getZ());
-        }
-
-        setTx(finalXPosition - (scale.get() * centreXOffset));
-        setTz(finalZPosition - (scale.get() * centreZOffset));
-
-        centreX = finalXPosition;
-        centreZ = finalZPosition;
+        translateXTo(xPosition);
+        translateZTo(zPosition);
 
         checkOffBed();
+
     }
 
     /**
@@ -408,8 +412,8 @@ public class ModelContainer extends Xform implements Serializable, Comparable
      */
     public void centreObjectOnBed()
     {
-        translateTo(PrintBed.getPrintVolumeCentre().getX(), PrintBed.getPrintVolumeCentre().getZ());
-        dropModelOnBed();
+        transformMoveToPreferred.setX(0);
+        transformMoveToPreferred.setZ(0);
     }
 
     /**
@@ -426,7 +430,8 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         double relativeXSize = printableBoundingBox.getWidth() / printVolumeBounds.getWidth();
         double relativeYSize = printableBoundingBox.getHeight() / -printVolumeBounds.getHeight();
         double relativeZSize = printableBoundingBox.getDepth() / printVolumeBounds.getDepth();
-        steno.info("Relative sizes of model: X" + relativeXSize + " Y" + relativeYSize + " Z" + relativeZSize);
+        steno.info("Relative sizes of model: X " + relativeXSize + " Y " + relativeYSize + " Z "
+            + relativeZSize);
 
         if (relativeXSize > relativeYSize && relativeXSize > relativeZSize)
         {
@@ -455,15 +460,6 @@ public class ModelContainer extends Xform implements Serializable, Comparable
             setScale(scaling);
         }
 
-        dropModelOnBed();
-        centreObjectOnBed();
-    }
-
-    private void dropModelOnBed()
-    {
-//        double yOffset = originalModelBounds.getMaxY();
-//
-//        setTy(getTy() + (-yOffset));
     }
 
     /**
@@ -502,7 +498,8 @@ public class ModelContainer extends Xform implements Serializable, Comparable
                         ((MeshView) node).setMaterial(ApplicationMaterials.getOffBedModelMaterial());
                     } else if (isCollided)
                     {
-                        ((MeshView) node).setMaterial(ApplicationMaterials.getCollidedModelMaterial());
+                        ((MeshView) node).setMaterial(
+                            ApplicationMaterials.getCollidedModelMaterial());
                     } else
                     {
                         ((MeshView) node).setMaterial(ApplicationMaterials.getDefaultModelMaterial());
@@ -539,18 +536,45 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         return modelName.get();
     }
 
+    public void setSnapFaceIndex(int snapFaceIndex)
+    {
+        this.snapFaceIndex = snapFaceIndex;
+        if (snapFaceIndex != SNAP_FACE_INDEX_NOT_SELECTED)
+        {
+            Vector3D faceNormal = getFaceNormal(snapFaceIndex);
+            Vector3D downVector = new Vector3D(0, 1, 0);
+
+            Rotation result = new Rotation(faceNormal, downVector);
+            Vector3D axis = result.getAxis();
+            double angleDegrees = result.getAngle() * RAD_TO_DEG;
+
+            transformRotateSnapToGround.setAxis(new Point3D(axis.getX(), axis.getY(), axis.getZ()));
+            transformRotateSnapToGround.setAngle(angleDegrees);
+            transformRotateSnapToGround.setPivotX(originalModelBounds.getCentreX());
+            transformRotateSnapToGround.setPivotY(originalModelBounds.getCentreY());
+            transformRotateSnapToGround.setPivotZ(originalModelBounds.getCentreZ());
+
+            dropToBedAndUpdateLastTransformedBounds();
+        }
+    }
+
     /**
      *
-     * @param value
+     * @param scaleFactor
      */
-    public void setScale(double value)
+    public void setScale(double scaleFactor)
     {
-        steno.info(this.toString());
-        setSx(value);
-        setSy(value);
-        setSz(value);
-        scale.set(value);
+        preferredScale.set(scaleFactor);
+        transformScalePreferred.setPivotX(originalModelBounds.getCentreX());
+        transformScalePreferred.setPivotY(originalModelBounds.getCentreY());
+        transformScalePreferred.setPivotZ(originalModelBounds.getCentreZ());
+        transformScalePreferred.setX(preferredScale.get());
+        transformScalePreferred.setY(preferredScale.get());
+        transformScalePreferred.setZ(preferredScale.get());
+
+        dropToBedAndUpdateLastTransformedBounds();
         checkOffBed();
+        notifyShapeChange();
     }
 
     /**
@@ -559,45 +583,7 @@ public class ModelContainer extends Xform implements Serializable, Comparable
      */
     public double getScale()
     {
-        return scale.get();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public DoubleProperty scaleProperty()
-    {
-        return scale;
-    }
-
-    /**
-     *
-     * @param value
-     */
-    public void setRotationX(double value)
-    {
-        setRotateX(value);
-        rotationX.set(value);
-        checkOffBed();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public double getRotationX()
-    {
-        return rotationX.doubleValue();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public DoubleProperty rotationXProperty()
-    {
-        return rotationX;
+        return preferredScale.get();
     }
 
     /**
@@ -606,57 +592,17 @@ public class ModelContainer extends Xform implements Serializable, Comparable
      */
     public void setRotationY(double value)
     {
-        setRotateY(value);
-        rotationY.set(value);
-//        calculateBounds();
+        preferredRotationY.set(value);
+        transformRotateYPreferred.setAngle(value);
+
+        dropToBedAndUpdateLastTransformedBounds();
         checkOffBed();
+        notifyShapeChange();
     }
 
-    /**
-     *
-     * @return
-     */
     public double getRotationY()
     {
-        return rotationY.doubleValue();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public DoubleProperty rotationYProperty()
-    {
-        return rotationY;
-    }
-
-    /**
-     *
-     * @param value
-     */
-    public void setRotationZ(double value)
-    {
-        setRotateZ(value);
-        rotationZ.set(value);
-        checkOffBed();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public double getRotationZ()
-    {
-        return rotationZ.doubleValue();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public DoubleProperty rotationZProperty()
-    {
-        return rotationZ;
+        return transformRotateYPreferred.getAngle();
     }
 
     /**
@@ -665,6 +611,17 @@ public class ModelContainer extends Xform implements Serializable, Comparable
      */
     public void setSelected(boolean selected)
     {
+        if (selected)
+        {
+            if (selectionHighlighter == null)
+            {
+                addSelectionHighlighter();
+            }
+            showSelectedMarkers();
+        } else
+        {
+            hideSelectedMarkers();
+        }
         isSelected.set(selected);
     }
 
@@ -687,7 +644,7 @@ public class ModelContainer extends Xform implements Serializable, Comparable
     }
 
     private void writeObject(ObjectOutputStream out)
-            throws IOException
+        throws IOException
     {
         out.writeUTF(modelName.get());
 
@@ -699,17 +656,20 @@ public class ModelContainer extends Xform implements Serializable, Comparable
 
             for (Node node : getChildren())
             {
-                MeshView mesh = (MeshView) node;
-                TriangleMesh triMesh = (TriangleMesh) mesh.getMesh();
+                if (node instanceof MeshView)
+                {
+                    MeshView mesh = (MeshView) node;
+                    TriangleMesh triMesh = (TriangleMesh) mesh.getMesh();
 
-                int[] smoothingGroups = triMesh.getFaceSmoothingGroups().toArray(null);
-                out.writeObject(smoothingGroups);
+                    int[] smoothingGroups = triMesh.getFaceSmoothingGroups().toArray(null);
+                    out.writeObject(smoothingGroups);
 
-                int[] faces = triMesh.getFaces().toArray(null);
-                out.writeObject(faces);
+                    int[] faces = triMesh.getFaces().toArray(null);
+                    out.writeObject(faces);
 
-                float[] points = triMesh.getPoints().toArray(null);
-                out.writeObject(points);
+                    float[] points = triMesh.getPoints().toArray(null);
+                    out.writeObject(points);
+                }
             }
         } else
         {
@@ -720,34 +680,15 @@ public class ModelContainer extends Xform implements Serializable, Comparable
 //            }
         }
 
-        steno.info("Pivot is " + this.getPivot());
-
-        double translationX = getTx();
-        double translationY = getTy();
-        double translationZ = getTz();
-        double storedscale = scale.get();
-        double xrot = getRotationX();
-        double yrot = getRotationY();
-        double zrot = getRotationZ();
-
-        out.writeDouble(translationX);
-        out.writeDouble(translationY);
-        out.writeDouble(translationZ);
-        out.writeDouble(storedscale);
-        out.writeDouble(xrot);
-        out.writeDouble(yrot);
-        out.writeDouble(zrot);
-
-        out.writeDouble(centreX);
-        out.writeDouble(centreY);
-        out.writeDouble(centreZ);
-        out.writeDouble(centreXOffset);
-        out.writeDouble(centreYOffset);
-        out.writeDouble(centreZOffset);
+        out.writeDouble(transformMoveToPreferred.getX());
+        out.writeDouble(transformMoveToPreferred.getZ());
+        out.writeDouble(getScale());
+        out.writeDouble(getRotationY());
+        out.writeInt(snapFaceIndex);
     }
 
     private void readObject(ObjectInputStream in)
-            throws IOException, ClassNotFoundException
+        throws IOException, ClassNotFoundException
     {
         String modelName = in.readUTF();
 
@@ -795,57 +736,32 @@ public class ModelContainer extends Xform implements Serializable, Comparable
 //        this.getTransforms().clear();
 //        this.getTransforms().addAll(new Xform(RotateOrder.XYZ).getTransforms());
 
-        initialiseObject(modelName);
+        initialise(modelName);
 
-        double translationX = in.readDouble();
-        double translationY = in.readDouble();
-        double translationZ = in.readDouble();
-        double storedscale = in.readDouble();
-        double xrot = in.readDouble();
-        double yrot = in.readDouble();
-        double zrot = in.readDouble();
-        double xCentre = in.readDouble();
-        double yCentre = in.readDouble();
-        double zCentre = in.readDouble();
-        double offsetX = in.readDouble();
-        double offsetY = in.readDouble();
-        double offsetZ = in.readDouble();
+        double storedX = in.readDouble();
+        double storedZ = in.readDouble();
+        double storedScale = in.readDouble();
+        double storedRotationY = in.readDouble();
+        int storedSnapFaceIndex = in.readInt();
 
-        centreXOffset = offsetX;
-        centreYOffset = offsetY;
-        centreZOffset = offsetZ;
+        initialiseTransforms();
 
-        configureModelOnLoad();
+        transformMoveToPreferred.setX(storedX);
+        transformMoveToPreferred.setZ(storedZ);
+        setScale(storedScale);
+        setRotationY(storedRotationY);
+        if (storedSnapFaceIndex != SNAP_FACE_INDEX_NOT_SELECTED)
+        {
+            snapToGround(storedSnapFaceIndex);
+        }
 
-        double loadedPositionX = translationX;
-        double loadedPositionZ = translationZ - offsetZ;
-
-        translateTo(xCentre, zCentre);
-
-//        centreX = xCentre;
-//        centreY = yCentre;
-//        centreZ = zCentre;
-        scale(storedscale);
-        
-        setRotateX(xrot);
-        setRotateY(yrot);
-        setRotateZ(zrot);
+        notifyShapeChange();
     }
 
     private void readObjectNoData()
-            throws ObjectStreamException
+        throws ObjectStreamException
     {
 
-    }
-
-    /**
-     *
-     * @param newScale
-     */
-    public void scale(double newScale)
-    {
-//        steno.info("About to scale to " + newScale + "\n" + this.toString());
-        setScale(newScale);
     }
 
     /**
@@ -1061,14 +977,13 @@ public class ModelContainer extends Xform implements Serializable, Comparable
      */
     public void resizeWidth(double width)
     {
-        Bounds bounds = getBoundsInLocal();
+        ModelBounds bounds = getLocalBounds();
 
-        double currentWidth = bounds.getWidth();
+        double originalWidth = bounds.getWidth();
 
-        double newScale = width / currentWidth;
-
+        double newScale = width / originalWidth;
         setScale(newScale);
-        dropModelOnBed();
+        notifyShapeChange();
     }
 
     /**
@@ -1077,14 +992,14 @@ public class ModelContainer extends Xform implements Serializable, Comparable
      */
     public void resizeHeight(double height)
     {
-        Bounds bounds = getBoundsInLocal();
+        ModelBounds bounds = getLocalBounds();
 
         double currentHeight = bounds.getHeight();
 
         double newScale = height / currentHeight;
 
         setScale(newScale);
-        dropModelOnBed();
+        notifyShapeChange();
     }
 
     /**
@@ -1093,68 +1008,84 @@ public class ModelContainer extends Xform implements Serializable, Comparable
      */
     public void resizeDepth(double depth)
     {
-        Bounds bounds = getBoundsInLocal();
+
+        ModelBounds bounds = getLocalBounds();
 
         double currentDepth = bounds.getDepth();
 
         double newScale = depth / currentDepth;
 
         setScale(newScale);
-        dropModelOnBed();
+        notifyShapeChange();
     }
 
     /**
      *
      * @param x
      */
-    public void translateXTo(double x)
+    public void translateXTo(double xPosition)
     {
-        translateTo(x, centreZ);
+        ModelBounds bounds = getTransformedBounds();
+
+        double newMaxX = xPosition + bounds.getWidth() / 2;
+        double newMinX = xPosition - bounds.getWidth() / 2;
+
+        double finalXPosition = xPosition;
+
+        if (newMinX < 0)
+        {
+            finalXPosition += -newMinX;
+        } else if (newMaxX > printBed.getPrintVolumeMaximums().getX())
+        {
+            finalXPosition -= (newMaxX - printBed.getPrintVolumeMaximums().getX());
+        }
+
+        double currentXPosition = getTransformedCentreX();
+        double requiredTranslation = finalXPosition - currentXPosition;
+        transformMoveToPreferred.setX(transformMoveToPreferred.getX() + requiredTranslation);
+
+        updateLastTransformedBoundsForTranslateByX(requiredTranslation);
+        checkOffBed();
+        notifyShapeChange();
     }
 
     /**
      *
-     * @param z
      */
-    public void translateZTo(double z)
-    {
-        translateTo(centreX, z);
-    }
+    public void translateZTo(double zPosition)
 
-    /**
-     *
-     * @return
-     */
-    public ModelBounds getOriginalModelBounds()
     {
-        return originalModelBounds;
-    }
+        ModelBounds bounds = getTransformedBounds();
 
-    /**
-     *
-     * @return
-     */
-    public double getCentreX()
-    {
-        return centreX;
-    }
+        double newMaxZ = zPosition + bounds.getDepth() / 2;
+        double newMinZ = zPosition - bounds.getDepth() / 2;
 
-    /**
-     *
-     * @return
-     */
-    public double getCentreZ()
-    {
-        return centreZ;
+        double finalZPosition = zPosition;
+
+        if (newMinZ < 0)
+        {
+            finalZPosition += -newMinZ;
+        } else if (newMaxZ > printBed.getPrintVolumeMaximums().getZ())
+        {
+            finalZPosition -= (newMaxZ - printBed.getPrintVolumeMaximums().getZ());
+        }
+
+        double currentZPosition = getTransformedCentreZ();
+        double requiredTranslation = finalZPosition - currentZPosition;
+        transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + requiredTranslation);
+
+        updateLastTransformedBoundsForTranslateByZ(requiredTranslation);
+        checkOffBed();
+        notifyShapeChange();
     }
 
     private void checkOffBed()
     {
         Bounds bounds = getBoundsInParent();
         if (bounds.getMinX() < 0
-                || bounds.getMaxX() > printBed.getPrintVolumeMaximums().getX()
-                || bounds.getMinZ() < 0
-                || bounds.getMaxZ() > printBed.getPrintVolumeMaximums().getZ())
+            || bounds.getMaxX() > printBed.getPrintVolumeMaximums().getX()
+            || bounds.getMinZ() < 0
+            || bounds.getMaxZ() > printBed.getPrintVolumeMaximums().getZ())
         {
             isOffBed.set(true);
         } else
@@ -1174,105 +1105,60 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         return isOffBed;
     }
 
-    /**
-     *
-     * @param rotationCentreX
-     * @param rotationCentreY
-     * @param rotationCentreZ
-     * @param newValue
-     */
-    public void deltaRotateAroundY(double rotationCentreX, double rotationCentreY, double rotationCentreZ, double newValue)
+    public void deltaRotateAroundY(double newValue)
     {
-        double xDiff = rotationCentreX - centreX;
-        double zDiff = rotationCentreZ - centreZ;
-
-        Point3D rotationCentre = new Point3D(rotationCentreX, rotationCentreY, rotationCentreZ);
-        Point3D myCentre = new Point3D(centreX, 0, centreZ);
-
-        Point3D resultant = myCentre.subtract(rotationCentre);
-
-        PolarCoordinate polar = MathUtils.cartesianToSphericalLocalSpaceUnadjusted(resultant);
-
-        steno.info("Rot centre " + rotationCentre);
-        steno.info("Position " + myCentre);
-        steno.info("Asked to rotate " + newValue);
-//        steno.info("subtracted " + resultant);
-//        steno.info("Polar " + polar);
-        polar.setPhi(polar.getPhi() - newValue * MathUtils.DEG_TO_RAD);
-//        steno.info("Polar now " + polar);
-        Point3D interimValue = MathUtils.sphericalToCartesianLocalSpaceUnadjusted(polar);
-        Point3D finalValue = interimValue.add(rotationCentre);
-//        steno.info("Final val " + finalValue);
-
-        translateTo(finalValue.getX(), finalValue.getZ());
-//        setRotationY(this.getRotationY() + newValue);
-//        setPivot(rotationCentreX, rotationCentreY, rotationCentreZ);
-
-        setRy(this.getRotateY() + newValue);
-        calculateBounds();
-//        setRotationX(getRotationX() + newValue);
-
+        transformRotateYPreferred.setAngle(transformRotateYPreferred.getAngle() + newValue);
+        lastTransformedBounds = calculateBoundsInParent();
     }
 
     /**
-     *
-     * @param newRotation
+     * Calculate max/min X,Y,Z before the transforms have been applied (ie the original model
+     * dimensions before any transforms).
      */
-    public void rotateDegrees(Rotation newRotation)
+    private ModelBounds calculateBounds()
     {
-        double angles[] = currentRotation.getAngles(RotationOrder.XYZ);
-        steno.info("Angles were " + angles[0] + ":" + angles[1] + ":" + angles[2]);
+        TriangleMesh mesh = (TriangleMesh) getMeshView().getMesh();
+        ObservableFloatArray originalPoints = mesh.getPoints();
 
-        double newangles[] = newRotation.getAngles(RotationOrder.XYZ);
-        steno.info("New angles were " + newangles[0] + ":" + newangles[1] + ":" + newangles[2]);
+        double minX = 999;
+        double minY = 999;
+        double minZ = 999;
+        double maxX = -999;
+        double maxY = -999;
+        double maxZ = -999;
 
-//        currentRotation = newRotation.applyTo(currentRotation);
-//        angles = currentRotation.getAngles(RotationOrder.XYZ);
-//        steno.info("Angles were " + angles [0] + ":" + angles[1] + ":" + angles[2]);
-        this.setRotateX(angles[0]);
-        this.setRotateY(angles[1]);
-        this.setRotateZ(angles[2]);
+        for (int pointOffset = 0; pointOffset < originalPoints.size(); pointOffset += 3)
+        {
+            float xPos = originalPoints.get(pointOffset);
+            float yPos = originalPoints.get(pointOffset + 1);
+            float zPos = originalPoints.get(pointOffset + 2);
 
-//        originalModelBounds = localToParent(getBoundsInLocal());
-//
-        Bounds localBounds = getBoundsInLocal();
-        Bounds parentBounds = localToParent(localBounds);
-        Bounds sceneBounds = localToScene(localBounds);
-//
-        steno.info("Local: " + localBounds.toString() + " Parent:" + parentBounds.toString() + " Scene:" + sceneBounds.toString());
-//        originalModelBounds = getBoundsInParent();
-//        centreObjectOnBed();
-//        calculateBounds();
-        dropModelOnBed();
+            minX = Math.min(xPos, minX);
+            minY = Math.min(yPos, minY);
+            minZ = Math.min(zPos, minZ);
 
+            maxX = Math.max(xPos, maxX);
+            maxY = Math.max(yPos, maxY);
+            maxZ = Math.max(zPos, maxZ);
+        }
+
+        double newwidth = maxX - minX;
+        double newdepth = maxZ - minZ;
+        double newheight = maxY - minY;
+
+        double newcentreX = minX + (newwidth / 2);
+        double newcentreY = minY + (newheight / 2);
+        double newcentreZ = minZ + (newdepth / 2);
+
+        return new ModelBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
+                               newheight, newdepth, newcentreX, newcentreY,
+                               newcentreZ);
     }
 
     /**
-     *
-     * @param newRotation
+     * Calculate max/min X,Y,Z after the transforms have been applied (ie in the parent node).
      */
-    public void rotateRadians(Rotation newRotation)
-    {
-        double angles[] = currentRotation.getAngles(RotationOrder.XYZ);
-        steno.info("Angles were " + angles[0] + ":" + angles[1] + ":" + angles[2]);
-
-        double newangles[] = newRotation.getAngles(RotationOrder.XYZ);
-        steno.info("New angles were " + newangles[0] + ":" + newangles[1] + ":" + newangles[2]);
-
-        currentRotation = newRotation.applyTo(currentRotation);
-        double resultingAngles[] = currentRotation.getAngles(RotationOrder.XYZ);
-//        steno.info("Angles were " + angles [0] + ":" + angles[1] + ":" + angles[2]);
-//        this.setPivot(centreXOffset, centreYOffset, centreZOffset);
-        this.setRotationX(resultingAngles[0] * MathUtils.RAD_TO_DEG);
-        this.setRotationY(resultingAngles[1] * MathUtils.RAD_TO_DEG);
-        this.setRotationZ(resultingAngles[2] * MathUtils.RAD_TO_DEG);
-
-        calculateBounds();
-        dropModelOnBed();
-
-    }
-
-    private void calculateBounds()
+    public ModelBounds calculateBoundsInParent()
     {
         TriangleMesh mesh = (TriangleMesh) getMeshView().getMesh();
         ObservableFloatArray originalPoints = mesh.getPoints();
@@ -1309,18 +1195,9 @@ public class ModelContainer extends Xform implements Serializable, Comparable
         double newcentreY = minY + (newheight / 2);
         double newcentreZ = minZ + (newdepth / 2);
 
-        steno.info("New bounds are MinX:" + minX
-                + " MaxX:" + maxX
-                + " MinY:" + minY
-                + " MaxY:" + maxY
-                + " MinZ:" + minZ
-                + " MaxZ:" + maxZ
-                + " W:" + newwidth
-                + " H:" + newheight
-                + " D:" + newdepth);
-
-        originalModelBounds = new ModelBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth, newheight, newdepth, newcentreX, newcentreY, newcentreZ);
-
+        return new ModelBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
+                               newheight, newdepth, newcentreX, newcentreY,
+                               newcentreZ);
     }
 
     /**
@@ -1353,19 +1230,22 @@ public class ModelContainer extends Xform implements Serializable, Comparable
             float x1Pos = originalPoints.get(vertex1Ref);
             float y1Pos = originalPoints.get(vertex1Ref + 1);
             float z1Pos = originalPoints.get(vertex1Ref + 2);
-            int vertex1Bin = (int) Math.floor((Math.abs(y1Pos) + originalModelBounds.getMaxY()) / -minPrintableY);
+            int vertex1Bin = (int) Math.floor((Math.abs(y1Pos) + originalModelBounds.getMaxY())
+                / -minPrintableY);
 
             int vertex2Ref = originalFaces.get(triOffset + 2) * 3;
             float x2Pos = originalPoints.get(vertex2Ref);
             float y2Pos = originalPoints.get(vertex2Ref + 1);
             float z2Pos = originalPoints.get(vertex2Ref + 2);
-            int vertex2Bin = (int) Math.floor((Math.abs(y2Pos) + originalModelBounds.getMaxY()) / -minPrintableY);
+            int vertex2Bin = (int) Math.floor((Math.abs(y2Pos) + originalModelBounds.getMaxY())
+                / -minPrintableY);
 
             int vertex3Ref = originalFaces.get(triOffset + 4) * 3;
             float x3Pos = originalPoints.get(vertex3Ref);
             float y3Pos = originalPoints.get(vertex3Ref + 1);
             float z3Pos = originalPoints.get(vertex3Ref + 2);
-            int vertex3Bin = (int) Math.floor((Math.abs(y3Pos) + originalModelBounds.getMaxY()) / -minPrintableY);
+            int vertex3Bin = (int) Math.floor((Math.abs(y3Pos) + originalModelBounds.getMaxY())
+                / -minPrintableY);
 
 //            steno.info("Considering " + y1Pos + ":" + y2Pos + ":" + y3Pos);
             if (vertex1Bin == vertex2Bin && vertex1Bin == vertex3Bin)
@@ -1424,10 +1304,7 @@ public class ModelContainer extends Xform implements Serializable, Comparable
     }
 
     /**
-     *
-     * @param o
-     * @return
-     * @throws ClassCastException
+     * This compareTo implementation compares based on the overall size of the model.
      */
     @Override
     public int compareTo(Object o) throws ClassCastException
@@ -1452,7 +1329,7 @@ public class ModelContainer extends Xform implements Serializable, Comparable
      */
     public double getTotalWidth()
     {
-        double totalwidth = originalModelBounds.getWidth() * getScale();
+        double totalwidth = originalModelBounds.getWidth() * preferredScale.get();
         return totalwidth;
     }
 
@@ -1462,7 +1339,7 @@ public class ModelContainer extends Xform implements Serializable, Comparable
      */
     public double getTotalDepth()
     {
-        double totaldepth = originalModelBounds.getDepth() * getScale();
+        double totaldepth = originalModelBounds.getDepth() * preferredScale.get();
         return totaldepth;
     }
 
@@ -1473,6 +1350,214 @@ public class ModelContainer extends Xform implements Serializable, Comparable
     public double getTotalSize()
     {
         return getTotalWidth() + getTotalDepth();
+    }
+
+    public void snapToGround(int faceNumber)
+    {
+        setSnapFaceIndex(faceNumber);
+
+        checkOffBed();
+        notifyShapeChange();
+    }
+
+    /**
+     * Return the face normal for the face of the given index.
+     *
+     */
+    private Vector3D getFaceNormal(int faceNumber) throws MathArithmeticException
+    {
+        MeshView meshView = getMeshView();
+        TriangleMesh triMesh = (TriangleMesh) meshView.getMesh();
+        int baseFaceIndex = faceNumber * 6;
+        int v1PointIndex = triMesh.getFaces().get(baseFaceIndex);
+        int v2PointIndex = triMesh.getFaces().get(baseFaceIndex + 2);
+        int v3PointIndex = triMesh.getFaces().get(baseFaceIndex + 4);
+        ObservableFloatArray points = triMesh.getPoints();
+        Vector3D v1 = convertToVector3D(points, v1PointIndex);
+        Vector3D v2 = convertToVector3D(points, v2PointIndex);
+        Vector3D v3 = convertToVector3D(points, v3PointIndex);
+        Vector3D result1 = v2.subtract(v1);
+        Vector3D result2 = v3.subtract(v1);
+        Vector3D faceNormal = result1.crossProduct(result2);
+        Vector3D currentVectorNormalised = faceNormal.normalize();
+        return currentVectorNormalised;
+    }
+
+    private Vector3D convertToVector3D(ObservableFloatArray points, int v1PointIndex)
+    {
+        Vector3D v1 = new Vector3D(points.get(v1PointIndex * 3), points.get((v1PointIndex * 3)
+                                   + 1), points.get((v1PointIndex * 3) + 2));
+        return v1;
+    }
+
+    public ModelBounds getOriginalModelBounds()
+    {
+        return originalModelBounds;
+    }
+
+    private void dropToBedAndUpdateLastTransformedBounds()
+    {
+        // Correct transformRotateSnapToGroundYAdjust for change in height (Y)
+        transformSnapToGroundYAdjust.setY(0);
+        ModelBounds modelBoundsParent = calculateBoundsInParent();
+        transformSnapToGroundYAdjust.setY(-modelBoundsParent.getMaxY());
+        lastTransformedBounds = calculateBoundsInParent();
+    }
+
+    @Override
+    public double getCentreZ()
+    {
+        return getLocalBounds().getCentreZ();
+    }
+
+    @Override
+    public double getCentreY()
+    {
+        return getLocalBounds().getCentreY();
+    }
+
+    @Override
+    public double getCentreX()
+    {
+        return getLocalBounds().getCentreX();
+    }
+
+    public double getTransformedCentreZ()
+    {
+        return getTransformedBounds().getCentreZ();
+    }
+
+    public double getTransformedCentreX()
+    {
+        return getTransformedBounds().getCentreX();
+    }
+
+    @Override
+    public double getHeight()
+    {
+        return getLocalBounds().getHeight();
+    }
+
+    public double getScaledHeight()
+    {
+        return getLocalBounds().getHeight() * preferredScale.get();
+    }
+
+    @Override
+    public double getDepth()
+    {
+        return getLocalBounds().getDepth();
+    }
+
+    public double getScaledDepth()
+    {
+        return getLocalBounds().getDepth() * preferredScale.get();
+    }
+
+    @Override
+    public double getWidth()
+    {
+        return getLocalBounds().getWidth();
+    }
+
+    public double getScaledWidth()
+    {
+        return getLocalBounds().getWidth() * preferredScale.get();
+    }
+
+    public void addSelectionHighlighter()
+    {
+        selectionHighlighter = new SelectionHighlighter(this);
+        getChildren().add(selectionHighlighter);
+        selectedMarkers.add(selectionHighlighter);
+        notifyShapeChange();
+    }
+
+    private void updateLastTransformedBoundsForTranslateByX(double deltaCentreX)
+    {
+        lastTransformedBounds.translateX(deltaCentreX);
+        notifyShapeChange();
+    }
+
+    private void updateLastTransformedBoundsForTranslateByZ(double deltaCentreZ)
+    {
+        lastTransformedBounds.translateZ(deltaCentreZ);
+        notifyShapeChange();
+    }
+
+    private void showSelectedMarkers()
+    {
+        for (Node selectedMarker : selectedMarkers)
+        {
+            selectedMarker.setVisible(true);
+        }
+    }
+
+    private void hideSelectedMarkers()
+    {
+        for (Node selectedMarker : selectedMarkers)
+        {
+            selectedMarker.setVisible(false);
+        }
+    }
+
+    @Override
+    public void addShapeChangeListener(ShapeChangeListener listener)
+    {
+        shapeChangeListeners.add(listener);
+    }
+
+    /**
+     * This method must be called at the end of any operation that changes one or more of the
+     * transforms.
+     */
+    private void notifyShapeChange()
+    {
+        for (ShapeChangeListener shapeChangeListener : shapeChangeListeners)
+        {
+            shapeChangeListener.shapeChanged(this);
+        }
+    }
+
+    public double getPreferredScale()
+    {
+        return preferredScale.get();
+    }
+
+    /**
+     * @param preferredScale the preferredScale to set
+     */
+    public void setPreferredScale(double preferredScale)
+    {
+        this.preferredScale.set(preferredScale);
+        setScale(preferredScale);
+    }
+
+    public DoubleProperty preferredScaleProperty()
+    {
+        return preferredScale;
+    }
+
+    /**
+     * @return the preferredYRotation
+     */
+    public double getPreferredRotationY()
+    {
+        return preferredRotationY.get();
+    }
+
+    /**
+     * @param preferredYRotation the preferredYRotation to set
+     */
+    public void setPreferredRotationY(double preferredYRotation)
+    {
+        this.preferredRotationY.set(preferredYRotation);
+        setRotationY(preferredYRotation);
+    }
+
+    public DoubleProperty preferredRotationYProperty()
+    {
+        return preferredRotationY;
     }
 
 }

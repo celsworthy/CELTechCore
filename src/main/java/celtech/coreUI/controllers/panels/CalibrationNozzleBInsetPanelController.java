@@ -44,6 +44,9 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
     private Button cancelCalibrationButton;
 
     @FXML
+    private Button saveSettingsButton;
+
+    @FXML
     private Text calibrationStatus;
 
     @FXML
@@ -76,21 +79,21 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
         cancelCalibrationAction();
     }
 
+    @FXML
+    void closeWindow(ActionEvent event)
+    {
+        Stage stage = (Stage) container.getScene().getWindow();
+        stage.close();
+        calibrationHelper.setState(NozzleBCalibrationState.IDLE);
+    }
+
     /**
      *
      */
     public void cancelCalibrationAction()
     {
         calibrationHelper.cancelCalibrationAction();
-
-        if (calibrationHelper.getState() == NozzleBCalibrationState.IDLE)
-        {
-            Stage stage = (Stage) container.getScene().getWindow();
-            stage.close();
-        } else
-        {
-            calibrationHelper.setState(NozzleBCalibrationState.IDLE);
-        }
+        closeWindow(null);
     }
 
     @Override
@@ -125,6 +128,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(false);
                 noButton.setVisible(false);
+                saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 calibrationInstruction.setText(state.getStepInstruction());
                 break;
@@ -133,6 +137,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(false);
                 noButton.setVisible(false);
+                saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 calibrationInstruction.setText(state.getStepInstruction());
                 break;
@@ -141,6 +146,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(false);
                 noButton.setVisible(false);
+                saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 calibrationInstruction.setText(state.getStepInstruction());
                 break;
@@ -149,6 +155,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(false);
                 noButton.setVisible(false);
+                saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 calibrationInstruction.setText(state.getStepInstruction());
                 break;
@@ -157,6 +164,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(true);
                 noButton.setVisible(true);
+                saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 calibrationInstruction.setText(state.getStepInstruction());
                 break;
@@ -165,6 +173,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(true);
                 noButton.setVisible(true);
+                saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
                 calibrationInstruction.setText(state.getStepInstruction(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
                 break;
@@ -173,6 +182,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(true);
                 noButton.setVisible(false);
+                saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 calibrationInstruction.setText(state.getStepInstruction());
                 break;
@@ -181,6 +191,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(false);
                 noButton.setVisible(false);
+                saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 calibrationInstruction.setText(state.getStepInstruction());
                 break;
@@ -189,6 +200,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(true);
                 noButton.setVisible(true);
+                saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
                 calibrationInstruction.setText(state.getStepInstruction(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
                 break;
@@ -197,6 +209,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(true);
                 noButton.setVisible(false);
+                saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 calibrationInstruction.setText(state.getStepInstruction());
                 break;
@@ -205,6 +218,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(false);
                 noButton.setVisible(false);
+                saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 calibrationInstruction.setText(state.getStepInstruction());
                 break;
@@ -213,6 +227,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(true);
                 noButton.setVisible(true);
+                saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 calibrationInstruction.setText(state.getStepInstruction());
                 break;
@@ -221,14 +236,16 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(true);
                 noButton.setVisible(true);
+                saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
                 calibrationInstruction.setText(state.getStepInstruction(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
                 break;
             case FINISHED:
-                startCalibrationButton.setVisible(false);
+                startCalibrationButton.setVisible(true);
                 cancelCalibrationButton.setVisible(false);
                 yesButton.setVisible(false);
                 noButton.setVisible(false);
+                saveSettingsButton.setVisible(true);
                 calibrationStatus.setText(state.getStepTitle());
                 calibrationInstruction.setText(state.getStepInstruction());
                 break;
@@ -237,6 +254,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(false);
                 noButton.setVisible(false);
+                saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 calibrationInstruction.setText(state.getStepInstruction());
                 break;
