@@ -7,6 +7,7 @@ package celtech.services.printing;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.PauseStatus;
 import celtech.coreUI.DisplayManager;
 import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.printerControl.PrintJob;
@@ -133,15 +134,14 @@ public class PrintQueue implements ControllableService
     private final NotificationsHandler notificationsHandler;
     ETCCalculator etcCalculator;
     /**
-     * progressETC holds the number of seconds predicted for the ETC of the
-     * print
+     * progressETC holds the number of seconds predicted for the ETC of the print
      */
     private final IntegerProperty progressETC = new SimpleIntegerProperty();
     /**
      * The current layer being processed
      */
     private final IntegerProperty progressCurrentLayer = new SimpleIntegerProperty();
-        /**
+    /**
      * The total number of layers in the model being printed
      */
     private final IntegerProperty progressNumLayers = new SimpleIntegerProperty();
@@ -457,8 +457,8 @@ public class PrintQueue implements ControllableService
         List<Double> layerNumberToPredictedDuration = printJobStatistics.getLayerNumberToPredictedDuration();
         List<Integer> layerNumberToLineNumber = printJobStatistics.getLayerNumberToLineNumber();
         etcCalculator = new ETCCalculator(associatedPrinter,
-            layerNumberToPredictedDuration, layerNumberToLineNumber);
-        
+                                          layerNumberToPredictedDuration, layerNumberToLineNumber);
+
         progressNumLayers.set(layerNumberToLineNumber.size());
         primaryProgressPercent.unbind();
         primaryProgressPercent.set(0);
@@ -496,12 +496,11 @@ public class PrintQueue implements ControllableService
                     if (roboxIsPrinting)
                     {
                         makeETCCalculatorForJobOfUUID(printJobID);
-//                            fxToJMEInterface.exposeGCodeModel(percentDone);
                         this.notificationsHandler.showInformationNotification(
                             notificationTitle,
                             detectedPrintInProgressNotification);
 
-                        if (associatedPrinter.pausedProperty().get() == true)
+                        if (associatedPrinter.pauseStatusProperty().get() == PauseStatus.PAUSED)
                         {
                             setPrintStatus(PrinterStatusEnumeration.PAUSED);
                         } else
@@ -515,7 +514,6 @@ public class PrintQueue implements ControllableService
                 case EXECUTING_MACRO:
                     if (roboxIsPrinting == false)
                     {
-//                            fxToJMEInterface.exposeGCodeModel(0);
                         setPrintStatus(PrinterStatusEnumeration.IDLE);
                     }
                     break;
@@ -581,7 +579,7 @@ public class PrintQueue implements ControllableService
                     {
                         //Need to send the file to the printer
                         //Is it still on disk?
-                        
+
                         if (printJob.roboxisedFileExists())
                         {
                             acceptedPrintRequest = reprintFileFromDisk(printJob);
@@ -593,7 +591,7 @@ public class PrintQueue implements ControllableService
                                 + " not found on printer or disk - going ahead with print from scratch");
                         }
                     }
-                    
+
                     try
                     {
                         makeETCCalculator(printJob.getStatistics(), associatedPrinter);
@@ -658,13 +656,13 @@ public class PrintQueue implements ControllableService
         if (project.getProjectMode() == ProjectMode.MESH)
         {
 
-                    //Write out the slicer config
-                    settings.filament_diameterProperty().set(ApplicationConfiguration.filamentDiameterToYieldVolumetricExtrusion);
+            //Write out the slicer config
+            settings.filament_diameterProperty().set(ApplicationConfiguration.filamentDiameterToYieldVolumetricExtrusion);
 
-                    //We need to tell Slic3r where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
-                    Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
-                    settings.getPrint_center().set((centreOfPrintedObject.getX() + ApplicationConfiguration.xPrintOffset) + "," + (centreOfPrintedObject.getZ() + ApplicationConfiguration.yPrintOffset));
-                    settings.writeToFile(printJobDirectoryName + File.separator + printUUID + ApplicationConfiguration.printProfileFileExtension);
+            //We need to tell Slic3r where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
+            Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
+            settings.getPrint_center().set((centreOfPrintedObject.getX() + ApplicationConfiguration.xPrintOffset) + "," + (centreOfPrintedObject.getZ() + ApplicationConfiguration.yPrintOffset));
+            settings.writeToFile(printJobDirectoryName + File.separator + printUUID + ApplicationConfiguration.printProfileFileExtension);
 
             setPrintStatus(PrinterStatusEnumeration.SLICING);
             slicerService.reset();
@@ -742,7 +740,7 @@ public class PrintQueue implements ControllableService
         this.notificationsHandler.showInformationNotification(
             notificationTitle, i18nBundle.getString(
                 "notification.reprintInitiated"));
-        
+
         if (printJob.roboxisedFileExists())
         {
             try
@@ -982,7 +980,7 @@ public class PrintQueue implements ControllableService
      */
     public void resumePrint()
     {
-        if (associatedPrinter.pausedProperty().get() == true)
+        if (associatedPrinter.pauseStatusProperty().get() == PauseStatus.PAUSED)
         {
             try
             {
@@ -1239,12 +1237,14 @@ public class PrintQueue implements ControllableService
     {
         return etcAvailable;
     }
-    
-    public ReadOnlyIntegerProperty progressCurrentLayerProperty() {
+
+    public ReadOnlyIntegerProperty progressCurrentLayerProperty()
+    {
         return progressCurrentLayer;
     }
-    
-    public ReadOnlyIntegerProperty progressNumLayersProperty() {
+
+    public ReadOnlyIntegerProperty progressNumLayersProperty()
+    {
         return progressNumLayers;
-    }    
+    }
 }

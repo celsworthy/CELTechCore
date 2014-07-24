@@ -63,7 +63,7 @@ public class ApplicationConfiguration
     /**
      *
      */
-    public static final String fxmlSidePanelResourcePath = resourcePath + "fxml/sidePanels/";
+    public static final String fxmlPanelResourcePath = resourcePath + "fxml/panels/";
 
     /**
      *

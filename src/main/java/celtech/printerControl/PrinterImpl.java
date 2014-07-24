@@ -9,6 +9,7 @@ import celtech.configuration.Head;
 import celtech.configuration.HeadContainer;
 import celtech.configuration.HeaterMode;
 import celtech.configuration.MaterialType;
+import celtech.configuration.PauseStatus;
 import celtech.configuration.PrintHead;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
@@ -150,11 +151,10 @@ public class PrinterImpl implements Printer
     private final IntegerProperty printJobLineNumber = new SimpleIntegerProperty(-1);
     private final StringProperty printJobID = new SimpleStringProperty();
     private final BooleanProperty busy = new SimpleBooleanProperty(false);
-    private final BooleanProperty paused = new SimpleBooleanProperty(false);
     private final ObjectProperty<WhyAreWeWaitingState> whyAreWeWaitingState = new SimpleObjectProperty(
         WhyAreWeWaitingState.NOT_WAITING);
     private final StringProperty whyAreWeWaitingString = new SimpleStringProperty("");
-
+    private ObjectProperty<PauseStatus> pauseStatus = new SimpleObjectProperty(PauseStatus.NOT_PAUSED);
     private final BooleanProperty SDCardError = new SimpleBooleanProperty(false);
     private final BooleanProperty ChunkSequenceError = new SimpleBooleanProperty(false);
     private final BooleanProperty FileTooLargeError = new SimpleBooleanProperty(false);
@@ -1068,10 +1068,9 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
-    @Override
-    public final void setPaused(boolean value)
+    public final void setPauseStatus(PauseStatus value)
     {
-        paused.set(value);
+        pauseStatus.set(value);
     }
 
     /**
@@ -1079,9 +1078,9 @@ public class PrinterImpl implements Printer
      * @return
      */
     @Override
-    public final boolean getPaused()
+    public final PauseStatus getPauseStatus()
     {
-        return paused.get();
+        return pauseStatus.get();
     }
 
     /**
@@ -1089,9 +1088,9 @@ public class PrinterImpl implements Printer
      * @return
      */
     @Override
-    public final BooleanProperty pausedProperty()
+    public final ObjectProperty<PauseStatus> pauseStatusProperty()
     {
-        return paused;
+        return pauseStatus;
     }
 
     /**
@@ -2347,7 +2346,8 @@ public class PrinterImpl implements Printer
                     {
                         try
                         {
-                            if (paused.get() == true)
+                            if (pauseStatus.get() == PauseStatus.PAUSED
+                                || pauseStatus.get() == PauseStatus.PAUSE_PENDING)
                             {
                                 transmitResumePrint();
                             }
@@ -2360,7 +2360,8 @@ public class PrinterImpl implements Printer
                     {
                         try
                         {
-                            if (paused.get() == false)
+                            if (pauseStatus.get() == PauseStatus.NOT_PAUSED
+                                || pauseStatus.get() == PauseStatus.RESUME_PENDING)
                             {
                                 transmitPausePrint();
                             }
@@ -2474,14 +2475,16 @@ public class PrinterImpl implements Printer
                 setHeadFanOn(statusResponse.isHeadFanOn());
                 setBusy(statusResponse.isBusyStatus());
 
-                if (statusResponse.isPauseStatus() && paused.get() == false)
+                if (pauseStatus.get() != statusResponse.getPauseStatus()
+                    && statusResponse.getPauseStatus() == PauseStatus.PAUSED)
                 {
                     printQueue.printerHasPaused();
-                } else if (!statusResponse.isPauseStatus() && paused.get() == true)
+                } else if (pauseStatus.get() != statusResponse.getPauseStatus()
+                    && statusResponse.getPauseStatus() == PauseStatus.NOT_PAUSED)
                 {
                     printQueue.printerHasResumed();
                 }
-                setPaused(statusResponse.isPauseStatus());
+                setPauseStatus(statusResponse.getPauseStatus());
 
                 setPrintJobLineNumber(statusResponse.getPrintJobLineNumber());
                 setPrintJobID(statusResponse.getRunningPrintJobID());
@@ -3509,7 +3512,6 @@ public class PrinterImpl implements Printer
 
         try
         {
-            transmitDirectGCode(GCodeConstants.goToTargetFirstLayerNozzleTemperature, true);
             transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperature, true);
         } catch (RoboxCommsException ex)
         {

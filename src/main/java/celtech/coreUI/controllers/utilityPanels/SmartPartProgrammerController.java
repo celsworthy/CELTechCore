@@ -134,7 +134,7 @@ public class SmartPartProgrammerController implements Initializable
     {
         if (connectedPrinter != null)
         {
-            Head.softResetHead(connectedPrinter);
+            Head.hardResetHead(connectedPrinter);
         }
     }
 

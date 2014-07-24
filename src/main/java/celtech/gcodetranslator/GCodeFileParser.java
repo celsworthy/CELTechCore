@@ -320,7 +320,7 @@ public class GCodeFileParser {
                         for (GCodeTranslationEventHandler listener : listeners) {
                             listener.processEvent(eventToOutput);
                         }
-                    } catch (NozzleCloseSettingsError ex) {
+                    } catch (PostProcessingError ex) {
                         steno.error("Error processing event - aborting - " + eventToOutput);
                     }
                 }
@@ -331,7 +331,7 @@ public class GCodeFileParser {
                 for (GCodeTranslationEventHandler listener : listeners) {
                     listener.processEvent(new EndOfFileEvent());
                 }
-            } catch (NozzleCloseSettingsError ex) {
+            } catch (PostProcessingError ex) {
                 steno.error("Error processing end of file event");
             }
         } catch (FileNotFoundException ex) {

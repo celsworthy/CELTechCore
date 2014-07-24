@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<fx:root type="celtech.coreUI.components.InsetPanelMenuItem" styleClass="inset-panel-menu-item" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+    <graphic>
+        <javafx.scene.shape.Rectangle fx:id="" fill="white" width="5"/>    
+        <Text fx:id="itemTitle" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-menu-item-text" text="Text" />
+    </graphic>
+</fx:root>
