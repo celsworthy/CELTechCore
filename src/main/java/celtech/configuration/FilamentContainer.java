@@ -11,8 +11,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -187,6 +190,16 @@ public class FilamentContainer
         }
         return DeDuplicator.suggestNonDuplicateName(proposedName, currentFilamentNames);
     }
+    
+    private static Optional<String> getCurrentFileNameForFilamentID(String filamentID) {
+        for (Filament filament : completeFilamentList)
+        {
+            if (filament.getFilamentID().equals(filamentID)) {
+                return Optional.of(constructFilePath(filament));
+            }
+        }
+        return Optional.empty();
+    }
 
     /**
      *
@@ -228,9 +241,13 @@ public class FilamentContainer
             filamentProperties.setProperty(displayColourProperty, webColour);
             
             String filename = constructFilePath(filament);
+            Optional<String> previousFileName = getCurrentFileNameForFilamentID(filament.getFilamentID());
             
             File filamentFile = new File(filename);
             filamentProperties.store(new FileOutputStream(filamentFile), "Robox data");
+            if (previousFileName.isPresent()) {
+                Files.delete(Paths.get(previousFileName.get()));
+            }
             loadFilamentData();
         } catch (IOException ex)
         {
