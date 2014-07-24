@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.shape.*?>
+
+<fx:root type="celtech.coreUI.components.buttons.PreferencesButton" styleClass="borderlessGraphicButton" stylesheets="@../../css/JMetroDarkTheme.css" text="" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+    <graphic>
+        <SVGPath content="M63.999,24.332c0,9.63-6.113,18.57-14.986,22.244c-9.09,3.762-19.594,1.354-26.357-5.723c-6.771-7.081-8.607-17.721-4.436-26.604c4.092-8.717,13.309-14.356,22.953-13.88C53.661,0.981,63.999,11.845,63.999,24.332zM61.794,24.364c0-9.686-6.707-18.365-16.014-20.978c-9.412-2.638-19.639,1.675-24.578,10.035c-4.998,8.454-3.529,19.421,3.439,26.327c6.787,6.729,17.326,8.385,25.732,3.758C57.304,39.694,61.794,32.289,61.794,24.364zM43.493,35.064h-7.398l7.787-7.911H27.009v-5.48h16.873l-7.787-7.944h7.398l10.156,10.635v0.098L43.493,35.064z" fill="WHITE" styleClass="graphic" />
+    </graphic>
+</fx:root>

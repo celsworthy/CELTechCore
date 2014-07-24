@@ -1280,6 +1280,13 @@ table-view .column-header-background {
     -fx-border-insets: 1 1 1 1, 0;
 }
 
+.about-panel{
+    -fx-background-color: blue_colour;
+}
+
+.about-text{
+    -fx-fill: white;
+}
 // TODO: Remove when custom control for menu strip introduced
 
 #snapToGroundButton {
