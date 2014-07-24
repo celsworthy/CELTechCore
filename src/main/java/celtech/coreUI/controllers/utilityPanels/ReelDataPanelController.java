@@ -6,6 +6,8 @@
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.configuration.EEPROMState;
+import celtech.configuration.Filament;
+import celtech.configuration.FilamentContainer;
 import celtech.configuration.MaterialType;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.StatusScreenState;
@@ -23,6 +25,7 @@ import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -41,7 +44,7 @@ public class ReelDataPanelController implements Initializable
 
     @FXML
     Pane reelContainer;
-    
+
     @FXML
     private RestrictedTextField reelFilamentName;
 
@@ -74,10 +77,10 @@ public class ReelDataPanelController implements Initializable
 
     @FXML
     private RestrictedTextField reelBedTemperature;
-    
+
     @FXML
     private ComboBox<MaterialType> reelMaterialType;
-    
+
     @FXML
     private ColorPicker reelDisplayColor;
 
@@ -90,7 +93,12 @@ public class ReelDataPanelController implements Initializable
     @FXML
     void filamentSaveAs(ActionEvent event)
     {
-
+        Filament newFilament = makeFilamentFromFields();
+        newFilament.setFilamentID(null);
+        String safeNewFilamentName = FilamentContainer.suggestNonDuplicateName(
+            newFilament.getFriendlyFilamentName());
+        newFilament.setFriendlyFilamentName(safeNewFilamentName);
+        FilamentContainer.saveFilament(newFilament);
     }
 
     @FXML
@@ -98,33 +106,45 @@ public class ReelDataPanelController implements Initializable
     {
         try
         {
-            float remainingFilament = 0;
+            Filament newFilament = makeFilamentFromFields();
 
-            try
-            {
-                remainingFilament = Float.valueOf(reelRemainingFilament.getText());
-            } catch (NumberFormatException ex)
-            {
-                steno.error("Error parsing filament parameters");
-            }
+            FilamentContainer.saveFilament(newFilament);
 
-            connectedPrinter.transmitWriteReelEEPROM(
-                filamentID.getText(), Float.valueOf(reelFirstLayerNozzleTemperature.getText()),
-                Float.valueOf(reelNozzleTemperature.getText()),
-                Float.valueOf(reelFirstLayerBedTemperature.getText()), Float.valueOf(
-                    reelBedTemperature.getText()), Float.valueOf(reelAmbientTemperature.getText()),
-                Float.valueOf(reelFilamentDiameter.getText()),
-                Float.valueOf(reelFilamentMultiplier.getText()), Float.valueOf(
-                    reelFeedRateMultiplier.getText()), remainingFilament,
-                    reelFilamentName.getText(), 
-                    reelMaterialType.getSelectionModel().getSelectedItem(), 
-                    reelDisplayColor.getValue());
+            connectedPrinter.transmitWriteReelEEPROM(newFilament);
 
         } catch (RoboxCommsException ex)
         {
             steno.error("Error writing reel EEPROM");
         }
         readReelConfig(event);
+    }
+
+    private Filament makeFilamentFromFields() throws NumberFormatException
+    {
+        float remainingFilament = 0;
+        try
+        {
+            remainingFilament = Float.valueOf(reelRemainingFilament.getText());
+        } catch (NumberFormatException ex)
+        {
+            steno.error("Error parsing filament parameters");
+        }
+        Filament newFilament = new Filament(
+            reelFilamentName.getText(),
+            reelMaterialType.getSelectionModel().getSelectedItem(),
+            filamentID.getText(),
+            Float.valueOf(reelFilamentDiameter.getText()),
+            Float.valueOf(reelFilamentMultiplier.getText()),
+            Float.valueOf(reelFeedRateMultiplier.getText()),
+            Integer.valueOf(reelAmbientTemperature.getText()),
+            Integer.valueOf(reelFirstLayerBedTemperature.getText()),
+            Integer.valueOf(reelBedTemperature.getText()),
+            Integer.valueOf(reelFirstLayerNozzleTemperature.getText()),
+            Integer.valueOf(reelNozzleTemperature.getText()),
+            reelDisplayColor.getValue(),
+            true);
+        newFilament.setRemainingFilament(remainingFilament);
+        return newFilament;
     }
 
     void readReelConfig(ActionEvent event)
@@ -203,7 +223,7 @@ public class ReelDataPanelController implements Initializable
         {
             reelMaterialType.getItems().add(materialType);
         }
-        
+
         statusScreenState = StatusScreenState.getInstance();
 
         statusScreenState.currentlySelectedPrinterProperty().addListener(
@@ -259,4 +279,5 @@ public class ReelDataPanelController implements Initializable
                 connectedPrinter.reelEEPROMStatusProperty().isNotEqualTo(EEPROMState.NOT_PRESENT));
         }
     }
+
 }

@@ -5,12 +5,14 @@
  */
 package celtech.configuration;
 
+import celtech.utils.DeDuplicator;
 import celtech.utils.FXUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -170,6 +172,20 @@ public class FilamentContainer
         }
         
         return filamentList;
+    }
+    
+    /**
+     * Suggest a safe name for a new filament name based on the proposed name.
+     * @param originalName
+     * @return 
+     */
+    public static String suggestNonDuplicateName(String proposedName) {
+        List<String> currentFilamentNames = new ArrayList<>();
+        for (Filament filament : completeFilamentList)
+        {
+            currentFilamentNames.add(filament.getFriendlyFilamentName());
+        }
+        return DeDuplicator.suggestNonDuplicateName(proposedName, currentFilamentNames);
     }
 
     /**
