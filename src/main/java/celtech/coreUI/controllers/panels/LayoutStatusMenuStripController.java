@@ -13,6 +13,7 @@ import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.components.ProjectTab;
+import celtech.coreUI.components.buttons.SnapToGroundButton;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
@@ -80,7 +81,7 @@ public class LayoutStatusMenuStripController
     private Button distributeModelsButton;
 
     @FXML
-    private ToggleButton snapToGroundButton;
+    private SnapToGroundButton snapToGroundButton;
 
     @FXML
     void forwardPressed(ActionEvent event)

@@ -7,13 +7,13 @@ package celtech.coreUI.components.buttons;
 
 import java.io.IOException;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Button;
+import javafx.scene.control.ToggleButton;
 
 /**
  *
  * @author Ian
  */
-public class SnapToGroundButton extends Button
+public class SnapToGroundButton extends ToggleButton
 {
     public SnapToGroundButton()
     {
