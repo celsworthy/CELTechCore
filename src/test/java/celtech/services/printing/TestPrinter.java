@@ -8,6 +8,7 @@ import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.Head;
 import celtech.configuration.HeaterMode;
+import celtech.configuration.PauseStatus;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
@@ -516,19 +517,19 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void setPaused(boolean value)
+    public void setPauseStatus(PauseStatus value)
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public boolean getPaused()
+    public PauseStatus getPauseStatus()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public BooleanProperty pausedProperty()
+    public ObjectProperty<PauseStatus> pauseStatusProperty()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }

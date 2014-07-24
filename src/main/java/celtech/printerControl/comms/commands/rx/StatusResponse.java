@@ -2,6 +2,7 @@ package celtech.printerControl.comms.commands.rx;
 
 import celtech.configuration.EEPROMState;
 import celtech.configuration.HeaterMode;
+import celtech.configuration.PauseStatus;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.utils.FixedDecimalFloatFormat;
 import java.io.UnsupportedEncodingException;
@@ -13,13 +14,13 @@ import java.text.ParseException;
  */
 public class StatusResponse extends RoboxRxPacket
 {
-    /* Current spec of status response as of v657 firmware */
+    /* Current spec of status response as of v677 firmware */
 
     /*
      status: <0xe1> iiiiiiiiiiiiiiii llllllll p b x y z e d b g h i j a k mmmmmmmm nnnnnnnn cccccccc o pppppppp qqqqqqqq aaaaaaaa r ssssssss tttttttt u c v w s xxxxxxxx yyyyyyyy zzzzzzzz bbbbbbbb eeeeeeee gggggggg ffffffff
      iiiiiiiiiiiiiiii = id of running job
      llllllll = line # of running job in hex
-     p = pause
+     p = pause ('0'->normal, '1'->pause pending, '2'->paused, '3'->resume pending)
      b = busy
      x = X switch state
      y = Y switch state
@@ -66,7 +67,7 @@ public class StatusResponse extends RoboxRxPacket
     private boolean xSwitchStatus = false;
     private boolean ySwitchStatus = false;
     private boolean zSwitchStatus = false;
-    private boolean pauseStatus = false;
+    private PauseStatus pauseStatus = null;
     private boolean busyStatus = false;
     private boolean filament1SwitchStatus = false;
     private boolean filament2SwitchStatus = false;
@@ -160,7 +161,7 @@ public class StatusResponse extends RoboxRxPacket
      *
      * @return
      */
-    public boolean isPauseStatus()
+    public PauseStatus getPauseStatus()
     {
         return pauseStatus;
     }
@@ -479,8 +480,9 @@ public class StatusResponse extends RoboxRxPacket
 
             this.printJobLineNumber = Integer.valueOf(printJobLineNumberString, 16);
 
-            this.pauseStatus = (byteData[byteOffset] & 1) > 0 ? true : false;
+            String pauseStatusString = new String(byteData, byteOffset, 1, charsetToUse);
             byteOffset += 1;
+            this.pauseStatus = PauseStatus.modeFromValue(Integer.valueOf(pauseStatusString, 16));
 
             this.busyStatus = (byteData[byteOffset] & 1) > 0 ? true : false;
             byteOffset += 1;
@@ -718,6 +720,7 @@ public class StatusResponse extends RoboxRxPacket
      *
      * @return
      */
+    @Override
     public String toString()
     {
         StringBuilder outputString = new StringBuilder();
@@ -730,7 +733,7 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append("\n");
         outputString.append("Print line number: " + getPrintJobLineNumber());
         outputString.append("\n");
-        outputString.append("Pause status: " + isPauseStatus());
+        outputString.append("Pause status: " + getPauseStatus());
         outputString.append("\n");
         outputString.append("Busy status: " + isBusyStatus());
         outputString.append("\n");

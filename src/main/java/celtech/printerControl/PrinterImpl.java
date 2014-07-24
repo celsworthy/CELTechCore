@@ -8,6 +8,7 @@ import celtech.configuration.FilamentContainer;
 import celtech.configuration.Head;
 import celtech.configuration.HeadContainer;
 import celtech.configuration.HeaterMode;
+import celtech.configuration.PauseStatus;
 import celtech.configuration.PrintHead;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
@@ -141,9 +142,9 @@ public class PrinterImpl implements Printer
     private final ObjectProperty<PrinterStatusEnumeration> printerStatus = new SimpleObjectProperty<>(PrinterStatusEnumeration.IDLE);
     // make the initial value to non-zero so that we get a change event when set to 0
     private IntegerProperty printJobLineNumber = new SimpleIntegerProperty(-1);
-    private StringProperty printJobID = new SimpleStringProperty();
-    private BooleanProperty busy = new SimpleBooleanProperty(false);
-    private BooleanProperty paused = new SimpleBooleanProperty(false);
+    private final StringProperty printJobID = new SimpleStringProperty();
+    private final BooleanProperty busy = new SimpleBooleanProperty(false);
+    private ObjectProperty<PauseStatus> pauseStatus = new SimpleObjectProperty(PauseStatus.NOT_PAUSED);
     private ObjectProperty<WhyAreWeWaitingState> whyAreWeWaitingState = new SimpleObjectProperty(WhyAreWeWaitingState.NOT_WAITING);
     private StringProperty whyAreWeWaitingString = new SimpleStringProperty("");
 
@@ -948,6 +949,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setBusy(boolean value)
     {
         busy.set(value);
@@ -957,6 +959,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final boolean getBusy()
     {
         return busy.get();
@@ -966,6 +969,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty busyProperty()
     {
         return busy;
@@ -975,33 +979,36 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
-    public final void setPaused(boolean value)
+    public final void setPauseStatus(PauseStatus value)
     {
-        paused.set(value);
+        pauseStatus.set(value);
     }
 
     /**
      *
      * @return
      */
-    public final boolean getPaused()
+    @Override
+    public final PauseStatus getPauseStatus()
     {
-        return paused.get();
+        return pauseStatus.get();
     }
 
     /**
      *
      * @return
      */
-    public final BooleanProperty pausedProperty()
+    @Override
+    public final ObjectProperty<PauseStatus> pauseStatusProperty()
     {
-        return paused;
+        return pauseStatus;
     }
 
     /**
      *
      * @param value
      */
+    @Override
     public final void setWhyAreWeWaiting(WhyAreWeWaitingState value)
     {
         whyAreWeWaitingState.set(value);
@@ -2133,7 +2140,8 @@ public class PrinterImpl implements Printer
                     {
                         try
                         {
-                            if (paused.get() == true)
+                            if (pauseStatus.get() == PauseStatus.PAUSED
+                                || pauseStatus.get() == PauseStatus.PAUSE_PENDING)
                             {
                                 transmitResumePrint();
                             }
@@ -2146,7 +2154,8 @@ public class PrinterImpl implements Printer
                     {
                         try
                         {
-                            if (paused.get() == false)
+                            if (pauseStatus.get() == PauseStatus.NOT_PAUSED
+                                || pauseStatus.get() == PauseStatus.RESUME_PENDING)
                             {
                                 transmitPausePrint();
                             }
@@ -2246,14 +2255,16 @@ public class PrinterImpl implements Printer
                 setHeadFanOn(statusResponse.isHeadFanOn());
                 setBusy(statusResponse.isBusyStatus());
 
-                if (statusResponse.isPauseStatus() && paused.get() == false)
+                if (pauseStatus.get() != statusResponse.getPauseStatus()
+                    && statusResponse.getPauseStatus() == PauseStatus.PAUSED)
                 {
                     printQueue.printerHasPaused();
-                } else if (!statusResponse.isPauseStatus() && paused.get() == true)
+                } else if (pauseStatus.get() != statusResponse.getPauseStatus()
+                    && statusResponse.getPauseStatus() == PauseStatus.NOT_PAUSED)
                 {
                     printQueue.printerHasResumed();
                 }
-                setPaused(statusResponse.isPauseStatus());
+                setPauseStatus(statusResponse.getPauseStatus());
 
                 setPrintJobLineNumber(statusResponse.getPrintJobLineNumber());
                 setPrintJobID(statusResponse.getRunningPrintJobID());
@@ -3169,7 +3180,8 @@ public class PrinterImpl implements Printer
         {
             try
             {
-                transmitSetTemperatures(filament.getFirstLayerNozzleTemperature(), filament.getNozzleTemperature(), filament.getFirstLayerBedTemperature(), filament.getBedTemperature(), filament.getAmbientTemperature());
+                transmitSetTemperatures(filament.getFirstLayerNozzleTemperature(), filament.getNozzleTemperature(), filament.getFirstLayerBedTemperature(), filament.getBedTemperature(), filament.
+                                        getAmbientTemperature());
                 transmitSetFilamentInfo(filament.getFilamentDiameter(), filament.getFilamentMultiplier(), filament.getFeedRateMultiplier());
             } catch (RoboxCommsException ex)
             {

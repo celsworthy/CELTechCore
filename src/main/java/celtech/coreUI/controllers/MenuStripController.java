@@ -14,7 +14,6 @@ import celtech.configuration.DirectoryMemoryProperty;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
-import celtech.coreUI.ErrorHandler;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.visualisation.SelectedModelContainers;
@@ -60,8 +59,6 @@ public class MenuStripController
     private Project boundProject = null;
     private ResourceBundle i18nBundle = null;
     private PrinterUtils printerUtils = null;
-
-    private ErrorHandler errorHandler = ErrorHandler.getInstance();
 
     @FXML
     private ResourceBundle resources;
