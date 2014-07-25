@@ -17,6 +17,9 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -24,6 +27,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -87,6 +91,9 @@ public class HeadEEPROMController implements Initializable
 
     @FXML
     private VBox headFullContainer;
+    
+    @FXML
+    private Button writeOffsetsButton;
 
 //    private BooleanProperty fastUpdates = new SimpleBooleanProperty(false);
     private Head temporaryHead = null;
@@ -103,6 +110,8 @@ public class HeadEEPROMController implements Initializable
     private Float nozzle1ZOffsetCalculated;
     private Float nozzle2ZOffsetCalculated;
 
+    private BooleanProperty offsetFieldsDirty = new SimpleBooleanProperty();
+    
     @FXML
     void resetToDefaults(ActionEvent event)
     {
@@ -145,6 +154,7 @@ public class HeadEEPROMController implements Initializable
                 nozzle2XOffsetVal, nozzle2YOffsetVal,
                 nozzle2ZOffsetCalculated, nozzle2BOffsetVal,
                 lastFilamentTemperatureVal, headHourCounterVal);
+            offsetFieldsDirty.set(false);
         } catch (RoboxCommsException ex)
         {
             steno.error("Error writing reel EEPROM");
@@ -336,12 +346,40 @@ public class HeadEEPROMController implements Initializable
                     }
                 }
             });
-
+            
+            setUpWriteEnabledAfterEdits();
+            
         } catch (Exception ex)
         {
             ex.printStackTrace();
         }
 
+    }
+
+    private void setUpWriteEnabledAfterEdits()
+    {
+        ChangeListener offsetsChangedListener = new ChangeListener<String>() {
+            
+            @Override
+            public void changed(
+                ObservableValue<? extends String> observable, String oldValue, String newValue)
+            {
+                offsetFieldsDirty.set(true);
+            }
+            
+        };
+        
+        nozzle1BOffset.textProperty().addListener(offsetsChangedListener);
+        nozzle1XOffset.textProperty().addListener(offsetsChangedListener);
+        nozzle1YOffset.textProperty().addListener(offsetsChangedListener);
+        nozzle1ZOverrun.textProperty().addListener(offsetsChangedListener);
+        nozzle2BOffset.textProperty().addListener(offsetsChangedListener);
+        nozzle2XOffset.textProperty().addListener(offsetsChangedListener);
+        nozzle2YOffset.textProperty().addListener(offsetsChangedListener);
+        nozzle2ZOverrun.textProperty().addListener(offsetsChangedListener);
+        
+        writeOffsetsButton.disableProperty().bind(Bindings.not(offsetFieldsDirty));
+        
     }
 
     private void unbindFromPrinter(Printer printer)
@@ -409,15 +447,6 @@ public class HeadEEPROMController implements Initializable
         nozzle2ZOverrun.setText(String.format("%.2f", selectedHead.getNozzle2ZOverrun()));
     }
 
-    /**
-     * Get the standard head details for the selected head type.
-     */
-//    private Head getSelectedHead()
-//    {
-//        Head selectedHead = (Head) (headTypeCombo.getSelectionModel().selectedItemProperty().get());
-//        return selectedHead;
-//    }
-
     private void updateFieldsFromAttachedHead()
     {
         headTypeCode.setText(connectedPrinter.getHeadTypeCode().get().trim());
@@ -448,5 +477,6 @@ public class HeadEEPROMController implements Initializable
                                               connectedPrinter.attachedHeadProperty().get().getNozzle1ZOverrun()));
         nozzle2ZOverrun.setText(String.format("%.2f",
                                               connectedPrinter.attachedHeadProperty().get().getNozzle2ZOverrun()));
+        offsetFieldsDirty.set(false);
     }
 }

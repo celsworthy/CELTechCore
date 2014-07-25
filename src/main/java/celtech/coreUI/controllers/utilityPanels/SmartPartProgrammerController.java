@@ -45,7 +45,7 @@ public class SmartPartProgrammerController implements Initializable
         {
             if (connectedPrinter != null)
             {
-                setupSmartReelDisplay(connectedPrinter.getReelEEPROMStatus());
+//                setupSmartReelDisplay(connectedPrinter.getReelEEPROMStatus());
             }
         }
     };
@@ -55,34 +55,31 @@ public class SmartPartProgrammerController implements Initializable
         @Override
         public void changed(ObservableValue<? extends EEPROMState> observable, EEPROMState oldValue, EEPROMState newValue)
         {
-            setupSmartReelDisplay(newValue);
+//            setupSmartReelDisplay(newValue);
         }
     };
 
-    private void setupSmartReelDisplay(EEPROMState newValue)
-    {
-        switch (newValue)
-        {
-            case NOT_PRESENT:
-                currentReelTitle.setText(DisplayManager.getLanguageBundle().getString("smartReelProgrammer.noReelLoaded"));
-                break;
-            case NOT_PROGRAMMED:
-                currentReelTitle.setText(DisplayManager.getLanguageBundle().getString("smartReelProgrammer.reelNotFormatted"));
-                break;
-            case PROGRAMMED:
-                if (connectedPrinter.loadedFilamentProperty().get() != null)
-                {
-                    currentReelTitle.setText(connectedPrinter.loadedFilamentProperty().get().toString());
-                } else
-                {
-                    currentReelTitle.setText("* " + connectedPrinter.reelFriendlyNameProperty().get());
-                }
-                break;
-        }
-    }
-
-    @FXML
-    private Label currentReelTitle;
+//    private void setupSmartReelDisplay(EEPROMState newValue)
+//    {
+//        switch (newValue)
+//        {
+//            case NOT_PRESENT:
+//                currentReelTitle.setText(DisplayManager.getLanguageBundle().getString("smartReelProgrammer.noReelLoaded"));
+//                break;
+//            case NOT_PROGRAMMED:
+//                currentReelTitle.setText(DisplayManager.getLanguageBundle().getString("smartReelProgrammer.reelNotFormatted"));
+//                break;
+//            case PROGRAMMED:
+//                if (connectedPrinter.loadedFilamentProperty().get() != null)
+//                {
+//                    currentReelTitle.setText(connectedPrinter.loadedFilamentProperty().get().toString());
+//                } else
+//                {
+//                    currentReelTitle.setText("* " + connectedPrinter.reelFriendlyNameProperty().get());
+//                }
+//                break;
+//        }
+//    }
 
     @FXML
     private ComboBox<Filament> materialSelector;

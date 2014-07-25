@@ -59,7 +59,7 @@
                         <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                     <children>
                         <Label alignment="CENTER" text="%printerStatus.Nozzle2ControlLabel" GridPane.columnIndex="2" GridPane.columnSpan="2" />
@@ -77,12 +77,12 @@
                         <Label text=" Y" GridPane.halignment="RIGHT" GridPane.rowIndex="2" />
                         <Label text=" Z" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
                         <Label text=" B" GridPane.halignment="RIGHT" GridPane.rowIndex="4" />
-                  <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnSpan="3" GridPane.rowIndex="5">
-                     <children>
-                              <Button maxWidth="1000" minWidth="120.0" mnemonicParsing="false" onAction="#writeHeadConfig" text="Write" />
-                        <Button minWidth="120.0" mnemonicParsing="false" onAction="#resetToDefaults" text="Reset To Defaults" />
-                     </children>
-                  </HBox>
+                        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnSpan="3" GridPane.rowIndex="5">
+                            <children>
+                                <Button fx:id="writeOffsetsButton" disable="true" maxWidth="1000" minWidth="120.0" mnemonicParsing="false" onAction="#writeHeadConfig" text="Write" />
+                                <Button minWidth="120.0" mnemonicParsing="false" onAction="#resetToDefaults" text="Reset To Defaults" />
+                            </children>
+                        </HBox>
                     </children>
                 </GridPane>
                 

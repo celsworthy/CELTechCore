@@ -67,7 +67,7 @@
                 <HBox alignment="CENTER" prefHeight="-1.0" prefWidth="-1.0" spacing="10">
                     <children>
                         <Button fx:id="reelWriteConfig" mnemonicParsing="false" onAction="#writeReelConfig" text="Write To Reel" />
-                        <Button fx:id="saveFilamentAs" mnemonicParsing="false" onAction="#filamentSaveAs" text="Save As Filament" />
+                        <Button fx:id="saveFilamentAs" mnemonicParsing="false" onAction="#filamentSaveAs" text="Save As New Filament" />
                     </children>
                 </HBox>
                 <fx:include source="/celtech/resources/fxml/utilityPanels/smartPartProgrammer.fxml"/>
