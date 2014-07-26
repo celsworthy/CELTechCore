@@ -135,6 +135,8 @@ public class RestrictedNumberField extends TextField
     public RestrictedNumberField()
     {
         this.getStyleClass().add(this.getClass().getSimpleName());
+        
+        setText("-1");
 
         valueChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {

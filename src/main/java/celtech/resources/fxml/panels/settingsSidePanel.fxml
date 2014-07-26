@@ -7,6 +7,8 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.shape.*?>
+<?import jfxtras.styles.jmetro8.*?>
+<?import javafx.scene.text.*?>
 
 <HBox maxWidth="360.0" minWidth="-Infinity" prefWidth="360.0" styleClass="sidePanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.SettingsSidePanelController">
     <children>
@@ -178,7 +180,7 @@
                                 </Label>
                             </children>
                         </VBox>
-                        <VBox fillWidth="true" spacing="5.0">
+                        <VBox fillWidth="true" spacing="5.0" alignment="CENTER" >
                             <children>
                                 <Label layoutX="141.0" layoutY="141.0" maxWidth="-1.0" styleClass="sidePanelDivider" text="%sidePanel_settings.printerSelectionLabel" />
                                 <ComboBox fx:id="printerChooser" maxWidth="1.7976931348623157E308" promptText="%sidePanel_printerStatus.noPrinterPlaceholder" VBox.vgrow="NEVER">
@@ -190,15 +192,9 @@
                                 </ComboBox>
                                 <Label fx:id="printQualityLabel" styleClass="sidePanelDivider" text="%sidePanel_settings.printQualityLabel">
                                 </Label>
-                                <Slider fx:id="qualityChooser" majorTickUnit="1.0" max="3.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="-1.0" >
-                                    <padding>
-                                        <Insets left="20.0" right="20.0" />
-                                    </padding>
-                                    <VBox.margin>
-                                        <Insets />
-                                    </VBox.margin>
-                                </Slider>
+                                <Slider fx:id="qualityChooser" majorTickUnit="1.0" max="3.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="-1.0" maxWidth="260" />
                                 <StackPane>
+                                    <children>
                                     <VBox fx:id="customProfileVBox" minHeight="0.0" spacing="5.0">
                                         <children>
                                             <Label fx:id="customSettingsLabel" minHeight="0.0" styleClass="sidePanelDivider" text="%sidePanel_settings.customButtonLabel">
@@ -210,27 +206,17 @@
                                     <VBox fx:id="nonCustomProfileVBox" fillWidth="true" spacing="5.0">
                                         <children>
                                             <Label styleClass="sidePanelDivider" text="%sidePanel_settings.supportMaterialLabel" />
-                                            <HBox alignment="TOP_CENTER" spacing="15.0">
+                                            <HBox spacing="5.0" alignment="CENTER"  > 
                                                 <children>
-                                                    <RadioButton fx:id="noSupportRadioButton" mnemonicParsing="false" selected="true" text="%sidePanel_settings.supportMaterialNo">
-                                                        <toggleGroup>
-                                                            <ToggleGroup fx:id="supportMaterialGroup" />
-                                                        </toggleGroup>
-                                                    </RadioButton>
-                                                    <RadioButton fx:id="autoSupportRadioButton" mnemonicParsing="false" text="%sidePanel_settings.supportMaterialAuto" toggleGroup="$supportMaterialGroup" />
+                                                    <Label text="%sidePanel_settings.supportMaterialNo" textAlignment="RIGHT" />
+                                                    <ToggleSwitch fx:id="supportToggle" maxWidth="100" />
+                                                    <Label text="%sidePanel_settings.supportMaterialAuto" textAlignment="LEFT" />
                                                 </children>
                                             </HBox>
                                             <Label styleClass="sidePanelDivider" text="%sidePanel_settings.brimLabel" />
                                             <HBox alignment="TOP_CENTER" spacing="15.0">
                                                 <children>
-                                                    <Slider fx:id="brimSlider" majorTickUnit="1.0" max="3.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true">
-                                                        <padding>
-                                                            <Insets left="20.0" right="20.0" />
-                                                        </padding>
-                                                        <VBox.margin>
-                                                            <Insets />
-                                                        </VBox.margin>
-                                                    </Slider>
+                                                    <Slider fx:id="brimSlider" majorTickUnit="1.0" max="3.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" maxWidth="260"  />
                                                 </children>
                                             </HBox>
                                             <Label styleClass="sidePanelDivider" text="%sidePanel_settings.fillDensityLabel" />
@@ -243,8 +229,17 @@
                                                     </Slider>
                                                 </children>
                                             </HBox>
+                                            <Label styleClass="sidePanelDivider" text="%extrusion.spiralVase" />
+                                            <HBox spacing="5.0" alignment="CENTER"  > 
+                                                <children>
+                                                    <Label text="%misc.Off" textAlignment="RIGHT"  />
+                                                    <ToggleSwitch fx:id="spiralPrintToggle" maxWidth="100" />
+                                                    <Label text="%misc.On" textAlignment="LEFT" />
+                                                </children>
+                                            </HBox>
                                         </children>
                                     </VBox>
+                                    </children>
                                 </StackPane>
                             </children>
                         </VBox>

@@ -297,7 +297,7 @@ public class RoboxProfile implements Serializable, Cloneable
     /**
      *
      */
-    protected StringProperty first_layer_extrusion_width = new SimpleStringProperty("150%"); // needs to be :0
+    protected FloatProperty first_layer_extrusion_width = new SimpleFloatProperty(0.5f);
 
     /**
      *
@@ -652,17 +652,22 @@ public class RoboxProfile implements Serializable, Cloneable
     /**
      *
      */
-    protected ObservableList<FloatProperty> nozzle_close_at_midpoint = FXCollections.observableArrayList(new SimpleFloatProperty(-1), new SimpleFloatProperty(-1));
+    protected ObservableList<FloatProperty> nozzle_close_at_midpoint = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0));
 
     /**
      *
      */
-    protected ObservableList<FloatProperty> nozzle_close_midpoint_percent = FXCollections.observableArrayList(new SimpleFloatProperty(-1), new SimpleFloatProperty(-1));
+    protected ObservableList<FloatProperty> nozzle_close_midpoint_percent = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0));
 
     /**
      *
      */
-    protected ObservableList<FloatProperty> nozzle_open_over_volume = FXCollections.observableArrayList(new SimpleFloatProperty(-1), new SimpleFloatProperty(-1));
+    protected ObservableList<FloatProperty> nozzle_open_over_volume = FXCollections.observableArrayList(new SimpleFloatProperty(0), new SimpleFloatProperty(0));
+
+    /**
+     *
+     */
+    protected IntegerProperty force_nozzle_on_first_layer = new SimpleIntegerProperty(-1);
 
     /**
      *
@@ -2094,18 +2099,9 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      * @return
      */
-    public StringProperty getFirst_layer_extrusion_width()
+    public FloatProperty getFirst_layer_extrusion_width()
     {
         return first_layer_extrusion_width;
-    }
-
-    /**
-     *
-     * @param first_layer_extrusion_width
-     */
-    public void setFirst_layer_extrusion_width(StringProperty first_layer_extrusion_width)
-    {
-        this.first_layer_extrusion_width = first_layer_extrusion_width;
     }
 
     /**
@@ -2650,6 +2646,15 @@ public class RoboxProfile implements Serializable, Cloneable
 
     /**
      *
+     * @return
+     */
+    public IntegerProperty getForce_nozzle_on_first_layer()
+    {
+        return force_nozzle_on_first_layer;
+    }
+
+    /**
+     *
      * @param profileName
      * @param mutable
      * @param filename
@@ -3100,7 +3105,7 @@ public class RoboxProfile implements Serializable, Cloneable
         out.writeInt(extruder_clearance_radius.get());
         out.writeUTF(extrusion_axis.get());
         out.writeFloat(extrusion_width.get());
-        out.writeUTF(first_layer_extrusion_width.get());
+        out.writeFloat(first_layer_extrusion_width.get());
         out.writeFloat(perimeter_extrusion_width.get());
         out.writeFloat(infill_extrusion_width.get());
         out.writeFloat(solid_infill_extrusion_width.get());
@@ -3168,6 +3173,7 @@ public class RoboxProfile implements Serializable, Cloneable
         out.writeUTF(seam_position.get());
         out.writeFloat(standby_temperature_delta.get());
         out.writeInt(support_material_interface_speed.get());
+        out.writeInt(force_nozzle_on_first_layer.get());
     }
 
     private void readObject(ObjectInputStream in)
@@ -3232,7 +3238,7 @@ public class RoboxProfile implements Serializable, Cloneable
         extrusion_axis = new SimpleStringProperty(in.readUTF());
 
         extrusion_width = new SimpleFloatProperty(in.readFloat());
-        first_layer_extrusion_width = new SimpleStringProperty(in.readUTF());
+        first_layer_extrusion_width = new SimpleFloatProperty(in.readFloat());
         perimeter_extrusion_width = new SimpleFloatProperty(in.readFloat());
         infill_extrusion_width = new SimpleFloatProperty(in.readFloat());
         solid_infill_extrusion_width = new SimpleFloatProperty(in.readFloat());
@@ -3305,6 +3311,7 @@ public class RoboxProfile implements Serializable, Cloneable
             seam_position = new SimpleStringProperty(in.readUTF());
             standby_temperature_delta = new SimpleFloatProperty(in.readFloat());
             support_material_interface_speed = new SimpleIntegerProperty(in.readInt());
+            force_nozzle_on_first_layer = new SimpleIntegerProperty(in.readInt());
         } catch (IOException ex)
         {
             LOCAL_steno.warning("Variables missing from config file - using defaults");

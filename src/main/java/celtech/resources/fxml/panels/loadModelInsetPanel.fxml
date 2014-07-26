@@ -5,14 +5,9 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="container" stylesheets="@../../css/JMetroDarkTheme.css" VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.LoadModelInsetPanelController">
+<VBox fx:id="container" styleClass="inset-panel" stylesheets="@../../css/JMetroDarkTheme.css" VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.LoadModelInsetPanelController">
     <children>        
-        <HBox styleClass="inset-panel" VBox.vgrow="ALWAYS">
-            <children>
-                <celtech.coreUI.components.InsetPanelMenu fx:id="menu" VBox.vgrow="ALWAYS" />
-                <VBox fx:id="webContentContainer" HBox.hgrow="ALWAYS" />
-            </children>
-        </HBox>
+        <InsetPanelWithMenu fx:id="insetPanel" />
         <BorderPane styleClass="menubar">
             <right>
                 <StackPane>

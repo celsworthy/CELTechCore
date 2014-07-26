@@ -8,6 +8,8 @@ package celtech.coreUI.components;
 import java.io.IOException;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
@@ -15,14 +17,15 @@ import javafx.scene.text.Text;
  *
  * @author Ian
  */
-public class InsetPanelMenu extends VBox
+public class InsetPanelMenu extends HBox
 {
-
     @FXML
     private Text menuTitle;
 
     @FXML
     private VBox menuItemContainer;
+    
+    private ToggleGroup buttonGroup = new ToggleGroup();
 
     public InsetPanelMenu()
     {
@@ -40,7 +43,6 @@ public class InsetPanelMenu extends VBox
         {
             throw new RuntimeException(exception);
         }
-        
     }
 
     public void setTitle(String title)
@@ -51,5 +53,7 @@ public class InsetPanelMenu extends VBox
     public void addMenuItem(InsetPanelMenuItem menuItem)
     {
         menuItemContainer.getChildren().add(menuItem);
+        
+        menuItem.setToggleGroup(buttonGroup);
     }
 }

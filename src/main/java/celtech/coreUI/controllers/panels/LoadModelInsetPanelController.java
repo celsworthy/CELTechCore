@@ -13,6 +13,7 @@ import celtech.configuration.DirectoryMemoryProperty;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.InsetPanelMenu;
 import celtech.coreUI.components.InsetPanelMenuItem;
+import celtech.coreUI.components.InsetPanelWithMenu;
 import celtech.utils.SystemUtils;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,7 +43,6 @@ import javafx.stage.FileChooser;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import netscape.javascript.JSObject;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 /**
@@ -58,13 +58,7 @@ public class LoadModelInsetPanelController implements Initializable
     private static final Stenographer steno = StenographerFactory.getStenographer(LoadModelInsetPanelController.class.getName());
 
     @FXML
-    private VBox container;
-
-    @FXML
-    private VBox webContentContainer;
-
-    @FXML
-    private InsetPanelMenu menu;
+    private InsetPanelWithMenu insetPanel;
 
     @FXML
     void cancelPressed(ActionEvent event)
@@ -146,7 +140,7 @@ public class LoadModelInsetPanelController implements Initializable
         displayManager = DisplayManager.getInstance();
         i18nBundle = DisplayManager.getLanguageBundle();
 
-        menu.setTitle(i18nBundle.getString("loadModel.menuTitle"));
+        insetPanel.setMenuTitle(i18nBundle.getString("loadModel.menuTitle"));
 
         InsetPanelMenuItem myComputerItem = new InsetPanelMenuItem();
         myComputerItem.setTitle(i18nBundle.getString("loadModel.myComputer"));
@@ -154,8 +148,12 @@ public class LoadModelInsetPanelController implements Initializable
         InsetPanelMenuItem myMiniFactoryItem = new InsetPanelMenuItem();
         myMiniFactoryItem.setTitle(i18nBundle.getString("loadModel.myMiniFactory"));
 
-        menu.addMenuItem(myComputerItem);
-        menu.addMenuItem(myMiniFactoryItem);
+//        insetPanel.addMenuItem(myComputerItem);
+        
+        VBox webContentContainer = new VBox();
+        webContentContainer.setFillWidth(true);
+        
+        insetPanel.addMenuItem(myMiniFactoryItem, webContentContainer);
 
         modelFileChooser.setTitle(i18nBundle.getString("dialogs.modelFileChooser"));
         modelFileChooser.getExtensionFilters().addAll(
@@ -169,6 +167,7 @@ public class LoadModelInsetPanelController implements Initializable
 
                 WebView webView = new WebView();
                 VBox.setVgrow(webView, Priority.ALWAYS);
+                
 
                 final WebEngine webEngine = webView.getEngine();
 

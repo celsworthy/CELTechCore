@@ -47,6 +47,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
+import jfxtras.styles.jmetro8.ToggleSwitch;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -82,7 +83,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private ComboBox<RoboxProfile> customProfileChooser;
 
     @FXML
-    private RadioButton noSupportRadioButton;
+    private ToggleSwitch supportToggle;
 
     @FXML
     private Slider qualityChooser;
@@ -100,13 +101,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private Slider fillDensitySlider;
 
     @FXML
-    private RadioButton autoSupportRadioButton;
-
-    @FXML
-    private ToggleGroup supportMaterialGroup;
-
-    @FXML
     private VBox nonCustomProfileVBox;
+
+    @FXML
+    private ToggleSwitch spiralPrintToggle;
 
     @FXML
     void go(MouseEvent event)
@@ -163,7 +161,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         try
         {
-            FXMLLoader createMaterialPageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlUtilityPanelResourcePath + "materialDetails.fxml"), DisplayManager.getLanguageBundle());
+            FXMLLoader createMaterialPageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlUtilityPanelResourcePath + "materialDetails.fxml"), DisplayManager.
+                                                                 getLanguageBundle());
             createMaterialPage = createMaterialPageLoader.load();
             materialDetailsController = createMaterialPageLoader.getController();
             materialDetailsController.updateMaterialData(new Filament("", MaterialType.ABS, null,
@@ -172,7 +171,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
             createMaterialDialogue = new ModalDialog(DisplayManager.getLanguageBundle().getString("sidePanel_settings.createMaterialDialogueTitle"));
             createMaterialDialogue.setContent(createMaterialPage);
-            saveMaterialAction = createMaterialDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Save"), materialDetailsController.getProfileNameInvalidProperty());
+            saveMaterialAction = createMaterialDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Save"), materialDetailsController.
+                                                                  getProfileNameInvalidProperty());
             cancelMaterialSaveAction = createMaterialDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Cancel"));
 
         } catch (Exception ex)
@@ -191,14 +191,16 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         try
         {
-            FXMLLoader createProfilePageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetails.fxml"), DisplayManager.getLanguageBundle());
+            FXMLLoader createProfilePageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetails.fxml"), DisplayManager.
+                                                                getLanguageBundle());
             createProfilePage = createProfilePageLoader.load();
             profileDetailsController = createProfilePageLoader.getController();
             profileDetailsController.showButtons(false);
 
             createProfileDialogue = new ModalDialog(DisplayManager.getLanguageBundle().getString("sidePanel_settings.createProfileDialogueTitle"));
             createProfileDialogue.setContent(createProfilePage);
-            saveProfileAction = createProfileDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Save"), profileDetailsController.getProfileNameInvalidProperty());
+            saveProfileAction = createProfileDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Save"), profileDetailsController.
+                                                                getProfileNameInvalidProperty());
             cancelProfileSaveAction = createProfileDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Cancel"));
         } catch (Exception ex)
         {
@@ -247,7 +249,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         });
 
         Callback<ListView<RoboxProfile>, ListCell<RoboxProfile>> profileChooserCellFactory
-                = (ListView<RoboxProfile> list) -> new ProfileChoiceListCell();
+            = (ListView<RoboxProfile> list) -> new ProfileChoiceListCell();
 
         customProfileChooser.setCellFactory(profileChooserCellFactory);
         customProfileChooser.setButtonCell(profileChooserCellFactory.call(null));
@@ -302,7 +304,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         printerChooser.setItems(printerStatusList);
 
         printerChooser.getSelectionModel()
-                .clearSelection();
+            .clearSelection();
 
         printerChooser.getItems().addListener(new ListChangeListener<Printer>()
         {
@@ -366,42 +368,42 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         );
 
         printerChooser.getSelectionModel()
-                .selectedItemProperty().addListener(new ChangeListener<Printer>()
-                        {
-                            @Override
-                            public void changed(ObservableValue<? extends Printer> ov, Printer lastSelectedPrinter, Printer selectedPrinter
-                            )
-                            {
-                                if (lastSelectedPrinter != null)
-                                {
-                                    lastSelectedPrinter.reelDataChangedProperty().removeListener(reelDataChangedListener);
-                                }
-                                if (selectedPrinter != null && selectedPrinter != lastSelectedPrinter)
-                                {
-                                    currentPrinter = selectedPrinter;
-                                    selectedPrinter.reelDataChangedProperty().addListener(reelDataChangedListener);
-                                }
-
-                                if (selectedPrinter == null)
-                                {
-                                    currentPrinter = null;
-                                }
-
-                                settingsScreenState.setSelectedPrinter(selectedPrinter);
-
-                            }
-                }
-                );
-
-        Callback<ListView<Filament>, ListCell<Filament>> materialChooserCellFactory
-                = new Callback<ListView<Filament>, ListCell<Filament>>()
+            .selectedItemProperty().addListener(new ChangeListener<Printer>()
                 {
                     @Override
-                    public ListCell<Filament> call(ListView<Filament> list)
+                    public void changed(ObservableValue<? extends Printer> ov, Printer lastSelectedPrinter, Printer selectedPrinter
+                    )
                     {
-                        return new MaterialChoiceListCell();
+                        if (lastSelectedPrinter != null)
+                        {
+                            lastSelectedPrinter.reelDataChangedProperty().removeListener(reelDataChangedListener);
+                        }
+                        if (selectedPrinter != null && selectedPrinter != lastSelectedPrinter)
+                        {
+                            currentPrinter = selectedPrinter;
+                            selectedPrinter.reelDataChangedProperty().addListener(reelDataChangedListener);
+                        }
+
+                        if (selectedPrinter == null)
+                        {
+                            currentPrinter = null;
+                        }
+
+                        settingsScreenState.setSelectedPrinter(selectedPrinter);
+
                     }
-                };
+            }
+            );
+
+        Callback<ListView<Filament>, ListCell<Filament>> materialChooserCellFactory
+            = new Callback<ListView<Filament>, ListCell<Filament>>()
+            {
+                @Override
+                public ListCell<Filament> call(ListView<Filament> list)
+                {
+                    return new MaterialChoiceListCell();
+                }
+            };
 
         materialChooser.setCellFactory(materialChooserCellFactory);
         materialChooser.setButtonCell(new MaterialChoiceListCell());
@@ -458,32 +460,25 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         };
 
         nonCustomProfileVBox.visibleProperty()
-                .bind(qualityChooser.valueProperty().isNotEqualTo(PrintQualityEnumeration.CUSTOM.getEnumPosition()));
+            .bind(qualityChooser.valueProperty().isNotEqualTo(PrintQualityEnumeration.CUSTOM.getEnumPosition()));
 
-        supportMaterialGroup.selectedToggleProperty()
-                .addListener(new ChangeListener<Toggle>()
-                        {
-                            @Override
-                            public void changed(ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue)
-                            {
-                                if (suppressQualityOverrideTriggers == false)
-                                {
-                                    if (newValue != oldValue)
-                                    {
-                                        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-                                    }
+        supportToggle.selectedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(
+                ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                if (suppressQualityOverrideTriggers == false)
+                {
+                    if (newValue != oldValue)
+                    {
+                        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+                    }
 
-                                    if (newValue == noSupportRadioButton)
-                                    {
-                                        settingsScreenState.getSettings().setSupport_material(false);
-                                    } else if (newValue == autoSupportRadioButton)
-                                    {
-                                        settingsScreenState.getSettings().setSupport_material(true);
-                                    }
-                                }
-                            }
+                    settingsScreenState.getSettings().setSupport_material(newValue);
                 }
-                );
+            }
+        });
 
         fillDensitySlider.valueProperty().addListener(new ChangeListener<Number>()
         {
@@ -519,19 +514,30 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             }
         });
 
+        spiralPrintToggle.selectedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(
+                ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                if (suppressQualityOverrideTriggers == false)
+                {
+                    if (newValue != oldValue)
+                    {
+                        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+                    }
+
+                    settingsScreenState.getSettings().setSpiral_vase(newValue);
+                }
+            }
+        });
+
         updateFilamentList();
     }
 
     private void setupQualityOverrideControls(RoboxProfile settings)
     {
-        if (settings.support_materialProperty().get() == true)
-        {
-            autoSupportRadioButton.selectedProperty().set(true);
-        } else
-        {
-            noSupportRadioButton.selectedProperty().set(true);
-        }
-
+        supportToggle.setSelected(settings.support_materialProperty().get());
         fillDensitySlider.setValue(settings.fill_densityProperty().get() * 100.0);
         brimSlider.setValue(settings.getBrim_width().get());
     }

@@ -8,6 +8,12 @@ package celtech.coreUI.controllers.panels;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
+import celtech.appManager.ProjectMode;
+import static celtech.appManager.ProjectMode.GCODE;
+import static celtech.appManager.ProjectMode.MESH;
+import static celtech.appManager.ProjectMode.NONE;
+import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.DirectoryMemoryProperty;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
@@ -20,8 +26,13 @@ import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.utils.PrinterUtils;
+import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
@@ -31,8 +42,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.HBox;
+import javafx.stage.FileChooser;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -47,6 +58,7 @@ public class LayoutStatusMenuStripController
     private SettingsScreenState settingsScreenState = null;
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
+    private final FileChooser modelFileChooser = new FileChooser();
     private Project boundProject = null;
     private PrinterUtils printerUtils = null;
 
@@ -141,7 +153,70 @@ public class LayoutStatusMenuStripController
     @FXML
     void addModel(ActionEvent event)
     {
-        applicationStatus.setMode(ApplicationMode.ADD_MODEL);
+//        applicationStatus.setMode(ApplicationMode.ADD_MODEL);
+         Platform.runLater(() ->
+        {
+            ListIterator iterator = modelFileChooser.getExtensionFilters().listIterator();
+
+            while (iterator.hasNext())
+            {
+                iterator.next();
+                iterator.remove();
+            }
+
+            ProjectMode projectMode = ProjectMode.NONE;
+
+            if (displayManager.getCurrentlyVisibleProject() != null)
+            {
+                projectMode = displayManager.getCurrentlyVisibleProject().getProjectMode();
+            }
+
+            String descriptionOfFile = null;
+
+            switch (projectMode)
+            {
+                case NONE:
+                    descriptionOfFile = DisplayManager.getLanguageBundle().getString("dialogs.anyFileChooserDescription");
+                    break;
+                case MESH:
+                    descriptionOfFile = DisplayManager.getLanguageBundle().getString("dialogs.meshFileChooserDescription");
+                    break;
+                case GCODE:
+                    descriptionOfFile = DisplayManager.getLanguageBundle().getString("dialogs.gcodeFileChooserDescription");
+                    break;
+                default:
+                    break;
+            }
+            modelFileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter(descriptionOfFile,
+                                                ApplicationConfiguration.getSupportedFileExtensionWildcards(
+                                                    projectMode)));
+
+            modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(
+                DirectoryMemoryProperty.MODEL)));
+
+            List<File> files;
+            if (projectMode == ProjectMode.NONE || projectMode == ProjectMode.MESH)
+            {
+                files = modelFileChooser.showOpenMultipleDialog(displayManager.getMainStage());
+            } else
+            {
+                File file = modelFileChooser.showOpenDialog(displayManager.getMainStage());
+                files = new ArrayList<>();
+                if (file != null)
+                {
+                    files.add(file);
+                }
+            }
+
+            if (files != null && !files.isEmpty())
+            {
+                ApplicationConfiguration.setLastDirectory(
+                    DirectoryMemoryProperty.MODEL,
+                    files.get(0).getParentFile().getAbsolutePath());
+                displayManager.loadExternalModels(files, true);
+            }
+        });
     }
 
     @FXML
@@ -216,6 +291,13 @@ public class LayoutStatusMenuStripController
         });
         
         layoutButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LAYOUT));
+     modelFileChooser.setTitle(DisplayManager.getLanguageBundle().getString("dialogs.modelFileChooser"));
+        modelFileChooser.getExtensionFilters().addAll(
+            new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString(
+                    "dialogs.modelFileChooserDescription"),
+                                            ApplicationConfiguration.getSupportedFileExtensionWildcards(
+                                                ProjectMode.NONE)));
+
     }
 
     /**

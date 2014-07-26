@@ -6,11 +6,11 @@
 package celtech.coreUI.components;
 
 import java.io.IOException;
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.layout.HBox;
-import javafx.scene.text.Text;
+import javafx.scene.shape.Rectangle;
 
 /**
  *
@@ -18,9 +18,6 @@ import javafx.scene.text.Text;
  */
 public class InsetPanelMenuItem extends ToggleButton
 {
-    @FXML
-    private Text itemTitle;
-
     public InsetPanelMenuItem()
     {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
@@ -37,10 +34,12 @@ public class InsetPanelMenuItem extends ToggleButton
         {
             throw new RuntimeException(exception);
         }
+
+        getStyleClass().add("inset-panel-menu-item");
     }
 
     public void setTitle(String title)
     {
-        itemTitle.setText(title);
+        setText(title);
     }
 }
