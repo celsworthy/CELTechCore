@@ -1281,6 +1281,13 @@ table-view .column-header-background {
     -fx-border-insets: 1 1 1 1, 0;
 }
 
+.borderFrame {
+    -fx-border-color: grey;
+    -fx-border-width: 2;
+    -fx-border-style: solid;
+    -fx-border-radius: 2;
+}    
+    
 .blue-inset-panel{
     -fx-background-color: blue_colour;
 }

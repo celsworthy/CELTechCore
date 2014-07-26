@@ -8,7 +8,7 @@ import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
 import celtech.configuration.MaterialType;
 import celtech.configuration.PrintProfileContainer;
-import static celtech.coreUI.DeDuplicator.suggestNonDuplicateName;
+import static celtech.utils.DeDuplicator.suggestNonDuplicateName;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.MaterialChoiceListCell;
 import celtech.coreUI.components.ModalDialog;
@@ -661,7 +661,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             Filament filamentToSave = (Filament) profile;
 
             FilamentContainer.saveFilament(filamentToSave);
-            Filament chosenFilament = FilamentContainer.getFilamentByID(filamentToSave.getReelID());
+            Filament chosenFilament = FilamentContainer.getFilamentByID(filamentToSave.getFilamentID());
             materialChooser.getSelectionModel().select(chosenFilament);
         } else if (profile instanceof RoboxProfile)
         {
@@ -685,7 +685,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     Filament filamentToSave = materialDetailsController.getMaterialData();
                     FilamentContainer.saveFilament(filamentToSave);
 
-                    Filament chosenFilament = FilamentContainer.getFilamentByID(filamentToSave.getReelID());
+                    Filament chosenFilament = FilamentContainer.getFilamentByID(filamentToSave.getFilamentID());
                     materialChooser.getSelectionModel().select(chosenFilament);
                 } else
                 {

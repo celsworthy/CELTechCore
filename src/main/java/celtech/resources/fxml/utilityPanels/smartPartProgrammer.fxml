@@ -7,28 +7,17 @@
 
 <AnchorPane styleClass="sidePanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.SmartPartProgrammerController">
     <children>
-        <VBox alignment="TOP_CENTER" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <VBox alignment="TOP_CENTER" spacing="5.0" styleClass="borderFrame" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="5.0">
             <children>
-                <HBox alignment="CENTER" spacing="5.0">
+            <Label text="Write A Known Filament To The Reel" />
+            <Separator prefWidth="200.0" />
+                <ComboBox fx:id="materialSelector" prefWidth="250.0" />
+                <Button fx:id="programReelButton" mnemonicParsing="false" onAction="#programReel" text="%smartreelProgrammer.programReel" />
+                <HBox alignment="CENTER" layoutX="10.0" layoutY="10.0" spacing="5.0">
                     <children>
-                        <Label layoutX="74.0" layoutY="10.0" text="%smartreelProgrammer.currentReel" />
-                        <Label fx:id="currentReelTitle" />
+                        <Label fx:id="currentHeadTitle" />
                     </children>
                 </HBox>
-                <Separator prefWidth="200.0" />
-                <Label layoutX="74.0" layoutY="10.0" text="%smartreelProgrammer.chooseMaterial" />
-                <ComboBox fx:id="materialSelector" prefWidth="250.0" />
-                <Button fx:id="programReelButton" mnemonicParsing="false" onAction="#programReel" text="%smartreelProgrammer.programReel" /><Separator prefWidth="200.0">
-<VBox.margin>
-<Insets bottom="5.0" top="5.0" />
-</VBox.margin></Separator>
-<HBox alignment="CENTER" layoutX="10.0" layoutY="10.0" spacing="5.0">
-<children>
-<Label layoutX="74.0" layoutY="10.0" text="%smartheadProgrammer.currentHead" />
-<Label fx:id="currentHeadTitle" />
-</children>
-</HBox>
-<Button fx:id="resetHeadButton" layoutX="71.0" layoutY="109.0" mnemonicParsing="false" onAction="#resetHeadToDefaults" text="%smartheadProgrammer.resetHead" />
             </children>
         </VBox>
     </children>

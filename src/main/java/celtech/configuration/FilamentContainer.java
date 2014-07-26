@@ -5,12 +5,17 @@
  */
 package celtech.configuration;
 
+import celtech.utils.DeDuplicator;
 import celtech.utils.FXUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -35,9 +40,6 @@ public class FilamentContainer
     private static final ObservableList<Filament> completeFilamentList = FXCollections.observableArrayList();
     private static final ObservableMap<String, Filament> completeFilamentMap = FXCollections.observableHashMap();
 
-    /**
-     *
-     */
     public static final Filament createNewFilament = new Filament(null, null, null,
                                                                   0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, false);
     
@@ -174,9 +176,35 @@ public class FilamentContainer
         
         return filamentList;
     }
+    
+    /**
+     * Suggest a safe name for a new filament name based on the proposed name.
+     * @param originalName
+     * @return 
+     */
+    public static String suggestNonDuplicateName(String proposedName) {
+        List<String> currentFilamentNames = new ArrayList<>();
+        for (Filament filament : completeFilamentList)
+        {
+            currentFilamentNames.add(filament.getFriendlyFilamentName());
+        }
+        return DeDuplicator.suggestNonDuplicateName(proposedName, currentFilamentNames);
+    }
+    
+    private static Optional<String> getCurrentFileNameForFilamentID(String filamentID) {
+        for (Filament filament : completeFilamentList)
+        {
+            if (filament.getFilamentID().equals(filamentID)) {
+                return Optional.of(constructFilePath(filament));
+            }
+        }
+        return Optional.empty();
+    }
 
     /**
-     *
+     * Save the given filament to file, using the friendly name and material type as file name.
+     * If a filament already exists of the same filamentID but different file name 
+     * then delete that file.
      * @param filament
      * @return
      */
@@ -190,14 +218,14 @@ public class FilamentContainer
             
             filamentProperties.setProperty(nameProperty, filament.getFriendlyFilamentName());
             filamentProperties.setProperty(materialProperty, filament.getMaterial().getFriendlyName());
-            if (filament.getReelID() == null)
+            if (filament.getFilamentID() == null)
             {
                 String userReelID = Filament.generateUserReelID();
-                filament.setReelID(userReelID);
+                filament.setFilamentID(userReelID);
                 filamentProperties.setProperty(reelIDProperty, userReelID);
             } else
             {
-                filamentProperties.setProperty(reelIDProperty, filament.getReelID());
+                filamentProperties.setProperty(reelIDProperty, filament.getFilamentID());
             }
             filamentProperties.setProperty(diameterProperty, floatConverter.toString(filament.getFilamentDiameter()));
             filamentProperties.setProperty(filamentMultiplierProperty, floatConverter.toString(filament.getFilamentMultiplier()));
@@ -214,10 +242,14 @@ public class FilamentContainer
                                              (int) (filament.getDisplayColour().getBlue() * 255));
             filamentProperties.setProperty(displayColourProperty, webColour);
             
-            String filename = constructFilePath(filament);
+            String newFilename = constructFilePath(filament);
+            Optional<String> previousFileName = getCurrentFileNameForFilamentID(filament.getFilamentID());
             
-            File filamentFile = new File(filename);
+            File filamentFile = new File(newFilename);
             filamentProperties.store(new FileOutputStream(filamentFile), "Robox data");
+            if (previousFileName.isPresent() && ! previousFileName.get().equals(newFilename)) {
+                Files.delete(Paths.get(previousFileName.get()));
+            }
             loadFilamentData();
         } catch (IOException ex)
         {

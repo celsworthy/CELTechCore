@@ -32,8 +32,8 @@ public class HeadContainer
     {
         File applicationHeadDirHandle = new File(ApplicationConfiguration.getApplicationHeadDirectory());
         File[] applicationheads = applicationHeadDirHandle.listFiles(new HeadFileFilter());
-        ArrayList<Head> filaments = ingestHeads(applicationheads);
-        completeHeadList.addAll(filaments);
+        ArrayList<Head> heads = ingestHeads(applicationheads);
+        completeHeadList.addAll(heads);
     }
 
     private ArrayList<Head> ingestHeads(File[] userheads)
@@ -137,17 +137,17 @@ public class HeadContainer
 
     /**
      *
-     * @param filamentID
+     * @param headID
      * @return
      */
-    public static Head getHeadByID(String filamentID)
+    public static Head getHeadByID(String headID)
     {
         if (instance == null)
         {
             HeadContainer.getInstance();
         }
 
-        Head returnedHead = completeHeadMap.get(filamentID);
+        Head returnedHead = completeHeadMap.get(headID);
         return returnedHead;
 
     }
