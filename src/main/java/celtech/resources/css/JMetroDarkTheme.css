@@ -1,10 +1,10 @@
 *{
     black: rgb(0,0,0);
-    dark_grey: rgb(45,45,45);
-    mid_grey: rgb(65,65,65);
-    light_grey: rgb(100,100,100);
+    dark_grey: rgb(48,48,48);
+    mid_grey: rgb(64,64,64);
+    light_grey: rgb(99,99,99);
     entrybox_background_grey: rgb(180,180,180);
-    blue_colour: rgb(15%, 65%, 85%);
+    blue_colour: rgb(0, 157, 226);
     background_colour: rgb(0,0,0);
     unselected_colour: #1d1d1d;
     selected_colour: #ffffff;
@@ -1297,11 +1297,11 @@ table-view .column-header-background {
 }
 
 .inset-panel{
-    -fx-background-color: green;
+    -fx-background-color: light_grey;
 }
 
 .inset-panel-with-menu{
-    -fx-background-color: purple;
+    -fx-background-color: light_grey;
 }
 
 .inset-panel-text{

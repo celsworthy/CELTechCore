@@ -81,7 +81,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     private boolean triggerCloseFromTravel = false;
     private boolean triggerCloseFromRetract = true;
 
-    private int tempNozzleMemory = -1;
+    private int tempNozzleMemory = 0;
     private int nozzleInUse = -1;
     private int forcedNozzleOnFirstLayer = -1;
 
@@ -550,7 +550,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                     nozzleInUse = forcedNozzleOnFirstLayer;
                     forcedNozzleOnFirstLayer = -1;
                     currentNozzle = nozzles.get(nozzleInUse);
-                } else if (layer == 1)
+                } else if (layer < 1)
                 {
                     tempNozzleMemory = nozzleChangeEvent.getNozzleNumber();
                 } else if (layer > 1)

@@ -368,8 +368,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     @FXML
     private RestrictedNumberField externalPerimeterSpeed;
 
-    @FXML
-    private ToggleSwitch spiralPrintToggle;
+//    @FXML
+//    private ToggleSwitch spiralPrintToggle;
     
     @FXML
     void saveData(ActionEvent event)
@@ -728,7 +728,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         supportInterfaceNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
         supportPattern.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
         
-        spiralPrintToggle.selectedProperty().addListener(dirtyBooleanListener);
+//        spiralPrintToggle.selectedProperty().addListener(dirtyBooleanListener);
 
         isDirty.addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
         {
@@ -859,7 +859,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         solidLayersBottom.intValueProperty().set(newSettings.bottom_solid_layersProperty().get());
         numberOfPerimeters.intValueProperty().set(newSettings.perimetersProperty().get());
         brimWidth.intValueProperty().set(newSettings.getBrim_width().get());
-        spiralPrintToggle.selectedProperty().set(newSettings.spiral_vaseProperty().get());
+//        spiralPrintToggle.selectedProperty().set(newSettings.spiral_vaseProperty().get());
 
         //Nozzle tab
         firstLayerExtrusionWidth.floatValueProperty().set(newSettings.getFirst_layer_extrusion_width().get());
@@ -919,7 +919,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         settingsToUpdate.bottom_solid_layersProperty().set(solidLayersBottom.intValueProperty().get());
         settingsToUpdate.perimetersProperty().set(numberOfPerimeters.intValueProperty().get());
         settingsToUpdate.getBrim_width().set(brimWidth.intValueProperty().get());
-        settingsToUpdate.spiral_vaseProperty().set(spiralPrintToggle.selectedProperty().get());
+//        settingsToUpdate.spiral_vaseProperty().set(spiralPrintToggle.selectedProperty().get());
 
         //Nozzle tab
         settingsToUpdate.getFirst_layer_extrusion_width().set(firstLayerExtrusionWidth.floatValueProperty().get());

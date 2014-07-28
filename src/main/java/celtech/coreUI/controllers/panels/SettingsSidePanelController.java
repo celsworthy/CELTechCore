@@ -103,8 +103,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     @FXML
     private VBox nonCustomProfileVBox;
 
-    @FXML
-    private ToggleSwitch spiralPrintToggle;
+//    @FXML
+//    private ToggleSwitch spiralPrintToggle;
 
     @FXML
     void go(MouseEvent event)
@@ -514,25 +514,25 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             }
         });
 
-        spiralPrintToggle.selectedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(
-                ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-            {
-                if (suppressQualityOverrideTriggers == false)
-                {
-                    if (newValue != oldValue)
-                    {
-                        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-                    }
-
-                    settingsScreenState.getSettings().setSpiral_vase(newValue);
-                }
-            }
-        });
-
-        updateFilamentList();
+//        spiralPrintToggle.selectedProperty().addListener(new ChangeListener<Boolean>()
+//        {
+//            @Override
+//            public void changed(
+//                ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+//            {
+//                if (suppressQualityOverrideTriggers == false)
+//                {
+//                    if (newValue != oldValue)
+//                    {
+//                        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+//                    }
+//
+//                    settingsScreenState.getSettings().setSpiral_vase(newValue);
+//                }
+//            }
+//        });
+//
+//        updateFilamentList();
     }
 
     private void setupQualityOverrideControls(RoboxProfile settings)

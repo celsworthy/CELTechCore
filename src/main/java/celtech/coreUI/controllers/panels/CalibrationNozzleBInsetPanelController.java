@@ -1,5 +1,6 @@
 package celtech.coreUI.controllers.panels;
 
+import celtech.appManager.ApplicationStatus;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
@@ -82,9 +83,8 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
     @FXML
     void closeWindow(ActionEvent event)
     {
-        Stage stage = (Stage) container.getScene().getWindow();
-        stage.close();
         calibrationHelper.setState(NozzleBCalibrationState.IDLE);
+        ApplicationStatus.getInstance().returnToLastMode();
     }
 
     /**

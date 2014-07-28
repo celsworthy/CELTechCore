@@ -6,7 +6,6 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import jfxtras.styles.jmetro8.*?>
-<?import javafx.scene.text.*?>
 
 <VBox fx:id="container" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="380.0" spacing="5.0" styleClass="slideOutPanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.ProfileDetailsController">
     <children>
@@ -67,14 +66,20 @@
                                 <Label minWidth="-1.0" text="%extrusion.brimWidth" GridPane.rowIndex="7" />
                                 <RestrictedNumberField fx:id="brimWidth" allowedDecimalPlaces="0" maxLength="5" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
                                 <ComboBox fx:id="fillPatternChoice" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                                <Label minWidth="-1.0" text="%extrusion.spiralVase" GridPane.rowIndex="8" />
-                                <HBox spacing="5.0" alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="8"  > 
+<!--                                <Label minWidth="-1.0" text="%extrusion.spiralVase" GridPane.rowIndex="8" />
+                                <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="8"> 
                                     <children>
-                                        <Label text="%misc.Off" textAlignment="RIGHT"  />
-                                        <ToggleSwitch fx:id="spiralPrintToggle" maxWidth="100" />
+                                        <Label text="%misc.Off" textAlignment="RIGHT" />
+                                        <ToggleSwitch fx:id="spiralPrintToggle" prefWidth="40.0" />
                                         <Label text="%misc.On" textAlignment="LEFT" />
                                     </children>
-                                </HBox>
+                                    <opaqueInsets>
+                                        <Insets />
+                                    </opaqueInsets>
+                                    <padding>
+                                        <Insets left="10.0" />
+                                    </padding>
+                                </HBox>-->
 
                             </children>
                         </GridPane>

@@ -23,6 +23,9 @@ import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.utils.AxisSpecifier;
 import java.net.URL;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -77,6 +80,9 @@ public class PrinterStatusPageController implements Initializable
     private String transferringDataString = null;
 
     private PrinterColourMap colourMap = PrinterColourMap.getInstance();
+
+    private NumberFormat threeDPformatter;
+    private NumberFormat fiveDPformatter;
 
     @FXML
     private ImageView printerSilhouette;
@@ -356,18 +362,22 @@ public class PrinterStatusPageController implements Initializable
             {
                 if (button.getFeedRate() > 0)
                 {
-                    printerToUse.transmitDirectGCode(String.format(
-                        "G1 " + axis.name() + "%.2f F%d", distance,
-                        button.getFeedRate()), true);
+                    printerToUse.transmitDirectGCode(
+                        "G1 " + axis.name()
+                        + threeDPformatter.format(distance)
+                        + " F"
+                        + threeDPformatter.format(button.getFeedRate()), true);
                 } else
                 {
-                    printerToUse.transmitDirectGCode(String.format(
-                        "G1 " + axis.name() + "%.2f", distance), true);
+                    printerToUse.transmitDirectGCode(
+                        "G1 " + axis.name()
+                        + threeDPformatter.format(distance), true);
                 }
             } else
             {
-                printerToUse.transmitDirectGCode(String.format(
-                    "G0 " + axis.name() + "%.2f", distance), true);
+                printerToUse.transmitDirectGCode(
+                    "G0 " + axis.name()
+                    + threeDPformatter.format(distance), true);
             }
         } catch (RoboxCommsException ex)
         {
@@ -499,6 +509,14 @@ public class PrinterStatusPageController implements Initializable
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
+        threeDPformatter.setMaximumFractionDigits(3);
+        threeDPformatter.setGroupingUsed(false);
+
+        fiveDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
+        fiveDPformatter.setMaximumFractionDigits(5);
+        fiveDPformatter.setGroupingUsed(false);
+
         statusScreenState = StatusScreenState.getInstance();
 
         ResourceBundle i18nBundle = DisplayManager.getLanguageBundle();
@@ -626,6 +644,8 @@ public class PrinterStatusPageController implements Initializable
 
                         reel.setVisible(false);
                         filamentRectangle.setVisible(false);
+
+                        processPrinterStatusChange(null);
                     } else
                     {
                         unbindFromSelectedPrinter();
@@ -832,16 +852,22 @@ public class PrinterStatusPageController implements Initializable
 
     private void processPrinterStatusChange(PrinterStatusEnumeration printerStatus)
     {
-        switch (printerStatus)
+        if (printerStatus == null)
         {
-            case PAUSED:
-            case SENDING_TO_PRINTER:
-            case PRINTING:
-                printControlButtons.setVisible(true);
-                break;
-            default:
-                printControlButtons.setVisible(false);
-                break;
+            printControlButtons.setVisible(false);
+        } else
+        {
+            switch (printerStatus)
+            {
+                case PAUSED:
+                case SENDING_TO_PRINTER:
+                case PRINTING:
+                    printControlButtons.setVisible(true);
+                    break;
+                default:
+                    printControlButtons.setVisible(false);
+                    break;
+            }
         }
     }
 

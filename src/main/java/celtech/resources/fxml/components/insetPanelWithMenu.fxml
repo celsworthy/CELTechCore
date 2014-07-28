@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<fx:root xmlns:fx="http://javafx.com/fxml/1" maxHeight="1.7976931348623157E308" maxWidth="-Infinity" stylesheets="@../../css/JMetroDarkTheme.css" type="celtech.coreUI.components.InsetPanelWithMenu" InsetPanelMenu.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/8" >
+<fx:root xmlns:fx="http://javafx.com/fxml/1" maxHeight="1.7976931348623157E308" maxWidth="-Infinity" stylesheets="@../../css/JMetroDarkTheme.css" type="celtech.coreUI.components.InsetPanelWithMenu" xmlns="http://javafx.com/javafx/8" >
     <children>
         <celtech.coreUI.components.InsetPanelMenu fx:id="menu" VBox.vgrow="ALWAYS" />
         <Separator orientation="VERTICAL" />

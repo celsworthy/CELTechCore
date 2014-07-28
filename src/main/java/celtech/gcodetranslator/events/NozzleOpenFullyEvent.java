@@ -1,5 +1,9 @@
 package celtech.gcodetranslator.events;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
+
 /**
  *
  * @author Ian
@@ -53,21 +57,29 @@ public class NozzleOpenFullyEvent extends GCodeParseEvent
     @Override
     public String renderForOutput()
     {
+        NumberFormat threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
+        threeDPformatter.setMaximumFractionDigits(3);
+        threeDPformatter.setGroupingUsed(false);
+
+        NumberFormat fiveDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
+        fiveDPformatter.setMaximumFractionDigits(5);
+        fiveDPformatter.setGroupingUsed(false);
+
         String stringToReturn = "G1 B1.0";
-        
+
         if (e != 0)
         {
-            stringToReturn += String.format(" E%.5f", e);
+            stringToReturn += " E" + fiveDPformatter.format(e);
         }
-        
+
         if (d != 0)
         {
-            stringToReturn += String.format(" D%.5f", d);
+            stringToReturn += " D" + fiveDPformatter.format(d);
         }
-        
+
         if (e != 0 || d != 0)
         {
-            stringToReturn += String.format(" F%.5f", 400f);
+            stringToReturn += " F" + fiveDPformatter.format(400f);
         }
 
         if (getComment() != null)

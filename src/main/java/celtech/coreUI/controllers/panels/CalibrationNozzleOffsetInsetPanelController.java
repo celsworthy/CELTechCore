@@ -1,5 +1,7 @@
 package celtech.coreUI.controllers.panels;
 
+import celtech.appManager.ApplicationMode;
+import celtech.appManager.ApplicationStatus;
 import celtech.configuration.Head;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.NudgeControlVertical;
@@ -180,9 +182,8 @@ public class CalibrationNozzleOffsetInsetPanelController implements Initializabl
 
     private void closeAndReset()
     {
-        Stage stage = (Stage) container.getScene().getWindow();
-        stage.close();
         calibrationHelper.setState(NozzleOffsetCalibrationState.CHOOSE_MODE);
+        ApplicationStatus.getInstance().returnToLastMode();
     }
 
     @Override

@@ -265,7 +265,7 @@ public class MaintenancePanelController implements Initializable
     void calibrateZOffset(ActionEvent event)
     {
 
-        calibrateZOffsetAction();
+        ApplicationStatus.getInstance().setMode(ApplicationMode.NOZZLE_OFFSET_CALIBRATION);
     }
 
     public static void calibrateZOffsetAction()
@@ -273,7 +273,7 @@ public class MaintenancePanelController implements Initializable
         if (offsetCalibrationStage == null)
         {
             offsetCalibrationStage = new Stage(StageStyle.UNDECORATED);
-            URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "CalibrationNozzleOffsetPage.fxml");
+            URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlPanelResourcePath + "CalibrationNozzleOffsetInsetPanel.fxml");
             FXMLLoader nozzleOffsetCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, DisplayManager.getLanguageBundle());
             try
             {

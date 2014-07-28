@@ -1,5 +1,8 @@
-
 package celtech.gcodetranslator.events;
+
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 /**
  *
@@ -41,12 +44,10 @@ public class NozzlePositionChangeEvent extends ExtrusionEvent
     /*
      * This method indicates whether E values should be output or not
      */
-
     /**
      *
      * @param value
      */
-    
     public void setNoExtrusionFlag(boolean value)
     {
         this.noExtrusion = value;
@@ -59,20 +60,28 @@ public class NozzlePositionChangeEvent extends ExtrusionEvent
     @Override
     public String renderForOutput()
     {
-        String stringToReturn = "G1 X" + String.format("%.3f", getX()) + " Y" + String.format("%.3f", getY()) + " B" + String.format("%.3f", b);
+        NumberFormat threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
+        threeDPformatter.setMaximumFractionDigits(3);
+        threeDPformatter.setGroupingUsed(false);
+
+        NumberFormat fiveDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
+        fiveDPformatter.setMaximumFractionDigits(5);
+        fiveDPformatter.setGroupingUsed(false);
+
+        String stringToReturn = "G1 X" + threeDPformatter.format(getX()) + " Y" + threeDPformatter.format(getY()) + " B" + threeDPformatter.format(b);
 
         if (noExtrusion == false)
         {
-            stringToReturn += " E" + String.format("%.5f", getE());
+            stringToReturn += " E" + fiveDPformatter.format(getE());
         }
 
         if (getFeedRate() > 0)
         {
-            stringToReturn += " F" + String.format("%.3f", getFeedRate());
+            stringToReturn += " F" + threeDPformatter.format(getFeedRate());
         }
 
         stringToReturn += " ; ->L" + getLength() + " ";
-        
+
         if (noExtrusion != false)
         {
             stringToReturn += " ; ->E" + getE() + " ";

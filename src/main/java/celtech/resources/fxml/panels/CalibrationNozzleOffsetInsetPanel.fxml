@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<VBox fx:id="container" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" pickOnBounds="false" prefHeight="500.0" prefWidth="600.0" styleClass="standardPanel" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationNozzleOffsetInsetPanelController">
+<VBox fx:id="container" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" pickOnBounds="false" styleClass="inset-panel" stylesheets="@../../../../../../../../../CELTechCore/src/main/java/celtech/resources/css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationNozzleOffsetInsetPanelController">
     <children>
         <BorderPane pickOnBounds="false" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
             <VBox.margin>

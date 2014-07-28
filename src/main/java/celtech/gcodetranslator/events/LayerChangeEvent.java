@@ -1,11 +1,16 @@
 package celtech.gcodetranslator.events;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
+
 /**
  *
  * @author Ian
  */
 public class LayerChangeEvent extends GCodeParseEvent
 {
+
     private double z;
 
     /**
@@ -33,11 +38,15 @@ public class LayerChangeEvent extends GCodeParseEvent
     @Override
     public String renderForOutput()
     {
-        String stringToReturn = "G1 Z" + String.format("%.3f", z);
+        NumberFormat threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
+        threeDPformatter.setMaximumFractionDigits(3);
+        threeDPformatter.setGroupingUsed(false);
+
+        String stringToReturn = "G1 Z" + threeDPformatter.format(z);
 
         if (getFeedRate() > 0)
         {
-            stringToReturn += " F" + String.format("%.3f", getFeedRate());
+            stringToReturn += " F" + threeDPformatter.format(getFeedRate());
         }
 
         if (getComment() != null)

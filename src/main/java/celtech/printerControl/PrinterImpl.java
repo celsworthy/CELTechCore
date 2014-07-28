@@ -2315,7 +2315,12 @@ public class PrinterImpl implements Printer
 
                     Action errorHandlingResponse = null;
 
-                    if (getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.IDLE
+                    if (ackResponse.isNozzleFlushNeededError())
+                    {
+                        //Shouldn't ever get this in firmware > v677
+                        steno.warning("Received nozzle flush error from printer");
+                    }
+                    else if (getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.IDLE
                         && getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.ERROR)
                     {
                         errorHandlingResponse = Dialogs.create().title(

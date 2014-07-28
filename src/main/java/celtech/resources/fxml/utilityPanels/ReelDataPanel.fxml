@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
 <?import celtech.coreUI.components.*?>
 <?import java.lang.*?>
 <?import javafx.scene.control.*?>
@@ -46,7 +45,7 @@
                         <Label text="Ambient" GridPane.rowIndex="10" />
                         <Label text="Remaining" GridPane.columnIndex="2" GridPane.rowIndex="10" /> 
                         <TextField fx:id="filamentID" disable="true" editable="false" prefWidth="140.0" styleClass="RestrictedTextField" GridPane.columnIndex="1" GridPane.columnSpan="2" />
-                        <RestrictedTextField fx:id="reelFilamentName" forceUpperCase="false" maxLength="20" prefWidth="140.0" restrict="-_' 0-9\p{L}\p{M}*+" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1" />
+                        <RestrictedTextField fx:id="reelFilamentName" forceUpperCase="false" maxLength="20" prefWidth="140.0" restrict="-_' 0-9\p{L}\p{M}*+" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="1" />
                         <RestrictedTextField fx:id="reelFilamentDiameter" maxLength="4" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="7" />
                         <RestrictedTextField fx:id="reelFilamentMultiplier" maxLength="4" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="8" />
                         <RestrictedTextField fx:id="reelFeedRateMultiplier" maxLength="4" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="9" />
@@ -56,7 +55,7 @@
                         <RestrictedTextField fx:id="reelNozzleTemperature" maxLength="4" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="9" />
                         <RestrictedTextField fx:id="reelAmbientTemperature" maxLength="8" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="10" />
                         <RestrictedTextField fx:id="reelRemainingFilament" maxLength="8" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="10" />
-                  <ComboBox fx:id="reelMaterialType" maxHeight="25.0" prefWidth="150.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2" />
+                  <ComboBox fx:id="reelMaterialType" maxHeight="25.0" prefWidth="150.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="2" />
                   <ColorPicker fx:id="reelDisplayColor" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" />
                   <Label text="Temp" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="4" GridPane.valignment="BOTTOM" />
                   <Label text="Filament " GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="4" GridPane.valignment="BOTTOM" />
@@ -70,7 +69,7 @@
                         <Button fx:id="saveFilamentAs" mnemonicParsing="false" onAction="#filamentSaveAs" text="Save As New Filament" />
                     </children>
                 </HBox>
-                <fx:include source="/celtech/resources/fxml/utilityPanels/smartPartProgrammer.fxml"/>
+                <fx:include source="/celtech/resources/fxml/utilityPanels/smartPartProgrammer.fxml" />
             </children>
               
         </VBox>                   
