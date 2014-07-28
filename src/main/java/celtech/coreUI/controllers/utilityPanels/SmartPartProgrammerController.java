@@ -10,7 +10,6 @@ import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
 import celtech.configuration.Head;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -23,7 +22,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
