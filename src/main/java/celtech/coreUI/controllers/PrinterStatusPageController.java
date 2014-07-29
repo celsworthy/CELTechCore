@@ -890,11 +890,11 @@ public class PrinterStatusPageController implements Initializable
                 cancelPrintButton.setVisible(true);
                 break;
             case PAUSE_PENDING:
-                resumePrintButton.setVisible(true);
+                resumePrintButton.setVisible(false); // revert when new firmware arrives
                 resumePrintButton.setDisable(false);
-                pausePrintButton.setVisible(false);
-                pausePrintButton.setDisable(false);
-                cancelPrintButton.setVisible(true);
+                pausePrintButton.setVisible(true); // revert when new firmware arrives
+                pausePrintButton.setDisable(true); // revert when new firmware arrives
+                cancelPrintButton.setVisible(false); // revert when new firmware arrives
                 break;
             case RESUME_PENDING:
                 resumePrintButton.setVisible(true);
