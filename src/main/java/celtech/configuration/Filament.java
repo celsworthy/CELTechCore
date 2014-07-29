@@ -29,7 +29,8 @@ import libertysystems.stenographer.StenographerFactory;
 public class Filament implements Serializable, Cloneable
 {
 
-    private static final Stenographer steno = StenographerFactory.getStenographer(Filament.class.getName());
+    private static final Stenographer steno = StenographerFactory.getStenographer(
+        Filament.class.getName());
 
     private final BooleanProperty mutable = new SimpleBooleanProperty(false);
     private final StringProperty friendlyFilamentName = new SimpleStringProperty("");
@@ -45,7 +46,8 @@ public class Filament implements Serializable, Cloneable
     private final IntegerProperty requiredFirstLayerNozzleTemperature = new SimpleIntegerProperty(0);
     private final IntegerProperty requiredNozzleTemperature = new SimpleIntegerProperty(0);
     private ObjectProperty<Color> displayColour = new SimpleObjectProperty<>();
-    private final FloatProperty remainingFilament = new SimpleFloatProperty(ApplicationConfiguration.mmOfFilamentOnAReel);
+    private final FloatProperty remainingFilament = new SimpleFloatProperty(
+        ApplicationConfiguration.mmOfFilamentOnAReel);
 
     private static final float epsilon = 0.0001f;
 
@@ -496,30 +498,29 @@ public class Filament implements Serializable, Cloneable
     }
 
     /**
+     * Return the friendlyName and if it is a Robox filament then prepend it with Robox®.
+     */
+    public String getLongFriendlyName()
+    {
+        if (filamentID.get() != null)
+        {
+            if (filamentID.get().startsWith("RBX"))
+            {
+                return "Robox® " + friendlyFilamentName.get();
+            }
+        }
+
+        return friendlyFilamentName.get();
+    }
+
+    /**
      *
      * @return
      */
     @Override
     public String toString()
     {
-        String prefix = null;
-        String displayName = friendlyFilamentName.get() + " " + material.get();
-
-        if (filamentID.get() != null)
-        {
-            if (filamentID.get().startsWith("RBX"))
-            {
-                prefix = "Robox® ";
-            }
-        }
-
-        if (prefix == null)
-        {
-            return displayName;
-        } else
-        {
-            return prefix + displayName;
-        }
+        return getLongFriendlyName() + " " + material.get();
     }
 
     /**
@@ -577,58 +578,75 @@ public class Filament implements Serializable, Cloneable
                     {
                         boolean needToWriteFilamentData = false;
 
-                        Filament referenceFilament = FilamentContainer.getFilamentByID(receivedTypeCode);
+                        Filament referenceFilament = FilamentContainer.getFilamentByID(
+                            receivedTypeCode);
 
                         if (referenceFilament != null)
                         {
                             Filament filamentToWrite = new Filament(response);
                             filamentToWrite.setRemainingFilament(response.getReelRemainingFilament());
 
-                            if (Math.abs(response.getAmbientTemperature() - referenceFilament.getAmbientTemperature()) > epsilon)
+                            if (Math.abs(response.getAmbientTemperature()
+                                - referenceFilament.getAmbientTemperature()) > epsilon)
                             {
-                                filamentToWrite.setAmbientTemperature(referenceFilament.getAmbientTemperature());
+                                filamentToWrite.setAmbientTemperature(
+                                    referenceFilament.getAmbientTemperature());
                                 needToWriteFilamentData = true;
                             }
 
-                            if (Math.abs(response.getBedTemperature() - referenceFilament.getBedTemperature()) > epsilon)
+                            if (Math.abs(response.getBedTemperature()
+                                - referenceFilament.getBedTemperature()) > epsilon)
                             {
-                                filamentToWrite.setBedTemperature(referenceFilament.getBedTemperature());
+                                filamentToWrite.setBedTemperature(
+                                    referenceFilament.getBedTemperature());
                                 needToWriteFilamentData = true;
                             }
 
-                            if (Math.abs(response.getFeedRateMultiplier() - referenceFilament.getFeedRateMultiplier()) > epsilon)
+                            if (Math.abs(response.getFeedRateMultiplier()
+                                - referenceFilament.getFeedRateMultiplier()) > epsilon)
                             {
-                                filamentToWrite.setFeedRateMultiplier(referenceFilament.getFeedRateMultiplier());
+                                filamentToWrite.setFeedRateMultiplier(
+                                    referenceFilament.getFeedRateMultiplier());
                                 needToWriteFilamentData = true;
                             }
 
-                            if (Math.abs(response.getFilamentDiameter() - referenceFilament.getFilamentDiameter()) > epsilon)
+                            if (Math.abs(response.getFilamentDiameter()
+                                - referenceFilament.getFilamentDiameter()) > epsilon)
                             {
-                                filamentToWrite.setFilamentDiameter(referenceFilament.getFilamentDiameter());
+                                filamentToWrite.setFilamentDiameter(
+                                    referenceFilament.getFilamentDiameter());
                                 needToWriteFilamentData = true;
                             }
 
-                            if (Math.abs(response.getFilamentMultiplier() - referenceFilament.getFilamentMultiplier()) > epsilon)
+                            if (Math.abs(response.getFilamentMultiplier()
+                                - referenceFilament.getFilamentMultiplier()) > epsilon)
                             {
-                                filamentToWrite.setFilamentMultiplier(referenceFilament.getFilamentMultiplier());
+                                filamentToWrite.setFilamentMultiplier(
+                                    referenceFilament.getFilamentMultiplier());
                                 needToWriteFilamentData = true;
                             }
 
-                            if (Math.abs(response.getFirstLayerBedTemperature() - referenceFilament.getFirstLayerBedTemperature()) > epsilon)
+                            if (Math.abs(response.getFirstLayerBedTemperature()
+                                - referenceFilament.getFirstLayerBedTemperature()) > epsilon)
                             {
-                                filamentToWrite.setFirstLayerBedTemperature(referenceFilament.getFirstLayerBedTemperature());
+                                filamentToWrite.setFirstLayerBedTemperature(
+                                    referenceFilament.getFirstLayerBedTemperature());
                                 needToWriteFilamentData = true;
                             }
 
-                            if (Math.abs(response.getFirstLayerNozzleTemperature() - referenceFilament.getFirstLayerNozzleTemperature()) > epsilon)
+                            if (Math.abs(response.getFirstLayerNozzleTemperature()
+                                - referenceFilament.getFirstLayerNozzleTemperature()) > epsilon)
                             {
-                                filamentToWrite.setFirstLayerNozzleTemperature(referenceFilament.getFirstLayerNozzleTemperature());
+                                filamentToWrite.setFirstLayerNozzleTemperature(
+                                    referenceFilament.getFirstLayerNozzleTemperature());
                                 needToWriteFilamentData = true;
                             }
 
-                            if (Math.abs(response.getNozzleTemperature() - referenceFilament.getNozzleTemperature()) > epsilon)
+                            if (Math.abs(response.getNozzleTemperature()
+                                - referenceFilament.getNozzleTemperature()) > epsilon)
                             {
-                                filamentToWrite.setNozzleTemperature(referenceFilament.getNozzleTemperature());
+                                filamentToWrite.setNozzleTemperature(
+                                    referenceFilament.getNozzleTemperature());
                                 needToWriteFilamentData = true;
                             }
 
@@ -636,15 +654,19 @@ public class Filament implements Serializable, Cloneable
                             {
                                 printer.transmitWriteReelEEPROM(filamentToWrite);
                                 printer.transmitReadReelEEPROM();
-                                steno.info("Automatically updated filament data for " + receivedTypeCode);
+                                steno.info("Automatically updated filament data for "
+                                    + receivedTypeCode);
 
                                 Platform.runLater(new Runnable()
                                 {
                                     @Override
                                     public void run()
                                     {
-                                        Notifier.showInformationNotification(DisplayManager.getLanguageBundle().getString("notification.reelDataUpdatedTitle"),
-                                                                             DisplayManager.getLanguageBundle().getString("notification.noActionRequired"));
+                                        Notifier.showInformationNotification(
+                                            DisplayManager.getLanguageBundle().getString(
+                                                "notification.reelDataUpdatedTitle"),
+                                            DisplayManager.getLanguageBundle().getString(
+                                                "notification.noActionRequired"));
                                     }
                                 });
 

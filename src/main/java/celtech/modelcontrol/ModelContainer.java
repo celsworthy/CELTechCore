@@ -753,6 +753,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         if (storedSnapFaceIndex != SNAP_FACE_INDEX_NOT_SELECTED)
         {
             snapToGround(storedSnapFaceIndex);
+        } else {
+            snapFaceIndex = SNAP_FACE_INDEX_NOT_SELECTED;
         }
 
         notifyShapeChange();
