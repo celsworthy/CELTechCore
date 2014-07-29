@@ -771,7 +771,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
             currentAmbientTemperatureHistory = selectedPrinter.ambientTemperatureHistory();
             temperatureChart.getData().add(selectedPrinter.ambientTemperatureHistory());
-            selectedPrinter.ambientTemperatureHistory().getData().addListener(graphDataPointChangeListener);
+            selectedPrinter.nozzleTemperatureHistory().getData().addListener(graphDataPointChangeListener);
             temperatureChart.getData().add(selectedPrinter.bedTemperatureHistory());
             temperatureChart.getData().add(selectedPrinter.nozzleTemperatureHistory());
             temperatureChart.getData().add(selectedPrinter.ambientTargetTemperatureHistory());

@@ -1254,7 +1254,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
                     currentNozzle.closeNozzleFully();
 
-                } else if (extrusionBuffer.size() > 0)
+                } else if (extrusionBuffer.size() > 0 && containsExtrusionEvents(extrusionBuffer))
                 {
                     CommentEvent failureComment = new CommentEvent();
                     failureComment.setComment(
@@ -1292,6 +1292,20 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         {
             autoUnretractEValue += event.getE();
         }
+    }
+
+    private boolean containsExtrusionEvents(ArrayList<GCodeParseEvent> buffer)
+    {
+        boolean foundExtrusionEvent = false;
+        for (GCodeParseEvent event : buffer)
+        {
+            if (event instanceof ExtrusionEvent)
+            {
+                foundExtrusionEvent = true;
+                break;
+            }
+        }
+        return foundExtrusionEvent;
     }
 
     private int getNextExtrusionEventIndex(int startingIndex)

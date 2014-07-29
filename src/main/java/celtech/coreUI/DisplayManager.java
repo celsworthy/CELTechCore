@@ -419,7 +419,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, getLanguageBundle());
             VBox topMenuStripControls = (VBox) menuStripLoader.load();
             VBox.setVgrow(topMenuStripControls, Priority.NEVER);
-            rhPanel.getChildren().add(topMenuStripControls);
+//            rhPanel.getChildren().add(topMenuStripControls);
         } catch (IOException ex)
         {
             steno.error("Failed to load top menu strip controls:" + ex);
@@ -431,8 +431,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
         tabDisplay = new TabPane();
         tabDisplay.setPickOnBounds(false);
         tabDisplay.setOnKeyPressed(this);
-        tabDisplay.setTabMinHeight(62);
-        tabDisplay.setTabMaxHeight(62);
+        tabDisplay.setTabMinHeight(50);
+        tabDisplay.setTabMaxHeight(50);
         tabDisplaySelectionModel = tabDisplay.getSelectionModel();
         tabDisplay.getStyleClass().add("main-project-tabPane");
 
