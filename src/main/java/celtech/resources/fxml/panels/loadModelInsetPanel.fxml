@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import celtech.coreUI.components.*?>
+<?import celtech.coreUI.components.buttons.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="container" styleClass="inset-panel" stylesheets="@../../css/JMetroDarkTheme.css" VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.LoadModelInsetPanelController">
+    <children>        
+        <InsetPanelWithMenu fx:id="insetPanel" />
+        <BorderPane styleClass="menubar">
+            <right>
+                <StackPane>
+                    <children>
+                        <AddToProjectButton fx:id="addToProjectButton" onAction="#addToProjectPressed" />
+                    </children>
+                </StackPane>
+            </right>
+            <left>
+                <CancelButton fx:id="backwardButton" onAction="#cancelPressed" />
+            </left>
+            <center>
+            </center>
+        </BorderPane>
+    </children>
+</VBox>

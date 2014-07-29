@@ -6,7 +6,6 @@ package celtech.gcodetranslator;
 import celtech.JavaFXConfiguredTest;
 import celtech.configuration.PrintProfileContainer;
 import celtech.services.slicer.RoboxProfile;
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -71,7 +70,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
         {
             totalDuration += duration;
         }
-        assertEquals(551d, totalDuration, 1);
+        assertEquals(552d, totalDuration, 1);
 
     }
 
@@ -103,6 +102,14 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     {
         byte[] producedData = Files.readAllBytes(outputFilePath);
         return new String(producedData).replaceAll("\r", "");
+    }
+    
+    @Test
+    public void writeEventsWithNozzleCloseTest()
+    {
+        GCodeRoboxiser roboxiser = new GCodeRoboxiser();
+        
+//        roboxiser.writeEventsWithNozzleClose();
     }
 
 }

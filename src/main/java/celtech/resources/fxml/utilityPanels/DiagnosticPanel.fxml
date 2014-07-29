@@ -6,7 +6,7 @@
 
 <AnchorPane id="AnchorPane" maxWidth="1.7976931348623157E308" styleClass="sidePanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.DiagnosticPanelController">
     <children>
-        <GridPane alignment="TOP_CENTER" hgap="5.0" vgap="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <GridPane alignment="TOP_CENTER" hgap="5.0" vgap="5.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <columnConstraints>
                 <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" />
                 <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" />
@@ -14,21 +14,21 @@
                 <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" />
             </columnConstraints>
             <rowConstraints>
-                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
+                <RowConstraints prefHeight="20.0" />
                 <RowConstraints />
+                <RowConstraints prefHeight="20.0" />
+                <RowConstraints prefHeight="20.0" />
+                <RowConstraints prefHeight="20.0" />
+                <RowConstraints prefHeight="20.0" />
                 <RowConstraints />
+                <RowConstraints prefHeight="20.0" />
+                <RowConstraints prefHeight="20.0" />
                 <RowConstraints />
+                <RowConstraints prefHeight="25.0" />
+                <RowConstraints prefHeight="20.0" />
                 <RowConstraints />
-                <RowConstraints />
-                <RowConstraints />
-                <RowConstraints />
-                <RowConstraints />
-                <RowConstraints />
-                <RowConstraints />
-                <RowConstraints />
-                <RowConstraints />
-                <RowConstraints />
-                <RowConstraints />
+                <RowConstraints prefHeight="20.0" />
 <RowConstraints />
             </rowConstraints>
             <children>

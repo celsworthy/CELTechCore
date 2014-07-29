@@ -8,6 +8,8 @@ import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.Head;
 import celtech.configuration.HeaterMode;
+import celtech.configuration.MaterialType;
+import celtech.configuration.PauseStatus;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
@@ -37,6 +39,7 @@ import javafx.scene.paint.Color;
  */
 public interface Printer
 {
+    public StringProperty getPrinterUniqueIDProperty();
 
     /**
      *
@@ -480,19 +483,19 @@ public interface Printer
      *
      * @param value
      */
-    public void setPaused(boolean value);
+    public void setPauseStatus(PauseStatus value);
 
     /**
      *
      * @return
      */
-    public boolean getPaused();
+    public PauseStatus getPauseStatus();
 
     /**
      *
      * @return
      */
-    public BooleanProperty pausedProperty();
+    public ObjectProperty<PauseStatus> pauseStatusProperty();
 
     /**
      *
@@ -1009,6 +1012,10 @@ public interface Printer
      * @return
      */
     public String getReelFriendlyName();
+    
+    public MaterialType getReelMaterialType();
+    
+    public Color getReelDisplayColour();
 
     /**
      *
@@ -1068,13 +1075,7 @@ public interface Printer
      *
      * @return
      */
-    public StringProperty getReelTypeCode();
-
-    /**
-     *
-     * @return
-     */
-    public StringProperty getReelUniqueID();
+    public StringProperty getReelFilamentID();
 
     /*
      *
@@ -1347,9 +1348,10 @@ public interface Printer
      * @param reelRemainingFilament
      * @throws RoboxCommsException
      */
-    public void transmitWriteReelEEPROM(String reelTypeCode, String reelUniqueID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
+    public void transmitWriteReelEEPROM(String reelTypeCode, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
             float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter,
-            float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament) throws RoboxCommsException;
+            float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament,
+            String friendlyName, MaterialType materialType, Color displayColour) throws RoboxCommsException;
 
     /**
      *
@@ -1535,5 +1537,10 @@ public interface Printer
      * @param reelNozzleTemperature
      */
     public void transmitWriteMaterialTemperatureToHeadEEPROM(int reelNozzleTemperature);
+
+    /**
+     * Return if the filament on the reel is mutable (is a Robox predefined filament or not)
+     */
+    public BooleanProperty getReelFilamentIsMutable();
     
 }

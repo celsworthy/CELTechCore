@@ -8,6 +8,7 @@ package celtech.coreUI.controllers;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
+import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterColourMap;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.AmbientLEDState;
@@ -15,8 +16,6 @@ import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.JogButton;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
-import static celtech.printerControl.PrinterStatusEnumeration.ERROR;
-import static celtech.printerControl.PrinterStatusEnumeration.IDLE;
 import static celtech.printerControl.PrinterStatusEnumeration.PAUSED;
 import static celtech.printerControl.PrinterStatusEnumeration.PRINTING;
 import static celtech.printerControl.PrinterStatusEnumeration.SENDING_TO_PRINTER;
@@ -24,6 +23,9 @@ import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.utils.AxisSpecifier;
 import java.net.URL;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -35,10 +37,12 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -65,6 +69,8 @@ public class PrinterStatusPageController implements Initializable
     private ChangeListener<Boolean> reelDataChangeListener = null;
     private ChangeListener<EEPROMState> reelChangeListener = null;
     private ChangeListener<Color> printerColourChangeListener = null;
+    private ChangeListener<PrinterStatusEnumeration> printerStatusChangeListener = null;
+    private ChangeListener<PauseStatus> pauseStatusChangeListener = null;
 
     private CommandLink goAheadAndOpenTheLid = null;
     private CommandLink dontOpenTheLid = null;
@@ -74,6 +80,9 @@ public class PrinterStatusPageController implements Initializable
     private String transferringDataString = null;
 
     private PrinterColourMap colourMap = PrinterColourMap.getInstance();
+
+    private NumberFormat threeDPformatter;
+    private NumberFormat fiveDPformatter;
 
     @FXML
     private ImageView printerSilhouette;
@@ -203,15 +212,15 @@ public class PrinterStatusPageController implements Initializable
 
     @FXML
     private Text progressETC;
-    
+
     @FXML
-    private Text progressLayers;   
-    
+    private Text progressLayers;
+
     @FXML
-    private Text progressLayerLabel;    
-    
+    private Text progressLayerLabel;
+
     @FXML
-    private Text progressETCLabel;      
+    private Text progressETCLabel;
 
     @FXML
     private Button cancelPrintButton;
@@ -241,7 +250,10 @@ public class PrinterStatusPageController implements Initializable
     private Text progressMessage;
 
     @FXML
-    private Text temperatureWarning;
+    private Group temperatureWarning;
+
+    @FXML
+    private HBox printControlButtons;
 
     private Node[] advancedControls = null;
     private BooleanProperty advancedControlsVisible = new SimpleBooleanProperty(
@@ -350,18 +362,22 @@ public class PrinterStatusPageController implements Initializable
             {
                 if (button.getFeedRate() > 0)
                 {
-                    printerToUse.transmitDirectGCode(String.format(
-                        "G1 " + axis.name() + "%.2f F%d", distance,
-                        button.getFeedRate()), true);
+                    printerToUse.transmitDirectGCode(
+                        "G1 " + axis.name()
+                        + threeDPformatter.format(distance)
+                        + " F"
+                        + threeDPformatter.format(button.getFeedRate()), true);
                 } else
                 {
-                    printerToUse.transmitDirectGCode(String.format(
-                        "G1 " + axis.name() + "%.2f", distance), true);
+                    printerToUse.transmitDirectGCode(
+                        "G1 " + axis.name()
+                        + threeDPformatter.format(distance), true);
                 }
             } else
             {
-                printerToUse.transmitDirectGCode(String.format(
-                    "G0 " + axis.name() + "%.2f", distance), true);
+                printerToUse.transmitDirectGCode(
+                    "G0 " + axis.name()
+                    + threeDPformatter.format(distance), true);
             }
         } catch (RoboxCommsException ex)
         {
@@ -493,6 +509,14 @@ public class PrinterStatusPageController implements Initializable
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
+        threeDPformatter.setMaximumFractionDigits(3);
+        threeDPformatter.setGroupingUsed(false);
+
+        fiveDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
+        fiveDPformatter.setMaximumFractionDigits(5);
+        fiveDPformatter.setGroupingUsed(false);
+
         statusScreenState = StatusScreenState.getInstance();
 
         ResourceBundle i18nBundle = DisplayManager.getLanguageBundle();
@@ -552,15 +576,27 @@ public class PrinterStatusPageController implements Initializable
             }
         };
 
+        printerStatusChangeListener = (ObservableValue<? extends PrinterStatusEnumeration> observable, PrinterStatusEnumeration oldValue, PrinterStatusEnumeration newValue) ->
+        {
+            processPrinterStatusChange(newValue);
+        };
+
+        pauseStatusChangeListener = new ChangeListener<PauseStatus>()
+        {
+            @Override
+            public void changed(
+                ObservableValue<? extends PauseStatus> observable, PauseStatus oldValue, PauseStatus newValue)
+            {
+                processPauseStatusChange(newValue);
+            }
+        };
+
         printerSilhouette.setVisible(true);
         printerClosedImage.setVisible(false);
         printerOpenImage.setVisible(false);
         printerColourRectangle.setVisible(false);
 
         progressGroup.setVisible(false);
-        cancelPrintButton.setVisible(false);
-        pausePrintButton.setVisible(false);
-        resumePrintButton.setVisible(false);
 
         ejectReelButton.setVisible(false);
         unlockLidButton.setVisible(false);
@@ -569,28 +605,13 @@ public class PrinterStatusPageController implements Initializable
         reel.setVisible(false);
         filamentRectangle.setVisible(false);
 
+        printControlButtons.setVisible(false);
+
         if (statusScreenState.getCurrentlySelectedPrinter() != null)
         {
             Printer printer = statusScreenState.getCurrentlySelectedPrinter();
-            switch (printer.getPrinterStatus())
-            {
-                case IDLE:
-                case ERROR:
-                    break;
-                case PAUSED:
-                    cancelPrintButton.setVisible(true);
-                    resumePrintButton.setVisible(true);
-                    pausePrintButton.setVisible(false);
-                    break;
-                case SENDING_TO_PRINTER:
-                case PRINTING:
-                    cancelPrintButton.setVisible(false);
-                    resumePrintButton.setVisible(false);
-                    pausePrintButton.setVisible(true);
-                    break;
-                default:
-                    break;
-            }
+            processPrinterStatusChange(printer.getPrinterStatus());
+            processPauseStatusChange(printer.getPauseStatus());
         }
 
         statusScreenState.currentlySelectedPrinterProperty().addListener(
@@ -616,8 +637,6 @@ public class PrinterStatusPageController implements Initializable
 
                         progressGroup.setVisible(false);
                         printerColourRectangle.setVisible(false);
-                        pausePrintButton.setVisible(false);
-                        resumePrintButton.setVisible(false);
 
                         ejectReelButton.setVisible(false);
                         unlockLidButton.setVisible(false);
@@ -625,6 +644,8 @@ public class PrinterStatusPageController implements Initializable
 
                         reel.setVisible(false);
                         filamentRectangle.setVisible(false);
+
+                        processPrinterStatusChange(null);
                     } else
                     {
                         unbindFromSelectedPrinter();
@@ -729,24 +750,6 @@ public class PrinterStatusPageController implements Initializable
                         selectedPrinter.printerColourProperty().addListener(
                             printerColourChangeListener);
 
-//                    steno.info("Status " + selectedPrinter.getPrinterStatus() + " in progress=" + selectedPrinter.getPrintQueue().printInProgressProperty().getValue());
-                        pausePrintButton.visibleProperty().bind(
-                            selectedPrinter.printerStatusProperty().isEqualTo(
-                                PrinterStatusEnumeration.PRINTING)
-                            .or(selectedPrinter.printerStatusProperty().isEqualTo(
-                                    PrinterStatusEnumeration.SENDING_TO_PRINTER)).
-                            or(selectedPrinter.printerStatusProperty().isEqualTo(
-                                    PrinterStatusEnumeration.EXECUTING_MACRO)));
-                        resumePrintButton.visibleProperty().bind(
-                            selectedPrinter.printerStatusProperty().isEqualTo(
-                                PrinterStatusEnumeration.PAUSED));
-                        cancelPrintButton.visibleProperty().bind(
-                            selectedPrinter.printerStatusProperty().isEqualTo(
-                                PrinterStatusEnumeration.PAUSED).or(
-                                selectedPrinter.printerStatusProperty().
-                                isEqualTo(
-                                    PrinterStatusEnumeration.SLICING)));
-
                         ejectReelButton.visibleProperty().bind(
                             selectedPrinter.Filament1LoadedProperty().and(
                                 selectedPrinter.printerStatusProperty().
@@ -776,10 +779,13 @@ public class PrinterStatusPageController implements Initializable
                             selectedPrinter.reelEEPROMStatusProperty().isEqualTo(
                                 EEPROMState.PROGRAMMED));
 
-                        printerOpenImage.visibleProperty().bind(
-                            selectedPrinter.LidOpenProperty());
-                        printerClosedImage.visibleProperty().bind(
-                            selectedPrinter.LidOpenProperty().not());
+                        processPrinterStatusChange(selectedPrinter.printerStatusProperty().get());
+                        selectedPrinter.printerStatusProperty().addListener(printerStatusChangeListener);
+                        processPauseStatusChange(selectedPrinter.pauseStatusProperty().get());
+                        selectedPrinter.pauseStatusProperty().addListener(pauseStatusChangeListener);
+
+                        printerOpenImage.visibleProperty().bind(selectedPrinter.LidOpenProperty());
+                        printerClosedImage.visibleProperty().bind(selectedPrinter.LidOpenProperty().not());
 
                         advancedControlsVisible.unbind();
                         advancedControlsVisible.bind(
@@ -842,6 +848,62 @@ public class PrinterStatusPageController implements Initializable
                 }
             }
         );
+    }
+
+    private void processPrinterStatusChange(PrinterStatusEnumeration printerStatus)
+    {
+        if (printerStatus == null)
+        {
+            printControlButtons.setVisible(false);
+        } else
+        {
+            switch (printerStatus)
+            {
+                case PAUSED:
+                case SENDING_TO_PRINTER:
+                case PRINTING:
+                    printControlButtons.setVisible(true);
+                    break;
+                default:
+                    printControlButtons.setVisible(false);
+                    break;
+            }
+        }
+    }
+
+    private void processPauseStatusChange(PauseStatus pauseStatus)
+    {
+        switch (pauseStatus)
+        {
+            case NOT_PAUSED:
+                resumePrintButton.setVisible(false);
+                resumePrintButton.setDisable(true);
+                pausePrintButton.setVisible(true);
+                pausePrintButton.setDisable(false);
+                cancelPrintButton.setVisible(false);
+                break;
+            case PAUSED:
+                resumePrintButton.setVisible(true);
+                resumePrintButton.setDisable(false);
+                pausePrintButton.setVisible(false);
+                pausePrintButton.setDisable(true);
+                cancelPrintButton.setVisible(true);
+                break;
+            case PAUSE_PENDING:
+                resumePrintButton.setVisible(true);
+                resumePrintButton.setDisable(false);
+                pausePrintButton.setVisible(false);
+                pausePrintButton.setDisable(false);
+                cancelPrintButton.setVisible(true);
+                break;
+            case RESUME_PENDING:
+                resumePrintButton.setVisible(true);
+                resumePrintButton.setDisable(true);
+                pausePrintButton.setVisible(false);
+                pausePrintButton.setDisable(false);
+                cancelPrintButton.setVisible(false);
+                break;
+        }
     }
 
     private String convertToHoursMinutes(int seconds)
@@ -931,10 +993,6 @@ public class PrinterStatusPageController implements Initializable
         secondProgressBar.visibleProperty().unbind();
         secondProgressBar.progressProperty().unbind();
         secondProgressPercent.textProperty().unbind();
-        pausePrintButton.visibleProperty().unbind();
-        resumePrintButton.visibleProperty().unbind();
-        cancelPrintButton.visibleProperty().unbind();
-//        printControlButtons.visibleProperty().unbind();
 
         reel.visibleProperty().unbind();
         if (lastSelectedPrinter != null)
@@ -945,6 +1003,8 @@ public class PrinterStatusPageController implements Initializable
                 reelDataChangeListener);
             lastSelectedPrinter.reelEEPROMStatusProperty().removeListener(
                 reelChangeListener);
+            lastSelectedPrinter.printerStatusProperty().removeListener(printerStatusChangeListener);
+            lastSelectedPrinter.pauseStatusProperty().removeListener(pauseStatusChangeListener);
         }
 
         filamentRectangle.visibleProperty().unbind();

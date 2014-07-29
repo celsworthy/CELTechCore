@@ -7,9 +7,7 @@ package celtech.coreUI.visualisation;
 
 import celtech.modelcontrol.ModelContainer;
 import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 

@@ -1,5 +1,9 @@
 package celtech.gcodetranslator.events;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
+
 /**
  *
  * @author Ian
@@ -34,7 +38,11 @@ public class NozzleChangeBValueEvent extends GCodeParseEvent
     @Override
     public String renderForOutput()
     {
-        String stringToReturn = "G0 B" + String.format("%.3f", b);
+        NumberFormat threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
+        threeDPformatter.setMaximumFractionDigits(3);
+        threeDPformatter.setGroupingUsed(false);
+
+        String stringToReturn = "G0 B" + threeDPformatter.format(b);
 
         if (getComment() != null)
         {

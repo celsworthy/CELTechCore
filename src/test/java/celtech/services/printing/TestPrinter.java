@@ -8,6 +8,8 @@ import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.Head;
 import celtech.configuration.HeaterMode;
+import celtech.configuration.MaterialType;
+import celtech.configuration.PauseStatus;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
@@ -516,19 +518,19 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void setPaused(boolean value)
+    public void setPauseStatus(PauseStatus value)
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public boolean getPaused()
+    public PauseStatus getPauseStatus()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public BooleanProperty pausedProperty()
+    public ObjectProperty<PauseStatus> pauseStatusProperty()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -1092,13 +1094,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public StringProperty getReelTypeCode()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public StringProperty getReelUniqueID()
+    public StringProperty getReelFilamentID()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -1302,12 +1298,13 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void transmitWriteReelEEPROM(String reelTypeCode, String reelUniqueID,
+    public void transmitWriteReelEEPROM(String reelTypeCode, 
             float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
             float reelFirstLayerBedTemperature, float reelBedTemperature,
             float reelAmbientTemperature, float reelFilamentDiameter,
             float reelFilamentMultiplier, float reelFeedRateMultiplier,
-            float reelRemainingFilament) throws RoboxCommsException
+            float reelRemainingFilament,
+            String friendlyName, MaterialType materialType, Color displayColour) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -1478,6 +1475,30 @@ public class TestPrinter implements Printer
 
     @Override
     public boolean transmitUpdateFirmware(String firmwareID) throws RoboxCommsException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public BooleanProperty getReelFilamentIsMutable()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public MaterialType getReelMaterialType()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Color getReelDisplayColour()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public StringProperty getPrinterUniqueIDProperty()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

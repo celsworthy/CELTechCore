@@ -15,7 +15,7 @@ public interface GCodeTranslationEventHandler
      * @param event
      * @throws NozzleCloseSettingsError
      */
-    public void processEvent(GCodeParseEvent event) throws NozzleCloseSettingsError;
+    public void processEvent(GCodeParseEvent event) throws PostProcessingError;
 
     /**
      *

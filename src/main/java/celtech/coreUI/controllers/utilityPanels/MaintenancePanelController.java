@@ -5,6 +5,8 @@
  */
 package celtech.coreUI.controllers.utilityPanels;
 
+import celtech.appManager.ApplicationMode;
+import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Notifier;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
@@ -12,9 +14,9 @@ import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.GCodeMacroButton;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.ProgressDialog;
-import celtech.coreUI.controllers.CalibrationNozzleBPageController;
-import celtech.coreUI.controllers.CalibrationNozzleOffsetPageController;
 import celtech.coreUI.controllers.StatusScreenState;
+import celtech.coreUI.controllers.panels.CalibrationNozzleBInsetPanelController;
+import celtech.coreUI.controllers.panels.CalibrationNozzleOffsetInsetPanelController;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -40,7 +42,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
+import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -68,9 +70,9 @@ public class MaintenancePanelController implements Initializable
     private FileChooser firmwareFileChooser = new FileChooser();
 
     private static Stage needleValvecalibrationStage = null;
-    private static CalibrationNozzleBPageController needleValveCalibrationController = null;
+    private static CalibrationNozzleBInsetPanelController needleValveCalibrationController = null;
     private static Stage offsetCalibrationStage = null;
-    private static CalibrationNozzleOffsetPageController nozzleOffsetCalibrationController = null;
+    private static CalibrationNozzleOffsetInsetPanelController nozzleOffsetCalibrationController = null;
 
     private ProgressDialog gcodeUpdateProgress = null;
     private FileChooser gcodeFileChooser = new FileChooser();
@@ -134,7 +136,7 @@ public class MaintenancePanelController implements Initializable
     private GCodeMacroButton T0CleanButton;
 
     @FXML
-    private TextField currentFirmwareField;
+    private Label currentFirmwareField;
 
     @FXML
     private GCodeMacroButton LevelGantryButton;
@@ -223,7 +225,7 @@ public class MaintenancePanelController implements Initializable
     @FXML
     void calibrateB(ActionEvent event)
     {
-        calibrateBAction();
+        ApplicationStatus.getInstance().setMode(ApplicationMode.NOZZLE_OPEN_CALIBRATION);
     }
 
     public static void calibrateBAction()
@@ -236,7 +238,7 @@ public class MaintenancePanelController implements Initializable
             try
             {
                 Parent dialogBoxScreen = (Parent) needleValveCalibrationLoader.load();
-                needleValveCalibrationController = (CalibrationNozzleBPageController) needleValveCalibrationLoader.getController();
+                needleValveCalibrationController = (CalibrationNozzleBInsetPanelController) needleValveCalibrationLoader.getController();
                 Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
                 dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
                 needleValvecalibrationStage.setScene(dialogScene);
@@ -263,7 +265,7 @@ public class MaintenancePanelController implements Initializable
     void calibrateZOffset(ActionEvent event)
     {
 
-        calibrateZOffsetAction();
+        ApplicationStatus.getInstance().setMode(ApplicationMode.NOZZLE_OFFSET_CALIBRATION);
     }
 
     public static void calibrateZOffsetAction()
@@ -271,12 +273,12 @@ public class MaintenancePanelController implements Initializable
         if (offsetCalibrationStage == null)
         {
             offsetCalibrationStage = new Stage(StageStyle.UNDECORATED);
-            URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "CalibrationNozzleOffsetPage.fxml");
+            URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlPanelResourcePath + "CalibrationNozzleOffsetInsetPanel.fxml");
             FXMLLoader nozzleOffsetCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, DisplayManager.getLanguageBundle());
             try
             {
                 Parent dialogBoxScreen = (Parent) nozzleOffsetCalibrationLoader.load();
-                nozzleOffsetCalibrationController = (CalibrationNozzleOffsetPageController) nozzleOffsetCalibrationLoader.getController();
+                nozzleOffsetCalibrationController = (CalibrationNozzleOffsetInsetPanelController) nozzleOffsetCalibrationLoader.getController();
                 Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
                 dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
                 offsetCalibrationStage.setScene(dialogScene);
@@ -362,10 +364,12 @@ public class MaintenancePanelController implements Initializable
             }
         });
 
+        currentFirmwareField.setStyle("-fx-font-weight: bold;");
+
         gcodeFileChooser.setTitle(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodeFileChooserTitle"));
         gcodeFileChooser.getExtensionFilters()
-                .addAll(
-                        new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodeFileDescription"), "*.gcode"));
+            .addAll(
+                new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodeFileDescription"), "*.gcode"));
 
         gcodePrintService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
         {
@@ -399,8 +403,8 @@ public class MaintenancePanelController implements Initializable
 
         firmwareFileChooser.setTitle(DisplayManager.getLanguageBundle().getString("maintenancePanel.firmwareFileChooserTitle"));
         firmwareFileChooser.getExtensionFilters()
-                .addAll(
-                        new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString("maintenancePanel.firmwareFileDescription"), "*.bin"));
+            .addAll(
+                new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString("maintenancePanel.firmwareFileDescription"), "*.bin"));
 
         firmwareLoadService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
         {
@@ -469,8 +473,16 @@ public class MaintenancePanelController implements Initializable
 
     private void setButtonVisibility()
     {
-        boolean printingdisabled = connectedPrinter.getPrinterStatus() != PrinterStatusEnumeration.IDLE;
+        boolean printingdisabled = false;
         boolean noFilamentOrPrintingdisabled = printingdisabled || (connectedPrinter.getFilament1Loaded() == false && connectedPrinter.getFilament2Loaded() == false);
+
+        if (connectedPrinter == null)
+        {
+            printingdisabled = true;
+        } else
+        {
+            printingdisabled = connectedPrinter.getPrinterStatus() != PrinterStatusEnumeration.IDLE;
+        }
 
         YTestButton.setDisable(printingdisabled);
 

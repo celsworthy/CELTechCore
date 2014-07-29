@@ -8,10 +8,11 @@ import celtech.configuration.FilamentContainer;
 import celtech.configuration.Head;
 import celtech.configuration.HeadContainer;
 import celtech.configuration.HeaterMode;
+import celtech.configuration.MaterialType;
+import celtech.configuration.PauseStatus;
 import celtech.configuration.PrintHead;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
-import celtech.coreUI.ErrorHandler;
 import celtech.coreUI.components.ModalDialog;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.GCodeConstants;
@@ -73,6 +74,8 @@ import javafx.scene.paint.Color;
 import libertysystems.configuration.Configuration;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.controlsfx.control.action.Action;
+import org.controlsfx.dialog.Dialogs;
 
 /**
  *
@@ -87,15 +90,17 @@ public class PrinterImpl implements Printer
     private String whyAreWeWaiting_heatingBed = null;
     private String whyAreWeWaiting_heatingNozzle = null;
 
-    private BooleanProperty printerIDDataChangedToggle = new SimpleBooleanProperty(false);
-    private StringProperty printermodel = new SimpleStringProperty("");
-    private StringProperty printeredition = new SimpleStringProperty("");
-    private StringProperty printerweekOfManufacture = new SimpleStringProperty("");
-    private StringProperty printeryearOfManufacture = new SimpleStringProperty("");
-    private StringProperty printerpoNumber = new SimpleStringProperty("");
-    private StringProperty printerserialNumber = new SimpleStringProperty("");
-    private StringProperty printercheckByte = new SimpleStringProperty("");
-    private StringProperty printerFriendlyName = new SimpleStringProperty("");
+    private final static String USER_FILAMENT_PREFIX = "U";
+
+    private final BooleanProperty printerIDDataChangedToggle = new SimpleBooleanProperty(false);
+    private final StringProperty printermodel = new SimpleStringProperty("");
+    private final StringProperty printeredition = new SimpleStringProperty("");
+    private final StringProperty printerweekOfManufacture = new SimpleStringProperty("");
+    private final StringProperty printeryearOfManufacture = new SimpleStringProperty("");
+    private final StringProperty printerpoNumber = new SimpleStringProperty("");
+    private final StringProperty printerserialNumber = new SimpleStringProperty("");
+    private final StringProperty printercheckByte = new SimpleStringProperty("");
+    private final StringProperty printerFriendlyName = new SimpleStringProperty("");
     private final ObjectProperty<Color> printerColour = new SimpleObjectProperty<>();
 
     /*
@@ -120,12 +125,16 @@ public class PrinterImpl implements Printer
     private final LineChart.Series<Number, Number> ambientTargetTemperatureSeries = new LineChart.Series<>();
     private final LineChart.Series<Number, Number> bedTargetTemperatureSeries = new LineChart.Series<>();
     private final LineChart.Series<Number, Number> nozzleTargetTemperatureSeries = new LineChart.Series<>();
-    private final LineChart.Data<Number, Number> ambientTargetPoint = new LineChart.Data<>(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP + 5, 0);
-    private final LineChart.Data<Number, Number> bedTargetPoint = new LineChart.Data<>(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP + 5, 0);
-    private final LineChart.Data<Number, Number> nozzleTargetPoint = new LineChart.Data<>(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP + 5, 0);
+    private final LineChart.Data<Number, Number> ambientTargetPoint = new LineChart.Data<>(
+        NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP + 5, 0);
+    private final LineChart.Data<Number, Number> bedTargetPoint = new LineChart.Data<>(
+        NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP + 5, 0);
+    private final LineChart.Data<Number, Number> nozzleTargetPoint = new LineChart.Data<>(
+        NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP + 5, 0);
 
     private long lastTimestamp = System.currentTimeMillis();
 
+    private final StringProperty printerUniqueID = new SimpleStringProperty("");
     private final BooleanProperty printerConnected = new SimpleBooleanProperty(false);
     private final BooleanProperty ambientFanOn = new SimpleBooleanProperty(false);
     private final ObjectProperty<HeaterMode> bedHeaterMode = new SimpleObjectProperty<>();
@@ -134,55 +143,60 @@ public class PrinterImpl implements Printer
     private final BooleanProperty errorsDetected = new SimpleBooleanProperty(false);
     private final StringProperty firmwareVersion = new SimpleStringProperty();
     private final FloatProperty headXPosition = new SimpleFloatProperty(0);
-    private FloatProperty headYPosition = new SimpleFloatProperty(0);
-    private FloatProperty headZPosition = new SimpleFloatProperty(0);
-    private FloatProperty BPosition = new SimpleFloatProperty(0);
-    private final ObjectProperty<PrinterStatusEnumeration> printerStatus = new SimpleObjectProperty<>(PrinterStatusEnumeration.IDLE);
+    private final FloatProperty headYPosition = new SimpleFloatProperty(0);
+    private final FloatProperty headZPosition = new SimpleFloatProperty(0);
+    private final FloatProperty BPosition = new SimpleFloatProperty(0);
+    private final ObjectProperty<PrinterStatusEnumeration> printerStatus = new SimpleObjectProperty<>(
+        PrinterStatusEnumeration.IDLE);
     // make the initial value to non-zero so that we get a change event when set to 0
-    private IntegerProperty printJobLineNumber = new SimpleIntegerProperty(-1);
-    private StringProperty printJobID = new SimpleStringProperty();
-    private BooleanProperty busy = new SimpleBooleanProperty(false);
-    private BooleanProperty paused = new SimpleBooleanProperty(false);
-    private ObjectProperty<WhyAreWeWaitingState> whyAreWeWaitingState = new SimpleObjectProperty(WhyAreWeWaitingState.NOT_WAITING);
-    private StringProperty whyAreWeWaitingString = new SimpleStringProperty("");
-
-    private BooleanProperty SDCardError = new SimpleBooleanProperty(false);
-    private BooleanProperty ChunkSequenceError = new SimpleBooleanProperty(false);
-    private BooleanProperty FileTooLargeError = new SimpleBooleanProperty(false);
-    private BooleanProperty GCodeLineTooLongError = new SimpleBooleanProperty(false);
-    private BooleanProperty USBRxError = new SimpleBooleanProperty(false);
-    private BooleanProperty USBTxError = new SimpleBooleanProperty(false);
-    private BooleanProperty BadCommandError = new SimpleBooleanProperty(false);
-    private BooleanProperty EEPROMError = new SimpleBooleanProperty(false);
-    private BooleanProperty XStopSwitch = new SimpleBooleanProperty(false);
-    private BooleanProperty YStopSwitch = new SimpleBooleanProperty(false);
-    private BooleanProperty ZStopSwitch = new SimpleBooleanProperty(false);
-    private BooleanProperty ZTopStopSwitch = new SimpleBooleanProperty(false);
-    private BooleanProperty Filament1Loaded = new SimpleBooleanProperty(false);
-    private BooleanProperty Filament2Loaded = new SimpleBooleanProperty(false);
-    private BooleanProperty Filament1Index = new SimpleBooleanProperty(false);
-    private BooleanProperty Filament2Index = new SimpleBooleanProperty(false);
-    private BooleanProperty reelButton = new SimpleBooleanProperty(false);
-    private ObjectProperty<EEPROMState> reelEEPROMStatus = new SimpleObjectProperty<EEPROMState>(EEPROMState.NOT_PRESENT);
-    private StringProperty reelFriendlyName = new SimpleStringProperty();
+    private final IntegerProperty printJobLineNumber = new SimpleIntegerProperty(-1);
+    private final StringProperty printJobID = new SimpleStringProperty();
+    private final BooleanProperty busy = new SimpleBooleanProperty(false);
+    private final ObjectProperty<WhyAreWeWaitingState> whyAreWeWaitingState = new SimpleObjectProperty(
+        WhyAreWeWaitingState.NOT_WAITING);
+    private final StringProperty whyAreWeWaitingString = new SimpleStringProperty("");
+    private ObjectProperty<PauseStatus> pauseStatus = new SimpleObjectProperty(PauseStatus.NOT_PAUSED);
+    private final BooleanProperty SDCardError = new SimpleBooleanProperty(false);
+    private final BooleanProperty ChunkSequenceError = new SimpleBooleanProperty(false);
+    private final BooleanProperty FileTooLargeError = new SimpleBooleanProperty(false);
+    private final BooleanProperty GCodeLineTooLongError = new SimpleBooleanProperty(false);
+    private final BooleanProperty USBRxError = new SimpleBooleanProperty(false);
+    private final BooleanProperty USBTxError = new SimpleBooleanProperty(false);
+    private final BooleanProperty BadCommandError = new SimpleBooleanProperty(false);
+    private final BooleanProperty EEPROMError = new SimpleBooleanProperty(false);
+    private final BooleanProperty XStopSwitch = new SimpleBooleanProperty(false);
+    private final BooleanProperty YStopSwitch = new SimpleBooleanProperty(false);
+    private final BooleanProperty ZStopSwitch = new SimpleBooleanProperty(false);
+    private final BooleanProperty ZTopStopSwitch = new SimpleBooleanProperty(false);
+    private final BooleanProperty Filament1Loaded = new SimpleBooleanProperty(false);
+    private final BooleanProperty Filament2Loaded = new SimpleBooleanProperty(false);
+    private final BooleanProperty Filament1Index = new SimpleBooleanProperty(false);
+    private final BooleanProperty Filament2Index = new SimpleBooleanProperty(false);
+    private final BooleanProperty reelButton = new SimpleBooleanProperty(false);
+    private final ObjectProperty<EEPROMState> reelEEPROMStatus = new SimpleObjectProperty<>(
+        EEPROMState.NOT_PRESENT);
+    private final StringProperty reelFriendlyName = new SimpleStringProperty();
+    private MaterialType reelMaterialType;
+    private Color reelDisplayColour;
 
     /*
      * Head parameters  - consider moving to a separate object?
      */
-    private Head temporaryHead = new Head(null, null, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-    private BooleanProperty headDataChangedToggle = new SimpleBooleanProperty(false);
-    private ObjectProperty<EEPROMState> headEEPROMStatus = new SimpleObjectProperty<EEPROMState>(EEPROMState.NOT_PRESENT);
-    private StringProperty headTypeCode = new SimpleStringProperty("");
-    private StringProperty headType = new SimpleStringProperty("");
-    private StringProperty headUniqueID = new SimpleStringProperty("");
-    private FloatProperty headMaximumTemperature = new SimpleFloatProperty(0);
-    private FloatProperty headThermistorBeta = new SimpleFloatProperty(0);
-    private FloatProperty headThermistorTCal = new SimpleFloatProperty(0);
-    private FloatProperty headNozzle1XOffset = new SimpleFloatProperty(0);
-    private FloatProperty headNozzle1YOffset = new SimpleFloatProperty(0);
-    private FloatProperty headNozzle1ZOffset = new SimpleFloatProperty(0);
-    private FloatProperty headNozzle1BOffset = new SimpleFloatProperty(0);
-    private FloatProperty headNozzle2XOffset = new SimpleFloatProperty(0);
+    private final Head temporaryHead = new Head(null, null, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    private final BooleanProperty headDataChangedToggle = new SimpleBooleanProperty(false);
+    private final ObjectProperty<EEPROMState> headEEPROMStatus = new SimpleObjectProperty<>(
+        EEPROMState.NOT_PRESENT);
+    private final StringProperty headTypeCode = new SimpleStringProperty("");
+    private final StringProperty headType = new SimpleStringProperty("");
+    private final StringProperty headUniqueID = new SimpleStringProperty("");
+    private final FloatProperty headMaximumTemperature = new SimpleFloatProperty(0);
+    private final FloatProperty headThermistorBeta = new SimpleFloatProperty(0);
+    private final FloatProperty headThermistorTCal = new SimpleFloatProperty(0);
+    private final FloatProperty headNozzle1XOffset = new SimpleFloatProperty(0);
+    private final FloatProperty headNozzle1YOffset = new SimpleFloatProperty(0);
+    private final FloatProperty headNozzle1ZOffset = new SimpleFloatProperty(0);
+    private final FloatProperty headNozzle1BOffset = new SimpleFloatProperty(0);
+    private final FloatProperty headNozzle2XOffset = new SimpleFloatProperty(0);
     private final FloatProperty headNozzle2YOffset = new SimpleFloatProperty(0);
     private final FloatProperty headNozzle2ZOffset = new SimpleFloatProperty(0);
     private final FloatProperty headNozzle2BOffset = new SimpleFloatProperty(0);
@@ -196,27 +210,28 @@ public class PrinterImpl implements Printer
     /*
      * Reel data
      */
-    private Filament temporaryFilament = new Filament(null, null, null,
-                                                      0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, false);
+    private final Filament temporaryFilament = new Filament(null, null, null,
+                                                            0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, false);
     private final BooleanProperty reelDataChangedToggle = new SimpleBooleanProperty(false);
-    private IntegerProperty reelAmbientTemperature = new SimpleIntegerProperty(0);
-    private IntegerProperty reelBedTemperature = new SimpleIntegerProperty(0);
-    private IntegerProperty reelFirstLayerBedTemperature = new SimpleIntegerProperty(0);
-    private IntegerProperty reelFirstLayerNozzleTemperature = new SimpleIntegerProperty(0);
-    private IntegerProperty reelNozzleTemperature = new SimpleIntegerProperty(0);
-    private FloatProperty reelFilamentDiameter = new SimpleFloatProperty(0);
-    private FloatProperty reelFeedRateMultiplier = new SimpleFloatProperty(0);
-    private FloatProperty reelFilamentMultiplier = new SimpleFloatProperty(0);
-    private FloatProperty reelRemainingFilament = new SimpleFloatProperty(0);
-    private StringProperty reelTypeCode = new SimpleStringProperty("unknown");
-    private StringProperty reelUniqueID = new SimpleStringProperty("unknown");
+    private final BooleanProperty reelFilamentIsMutable = new SimpleBooleanProperty(false);
+    private final IntegerProperty reelAmbientTemperature = new SimpleIntegerProperty(0);
+    private final IntegerProperty reelBedTemperature = new SimpleIntegerProperty(0);
+    private final IntegerProperty reelFirstLayerBedTemperature = new SimpleIntegerProperty(0);
+    private final IntegerProperty reelFirstLayerNozzleTemperature = new SimpleIntegerProperty(0);
+    private final IntegerProperty reelNozzleTemperature = new SimpleIntegerProperty(0);
+    private final FloatProperty reelFilamentDiameter = new SimpleFloatProperty(0);
+    private final FloatProperty reelFeedRateMultiplier = new SimpleFloatProperty(0);
+    private final FloatProperty reelFilamentMultiplier = new SimpleFloatProperty(0);
+    private final FloatProperty reelRemainingFilament = new SimpleFloatProperty(0);
+    private final StringProperty reelFilamentID = new SimpleStringProperty("unknown");
 
-    private BooleanProperty NozzleHomed = new SimpleBooleanProperty(false);
-    private BooleanProperty LidOpen = new SimpleBooleanProperty(false);
-    private StringProperty errorList = new SimpleStringProperty();
-    private ObjectProperty<Filament> loadedFilament = new SimpleObjectProperty<Filament>(temporaryFilament);
+    private final BooleanProperty NozzleHomed = new SimpleBooleanProperty(false);
+    private final BooleanProperty LidOpen = new SimpleBooleanProperty(false);
+    private final StringProperty errorList = new SimpleStringProperty();
+    private final ObjectProperty<Filament> loadedFilament = new SimpleObjectProperty<Filament>(
+        temporaryFilament);
 
-    private BooleanProperty sdCardPresent = new SimpleBooleanProperty(false);
+    private final BooleanProperty sdCardPresent = new SimpleBooleanProperty(false);
 
     /*
     
@@ -241,7 +256,7 @@ public class PrinterImpl implements Printer
     /*
      * 
      */
-    private Stenographer steno = StenographerFactory.getStenographer(this.getClass().getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(this.getClass().getName());
     private Configuration applicationConfiguration = null;
     /*
      * 
@@ -251,7 +266,13 @@ public class PrinterImpl implements Printer
 
     private RoboxCommsManager printerCommsManager = null;
 
-    private ErrorHandler errorHandler = null;
+    private static final Dialogs.CommandLink clearOnly = new Dialogs.CommandLink(
+        DisplayManager.getLanguageBundle().getString("dialogs.error.clearOnly"), null);
+    private static final Dialogs.CommandLink clearAndContinue = new Dialogs.CommandLink(
+        DisplayManager.getLanguageBundle().getString("dialogs.error.clearAndContinue"), null);
+    private static final Dialogs.CommandLink abortJob = new Dialogs.CommandLink(
+        DisplayManager.getLanguageBundle().getString("dialogs.error.abortJob"), null);
+    private boolean errorDialogOnDisplay = false;
 
     /**
      *
@@ -270,7 +291,6 @@ public class PrinterImpl implements Printer
             @Override
             public void run()
             {
-                errorHandler = ErrorHandler.getInstance();
                 noSDDialog = new ModalDialog();
                 noSDDialog.setTitle(languageBundle.getString("dialogs.noSDCardTitle"));
                 noSDDialog.setMessage(languageBundle.getString("dialogs.noSDCardMessage"));
@@ -278,9 +298,12 @@ public class PrinterImpl implements Printer
             }
         });
 
-        ambientTemperatureHistory.setName(languageBundle.getString("printerStatus.temperatureGraphAmbientLabel"));
-        bedTemperatureHistory.setName(languageBundle.getString("printerStatus.temperatureGraphBedLabel"));
-        nozzleTemperatureHistory.setName(languageBundle.getString("printerStatus.temperatureGraphNozzleLabel"));
+        ambientTemperatureHistory.setName(languageBundle.getString(
+            "printerStatus.temperatureGraphAmbientLabel"));
+        bedTemperatureHistory.setName(languageBundle.getString(
+            "printerStatus.temperatureGraphBedLabel"));
+        nozzleTemperatureHistory.setName(languageBundle.getString(
+            "printerStatus.temperatureGraphNozzleLabel"));
 
         for (int i = 0; i < NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP; i++)
         {
@@ -304,11 +327,17 @@ public class PrinterImpl implements Printer
         whyAreWeWaiting_heatingBed = i18nBundle.getString("printerStatus.printerBedHeating");
         whyAreWeWaiting_heatingNozzle = i18nBundle.getString("printerStatus.printerNozzleHeating");
     }
+    
+    public StringProperty getPrinterUniqueIDProperty()
+    {
+        return printerUniqueID;
+    }
 
     /**
      *
      * @return
      */
+    @Override
     public String getPrinterPort()
     {
         return portName;
@@ -318,6 +347,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public BooleanProperty getPrinterIDDataChangedToggle()
     {
         return printerIDDataChangedToggle;
@@ -327,6 +357,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public StringProperty getPrintermodel()
     {
         return printermodel;
@@ -336,6 +367,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public StringProperty getPrinteredition()
     {
         return printeredition;
@@ -345,6 +377,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public StringProperty getPrinterweekOfManufacture()
     {
         return printerweekOfManufacture;
@@ -354,6 +387,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public StringProperty getPrinteryearOfManufacture()
     {
         return printeryearOfManufacture;
@@ -363,6 +397,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public StringProperty getPrinterpoNumber()
     {
         return printerpoNumber;
@@ -372,6 +407,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public StringProperty getPrinterserialNumber()
     {
         return printerserialNumber;
@@ -381,6 +417,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public StringProperty getPrintercheckByte()
     {
         return printercheckByte;
@@ -390,21 +427,23 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public String getPrinterUniqueID()
     {
         return printermodel.get()
-                + printeredition.get()
-                + printerweekOfManufacture.get()
-                + printeryearOfManufacture.get()
-                + printerpoNumber.get()
-                + printerserialNumber.get()
-                + printercheckByte.get();
+            + printeredition.get()
+            + printerweekOfManufacture.get()
+            + printeryearOfManufacture.get()
+            + printerpoNumber.get()
+            + printerserialNumber.get()
+            + printercheckByte.get();
     }
 
     /**
      *
      * @return
      */
+    @Override
     public StringProperty printerFriendlyNameProperty()
     {
         return printerFriendlyName;
@@ -414,6 +453,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public String getPrinterFriendlyName()
     {
         return printerFriendlyName.get();
@@ -423,6 +463,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public void setPrinterColour(Color value)
     {
         printerColour.set(value);
@@ -432,6 +473,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public Color getPrinterColour()
     {
         return printerColour.get();
@@ -441,6 +483,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final ObjectProperty<Color> printerColourProperty()
     {
         return printerColour;
@@ -450,6 +493,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setHeadXPosition(float value)
     {
         headXPosition.set(value);
@@ -459,6 +503,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final float getHeadXPosition()
     {
         return headXPosition.get();
@@ -468,6 +513,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final FloatProperty headXPositionProperty()
     {
         return headXPosition;
@@ -477,6 +523,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setHeadYPosition(float value)
     {
         headYPosition.set(value);
@@ -486,6 +533,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final float getHeadYPosition()
     {
         return headYPosition.get();
@@ -495,6 +543,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final FloatProperty headYPositionProperty()
     {
         return headYPosition;
@@ -504,6 +553,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setHeadZPosition(float value)
     {
         headZPosition.set(value);
@@ -513,6 +563,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final float getHeadZPosition()
     {
         return headZPosition.get();
@@ -522,6 +573,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final FloatProperty headZPositionProperty()
     {
         return headZPosition;
@@ -531,6 +583,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setBPosition(float value)
     {
         BPosition.set(value);
@@ -540,6 +593,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final float getBPosition()
     {
         return BPosition.get();
@@ -549,6 +603,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final FloatProperty BPositionProperty()
     {
         return BPosition;
@@ -558,6 +613,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setPrinterConnected(boolean value)
     {
         printerConnected.set(value);
@@ -567,6 +623,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final boolean getPrinterConnected()
     {
         return printerConnected.get();
@@ -576,6 +633,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty printerConnectedProperty()
     {
         return printerConnected;
@@ -585,6 +643,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setAmbientTemperature(int value)
     {
         ambientTemperature.set(value);
@@ -594,6 +653,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final float getAmbientTemperature()
     {
         return ambientTemperature.get();
@@ -603,6 +663,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final IntegerProperty ambientTemperatureProperty()
     {
         return ambientTemperature;
@@ -612,6 +673,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final XYChart.Series<Number, Number> ambientTemperatureHistory()
     {
         return ambientTemperatureHistory;
@@ -621,6 +683,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final XYChart.Series<Number, Number> ambientTargetTemperatureHistory()
     {
         return ambientTargetTemperatureSeries;
@@ -630,6 +693,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setAmbientTargetTemperature(int value)
     {
         ambientTargetTemperature.set(value);
@@ -639,6 +703,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final int getAmbientTargetTemperature()
     {
         return ambientTargetTemperature.get();
@@ -648,6 +713,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final IntegerProperty ambientTargetTemperatureProperty()
     {
         return ambientTargetTemperature;
@@ -657,6 +723,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setAmbientFanOn(boolean value)
     {
         ambientFanOn.set(value);
@@ -666,6 +733,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final boolean getAmbientFanOn()
     {
         return ambientFanOn.get();
@@ -675,6 +743,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty ambientFanOnProperty()
     {
         return ambientFanOn;
@@ -684,6 +753,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final HeaterMode getBedHeaterMode()
     {
         return bedHeaterMode.get();
@@ -693,6 +763,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final ObjectProperty<HeaterMode> getBedHeaterModeProperty()
     {
         return bedHeaterMode;
@@ -702,6 +773,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final HeaterMode getNozzleHeaterMode()
     {
         return nozzleHeaterMode.get();
@@ -711,6 +783,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final ObjectProperty<HeaterMode> getNozzleHeaterModeProperty()
     {
         return nozzleHeaterMode;
@@ -720,6 +793,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setBedTemperature(int value)
     {
         bedTemperature.set(value);
@@ -729,6 +803,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final int getBedTemperature()
     {
         return bedTemperature.get();
@@ -738,6 +813,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final IntegerProperty bedTemperatureProperty()
     {
         return bedTemperature;
@@ -747,6 +823,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final XYChart.Series<Number, Number> bedTemperatureHistory()
     {
         return bedTemperatureHistory;
@@ -756,6 +833,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final XYChart.Series<Number, Number> bedTargetTemperatureHistory()
     {
         return bedTargetTemperatureSeries;
@@ -765,6 +843,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setBedFirstLayerTargetTemperature(int value)
     {
         bedFirstLayerTargetTemperature.set(value);
@@ -774,6 +853,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final int getBedFirstLayerTargetTemperature()
     {
         return bedFirstLayerTargetTemperature.get();
@@ -783,6 +863,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final IntegerProperty bedFirstLayerTargetTemperatureProperty()
     {
         return bedFirstLayerTargetTemperature;
@@ -792,6 +873,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setBedTargetTemperature(int value)
     {
         bedTargetTemperature.set(value);
@@ -801,6 +883,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final int getBedTargetTemperature()
     {
         return bedTargetTemperature.get();
@@ -810,6 +893,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final IntegerProperty bedTargetTemperatureProperty()
     {
         return bedTargetTemperature;
@@ -819,6 +903,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setExtruderTemperature(int value)
     {
         nozzleTemperature.set(value);
@@ -828,6 +913,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final int getExtruderTemperature()
     {
         return nozzleTemperature.get();
@@ -837,6 +923,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final IntegerProperty extruderTemperatureProperty()
     {
         return nozzleTemperature;
@@ -846,6 +933,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final XYChart.Series<Number, Number> nozzleTemperatureHistory()
     {
         return nozzleTemperatureHistory;
@@ -855,6 +943,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final XYChart.Series<Number, Number> nozzleTargetTemperatureHistory()
     {
         return nozzleTargetTemperatureSeries;
@@ -864,6 +953,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setNozzleFirstLayerTargetTemperature(int value)
     {
         nozzleFirstLayerTargetTemperature.set(value);
@@ -873,6 +963,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final int getNozzleFirstLayerTargetTemperature()
     {
         return nozzleFirstLayerTargetTemperature.get();
@@ -882,6 +973,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final IntegerProperty nozzleFirstLayerTargetTemperatureProperty()
     {
         return nozzleFirstLayerTargetTemperature;
@@ -891,6 +983,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setNozzleTargetTemperature(int value)
     {
         nozzleTargetTemperature.set(value);
@@ -900,6 +993,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final int getNozzleTargetTemperature()
     {
         return nozzleTargetTemperature.get();
@@ -909,6 +1003,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final IntegerProperty nozzleTargetTemperatureProperty()
     {
         return nozzleTargetTemperature;
@@ -918,6 +1013,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setHeadFanOn(boolean value)
     {
         headFanOn.set(value);
@@ -927,6 +1023,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final boolean getHeadFanOn()
     {
         return headFanOn.get();
@@ -936,6 +1033,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty headFanOnProperty()
     {
         return headFanOn;
@@ -945,6 +1043,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setBusy(boolean value)
     {
         busy.set(value);
@@ -954,6 +1053,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final boolean getBusy()
     {
         return busy.get();
@@ -963,6 +1063,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty busyProperty()
     {
         return busy;
@@ -972,33 +1073,36 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
-    public final void setPaused(boolean value)
+    public final void setPauseStatus(PauseStatus value)
     {
-        paused.set(value);
+        pauseStatus.set(value);
     }
 
     /**
      *
      * @return
      */
-    public final boolean getPaused()
+    @Override
+    public final PauseStatus getPauseStatus()
     {
-        return paused.get();
+        return pauseStatus.get();
     }
 
     /**
      *
      * @return
      */
-    public final BooleanProperty pausedProperty()
+    @Override
+    public final ObjectProperty<PauseStatus> pauseStatusProperty()
     {
-        return paused;
+        return pauseStatus;
     }
 
     /**
      *
      * @param value
      */
+    @Override
     public final void setWhyAreWeWaiting(WhyAreWeWaitingState value)
     {
         whyAreWeWaitingState.set(value);
@@ -1008,6 +1112,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final WhyAreWeWaitingState getWhyAreWeWaiting()
     {
         return whyAreWeWaitingState.get();
@@ -1017,6 +1122,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final StringProperty getWhyAreWeWaitingStringProperty()
     {
         return whyAreWeWaitingString;
@@ -1026,6 +1132,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final ObjectProperty<WhyAreWeWaitingState> whyAreWeWaitingProperty()
     {
         return whyAreWeWaitingState;
@@ -1038,6 +1145,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setErrorsDetected(boolean value)
     {
         errorsDetected.set(value);
@@ -1047,6 +1155,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final boolean getErrorsDetected()
     {
         return errorsDetected.get();
@@ -1056,6 +1165,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty errorsDetectedProperty()
     {
         return errorsDetected;
@@ -1065,6 +1175,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty SDCardErrorProperty()
     {
         return SDCardError;
@@ -1074,6 +1185,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean getSDCardError()
     {
         return SDCardError.get();
@@ -1083,6 +1195,7 @@ public class PrinterImpl implements Printer
      *
      * @param SDCardError
      */
+    @Override
     public void setSDCardError(boolean SDCardError)
     {
         this.SDCardError.set(SDCardError);
@@ -1092,6 +1205,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty chunkSequenceErrorProperty()
     {
         return ChunkSequenceError;
@@ -1101,6 +1215,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean getChunkSequenceError()
     {
         return ChunkSequenceError.get();
@@ -1110,6 +1225,7 @@ public class PrinterImpl implements Printer
      *
      * @param ChunkSequenceError
      */
+    @Override
     public void setChunkSequenceError(boolean ChunkSequenceError)
     {
         this.ChunkSequenceError.set(ChunkSequenceError);
@@ -1119,6 +1235,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty fileTooLargeErrorProperty()
     {
         return FileTooLargeError;
@@ -1128,6 +1245,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean getFileTooLargeError()
     {
         return FileTooLargeError.get();
@@ -1137,6 +1255,7 @@ public class PrinterImpl implements Printer
      *
      * @param FileTooLargeError
      */
+    @Override
     public void setFileTooLargeError(boolean FileTooLargeError)
     {
         this.FileTooLargeError.set(FileTooLargeError);
@@ -1146,6 +1265,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty GCodeLineTooLongErrorProperty()
     {
         return GCodeLineTooLongError;
@@ -1155,6 +1275,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean getGCodeLineTooLongError()
     {
         return GCodeLineTooLongError.get();
@@ -1164,6 +1285,7 @@ public class PrinterImpl implements Printer
      *
      * @param GCodeLineTooLongError
      */
+    @Override
     public void setGCodeLineTooLongError(boolean GCodeLineTooLongError)
     {
         this.GCodeLineTooLongError.set(GCodeLineTooLongError);
@@ -1173,6 +1295,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty USBRxErrorProperty()
     {
         return USBRxError;
@@ -1182,6 +1305,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean getUSBRxError()
     {
         return USBRxError.get();
@@ -1191,6 +1315,7 @@ public class PrinterImpl implements Printer
      *
      * @param USBRxError
      */
+    @Override
     public void setUSBRxError(boolean USBRxError)
     {
         this.USBRxError.set(USBRxError);
@@ -1200,6 +1325,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty USBTxErrorProperty()
     {
         return USBTxError;
@@ -1209,6 +1335,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean getUSBTxError()
     {
         return USBTxError.get();
@@ -1218,6 +1345,7 @@ public class PrinterImpl implements Printer
      *
      * @param USBTxError
      */
+    @Override
     public void setUSBTxError(boolean USBTxError)
     {
         this.USBTxError.set(USBTxError);
@@ -1227,6 +1355,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty BadCommandErrorProperty()
     {
         return BadCommandError;
@@ -1236,6 +1365,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean getBadCommandError()
     {
         return BadCommandError.get();
@@ -1245,6 +1375,7 @@ public class PrinterImpl implements Printer
      *
      * @param BadCommandError
      */
+    @Override
     public void setBadCommandError(boolean BadCommandError)
     {
         this.BadCommandError.set(BadCommandError);
@@ -1254,6 +1385,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty EEPROMErrorProperty()
     {
         return EEPROMError;
@@ -1263,6 +1395,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean getEEPROMError()
     {
         return EEPROMError.get();
@@ -1272,6 +1405,7 @@ public class PrinterImpl implements Printer
      *
      * @param EEPROMError
      */
+    @Override
     public void setEEPROMError(boolean EEPROMError)
     {
         this.EEPROMError.set(EEPROMError);
@@ -1284,6 +1418,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty XStopSwitchProperty()
     {
         return XStopSwitch;
@@ -1293,6 +1428,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean getXStopSwitch()
     {
         return XStopSwitch.get();
@@ -1302,6 +1438,7 @@ public class PrinterImpl implements Printer
      *
      * @param XStopSwitch
      */
+    @Override
     public void setXStopSwitch(boolean XStopSwitch)
     {
         this.XStopSwitch.set(XStopSwitch);
@@ -1311,6 +1448,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty YStopSwitchProperty()
     {
         return YStopSwitch;
@@ -1320,6 +1458,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean getYStopSwitch()
     {
         return YStopSwitch.get();
@@ -1329,6 +1468,7 @@ public class PrinterImpl implements Printer
      *
      * @param YStopSwitch
      */
+    @Override
     public void setYStopSwitch(boolean YStopSwitch)
     {
         this.YStopSwitch.set(YStopSwitch);
@@ -1338,6 +1478,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty ZStopSwitchProperty()
     {
         return ZStopSwitch;
@@ -1347,6 +1488,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean getZStopSwitch()
     {
         return ZStopSwitch.get();
@@ -1356,6 +1498,7 @@ public class PrinterImpl implements Printer
      *
      * @param ZStopSwitch
      */
+    @Override
     public void setZStopSwitch(boolean ZStopSwitch)
     {
         this.ZStopSwitch.set(ZStopSwitch);
@@ -1365,6 +1508,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty ZTopStopSwitchProperty()
     {
         return ZTopStopSwitch;
@@ -1374,6 +1518,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean getZTopStopSwitch()
     {
         return ZTopStopSwitch.get();
@@ -1383,6 +1528,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public void setZTopStopSwitch(boolean value)
     {
         this.ZTopStopSwitch.set(value);
@@ -1392,6 +1538,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty Filament1LoadedProperty()
     {
         return Filament1Loaded;
@@ -1401,6 +1548,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean getFilament1Loaded()
     {
         return Filament1Loaded.get();
@@ -1410,6 +1558,7 @@ public class PrinterImpl implements Printer
      *
      * @param FilamentLoaded
      */
+    @Override
     public void setFilament1Loaded(boolean FilamentLoaded)
     {
         this.Filament1Loaded.set(FilamentLoaded);
@@ -1419,6 +1568,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty Filament2LoadedProperty()
     {
         return Filament2Loaded;
@@ -1428,6 +1578,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean getFilament2Loaded()
     {
         return Filament2Loaded.get();
@@ -1437,6 +1588,7 @@ public class PrinterImpl implements Printer
      *
      * @param FilamentLoaded
      */
+    @Override
     public void setFilament2Loaded(boolean FilamentLoaded)
     {
         this.Filament2Loaded.set(FilamentLoaded);
@@ -1446,6 +1598,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty Filament1IndexProperty()
     {
         return Filament1Index;
@@ -1455,6 +1608,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean getFilament1Index()
     {
         return Filament1Index.get();
@@ -1464,6 +1618,7 @@ public class PrinterImpl implements Printer
      *
      * @param FilamentIndex
      */
+    @Override
     public void setFilament1Index(boolean FilamentIndex)
     {
         this.Filament1Index.set(FilamentIndex);
@@ -1473,6 +1628,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty Filament2IndexProperty()
     {
         return Filament2Index;
@@ -1482,6 +1638,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean getFilament2Index()
     {
         return Filament2Index.get();
@@ -1491,6 +1648,7 @@ public class PrinterImpl implements Printer
      *
      * @param FilamentIndex
      */
+    @Override
     public void setFilament2Index(boolean FilamentIndex)
     {
         this.Filament2Index.set(FilamentIndex);
@@ -1500,6 +1658,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty reelButtonProperty()
     {
         return reelButton;
@@ -1509,6 +1668,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean getReelButton()
     {
         return reelButton.get();
@@ -1518,6 +1678,7 @@ public class PrinterImpl implements Printer
      *
      * @param FilamentIndex
      */
+    @Override
     public void setReelButton(boolean FilamentIndex)
     {
         this.reelButton.set(FilamentIndex);
@@ -1530,6 +1691,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public ObjectProperty<Head> attachedHeadProperty()
     {
         return attachedHead;
@@ -1539,6 +1701,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public BooleanProperty getHeadDataChangedToggle()
     {
         return headDataChangedToggle;
@@ -1548,6 +1711,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final ObjectProperty<EEPROMState> headEEPROMStatusProperty()
     {
         return headEEPROMStatus;
@@ -1557,6 +1721,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public EEPROMState getHeadEEPROMStatus()
     {
         return headEEPROMStatus.get();
@@ -1566,6 +1731,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public StringProperty getHeadTypeCode()
     {
         return headTypeCode;
@@ -1575,6 +1741,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public StringProperty getHeadType()
     {
         return headType;
@@ -1584,6 +1751,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public StringProperty getHeadUniqueID()
     {
         return headUniqueID;
@@ -1593,6 +1761,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public FloatProperty getHeadMaximumTemperature()
     {
         return headMaximumTemperature;
@@ -1602,6 +1771,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public FloatProperty getHeadThermistorBeta()
     {
         return headThermistorBeta;
@@ -1611,6 +1781,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public FloatProperty getHeadThermistorTCal()
     {
         return headThermistorTCal;
@@ -1620,6 +1791,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public FloatProperty getHeadNozzle1XOffset()
     {
         return headNozzle1XOffset;
@@ -1629,6 +1801,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public FloatProperty getHeadNozzle1YOffset()
     {
         return headNozzle1YOffset;
@@ -1638,6 +1811,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public FloatProperty getHeadNozzle1ZOffset()
     {
         return headNozzle1ZOffset;
@@ -1647,6 +1821,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public FloatProperty getHeadNozzle1BOffset()
     {
         return headNozzle1BOffset;
@@ -1656,6 +1831,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public FloatProperty getHeadNozzle2XOffset()
     {
         return headNozzle2XOffset;
@@ -1665,6 +1841,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public FloatProperty getHeadNozzle2YOffset()
     {
         return headNozzle2YOffset;
@@ -1674,6 +1851,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public FloatProperty getHeadNozzle2ZOffset()
     {
         return headNozzle2ZOffset;
@@ -1683,6 +1861,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public FloatProperty getHeadNozzle2BOffset()
     {
         return headNozzle2BOffset;
@@ -1692,6 +1871,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public FloatProperty getHeadHoursCounter()
     {
         return headHoursCounter;
@@ -1701,6 +1881,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public FloatProperty getLastFilamentTemperature()
     {
         return lastFilamentTemperature;
@@ -1713,6 +1894,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public ObjectProperty<Filament> loadedFilamentProperty()
     {
         return loadedFilament;
@@ -1722,6 +1904,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public BooleanProperty reelDataChangedProperty()
     {
         return reelDataChangedToggle;
@@ -1731,6 +1914,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final ObjectProperty<EEPROMState> reelEEPROMStatusProperty()
     {
         return reelEEPROMStatus;
@@ -1740,6 +1924,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public EEPROMState getReelEEPROMStatus()
     {
         return reelEEPROMStatus.get();
@@ -1749,6 +1934,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final StringProperty reelFriendlyNameProperty()
     {
         return reelFriendlyName;
@@ -1758,15 +1944,29 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public String getReelFriendlyName()
     {
         return reelFriendlyName.get();
+    }
+
+    @Override
+    public MaterialType getReelMaterialType()
+    {
+        return reelMaterialType;
+    }
+
+    @Override
+    public Color getReelDisplayColour()
+    {
+        return reelDisplayColour;
     }
 
     /**
      *
      * @return
      */
+    @Override
     public IntegerProperty getReelAmbientTemperature()
     {
         return reelAmbientTemperature;
@@ -1776,6 +1976,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public IntegerProperty getReelBedTemperature()
     {
         return reelBedTemperature;
@@ -1785,6 +1986,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public FloatProperty getReelFilamentDiameter()
     {
         return reelFilamentDiameter;
@@ -1794,6 +1996,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public IntegerProperty getReelFirstLayerBedTemperature()
     {
         return reelFirstLayerBedTemperature;
@@ -1803,6 +2006,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public IntegerProperty getReelFirstLayerNozzleTemperature()
     {
         return reelFirstLayerNozzleTemperature;
@@ -1812,6 +2016,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public FloatProperty getReelFilamentMultiplier()
     {
         return reelFilamentMultiplier;
@@ -1821,6 +2026,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public FloatProperty getReelFeedRateMultiplier()
     {
         return reelFeedRateMultiplier;
@@ -1830,6 +2036,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public IntegerProperty getReelNozzleTemperature()
     {
         return reelNozzleTemperature;
@@ -1839,6 +2046,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public FloatProperty getReelRemainingFilament()
     {
         return reelRemainingFilament;
@@ -1848,27 +2056,17 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
-    public StringProperty getReelTypeCode()
+    @Override
+    public StringProperty getReelFilamentID()
     {
-        return reelTypeCode;
+        return reelFilamentID;
     }
 
     /**
      *
      * @return
      */
-    public StringProperty getReelUniqueID()
-    {
-        return reelUniqueID;
-    }
-
-    /*
-     *
-     */
-    /**
-     *
-     * @return
-     */
+    @Override
     public final BooleanProperty NozzleHomedProperty()
     {
         return NozzleHomed;
@@ -1878,6 +2076,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean getNozzleHomed()
     {
         return NozzleHomed.get();
@@ -1887,6 +2086,7 @@ public class PrinterImpl implements Printer
      *
      * @param NozzleHomed
      */
+    @Override
     public void setNozzleHomed(boolean NozzleHomed)
     {
         this.NozzleHomed.set(NozzleHomed);
@@ -1896,6 +2096,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty LidOpenProperty()
     {
         return LidOpen;
@@ -1905,6 +2106,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean getLidOpen()
     {
         return LidOpen.get();
@@ -1914,6 +2116,7 @@ public class PrinterImpl implements Printer
      *
      * @param LidOpen
      */
+    @Override
     public void setLidOpen(boolean LidOpen)
     {
         this.LidOpen.set(LidOpen);
@@ -1923,6 +2126,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final BooleanProperty sdCardPresentProperty()
     {
         return sdCardPresent;
@@ -1932,6 +2136,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean sdCardPresent()
     {
         return sdCardPresent.get();
@@ -1944,6 +2149,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setFirmwareVersion(String value)
     {
         firmwareVersion.set(value);
@@ -1953,6 +2159,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final String getFirmwareVersion()
     {
         return firmwareVersion.get();
@@ -1962,6 +2169,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final StringProperty firmwareVersionProperty()
     {
         return firmwareVersion;
@@ -1971,6 +2179,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setPrinterStatus(PrinterStatusEnumeration value)
     {
         printerStatus.set(value);
@@ -1980,6 +2189,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final PrinterStatusEnumeration getPrinterStatus()
     {
         return printerStatus.get();
@@ -1989,6 +2199,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final ObjectProperty<PrinterStatusEnumeration> printerStatusProperty()
     {
         return printerStatus;
@@ -1998,6 +2209,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setPrintJobLineNumber(int value)
     {
         printJobLineNumber.set(value);
@@ -2007,6 +2219,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final int getPrintJobLineNumber()
     {
         return printJobLineNumber.get();
@@ -2016,6 +2229,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final IntegerProperty printJobLineNumberProperty()
     {
         return printJobLineNumber;
@@ -2025,6 +2239,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setPrintJobID(String value)
     {
         printJobID.set(value);
@@ -2034,6 +2249,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final String getPrintJobID()
     {
         return printJobID.get();
@@ -2043,6 +2259,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final StringProperty printJobIDProperty()
     {
         return printJobID;
@@ -2055,6 +2272,7 @@ public class PrinterImpl implements Printer
      *
      * @param value
      */
+    @Override
     public final void setErrorList(String value)
     {
         errorList.set(value);
@@ -2064,6 +2282,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final String getErrorList()
     {
         return errorList.get();
@@ -2073,6 +2292,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public final StringProperty errorListProperty()
     {
         return errorList;
@@ -2082,8 +2302,9 @@ public class PrinterImpl implements Printer
      *
      * @param printerEvent
      */
+    @Override
     public void processRoboxEvent(RoboxEvent printerEvent)
-     {
+    {
         switch (printerEvent.getEventType())
         {
             case PRINTER_CONNECTED:
@@ -2094,6 +2315,73 @@ public class PrinterImpl implements Printer
                 break;
             case PRINTER_ACK:
                 AckResponse ackResponse = (AckResponse) printerEvent.getPayload();
+
+                if (ackResponse.isError() && !errorDialogOnDisplay)
+                {
+                    errorDialogOnDisplay = true;
+
+                    Action errorHandlingResponse = null;
+
+                    if (getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.IDLE
+                        && getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.ERROR)
+                    {
+                        errorHandlingResponse = Dialogs.create().title(
+                            DisplayManager.getLanguageBundle().getString(
+                                "dialogs.error.errorEncountered"))
+                            .message(ackResponse.getErrorsAsString())
+                            .masthead(null)
+                            .showCommandLinks(clearAndContinue, clearAndContinue, abortJob);
+                    } else
+                    {
+                        errorHandlingResponse = Dialogs.create().title(
+                            DisplayManager.getLanguageBundle().getString(
+                                "dialogs.error.errorEncountered"))
+                            .message(ackResponse.getErrorsAsString())
+                            .masthead(null)
+                            .showCommandLinks(clearOnly, clearOnly);
+                    }
+
+                    try
+                    {
+                        transmitResetErrors();
+                    } catch (RoboxCommsException ex)
+                    {
+                        steno.error("Couldn't reset errors after error detection");
+                    }
+
+                    if (errorHandlingResponse == clearAndContinue)
+                    {
+                        try
+                        {
+                            if (pauseStatus.get() == PauseStatus.PAUSED
+                                || pauseStatus.get() == PauseStatus.PAUSE_PENDING)
+                            {
+                                transmitResumePrint();
+                            }
+                        } catch (RoboxCommsException ex)
+                        {
+                            steno.error("Couldn't reset errors and resume after error");
+                        }
+
+                    } else if (errorHandlingResponse == abortJob)
+                    {
+                        try
+                        {
+                            if (pauseStatus.get() == PauseStatus.NOT_PAUSED
+                                || pauseStatus.get() == PauseStatus.RESUME_PENDING)
+                            {
+                                transmitPausePrint();
+                            }
+                            transmitAbortPrint();
+                        } catch (RoboxCommsException ex)
+                        {
+                            steno.error("Couldn't abort print after error");
+                        }
+                    }
+
+                    errorDialogOnDisplay = false;
+                }
+
                 setErrorsDetected(ackResponse.isError());
                 setSDCardError(ackResponse.isSdCardError());
                 setChunkSequenceError(ackResponse.isChunkSequenceError());
@@ -2104,6 +2392,7 @@ public class PrinterImpl implements Printer
                 setBadCommandError(ackResponse.isBadCommandError());
                 setEEPROMError(ackResponse.isHeadEepromError());
                 break;
+
             case PRINTER_STATUS_UPDATE:
                 StatusResponse statusResponse = (StatusResponse) printerEvent.getPayload();
 //                steno.info("Got:" + statusResponse.toString());
@@ -2114,7 +2403,8 @@ public class PrinterImpl implements Printer
                 setExtruderTemperature(statusResponse.getNozzleTemperature());
                 setBedFirstLayerTargetTemperature(statusResponse.getBedFirstLayerTargetTemperature());
                 setBedTargetTemperature(statusResponse.getBedTargetTemperature());
-                setNozzleFirstLayerTargetTemperature(statusResponse.getNozzleFirstLayerTargetTemperature());
+                setNozzleFirstLayerTargetTemperature(
+                    statusResponse.getNozzleFirstLayerTargetTemperature());
                 setNozzleTargetTemperature(statusResponse.getNozzleTargetTemperature());
 
                 long now = System.currentTimeMillis();
@@ -2122,23 +2412,38 @@ public class PrinterImpl implements Printer
                 {
                     lastTimestamp = now;
 
-                    for (int pointCounter = 0; pointCounter < NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1; pointCounter++)
+                    for (int pointCounter = 0; pointCounter < NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP
+                        - 1; pointCounter++)
                     {
-                        ambientTemperatureDataPoints.get(pointCounter).setYValue(ambientTemperatureDataPoints.get(pointCounter + 1).getYValue());
-                        bedTemperatureDataPoints.get(pointCounter).setYValue(bedTemperatureDataPoints.get(pointCounter + 1).getYValue());
-                        nozzleTemperatureDataPoints.get(pointCounter).setYValue(nozzleTemperatureDataPoints.get(pointCounter + 1).getYValue());
+                        ambientTemperatureDataPoints.get(pointCounter).setYValue(
+                            ambientTemperatureDataPoints.get(pointCounter + 1).getYValue());
+                        bedTemperatureDataPoints.get(pointCounter).setYValue(
+                            bedTemperatureDataPoints.get(pointCounter + 1).getYValue());
+                        nozzleTemperatureDataPoints.get(pointCounter).setYValue(
+                            nozzleTemperatureDataPoints.get(pointCounter + 1).getYValue());
                     }
 
-                    ambientTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(statusResponse.getAmbientTemperature());
+                    ambientTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(
+                        statusResponse.getAmbientTemperature());
 
-                    if (statusResponse.getBedTemperature() < ApplicationConfiguration.maxTempToDisplayOnGraph && statusResponse.getBedTemperature() > ApplicationConfiguration.minTempToDisplayOnGraph)
+                    if (statusResponse.getBedTemperature()
+                        < ApplicationConfiguration.maxTempToDisplayOnGraph
+                        && statusResponse.getBedTemperature()
+                        > ApplicationConfiguration.minTempToDisplayOnGraph)
                     {
-                        bedTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(statusResponse.getBedTemperature());
+                        bedTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(
+                            statusResponse.getBedTemperature());
                     }
+                    
+                    nozzleTemperatureDataPoints.add(bedTargetPoint);
 
-                    if (statusResponse.getNozzleTemperature() < ApplicationConfiguration.maxTempToDisplayOnGraph && statusResponse.getNozzleTemperature() > ApplicationConfiguration.minTempToDisplayOnGraph)
+                    if (statusResponse.getNozzleTemperature()
+                        < ApplicationConfiguration.maxTempToDisplayOnGraph
+                        && statusResponse.getNozzleTemperature()
+                        > ApplicationConfiguration.minTempToDisplayOnGraph)
                     {
-                        nozzleTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(statusResponse.getNozzleTemperature());
+                        nozzleTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(
+                            statusResponse.getNozzleTemperature());
                     }
                 }
 
@@ -2163,7 +2468,8 @@ public class PrinterImpl implements Printer
                         nozzleTargetPoint.setYValue(0);
                         break;
                     case FIRST_LAYER:
-                        nozzleTargetPoint.setYValue(statusResponse.getNozzleFirstLayerTargetTemperature());
+                        nozzleTargetPoint.setYValue(
+                            statusResponse.getNozzleFirstLayerTargetTemperature());
                         break;
                     case NORMAL:
                         nozzleTargetPoint.setYValue(statusResponse.getNozzleTargetTemperature());
@@ -2178,14 +2484,16 @@ public class PrinterImpl implements Printer
                 setHeadFanOn(statusResponse.isHeadFanOn());
                 setBusy(statusResponse.isBusyStatus());
 
-                if (statusResponse.isPauseStatus() && paused.get() == false)
+                if (pauseStatus.get() != statusResponse.getPauseStatus()
+                    && statusResponse.getPauseStatus() == PauseStatus.PAUSED)
                 {
                     printQueue.printerHasPaused();
-                } else if (!statusResponse.isPauseStatus() && paused.get() == true)
+                } else if (pauseStatus.get() != statusResponse.getPauseStatus()
+                    && statusResponse.getPauseStatus() == PauseStatus.NOT_PAUSED)
                 {
                     printQueue.printerHasResumed();
                 }
-                setPaused(statusResponse.isPauseStatus());
+                setPauseStatus(statusResponse.getPauseStatus());
 
                 setPrintJobLineNumber(statusResponse.getPrintJobLineNumber());
                 setPrintJobID(statusResponse.getRunningPrintJobID());
@@ -2204,15 +2512,15 @@ public class PrinterImpl implements Printer
                 EEPROMState lastReelState = reelEEPROMStatus.get();
 
                 if (reelEEPROMStatus.get() != EEPROMState.PROGRAMMED
-                        && statusResponse.getReelEEPROMState() == EEPROMState.PROGRAMMED)
+                    && statusResponse.getReelEEPROMState() == EEPROMState.PROGRAMMED)
                 {
                     Filament.repairFilamentIfNecessary(this);
                 } else if (reelEEPROMStatus.get() != EEPROMState.NOT_PRESENT
-                        && statusResponse.getReelEEPROMState() == EEPROMState.NOT_PRESENT)
+                    && statusResponse.getReelEEPROMState() == EEPROMState.NOT_PRESENT)
                 {
                     loadedFilament.set(null);
-                    reelFriendlyName.set(DisplayManager.getLanguageBundle().getString("smartReelProgrammer.noReelLoaded"));
-                    reelUniqueID.set(null);
+                    reelFriendlyName.set(DisplayManager.getLanguageBundle().getString(
+                        "smartReelProgrammer.noReelLoaded"));
                     reelAmbientTemperature.set(0);
                     reelBedTemperature.set(0);
                     reelFirstLayerBedTemperature.set(0);
@@ -2222,6 +2530,7 @@ public class PrinterImpl implements Printer
                     reelFeedRateMultiplier.set(0);
                     reelRemainingFilament.set(0);
                     reelFilamentDiameter.set(0);
+                    reelFilamentIsMutable.set(false);
                     reelDataChangedToggle.set(!reelDataChangedToggle.get());
                 }
 
@@ -2230,11 +2539,11 @@ public class PrinterImpl implements Printer
                 EEPROMState lastHeadState = headEEPROMStatus.get();
 
                 if (headEEPROMStatus.get() != EEPROMState.PROGRAMMED
-                        && statusResponse.getHeadEEPROMState() == EEPROMState.PROGRAMMED)
+                    && statusResponse.getHeadEEPROMState() == EEPROMState.PROGRAMMED)
                 {
                     Head.repairHeadIfNecessary(this);
                 } else if (headEEPROMStatus.get() != EEPROMState.NOT_PRESENT
-                        && statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PRESENT)
+                    && statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PRESENT)
                 {
                     attachedHead.set(null);
                     headType.set(null);
@@ -2273,11 +2582,6 @@ public class PrinterImpl implements Printer
                 setHeadXPosition(statusResponse.getHeadXPosition());
                 setHeadYPosition(statusResponse.getHeadYPosition());
                 setHeadZPosition(statusResponse.getHeadZPosition());
-
-                if (statusResponse.isPauseStatus())
-                {
-                    errorHandler.checkForErrors(this);
-                }
 
                 setWhyAreWeWaiting(statusResponse.getWhyAreWeWaitingState());
                 switch (statusResponse.getWhyAreWeWaitingState())
@@ -2322,6 +2626,7 @@ public class PrinterImpl implements Printer
                 printerserialNumber.set(idResponse.getSerialNumber());
                 printercheckByte.set(idResponse.getCheckByte());
                 printerFriendlyName.set(idResponse.getPrinterFriendlyName());
+                printerUniqueID.set(getPrinterUniqueID());
                 setPrinterColour(idResponse.getPrinterColour());
                 try
                 {
@@ -2335,39 +2640,50 @@ public class PrinterImpl implements Printer
                 break;
             case REEL_EEPROM_DATA:
                 ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) printerEvent.getPayload();
-                reelTypeCode.set(reelResponse.getReelTypeCode());
+                reelFilamentID.set(reelResponse.getReelFilamentID());
                 try
                 {
-                    Filament loadedFilamentCandidate = FilamentContainer.getFilamentByID(reelTypeCode.get());
+                    Filament loadedFilamentCandidate = FilamentContainer.getFilamentByID(
+                        reelFilamentID.get());
                     if (loadedFilamentCandidate != null)
                     {
-                        temporaryFilament.setFriendlyFilamentName(loadedFilamentCandidate.getFriendlyFilamentName());
+                        temporaryFilament.setFriendlyFilamentName(
+                            loadedFilamentCandidate.getFriendlyFilamentName());
                         temporaryFilament.setMaterial(loadedFilamentCandidate.getMaterial());
-                        temporaryFilament.setReelID(reelResponse.getReelTypeCode());
-                        temporaryFilament.setDisplayColour(loadedFilamentCandidate.getDisplayColour());
-                        temporaryFilament.setUniqueID(reelResponse.getReelUniqueID());
+                        temporaryFilament.setFilamentID(reelResponse.getReelFilamentID());
+                        temporaryFilament.setDisplayColour(
+                            loadedFilamentCandidate.getDisplayColour());
                         temporaryFilament.setAmbientTemperature(reelResponse.getAmbientTemperature());
                         temporaryFilament.setBedTemperature(reelResponse.getBedTemperature());
-                        temporaryFilament.setFirstLayerBedTemperature(reelResponse.getFirstLayerBedTemperature());
+                        temporaryFilament.setFirstLayerBedTemperature(
+                            reelResponse.getFirstLayerBedTemperature());
                         temporaryFilament.setNozzleTemperature(reelResponse.getNozzleTemperature());
-                        temporaryFilament.setFirstLayerNozzleTemperature(reelResponse.getFirstLayerNozzleTemperature());
+                        temporaryFilament.setFirstLayerNozzleTemperature(
+                            reelResponse.getFirstLayerNozzleTemperature());
+                        temporaryFilament.setMutable(reelResponse.getReelFilamentID().startsWith(USER_FILAMENT_PREFIX));
                         temporaryFilament.setFilamentMultiplier(reelResponse.getFilamentMultiplier());
                         temporaryFilament.setFeedRateMultiplier(reelResponse.getFeedRateMultiplier());
-                        temporaryFilament.setRemainingFilament(reelResponse.getReelRemainingFilament());
+                        temporaryFilament.setRemainingFilament(
+                            reelResponse.getReelRemainingFilament());
                         temporaryFilament.setFilamentDiameter(reelResponse.getFilamentDiameter());
                         loadedFilament.set(temporaryFilament);
                         reelFriendlyName.set(loadedFilamentCandidate.toString());
                     } else
                     {
-                        reelFriendlyName.set(DisplayManager.getLanguageBundle().getString("sidePanel_settings.filamentUnknown"));
+                        reelFriendlyName.set(DisplayManager.getLanguageBundle().getString(
+                            "sidePanel_settings.filamentUnknown"));
                         loadedFilament.set(null);
                     }
                 } catch (IllegalArgumentException ex)
                 {
-                    reelFriendlyName.set(DisplayManager.getLanguageBundle().getString("sidePanel_settings.filamentUnknown"));
+                    reelFriendlyName.set(DisplayManager.getLanguageBundle().getString(
+                        "sidePanel_settings.filamentUnknown"));
                     loadedFilament.set(null);
                 }
-                reelUniqueID.set(reelResponse.getReelUniqueID());
+
+                reelFriendlyName.set(reelResponse.getReelFriendlyName());
+                reelMaterialType = reelResponse.getReelMaterialType();
+                reelDisplayColour = reelResponse.getReelDisplayColour();
                 reelAmbientTemperature.set(reelResponse.getAmbientTemperature());
                 reelBedTemperature.set(reelResponse.getBedTemperature());
                 reelFirstLayerBedTemperature.set(reelResponse.getFirstLayerBedTemperature());
@@ -2377,6 +2693,7 @@ public class PrinterImpl implements Printer
                 reelFeedRateMultiplier.set(reelResponse.getFeedRateMultiplier());
                 reelRemainingFilament.set(reelResponse.getReelRemainingFilament());
                 reelFilamentDiameter.set(reelResponse.getFilamentDiameter());
+                reelFilamentIsMutable.set(reelFilamentID.get().startsWith(USER_FILAMENT_PREFIX));
                 reelDataChangedToggle.set(!reelDataChangedToggle.get());
                 break;
             case HEAD_EEPROM_DATA:
@@ -2388,10 +2705,12 @@ public class PrinterImpl implements Printer
                     Head attachedHeadCandidate = HeadContainer.getHeadByID(headTypeCodeString);
                     if (attachedHeadCandidate != null)
                     {
-                        headType.set(PrintHead.getPrintHeadForType(headTypeCodeString).getShortName());
+                        headType.set(
+                            PrintHead.getPrintHeadForType(headTypeCodeString).getShortName());
                         temporaryHead.setUniqueID(headResponse.getUniqueID());
                         temporaryHead.setHeadHours(headResponse.getHeadHours());
-                        temporaryHead.setLastFilamentTemperature(headResponse.getLastFilamentTemperature());
+                        temporaryHead.setLastFilamentTemperature(
+                            headResponse.getLastFilamentTemperature());
                         temporaryHead.setMaximumTemperature(headResponse.getMaximumTemperature());
                         temporaryHead.setNozzle1_B_offset(headResponse.getNozzle1BOffset());
                         temporaryHead.setNozzle1_X_offset(headResponse.getNozzle1XOffset());
@@ -2433,7 +2752,8 @@ public class PrinterImpl implements Printer
                 headDataChangedToggle.set(!headDataChangedToggle.get());
                 break;
             default:
-                steno.warning("Unknown packet type delivered to Printer Status: " + printerEvent.getEventType().name());
+                steno.warning("Unknown packet type delivered to Printer Status: "
+                    + printerEvent.getEventType().name());
                 break;
         }
     }
@@ -2472,6 +2792,7 @@ public class PrinterImpl implements Printer
      *
      * @param gcodeToSend
      */
+    @Override
     public void addToGCodeTranscript(String gcodeToSend)
     {
         gcodeTranscript.add(gcodeToSend);
@@ -2481,6 +2802,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public ObservableList<String> gcodeTranscriptProperty()
     {
         return gcodeTranscript;
@@ -2490,6 +2812,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public PrintQueue getPrintQueue()
     {
         return printQueue;
@@ -2505,6 +2828,7 @@ public class PrinterImpl implements Printer
      * @return
      * @throws RoboxCommsException
      */
+    @Override
     public String transmitDirectGCode(final String gcodeToSend, boolean addToTranscript) throws RoboxCommsException
     {
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.EXECUTE_GCODE);
@@ -2517,7 +2841,8 @@ public class PrinterImpl implements Printer
         {
             addToGCodeTranscript(gcodeToSendWithLF);
         }
-        GCodeDataResponse response = (GCodeDataResponse) printerCommsManager.submitForWrite(portName, gcodePacket);
+        GCodeDataResponse response = (GCodeDataResponse) printerCommsManager.submitForWrite(portName,
+                                                                                            gcodePacket);
         if (addToTranscript)
         {
             Platform.runLater(new Runnable()
@@ -2544,6 +2869,7 @@ public class PrinterImpl implements Printer
      * @param macroName
      * @throws RoboxCommsException
      */
+    @Override
     public void transmitStoredGCode(final String macroName) throws RoboxCommsException
     {
         transmitStoredGCode(macroName, true);
@@ -2555,6 +2881,7 @@ public class PrinterImpl implements Printer
      * @param checkForPurge
      * @throws RoboxCommsException
      */
+    @Override
     public void transmitStoredGCode(final String macroName, boolean checkForPurge) throws RoboxCommsException
     {
         if (printQueue.getPrintStatus() == PrinterStatusEnumeration.IDLE)
@@ -2579,10 +2906,12 @@ public class PrinterImpl implements Printer
 
     private boolean transmitDataFileStart(final String fileID) throws RoboxCommsException
     {
-        RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.START_OF_DATA_FILE);
+        RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.START_OF_DATA_FILE);
         gcodePacket.setMessagePayload(fileID);
 
-        AckResponse response = (AckResponse) printerCommsManager.submitForWrite(portName, gcodePacket);
+        AckResponse response = (AckResponse) printerCommsManager.submitForWrite(portName,
+                                                                                gcodePacket);
         boolean success = false;
         // Only check for SD card errors here...
         success = !response.isSdCardError();
@@ -2592,11 +2921,13 @@ public class PrinterImpl implements Printer
 
     private AckResponse transmitDataFileChunk(final String payloadData, final int sequenceNumber) throws RoboxCommsException
     {
-        RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.DATA_FILE_CHUNK);
+        RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.DATA_FILE_CHUNK);
         gcodePacket.setMessagePayload(payloadData);
         gcodePacket.setSequenceNumber(sequenceNumber);
 
-        AckResponse response = (AckResponse) printerCommsManager.submitForWrite(portName, gcodePacket);
+        AckResponse response = (AckResponse) printerCommsManager.submitForWrite(portName,
+                                                                                gcodePacket);
         dataFileSequenceNumber++;
 
         return response;
@@ -2604,7 +2935,8 @@ public class PrinterImpl implements Printer
 
     private AckResponse transmitDataFileEnd(final String payloadData, final int sequenceNumber) throws RoboxCommsException
     {
-        RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.END_OF_DATA_FILE);
+        RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.END_OF_DATA_FILE);
         gcodePacket.setMessagePayload(payloadData);
         gcodePacket.setSequenceNumber(sequenceNumber);
 
@@ -2615,6 +2947,7 @@ public class PrinterImpl implements Printer
      *
      * @return @throws RoboxCommsException
      */
+    @Override
     public AckResponse transmitReportErrors() throws RoboxCommsException
     {
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.REPORT_ERRORS);
@@ -2626,6 +2959,7 @@ public class PrinterImpl implements Printer
      *
      * @throws RoboxCommsException
      */
+    @Override
     public void transmitResetErrors() throws RoboxCommsException
     {
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.RESET_ERRORS);
@@ -2639,19 +2973,23 @@ public class PrinterImpl implements Printer
      * @return
      * @throws RoboxCommsException
      */
+    @Override
     public boolean transmitUpdateFirmware(final String firmwareID) throws RoboxCommsException
     {
-        RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.UPDATE_FIRMWARE);
+        RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.UPDATE_FIRMWARE);
         gcodePacket.setMessagePayload(firmwareID);
 
-        AckResponse response = (AckResponse) printerCommsManager.submitForWrite(portName, gcodePacket);
+        AckResponse response = (AckResponse) printerCommsManager.submitForWrite(portName,
+                                                                                gcodePacket);
 
         return (response.isError());
     }
 
     private void transmitInitiatePrint(final String printJobUUID) throws RoboxCommsException
     {
-        RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.INITIATE_PRINT);
+        RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.INITIATE_PRINT);
         gcodePacket.setMessagePayload(printJobUUID);
 
         printerCommsManager.submitForWrite(portName, gcodePacket);
@@ -2661,6 +2999,7 @@ public class PrinterImpl implements Printer
      *
      * @throws RoboxCommsException
      */
+    @Override
     public void transmitAbortPrint() throws RoboxCommsException
     {
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.ABORT_PRINT);
@@ -2672,9 +3011,11 @@ public class PrinterImpl implements Printer
      *
      * @throws RoboxCommsException
      */
+    @Override
     public void transmitPausePrint() throws RoboxCommsException
     {
-        PausePrint gcodePacket = (PausePrint) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.PAUSE_RESUME_PRINT);
+        PausePrint gcodePacket = (PausePrint) RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.PAUSE_RESUME_PRINT);
         gcodePacket.setPause();
 
         printerCommsManager.submitForWrite(portName, gcodePacket);
@@ -2684,9 +3025,11 @@ public class PrinterImpl implements Printer
      *
      * @throws RoboxCommsException
      */
+    @Override
     public void transmitResumePrint() throws RoboxCommsException
     {
-        PausePrint gcodePacket = (PausePrint) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.PAUSE_RESUME_PRINT);
+        PausePrint gcodePacket = (PausePrint) RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.PAUSE_RESUME_PRINT);
         gcodePacket.setResume();
 
         printerCommsManager.submitForWrite(portName, gcodePacket);
@@ -2696,9 +3039,11 @@ public class PrinterImpl implements Printer
      *
      * @return @throws RoboxCommsException
      */
+    @Override
     public AckResponse transmitFormatHeadEEPROM() throws RoboxCommsException
     {
-        FormatHeadEEPROM formatHead = (FormatHeadEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.FORMAT_HEAD_EEPROM);
+        FormatHeadEEPROM formatHead = (FormatHeadEEPROM) RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.FORMAT_HEAD_EEPROM);
         return (AckResponse) printerCommsManager.submitForWrite(portName, formatHead);
     }
 
@@ -2706,9 +3051,11 @@ public class PrinterImpl implements Printer
      *
      * @return @throws RoboxCommsException
      */
+    @Override
     public AckResponse transmitFormatReelEEPROM() throws RoboxCommsException
     {
-        FormatReelEEPROM formatReel = (FormatReelEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.FORMAT_REEL_EEPROM);
+        FormatReelEEPROM formatReel = (FormatReelEEPROM) RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.FORMAT_REEL_EEPROM);
         return (AckResponse) printerCommsManager.submitForWrite(portName, formatReel);
     }
 
@@ -2716,9 +3063,11 @@ public class PrinterImpl implements Printer
      *
      * @return @throws RoboxCommsException
      */
+    @Override
     public ReelEEPROMDataResponse transmitReadReelEEPROM() throws RoboxCommsException
     {
-        ReadReelEEPROM readReel = (ReadReelEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_REEL_EEPROM);
+        ReadReelEEPROM readReel = (ReadReelEEPROM) RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.READ_REEL_EEPROM);
         return (ReelEEPROMDataResponse) printerCommsManager.submitForWrite(portName, readReel);
     }
 
@@ -2726,9 +3075,11 @@ public class PrinterImpl implements Printer
      *
      * @return @throws RoboxCommsException
      */
+    @Override
     public HeadEEPROMDataResponse transmitReadHeadEEPROM() throws RoboxCommsException
     {
-        ReadHeadEEPROM readHead = (ReadHeadEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_HEAD_EEPROM);
+        ReadHeadEEPROM readHead = (ReadHeadEEPROM) RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.READ_HEAD_EEPROM);
         return (HeadEEPROMDataResponse) printerCommsManager.submitForWrite(portName, readHead);
     }
 
@@ -2738,11 +3089,12 @@ public class PrinterImpl implements Printer
      * @return
      * @throws RoboxCommsException
      */
+    @Override
     public AckResponse transmitWriteReelEEPROM(Filament filament) throws RoboxCommsException
     {
-        WriteReelEEPROM writeReelEEPROM = (WriteReelEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_REEL_EEPROM);
-        writeReelEEPROM.populateEEPROM(filament.getReelID(),
-                                       filament.getUniqueID(),
+        WriteReelEEPROM writeReelEEPROM = (WriteReelEEPROM) RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.WRITE_REEL_EEPROM);
+        writeReelEEPROM.populateEEPROM(filament.getFilamentID(),
                                        filament.getFirstLayerNozzleTemperature(),
                                        filament.getNozzleTemperature(),
                                        filament.getFirstLayerBedTemperature(),
@@ -2751,14 +3103,16 @@ public class PrinterImpl implements Printer
                                        filament.getFilamentDiameter(),
                                        filament.getFilamentMultiplier(),
                                        filament.getFeedRateMultiplier(),
-                                       filament.getRemainingFilament());
+                                       filament.getRemainingFilament(),
+                                       filament.getFriendlyFilamentName(),
+                                       filament.getMaterial(),
+                                       filament.getDisplayColour());
         return (AckResponse) printerCommsManager.submitForWrite(portName, writeReelEEPROM);
     }
 
     /**
      *
-     * @param reelTypeCode
-     * @param reelUniqueID
+     * @param filamentID
      * @param reelFirstLayerNozzleTemperature
      * @param reelNozzleTemperature
      * @param reelFirstLayerBedTemperature
@@ -2770,14 +3124,23 @@ public class PrinterImpl implements Printer
      * @param reelRemainingFilament
      * @throws RoboxCommsException
      */
-    public void transmitWriteReelEEPROM(String reelTypeCode, String reelUniqueID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
-            float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter,
-            float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament) throws RoboxCommsException
+    @Override
+    public void transmitWriteReelEEPROM(String filamentID,
+        float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
+        float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature,
+        float reelFilamentDiameter,
+        float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament,
+        String friendlyName, MaterialType materialType, Color displayColour) throws RoboxCommsException
     {
-        WriteReelEEPROM writeReelEEPROM = (WriteReelEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_REEL_EEPROM);
-        writeReelEEPROM.populateEEPROM(reelTypeCode, reelUniqueID, reelFirstLayerNozzleTemperature, reelNozzleTemperature,
-                                       reelFirstLayerBedTemperature, reelBedTemperature, reelAmbientTemperature, reelFilamentDiameter,
-                                       reelFilamentMultiplier, reelFeedRateMultiplier, reelRemainingFilament);
+        WriteReelEEPROM writeReelEEPROM = (WriteReelEEPROM) RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.WRITE_REEL_EEPROM);
+        writeReelEEPROM.populateEEPROM(filamentID, reelFirstLayerNozzleTemperature,
+                                       reelNozzleTemperature,
+                                       reelFirstLayerBedTemperature, reelBedTemperature,
+                                       reelAmbientTemperature, reelFilamentDiameter,
+                                       reelFilamentMultiplier, reelFeedRateMultiplier,
+                                       reelRemainingFilament,
+                                       friendlyName, materialType, displayColour);
         printerCommsManager.submitForWrite(portName, writeReelEEPROM);
     }
 
@@ -2786,9 +3149,11 @@ public class PrinterImpl implements Printer
      * @param headToWrite
      * @throws RoboxCommsException
      */
+    @Override
     public void transmitWriteHeadEEPROM(Head headToWrite) throws RoboxCommsException
     {
-        WriteHeadEEPROM writeHeadEEPROM = (WriteHeadEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_HEAD_EEPROM);
+        WriteHeadEEPROM writeHeadEEPROM = (WriteHeadEEPROM) RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.WRITE_HEAD_EEPROM);
         writeHeadEEPROM.populateEEPROM(headToWrite.getTypeCode(),
                                        headToWrite.getUniqueID(),
                                        headToWrite.getMaximumTemperature(),
@@ -2827,13 +3192,16 @@ public class PrinterImpl implements Printer
      * @return
      * @throws RoboxCommsException
      */
-    public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature,
-            float thermistorBeta, float thermistorTCal,
-            float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset,
-            float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
-            float lastFilamentTemperature, float hourCounter) throws RoboxCommsException
+    @Override
+    public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID,
+        float maximumTemperature,
+        float thermistorBeta, float thermistorTCal,
+        float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset,
+        float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
+        float lastFilamentTemperature, float hourCounter) throws RoboxCommsException
     {
-        WriteHeadEEPROM writeHeadEEPROM = (WriteHeadEEPROM) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_HEAD_EEPROM);
+        WriteHeadEEPROM writeHeadEEPROM = (WriteHeadEEPROM) RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.WRITE_HEAD_EEPROM);
         writeHeadEEPROM.populateEEPROM(headTypeCode,
                                        headUniqueID,
                                        maximumTemperature,
@@ -2860,6 +3228,7 @@ public class PrinterImpl implements Printer
      * @param on
      * @throws RoboxCommsException
      */
+    @Override
     public void switchOnHeadLEDs(boolean on) throws RoboxCommsException
     {
         if (on)
@@ -2876,9 +3245,11 @@ public class PrinterImpl implements Printer
      * @param colour
      * @throws RoboxCommsException
      */
+    @Override
     public void transmitSetAmbientLEDColour(Color colour) throws RoboxCommsException
     {
-        SetAmbientLEDColour ledColour = (SetAmbientLEDColour) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.SET_AMBIENT_LED_COLOUR);
+        SetAmbientLEDColour ledColour = (SetAmbientLEDColour) RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.SET_AMBIENT_LED_COLOUR);
         ledColour.setLEDColour(colour);
         printerCommsManager.submitForWrite(portName, ledColour);
     }
@@ -2888,9 +3259,11 @@ public class PrinterImpl implements Printer
      * @param colour
      * @throws RoboxCommsException
      */
+    @Override
     public void transmitSetReelLEDColour(Color colour) throws RoboxCommsException
     {
-        SetReelLEDColour ledColour = (SetReelLEDColour) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.SET_REEL_LED_COLOUR);
+        SetReelLEDColour ledColour = (SetReelLEDColour) RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.SET_REEL_LED_COLOUR);
         ledColour.setLEDColour(colour);
         printerCommsManager.submitForWrite(portName, ledColour);
     }
@@ -2899,9 +3272,11 @@ public class PrinterImpl implements Printer
      *
      * @throws RoboxCommsException
      */
+    @Override
     public void transmitReadPrinterID() throws RoboxCommsException
     {
-        ReadPrinterID readId = (ReadPrinterID) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_PRINTER_ID);
+        ReadPrinterID readId = (ReadPrinterID) RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.READ_PRINTER_ID);
         printerCommsManager.submitForWrite(portName, readId);
     }
 
@@ -2919,10 +3294,15 @@ public class PrinterImpl implements Printer
      * @return
      * @throws RoboxCommsException
      */
-    public boolean transmitWritePrinterID(String model, String edition, String weekOfManufacture, String yearOfManufacture, String poNumber, String serialNumber, String checkByte, String printerFriendlyName, Color colour) throws RoboxCommsException
+    @Override
+    public boolean transmitWritePrinterID(String model, String edition, String weekOfManufacture,
+        String yearOfManufacture, String poNumber, String serialNumber, String checkByte,
+        String printerFriendlyName, Color colour) throws RoboxCommsException
     {
-        WritePrinterID writeIDCmd = (WritePrinterID) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_PRINTER_ID);
-        writeIDCmd.setIDAndColour(model, edition, weekOfManufacture, yearOfManufacture, poNumber, serialNumber, checkByte, printerFriendlyName, colour);
+        WritePrinterID writeIDCmd = (WritePrinterID) RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.WRITE_PRINTER_ID);
+        writeIDCmd.setIDAndColour(model, edition, weekOfManufacture, yearOfManufacture, poNumber,
+                                  serialNumber, checkByte, printerFriendlyName, colour);
 
         AckResponse response = (AckResponse) printerCommsManager.submitForWrite(portName, writeIDCmd);
 
@@ -2933,9 +3313,11 @@ public class PrinterImpl implements Printer
      *
      * @return @throws RoboxCommsException
      */
+    @Override
     public FirmwareResponse transmitReadFirmwareVersion() throws RoboxCommsException
     {
-        QueryFirmwareVersion readFirmware = (QueryFirmwareVersion) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.QUERY_FIRMWARE_VERSION);
+        QueryFirmwareVersion readFirmware = (QueryFirmwareVersion) RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.QUERY_FIRMWARE_VERSION);
         return (FirmwareResponse) printerCommsManager.submitForWrite(portName, readFirmware);
     }
 
@@ -2948,10 +3330,14 @@ public class PrinterImpl implements Printer
      * @param ambientTarget
      * @throws RoboxCommsException
      */
-    public void transmitSetTemperatures(double nozzleFirstLayerTarget, double nozzleTarget, double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException
+    @Override
+    public void transmitSetTemperatures(double nozzleFirstLayerTarget, double nozzleTarget,
+        double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException
     {
-        SetTemperatures setTemperatures = (SetTemperatures) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.SET_TEMPERATURES);
-        setTemperatures.setTemperatures(nozzleFirstLayerTarget, nozzleTarget, bedFirstLayerTarget, bedTarget, ambientTarget);
+        SetTemperatures setTemperatures = (SetTemperatures) RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.SET_TEMPERATURES);
+        setTemperatures.setTemperatures(nozzleFirstLayerTarget, nozzleTarget, bedFirstLayerTarget,
+                                        bedTarget, ambientTarget);
         printerCommsManager.submitForWrite(portName, setTemperatures);
     }
 
@@ -2962,9 +3348,12 @@ public class PrinterImpl implements Printer
      * @param feedRateMultiplier
      * @throws RoboxCommsException
      */
-    public void transmitSetFilamentInfo(double filamentDiameter, double filamentMultiplier, double feedRateMultiplier) throws RoboxCommsException
+    @Override
+    public void transmitSetFilamentInfo(double filamentDiameter, double filamentMultiplier,
+        double feedRateMultiplier) throws RoboxCommsException
     {
-        SetFilamentInfo setFilamentInfo = (SetFilamentInfo) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.SET_FILAMENT_INFO);
+        SetFilamentInfo setFilamentInfo = (SetFilamentInfo) RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.SET_FILAMENT_INFO);
         setFilamentInfo.setFilamentInfo(filamentDiameter, filamentMultiplier, feedRateMultiplier);
         printerCommsManager.submitForWrite(portName, setFilamentInfo);
     }
@@ -2973,9 +3362,11 @@ public class PrinterImpl implements Printer
      *
      * @return @throws RoboxCommsException
      */
+    @Override
     public ListFilesResponse transmitListFiles() throws RoboxCommsException
     {
-        ListFiles listFiles = (ListFiles) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.LIST_FILES);
+        ListFiles listFiles = (ListFiles) RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.LIST_FILES);
         return (ListFilesResponse) printerCommsManager.submitForWrite(portName, listFiles);
     }
 
@@ -2983,9 +3374,11 @@ public class PrinterImpl implements Printer
      *
      * @return @throws RoboxCommsException
      */
+    @Override
     public StatusResponse transmitStatusRequest() throws RoboxCommsException
     {
-        StatusRequest statusRequest = (StatusRequest) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.STATUS_REQUEST);
+        StatusRequest statusRequest = (StatusRequest) RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.STATUS_REQUEST);
         return (StatusResponse) printerCommsManager.submitForWrite(portName, statusRequest);
     }
 
@@ -2996,6 +3389,7 @@ public class PrinterImpl implements Printer
      * @throws DatafileSendAlreadyInProgress
      * @throws RoboxCommsException
      */
+    @Override
     public boolean initialiseDataFileSend(String fileID) throws DatafileSendAlreadyInProgress, RoboxCommsException
     {
         boolean success = false;
@@ -3013,6 +3407,7 @@ public class PrinterImpl implements Printer
      * @param jobUUID
      * @throws RoboxCommsException
      */
+    @Override
     public void initiatePrint(String jobUUID) throws RoboxCommsException
     {
         transmitInitiatePrint(jobUUID);
@@ -3027,6 +3422,7 @@ public class PrinterImpl implements Printer
      * @throws DatafileSendNotInitialised
      * @throws RoboxCommsException
      */
+    @Override
     public void sendDataFileChunk(String hexDigits, boolean lastPacket, boolean appendCRLF) throws DatafileSendNotInitialised, RoboxCommsException
     {
 //        if (lastPacket == true)
@@ -3058,7 +3454,10 @@ public class PrinterImpl implements Printer
                 /*
                  * put in what we can
                  */
-                String stringToWrite = hexDigits.substring(hexDigits.length() - remainingCharacters, (hexDigits.length() - remainingCharacters) + (outputBuffer.capacity() - outputBuffer.length()));
+                String stringToWrite = hexDigits.substring(hexDigits.length() - remainingCharacters,
+                                                           (hexDigits.length() - remainingCharacters)
+                                                           + (outputBuffer.capacity()
+                                                           - outputBuffer.length()));
                 outputBuffer.append(stringToWrite);
                 remainingCharacters -= stringToWrite.length();
             }
@@ -3068,7 +3467,8 @@ public class PrinterImpl implements Printer
              */
             if (dataIngested && lastPacket)
             {
-                steno.info("Final complete chunk:" + outputBuffer.toString() + " seq:" + sequenceNumber);
+                steno.info("Final complete chunk:" + outputBuffer.toString() + " seq:"
+                    + sequenceNumber);
                 AckResponse response = transmitDataFileEnd(outputBuffer.toString(), sequenceNumber);
                 if (response.isError())
                 {
@@ -3098,15 +3498,22 @@ public class PrinterImpl implements Printer
      * @param printQuality
      * @param settings
      */
-    public void printProject(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings)
+    @Override
+    public void printProject(Project project, Filament filament,
+        PrintQualityEnumeration printQuality, RoboxProfile settings)
     {
         if (filament != null)
         {
             try
             {
-                transmitSetTemperatures(filament.getNozzleTemperature(), filament.getNozzleTemperature(), filament.getFirstLayerBedTemperature(), filament.getBedTemperature(), filament.getAmbientTemperature());
-                transmitSetFilamentInfo(filament.getFilamentDiameter(), filament.getFilamentMultiplier(), filament.getFeedRateMultiplier());
-
+                transmitSetTemperatures(filament.getFirstLayerNozzleTemperature(),
+                                        filament.getNozzleTemperature(),
+                                        filament.getFirstLayerBedTemperature(),
+                                        filament.getBedTemperature(),
+                                        filament.getAmbientTemperature());
+                transmitSetFilamentInfo(filament.getFilamentDiameter(),
+                                        filament.getFilamentMultiplier(),
+                                        filament.getFeedRateMultiplier());
             } catch (RoboxCommsException ex)
             {
                 steno.error("Failure to set temperatures prior to print");
@@ -3115,7 +3522,6 @@ public class PrinterImpl implements Printer
 
         try
         {
-            transmitDirectGCode(GCodeConstants.goToTargetFirstLayerNozzleTemperature, true);
             transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperature, true);
         } catch (RoboxCommsException ex)
         {
@@ -3128,6 +3534,7 @@ public class PrinterImpl implements Printer
     /**
      *
      */
+    @Override
     public void abortPrint()
     {
         printQueue.abortPrint();
@@ -3136,6 +3543,7 @@ public class PrinterImpl implements Printer
     /**
      *
      */
+    @Override
     public void pausePrint()
     {
         printQueue.pausePrint();
@@ -3144,6 +3552,7 @@ public class PrinterImpl implements Printer
     /**
      *
      */
+    @Override
     public void resumePrint()
     {
         printQueue.resumePrint();
@@ -3153,6 +3562,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public int getSequenceNumber()
     {
         return sequenceNumber;
@@ -3162,6 +3572,7 @@ public class PrinterImpl implements Printer
      *
      * @return
      */
+    @Override
     public boolean isPrintInitiated()
     {
         return printInitiated;
@@ -3171,8 +3582,15 @@ public class PrinterImpl implements Printer
      *
      * @param reelNozzleTemperature
      */
+    @Override
     public void transmitWriteMaterialTemperatureToHeadEEPROM(int reelNozzleTemperature)
     {
 
+    }
+
+    @Override
+    public BooleanProperty getReelFilamentIsMutable()
+    {
+        return reelFilamentIsMutable;
     }
 }

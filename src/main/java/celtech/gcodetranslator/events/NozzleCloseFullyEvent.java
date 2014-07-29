@@ -1,8 +1,5 @@
 package celtech.gcodetranslator.events;
 
-import celtech.gcodetranslator.Nozzle;
-import java.io.IOException;
-
 /**
  *
  * @author Ian

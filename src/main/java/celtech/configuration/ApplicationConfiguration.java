@@ -63,7 +63,7 @@ public class ApplicationConfiguration
     /**
      *
      */
-    public static final String fxmlSidePanelResourcePath = resourcePath + "fxml/sidePanels/";
+    public static final String fxmlPanelResourcePath = resourcePath + "fxml/panels/";
 
     /**
      *
@@ -276,7 +276,7 @@ public class ApplicationConfiguration
      */
     public static final float minTempToDisplayOnGraph = 35;
 
-    public static final int maxPermittedTempDifferenceForPurge = 50;
+    public static final int maxPermittedTempDifferenceForPurge = 15;
 
     private static Properties installationProperties = null;
     private static Properties applicationMemoryProperties = null;
@@ -861,7 +861,6 @@ public class ApplicationConfiguration
                 {
                     returnVal.add("*." + extension);
                 }
-                returnVal.add("*." + supportedProjectFileExtension);
                 break;
             case MESH:
                 for (String extension : supportedModelExtensions)

@@ -49,11 +49,11 @@ public class Head implements Cloneable
     private final FloatProperty lastFilamentTemperature = new SimpleFloatProperty(0);
     private final FloatProperty headHours = new SimpleFloatProperty(0);
 
-    private static final float normalX1OffsetMin = 7;
-    private static final float normalX1OffsetMax = 7.3f;
+    private static final float normalX1OffsetMin = 6.8f;
+    private static final float normalX1OffsetMax = 7.5f;
 
-    private static final float normalX2OffsetMin = -7.3f;
-    private static final float normalX2OffsetMax = -7;
+    private static final float normalX2OffsetMin = -7.5f;
+    private static final float normalX2OffsetMax = -6.8f;
 
     private static final float normalYOffsetMin = -0.3f;
     private static final float normalYOffsetMax = 0.3f;
@@ -687,8 +687,12 @@ public class Head implements Cloneable
             {
                 String receivedTypeCode = response.getTypeCode();
 
-                Head referenceHead = HeadContainer.getHeadByID(response.getTypeCode());
-
+                Head referenceHead = null;
+                if (receivedTypeCode != null)
+                {
+                    referenceHead = HeadContainer.getHeadByID(response.getTypeCode());
+                }
+                
                 if (referenceHead != null)
                 {
                     Head headToWrite = referenceHead.clone();
@@ -729,11 +733,11 @@ public class Head implements Cloneable
      */
     public static void repairHeadIfNecessary(Printer printer)
     {
-        if (ApplicationConfiguration.isAutoRepairHeads())
+        try
         {
-            try
+            HeadEEPROMDataResponse response = printer.transmitReadHeadEEPROM();
+            if (ApplicationConfiguration.isAutoRepairHeads())
             {
-                HeadEEPROMDataResponse response = printer.transmitReadHeadEEPROM();
                 // Check to see if the maximum temperature of the head matches our view
                 // If not, change the max value and prompt to calibrate
                 if (response != null)
@@ -850,8 +854,8 @@ public class Head implements Cloneable
                                     @Override
                                     public void run()
                                     {
-                                        Notifier.showInformationNotification(DisplayManager.getLanguageBundle().getString("notification.headSettingsUpdatedTitle"), DisplayManager.getLanguageBundle().
-                                                                             getString("notification.noActionRequired"));
+                                        Notifier.showInformationNotification(DisplayManager.getLanguageBundle().getString("notification.headSettingsUpdatedTitle"),
+                                                                             DisplayManager.getLanguageBundle().getString("notification.noActionRequired"));
                                     }
                                 });
                             }
@@ -863,10 +867,10 @@ public class Head implements Cloneable
                         showCalibrationDialogue();
                     }
                 }
-            } catch (RoboxCommsException ex)
-            {
-                steno.error("Error from triggered read of Head EEPROM");
             }
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error from triggered read of Head EEPROM");
         }
     }
 

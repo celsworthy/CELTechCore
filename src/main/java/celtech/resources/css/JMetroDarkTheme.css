@@ -1,10 +1,10 @@
 *{
     black: rgb(0,0,0);
-    dark_grey: rgb(45,45,45);
-    mid_grey: rgb(65,65,65);
-    light_grey: rgb(100,100,100);
+    dark_grey: rgb(48,48,48);
+    mid_grey: rgb(64,64,64);
+    light_grey: rgb(99,99,99);
     entrybox_background_grey: rgb(180,180,180);
-    blue_colour: rgb(15%, 65%, 85%);
+    blue_colour: rgb(0, 157, 226);
     background_colour: rgb(0,0,0);
     unselected_colour: #1d1d1d;
     selected_colour: #ffffff;
@@ -1000,6 +1000,7 @@ table-view .column-header-background {
 
 .menubar{
     -fx-background-color: black;
+    -fx-padding: 5px;
 }
 
 .sidePanel{
@@ -1278,4 +1279,184 @@ table-view .column-header-background {
     -fx-border-style: solid, segments(1, 1);
     -fx-border-radius: 0, 0;
     -fx-border-insets: 1 1 1 1, 0;
+}
+
+.borderFrame {
+    -fx-border-color: grey;
+    -fx-border-width: 2;
+    -fx-border-style: solid;
+    -fx-border-radius: 2;
+}    
+    
+.blue-inset-panel{
+    -fx-background-color: blue_colour;
+}
+
+.blue-inset-panel-text{
+    -fx-fill: white;
+}
+
+.inset-panel{
+    -fx-background-color: light_grey;
+}
+
+.inset-panel-with-menu{
+    -fx-background-color: light_grey;
+}
+
+.inset-panel-text{
+    -fx-fill: white;
+}
+
+.inset-panel-menu{
+    -fx-background-color: light_grey;
+}
+
+.inset-panel-menu-title{
+    -fx-fill: white;
+    -fx-font-size:28pt;
+}
+
+.inset-panel-menu-item #statusStud{
+    -fx-fill: green;
+}
+
+.inset-panel-menu-item, .inset-panel-menu-item:focused {
+    -fx-padding: 5 22 5 22;   
+    -fx-border-color: transparent;
+
+    -fx-background-radius: 0;
+
+    -fx-background-color: transparent;
+
+    -fx-font-size: 11pt;
+    -fx-text-fill: white;
+}
+
+.inset-panel-menu-item:hover {
+    -fx-text-fill: #d8d8d8;
+    -fx-background-color: #3a3a3a;
+}
+
+.inset-panel-menu-item:selected {
+    -fx-background-color: white;
+    -fx-text-fill: #1d1d1d;
+}
+
+.inset-panel-menu-item:selected:hover {
+    -fx-background-color: #eee;
+    -fx-text-fill: #1d1d1d;
+    -fx-border-color: #eee;
+}
+.inset-panel-menu-item:disabled {
+    -fx-opacity: -fx-disabled-opacity;
+}
+
+
+// TODO: Remove when custom control for menu strip introduced
+
+#snapToGroundButton {
+    -fx-padding: 0 0 0 0;
+    -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
+    -fx-background-radius: 50;
+    -fx-content-display: graphic-only;
+    -fx-border-color: transparent;
+}
+
+#snapToGroundButton:focused {
+    -fx-border-color: transparent;
+}
+
+#snapToGroundButton:pressed .graphic {
+    -fx-fill: black;   
+}
+
+#snapToGroundButton:disabled, #snapToGroundButton:default:disabled
+{
+    -fx-opacity: 0.4;
+    -fx-background-color: #1d1d1d;
+    -fx-text-fill: white;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Slider                                                                      *
+ *                                                                             *
+ ******************************************************************************/
+
+.slider {
+    -fx-skin: "jfxtras.styles.jmetro8.FilledSliderSkin";
+}
+
+.slider .thumb {
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0em;
+    -fx-padding: 0.333333em; /* 4 */
+
+    -fx-effect: null;
+}
+.slider:focused .thumb {
+    -fx-background-radius: 0em;
+}
+
+.slider .track {
+    -fx-background-color: #6c6c6c;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0.333333em; /* This value must be equal to ".slider .thumb" padding */
+}
+
+.slider .fill {
+    -fx-background-color: #008287;
+    -fx-padding: 0.333333em; /* This value must be equal to ".slider .thumb" padding */
+}
+
+.slider .fill:hover {
+    -fx-background-color: #219297;
+}
+
+.slider .fill:pressed {
+    -fx-background-color: #25bbc4;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * ToggleSwitch                                                                *
+ *                                                                             *
+ ******************************************************************************/
+.toggle-switch .text{
+    -fx-fill: white;
+    -fx-font-size: 1em;
+}
+
+.toggle-switch .thumb {
+    -fx-background-color: white;
+    -fx-padding: 0.583333em 0.333333em 0.583333em 0.333333em;  /* 7 4 7 4*/
+}
+
+.toggle-switch:selected .thumb-area{
+    -fx-background-insets: 0, 1, 2;
+    -fx-background-color: #777777, black, #219297;  /* The last one is the accent color */
+}
+
+.toggle-switch .thumb-area{
+    -fx-background-insets: 0, 1, 2;
+    -fx-background-color: #777777, black, #777777;
+}
+
+.toggle-switch:selected:pressed .thumb-area{
+    -fx-background-insets: 0, 1, 2;
+    -fx-background-color: #777777, black, #25bbc4; /* The last one is the accent color */
+}
+
+.toggle-switch .thumb-area
+{
+    -fx-padding: 0.583333em 1.333333em 0.583333em 1.333333em; /* 7 16 7 16 */
+
+}
+
+.toggle-switch:disabled
+{
+    -fx-opacity: 0.4;
 }

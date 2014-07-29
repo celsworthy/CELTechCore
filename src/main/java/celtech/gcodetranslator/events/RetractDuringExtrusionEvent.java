@@ -3,8 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package celtech.gcodetranslator.events;
+
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 /**
  *
@@ -12,6 +15,7 @@ package celtech.gcodetranslator.events;
  */
 public class RetractDuringExtrusionEvent extends TravelEvent
 {
+    
     private double e;
 
     /**
@@ -39,11 +43,19 @@ public class RetractDuringExtrusionEvent extends TravelEvent
     @Override
     public String renderForOutput()
     {
-        String stringToReturn = "G1 X" + String.format("%.3f", getX()) + " Y" + String.format("%.3f", getY()) + " E" + String.format("%.5f", e);
+        NumberFormat threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
+        threeDPformatter.setMaximumFractionDigits(3);
+        threeDPformatter.setGroupingUsed(false);
+        
+        NumberFormat fiveDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
+        fiveDPformatter.setMaximumFractionDigits(5);
+        fiveDPformatter.setGroupingUsed(false);
+        
+        String stringToReturn = "G1 X" + threeDPformatter.format(getX()) + " Y" + threeDPformatter.format(getY()) + " E" + fiveDPformatter.format(e);
         
         if (getFeedRate() > 0)
         {
-            stringToReturn += " F" + String.format("%.3f", getFeedRate());
+            stringToReturn += " F" + threeDPformatter.format(getFeedRate());
         }
         
         stringToReturn += " ; ->" + getLength() + " ";

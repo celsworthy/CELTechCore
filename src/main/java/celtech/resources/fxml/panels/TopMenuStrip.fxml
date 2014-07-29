@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import celtech.coreUI.components.buttons.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="container" alignment="TOP_RIGHT" fillWidth="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" pickOnBounds="false" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.TopMenuStripController">
+    <children>
+        <HBox alignment="CENTER_RIGHT" pickOnBounds="false" styleClass="menubar">
+            <children>
+                <HelpButton fx:id="helpButton" onAction="#helpPressed" />
+                <!--<PreferencesButton fx:id="preferencesButton" onAction="#preferencesPressed" />-->
+            </children>  
+            <padding>
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+            </padding>
+        </HBox>
+    </children>
+</VBox>

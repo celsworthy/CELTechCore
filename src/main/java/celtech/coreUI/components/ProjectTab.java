@@ -10,16 +10,15 @@ import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
 import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
-import static celtech.coreUI.DeDuplicator.suggestNonDuplicateName;
+import celtech.configuration.PrintBed;
+import static celtech.utils.DeDuplicator.suggestNonDuplicateName;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.GCodeEditorPanelController;
 import celtech.coreUI.visualisation.CameraPositionPreset;
-import celtech.coreUI.visualisation.SelectionContainer;
+import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
-import celtech.coreUI.visualisation.Xform;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelContentsEnumeration;
-import celtech.utils.Math.Packing.Block;
 import celtech.utils.Math.Packing.PackingThing;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,7 +26,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -39,7 +37,6 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Point2D;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.effect.Glow;
@@ -71,26 +68,25 @@ public class ProjectTab extends Tab
     private DisplayManager displayManager = null;
     private final ProjectManager projectManager = ProjectManager.getInstance();
     private boolean titleBeingEdited = false;
-    private Xform gizmoXform = new Xform(Xform.RotateOrder.YXZ);
+//    private Xform gizmoXform = new Xform(Xform.RotateOrder.YXZ);
 
     final Rectangle testRect = new Rectangle(5, 5);
 
-    private final ChangeListener<Number> selectionContainerMoveListener = new ChangeListener<Number>()
-    {
-        @Override
-        public void changed(ObservableValue<? extends Number> ov, Number t,
-            Number t1)
-        {
-            Point2D reference = basePane.localToScreen(0, 0);
-            double x = viewManager.getSelectionContainer().getScreenX()
-                - reference.getX();
-            double y = viewManager.getSelectionContainer().getScreenY()
-                - reference.getY();
-            gizmoXform.setTx(x);
-            gizmoXform.setTy(y);
-        }
-    };
-
+//    private final ChangeListener<Number> selectionContainerMoveListener = new ChangeListener<Number>()
+//    {
+//        @Override
+//        public void changed(ObservableValue<? extends Number> ov, Number t,
+//            Number t1)
+//        {
+////            Point2D reference = basePane.localToScreen(0, 0);
+////            double x = viewManager.getSelectionContainer().getScreenX()
+////                - reference.getX();
+////            double y = viewManager.getSelectionContainer().getScreenY()
+////                - reference.getY();
+////            gizmoXform.setTx(x);
+////            gizmoXform.setTy(y);
+//        }
+//    };
     /**
      *
      * @param dispManagerRef
@@ -153,7 +149,7 @@ public class ProjectTab extends Tab
         nonEditableProjectNameField.getStyleClass().add("nonEditableProjectTab");
         editableProjectNameField.getStyleClass().add("editableProjectTab");
         editableProjectNameField.setDirectorySafeName(true);
-        editableProjectNameField.setRestrict("-_0-9a-zA-Z\\p{L}\\p{M}*+");
+        editableProjectNameField.setRestrict(" -_0-9a-zA-Z\\p{L}\\p{M}*+");
         editableProjectNameField.setMaxLength(25);
 
         setOnCloseRequest((Event t) ->
@@ -190,7 +186,7 @@ public class ProjectTab extends Tab
                             for (String extension : ApplicationConfiguration.getSupportedFileExtensions(
                                 project.getProjectMode()))
                             {
-                                if (file.getName().endsWith(extension))
+                                if (file.getName().toUpperCase().endsWith(extension.toUpperCase()))
                                 {
                                     extensionFound = true;
                                     break;
@@ -283,7 +279,7 @@ public class ProjectTab extends Tab
                 boolean success = false;
                 if (db.hasFiles())
                 {
-                    displayManager.loadExternalModels(db.getFiles());
+                    displayManager.loadExternalModels(db.getFiles(), true);
                 } else
                 {
                     steno.error("No files in dragboard");
@@ -297,10 +293,6 @@ public class ProjectTab extends Tab
         });
 
         basePane.getChildren().add(viewManager.getSubScene());
-        viewManager.getSelectionContainer().screenXProperty().addListener(
-            selectionContainerMoveListener);
-        viewManager.getSelectionContainer().screenYProperty().addListener(
-            selectionContainerMoveListener);
 
         try
         {
@@ -398,18 +390,18 @@ public class ProjectTab extends Tab
     /**
      *
      * @param fullFilename
-     * @param modelGroup
+     * @param modelContainer
      */
-    public void addModelContainer(String fullFilename, ModelContainer modelGroup)
+    public void addModelContainer(String fullFilename, ModelContainer modelContainer)
     {
         steno.info("I am loading " + fullFilename);
         if (project.getProjectMode() == ProjectMode.NONE)
         {
-            switch (modelGroup.getModelContentsType())
+            switch (modelContainer.getModelContentsType())
             {
                 case GCODE:
                     project.setProjectMode(ProjectMode.GCODE);
-                    project.setProjectName(modelGroup.getModelName());
+                    project.setProjectName(modelContainer.getModelName());
                     project.setGCodeFilename(fullFilename);
                     viewManager.activateGCodeVisualisationMode();
                     break;
@@ -423,17 +415,17 @@ public class ProjectTab extends Tab
         }
 
         if ((project.getProjectMode() == ProjectMode.GCODE
-            && modelGroup.getModelContentsType()
+            && modelContainer.getModelContentsType()
             == ModelContentsEnumeration.GCODE)
             || (project.getProjectMode() == ProjectMode.MESH
-            && modelGroup.getModelContentsType()
+            && modelContainer.getModelContentsType()
             == ModelContentsEnumeration.MESH))
         {
-            viewManager.addModel(modelGroup);
-            displayManager.selectModel(modelGroup);
+            viewManager.addModel(modelContainer);
+            viewManager.selectModel(modelContainer, false);
         } else
         {
-            steno.warning("Discarded load of " + modelGroup.getModelName()
+            steno.warning("Discarded load of " + modelContainer.getModelName()
                 + " due to conflict with project type");
         }
     }
@@ -467,15 +459,6 @@ public class ProjectTab extends Tab
      *
      * @return
      */
-    public SelectionContainer getSelectionContainer()
-    {
-        return viewManager.getSelectionContainer();
-    }
-
-    /**
-     *
-     * @return
-     */
     public ObservableList<ModelContainer> getLoadedModels()
     {
         return viewManager.getLoadedModels();
@@ -487,44 +470,15 @@ public class ProjectTab extends Tab
     public void autoLayout()
     {
         Collections.sort(viewManager.getLoadedModels());
-        PackingThing thing = new PackingThing(210, 150);
-
-        ArrayList<Block> blocks = new ArrayList<>();
+        PackingThing thing = new PackingThing((int) PrintBed.maxPrintableXSize,
+                                              (int) PrintBed.maxPrintableZSize);
 
         thing.reference(viewManager.getLoadedModels(), 10);
         thing.pack();
         thing.relocateBlocks();
 
-        viewManager.recalculateSelectionBounds(false);
+        viewManager.collideModels();
 
-//        for (Block block : blocks)
-//        {
-//            System.out.println(">>>>>>>>>>");
-//            System.out.println("W:" + block.getW());
-//            System.out.println("H:" + block.getH());
-//            if (block.getFit() != null)
-//            {
-//                System.out.println("Fit X:" + block.getFit().getX());
-//                System.out.println("Fit Y:" + block.getFit().getY());
-//                System.out.println("Fit w:" + block.getFit().getW());
-//                System.out.println("Fit h:" + block.getFit().getH());
-//            }
-//            else
-//            {
-//                System.out.println("No fit");
-//            }
-//            block.relocate();
-//            System.out.println("<<<<<<<<<<");
-//        }
-    }
-
-    /**
-     *
-     * @param selectedModel
-     */
-    public void selectModel(ModelContainer selectedModel)
-    {
-        viewManager.selectModel(selectedModel, false);
     }
 
     /**
@@ -599,20 +553,19 @@ public class ProjectTab extends Tab
         viewManager.deselectModel(selectedModel);
     }
 
-    private void recentreGizmoX(int screenX)
-    {
-        Point2D newPosition = basePane.screenToLocal(screenX, 0);
-        gizmoXform.setTx(newPosition.getX());
-        steno.info("New X pos " + newPosition.getX() + " for " + screenX);
-    }
-
-    private void recentreGizmoY(int screenY)
-    {
-        Point2D newPosition = basePane.screenToLocal(0, screenY);
-        gizmoXform.setTy(newPosition.getY());
-        steno.info("New Y pos " + newPosition.getY() + " for " + screenY);
-    }
-
+//    private void recentreGizmoX(int screenX)
+//    {
+//        Point2D newPosition = basePane.screenToLocal(screenX, 0);
+//        gizmoXform.setTx(newPosition.getX());
+//        steno.info("New X pos " + newPosition.getX() + " for " + screenX);
+//    }
+//
+//    private void recentreGizmoY(int screenY)
+//    {
+//        Point2D newPosition = basePane.screenToLocal(0, screenY);
+//        gizmoXform.setTy(newPosition.getY());
+//        steno.info("New Y pos " + newPosition.getY() + " for " + screenY);
+//    }
     /**
      *
      * @param newMode
@@ -630,5 +583,15 @@ public class ProjectTab extends Tab
                 viewManager.startSettingsAnimation();
                 break;
         }
+    }
+
+    public SelectedModelContainers getSelectionModel()
+    {
+        return viewManager.getSelectedModelContainers();
+    }
+
+    public void selectAllModels()
+    {
+        viewManager.selectAllModels();
     }
 }

@@ -4,8 +4,13 @@
  */
 package celtech.printerControl.comms.commands.tx;
 
+import celtech.configuration.MaterialType;
+import celtech.printerControl.comms.commands.ColourStringConverter;
+import celtech.printerControl.comms.commands.EnumStringConverter;
+import celtech.printerControl.comms.commands.StringToBase64Encoder;
 import celtech.utils.FixedDecimalFloatFormat;
 import java.io.UnsupportedEncodingException;
+import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -18,38 +23,37 @@ public class WriteReelEEPROM extends RoboxTxPacket
 
     private Stenographer steno = StenographerFactory.getStenographer(WriteReelEEPROM.class.getName());
 
-    /**
-     *
-     */
+    public static final int FRIENDLY_NAME_LENGTH = 30;
+    public static final int MATERIAL_TYPE_LENGTH = 1;
+    public static final int DISPLAY_COLOUR_LENGTH = 6;
+    public static final int REEL_EEPROM_PADDING_LENGTH = 
+                                            80 - FRIENDLY_NAME_LENGTH - MATERIAL_TYPE_LENGTH;
+
     public WriteReelEEPROM()
     {
         super(TxPacketTypeEnum.WRITE_REEL_EEPROM, false, false);
     }
 
-    /**
-     *
-     * @param reelTypeCode
-     * @param reelUniqueID
-     * @param reelFirstLayerNozzleTemperature
-     * @param reelNozzleTemperature
-     * @param reelFirstLayerBedTemperature
-     * @param reelBedTemperature
-     * @param reelAmbientTemperature
-     * @param reelFilamentDiameter
-     * @param reelFilamentMultiplier
-     * @param reelFeedRateMultiplier
-     * @param reelRemainingFilament
-     */
-    public void populateEEPROM(String reelTypeCode, String reelUniqueID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
-            float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter,
-            float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament)
+    private String formatString(String rawString, int length)
+    {
+        String formatString = "%-" + length + "s";
+        return String.format(formatString, rawString);
+    }
+
+    public void populateEEPROM(String filamentID, float reelFirstLayerNozzleTemperature,
+        float reelNozzleTemperature,
+        float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature,
+        float reelFilamentDiameter,
+        float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament,
+        String friendlyName, MaterialType materialType, Color displayColour)
     {
         StringBuilder payload = new StringBuilder();
 
         FixedDecimalFloatFormat decimalFloatFormatter = new FixedDecimalFloatFormat();
 
-        payload.append(String.format("%1$-16s", reelTypeCode));
-        payload.append(String.format("%1$-24s", reelUniqueID));
+        payload.append(formatString(filamentID, 16));
+        payload.append(formatString(ColourStringConverter.colourToString(displayColour), DISPLAY_COLOUR_LENGTH));
+        payload.append(formatString(" ", 24 - DISPLAY_COLOUR_LENGTH));
         payload.append(decimalFloatFormatter.format(reelFirstLayerNozzleTemperature));
         payload.append(decimalFloatFormatter.format(reelNozzleTemperature));
         payload.append(decimalFloatFormatter.format(reelFirstLayerBedTemperature));
@@ -58,23 +62,38 @@ public class WriteReelEEPROM extends RoboxTxPacket
         payload.append(decimalFloatFormatter.format(reelFilamentDiameter));
         payload.append(decimalFloatFormatter.format(reelFilamentMultiplier));
         payload.append(decimalFloatFormatter.format(reelFeedRateMultiplier));
-        payload.append(String.format("%1$80s", " "));
+
+        String friendlyNameEncoded;
+        try
+        {
+            friendlyNameEncoded = StringToBase64Encoder.encode(friendlyName, FRIENDLY_NAME_LENGTH);
+        } catch (UnsupportedEncodingException ex)
+        {
+            steno.error("Unable to encode string: " + friendlyName);
+            friendlyNameEncoded = "";
+        }
+        payload.append(formatString(friendlyNameEncoded, FRIENDLY_NAME_LENGTH));
+        String materialTypeInt = EnumStringConverter.intToString(0);
+        if (materialType != null) {
+            materialTypeInt = EnumStringConverter.intToString(materialType.ordinal());
+        }
+        payload.append(materialTypeInt);
+
+        String paddedBlanks = formatString(" ", REEL_EEPROM_PADDING_LENGTH);
+        payload.append(paddedBlanks);
         String remainingFilamentValue = decimalFloatFormatter.format(reelRemainingFilament);
         if (remainingFilamentValue.length() > 8)
         {
             String oldValue = remainingFilamentValue;
             remainingFilamentValue = remainingFilamentValue.substring(0, 8);
-            steno.warning("Truncated remaining filament value from " + oldValue + " to " + remainingFilamentValue);
+            steno.warning("Truncated remaining filament value from " + oldValue + " to "
+                + remainingFilamentValue);
         }
         payload.append(remainingFilamentValue);
 
         this.setMessagePayload(payload.toString());
     }
 
-    /**
-     *
-     * @return
-     */
     @Override
     public byte[] toByteArray()
     {
@@ -133,4 +152,6 @@ public class WriteReelEEPROM extends RoboxTxPacket
     {
         return false;
     }
+
+    
 }
