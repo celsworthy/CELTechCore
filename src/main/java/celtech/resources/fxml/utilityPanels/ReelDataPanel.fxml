@@ -9,20 +9,19 @@
     <children>         
         <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-                <GridPane fx:id="reelContainer">
+                <GridPane fx:id="reelContainer" hgap="5.0" vgap="2.0">
                     <columnConstraints>
                   <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="130.0" />
                         <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" />
-                        <ColumnConstraints fillWidth="false" halignment="LEFT" minWidth="80.0" prefWidth="80.0" />
+                        <ColumnConstraints fillWidth="false" halignment="RIGHT" minWidth="80.0" prefWidth="80.0" />
                   <ColumnConstraints fillWidth="false" halignment="LEFT" minWidth="10.0" prefWidth="100.0" />
                     </columnConstraints>
                     <rowConstraints>
                         <RowConstraints minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="34.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="34.0" vgrow="SOMETIMES" />
                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                  <RowConstraints minHeight="10.0" prefHeight="10.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
@@ -35,32 +34,30 @@
                         <Label text="Colour" GridPane.rowIndex="3" />
                         <Label text="Material" GridPane.rowIndex="2" />
                         <Label text="Name" GridPane.rowIndex="1" />                        
-                        <Label text="Diameter" GridPane.columnIndex="2" GridPane.rowIndex="7" />
-                        <Label text="Multiplier" GridPane.columnIndex="2" GridPane.rowIndex="8" />
-                        <Label text="Feed rt mlt" GridPane.columnIndex="2" GridPane.rowIndex="9" />
-                        <Label text="First layer bed" GridPane.rowIndex="6" />
-                        <Label text="Bed" GridPane.rowIndex="7" />
-                        <Label text="First lyr nozzle" GridPane.rowIndex="8" />
-                        <Label text="Nozzle" GridPane.rowIndex="9" />
-                        <Label text="Ambient" GridPane.rowIndex="10" />
-                        <Label text="Remaining" GridPane.columnIndex="2" GridPane.rowIndex="10" /> 
-                        <TextField fx:id="filamentID" disable="true" editable="false" prefWidth="140.0" styleClass="RestrictedTextField" GridPane.columnIndex="1" GridPane.columnSpan="2" />
+                        <Label text="Diameter" GridPane.columnIndex="2" GridPane.rowIndex="6" />
+                        <Label text="Multiplier" GridPane.columnIndex="2" GridPane.rowIndex="7" />
+                        <Label text="Feed rate" GridPane.columnIndex="2" GridPane.rowIndex="8" />
+                        <Label text="First layer bed" GridPane.rowIndex="5" />
+                        <Label text="Bed" GridPane.rowIndex="6" />
+                        <Label text="First lyr nozzle" GridPane.rowIndex="7" />
+                        <Label text="Nozzle" GridPane.rowIndex="8" />
+                        <Label text="Ambient" GridPane.rowIndex="9" />
+                        <Label text="Remaining" GridPane.columnIndex="2" GridPane.rowIndex="9" /> 
+                        <TextField fx:id="filamentID" disable="true" editable="false" prefWidth="140.0" styleClass="RestrictedTextField" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" />
                         <RestrictedTextField fx:id="reelFilamentName" forceUpperCase="false" maxLength="20" prefWidth="140.0" restrict="-_' 0-9\p{L}\p{M}*+" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="1" />
-                        <RestrictedTextField fx:id="reelFilamentDiameter" maxLength="4" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="7" />
-                        <RestrictedTextField fx:id="reelFilamentMultiplier" maxLength="4" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="8" />
-                        <RestrictedTextField fx:id="reelFeedRateMultiplier" maxLength="4" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="9" />
-                        <RestrictedTextField fx:id="reelFirstLayerBedTemperature" maxLength="4" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                        <RestrictedTextField fx:id="reelBedTemperature" maxLength="8" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-                        <RestrictedTextField id="firstLayerNozzleTemperature" fx:id="reelFirstLayerNozzleTemperature" maxLength="4" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-                        <RestrictedTextField fx:id="reelNozzleTemperature" maxLength="4" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="9" />
-                        <RestrictedTextField fx:id="reelAmbientTemperature" maxLength="8" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="10" />
-                        <RestrictedTextField fx:id="reelRemainingFilament" maxLength="8" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="10" />
-                  <ComboBox fx:id="reelMaterialType" maxHeight="25.0" prefWidth="150.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="2" />
-                  <ColorPicker fx:id="reelDisplayColor" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" />
-                  <Label text="Temp" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="4" GridPane.valignment="BOTTOM" />
-                  <Label text="Filament " GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="4" GridPane.valignment="BOTTOM" />
-                  <Separator prefWidth="100.0" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="5" />
-                  <Separator maxWidth="100.0" prefWidth="100.0" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="5" />
+                        <RestrictedTextField fx:id="reelFilamentDiameter" alignment="CENTER_RIGHT" maxLength="4" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="6" />
+                        <RestrictedTextField fx:id="reelFilamentMultiplier" alignment="CENTER_RIGHT" maxLength="4" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="7" />
+                        <RestrictedTextField fx:id="reelFeedRateMultiplier" alignment="CENTER_RIGHT" maxLength="4" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="8" />
+                        <RestrictedTextField fx:id="reelFirstLayerBedTemperature" alignment="CENTER_RIGHT" maxLength="4" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                        <RestrictedTextField fx:id="reelBedTemperature" alignment="CENTER_RIGHT" maxLength="8" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                        <RestrictedTextField id="firstLayerNozzleTemperature" fx:id="reelFirstLayerNozzleTemperature" alignment="CENTER_RIGHT" maxLength="4" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                        <RestrictedTextField fx:id="reelNozzleTemperature" alignment="CENTER_RIGHT" maxLength="4" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                        <RestrictedTextField fx:id="reelAmbientTemperature" alignment="CENTER_RIGHT" maxLength="8" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                        <RestrictedTextField fx:id="reelRemainingFilament" alignment="CENTER_RIGHT" maxLength="8" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="9" />
+                  <ComboBox fx:id="reelMaterialType" maxHeight="25.0" prefWidth="150.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.halignment="LEFT" GridPane.rowIndex="2" />
+                  <ColorPicker fx:id="reelDisplayColor" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="LEFT" GridPane.rowIndex="3" />
+                  <Label text="Temperature" GridPane.halignment="LEFT" GridPane.rowIndex="4" GridPane.valignment="BOTTOM" />
+                  <Label text="Filament " GridPane.columnIndex="2" GridPane.halignment="LEFT" GridPane.rowIndex="4" GridPane.valignment="BOTTOM" />
                     </children>
                 </GridPane>
                 <HBox alignment="CENTER" prefHeight="-1.0" prefWidth="-1.0" spacing="10">
