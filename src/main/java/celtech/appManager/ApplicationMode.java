@@ -16,13 +16,14 @@ public enum ApplicationMode
     /**
      *
      */
-    STATUS("printerStatus", null),
     NOZZLE_OPEN_CALIBRATION("printerStatus", "CalibrationNozzleB"),
     NOZZLE_OFFSET_CALIBRATION("printerStatus", "CalibrationNozzleOffset"),
     PURGE("printerStatus", "purge"),
     ABOUT("printerStatus", "about"),
     SYSTEM_INFORMATION("printerStatus", "systemInformation"),
     PREFERENCES_TOP_LEVEL("printerStatus", "preferencesTop"),
+    //TODO printer status has to be last otherwise the temperature graph doesn't work!! Fix in DisplayManager
+    STATUS("printerStatus", null),
     /**
      *
      */

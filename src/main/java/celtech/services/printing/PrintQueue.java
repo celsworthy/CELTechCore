@@ -980,7 +980,8 @@ public class PrintQueue implements ControllableService
      */
     public void resumePrint()
     {
-        if (associatedPrinter.pauseStatusProperty().get() == PauseStatus.PAUSED)
+        if (associatedPrinter.pauseStatusProperty().get() == PauseStatus.PAUSED
+            || associatedPrinter.pauseStatusProperty().get() == PauseStatus.PAUSE_PENDING)
         {
             try
             {

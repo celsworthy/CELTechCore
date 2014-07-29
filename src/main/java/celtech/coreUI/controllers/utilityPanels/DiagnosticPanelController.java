@@ -130,7 +130,7 @@ public class DiagnosticPanelController implements Initializable
         {
             connectedPrinter = printer;
             
-            printerID.textProperty().bind(printer.getPrinterserialNumber());
+            printerID.textProperty().bind(printer.getPrinterUniqueIDProperty());
             headID.textProperty().bind(printer.getHeadUniqueID());
             xLimitSwitch.textProperty().bind(printer.XStopSwitchProperty().asString());
             yLimitSwitch.textProperty().bind(printer.YStopSwitchProperty().asString());

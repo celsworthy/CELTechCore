@@ -11,7 +11,6 @@ import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
 import celtech.coreUI.DisplayManager;
-import celtech.coreUI.components.InsetPanelMenu;
 import celtech.coreUI.components.InsetPanelMenuItem;
 import celtech.coreUI.components.InsetPanelWithMenu;
 import celtech.utils.SystemUtils;

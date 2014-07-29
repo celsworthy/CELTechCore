@@ -894,7 +894,7 @@ public class PrinterStatusPageController implements Initializable
                 resumePrintButton.setDisable(false);
                 pausePrintButton.setVisible(false);
                 pausePrintButton.setDisable(false);
-                cancelPrintButton.setVisible(false);
+                cancelPrintButton.setVisible(true);
                 break;
             case RESUME_PENDING:
                 resumePrintButton.setVisible(true);

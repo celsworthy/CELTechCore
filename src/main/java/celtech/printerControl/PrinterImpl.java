@@ -134,6 +134,7 @@ public class PrinterImpl implements Printer
 
     private long lastTimestamp = System.currentTimeMillis();
 
+    private final StringProperty printerUniqueID = new SimpleStringProperty("");
     private final BooleanProperty printerConnected = new SimpleBooleanProperty(false);
     private final BooleanProperty ambientFanOn = new SimpleBooleanProperty(false);
     private final ObjectProperty<HeaterMode> bedHeaterMode = new SimpleObjectProperty<>();
@@ -325,6 +326,11 @@ public class PrinterImpl implements Printer
         whyAreWeWaiting_cooling = i18nBundle.getString("printerStatus.printerCooling");
         whyAreWeWaiting_heatingBed = i18nBundle.getString("printerStatus.printerBedHeating");
         whyAreWeWaiting_heatingNozzle = i18nBundle.getString("printerStatus.printerNozzleHeating");
+    }
+    
+    public StringProperty getPrinterUniqueIDProperty()
+    {
+        return printerUniqueID;
     }
 
     /**
@@ -2620,6 +2626,7 @@ public class PrinterImpl implements Printer
                 printerserialNumber.set(idResponse.getSerialNumber());
                 printercheckByte.set(idResponse.getCheckByte());
                 printerFriendlyName.set(idResponse.getPrinterFriendlyName());
+                printerUniqueID.set(getPrinterUniqueID());
                 setPrinterColour(idResponse.getPrinterColour());
                 try
                 {

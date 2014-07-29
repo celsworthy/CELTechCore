@@ -39,6 +39,7 @@ import javafx.scene.paint.Color;
  */
 public interface Printer
 {
+    public StringProperty getPrinterUniqueIDProperty();
 
     /**
      *

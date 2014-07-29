@@ -11,100 +11,20 @@
 <fx:root type="celtech.coreUI.components.buttons.DeleteModelButton" styleClass="borderlessGraphicButton" stylesheets="@../../css/JMetroDarkTheme.css" text="" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
     <graphic>
         <Group>
-            <children>
-                <Polygon points="425.376,285.966,434.062,282.749,434.062,306.055,417.091,315.232,417.091,304.743,425.365,301.009">
-                    <opacity>1</opacity>
-                    <fill>
-                        <Color>
-                            <red>0.8156862745098039</red>
-                            <green>0.807843137254902</green>
-                            <blue>0.803921568627451</blue>
-                            <opacity>1</opacity>
-                        </Color>
-                    </fill>
-                </Polygon>
-                <Polygon points="425.376,285.966,416.316,283.102,425.4,280.238,434.062,282.749">
-                    <opacity>1</opacity>
-                    <fill>
-                        <Color>
-                            <red>0.8823529411764706</red>
-                            <green>0.8823529411764706</green>
-                            <blue>0.8784313725490196</blue>
-                            <opacity>1</opacity>
-                        </Color>
-                    </fill>
-                </Polygon>
-                <Polygon points="416.317,283.102,416.317,297.419,425.365,301.009,425.376,285.965">
-                    <opacity>1</opacity>
-                    <fill>
-                        <Color>
-                            <red>0.38823529411764707</red>
-                            <green>0.38823529411764707</green>
-                            <blue>0.38823529411764707</blue>
-                            <opacity>1</opacity>
-                        </Color>
-                    </fill>
-                </Polygon>
-                <Polygon points="425.365,301.009,417.091,304.743,407.867,300.563,416.317,297.418">
-                    <opacity>1</opacity>
-                    <fill>
-                        <Color>
-                            <red>0.8823529411764706</red>
-                            <green>0.8823529411764706</green>
-                            <blue>0.8784313725490196</blue>
-                            <opacity>1</opacity>
-                        </Color>
-                    </fill>
-                </Polygon>
-                <Polygon points="417.091,315.232,408.033,310.393,407.867,300.563,417.091,304.743">
-                    <opacity>1</opacity>
-                    <fill>
-                        <Color>
-                            <red>0.38823529411764707</red>
-                            <green>0.38823529411764707</green>
-                            <blue>0.38823529411764707</blue>
-                            <opacity>1</opacity>
-                        </Color>
-                    </fill>
-                </Polygon>
-                <SVGPath content="M420.964,276.297c-11.823,0-21.439,9.617-21.439,21.438c0,11.821,9.616,21.439,21.439,21.439   c11.821,0,21.438-9.618,21.438-21.439C442.402,285.913,432.785,276.297,420.964,276.297L420.964,276.297z M420.964,321.736   c-13.233,0-24.002-10.767-24.002-24c0-13.233,10.769-24,24.002-24c13.235,0,24.001,10.765,24.001,24   C444.965,310.969,434.199,321.736,420.964,321.736z">
-                    <opacity>1</opacity>
-                    <fill>
-                        <Color>
-                            <red>1</red>
-                            <green>1</green>
-                            <blue>1</blue>
-                            <opacity>1</opacity>
-                        </Color>
-                    </fill>
-                </SVGPath>
-                <Group>
-                    <children>
-                        <SVGPath content="M425.734,310.056c0-4.957,4.02-8.977,8.974-8.977c4.957,0,8.977,4.02,8.977,8.977s-4.02,8.976-8.977,8.976    C429.753,319.032,425.734,315.013,425.734,310.056z">
-                            <opacity>1</opacity>
-                            <fill>
-                                <Color>
-                                    <red>0.8588235294117647</red>
-                                    <green>0.050980392156862744</green>
-                                    <blue>0.08627450980392157</blue>
-                                    <opacity>1</opacity>
-                                </Color>
-                            </fill>
-                        </SVGPath>
-                        <Rectangle height="1.791" width="10.626" x="429.395" y="309.161">
-                            <opacity>1</opacity>
-                            <fill>
-                                <Color>
-                                    <red>1</red>
-                                    <green>1</green>
-                                    <blue>1</blue>
-                                    <opacity>1</opacity>
-                                </Color>
-                            </fill>
-                        </Rectangle>
-                    </children>
-                </Group>
-            </children>
-        </Group>
+		<Group>
+			<SVGPath fill="#FFFFFF" content="M64.001,24.332c0,9.63-6.115,18.57-14.988,22.243c-9.09,3.763-19.592,1.354-26.357-5.723c-6.77-7.081-8.607-17.721-4.436-26.603C22.313,5.531,31.53-0.107,41.173,0.369C53.661,0.981,64.001,11.844,64.001,24.332zM61.794,24.364c0-9.686-6.705-18.365-16.012-20.978c-9.414-2.638-19.639,1.675-24.58,10.036c-4.996,8.454-3.529,19.42,3.439,26.327c6.787,6.728,17.326,8.385,25.734,3.757C57.304,39.694,61.794,32.288,61.794,24.364z"/>
+		</Group>
+		<Group>
+			<Polygon fill="#D0CDCD" points="44.413,12.571,53.097,9.355,53.097,32.659,36.128,41.835,36.128,31.347,44.401,27.613"/>
+			<Polygon fill="#E1E0E0" points="44.413,12.571,35.353,9.707,44.437,6.844,53.097,9.355"/>
+			<Polygon fill="#626363" points="35.353,9.707,35.353,24.023,44.401,27.613,44.413,12.57"/>
+			<Polygon fill="#E1E0E0" points="44.401,27.613,36.128,31.347,26.905,27.166,35.353,24.023"/>
+			<Polygon fill="#626363" points="36.128,41.835,27.071,36.997,26.905,27.166,36.128,31.345"/>
+			<Group>
+				<Circle fill="#009EE3" centerX="53.743" centerY="36.659" radius="8.975"/>
+				<Rectangle x="48.433" y="35.763" fill="#FFFFFF" width="10.625" height="1.792"/>
+			</Group>
+		</Group>
+	</Group>
     </graphic>
 </fx:root>
