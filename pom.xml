@@ -115,6 +115,11 @@
             <version>3.2</version>
         </dependency>
         <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna-platform</artifactId>
+            <version>4.0.0</version>
+        </dependency>        
+        <dependency>
             <groupId>libertysystems</groupId>
             <artifactId>Configuration</artifactId>
             <version>1.0</version>
