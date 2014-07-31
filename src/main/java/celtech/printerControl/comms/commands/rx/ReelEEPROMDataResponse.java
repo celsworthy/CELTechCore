@@ -164,6 +164,11 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
             reelFriendlyName = StringToBase64Encoder.decode(encodedFriendlyName);
             byteOffset += FRIENDLY_NAME_LENGTH;
             
+            //Handle case where reelFriendlyName has not yet been set on EEPROM
+            if (reelFriendlyName.length() == 0) {
+                reelFriendlyName = reelFilamentID;
+            }
+            
             String intMaterialTypeString = new String(byteData, byteOffset, MATERIAL_TYPE_LENGTH, charsetToUse);
             int intMaterialType = EnumStringConverter.stringToInt(intMaterialTypeString);
             try {
