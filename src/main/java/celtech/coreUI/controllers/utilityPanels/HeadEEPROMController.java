@@ -110,7 +110,7 @@ public class HeadEEPROMController implements Initializable
     private Float nozzle1ZOffsetCalculated;
     private Float nozzle2ZOffsetCalculated;
 
-    private BooleanProperty offsetFieldsDirty = new SimpleBooleanProperty();
+    private final BooleanProperty offsetFieldsDirty = new SimpleBooleanProperty();
     
     @FXML
     void resetToDefaults(ActionEvent event)
@@ -389,7 +389,7 @@ public class HeadEEPROMController implements Initializable
 
             connectedPrinter.getHeadDataChangedToggle().removeListener(headDataChangeListener);
 
-            headFullContainer.visibleProperty().unbind();
+            headFullContainer.disableProperty().unbind();
 
             connectedPrinter.headEEPROMStatusProperty().removeListener(headAttachListener);
 
@@ -406,8 +406,8 @@ public class HeadEEPROMController implements Initializable
             connectedPrinter = printer;
             connectedPrinter.getHeadDataChangedToggle().addListener(headDataChangeListener);
 
-            headFullContainer.visibleProperty().bind(
-                connectedPrinter.headEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
+            headFullContainer.disableProperty().bind(Bindings.not(
+                connectedPrinter.headEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED)));
 
             connectedPrinter.headEEPROMStatusProperty().addListener(headAttachListener);
 

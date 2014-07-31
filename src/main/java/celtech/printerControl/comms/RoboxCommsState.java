@@ -18,6 +18,14 @@ public enum RoboxCommsState
     /**
      *
      */
+    CHECKING_HEAD,
+    /**
+     * 
+     */
+    FORMATTING_HEAD,
+    /**
+     * 
+     */
     POST,
     /**
      *
