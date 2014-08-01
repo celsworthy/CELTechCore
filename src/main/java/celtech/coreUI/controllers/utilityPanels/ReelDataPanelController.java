@@ -14,7 +14,10 @@ import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -93,12 +96,20 @@ public class ReelDataPanelController implements Initializable
     @FXML
     void filamentSaveAs(ActionEvent event)
     {
-        Filament newFilament = makeFilamentFromFields();
-        newFilament.setFilamentID(null);
-        String safeNewFilamentName = FilamentContainer.suggestNonDuplicateName(
-            newFilament.getFriendlyFilamentName());
-        newFilament.setFriendlyFilamentName(safeNewFilamentName);
-        FilamentContainer.saveFilament(newFilament);
+        Filament newFilament;
+        try
+        {
+            newFilament = makeFilamentFromFields();
+            newFilament.setFilamentID(null);
+            String safeNewFilamentName = FilamentContainer.suggestNonDuplicateName(
+                newFilament.getFriendlyFilamentName());
+            newFilament.setFriendlyFilamentName(safeNewFilamentName);
+            FilamentContainer.saveFilament(newFilament);
+        } catch (ParseException ex)
+        {
+            steno.info("Parse error getting filament data");
+        }
+
     }
 
     @FXML
@@ -107,19 +118,27 @@ public class ReelDataPanelController implements Initializable
         try
         {
             Filament newFilament = makeFilamentFromFields();
+            try
+            {
 
-            FilamentContainer.saveFilament(newFilament);
+                FilamentContainer.saveFilament(newFilament);
 
-            connectedPrinter.transmitWriteReelEEPROM(newFilament);
+                connectedPrinter.transmitWriteReelEEPROM(newFilament);
 
-        } catch (RoboxCommsException ex)
+            } catch (RoboxCommsException ex)
+            {
+                steno.error("Error writing reel EEPROM");
+            }
+
+        } catch (ParseException ex)
         {
-            steno.error("Error writing reel EEPROM");
+            steno.info("Parse error getting filament data");
         }
         readReelConfig(event);
+
     }
 
-    private Filament makeFilamentFromFields() throws NumberFormatException
+    private Filament makeFilamentFromFields() throws ParseException
     {
         float remainingFilament = 0;
         try
@@ -133,9 +152,9 @@ public class ReelDataPanelController implements Initializable
             reelFilamentName.getText(),
             reelMaterialType.getSelectionModel().getSelectedItem(),
             filamentID.getText(),
-            Float.valueOf(reelFilamentDiameter.getText()),
-            Float.valueOf(reelFilamentMultiplier.getText()),
-            Float.valueOf(reelFeedRateMultiplier.getText()),
+            reelFilamentDiameter.getFloatValue(),
+            reelFilamentMultiplier.getFloatValue(),
+            reelFeedRateMultiplier.getFloatValue(),
             Integer.valueOf(reelAmbientTemperature.getText()),
             Integer.valueOf(reelFirstLayerBedTemperature.getText()),
             Integer.valueOf(reelBedTemperature.getText()),

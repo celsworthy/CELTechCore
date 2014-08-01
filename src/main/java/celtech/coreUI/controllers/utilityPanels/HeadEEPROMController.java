@@ -16,6 +16,7 @@ import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -136,17 +137,17 @@ public class HeadEEPROMController implements Initializable
                 uniqueId = headUniqueID.getText();
             }
             String headTypeCodeText = headTypeCode.getText();
-            Float headMaxTemperatureVal = Float.valueOf(headMaxTemperature.getText());
-            Float headThermistorBetaVal = Float.valueOf(headThermistorBeta.getText());
-            Float headThermistorTCalVal = Float.valueOf(headThermistorTCal.getText());
-            Float nozzle1XOffsetVal = Float.valueOf(nozzle1XOffset.getText());
-            Float nozzle1YOffsetVal = Float.valueOf(nozzle1YOffset.getText());
-            Float nozzle1BOffsetVal = Float.valueOf(nozzle1BOffset.getText());
-            Float nozzle2XOffsetVal = Float.valueOf(nozzle2XOffset.getText());
-            Float nozzle2YOffsetVal = Float.valueOf(nozzle2YOffset.getText());
-            Float nozzle2BOffsetVal = Float.valueOf(nozzle2BOffset.getText());
-            Float lastFilamentTemperatureVal = Float.valueOf(lastFilamentTemperature.getText());
-            Float headHourCounterVal = Float.valueOf(headHourCounter.getText());
+            Float headMaxTemperatureVal = headMaxTemperature.getFloatValue();
+            Float headThermistorBetaVal = headThermistorBeta.getFloatValue();
+            Float headThermistorTCalVal = headThermistorTCal.getFloatValue();
+            Float nozzle1XOffsetVal = nozzle1XOffset.getFloatValue();
+            Float nozzle1YOffsetVal = nozzle1YOffset.getFloatValue();
+            Float nozzle1BOffsetVal = nozzle1BOffset.getFloatValue();
+            Float nozzle2XOffsetVal = nozzle2XOffset.getFloatValue();
+            Float nozzle2YOffsetVal = nozzle2YOffset.getFloatValue();
+            Float nozzle2BOffsetVal = nozzle2BOffset.getFloatValue();
+            Float lastFilamentTemperatureVal = lastFilamentTemperature.getFloatValue();
+            Float headHourCounterVal = headHourCounter.getFloatValue();
             connectedPrinter.transmitWriteHeadEEPROM(
                 headTypeCodeText, uniqueId, headMaxTemperatureVal, headThermistorBetaVal,
                 headThermistorTCalVal, nozzle1XOffsetVal, nozzle1YOffsetVal,
@@ -161,6 +162,8 @@ public class HeadEEPROMController implements Initializable
             eepromCommsError.setMessage(DisplayManager.getLanguageBundle().getString(
                 "eeprom.headWriteError"));
             eepromCommsError.show();
+        } catch(ParseException ex) {
+             steno.info("Parse error getting head data");
         }
         readHeadConfig(event);
     }

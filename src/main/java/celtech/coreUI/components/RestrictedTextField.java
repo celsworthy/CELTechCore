@@ -5,7 +5,8 @@
  */
 package celtech.coreUI.components;
 
-import java.io.File;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -24,7 +25,7 @@ public class RestrictedTextField extends TextField
     private final StringProperty restrict = new SimpleStringProperty("");
     private final IntegerProperty maxLength = new SimpleIntegerProperty(-1);
     private final BooleanProperty forceUpperCase = new SimpleBooleanProperty(false);
-    private BooleanProperty directorySafeName = new SimpleBooleanProperty(false);
+    private final BooleanProperty directorySafeName = new SimpleBooleanProperty(false);
 
     private final String standardAllowedCharacters = "\u0008\u007f";
 
@@ -178,5 +179,10 @@ public class RestrictedTextField extends TextField
     public void setDirectorySafeName(boolean directorySafeName)
     {
         this.directorySafeName.set(directorySafeName);
+    }
+    
+    public Float getFloatValue() throws ParseException {
+        Number number = NumberFormat.getInstance().parse(getText());
+        return number.floatValue();
     }
 }

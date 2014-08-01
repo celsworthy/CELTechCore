@@ -45,9 +45,9 @@
                         <Label text="Remaining" GridPane.columnIndex="2" GridPane.rowIndex="9" /> 
                         <TextField fx:id="filamentID" disable="true" editable="false" prefWidth="140.0" styleClass="RestrictedTextField" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" />
                         <RestrictedTextField fx:id="reelFilamentName" forceUpperCase="false" maxLength="20" prefWidth="140.0" restrict="-_' 0-9\p{L}\p{M}*+" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="1" />
-                        <RestrictedTextField fx:id="reelFilamentDiameter" alignment="CENTER_RIGHT" maxLength="4" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="6" />
-                        <RestrictedTextField fx:id="reelFilamentMultiplier" alignment="CENTER_RIGHT" maxLength="4" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="7" />
-                        <RestrictedTextField fx:id="reelFeedRateMultiplier" alignment="CENTER_RIGHT" maxLength="4" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="8" />
+                        <RestrictedTextField fx:id="reelFilamentDiameter" alignment="CENTER_RIGHT" maxLength="4" prefWidth="70.0" restrict="0-9.," GridPane.columnIndex="3" GridPane.rowIndex="6" />
+                        <RestrictedTextField fx:id="reelFilamentMultiplier" alignment="CENTER_RIGHT" maxLength="4" prefWidth="70.0" restrict="0-9.," GridPane.columnIndex="3" GridPane.rowIndex="7" />
+                        <RestrictedTextField fx:id="reelFeedRateMultiplier" alignment="CENTER_RIGHT" maxLength="4" prefWidth="70.0" restrict="0-9.," GridPane.columnIndex="3" GridPane.rowIndex="8" />
                         <RestrictedTextField fx:id="reelFirstLayerBedTemperature" alignment="CENTER_RIGHT" maxLength="4" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                         <RestrictedTextField fx:id="reelBedTemperature" alignment="CENTER_RIGHT" maxLength="8" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="6" />
                         <RestrictedTextField id="firstLayerNozzleTemperature" fx:id="reelFirstLayerNozzleTemperature" alignment="CENTER_RIGHT" maxLength="4" prefWidth="70.0" restrict="0-9" GridPane.columnIndex="1" GridPane.rowIndex="7" />
