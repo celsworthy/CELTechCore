@@ -155,18 +155,21 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
             {
                 for (String port : activePorts)
                 {
-//                    steno.info("Found printer on " + port);
+                    steno.info("Found printer on " + port);
                     if (pendingPrinterConnections.containsKey(port))
                     {
                         //A connection to this printer is pending...
+                        System.out.println("PENDING FOUND");
                     } else if (activePrinterConnections.containsKey(port))
                     {
                         //We're already connected to this printer
+                        System.out.println("ACTIVE FOUND");
                     } else
                     {
                         // We need to connect!
                         steno.info("Adding new printer on " + port);
                         PrinterHandler newPrinterHandler = new PrinterHandler(this, port, suppressPrinterIDChecks, sleepBetweenStatusChecks);
+                        System.out.println("ADD NEW HANDLER " + newPrinterHandler);
                         pendingPrinterConnections.put(port, newPrinterHandler);
                         Printer newPrinter = new PrinterImpl(port, this);
                         pendingPrinters.put(port, newPrinter);
@@ -372,8 +375,10 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
     public void printerConnected(String portName)
     {
         PrinterHandler handler = pendingPrinterConnections.get(portName);
+
         pendingPrinterConnections.remove(portName);
 
+        System.out.println("ADD HANDLER " + handler + " To ACTIVE");
         activePrinterConnections.put(portName, handler);
 
         Printer printer = pendingPrinters.get(portName);
