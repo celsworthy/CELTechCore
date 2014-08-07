@@ -9,6 +9,6 @@
     <Pane fx:id="innerPane">
         <PrinterSVGComponent fx:id="printerSVG"/>
         <WhiteProgressBarComponent fx:id="progressBar" />
-        <Label fx:id="name" style="-fx-font-size: 30pt;" />
+        <Label fx:id="name" />
     </Pane>
 </fx:root>

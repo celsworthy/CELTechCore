@@ -3,10 +3,15 @@
  */
 package celtech.coreUI.components.printerstatus;
 
+import celtech.coreUI.DisplayManager;
 import celtech.printerControl.Printer;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
+import com.sun.javafx.tk.FontMetrics;
+import com.sun.javafx.tk.Toolkit;
 import java.io.IOException;
 import java.net.URL;
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -47,6 +52,7 @@ public class PrinterComponent extends Pane
     private final Printer printer;
     private ChangeListener<String> nameListener;
     private ChangeListener<Color> colorListener;
+    private ChangeListener<Number> progressListener;
 
     public PrinterComponent(Printer printer)
     {
@@ -83,11 +89,17 @@ public class PrinterComponent extends Pane
     private void initialise()
     {
 
+
         setStyle("-fx-background-color: white;");
 
         name.setTextFill(Color.WHITE);
         name.setText(printer.getPrinterFriendlyName());
         setColour(printer.getPrinterColour());
+        
+        progressListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                setProgress((double) newValue);
+            };
 
         nameListener = (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
         {
@@ -101,7 +113,8 @@ public class PrinterComponent extends Pane
 
         printer.printerFriendlyNameProperty().addListener(nameListener);
         printer.printerColourProperty().addListener(colorListener);
-
+        printer.getPrintQueue().progressProperty().addListener(progressListener);
+       
         setSize(Size.SIZE_LARGE);
     }
 
@@ -148,7 +161,8 @@ public class PrinterComponent extends Pane
         int fontSize;
         int progressBarWidth;
         int progressBarHeight;
-        int nameLayoutY;
+        double progressBarYOffset;
+        double nameLayoutY;
         int borderWidth;
         if (selected)
         {
@@ -165,44 +179,51 @@ public class PrinterComponent extends Pane
                 fontSize = 9;
                 progressBarWidth = 65;
                 progressBarHeight = 6;
-                nameLayoutY = 70;
+                progressBarYOffset = 17;
+
                 break;
             case SIZE_MEDIUM:
                 sizePixels = 120;
                 fontSize = 14;
                 progressBarWidth = 100;
                 progressBarHeight = 9;
-                nameLayoutY = 105;
+                progressBarYOffset = 26;
                 break;
             default:
                 sizePixels = 260;
                 fontSize = 30;
                 progressBarWidth = 220;
                 progressBarHeight = 20;
-                nameLayoutY = 225;
+                progressBarYOffset = 55;
                 break;
         }
         setMinWidth(sizePixels);
         setMaxWidth(sizePixels);
         setMinHeight(sizePixels);
         setMaxHeight(sizePixels);
+
+        double progressBarX = (sizePixels - progressBarWidth) / 2.0;
+        double progressBarY = sizePixels - progressBarYOffset;
+
         innerPane.setMinWidth(sizePixels - borderWidth * 2);
         innerPane.setMaxWidth(sizePixels - borderWidth * 2);
         innerPane.setMinHeight(sizePixels - borderWidth * 2);
         innerPane.setMaxHeight(sizePixels - borderWidth * 2);
         innerPane.setTranslateX(borderWidth);
         innerPane.setTranslateY(borderWidth);
-        printerSVG.setSize(sizePixels * 0.9);
-        progressBar.setLayoutX((sizePixels - progressBarWidth) / 2.0);
-        progressBar.setLayoutY(sizePixels * 0.7);
+        printerSVG.setSize(sizePixels);
+        progressBar.setLayoutX(progressBarX);
+        progressBar.setLayoutY(progressBarY);
         progressBar.setControlWidth(progressBarWidth);
         progressBar.setControlHeight(progressBarHeight);
 
-        name.setStyle("-fx-font-size: " + fontSize + "pt;");
-        Font font = name.getFont();
-        Font font2 = new Font(font.getName(), fontSize);
-        name.setFont(font2);
-        name.setLayoutX((sizePixels - progressBarWidth) / 2.0);
+        name.setStyle("-fx-font-size: " + fontSize + "pt !important;");
+        name.setLayoutX(progressBarX);
+
+        Font primaryFont = DisplayManager.getInstance().getPrimaryFont();
+        FontMetrics fontMetrics = Toolkit.getToolkit().getFontLoader().getFontMetrics(primaryFont);
+        double xHeight = fontMetrics.getXheight() * fontSize / primaryFont.getSize();
+        nameLayoutY = sizePixels - (progressBarYOffset / 2) + xHeight / 2;
         name.setLayoutY(nameLayoutY);
     }
 }

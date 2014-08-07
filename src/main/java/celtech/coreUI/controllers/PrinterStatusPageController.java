@@ -651,8 +651,7 @@ public class PrinterStatusPageController implements Initializable
                         unbindFromSelectedPrinter();
 
                         progressGroup.visibleProperty().bind(
-                            selectedPrinter.getPrintQueue().
-                            printInProgressProperty());
+                            selectedPrinter.getPrintQueue().printInProgressProperty());
                         progressBar.progressProperty().bind(
                             selectedPrinter.getPrintQueue().progressProperty());
                         progressPercent.textProperty().bind(Bindings.multiply(
@@ -682,8 +681,7 @@ public class PrinterStatusPageController implements Initializable
                             {
                                 {
                                     super.bind(
-                                        selectedPrinter.getPrintQueue().
-                                        progressETCProperty());
+                                        selectedPrinter.getPrintQueue().progressETCProperty());
                                 }
 
                                 @Override

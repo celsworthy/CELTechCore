@@ -409,7 +409,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
         slideoutAndProjectHolder.setPrefSize(-1, -1);
         slideoutAndProjectHolder.getStyleClass().add("master-details-pane");
         HBox.setHgrow(slideoutAndProjectHolder, Priority.ALWAYS);
-        
+
         HBox.setHgrow(rhPanel, Priority.ALWAYS);
 
         try
@@ -683,7 +683,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
     }
 
     /**
-     * Load each model in modelsToLoad and then optionally lay them out on the bed. If there are already models loaded in the project then do not relayout even if relayout=true;
+     * Load each model in modelsToLoad and then optionally lay them out on the bed. If there are
+     * already models loaded in the project then do not relayout even if relayout=true;
      */
     public void loadExternalModels(List<File> modelsToLoad, boolean relayout)
     {
@@ -755,7 +756,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             ((ProjectTab) currentTab).autoLayout();
         }
     }
-    
+
     /**
      *
      */
@@ -894,12 +895,12 @@ public class DisplayManager implements EventHandler<KeyEvent>
     }
 
     /**
-     * Return the font family name of the primary font used in the GUI
+     * Return the primary font used in the GUI.
      *
      * @return
      */
-    public String getPrimaryFontFamily()
+    public Font getPrimaryFont()
     {
-        return primaryFont.getFamily();
+        return primaryFont;
     }
 }

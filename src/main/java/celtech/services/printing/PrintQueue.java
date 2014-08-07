@@ -98,16 +98,11 @@ public class PrintQueue implements ControllableService
 
     private final StringProperty printProgressTitle = new SimpleStringProperty();
     private final StringProperty printProgressMessage = new SimpleStringProperty();
-    private final BooleanProperty dialogRequired = new SimpleBooleanProperty(
-        false);
-    private final BooleanProperty printInProgress = new SimpleBooleanProperty(
-        false);
-    private final DoubleProperty primaryProgressPercent = new SimpleDoubleProperty(
-        0);
-    private final DoubleProperty secondaryProgressPercent = new SimpleDoubleProperty(
-        0);
-    private final BooleanProperty sendingDataToPrinter = new SimpleBooleanProperty(
-        false);
+    private final BooleanProperty dialogRequired = new SimpleBooleanProperty(false);
+    private final BooleanProperty printInProgress = new SimpleBooleanProperty(false);
+    private final DoubleProperty primaryProgressPercent = new SimpleDoubleProperty(0);
+    private final DoubleProperty secondaryProgressPercent = new SimpleDoubleProperty(0);
+    private final BooleanProperty sendingDataToPrinter = new SimpleBooleanProperty(false);
     private final ObjectProperty<Date> printJobStartTime = new SimpleObjectProperty<>();
     /*
      * 
@@ -441,8 +436,7 @@ public class PrintQueue implements ControllableService
 
         setPrintStatus(PrinterStatusEnumeration.IDLE);
 
-        associatedPrinter.printJobLineNumberProperty().
-            addListener(printLineNumberListener);
+        associatedPrinter.printJobLineNumberProperty().addListener(printLineNumberListener);
         associatedPrinter.printJobIDProperty().addListener(printJobIDListener);
     }
 
