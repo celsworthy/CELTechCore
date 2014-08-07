@@ -22,8 +22,6 @@ import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.utils.PrinterUtils;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -36,19 +34,18 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Side;
+import javafx.scene.Node;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -320,6 +317,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         initialisePrinterStatusGrid();
         initialiseTemperatureAndHeaterListeners();
+        controlDetailsVisibility();
     }
 
     private void initialiseTemperatureAndHeaterListeners()
@@ -620,6 +618,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             statusScreenState.setCurrentlySelectedPrinter(printerToEdit);
             bindDetails(printerToEdit);
             controlDetailsVisibility();
+            PrinterComponent printerComponent = (PrinterComponent) event.getSource();
+            printerComponent.setSelected(true);
         }
         if (event.getClickCount() > 1)
         {
@@ -661,10 +661,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private void addPrinterToGrid(PrinterComponent printerComponent, Printer printer, int row,
         int column)
     {
-        printerComponent.setName(printer.getPrinterFriendlyName());
-        printerComponent.setColour(printer.getPrinterColour());
-        printerComponent.setProgress(0.3);
-        printerComponent.setSize(260);
+        printerComponent.setSize(PrinterComponent.Size.SIZE_LARGE);
         printerStatusGrid.add(printerComponent, row, column);
 
         printerComponent.setOnMouseClicked(new EventHandler<MouseEvent>()

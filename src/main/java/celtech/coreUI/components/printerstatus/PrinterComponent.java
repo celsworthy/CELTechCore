@@ -15,6 +15,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 
 /**
  *
@@ -23,8 +24,20 @@ import javafx.scene.paint.Color;
 public class PrinterComponent extends Pane
 {
 
+    private boolean selected;
+    private Size currentSize;
+
+    public enum Size
+    {
+
+        SIZE_SMALL, SIZE_MEDIUM, SIZE_LARGE;
+    }
+
     @FXML
     private Label name;
+
+    @FXML
+    private Pane innerPane;
 
     @FXML
     private WhiteProgressBarComponent progressBar;
@@ -70,8 +83,8 @@ public class PrinterComponent extends Pane
     private void initialise()
     {
 
-        progressBar.setStyle("-fx-progress-color: red;");
-        setSize(150);
+        setStyle("-fx-background-color: white;");
+
         name.setTextFill(Color.WHITE);
         name.setText(printer.getPrinterFriendlyName());
         setColour(printer.getPrinterColour());
@@ -88,6 +101,8 @@ public class PrinterComponent extends Pane
 
         printer.printerFriendlyNameProperty().addListener(nameListener);
         printer.printerColourProperty().addListener(colorListener);
+
+        setSize(Size.SIZE_LARGE);
     }
 
     public void setProgress(double progress)
@@ -99,37 +114,95 @@ public class PrinterComponent extends Pane
     {
         String colourHexString = String.format("#%06X", color);
         String style = "-fx-background-color: " + colourHexString + ";";
-        System.out.println("style is " + style);
-        setStyle(style);
+        innerPane.setStyle(style);
     }
 
     public void setColour(Color color)
     {
         String colourHexString = "#" + colourToString(color);
         String style = "-fx-background-color: " + colourHexString + ";";
-        System.out.println("style is " + style);
-        setStyle(style);
+        innerPane.setStyle(style);
     }
 
-    public void setSize(int size)
+    public void setSelected(boolean select)
     {
-//        setPrefWidth(size);
-        size = (int) (size * 0.9d);
-        setMinWidth(size);
-        setMaxWidth(size);
-//        setPrefHeight(size);
-        setMinHeight(size);
-        setMaxHeight(size);
-        printerSVG.setSize(size * 0.9);
-        progressBar.setLayoutX(size * (1 - 0.846) * 0.5);
-        progressBar.setLayoutY(size * 0.7);
-//        progressBar.setPrefWidth(size * 0.9);
-//        progressBar.setPrefHeight(size * 0.02);
-        progressBar.setControlWidth(size * 0.846);
-        progressBar.setControlHeight(size * 20.0 / 260.0);
+        if (selected != select)
+        {
+            selected = select;
+            redraw();
+        }
+    }
 
-        name.setStyle("-fx-font-size: 20;");
-        name.setLayoutX(size * 0.02);
-        name.setLayoutY(size * 0.85);
+    public void setSize(Size size)
+    {
+        if (size != currentSize)
+        {
+            currentSize = size;
+            redraw();
+        }
+    }
+
+    private void redraw()
+    {
+        int sizePixels;
+        int fontSize;
+        int progressBarWidth;
+        int progressBarHeight;
+        int nameLayoutY;
+        int borderWidth;
+        if (selected)
+        {
+            borderWidth = 3;
+        } else
+        {
+            borderWidth = 0;
+        }
+
+        switch (currentSize)
+        {
+            case SIZE_SMALL:
+                sizePixels = 80;
+                fontSize = 9;
+                progressBarWidth = 65;
+                progressBarHeight = 6;
+                nameLayoutY = 70;
+                break;
+            case SIZE_MEDIUM:
+                sizePixels = 120;
+                fontSize = 14;
+                progressBarWidth = 100;
+                progressBarHeight = 9;
+                nameLayoutY = 105;
+                break;
+            default:
+                sizePixels = 260;
+                fontSize = 30;
+                progressBarWidth = 220;
+                progressBarHeight = 20;
+                nameLayoutY = 225;
+                break;
+        }
+        setMinWidth(sizePixels);
+        setMaxWidth(sizePixels);
+        setMinHeight(sizePixels);
+        setMaxHeight(sizePixels);
+        innerPane.setMinWidth(sizePixels - borderWidth * 2);
+        innerPane.setMaxWidth(sizePixels - borderWidth * 2);
+        innerPane.setMinHeight(sizePixels - borderWidth * 2);
+        innerPane.setMaxHeight(sizePixels - borderWidth * 2);
+        innerPane.setTranslateX(borderWidth);
+        innerPane.setTranslateY(borderWidth);
+        printerSVG.setSize(sizePixels * 0.9);
+        progressBar.setLayoutX((sizePixels - progressBarWidth) / 2.0);
+        progressBar.setLayoutY(sizePixels * 0.7);
+        progressBar.setControlWidth(progressBarWidth);
+        progressBar.setControlHeight(progressBarHeight);
+
+        name.setStyle("-fx-font-size: " + fontSize + "pt;");
+        Font font = name.getFont();
+        Font font2 = new Font(font.getName(), fontSize);
+        name.setFont(font2);
+        name.setLayoutX((sizePixels - progressBarWidth) / 2.0);
+        name.setLayoutY(nameLayoutY);
     }
 }
