@@ -124,22 +124,6 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
 
     /**
      *
-     * @param pathToBinaries
-     * @param suppressPrinterIDCheck
-     * @return
-     */
-    public static RoboxCommsManager getInstance(String pathToBinaries, boolean suppressPrinterIDCheck)
-    {
-        if (instance == null)
-        {
-            instance = new RoboxCommsManager(pathToBinaries, true);
-        }
-
-        return instance;
-    }
-
-    /**
-     *
      */
     @Override
     public void run()
@@ -159,17 +143,17 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
                     if (pendingPrinterConnections.containsKey(port))
                     {
                         //A connection to this printer is pending...
-                        System.out.println("PENDING FOUND");
+//                        System.out.println("PENDING FOUND");
                     } else if (activePrinterConnections.containsKey(port))
                     {
                         //We're already connected to this printer
-                        System.out.println("ACTIVE FOUND");
+//                        System.out.println("ACTIVE FOUND");
                     } else
                     {
                         // We need to connect!
                         steno.info("Adding new printer on " + port);
                         PrinterHandler newPrinterHandler = new PrinterHandler(this, port, suppressPrinterIDChecks, sleepBetweenStatusChecks);
-                        System.out.println("ADD NEW HANDLER " + newPrinterHandler);
+//                        System.out.println("ADD NEW HANDLER " + newPrinterHandler);
                         pendingPrinterConnections.put(port, newPrinterHandler);
                         Printer newPrinter = new PrinterImpl(port, this);
                         pendingPrinters.put(port, newPrinter);
@@ -378,7 +362,7 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
 
         pendingPrinterConnections.remove(portName);
 
-        System.out.println("ADD HANDLER " + handler + " To ACTIVE");
+//        System.out.println("ADD HANDLER " + handler + " To ACTIVE");
         activePrinterConnections.put(portName, handler);
 
         Printer printer = pendingPrinters.get(portName);

@@ -99,6 +99,7 @@ public class FirmwareLoadTask extends Task<Integer>
                 if (!isCancelled())
                 {
                     printerToUpdate.transmitUpdateFirmware(firmwareID);
+                    // 
                     returnValue = SUCCESS;
                 }
             }

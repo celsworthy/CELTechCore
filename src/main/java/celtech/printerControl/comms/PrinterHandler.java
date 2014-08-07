@@ -38,16 +38,15 @@ import celtech.printerControl.comms.events.RoboxEvent;
 import celtech.printerControl.comms.events.RoboxEventType;
 import celtech.services.firmware.FirmwareLoadService;
 import celtech.services.firmware.FirmwareLoadTask;
+import java.util.HashSet;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
-import javafx.scene.paint.Color;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 import libertysystems.configuration.ConfigNotLoadedException;
@@ -65,6 +64,8 @@ import org.controlsfx.dialog.Dialogs.CommandLink;
 public class PrinterHandler extends Thread
 {
 
+    private static Set<String> dontCheckFirmwareForPortName = new HashSet<>();
+
     private boolean keepRunning = true;
     private boolean initialised = false;
 
@@ -76,13 +77,6 @@ public class PrinterHandler extends Thread
     private volatile RoboxCommsState commsState = RoboxCommsState.FOUND;
     private SerialPort serialPort = null;
     private PrinterID printerID = new PrinterID();
-    /*
-     * 
-     */
-    private Dialogs.CommandLink firmwareUpgradeOK = null;
-    private Dialogs.CommandLink firmwareUpgradeNotOK = null;
-    private Dialogs.CommandLink firmwareDowngradeOK = null;
-    private Dialogs.CommandLink firmwareDowngradeNotOK = null;
 
     private ProgressDialog firmwareUpdateProgress = null;
     private final FirmwareLoadService firmwareLoadService = new FirmwareLoadService();
@@ -91,7 +85,6 @@ public class PrinterHandler extends Thread
 
     private PrinterIDDialog printerIDDialog = null;
     private boolean printerIDDialogWillShow = false;
-    private boolean printerIDDialogWasShowing = false;
     private PrinterIDResponse lastPrinterIDResponse = null;
     private int printerIDSetupAttempts = 0;
 
@@ -112,6 +105,7 @@ public class PrinterHandler extends Thread
     public PrinterHandler(PrinterControlInterface controlInterface, String portName,
         boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
+        System.out.println("PORT NAME IS " + portName);
         this.controlInterface = controlInterface;
         this.portName = portName;
         this.suppressPrinterIDChecks = suppressPrinterIDChecks;
@@ -145,19 +139,6 @@ public class PrinterHandler extends Thread
                 initialised = true;
             }
         });
-
-        firmwareUpgradeOK = new CommandLink(languageBundle.getString(
-            "dialogs.firmwareUpgradeOKTitle"), languageBundle.getString(
-                                                "dialogs.firmwareUpgradeOKMessage"));
-        firmwareUpgradeNotOK = new CommandLink(languageBundle.getString(
-            "dialogs.firmwareUpgradeNotOKTitle"), languageBundle.getString(
-                                                   "dialogs.firmwareUpgradeNotOKMessage"));
-        firmwareDowngradeOK = new CommandLink(languageBundle.getString(
-            "dialogs.firmwareDowngradeOKTitle"), languageBundle.getString(
-                                                  "dialogs.firmwareUpgradeOKMessage"));
-        firmwareDowngradeNotOK = new CommandLink(languageBundle.getString(
-            "dialogs.firmwareDowngradeNotOKTitle"), languageBundle.getString(
-                                                     "dialogs.firmwareUpgradeNotOKMessage"));
 
         firmwareLoadService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
         {
@@ -194,6 +175,8 @@ public class PrinterHandler extends Thread
                         break;
                 }
                 firmwareCheckInProgress = false;
+                dontCheckFirmwareForPortName.add(portName);
+                disconnectSerialPort();
             }
         });
 
@@ -208,6 +191,7 @@ public class PrinterHandler extends Thread
                                                DisplayManager.getLanguageBundle().getString(
                                                    "dialogs.firmwareUpgradeFailedMessage"));
                 firmwareCheckInProgress = false;
+                disconnectSerialPort();
             }
         });
     }
@@ -232,7 +216,7 @@ public class PrinterHandler extends Thread
 
         while (keepRunning)
         {
-            System.out.println("STATE IS " + commsState);
+//            System.out.println("STATE IS " + commsState);
             switch (commsState)
             {
                 case FOUND:
@@ -273,12 +257,14 @@ public class PrinterHandler extends Thread
                     setCommsState(RoboxCommsState.CHECKING_FIRMWARE);
                     break;
 
-                case POST:
-                    doPOST();
-
-                    break;
-
                 case CHECKING_FIRMWARE:
+                    System.out.println("CHECK FIRMWARE FOR PORT NAME " + portName);
+                    if (dontCheckFirmwareForPortName.contains(portName))
+                    {
+                        System.out.println("SKIP CHECK");
+                        setCommsState(RoboxCommsState.CHECKING_ID);
+                        break;
+                    }
                     if (firmwareCheckInProgress == false && noSDDialog.isShowing() == false)
                     {
                         checkFirmwareVersion();
@@ -286,7 +272,7 @@ public class PrinterHandler extends Thread
                     {
                         try
                         {
-                            System.out.println("Firmware check GUI in progress");
+//                            System.out.println("Firmware check GUI in progress");
                             sleep(100);
                         } catch (InterruptedException ex)
                         {
@@ -296,7 +282,13 @@ public class PrinterHandler extends Thread
                     break;
 
                 case CHECKING_ID:
-                    checkPrinterID();
+                    if (suppressPrinterIDChecks)
+                    {
+                        setCommsState(RoboxCommsState.CONNECTED);
+                    } else
+                    {
+                        checkPrinterID();
+                    }
                     break;
 
                 case CONNECTED:
@@ -343,44 +335,9 @@ public class PrinterHandler extends Thread
             "Handler for " + portName + " exiting");
     }
 
-    private void doPOST()
-    {
-        try
-        {
-            StatusResponse response = (StatusResponse) writeToPrinter(
-                RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.STATUS_REQUEST));
-
-//                        if (response.isSDCardPresent() == false)
-//                        {
-//                            steno.error("The SD card is missing. Printing cannot continue");
-//                            if (!noSDDialog.isShowing())
-//                            {
-//                                Platform.runLater(new Runnable()
-//                                {
-//                                    @Override
-//                                    public void run()
-//                                    {
-//                                        noSDDialog.show();
-//                                    }
-//                                });
-//                            }
-//                        } else
-//                        {
-            controlInterface.publishEvent(portName, new RoboxEvent(
-                                          RoboxEventType.PRINTER_STATUS_UPDATE, response));
-            setCommsState(RoboxCommsState.CHECKING_FIRMWARE);
-//                        }
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error whilst carrying out firmware POST");
-            disconnectSerialPort();
-        }
-    }
-
     private void checkPrinterID()
     {
         String printerID = null;
-        Color printerColour = null;
         boolean success = false;
 
         try
@@ -389,7 +346,6 @@ public class PrinterHandler extends Thread
             {
                 if (printerIDDialog.isShowing())
                 {
-                    printerIDDialogWasShowing = true;
                     printerIDDialogWillShow = false;
                 }
                 StatusResponse testStatusResp = (StatusResponse) writeToPrinter(
@@ -469,13 +425,8 @@ public class PrinterHandler extends Thread
 //                    controlInterface.publishEvent(portName, new RoboxEvent(
 //                                                  RoboxEventType.FIRMWARE_VERSION_INFO,
 //                                                  response));
-                    if (suppressPrinterIDChecks == false)
-                    {
-                        setCommsState(RoboxCommsState.CHECKING_ID);
-                    } else
-                    {
-                        setCommsState(RoboxCommsState.CONNECTED);
-                    }
+                    setCommsState(RoboxCommsState.CHECKING_ID);
+
                 }
             } else
             {
@@ -506,6 +457,15 @@ public class PrinterHandler extends Thread
             @Override
             public void run()
             {
+
+                Dialogs.CommandLink firmwareDowngradeOK = new CommandLink(languageBundle.getString(
+                    "dialogs.firmwareDowngradeOKTitle"), languageBundle.getString(
+                                                                              "dialogs.firmwareUpgradeOKMessage"));
+                Dialogs.CommandLink firmwareDowngradeNotOK = new CommandLink(
+                    languageBundle.getString(
+                        "dialogs.firmwareDowngradeNotOKTitle"), languageBundle.getString(
+                        "dialogs.firmwareUpgradeNotOKMessage"));
+
                 Action upgradeApplicationResponse = Dialogs.create().title(
                     languageBundle.getString(
                         "dialogs.firmwareVersionTooLowTitle"))
@@ -538,14 +498,9 @@ public class PrinterHandler extends Thread
 //                                                  new RoboxEvent(
 //                                                      RoboxEventType.FIRMWARE_VERSION_INFO,
 //                                                      response));
-                    if (suppressPrinterIDChecks == false)
-                    {
-                        setCommsState(RoboxCommsState.CHECKING_ID);
-                    } else
-                    {
-                        setCommsState(RoboxCommsState.CONNECTED);
-                    }
                     firmwareCheckInProgress = false;
+                    setCommsState(RoboxCommsState.CHECKING_ID);
+
                 }
             }
         });
@@ -558,55 +513,23 @@ public class PrinterHandler extends Thread
             + fwResponse.getFirmwareRevisionInt() + " and should be "
             + requiredFirmwareVersion);
 
-        Platform.runLater(new Runnable()
+        int firmwareRevision = fwResponse.getFirmwareRevisionInt();
+        boolean upgradeFirmware = askIfUpgradeFirmware(firmwareRevision);
+
+        if (upgradeFirmware)
         {
+            firmwareLoadService.reset();
+            firmwareLoadService.setPrinterToUse(printerToUse);
+            firmwareLoadService.setFirmwareFileToLoad(
+                ApplicationConfiguration.getCommonApplicationDirectory()
+                + "robox_r" + requiredFirmwareVersion + ".bin");
+            firmwareLoadService.start();
+        } else
+        {
+            firmwareCheckInProgress = false;
+            setCommsState(RoboxCommsState.CHECKING_ID);
 
-            @Override
-            public void run()
-            {
-                Action upgradeApplicationResponse = Dialogs.create().title(
-                    languageBundle.getString(
-                        "dialogs.firmwareUpgradeTitle"))
-                    .message(languageBundle.getString(
-                            "dialogs.firmwareVersionError1")
-                        + fwResponse.getFirmwareRevisionInt()
-                        + languageBundle.getString(
-                            "dialogs.firmwareVersionError2")
-                        + requiredFirmwareVersion + ".\n"
-                        + languageBundle.getString(
-                            "dialogs.firmwareVersionError3"))
-                    .masthead(null)
-                    .showCommandLinks(firmwareUpgradeOK,
-                                      firmwareUpgradeOK,
-                                      firmwareUpgradeNotOK);
-
-                if (upgradeApplicationResponse == firmwareUpgradeOK)
-                {
-                    firmwareLoadService.reset();
-                    firmwareLoadService.setPrinterToUse(printerToUse);
-                    firmwareLoadService.setFirmwareFileToLoad(
-                        ApplicationConfiguration.getCommonApplicationDirectory()
-                        + "robox_r" + requiredFirmwareVersion + ".bin");
-                    firmwareLoadService.start();
-                } else if (upgradeApplicationResponse == firmwareUpgradeNotOK)
-                {
-                    //Proceed at risk
-//                    controlInterface.publishEvent(portName,
-//                                                  new RoboxEvent(
-//                                                      RoboxEventType.FIRMWARE_VERSION_INFO,
-//                                                      response));
-                    if (suppressPrinterIDChecks == false)
-                    {
-
-                        setCommsState(RoboxCommsState.CHECKING_ID);
-                    } else
-                    {
-                        setCommsState(RoboxCommsState.CONNECTED);
-                    }
-                    firmwareCheckInProgress = false;
-                }
-            }
-        });
+        }
     }
 
     private boolean connectToPrinter(String commsPortName)
@@ -622,13 +545,14 @@ public class PrinterHandler extends Thread
             serialPort.setParams(SerialPort.BAUDRATE_115200, SerialPort.DATABITS_8,
                                  SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
             serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
+//            serialPort.purgePort(PURGE_RXCLEAR | PURGE_TXCLEAR);
             portSetupOK = true;
             steno.trace("Finished opening serial port");
         } catch (SerialPortException ex)
         {
             steno.error("Error setting up serial port " + ex.getMessage());
         }
-        
+
         return portSetupOK;
     }
 
@@ -689,15 +613,8 @@ public class PrinterHandler extends Thread
      */
     public synchronized RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite) throws RoboxCommsException
     {
-        try
-        {
-            serialPort.readBytes();
-        } catch (SerialPortException ex)
-        {
-            Logger.getLogger(PrinterHandler.class.getName()).log(Level.SEVERE, null, ex);
-        }
         steno.info("WRITE " + messageToWrite);
-        System.out.println("WRITE");
+//        System.out.println("WRITE");
         RoboxRxPacket receivedPacket = null;
 
         if (commsState == RoboxCommsState.CONNECTED || commsState
@@ -726,7 +643,7 @@ public class PrinterHandler extends Thread
 
                     if (waitCounter >= 20)
                     {
-                        System.out.println("TIMEOUT on printer");
+//                        System.out.println("TIMEOUT on printer");
                         steno.error("No response from printer - disconnecting");
                         throw new SerialPortException(serialPort.getPortName(), "Check availability",
                                                       "Printer did not respond");
@@ -743,7 +660,7 @@ public class PrinterHandler extends Thread
                 {
                     if (packetType != messageToWrite.getPacketType().getExpectedResponse())
                     {
-                        System.out.println("INVALID RESPONSE");
+//                        System.out.println("INVALID RESPONSE");
                         throw new InvalidResponseFromPrinterException("Expected response of type "
                             + messageToWrite.getPacketType().getExpectedResponse().name()
                             + " but got type " + packetType);
@@ -879,7 +796,7 @@ public class PrinterHandler extends Thread
                 throw new ConnectionLostException();
             }
         }
-        System.out.println("WRITE COMPLETED");
+//        System.out.println("WRITE COMPLETED");
         return receivedPacket;
     }
 
@@ -940,6 +857,52 @@ public class PrinterHandler extends Thread
 
     }
 
+    private boolean askIfUpgradeFirmware(int firmwareRevision)
+    {
+        Callable<Boolean> askUpgradeFirmware = new Callable()
+        {
+
+            @Override
+            public Object call() throws Exception
+            {
+                Dialogs.CommandLink firmwareUpgradeOK = new CommandLink(languageBundle.getString(
+                    "dialogs.firmwareUpgradeOKTitle"), languageBundle.getString(
+                                                                            "dialogs.firmwareUpgradeOKMessage"));
+                Dialogs.CommandLink firmwareUpgradeNotOK = new CommandLink(languageBundle.getString(
+                    "dialogs.firmwareUpgradeNotOKTitle"), languageBundle.getString(
+                                                                               "dialogs.firmwareUpgradeNotOKMessage"));
+
+                Action upgradeApplicationResponse = Dialogs.create().title(
+                    languageBundle.getString(
+                        "dialogs.firmwareUpgradeTitle"))
+                    .message(languageBundle.getString(
+                            "dialogs.firmwareVersionError1")
+                        + firmwareRevision
+                        + languageBundle.getString(
+                            "dialogs.firmwareVersionError2")
+                        + requiredFirmwareVersion + ".\n"
+                        + languageBundle.getString(
+                            "dialogs.firmwareVersionError3"))
+                    .masthead(null)
+                    .showCommandLinks(firmwareUpgradeOK,
+                                      firmwareUpgradeOK,
+                                      firmwareUpgradeNotOK);
+
+                return (upgradeApplicationResponse == firmwareUpgradeOK);
+            }
+        };
+        
+        FutureTask<Boolean> askFirmwareUpgradeTask = new FutureTask<>(askUpgradeFirmware);
+        Platform.runLater(askFirmwareUpgradeTask);
+        try
+        {
+            return askFirmwareUpgradeTask.get();
+        } catch (InterruptedException | ExecutionException ex)
+        {
+            return false;
+        }
+    }
+
     /**
      * Ask the user if the unformatted head should be formatted.
      *
@@ -975,8 +938,6 @@ public class PrinterHandler extends Thread
             return askFormatTask.get();
         } catch (InterruptedException | ExecutionException ex)
         {
-            ex.printStackTrace();
-            System.out.println("XXX Exception " + ex);
             return false;
         }
     }
@@ -996,7 +957,7 @@ public class PrinterHandler extends Thread
     private synchronized void setCommsState(RoboxCommsState roboxCommsState)
     {
 
-        System.out.println("SET STATE TO " + roboxCommsState);
+//        System.out.println("SET STATE TO " + roboxCommsState);
         commsState = roboxCommsState;
         if (commsState == RoboxCommsState.CONNECTED)
         {
