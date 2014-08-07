@@ -79,6 +79,14 @@ public class PrinterComponent extends Pane
         setStyle(style);
     }
     
+    public void setColour(Color color) {
+        double colorRGB = color.getRed() * 0x10000 + color.getGreen() * 0x100 + color.getBlue();
+        String colourHexString = String.format("#%06X", colorRGB);
+        String style = "-fx-background-color: " + colourHexString + ";";
+        System.out.println("style is " + style);
+        setStyle(style);
+    }    
+    
     
     public void setSize(int size) {
 //        setPrefWidth(size);
