@@ -65,8 +65,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private ApplicationStatus applicationStatus = null;
     private PrinterUtils printerUtils = null;
 
-//    @FXML
-//    private ListView printerStatusTable;
     @FXML
     private Label ambientTemperatureLabel;
 
@@ -150,7 +148,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private ChangeListener<HeaterMode> nozzleHeaterStatusListener = null;
 
     private Printer lastSelectedPrinter = null;
-    private final Map<PrinterComponent, Printer> printersByComponent = new HashMap<>();
 
     private final int MAX_DATA_POINTS = 180;
 
@@ -321,7 +318,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         printerNameColumn.setCellValueFactory(new PropertyValueFactory<Printer, String>(
             "printerFriendlyName"));
 
-//        initialisePrinterStatusTable(languageBundle);
         initialisePrinterStatusGrid();
         initialiseTemperatureAndHeaterListeners();
     }
@@ -569,7 +565,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         int column = 0;
         for (Printer printer : printerStatusList)
         {
-            PrinterComponent printerComponent = new PrinterComponent();
+            PrinterComponent printerComponent = new PrinterComponent(printer);
             addPrinterToGrid(printerComponent, printer, row, column);
         }
 
@@ -597,7 +593,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                         }
                     } else if (change.wasRemoved())
                     {
-                        for (Printer additem : change.getRemoved())
+                        for (Printer printer : change.getRemoved())
                         {
                         }
                     } else if (change.wasReplaced())
@@ -670,7 +666,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         printerComponent.setProgress(0.3);
         printerComponent.setSize(260);
         printerStatusGrid.add(printerComponent, row, column);
-        printersByComponent.put(printerComponent, printer);
 
         printerComponent.setOnMouseClicked(new EventHandler<MouseEvent>()
         {
@@ -685,131 +680,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private void addPrinterToGridAndLayout(Printer printer)
     {
-        PrinterComponent printerComponent = new PrinterComponent();
+        PrinterComponent printerComponent = new PrinterComponent(printer);
         addPrinterToGrid(printerComponent, printer, 0, 0);
     }
 
-//    private void initialisePrinterStatusTable(ResourceBundle languageBundle)
-//    {
-//        //        printerStatusTable.getColumns().addAll(printerNameColumn);
-////        printerStatusTable.setEditable(false);
-////        printerStatusTable.getSortOrder().add(printerNameColumn);
-//        printerStatusTableSelectionModel = printerStatusTable.getSelectionModel();
-//        printerStatusTable.setItems(printerStatusList);
-//        printerStatusTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-//        printerStatusTable.setCellFactory(new Callback<ListView<Printer>, ListCell<Printer>>()
-//        {
-//            @Override
-//            public ListCell<Printer> call(ListView<Printer> list)
-//            {
-//                return new PrinterStatusListCell();
-//            }
-//        }
-//        );
-//
-//        printerStatusTable.setOnMouseClicked(new EventHandler<MouseEvent>()
-//        {
-//            @Override
-//            public void handle(MouseEvent event)
-//            {
-//                if (event.getClickCount() > 1)
-//                {
-//                    Printer printerToEdit = (Printer) printerStatusTableSelectionModel.getSelectedItem();
-//                    if (printerToEdit != null)
-//                    {
-//                        printerIDDialog.setPrinterToUse(printerToEdit);
-//                        printerIDDialog.setChosenDisplayColour(colourMap.printerToDisplayColour(
-//                            printerToEdit.getPrinterColour()));
-//                        printerIDDialog.setChosenPrinterName(printerToEdit.getPrinterFriendlyName());
-//
-//                        Color currentColour = printerToEdit.getPrinterColour();
-//
-//                        boolean okPressed = printerIDDialog.show();
-//
-//                        if (okPressed)
-//                        {
-//                            try
-//                            {
-//                                printerToEdit.transmitWritePrinterID(
-//                                    printerToEdit.getPrintermodel().get(),
-//                                    printerToEdit.getPrinteredition().get(),
-//                                    printerToEdit.getPrinterweekOfManufacture().get(),
-//                                    printerToEdit.getPrinteryearOfManufacture().get(),
-//                                    printerToEdit.getPrinterpoNumber().get(),
-//                                    printerToEdit.getPrinterserialNumber().get(),
-//                                    printerToEdit.getPrintercheckByte().get(),
-//                                    printerIDDialog.getChosenPrinterName(),
-//                                    colourMap.displayToPrinterColour(
-//                                        printerIDDialog.getChosenDisplayColour()));
-//
-//                                printerToEdit.transmitReadPrinterID();
-//                            } catch (RoboxCommsException ex)
-//                            {
-//                                steno.error("Error writing printer ID");
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        });
-//
-//        Label noPrinterLabel = new Label();
-//        noPrinterLabel.setText(languageBundle.getString(
-//            "sidePanel_printerStatus.noPrinterPlaceholder"));
-//
-//        printerStatusTable.setPlaceholder(noPrinterLabel);
-//
-//        printerStatusList.addListener(new ListChangeListener<Printer>()
-//        {
-//            @Override
-//            public void onChanged(ListChangeListener.Change<? extends Printer> change)
-//            {
-//                while (change.next())
-//                {
-//                    if (change.wasAdded())
-//                    {
-//                        for (Printer additem : change.getAddedSubList())
-//                        {
-//                            printerStatusTableSelectionModel.select(additem);
-//                        }
-//                    } else if (change.wasRemoved())
-//                    {
-//                        for (Printer additem : change.getRemoved())
-//                        {
-//                        }
-//                    } else if (change.wasReplaced())
-//                    {
-//                    } else if (change.wasUpdated())
-//                    {
-//                    }
-//                }
-//            }
-//        });
-//
-//        controlDetailsVisibility();
-//
-//        printerStatusTableSelectionModel.selectedItemProperty().addListener(
-//            new ChangeListener<Printer>()
-//            {
-//
-//                @Override
-//                public void changed(ObservableValue<? extends Printer> ov, Printer t,
-//                    Printer latestSelection)
-//                {
-//                    if (latestSelection != null
-//                    || printerStatusList.size() > 0)
-//                    {
-//                        statusScreenState.setCurrentlySelectedPrinter(latestSelection);
-//                        bindDetails(latestSelection);
-//                    } else
-//                    {
-//                        statusScreenState.setCurrentlySelectedPrinter(latestSelection);
-//                    }
-//
-//                    controlDetailsVisibility();
-//                }
-//            });
-//    }
     private void bindDetails(Printer selectedPrinter)
     {
         nozzleTemperatureLabel.textProperty().unbind();

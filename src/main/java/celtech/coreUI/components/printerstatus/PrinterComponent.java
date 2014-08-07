@@ -8,6 +8,8 @@ import static celtech.printerControl.comms.commands.ColourStringConverter.colour
 import java.io.IOException;
 import java.net.URL;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -23,15 +25,19 @@ public class PrinterComponent extends Pane
 
     @FXML
     private Label name;
-    
+
     @FXML
-    private WhiteProgressBarComponent progressBar;   
-    
+    private WhiteProgressBarComponent progressBar;
+
     @FXML
     private PrinterSVGComponent printerSVG;
+    private final Printer printer;
+    private ChangeListener<String> nameListener;
+    private ChangeListener<Color> colorListener;
 
-    public PrinterComponent()
+    public PrinterComponent(Printer printer)
     {
+        this.printer = printer;
         URL fxml = getClass().getResource("/celtech/resources/fxml/printerstatus/printer.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
         fxmlLoader.setRoot(this);
@@ -44,7 +50,7 @@ public class PrinterComponent extends Pane
         {
             throw new RuntimeException(exception);
         }
-        
+
         initialise();
     }
 
@@ -63,38 +69,56 @@ public class PrinterComponent extends Pane
      */
     private void initialise()
     {
-        
+
         progressBar.setStyle("-fx-progress-color: red;");
         setSize(150);
         name.setTextFill(Color.WHITE);
+        name.setText(printer.getPrinterFriendlyName());
+        setColour(printer.getPrinterColour());
+
+        nameListener = (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
+        {
+            setName(newValue);
+        };
+
+        colorListener = (ObservableValue<? extends Color> observable, Color oldValue, Color newValue) ->
+        {
+            setColour(newValue);
+        };
+
+        printer.printerFriendlyNameProperty().addListener(nameListener);
+        printer.printerColourProperty().addListener(colorListener);
     }
-    
-    public void setProgress(double progress) {
+
+    public void setProgress(double progress)
+    {
         progressBar.setProgress(progress);
     }
-    
-    public void setColour(int color) {
+
+    public void setColour(int color)
+    {
         String colourHexString = String.format("#%06X", color);
         String style = "-fx-background-color: " + colourHexString + ";";
         System.out.println("style is " + style);
         setStyle(style);
     }
-    
-    public void setColour(Color color) {
+
+    public void setColour(Color color)
+    {
         String colourHexString = "#" + colourToString(color);
         String style = "-fx-background-color: " + colourHexString + ";";
         System.out.println("style is " + style);
         setStyle(style);
-    }    
-    
-    
-    public void setSize(int size) {
+    }
+
+    public void setSize(int size)
+    {
 //        setPrefWidth(size);
         size = (int) (size * 0.9d);
         setMinWidth(size);
         setMaxWidth(size);
 //        setPrefHeight(size);
-        setMinHeight(size );
+        setMinHeight(size);
         setMaxHeight(size);
         printerSVG.setSize(size * 0.9);
         progressBar.setLayoutX(size * (1 - 0.846) * 0.5);
@@ -103,7 +127,7 @@ public class PrinterComponent extends Pane
 //        progressBar.setPrefHeight(size * 0.02);
         progressBar.setControlWidth(size * 0.846);
         progressBar.setControlHeight(size * 20.0 / 260.0);
-        
+
         name.setStyle("-fx-font-size: 20;");
         name.setLayoutX(size * 0.02);
         name.setLayoutY(size * 0.85);
