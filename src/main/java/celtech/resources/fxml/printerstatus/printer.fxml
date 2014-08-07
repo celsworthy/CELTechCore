@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import celtech.coreUI.components.printerstatus.*?>
+
+<fx:root type="javafx.scene.layout.Pane" xmlns:fx="http://javafx.com/fxml">
+    <PrinterSVGComponent fx:id="printerSVG"/>
+    <!--ProgressBar fx:id="progressBar" /-->
+    <WhiteProgressBarComponent fx:id="progressBar" />
+    <Label fx:id="name"/>
+</fx:root>
