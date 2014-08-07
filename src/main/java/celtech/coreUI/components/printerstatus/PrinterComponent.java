@@ -3,13 +3,14 @@
  */
 package celtech.coreUI.components.printerstatus;
 
+import celtech.printerControl.Printer;
+import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
 import java.io.IOException;
 import java.net.URL;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
@@ -31,7 +32,7 @@ public class PrinterComponent extends Pane
 
     public PrinterComponent()
     {
-        URL fxml = getClass().getResource("/resources/printer.fxml");
+        URL fxml = getClass().getResource("/celtech/resources/fxml/printerstatus/printer.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
@@ -64,7 +65,7 @@ public class PrinterComponent extends Pane
     {
         
         progressBar.setStyle("-fx-progress-color: red;");
-        setWidth(50);
+        setSize(150);
         name.setTextFill(Color.WHITE);
     }
     
@@ -80,8 +81,7 @@ public class PrinterComponent extends Pane
     }
     
     public void setColour(Color color) {
-        double colorRGB = color.getRed() * 0x10000 + color.getGreen() * 0x100 + color.getBlue();
-        String colourHexString = String.format("#%06X", colorRGB);
+        String colourHexString = "#" + colourToString(color);
         String style = "-fx-background-color: " + colourHexString + ";";
         System.out.println("style is " + style);
         setStyle(style);

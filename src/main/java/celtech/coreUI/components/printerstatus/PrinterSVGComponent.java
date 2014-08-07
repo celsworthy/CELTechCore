@@ -32,7 +32,7 @@ public class PrinterSVGComponent extends Pane
     
     public PrinterSVGComponent()
     {
-        URL fxml = getClass().getResource("/resources/printerSVG.fxml");
+        URL fxml = getClass().getResource("/celtech/resources/fxml/printerstatus/printerSVG.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);

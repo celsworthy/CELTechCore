@@ -144,7 +144,7 @@
             <top>
                 <VBox alignment="TOP_CENTER" fillWidth="true" prefWidth="-1.0" BorderPane.alignment="CENTER">
                     <children>
-                        <VBox>
+                        <VBox prefWidth="300.0">
                             <children>
                                 <Label scaleX="2.0" scaleY="2.0" styleClass="sidePanelTitle" text="%sidePanel_printerStatus.title" translateX="3.0">
                                     <graphic>
@@ -243,17 +243,13 @@
                                 <Insets left="41.0" />
                             </padding>
                         </VBox>
-                        <ListView fx:id="printerStatusTable" prefHeight="120.0">
-                        </ListView>
                   <GridPane fx:id="printerStatusGrid">
                     <columnConstraints>
                       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                     </columnConstraints>
                     <rowConstraints>
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="260.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                   </GridPane>
                         <HBox fx:id="printerStatusHBox" spacing="5.0">

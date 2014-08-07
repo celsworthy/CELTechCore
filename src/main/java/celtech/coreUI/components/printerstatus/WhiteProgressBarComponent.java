@@ -31,7 +31,7 @@ public class WhiteProgressBarComponent extends Pane
     public WhiteProgressBarComponent()
     {
         super();
-        URL fxml = getClass().getResource("/resources/whiteprogressbar.fxml");
+        URL fxml = getClass().getResource("/celtech/resources/fxml/printerstatus/whiteprogressbar.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);

@@ -13,7 +13,6 @@ import celtech.configuration.HeaterMode;
 import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.PrinterIDDialog;
-import celtech.coreUI.components.PrinterStatusListCell;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.printerstatus.PrinterComponent;
 import celtech.coreUI.controllers.StatusScreenState;
@@ -23,7 +22,10 @@ import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.utils.PrinterUtils;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -39,9 +41,6 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -50,7 +49,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.util.Callback;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -67,9 +65,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private ApplicationStatus applicationStatus = null;
     private PrinterUtils printerUtils = null;
 
-    @FXML
-    private ListView printerStatusTable;
-
+//    @FXML
+//    private ListView printerStatusTable;
     @FXML
     private Label ambientTemperatureLabel;
 
@@ -128,7 +125,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private NumberAxis timeAxis;
 
     private final TableColumn printerNameColumn = new TableColumn();
-    private SelectionModel printerStatusTableSelectionModel = null;
 
     private ObservableList<Printer> printerStatusList = null;
     private StatusScreenState statusScreenState = null;
@@ -154,6 +150,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private ChangeListener<HeaterMode> nozzleHeaterStatusListener = null;
 
     private Printer lastSelectedPrinter = null;
+    private final Map<PrinterComponent, Printer> printersByComponent = new HashMap<>();
 
     private final int MAX_DATA_POINTS = 180;
 
@@ -324,7 +321,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         printerNameColumn.setCellValueFactory(new PropertyValueFactory<Printer, String>(
             "printerFriendlyName"));
 
-        initialisePrinterStatusTable(languageBundle);
+//        initialisePrinterStatusTable(languageBundle);
         initialisePrinterStatusGrid();
         initialiseTemperatureAndHeaterListeners();
     }
@@ -587,7 +584,16 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                     {
                         for (Printer printer : change.getAddedSubList())
                         {
-                            addPrinterToGridAndLayout(printer);
+                            Platform.runLater(new Runnable()
+                            {
+
+                                @Override
+                                public void run()
+                                {
+                                    addPrinterToGridAndLayout(printer);
+                                }
+                            });
+
                         }
                     } else if (change.wasRemoved())
                     {
@@ -602,6 +608,58 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                 }
             }
         });
+
+    }
+
+    /**
+     * This is called when the user clicks on the printer component for the given printer, and
+     * handles double-click (go to edit printer details).
+     *
+     * @param event
+     */
+    private void handlePrinterClicked(MouseEvent event, Printer printerToEdit)
+    {
+        if (event.getClickCount() == 1)
+        {
+            statusScreenState.setCurrentlySelectedPrinter(printerToEdit);
+            bindDetails(printerToEdit);
+            controlDetailsVisibility();
+        }
+        if (event.getClickCount() > 1)
+        {
+            if (printerToEdit != null)
+            {
+                printerIDDialog.setPrinterToUse(printerToEdit);
+                printerIDDialog.setChosenDisplayColour(colourMap.printerToDisplayColour(
+                    printerToEdit.getPrinterColour()));
+                printerIDDialog.setChosenPrinterName(printerToEdit.getPrinterFriendlyName());
+
+                boolean okPressed = printerIDDialog.show();
+
+                if (okPressed)
+                {
+                    try
+                    {
+                        printerToEdit.transmitWritePrinterID(
+                            printerToEdit.getPrintermodel().get(),
+                            printerToEdit.getPrinteredition().get(),
+                            printerToEdit.getPrinterweekOfManufacture().get(),
+                            printerToEdit.getPrinteryearOfManufacture().get(),
+                            printerToEdit.getPrinterpoNumber().get(),
+                            printerToEdit.getPrinterserialNumber().get(),
+                            printerToEdit.getPrintercheckByte().get(),
+                            printerIDDialog.getChosenPrinterName(),
+                            colourMap.displayToPrinterColour(
+                                printerIDDialog.getChosenDisplayColour()));
+
+                        printerToEdit.transmitReadPrinterID();
+                    } catch (RoboxCommsException ex)
+                    {
+                        steno.error("Error writing printer ID");
+                    }
+                }
+            }
+        }
     }
 
     private void addPrinterToGrid(PrinterComponent printerComponent, Printer printer, int row,
@@ -610,137 +668,148 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         printerComponent.setName(printer.getPrinterFriendlyName());
         printerComponent.setColour(printer.getPrinterColour());
         printerComponent.setProgress(0.3);
+        printerComponent.setSize(260);
         printerStatusGrid.add(printerComponent, row, column);
+        printersByComponent.put(printerComponent, printer);
+
+        printerComponent.setOnMouseClicked(new EventHandler<MouseEvent>()
+        {
+            @Override
+            public void handle(MouseEvent event)
+            {
+                handlePrinterClicked(event, printer);
+            }
+        });
+
     }
 
     private void addPrinterToGridAndLayout(Printer printer)
     {
         PrinterComponent printerComponent = new PrinterComponent();
-        addPrinterToGrid(printerComponent, printer, 1, 1);
+        addPrinterToGrid(printerComponent, printer, 0, 0);
     }
 
-    private void initialisePrinterStatusTable(ResourceBundle languageBundle)
-    {
-        //        printerStatusTable.getColumns().addAll(printerNameColumn);
-//        printerStatusTable.setEditable(false);
-//        printerStatusTable.getSortOrder().add(printerNameColumn);
-        printerStatusTableSelectionModel = printerStatusTable.getSelectionModel();
-        printerStatusTable.setItems(printerStatusList);
-        printerStatusTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        printerStatusTable.setCellFactory(new Callback<ListView<Printer>, ListCell<Printer>>()
-        {
-            @Override
-            public ListCell<Printer> call(ListView<Printer> list)
-            {
-                return new PrinterStatusListCell();
-            }
-        }
-        );
-
-        printerStatusTable.setOnMouseClicked(new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent event)
-            {
-                if (event.getClickCount() > 1)
-                {
-                    Printer printerToEdit = (Printer) printerStatusTableSelectionModel.getSelectedItem();
-                    if (printerToEdit != null)
-                    {
-                        printerIDDialog.setPrinterToUse(printerToEdit);
-                        printerIDDialog.setChosenDisplayColour(colourMap.printerToDisplayColour(
-                            printerToEdit.getPrinterColour()));
-                        printerIDDialog.setChosenPrinterName(printerToEdit.getPrinterFriendlyName());
-
-                        Color currentColour = printerToEdit.getPrinterColour();
-
-                        boolean okPressed = printerIDDialog.show();
-
-                        if (okPressed)
-                        {
-                            try
-                            {
-                                printerToEdit.transmitWritePrinterID(
-                                    printerToEdit.getPrintermodel().get(),
-                                    printerToEdit.getPrinteredition().get(),
-                                    printerToEdit.getPrinterweekOfManufacture().get(),
-                                    printerToEdit.getPrinteryearOfManufacture().get(),
-                                    printerToEdit.getPrinterpoNumber().get(),
-                                    printerToEdit.getPrinterserialNumber().get(),
-                                    printerToEdit.getPrintercheckByte().get(),
-                                    printerIDDialog.getChosenPrinterName(),
-                                    colourMap.displayToPrinterColour(
-                                        printerIDDialog.getChosenDisplayColour()));
-
-                                printerToEdit.transmitReadPrinterID();
-                            } catch (RoboxCommsException ex)
-                            {
-                                steno.error("Error writing printer ID");
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        Label noPrinterLabel = new Label();
-        noPrinterLabel.setText(languageBundle.getString(
-            "sidePanel_printerStatus.noPrinterPlaceholder"));
-
-        printerStatusTable.setPlaceholder(noPrinterLabel);
-
-        printerStatusList.addListener(new ListChangeListener<Printer>()
-        {
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends Printer> change)
-            {
-                while (change.next())
-                {
-                    if (change.wasAdded())
-                    {
-                        for (Printer additem : change.getAddedSubList())
-                        {
-                            printerStatusTableSelectionModel.select(additem);
-                        }
-                    } else if (change.wasRemoved())
-                    {
-                        for (Printer additem : change.getRemoved())
-                        {
-                        }
-                    } else if (change.wasReplaced())
-                    {
-                    } else if (change.wasUpdated())
-                    {
-                    }
-                }
-            }
-        });
-
-        controlDetailsVisibility();
-
-        printerStatusTableSelectionModel.selectedItemProperty().addListener(
-            new ChangeListener<Printer>()
-            {
-
-                @Override
-                public void changed(ObservableValue<? extends Printer> ov, Printer t,
-                    Printer latestSelection)
-                {
-                    if (latestSelection != null
-                    || printerStatusList.size() > 0)
-                    {
-                        statusScreenState.setCurrentlySelectedPrinter(latestSelection);
-                        bindDetails(latestSelection);
-                    } else
-                    {
-                        statusScreenState.setCurrentlySelectedPrinter(latestSelection);
-                    }
-
-                    controlDetailsVisibility();
-                }
-            });
-    }
-
+//    private void initialisePrinterStatusTable(ResourceBundle languageBundle)
+//    {
+//        //        printerStatusTable.getColumns().addAll(printerNameColumn);
+////        printerStatusTable.setEditable(false);
+////        printerStatusTable.getSortOrder().add(printerNameColumn);
+//        printerStatusTableSelectionModel = printerStatusTable.getSelectionModel();
+//        printerStatusTable.setItems(printerStatusList);
+//        printerStatusTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+//        printerStatusTable.setCellFactory(new Callback<ListView<Printer>, ListCell<Printer>>()
+//        {
+//            @Override
+//            public ListCell<Printer> call(ListView<Printer> list)
+//            {
+//                return new PrinterStatusListCell();
+//            }
+//        }
+//        );
+//
+//        printerStatusTable.setOnMouseClicked(new EventHandler<MouseEvent>()
+//        {
+//            @Override
+//            public void handle(MouseEvent event)
+//            {
+//                if (event.getClickCount() > 1)
+//                {
+//                    Printer printerToEdit = (Printer) printerStatusTableSelectionModel.getSelectedItem();
+//                    if (printerToEdit != null)
+//                    {
+//                        printerIDDialog.setPrinterToUse(printerToEdit);
+//                        printerIDDialog.setChosenDisplayColour(colourMap.printerToDisplayColour(
+//                            printerToEdit.getPrinterColour()));
+//                        printerIDDialog.setChosenPrinterName(printerToEdit.getPrinterFriendlyName());
+//
+//                        Color currentColour = printerToEdit.getPrinterColour();
+//
+//                        boolean okPressed = printerIDDialog.show();
+//
+//                        if (okPressed)
+//                        {
+//                            try
+//                            {
+//                                printerToEdit.transmitWritePrinterID(
+//                                    printerToEdit.getPrintermodel().get(),
+//                                    printerToEdit.getPrinteredition().get(),
+//                                    printerToEdit.getPrinterweekOfManufacture().get(),
+//                                    printerToEdit.getPrinteryearOfManufacture().get(),
+//                                    printerToEdit.getPrinterpoNumber().get(),
+//                                    printerToEdit.getPrinterserialNumber().get(),
+//                                    printerToEdit.getPrintercheckByte().get(),
+//                                    printerIDDialog.getChosenPrinterName(),
+//                                    colourMap.displayToPrinterColour(
+//                                        printerIDDialog.getChosenDisplayColour()));
+//
+//                                printerToEdit.transmitReadPrinterID();
+//                            } catch (RoboxCommsException ex)
+//                            {
+//                                steno.error("Error writing printer ID");
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        });
+//
+//        Label noPrinterLabel = new Label();
+//        noPrinterLabel.setText(languageBundle.getString(
+//            "sidePanel_printerStatus.noPrinterPlaceholder"));
+//
+//        printerStatusTable.setPlaceholder(noPrinterLabel);
+//
+//        printerStatusList.addListener(new ListChangeListener<Printer>()
+//        {
+//            @Override
+//            public void onChanged(ListChangeListener.Change<? extends Printer> change)
+//            {
+//                while (change.next())
+//                {
+//                    if (change.wasAdded())
+//                    {
+//                        for (Printer additem : change.getAddedSubList())
+//                        {
+//                            printerStatusTableSelectionModel.select(additem);
+//                        }
+//                    } else if (change.wasRemoved())
+//                    {
+//                        for (Printer additem : change.getRemoved())
+//                        {
+//                        }
+//                    } else if (change.wasReplaced())
+//                    {
+//                    } else if (change.wasUpdated())
+//                    {
+//                    }
+//                }
+//            }
+//        });
+//
+//        controlDetailsVisibility();
+//
+//        printerStatusTableSelectionModel.selectedItemProperty().addListener(
+//            new ChangeListener<Printer>()
+//            {
+//
+//                @Override
+//                public void changed(ObservableValue<? extends Printer> ov, Printer t,
+//                    Printer latestSelection)
+//                {
+//                    if (latestSelection != null
+//                    || printerStatusList.size() > 0)
+//                    {
+//                        statusScreenState.setCurrentlySelectedPrinter(latestSelection);
+//                        bindDetails(latestSelection);
+//                    } else
+//                    {
+//                        statusScreenState.setCurrentlySelectedPrinter(latestSelection);
+//                    }
+//
+//                    controlDetailsVisibility();
+//                }
+//            });
+//    }
     private void bindDetails(Printer selectedPrinter)
     {
         nozzleTemperatureLabel.textProperty().unbind();
@@ -887,8 +956,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private void controlDetailsVisibility()
     {
-        boolean visible = printerStatusList.size() > 0
-            && !printerStatusTableSelectionModel.isEmpty();
+        boolean visible = printerStatusList.size() > 0;
 
         temperatureVBox.setVisible(visible);
         temperatureChart.setVisible(visible);
