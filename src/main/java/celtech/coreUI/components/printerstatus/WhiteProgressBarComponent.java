@@ -55,7 +55,10 @@ public class WhiteProgressBarComponent extends Pane
 
     public void setProgress(double progress)
     {
-        this.progress = progress;
+        if (progress != this.progress) {
+            this.progress = progress;
+            redraw();
+        }
     }
 
     void setControlWidth(double width)
