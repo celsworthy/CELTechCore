@@ -137,13 +137,6 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
         progressBar.setProgress(progress);
     }
 
-    public void setColour(int color)
-    {
-        String colourHexString = String.format("#%06X", color);
-        String style = "-fx-background-color: " + colourHexString + ";";
-        innerPane.setStyle(style);
-    }
-
     public void setColour(Color color)
     {
         String colourHexString = "#" + colourToString(color);
@@ -168,11 +161,12 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
             redraw();
         }
     }
-    
+
     @Override
     public void propertyChange(PropertyChangeEvent evt)
     {
-        if (evt.getPropertyName().equals("printStatus")) {
+        if (evt.getPropertyName().equals("printStatus"))
+        {
             PrinterStatusEnumeration newStatus = (PrinterStatusEnumeration) evt.getNewValue();
             updateStatus(newStatus);
         }
@@ -181,7 +175,8 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
     private void updateStatus(PrinterStatusEnumeration newStatus)
     {
         Status status;
-        switch (newStatus) {
+        switch (newStatus)
+        {
             case ERROR:
                 status = Status.ERROR;
                 break;
@@ -201,8 +196,10 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
         }
         setStatus(status);
     }
-    
 
+    /**
+     * Redraw the component. Reposition child nodes according to selection state and size.
+     */
     private void redraw()
     {
         int sizePixels;

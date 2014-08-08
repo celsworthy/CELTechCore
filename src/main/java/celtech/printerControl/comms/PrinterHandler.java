@@ -685,8 +685,6 @@ public class PrinterHandler extends Thread
 
                 serialPort.writeBytes(outputBuffer);
 
-                int len = -1;
-
                 int waitCounter = 0;
                 while (serialPort.getInputBufferBytesCount() <= 0)
                 {
