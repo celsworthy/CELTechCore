@@ -563,7 +563,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         int column = 0;
         for (Printer printer : printerStatusList)
         {
-            PrinterComponent printerComponent = new PrinterComponent(printer);
+            PrinterComponent printerComponent = createPrinterComponentForPrinter(printer);
             addPrinterToGrid(printerComponent, printer, row, column);
         }
 
@@ -607,7 +607,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     /**
      * This is called when the user clicks on the printer component for the given printer, and
-     * handles double-click (go to edit printer details).
+     * handles click (select printer) and double-click (go to edit printer details).
      *
      * @param event
      */
@@ -623,21 +623,30 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         }
         if (event.getClickCount() > 1)
         {
-            if (printerToEdit != null)
+            showEditPrinterDetails(printerToEdit);
+        }
+    }
+
+    /**
+     * Show the printerIDDialog for the given printer.
+     */
+    private void showEditPrinterDetails(Printer printerToEdit)
+    {
+        if (printerToEdit != null)
+        {
+            printerIDDialog.setPrinterToUse(printerToEdit);
+            printerIDDialog.setChosenDisplayColour(colourMap.printerToDisplayColour(
+                printerToEdit.getPrinterColour()));
+            printerIDDialog.setChosenPrinterName(printerToEdit.getPrinterFriendlyName());
+            
+            boolean okPressed = printerIDDialog.show();
+            
+            if (okPressed)
             {
-                printerIDDialog.setPrinterToUse(printerToEdit);
-                printerIDDialog.setChosenDisplayColour(colourMap.printerToDisplayColour(
-                    printerToEdit.getPrinterColour()));
-                printerIDDialog.setChosenPrinterName(printerToEdit.getPrinterFriendlyName());
-
-                boolean okPressed = printerIDDialog.show();
-
-                if (okPressed)
+                try
                 {
-                    try
-                    {
-                        printerToEdit.transmitWritePrinterID(
-                            printerToEdit.getPrintermodel().get(),
+                    printerToEdit.transmitWritePrinterID(
+                        printerToEdit.getPrintermodel().get(),
                             printerToEdit.getPrinteredition().get(),
                             printerToEdit.getPrinterweekOfManufacture().get(),
                             printerToEdit.getPrinteryearOfManufacture().get(),
@@ -647,12 +656,11 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                             printerIDDialog.getChosenPrinterName(),
                             colourMap.displayToPrinterColour(
                                 printerIDDialog.getChosenDisplayColour()));
-
-                        printerToEdit.transmitReadPrinterID();
-                    } catch (RoboxCommsException ex)
-                    {
-                        steno.error("Error writing printer ID");
-                    }
+                    
+                    printerToEdit.transmitReadPrinterID();
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error writing printer ID");
                 }
             }
         }
@@ -663,21 +671,25 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     {
         printerComponent.setSize(PrinterComponent.Size.SIZE_LARGE);
         printerStatusGrid.add(printerComponent, row, column);
+    }
 
-        printerComponent.setOnMouseClicked(new EventHandler<MouseEvent>()
+    /**
+     * Create the PrinterComponent for the given printer and set up any listeners on 
+     * component events.
+     */
+    private PrinterComponent createPrinterComponentForPrinter(Printer printer)
+    {
+        PrinterComponent printerComponent = new PrinterComponent(printer);
+        printerComponent.setOnMouseClicked((MouseEvent event) ->
         {
-            @Override
-            public void handle(MouseEvent event)
-            {
-                handlePrinterClicked(event, printer);
-            }
+            handlePrinterClicked(event, printer);
         });
-
+        return printerComponent;
     }
 
     private void addPrinterToGridAndLayout(Printer printer)
     {
-        PrinterComponent printerComponent = new PrinterComponent(printer);
+        PrinterComponent printerComponent = createPrinterComponentForPrinter(printer);
         addPrinterToGrid(printerComponent, printer, 0, 0);
     }
 

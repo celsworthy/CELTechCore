@@ -34,9 +34,12 @@ public class PrinterComponent extends Pane
 
     public enum Size
     {
-
         SIZE_SMALL, SIZE_MEDIUM, SIZE_LARGE;
     }
+    
+    public enum Status {
+        READY, PRINTING, PAUSED, NOTIFICATION, ERROR
+    }    
 
     @FXML
     private Label name;
@@ -71,6 +74,10 @@ public class PrinterComponent extends Pane
         }
 
         initialise();
+    }
+    
+    public void setStatus(Status status) {
+        printerSVG.setStatus(status);
     }
 
     public void setName(String value)
@@ -203,7 +210,7 @@ public class PrinterComponent extends Pane
         setMaxHeight(sizePixels);
 
         double progressBarX = (sizePixels - progressBarWidth) / 2.0;
-        double progressBarY = sizePixels - progressBarYOffset;
+        double progressBarY = sizePixels - progressBarYOffset - progressBarHeight;
 
         innerPane.setMinWidth(sizePixels - borderWidth * 2);
         innerPane.setMaxWidth(sizePixels - borderWidth * 2);

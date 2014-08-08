@@ -6,12 +6,11 @@ package celtech.coreUI.components.printerstatus;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.layout.Pane;
-import javafx.scene.shape.SVGPath;
+import javafx.scene.transform.Scale;
 
 /**
  *
@@ -20,15 +19,22 @@ import javafx.scene.shape.SVGPath;
 public class PrinterSVGComponent extends Pane
 {
     
-    @FXML Pane groupPane;
-    @FXML SVGPath p1;
-    @FXML SVGPath p2;
-    @FXML SVGPath p3;
-    @FXML SVGPath p4;
-    @FXML SVGPath p5;
-    @FXML SVGPath p6;
+    @FXML Pane printerIcon;
     
-    Set<SVGPath> paths = new HashSet<>();
+    @FXML Pane readyIcon;
+    @FXML Pane printingIcon;
+    @FXML Pane pausedIcon;
+    @FXML Pane notificationIcon;
+    @FXML Pane errorIcon;
+
+    private void hideAllIcons()
+    {
+        readyIcon.setVisible(false);
+        printingIcon.setVisible(false);
+        pausedIcon.setVisible(false);
+        notificationIcon.setVisible(false);
+        errorIcon.setVisible(false);
+    }
     
     public PrinterSVGComponent()
     {
@@ -44,24 +50,34 @@ public class PrinterSVGComponent extends Pane
         {
             throw new RuntimeException(exception);
         }
-        
-        paths.add(p1);
-        paths.add(p2);
-        paths.add(p3);
-        paths.add(p4);
-        paths.add(p5);
-        paths.add(p6);
-        
-        for (SVGPath path : paths)
-        {
-            path.setStyle("-fx-fill: white;");
+    }
+    
+    public void setStatus(PrinterComponent.Status status) {
+        hideAllIcons();
+
+        switch (status) {
+            case READY: 
+                readyIcon.setVisible(true);
+                break;
+            case PAUSED: 
+                pausedIcon.setVisible(true);
+                break;
+            case NOTIFICATION: 
+                notificationIcon.setVisible(true);
+                break;
+            case PRINTING: 
+                printingIcon.setVisible(true);
+                break;
+            case ERROR: 
+                errorIcon.setVisible(true);
+                break;                
         }
-        
     }
     
     public void setSize(double size) {
-        setScaleX(size/260.0);
-        setScaleY(size/260.0);
+        Scale scale = new Scale(size/260.0, size/260.0, 0, 0);
+        getTransforms().clear();
+        getTransforms().add(scale);
     }
     
 }
