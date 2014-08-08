@@ -26,6 +26,8 @@ import celtech.services.slicer.SlicerService;
 import celtech.utils.PrinterUtils;
 import celtech.utils.SystemUtils;
 import celtech.utils.threed.ThreeDUtils;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,9 +35,11 @@ import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -140,6 +144,7 @@ public class PrintQueue implements ControllableService
      * The total number of layers in the model being printed
      */
     private final IntegerProperty progressNumLayers = new SimpleIntegerProperty();
+    private Set<PropertyChangeListener> propertyChangeListeners = new HashSet<>();
 
     public PrintQueue(Printer associatedPrinter)
     {
@@ -759,6 +764,10 @@ public class PrintQueue implements ControllableService
     {
         return printState;
     }
+    
+    public void addPrintStatusListener(PropertyChangeListener listener) {
+        propertyChangeListeners.add(listener);
+    }
 
     private void setPrintStatus(PrinterStatusEnumeration newState)
     {
@@ -839,8 +848,21 @@ public class PrintQueue implements ControllableService
                 break;
         }
         setPrintProgressTitle(newState.getDescription());
+        PrinterStatusEnumeration oldState = printState;
         printState = newState;
         consideringPrintRequest = false;
+        
+        firePropertyChange("printStatus", oldState, printState);
+    }
+
+    private void firePropertyChange(String propertyName, Object oldState, Object newState)
+    {
+        for (PropertyChangeListener propertyChangeListener : propertyChangeListeners)
+        {
+            PropertyChangeEvent propertyChangeEvent = new PropertyChangeEvent(this, propertyName,
+                oldState, newState);
+            propertyChangeListener.propertyChange(propertyChangeEvent);
+        }
     }
 
     private void setDialogRequired(boolean value)

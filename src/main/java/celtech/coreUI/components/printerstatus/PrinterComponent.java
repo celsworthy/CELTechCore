@@ -5,18 +5,20 @@ package celtech.coreUI.components.printerstatus;
 
 import celtech.coreUI.DisplayManager;
 import celtech.printerControl.Printer;
+import celtech.printerControl.PrinterStatusEnumeration;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
 import com.sun.javafx.tk.FontMetrics;
 import com.sun.javafx.tk.Toolkit;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
-import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -26,7 +28,7 @@ import javafx.scene.text.Font;
  *
  * @author tony
  */
-public class PrinterComponent extends Pane
+public class PrinterComponent extends Pane implements PropertyChangeListener
 {
 
     private boolean selected;
@@ -34,12 +36,15 @@ public class PrinterComponent extends Pane
 
     public enum Size
     {
+
         SIZE_SMALL, SIZE_MEDIUM, SIZE_LARGE;
     }
-    
-    public enum Status {
+
+    public enum Status
+    {
+
         READY, PRINTING, PAUSED, NOTIFICATION, ERROR
-    }    
+    }
 
     @FXML
     private Label name;
@@ -75,8 +80,9 @@ public class PrinterComponent extends Pane
 
         initialise();
     }
-    
-    public void setStatus(Status status) {
+
+    public void setStatus(Status status)
+    {
         printerSVG.setStatus(status);
     }
 
@@ -96,17 +102,16 @@ public class PrinterComponent extends Pane
     private void initialise()
     {
 
-
         setStyle("-fx-background-color: white;");
 
         name.setTextFill(Color.WHITE);
         name.setText(printer.getPrinterFriendlyName());
         setColour(printer.getPrinterColour());
-        
+
         progressListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                setProgress((double) newValue);
-            };
+        {
+            setProgress((double) newValue);
+        };
 
         nameListener = (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
         {
@@ -121,8 +126,9 @@ public class PrinterComponent extends Pane
         printer.printerFriendlyNameProperty().addListener(nameListener);
         printer.printerColourProperty().addListener(colorListener);
         printer.getPrintQueue().progressProperty().addListener(progressListener);
-       
+
         setSize(Size.SIZE_LARGE);
+        updateStatus(printer.getPrintQueue().getPrintStatus());
     }
 
     public void setProgress(double progress)
@@ -161,6 +167,40 @@ public class PrinterComponent extends Pane
             redraw();
         }
     }
+    
+    @Override
+    public void propertyChange(PropertyChangeEvent evt)
+    {
+        if (evt.getPropertyName().equals("printStatus")) {
+            PrinterStatusEnumeration newStatus = (PrinterStatusEnumeration) evt.getNewValue();
+            updateStatus(newStatus);
+        }
+    }
+
+    private void updateStatus(PrinterStatusEnumeration newStatus)
+    {
+        Status status;
+        switch (newStatus) {
+            case ERROR:
+                status = Status.ERROR;
+                break;
+            case EXECUTING_MACRO:
+            case POST_PROCESSING:
+            case PRINTING:
+            case SENDING_TO_PRINTER:
+            case SLICING:
+                status = Status.PRINTING;
+                break;
+            case PAUSED:
+                status = Status.PAUSED;
+                break;
+            default:
+                status = Status.READY;
+                break;
+        }
+        setStatus(status);
+    }
+    
 
     private void redraw()
     {
@@ -223,6 +263,12 @@ public class PrinterComponent extends Pane
         progressBar.setLayoutY(progressBarY);
         progressBar.setControlWidth(progressBarWidth);
         progressBar.setControlHeight(progressBarHeight);
+
+        for (Node child : innerPane.getChildren())
+        {
+            child.setTranslateX(-borderWidth);
+            child.setTranslateY(-borderWidth);
+        }
 
         name.setStyle("-fx-font-size: " + fontSize + "pt !important;");
         name.setLayoutX(progressBarX);

@@ -23,18 +23,15 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.utils.PrinterUtils;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Side;
-import javafx.scene.Node;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
@@ -564,7 +561,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         for (Printer printer : printerStatusList)
         {
             PrinterComponent printerComponent = createPrinterComponentForPrinter(printer);
-            addPrinterToGrid(printerComponent, printer, row, column);
+            addPrinterComponentToGrid(printerComponent, row, column);
         }
 
         printerStatusList.addListener(new ListChangeListener<Printer>()
@@ -578,16 +575,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                     {
                         for (Printer printer : change.getAddedSubList())
                         {
-                            Platform.runLater(new Runnable()
-                            {
-
-                                @Override
-                                public void run()
-                                {
-                                    addPrinterToGridAndLayout(printer);
-                                }
-                            });
-
+                            addPrinterToGridAndLayout(printer);
                         }
                     } else if (change.wasRemoved())
                     {
@@ -611,53 +599,53 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
      *
      * @param event
      */
-    private void handlePrinterClicked(MouseEvent event, Printer printerToEdit)
+    private void handlePrinterClicked(MouseEvent event, Printer printer)
     {
         if (event.getClickCount() == 1)
         {
-            statusScreenState.setCurrentlySelectedPrinter(printerToEdit);
-            bindDetails(printerToEdit);
+            statusScreenState.setCurrentlySelectedPrinter(printer);
+            bindDetails(printer);
             controlDetailsVisibility();
             PrinterComponent printerComponent = (PrinterComponent) event.getSource();
             printerComponent.setSelected(true);
         }
         if (event.getClickCount() > 1)
         {
-            showEditPrinterDetails(printerToEdit);
+            showEditPrinterDetails(printer);
         }
     }
 
     /**
      * Show the printerIDDialog for the given printer.
      */
-    private void showEditPrinterDetails(Printer printerToEdit)
+    private void showEditPrinterDetails(Printer printer)
     {
-        if (printerToEdit != null)
+        if (printer != null)
         {
-            printerIDDialog.setPrinterToUse(printerToEdit);
+            printerIDDialog.setPrinterToUse(printer);
             printerIDDialog.setChosenDisplayColour(colourMap.printerToDisplayColour(
-                printerToEdit.getPrinterColour()));
-            printerIDDialog.setChosenPrinterName(printerToEdit.getPrinterFriendlyName());
-            
+                printer.getPrinterColour()));
+            printerIDDialog.setChosenPrinterName(printer.getPrinterFriendlyName());
+
             boolean okPressed = printerIDDialog.show();
-            
+
             if (okPressed)
             {
                 try
                 {
-                    printerToEdit.transmitWritePrinterID(
-                        printerToEdit.getPrintermodel().get(),
-                            printerToEdit.getPrinteredition().get(),
-                            printerToEdit.getPrinterweekOfManufacture().get(),
-                            printerToEdit.getPrinteryearOfManufacture().get(),
-                            printerToEdit.getPrinterpoNumber().get(),
-                            printerToEdit.getPrinterserialNumber().get(),
-                            printerToEdit.getPrintercheckByte().get(),
-                            printerIDDialog.getChosenPrinterName(),
-                            colourMap.displayToPrinterColour(
-                                printerIDDialog.getChosenDisplayColour()));
-                    
-                    printerToEdit.transmitReadPrinterID();
+                    printer.transmitWritePrinterID(
+                        printer.getPrintermodel().get(),
+                        printer.getPrinteredition().get(),
+                        printer.getPrinterweekOfManufacture().get(),
+                        printer.getPrinteryearOfManufacture().get(),
+                        printer.getPrinterpoNumber().get(),
+                        printer.getPrinterserialNumber().get(),
+                        printer.getPrintercheckByte().get(),
+                        printerIDDialog.getChosenPrinterName(),
+                        colourMap.displayToPrinterColour(
+                            printerIDDialog.getChosenDisplayColour()));
+
+                    printer.transmitReadPrinterID();
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error writing printer ID");
@@ -666,7 +654,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         }
     }
 
-    private void addPrinterToGrid(PrinterComponent printerComponent, Printer printer, int row,
+    private void addPrinterComponentToGrid(PrinterComponent printerComponent, int row,
         int column)
     {
         printerComponent.setSize(PrinterComponent.Size.SIZE_LARGE);
@@ -674,8 +662,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     }
 
     /**
-     * Create the PrinterComponent for the given printer and set up any listeners on 
-     * component events.
+     * Create the PrinterComponent for the given printer and set up any listeners on component
+     * events.
      */
     private PrinterComponent createPrinterComponentForPrinter(Printer printer)
     {
@@ -690,7 +678,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private void addPrinterToGridAndLayout(Printer printer)
     {
         PrinterComponent printerComponent = createPrinterComponentForPrinter(printer);
-        addPrinterToGrid(printerComponent, printer, 0, 0);
+        addPrinterComponentToGrid(printerComponent, 0, 0);
     }
 
     private void bindDetails(Printer selectedPrinter)
