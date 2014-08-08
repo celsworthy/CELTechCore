@@ -865,6 +865,10 @@ public class PrintQueue implements ControllableService
         }
     }
 
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeListeners.add(listener);
+    }
+    
     private void setDialogRequired(boolean value)
     {
         dialogRequired.set(value);

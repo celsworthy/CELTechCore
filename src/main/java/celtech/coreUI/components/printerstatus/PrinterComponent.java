@@ -126,6 +126,7 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
         printer.printerFriendlyNameProperty().addListener(nameListener);
         printer.printerColourProperty().addListener(colorListener);
         printer.getPrintQueue().progressProperty().addListener(progressListener);
+        printer.getPrintQueue().addPropertyChangeListener(this);
 
         setSize(Size.SIZE_LARGE);
         updateStatus(printer.getPrintQueue().getPrintStatus());
