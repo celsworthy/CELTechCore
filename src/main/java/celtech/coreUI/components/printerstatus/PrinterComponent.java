@@ -13,16 +13,17 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
+import javafx.application.Platform;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
 /**
  *
@@ -47,7 +48,7 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
     }
 
     @FXML
-    private Label name;
+    private Text name;
 
     @FXML
     private Pane innerPane;
@@ -104,8 +105,9 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
 
         setStyle("-fx-background-color: white;");
 
-        name.setTextFill(Color.WHITE);
+        name.setFill(Color.WHITE);
         name.setText(printer.getPrinterFriendlyName());
+//        name.getStyleClass().add("printer-component-label");
         setColour(printer.getPrinterColour());
 
         progressListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
@@ -268,13 +270,15 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
             child.setTranslateY(-borderWidth);
         }
 
+        System.out.println("set name font size: " + "-fx-font-size: " + fontSize + "pt !important;");
         name.setStyle("-fx-font-size: " + fontSize + "pt !important;");
         name.setLayoutX(progressBarX);
 
         Font primaryFont = DisplayManager.getInstance().getPrimaryFont();
-        FontMetrics fontMetrics = Toolkit.getToolkit().getFontLoader().getFontMetrics(primaryFont);
-        double xHeight = fontMetrics.getXheight() * fontSize / primaryFont.getSize();
-        nameLayoutY = sizePixels - (progressBarYOffset / 2) + xHeight / 2;
+        Font actualFont = new Font(primaryFont.getName(), fontSize);
+        FontMetrics fontMetrics = Toolkit.getToolkit().getFontLoader().getFontMetrics(actualFont);
+
+        nameLayoutY = sizePixels - (progressBarYOffset / 2) + fontMetrics.getDescent();
         name.setLayoutY(nameLayoutY);
     }
 }

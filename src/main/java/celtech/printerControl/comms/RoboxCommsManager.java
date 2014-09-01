@@ -139,7 +139,7 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
             {
                 for (String port : activePorts)
                 {
-                    steno.info("Found printer on " + port);
+//                    steno.info("Found printer on " + port);
                     if (pendingPrinterConnections.containsKey(port))
                     {
                         //A connection to this printer is pending...
