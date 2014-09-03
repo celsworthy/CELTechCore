@@ -126,11 +126,11 @@ public class PrinterImpl implements Printer
     private final LineChart.Series<Number, Number> bedTargetTemperatureSeries = new LineChart.Series<>();
     private final LineChart.Series<Number, Number> nozzleTargetTemperatureSeries = new LineChart.Series<>();
     private final LineChart.Data<Number, Number> ambientTargetPoint = new LineChart.Data<>(
-        NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 5, 0);
+        NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 10, 0);
     private final LineChart.Data<Number, Number> bedTargetPoint = new LineChart.Data<>(
-        NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 5, 0);
+        NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 10, 0);
     private final LineChart.Data<Number, Number> nozzleTargetPoint = new LineChart.Data<>(
-        NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 5, 0);
+        NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 10, 0);
 
     private long lastTimestamp = System.currentTimeMillis();
 

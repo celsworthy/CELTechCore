@@ -63,6 +63,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     @FXML
     private Label ambientTemperatureLabel;
+    
+    @FXML
+    private GridPane targetTemperatureColumn;
 
     @FXML
     private RestrictedNumberField ambientTargetTemperature;
@@ -297,6 +300,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         printerNameColumn.setCellValueFactory(new PropertyValueFactory<Printer, String>(
             "printerFriendlyName"));
 
+        targetTemperatureColumn.setVisible(false);
+        
         initialiseTemperatureChart();
         initialisePrinterStatusGrid();
         initialiseTemperatureAndHeaterListeners();

@@ -812,29 +812,38 @@
  * Temperature graph
  */
 
-.default-color0.chart-series-line { -fx-stroke: graph_line_green; }
-.default-color1.chart-series-line { -fx-stroke: graph_line_yellow; }
-.default-color2.chart-series-line { -fx-stroke: graph_line_red; }
+.default-color0.chart-series-line { 
+    -fx-stroke: graph_line_green;
+    -fx-stroke-width: 3;
+}
+.default-color1.chart-series-line { -fx-stroke: graph_line_yellow; -fx-stroke-width: 3;}
+.default-color2.chart-series-line { -fx-stroke: graph_line_red; -fx-stroke-width: 3;}
 .default-color0.chart-line-symbol {visibility: hidden;}
 .default-color1.chart-line-symbol {visibility: hidden;}
 .default-color2.chart-line-symbol {visibility: hidden;}
-.default-color3.chart-line-symbol { /* solid diamond */
+.default-color3.chart-line-symbol { /* solid triangle */
     -fx-background-color: graph_setpoint_green;
     -fx-background-radius: 0;
     /*-fx-padding: 7px 5px 7px 5px;*/
-    -fx-shape: "M0,3 L5,0 L5,6 L0,3 Z";
+    -fx-shape: "M0,6 L12,0 L12,12 L0,6 Z";
+    -fx-scale-x: 2;
+    -fx-scale-y: 2;
 }
-.default-color4.chart-line-symbol { /* solid diamond */
+.default-color4.chart-line-symbol { /* solid triangle */
     -fx-background-color: graph_setpoint_yellow;
     -fx-background-radius: 0;
     /*-fx-padding: 7px 5px 7px 5px;*/
-    -fx-shape: "M0,3 L5,0 L5,6 L0,3 Z";
+    -fx-shape: "M0,6 L12,0 L12,12 L0,6 Z";
+    -fx-scale-x: 2;
+    -fx-scale-y: 2;
 }
-.default-color5.chart-line-symbol { /* solid diamond */
+.default-color5.chart-line-symbol { /* solid triangle */
     -fx-background-color: graph_setpoint_red;
     -fx-background-radius: 0;
     /*-fx-padding: 7px 5px 7px 5px;*/
-    -fx-shape: "M0,3 L5,0 L5,6 L0,3 Z";
+    -fx-shape: "M0,6 L12,0 L12,12 L0,6 Z";
+    -fx-scale-x: 2;
+    -fx-scale-y: 2;
 }
 
 .temperatureXLabel {
@@ -859,7 +868,7 @@
 }
 
 .axis .text {
-  -fx-font-size: 10pt;
+    -fx-font-size: 10pt;
 }
 
 .axis-tick-mark {
@@ -1363,7 +1372,7 @@ table-view .column-header-background {
     -fx-border-style: solid;
     -fx-border-radius: 2;
 }    
-    
+
 .blue-inset-panel{
     -fx-background-color: blue_colour;
 }
