@@ -25,6 +25,9 @@
     graph_line_green: #1eb43c;
     graph_line_yellow: #ffc800;
     graph_line_blue: #0096e1;
+    graph_setpoint_red: #8c0000;
+    graph_setpoint_green: #145019;
+    graph_setpoint_yellow: #a07800;    
 }
 
 .standardPanel{
@@ -809,28 +812,26 @@
  * Temperature graph
  */
 
-
-
-.default-color0.chart-series-line { -fx-stroke: green; }
-.default-color1.chart-series-line { -fx-stroke: yellow; }
-.default-color2.chart-series-line { -fx-stroke: darkviolet; }
+.default-color0.chart-series-line { -fx-stroke: graph_line_green; }
+.default-color1.chart-series-line { -fx-stroke: graph_line_yellow; }
+.default-color2.chart-series-line { -fx-stroke: graph_line_red; }
 .default-color0.chart-line-symbol {visibility: hidden;}
 .default-color1.chart-line-symbol {visibility: hidden;}
 .default-color2.chart-line-symbol {visibility: hidden;}
 .default-color3.chart-line-symbol { /* solid diamond */
-    -fx-background-color: green;
+    -fx-background-color: graph_setpoint_green;
     -fx-background-radius: 0;
     /*-fx-padding: 7px 5px 7px 5px;*/
     -fx-shape: "M0,3 L5,0 L5,6 L0,3 Z";
 }
 .default-color4.chart-line-symbol { /* solid diamond */
-    -fx-background-color: yellow;
+    -fx-background-color: graph_setpoint_yellow;
     -fx-background-radius: 0;
     /*-fx-padding: 7px 5px 7px 5px;*/
     -fx-shape: "M0,3 L5,0 L5,6 L0,3 Z";
 }
 .default-color5.chart-line-symbol { /* solid diamond */
-    -fx-background-color: darkviolet;
+    -fx-background-color: graph_setpoint_red;
     -fx-background-radius: 0;
     /*-fx-padding: 7px 5px 7px 5px;*/
     -fx-shape: "M0,3 L5,0 L5,6 L0,3 Z";
@@ -858,7 +859,7 @@
 }
 
 .axis .text {
-  -fx-font-size: 11pt;
+  -fx-font-size: 10pt;
 }
 
 .axis-tick-mark {

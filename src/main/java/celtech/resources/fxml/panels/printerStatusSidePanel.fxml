@@ -273,10 +273,9 @@
             <HBox prefHeight="20.0" prefWidth="260.0" style="-fx-background-color: dark_grey;" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0">
                <children>
                   <Text fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-size: 9;" text="Key:" translateX="15.0" />
-                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="graph-red" text="● Nozzle 1" translateX="19.0" />
-                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="graph-blue" text="● Nozzle 2" translateX="25.0" />
-                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="graph-yellow" text="● Bed" translateX="32.0" />
-                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="graph-green" text="● Ambient" translateX="40.0" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="graph-red" text="● Nozzle" translateX="35.0" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="graph-yellow" text="● Bed" translateX="70.0" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="graph-green" text="● Ambient" translateX="105.0" />
                </children>
             </HBox>
             </children>
