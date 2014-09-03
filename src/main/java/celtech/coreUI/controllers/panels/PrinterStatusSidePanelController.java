@@ -692,20 +692,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     }
 
     /**
-     * Add the given printer component to the given grid coordinates.
-     */
-    private void addPrinterComponentToGrid(PrinterComponent printerComponent, int row,
-        int column)
-    {
-        printerComponent.setSize(PrinterComponent.Size.SIZE_LARGE);
-        printerStatusGrid.add(printerComponent, row, column);
-    }
-    
-    private void removePrinterComponentFromGrid(PrinterComponent printerComponent) {
-        printerStatusGrid.getChildren().remove(printerComponent);
-    }
-
-    /**
      * Create the PrinterComponent for the given printer and set up any listeners on component
      * events.
      */
@@ -729,6 +715,24 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         PrinterComponent printerComponent = createPrinterComponentForPrinter(printer);
         addPrinterComponentToGrid(printerComponent, 0, 0);
     }
+    
+    /**
+     * Add the given printer component to the given grid coordinates.
+     */
+    private void addPrinterComponentToGrid(PrinterComponent printerComponent, int row,
+        int column)
+    {
+        printerComponent.setSize(PrinterComponent.Size.SIZE_LARGE);
+        printerStatusGrid.add(printerComponent, row, column);
+    }    
+    
+    /**
+     * Remove the given printer from the grid.
+     * @param printerComponent 
+     */
+    private void removePrinterComponentFromGrid(PrinterComponent printerComponent) {
+        printerStatusGrid.getChildren().remove(printerComponent);
+    }    
 
     private void bindDetails(Printer printer)
     {
