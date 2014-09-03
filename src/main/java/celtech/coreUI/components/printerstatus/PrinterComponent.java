@@ -13,7 +13,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
-import javafx.application.Platform;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -81,7 +80,7 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
 
         initialise();
     }
-
+    
     public void setStatus(Status status)
     {
         printerSVG.setStatus(status);
@@ -244,10 +243,13 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
                 progressBarYOffset = 55;
                 break;
         }
+        
+        setPrefWidth(sizePixels);
         setMinWidth(sizePixels);
         setMaxWidth(sizePixels);
         setMinHeight(sizePixels);
         setMaxHeight(sizePixels);
+        setPrefHeight(sizePixels);
 
         double progressBarX = (sizePixels - progressBarWidth) / 2.0;
         double progressBarY = sizePixels - progressBarYOffset - progressBarHeight;
@@ -270,7 +272,6 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
             child.setTranslateY(-borderWidth);
         }
 
-        System.out.println("set name font size: " + "-fx-font-size: " + fontSize + "pt !important;");
         name.setStyle("-fx-font-size: " + fontSize + "pt !important;");
         name.setLayoutX(progressBarX);
 

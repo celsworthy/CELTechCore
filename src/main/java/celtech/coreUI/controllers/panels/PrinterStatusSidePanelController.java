@@ -286,28 +286,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         statusScreenState = StatusScreenState.getInstance();
         printerUtils = PrinterUtils.getInstance();
 
-        timeAxis = new NumberAxis(0, MAX_DATA_POINTS, 30);
-        timeAxis.setForceZeroInRange(false);
-        timeAxis.setAutoRanging(true);
-
-        temperatureAxis = new NumberAxis();
-        temperatureAxis.setAutoRanging(false);
-
-        temperatureChart.setAnimated(false);
-        temperatureChart.setLegendVisible(false);
-        temperatureChart.setLegendSide(Side.RIGHT);
-
-        temperatureChart.setVisible(false);
-
         printerIDDialog = new PrinterIDDialog();
 
         ResourceBundle languageBundle = DisplayManager.getLanguageBundle();
-        filamentNotLoadedString = languageBundle.getString("smartReelProgrammer.noReelLoaded");
-        reelNotFormattedString = languageBundle.getString("smartReelProgrammer.reelNotFormatted");
-        headNotAttachedString = languageBundle.getString("sidePanel_printerStatus.headNotAttached");
-        headNotFormattedString = languageBundle.getString("smartheadProgrammer.headNotFormatted");
-        tempOutOfRangeHighString = languageBundle.getString("printerStatus.tempOutOfRangeHigh");
-        tempOutOfRangeLowString = languageBundle.getString("printerStatus.tempOutOfRangeLow");
+        initialiseMessages(languageBundle);
 
         printerNameColumn.setText(languageBundle.getString(
             "sidePanel_printerStatus.printerNameColumn"));
@@ -315,9 +297,36 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         printerNameColumn.setCellValueFactory(new PropertyValueFactory<Printer, String>(
             "printerFriendlyName"));
 
+        initialiseTemperatureChart();
         initialisePrinterStatusGrid();
         initialiseTemperatureAndHeaterListeners();
         controlDetailsVisibility();
+    }
+
+    private void initialiseMessages(ResourceBundle languageBundle)
+    {
+        filamentNotLoadedString = languageBundle.getString("smartReelProgrammer.noReelLoaded");
+        reelNotFormattedString = languageBundle.getString("smartReelProgrammer.reelNotFormatted");
+        headNotAttachedString = languageBundle.getString("sidePanel_printerStatus.headNotAttached");
+        headNotFormattedString = languageBundle.getString("smartheadProgrammer.headNotFormatted");
+        tempOutOfRangeHighString = languageBundle.getString("printerStatus.tempOutOfRangeHigh");
+        tempOutOfRangeLowString = languageBundle.getString("printerStatus.tempOutOfRangeLow");
+    }
+
+    private void initialiseTemperatureChart()
+    {
+        timeAxis = new NumberAxis(0, MAX_DATA_POINTS, 30);
+        timeAxis.setForceZeroInRange(false);
+        timeAxis.setAutoRanging(true);
+        
+        temperatureAxis = new NumberAxis();
+        temperatureAxis.setAutoRanging(false);
+        
+        temperatureChart.setAnimated(false);
+        temperatureChart.setLegendVisible(false);
+        temperatureChart.setLegendSide(Side.RIGHT);
+        
+        temperatureChart.setVisible(false);
     }
 
     private void initialiseTemperatureAndHeaterListeners()

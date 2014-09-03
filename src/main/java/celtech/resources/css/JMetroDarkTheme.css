@@ -21,6 +21,10 @@
     gizmoZHandle_pressed: #a74c30;
     gizmoXZHandle_pressed: #554dc9;
     gizmoRotationHandle_pressed: #53919d;
+    graph_line_red: #ff0000;
+    graph_line_green: #1eb43c;
+    graph_line_yellow: #ffc800;
+    graph_line_blue: #0096e1;
 }
 
 .standardPanel{
@@ -804,6 +808,9 @@
 /*
  * Temperature graph
  */
+
+
+
 .default-color0.chart-series-line { -fx-stroke: green; }
 .default-color1.chart-series-line { -fx-stroke: yellow; }
 .default-color2.chart-series-line { -fx-stroke: darkviolet; }
@@ -829,12 +836,72 @@
     -fx-shape: "M0,3 L5,0 L5,6 L0,3 Z";
 }
 
+.temperatureXLabel {
+    -fx-font-size: 9pt;
+}
+
+.axis:top {
+    -fx-border-color: transparent transparent transparent transparent;
+    -fx-border-width: 0;
+}
+.axis:right {
+    -fx-border-color: transparent transparent transparent #000000;
+    -fx-border-width: 2;
+}
+.axis:bottom {
+    -fx-border-color: #000000 transparent transparent transparent;
+    -fx-border-width: 2;
+}
+.axis:left {
+    -fx-border-color: transparent transparent transparent transparent;
+    -fx-border-width: 0;
+}
+
+.axis .text {
+  -fx-font-size: 11pt;
+}
+
+.axis-tick-mark {
+    -fx-stroke: black;
+    -fx-stroke-width: 2;
+}
+
+.axis-minor-tick-mark {
+    -fx-stroke: black;
+    -fx-stroke-width: 2;
+}
+
+.graph-red {
+    -fx-fill: graph_line_red;
+    -fx-font-size: 9;
+}
+.graph-blue {
+    -fx-fill: graph_line_blue;
+    -fx-font-size: 9;
+}
+.graph-green {
+    -fx-fill: graph_line_green;
+    -fx-font-size: 9;
+}
+.graph-yellow {
+    -fx-fill: graph_line_yellow;
+    -fx-font-size: 9;
+}
+
 #ambientTempLegend { -fx-fill: green; }
 #bedTempLegend { -fx-fill: yellow; }
 #nozzleTempLegend { -fx-fill: darkviolet; }
 
 #temperatureGraphTempAxis {
     -fx-tick-label-fill: white;
+}
+
+#temperatureChart {
+    -fx-background-color: dark_grey;
+}
+
+#temperatureChartXLabels {
+    fx-background-color: dark_grey;
 }
 
 .invisible-graph-node{
@@ -1001,6 +1068,14 @@ table-view .column-header-background {
 .menubar{
     -fx-background-color: black;
     -fx-padding: 5px;
+}
+
+.statusPanel{
+    -fx-background-color: mid_grey;
+}
+
+.statusPanelChild{
+    -fx-background-color: dark_grey;
 }
 
 .sidePanel{
