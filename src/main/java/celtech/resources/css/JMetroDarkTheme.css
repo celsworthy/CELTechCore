@@ -808,6 +808,20 @@
 
 }
 
+/**
+* Reel and Material
+*/
+
+.reelLabel {
+    -fx-font-size: 32;
+}
+.reelMaterialName {
+     -fx-font-size: 21;
+}
+.reelMaterialRemaining {
+    -fx-font-size: 18;
+}
+
 /*
  * Temperature graph
  */
@@ -1103,9 +1117,9 @@ table-view .column-header-background {
 
 .sidePanelTitle{
     -fx-text-fill: blue_colour;
-    -fx-pref-height: 82;
-    -fx-scale-x: 2;
-    -fx-scale-y: 2;
+    -fx-pref-height: 60;
+    -fx-scale-x: 1.7;
+    -fx-scale-y: 1.7;
 }
 
 .slideOutPanel, .slideOutPanel .tab-pane{

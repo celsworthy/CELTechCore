@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.StringBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -63,7 +64,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     @FXML
     private Label ambientTemperatureLabel;
-    
+
     @FXML
     private GridPane targetTemperatureColumn;
 
@@ -83,9 +84,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private Label bedTemperaturePlaceholder;
 
     @FXML
-    private Label filamentStatusLabel;
-
-    @FXML
     private Label nozzleTemperatureLabel;
 
     @FXML
@@ -96,12 +94,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     @FXML
     private Label nozzleTemperaturePlaceholder;
-
-    @FXML
-    private Label printHeadLabel;
-
-    @FXML
-    private HBox printerStatusHBox;
 
     @FXML
     private VBox temperatureVBox;
@@ -301,7 +293,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             "printerFriendlyName"));
 
         targetTemperatureColumn.setVisible(false);
-        
+
         initialiseTemperatureChart();
         initialisePrinterStatusGrid();
         initialiseTemperatureAndHeaterListeners();
@@ -323,14 +315,14 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         timeAxis = new NumberAxis(0, MAX_DATA_POINTS, 30);
         timeAxis.setForceZeroInRange(false);
         timeAxis.setAutoRanging(true);
-        
+
         temperatureAxis = new NumberAxis();
         temperatureAxis.setAutoRanging(false);
-        
+
         temperatureChart.setAnimated(false);
         temperatureChart.setLegendVisible(false);
         temperatureChart.setLegendSide(Side.RIGHT);
-        
+
         temperatureChart.setVisible(false);
     }
 
@@ -614,8 +606,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     }
 
     /**
-     * Remove the current printer from the display. Update the selected printer to one of
-     * the remaining printers.
+     * Remove the current printer from the display. Update the selected printer to one of the
+     * remaining printers.
      */
     private void removePrinter(Printer printer)
     {
@@ -636,16 +628,17 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             PrinterComponent printerComponent = printerComponentsByPrinter.get(selectedPrinter);
             printerComponent.setSelected(true);
         }
-       
+
         selectedPrinter = printer;
-         if (printer != null) {
+        if (printer != null)
+        {
             PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
             printerComponent.setSelected(true);
-         }   
+        }
         statusScreenState.setCurrentlySelectedPrinter(printer);
         bindDetails(printer);
         controlDetailsVisibility();
-        
+
     }
 
     /**
@@ -729,7 +722,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         PrinterComponent printerComponent = createPrinterComponentForPrinter(printer);
         addPrinterComponentToGrid(printerComponent, 0, 0);
     }
-    
+
     /**
      * Add the given printer component to the given grid coordinates.
      */
@@ -738,156 +731,184 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     {
         printerComponent.setSize(PrinterComponent.Size.SIZE_LARGE);
         printerStatusGrid.add(printerComponent, row, column);
-    }    
-    
+    }
+
     /**
      * Remove the given printer from the grid.
-     * @param printerComponent 
+     *
+     * @param printerComponent
      */
-    private void removePrinterComponentFromGrid(PrinterComponent printerComponent) {
+    private void removePrinterComponentFromGrid(PrinterComponent printerComponent)
+    {
         printerStatusGrid.getChildren().remove(printerComponent);
-    }    
+    }
 
     private void bindDetails(Printer printer)
     {
         nozzleTemperatureLabel.textProperty().unbind();
         bedTemperatureLabel.textProperty().unbind();
         ambientTemperatureLabel.textProperty().unbind();
-        filamentStatusLabel.textProperty().unbind();
 
         if (selectedPrinter != null)
         {
-            selectedPrinter.nozzleFirstLayerTargetTemperatureProperty().unbind();
-            selectedPrinter.nozzleTargetTemperatureProperty().unbind();
-            selectedPrinter.bedFirstLayerTargetTemperatureProperty().unbind();
-            selectedPrinter.bedTargetTemperatureProperty().unbind();
-            selectedPrinter.ambientTargetTemperatureProperty().unbind();
-
-            temperatureChart.getData().remove(selectedPrinter.ambientTemperatureHistory());
-            currentAmbientTemperatureHistory = null;
-            temperatureChart.getData().remove(selectedPrinter.bedTemperatureHistory());
-            temperatureChart.getData().remove(selectedPrinter.nozzleTemperatureHistory());
-            temperatureChart.getData().remove(selectedPrinter.ambientTargetTemperatureHistory());
-            temperatureChart.getData().remove(selectedPrinter.bedTargetTemperatureHistory());
-            temperatureChart.getData().remove(selectedPrinter.nozzleTargetTemperatureHistory());
-
-            nozzleFirstLayerTargetTemperature.visibleProperty().unbind();
-            nozzleTargetTemperature.visibleProperty().unbind();
-            nozzleTemperaturePlaceholder.visibleProperty().unbind();
-            bedFirstLayerTargetTemperature.visibleProperty().unbind();
-            bedTargetTemperature.visibleProperty().unbind();
-            bedTemperaturePlaceholder.visibleProperty().unbind();
-
-            bedHeaterCheckBox.selectedProperty()
-                .removeListener(bedHeaterCheckBoxListener);
-            nozzleHeaterCheckBox.selectedProperty()
-                .removeListener(nozzleHeaterCheckBoxListener);
-            selectedPrinter.getBedHeaterModeProperty().removeListener(bedHeaterStatusListener);
-            selectedPrinter.getNozzleHeaterModeProperty().removeListener(
-                nozzleHeaterStatusListener);
+            unbindSelectedPrinter();
         }
 
         if (printer != null)
         {
-            // Temperatures / Heaters / Fans
-            nozzleTemperatureLabel.textProperty().bind(Bindings.when(
-                printer.printerConnectedProperty().not()).then("-").otherwise(Bindings.when(
-                        printer.extruderTemperatureProperty().greaterThan(
-                            ApplicationConfiguration.maxTempToDisplayOnGraph)).then(
-                        tempOutOfRangeHighString)
-                    .otherwise(Bindings.when(printer.extruderTemperatureProperty().lessThan(
-                                ApplicationConfiguration.minTempToDisplayOnGraph)).then(
-                            tempOutOfRangeLowString).otherwise(
-                            printer.extruderTemperatureProperty().asString("%d°C")))));
-            nozzleFirstLayerTargetTemperature.setText(String.format("%d",
-                                                                    printer.getNozzleFirstLayerTargetTemperature()));
-            printer.nozzleFirstLayerTargetTemperatureProperty().addListener(
-                targetNozzleFirstLayerTempListener);
-            nozzleTargetTemperature.setText(String.format("%d",
-                                                          printer.getNozzleTargetTemperature()));
-            printer.nozzleTargetTemperatureProperty().addListener(targetNozzleTempListener);
-            nozzleFirstLayerTargetTemperature.visibleProperty().bind(
-                printer.getNozzleHeaterModeProperty().isEqualTo(HeaterMode.FIRST_LAYER));
-            nozzleTargetTemperature.visibleProperty().bind(
-                printer.getNozzleHeaterModeProperty().isEqualTo(HeaterMode.NORMAL));
-            nozzleTemperaturePlaceholder.visibleProperty().bind(
-                printer.getNozzleHeaterModeProperty().isEqualTo(HeaterMode.OFF));
+            bindPrinter(printer);
+        }
+    }
 
-            bedTemperatureLabel.textProperty().bind(Bindings.when(
-                printer.printerConnectedProperty().not()).then("-").otherwise(Bindings.when(
-                        printer.bedTemperatureProperty().greaterThan(
-                            ApplicationConfiguration.maxTempToDisplayOnGraph)).then(
-                        tempOutOfRangeHighString)
-                    .otherwise(Bindings.when(printer.bedTemperatureProperty().lessThan(
-                                ApplicationConfiguration.minTempToDisplayOnGraph)).then(
-                            tempOutOfRangeLowString).otherwise(
-                            printer.bedTemperatureProperty().asString("%d°C")))));
-            bedFirstLayerTargetTemperature.setText(String.format("%d",
-                                                                 printer.getBedFirstLayerTargetTemperature()));
-            printer.bedFirstLayerTargetTemperatureProperty().addListener(
-                targetBedFirstLayerTempListener);
-            bedTargetTemperature.setText(String.format("%d",
-                                                       printer.getBedTargetTemperature()));
-            printer.bedTargetTemperatureProperty().addListener(targetBedTempListener);
-            bedFirstLayerTargetTemperature.visibleProperty().bind(
-                printer.getBedHeaterModeProperty().isEqualTo(HeaterMode.FIRST_LAYER));
-            bedTargetTemperature.visibleProperty().bind(
-                printer.getBedHeaterModeProperty().isEqualTo(HeaterMode.NORMAL));
-            bedTemperaturePlaceholder.visibleProperty().bind(
-                printer.getBedHeaterModeProperty().isEqualTo(HeaterMode.OFF));
+    private void bindPrinter(Printer printer)
+    {
+        // Temperatures / Heaters / Fans
+        nozzleTemperatureLabel.textProperty().bind(Bindings.when(
+            printer.printerConnectedProperty().not()).then("-").otherwise(Bindings.when(
+                    printer.extruderTemperatureProperty().greaterThan(
+                        ApplicationConfiguration.maxTempToDisplayOnGraph)).then(
+                    tempOutOfRangeHighString)
+                .otherwise(Bindings.when(printer.extruderTemperatureProperty().lessThan(
+                            ApplicationConfiguration.minTempToDisplayOnGraph)).then(
+                        tempOutOfRangeLowString).otherwise(
+                        printer.extruderTemperatureProperty().asString("%d°C")))));
+        nozzleFirstLayerTargetTemperature.setText(String.format("%d",
+                                                                printer.getNozzleFirstLayerTargetTemperature()));
+        printer.nozzleFirstLayerTargetTemperatureProperty().addListener(
+            targetNozzleFirstLayerTempListener);
+        nozzleTargetTemperature.setText(String.format("%d",
+                                                      printer.getNozzleTargetTemperature()));
+        printer.nozzleTargetTemperatureProperty().addListener(targetNozzleTempListener);
+        nozzleFirstLayerTargetTemperature.visibleProperty().bind(
+            printer.getNozzleHeaterModeProperty().isEqualTo(HeaterMode.FIRST_LAYER));
+        nozzleTargetTemperature.visibleProperty().bind(
+            printer.getNozzleHeaterModeProperty().isEqualTo(HeaterMode.NORMAL));
+        nozzleTemperaturePlaceholder.visibleProperty().bind(
+            printer.getNozzleHeaterModeProperty().isEqualTo(HeaterMode.OFF));
 
-            ambientTemperatureLabel.textProperty().bind(Bindings.when(
-                printer.printerConnectedProperty().not()).then("-").otherwise(Bindings.when(
-                        printer.ambientTemperatureProperty().greaterThan(
-                            ApplicationConfiguration.maxTempToDisplayOnGraph)).then(
-                        tempOutOfRangeHighString).otherwise(
-                        printer.ambientTemperatureProperty().asString("%d°C"))));
-            ambientTargetTemperature.setText(String.format("%d",
-                                                           printer.getAmbientTargetTemperature()));
-            printer.ambientTargetTemperatureProperty().addListener(targetAmbientTempListener);
-            /*
-             * Door
-             */
+        bedTemperatureLabel.textProperty().bind(Bindings.when(
+            printer.printerConnectedProperty().not()).then("-").otherwise(Bindings.when(
+                    printer.bedTemperatureProperty().greaterThan(
+                        ApplicationConfiguration.maxTempToDisplayOnGraph)).then(
+                    tempOutOfRangeHighString)
+                .otherwise(Bindings.when(printer.bedTemperatureProperty().lessThan(
+                            ApplicationConfiguration.minTempToDisplayOnGraph)).then(
+                        tempOutOfRangeLowString).otherwise(
+                        printer.bedTemperatureProperty().asString("%d°C")))));
+        bedFirstLayerTargetTemperature.setText(String.format("%d",
+                                                             printer.getBedFirstLayerTargetTemperature()));
+        printer.bedFirstLayerTargetTemperatureProperty().addListener(
+            targetBedFirstLayerTempListener);
+        bedTargetTemperature.setText(String.format("%d",
+                                                   printer.getBedTargetTemperature()));
+        printer.bedTargetTemperatureProperty().addListener(targetBedTempListener);
+        bedFirstLayerTargetTemperature.visibleProperty().bind(
+            printer.getBedHeaterModeProperty().isEqualTo(HeaterMode.FIRST_LAYER));
+        bedTargetTemperature.visibleProperty().bind(
+            printer.getBedHeaterModeProperty().isEqualTo(HeaterMode.NORMAL));
+        bedTemperaturePlaceholder.visibleProperty().bind(
+            printer.getBedHeaterModeProperty().isEqualTo(HeaterMode.OFF));
+
+        ambientTemperatureLabel.textProperty().bind(Bindings.when(
+            printer.printerConnectedProperty().not()).then("-").otherwise(Bindings.when(
+                    printer.ambientTemperatureProperty().greaterThan(
+                        ApplicationConfiguration.maxTempToDisplayOnGraph)).then(
+                    tempOutOfRangeHighString).otherwise(
+                    printer.ambientTemperatureProperty().asString("%d°C"))));
+        ambientTargetTemperature.setText(String.format("%d",
+                                                       printer.getAmbientTargetTemperature()));
+        printer.ambientTargetTemperatureProperty().addListener(targetAmbientTempListener);
+        /*
+         * Door
+         */
 //            doorStatusLabel.textProperty().bind(Bindings.when(selectedPrinter.LidOpenProperty()).then(openString).otherwise(closedString));
 
-            /*
-             * Reel
-             */
-            filamentStatusLabel.textProperty().bind(Bindings.when(
-                printer.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED)).then(
-                    printer.reelFriendlyNameProperty()).otherwise(Bindings.when(
-                        printer.reelEEPROMStatusProperty().isEqualTo(
-                            EEPROMState.NOT_PROGRAMMED)).then(reelNotFormattedString).otherwise(
-                        filamentNotLoadedString)));
+        /*
+         * Reel
+         */
+        printer.reelDataChangedProperty().addListener(new ChangeListener() {
 
-            /*
-             * Head
-             */
-            printHeadLabel.textProperty().bind(Bindings.when(
-                printer.headEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED)).then(
-                    printer.getHeadType()).otherwise(Bindings.when(
-                        printer.headEEPROMStatusProperty().isEqualTo(
-                            EEPROMState.NOT_PROGRAMMED)).then(headNotFormattedString).otherwise(
-                        headNotAttachedString)));
+            @Override
+            public void changed(ObservableValue observable, Object oldValue, Object newValue)
+            {
+                updateReelMaterial(printer);
+            }
+        });
 
-            currentAmbientTemperatureHistory = printer.ambientTemperatureHistory();
-            temperatureChart.getData().add(printer.ambientTemperatureHistory());
-            printer.nozzleTemperatureHistory().getData().addListener(
-                graphDataPointChangeListener);
-            temperatureChart.getData().add(printer.bedTemperatureHistory());
-            temperatureChart.getData().add(printer.nozzleTemperatureHistory());
-            temperatureChart.getData().add(printer.ambientTargetTemperatureHistory());
-            temperatureChart.getData().add(printer.bedTargetTemperatureHistory());
-            temperatureChart.getData().add(printer.nozzleTargetTemperatureHistory());
+//        /*
+//         * Head
+//         */
+//        printHeadLabel.textProperty().bind(Bindings.when(
+//            printer.headEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED)).then(
+//                printer.getHeadType()).otherwise(Bindings.when(
+//                    printer.headEEPROMStatusProperty().isEqualTo(
+//                        EEPROMState.NOT_PROGRAMMED)).then(headNotFormattedString).otherwise(
+//                    headNotAttachedString)));
 
-            printer.getBedHeaterModeProperty().addListener(bedHeaterStatusListener);
+        currentAmbientTemperatureHistory = printer.ambientTemperatureHistory();
+        temperatureChart.getData().add(printer.ambientTemperatureHistory());
+        printer.nozzleTemperatureHistory().getData().addListener(
+            graphDataPointChangeListener);
+        temperatureChart.getData().add(printer.bedTemperatureHistory());
+        temperatureChart.getData().add(printer.nozzleTemperatureHistory());
+        temperatureChart.getData().add(printer.ambientTargetTemperatureHistory());
+        temperatureChart.getData().add(printer.bedTargetTemperatureHistory());
+        temperatureChart.getData().add(printer.nozzleTargetTemperatureHistory());
 
-            printer.getNozzleHeaterModeProperty().addListener(nozzleHeaterStatusListener);
-            bedHeaterCheckBox.selectedProperty()
-                .addListener(bedHeaterCheckBoxListener);
-            nozzleHeaterCheckBox.selectedProperty()
-                .addListener(nozzleHeaterCheckBoxListener);
+        printer.getBedHeaterModeProperty().addListener(bedHeaterStatusListener);
+
+        printer.getNozzleHeaterModeProperty().addListener(nozzleHeaterStatusListener);
+        bedHeaterCheckBox.selectedProperty()
+            .addListener(bedHeaterCheckBoxListener);
+        nozzleHeaterCheckBox.selectedProperty()
+            .addListener(nozzleHeaterCheckBoxListener);
+    }
+
+    private void updateReelMaterial(Printer printer)
+    {
+        if (printer.reelEEPROMStatusProperty().get().equals(EEPROMState.PROGRAMMED))
+        {
+//            filamentStatusLabel.textProperty().set(printer.reelFriendlyNameProperty().get());
+        } else if (printer.reelEEPROMStatusProperty().get().equals(
+            EEPROMState.NOT_PROGRAMMED))
+        {
+//            filamentStatusLabel.textProperty().set(reelNotFormattedString);
+        } else
+        {
+//            filamentStatusLabel.textProperty().set(filamentNotLoadedString);
         }
+    }
+
+    private void unbindSelectedPrinter()
+    {
+        selectedPrinter.nozzleFirstLayerTargetTemperatureProperty().unbind();
+        selectedPrinter.nozzleTargetTemperatureProperty().unbind();
+        selectedPrinter.bedFirstLayerTargetTemperatureProperty().unbind();
+        selectedPrinter.bedTargetTemperatureProperty().unbind();
+        selectedPrinter.ambientTargetTemperatureProperty().unbind();
+
+        temperatureChart.getData().remove(selectedPrinter.ambientTemperatureHistory());
+        currentAmbientTemperatureHistory = null;
+        temperatureChart.getData().remove(selectedPrinter.bedTemperatureHistory());
+        temperatureChart.getData().remove(selectedPrinter.nozzleTemperatureHistory());
+        temperatureChart.getData().remove(selectedPrinter.ambientTargetTemperatureHistory());
+        temperatureChart.getData().remove(selectedPrinter.bedTargetTemperatureHistory());
+        temperatureChart.getData().remove(selectedPrinter.nozzleTargetTemperatureHistory());
+
+        nozzleFirstLayerTargetTemperature.visibleProperty().unbind();
+        nozzleTargetTemperature.visibleProperty().unbind();
+        nozzleTemperaturePlaceholder.visibleProperty().unbind();
+        bedFirstLayerTargetTemperature.visibleProperty().unbind();
+        bedTargetTemperature.visibleProperty().unbind();
+        bedTemperaturePlaceholder.visibleProperty().unbind();
+
+        bedHeaterCheckBox.selectedProperty()
+            .removeListener(bedHeaterCheckBoxListener);
+        nozzleHeaterCheckBox.selectedProperty()
+            .removeListener(nozzleHeaterCheckBoxListener);
+        selectedPrinter.getBedHeaterModeProperty().removeListener(bedHeaterStatusListener);
+        selectedPrinter.getNozzleHeaterModeProperty().removeListener(
+            nozzleHeaterStatusListener);
     }
 
     private void controlDetailsVisibility()
@@ -896,7 +917,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         temperatureVBox.setVisible(visible);
         temperatureChart.setVisible(visible);
-        printerStatusHBox.setVisible(visible);
     }
 
     /**
