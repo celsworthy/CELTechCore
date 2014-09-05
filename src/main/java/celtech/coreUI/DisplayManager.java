@@ -126,20 +126,11 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
 
-    /**
-     * The primary font used throughout the GUI, at various font sizes
-     */
-    private final Font primaryFont;
-
     private Locale usersLocale = null;
 
     private DisplayManager()
     {
         usersLocale = Locale.getDefault();
-
-        String primaryFontLocation = DisplayManager.class.getResource(
-            ApplicationConfiguration.fontResourcePath + "SourceSansPro-Light.ttf").toExternalForm();
-        primaryFont = Font.loadFont(primaryFontLocation, 10);
 
         modelLoadDialog = new ProgressDialog(modelLoaderService);
 
@@ -545,9 +536,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
                           ApplicationConfiguration.DEFAULT_HEIGHT);
 
         scene.getStylesheets().add("/celtech/resources/css/JMetroDarkTheme.css");
-//        root.setStyle("-fx-font-family: FreeMono;");
-        String primaryFontFamily = primaryFont.getFamily();
-        root.setStyle("-fx-font-family: " + primaryFontFamily + ";");
 
         // Camera required to allow 2D shapes to be rotated in 3D in the '2D' UI
         PerspectiveCamera controlOverlaycamera = new PerspectiveCamera(false);
@@ -894,13 +882,4 @@ public class DisplayManager implements EventHandler<KeyEvent>
         return usersLocale;
     }
 
-    /**
-     * Return the primary font used in the GUI.
-     *
-     * @return
-     */
-    public Font getPrimaryFont()
-    {
-        return primaryFont;
-    }
 }

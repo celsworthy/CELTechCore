@@ -14,6 +14,7 @@ import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.RestrictedNumberField;
+import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.components.printerstatus.PrinterComponent;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
@@ -26,7 +27,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.StringBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -44,7 +44,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -61,6 +60,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         PrinterStatusSidePanelController.class.getName());
     private ApplicationStatus applicationStatus = null;
     private PrinterUtils printerUtils = null;
+    
+    @FXML
+    private MaterialComponent material1;
 
     @FXML
     private Label ambientTemperatureLabel;
@@ -868,6 +870,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     {
         if (printer.reelEEPROMStatusProperty().get().equals(EEPROMState.PROGRAMMED))
         {
+            material1.setMaterial(1, printer.reelFriendlyNameProperty().get(), printer.reelFriendlyNameProperty().get(),
+                                  printer.getReelDisplayColour());
 //            filamentStatusLabel.textProperty().set(printer.reelFriendlyNameProperty().get());
         } else if (printer.reelEEPROMStatusProperty().get().equals(
             EEPROMState.NOT_PROGRAMMED))

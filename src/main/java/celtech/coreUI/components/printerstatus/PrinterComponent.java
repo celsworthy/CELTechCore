@@ -274,9 +274,9 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
 
         name.setStyle("-fx-font-size: " + fontSize + "pt !important;");
         name.setLayoutX(progressBarX);
-
-        Font primaryFont = DisplayManager.getInstance().getPrimaryFont();
-        Font actualFont = new Font(primaryFont.getName(), fontSize);
+        
+        Font font = name.getFont();
+        Font actualFont = new Font(font.getName(), fontSize);
         FontMetrics fontMetrics = Toolkit.getToolkit().getFontLoader().getFontMetrics(actualFont);
 
         nameLayoutY = sizePixels - (progressBarYOffset / 2) + fontMetrics.getDescent();

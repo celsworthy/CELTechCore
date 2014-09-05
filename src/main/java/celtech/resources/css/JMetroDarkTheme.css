@@ -1,3 +1,32 @@
+
+@font-face {
+    font-family: SSPLight;
+    font-weight: light;
+    font-style: normal;
+    src: url('/celtech/resources/fonts/SourceSansPro-Light.ttf') format(ttf);
+}
+
+@font-face {
+    font-family: SSPExtraLight;
+    font-weight: lighter;
+    font-style: normal;
+    src: url('/celtech/resources/fonts/SourceSansPro-ExtraLight.ttf') format(ttf);
+}
+
+@font-face {
+    font-family: SSPSemiBold;
+    font-weight: bold;
+    font-style: normal;
+    src: url('/celtech/resources/fonts/SourceSansPro-Semibold.ttf') format(ttf);
+}
+
+@font-face {
+    font-family: CrazyZooX;
+    font-weight: normal;
+    font-style: normal;
+    src: url('/celtech/resources/fonts/crazyzoo.ttf') format(ttf);
+}
+
 *{
     black: rgb(0,0,0);
     dark_grey: rgb(48,48,48);
@@ -28,6 +57,13 @@
     graph_setpoint_red: #8c0000;
     graph_setpoint_green: #145019;
     graph_setpoint_yellow: #a07800;    
+    /*-fx-font-family: 'CrazyZoo';*/
+    -fx-font-family: 'SourceSansPro';
+    -fx-font-weight: light; 
+}
+
+#reelNumberMaterial {
+    -fx-font-weight: bold;
 }
 
 .standardPanel{
@@ -864,33 +900,33 @@
     -fx-font-size: 9pt;
 }
 
-.axis:top {
+#temperatureChart .axis:top {
     -fx-border-color: transparent transparent transparent transparent;
     -fx-border-width: 0;
 }
-.axis:right {
+#temperatureChart .axis:right {
     -fx-border-color: transparent transparent transparent #000000;
     -fx-border-width: 2;
 }
-.axis:bottom {
+#temperatureChart .axis:bottom {
     -fx-border-color: #000000 transparent transparent transparent;
     -fx-border-width: 2;
 }
-.axis:left {
+#temperatureChart .axis:left {
     -fx-border-color: transparent transparent transparent transparent;
     -fx-border-width: 0;
 }
 
-.axis .text {
+#temperatureChart .axis .text {
     -fx-font-size: 10pt;
 }
 
-.axis-tick-mark {
+#temperatureChart .axis-tick-mark {
     -fx-stroke: black;
     -fx-stroke-width: 2;
 }
 
-.axis-minor-tick-mark {
+#temperatureChart .axis-minor-tick-mark {
     -fx-stroke: black;
     -fx-stroke-width: 2;
 }

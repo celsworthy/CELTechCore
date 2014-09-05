@@ -233,7 +233,7 @@
                         </VBox>
                     </children>
                 </VBox>
-                <LineChart fx:id="temperatureChart" alternativeColumnFillVisible="true" alternativeRowFillVisible="true" animated="false" horizontalGridLinesVisible="false" legendVisible="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="160.0" prefWidth="260.0" verticalGridLinesVisible="false" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="20.0">
+                <LineChart id="temperatureChart" fx:id="temperatureChart" alternativeColumnFillVisible="true" alternativeRowFillVisible="true" animated="false" horizontalGridLinesVisible="false" legendVisible="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="160.0" prefWidth="260.0" verticalGridLinesVisible="false" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="20.0">
                     <xAxis>
                         <NumberAxis fx:id="timeAxis" animated="false" autoRanging="false" lowerBound="0.0" minorTickCount="2" side="BOTTOM" tickLabelsVisible="false" tickUnit="30.0" upperBound="210.0" />
                     </xAxis>
