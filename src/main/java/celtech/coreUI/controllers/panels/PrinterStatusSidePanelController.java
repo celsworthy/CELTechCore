@@ -45,6 +45,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -60,7 +61,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         PrinterStatusSidePanelController.class.getName());
     private ApplicationStatus applicationStatus = null;
     private PrinterUtils printerUtils = null;
-    
+
     @FXML
     private MaterialComponent material1;
 
@@ -828,7 +829,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         /*
          * Reel
          */
-        printer.reelDataChangedProperty().addListener(new ChangeListener() {
+        printer.reelDataChangedProperty().addListener(new ChangeListener()
+        {
 
             @Override
             public void changed(ObservableValue observable, Object oldValue, Object newValue)
@@ -846,7 +848,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 //                    printer.headEEPROMStatusProperty().isEqualTo(
 //                        EEPROMState.NOT_PROGRAMMED)).then(headNotFormattedString).otherwise(
 //                    headNotAttachedString)));
-
         currentAmbientTemperatureHistory = printer.ambientTemperatureHistory();
         temperatureChart.getData().add(printer.ambientTemperatureHistory());
         printer.nozzleTemperatureHistory().getData().addListener(
@@ -870,16 +871,18 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     {
         if (printer.reelEEPROMStatusProperty().get().equals(EEPROMState.PROGRAMMED))
         {
-            material1.setMaterial(1, printer.reelFriendlyNameProperty().get(), printer.reelFriendlyNameProperty().get(),
-                                  printer.getReelDisplayColour());
-//            filamentStatusLabel.textProperty().set(printer.reelFriendlyNameProperty().get());
+            material1.setMaterial(1, printer.getReelMaterialType(),
+                                  printer.reelFriendlyNameProperty().get(),
+                                  printer.getReelDisplayColour(),
+                                  printer.getReelRemainingFilament().get(),
+                                  printer.getReelFilamentDiameter().get());
         } else if (printer.reelEEPROMStatusProperty().get().equals(
             EEPROMState.NOT_PROGRAMMED))
         {
-//            filamentStatusLabel.textProperty().set(reelNotFormattedString);
+//            material1.setMaterial(1, "ERROR", reelNotFormattedString, Color.BLACK, 0f, 0f);
         } else
         {
-//            filamentStatusLabel.textProperty().set(filamentNotLoadedString);
+//            material1.setMaterial(1, "", filamentNotLoadedString, Color.BLACK, 0f, 0f);
         }
     }
 

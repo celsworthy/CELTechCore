@@ -1,27 +1,27 @@
 
 @font-face {
-    font-family: SSPLight;
+    font-family: SourceSansPro;
     font-weight: light;
     font-style: normal;
     src: url('/celtech/resources/fonts/SourceSansPro-Light.ttf') format(ttf);
 }
 
 @font-face {
-    font-family: SSPExtraLight;
+    font-family: SourceSansPro;
     font-weight: lighter;
     font-style: normal;
     src: url('/celtech/resources/fonts/SourceSansPro-ExtraLight.ttf') format(ttf);
 }
 
 @font-face {
-    font-family: SSPSemiBold;
+    font-family: SourceSansPro;
     font-weight: bold;
     font-style: normal;
     src: url('/celtech/resources/fonts/SourceSansPro-Semibold.ttf') format(ttf);
 }
 
 @font-face {
-    font-family: CrazyZooX;
+    font-family: CrazyZoo;
     font-weight: normal;
     font-style: normal;
     src: url('/celtech/resources/fonts/crazyzoo.ttf') format(ttf);
@@ -60,10 +60,6 @@
     /*-fx-font-family: 'CrazyZoo';*/
     -fx-font-family: 'SourceSansPro';
     -fx-font-weight: light; 
-}
-
-#reelNumberMaterial {
-    -fx-font-weight: bold;
 }
 
 .standardPanel{
@@ -856,6 +852,10 @@
 }
 .reelMaterialRemaining {
     -fx-font-size: 18;
+}
+
+#reelNumberMaterial {
+    -fx-font-weight: bold;
 }
 
 /*

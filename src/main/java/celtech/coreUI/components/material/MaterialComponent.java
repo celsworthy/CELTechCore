@@ -3,9 +3,12 @@
  */
 package celtech.coreUI.components.material;
 
+import celtech.configuration.MaterialType;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.AnchorPane;
@@ -20,7 +23,7 @@ import javafx.scene.text.Text;
  */
 public class MaterialComponent extends AnchorPane
 {
-
+    
     @FXML
     private Text reelNumberMaterial;
 
@@ -35,9 +38,6 @@ public class MaterialComponent extends AnchorPane
 
     @FXML
     private HBox materialColourContainer;
-
-    @FXML
-    private HBox materialRemainingContainer;
 
     public MaterialComponent()
     {
@@ -57,10 +57,10 @@ public class MaterialComponent extends AnchorPane
         }
     }
 
-    public void setMaterial(int reelNumber, String materialName, String materialColourString,
-        Color colour)
+    public void setMaterial(int reelNumber, MaterialType materialType, String materialColourString,
+        Color colour, double remainingFilament, double filamentDiameter)
     {
-        String numberMaterial = String.valueOf(reelNumber) + ":" + materialName;
+        String numberMaterial = String.valueOf(reelNumber) + ":" + materialType.getFriendlyName();
         reelNumberMaterial.setText(numberMaterial);
 
         String colourString = colourToString(colour);
@@ -74,5 +74,11 @@ public class MaterialComponent extends AnchorPane
         } else {
             materialColour.setStyle("-fx-fill:black;");
         }
+        
+        double remainingLengthMeters = remainingFilament / 1000d;
+        double densityKGM2 = materialType.getDensity() * 1000d;
+        double crossSectionM2 = Math.PI * filamentDiameter * filamentDiameter  / 4d * 1e-6;
+        double remainingWeightG = remainingLengthMeters * crossSectionM2 * densityKGM2 * 1000d;
+        materialRemaining.setText(((int) remainingLengthMeters) + "m / " + ((int) remainingWeightG) + "g remaining");
     }
 }
