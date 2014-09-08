@@ -127,11 +127,11 @@
                             </rowConstraints>
                         </GridPane>
                         <Pane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="20.0" />
-                  <HBox id="materialContainer" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="statusPanelChild" translateX="20.0">
-                     <children>
-                              <MaterialComponent fx:id="material1" translateX="10.0" />
-                     </children>
-                  </HBox>
+                        <HBox fx:id="materialContainer" id="materialContainer" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="statusPanelChild" translateX="20.0">
+                            <children>
+                                <MaterialComponent fx:id="material1" translateX="10.0" />
+                            </children>
+                        </HBox>
                         <VBox fx:id="temperatureVBox" alignment="TOP_CENTER" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" styleClass="sidePanelVBox">
                             <BorderPane.margin>
                                 <Insets top="5.0" />
@@ -245,7 +245,7 @@
                         </NumberAxis>
                     </yAxis>
                 </LineChart>
-                <HBox id="temperatureChartXLabels" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="260.0" style="-fx-background-color: dark_grey;" translateX="20.0" AnchorPane.bottomAnchor="40.0">
+                <HBox fx:id="temperatureChartXLabels" id="temperatureChartXLabels" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="260.0" style="-fx-background-color: dark_grey;" translateX="20.0" AnchorPane.bottomAnchor="40.0">
                     <children>
                         <Text fill="#ffffff" style="-fx-font-size: 9;" styleClass="temperatureXLabel" text="-3" translateX="-55.0" HBox.hgrow="NEVER">
                         </Text>
@@ -258,16 +258,15 @@
                         </Text>
                     </children>
                 </HBox>
-            <HBox prefHeight="20.0" prefWidth="260.0" style="-fx-background-color: dark_grey;" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0">
-               <children>
-                  <Text fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-size: 9;" text="Key:" translateX="15.0" />
-                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="graph-red" text="● Nozzle" translateX="35.0" />
-                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="graph-yellow" text="● Bed" translateX="70.0" />
-                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="graph-green" text="● Ambient" translateX="105.0" />
-               </children>
-            </HBox>
+                <HBox fx:id="legendContainer" prefHeight="20.0" prefWidth="260.0" style="-fx-background-color: dark_grey;" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0">
+                    <children>
+                        <Text fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-size: 9;" text="Key:" translateX="15.0" />
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="graph-red" text="● Nozzle" translateX="35.0" />
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="graph-yellow" text="● Bed" translateX="70.0" />
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="graph-green" text="● Ambient" translateX="105.0" />
+                    </children>
+                </HBox>
             </children>
         </AnchorPane>
-        <!--<fx:include fx:id="slideout" source="printerStatusSlideOutPanel.fxml" />-->
     </children>
 </HBox>

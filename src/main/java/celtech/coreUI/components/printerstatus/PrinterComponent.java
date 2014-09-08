@@ -3,6 +3,7 @@
  */
 package celtech.coreUI.components.printerstatus;
 
+import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.DisplayManager;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
@@ -140,7 +141,9 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
 
     public void setColour(Color color)
     {
-        String colourHexString = "#" + colourToString(color);
+        PrinterColourMap colourMap = PrinterColourMap.getInstance();
+        Color displayColour = colourMap.printerToDisplayColour(color);
+        String colourHexString = "#" + colourToString(displayColour);
         String style = "-fx-background-color: " + colourHexString + ";";
         innerPane.setStyle(style);
     }
@@ -281,5 +284,15 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
 
         nameLayoutY = sizePixels - (progressBarYOffset / 2) + fontMetrics.getDescent();
         name.setLayoutY(nameLayoutY);
+        
+        
     }
+    
+    /**
+     * Fit the printer name to the available space
+     */
+    public void fitNameToWidth() {
+        float stringWidth;
+    }
+        
 }

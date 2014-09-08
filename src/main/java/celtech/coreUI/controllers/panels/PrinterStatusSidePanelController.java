@@ -44,8 +44,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -64,6 +64,15 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     @FXML
     private MaterialComponent material1;
+    
+    @FXML
+    private HBox materialContainer;
+    
+    @FXML 
+    private HBox temperatureChartXLabels;
+    
+    @FXML
+    private HBox legendContainer;
 
     @FXML
     private Label ambientTemperatureLabel;
@@ -924,6 +933,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         temperatureVBox.setVisible(visible);
         temperatureChart.setVisible(visible);
+        temperatureChartXLabels.setVisible(visible);
+        materialContainer.setVisible(visible);
+        
+        legendContainer.setVisible(visible);
     }
 
     /**
