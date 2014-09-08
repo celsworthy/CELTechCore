@@ -72,7 +72,7 @@ public class GCodeFileParser {
             String line;
             while ((line = fileReader.readLine()) != null) {
                 linesSoFar++;
-                double percentSoFar = (double) linesSoFar / (double) linesInFile;
+                double percentSoFar = ((double) linesSoFar / (double) linesInFile) * 100;
                 if (percentSoFar - lastPercentSoFar >= 1) {
                     percentProgress.set(percentSoFar);
                     lastPercentSoFar = percentSoFar;

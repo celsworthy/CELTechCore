@@ -78,13 +78,17 @@ public class SlicerTask extends Task<SliceResult>
                 commands.add("command.com");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\" --load " + configFile + " -o " + tempGcodeFilename + " " + tempModelFilename + "\"");
+                commands.add("\"pushd \"" + workingDirectory + "\" && \"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\" --load " + configFile + " -o "
+                    + tempGcodeFilename + " " + tempModelFilename
+                    + " && popd\"");
                 break;
             case WINDOWS:
                 commands.add("cmd.exe");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\" --load " + configFile + " -o " + tempGcodeFilename + " " + tempModelFilename + "\"");
+                commands.add("\"pushd \"" + workingDirectory + "\" && \"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\" --load " + configFile + " -o "
+                    + tempGcodeFilename + " " + tempModelFilename
+                    + " && popd\"");
                 break;
             case MAC:
                 commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r.app/Contents/MacOS/slic3r");
@@ -110,7 +114,10 @@ public class SlicerTask extends Task<SliceResult>
         if (commands.size() > 0)
         {
             ProcessBuilder slicerProcessBuilder = new ProcessBuilder(commands);
-            slicerProcessBuilder.directory(new File(workingDirectory));
+            if (machineType != MachineType.WINDOWS && machineType == MachineType.WINDOWS_95)
+            {
+                slicerProcessBuilder.directory(new File(workingDirectory));
+            }
             
             Process slicerProcess = null;
 

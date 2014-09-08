@@ -16,10 +16,11 @@ import celtech.coreUI.components.ProjectLoader;
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.components.SlideoutAndProjectHolder;
 import celtech.coreUI.controllers.InfoScreenIndicatorController;
-import celtech.coreUI.controllers.panels.LayoutStatusMenuStripController;
 import celtech.coreUI.controllers.PrinterStatusPageController;
 import celtech.coreUI.controllers.panels.LayoutSidePanelController;
 import celtech.coreUI.controllers.panels.LayoutSlideOutPanelController;
+import celtech.coreUI.controllers.panels.LayoutStatusMenuStripController;
+import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
 import celtech.coreUI.controllers.panels.SettingsSidePanelController;
 import celtech.coreUI.controllers.panels.SidePanelManager;
 import celtech.coreUI.visualisation.ThreeDViewManager;
@@ -409,7 +410,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
         slideoutAndProjectHolder.setPrefSize(-1, -1);
         slideoutAndProjectHolder.getStyleClass().add("master-details-pane");
         HBox.setHgrow(slideoutAndProjectHolder, Priority.ALWAYS);
-        
+
         HBox.setHgrow(rhPanel, Priority.ALWAYS);
 
         try
@@ -755,7 +756,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             ((ProjectTab) currentTab).autoLayout();
         }
     }
-    
+
     /**
      *
      */
@@ -901,5 +902,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
     public String getPrimaryFontFamily()
     {
         return primaryFont.getFamily();
+    }
+
+    public PurgeInsetPanelController getPurgeInsetPanelController()
+    {
+        return (PurgeInsetPanelController) insetPanelControllers.get(ApplicationMode.PURGE);
     }
 }

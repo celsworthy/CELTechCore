@@ -2892,7 +2892,7 @@ public class PrinterImpl implements Printer
 
                 if (purgeConsent)
                 {
-                    PrinterUtils.runPurge(this, macroName);
+                    DisplayManager.getInstance().getPurgeInsetPanelController().purgeAndRunMacro(macroName, this);
                 } else
                 {
                     printQueue.printGCodeFile(GCodeMacros.getFilename(macroName), true);

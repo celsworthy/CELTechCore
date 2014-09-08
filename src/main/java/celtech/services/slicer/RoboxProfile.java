@@ -257,7 +257,7 @@ public class RoboxProfile implements Serializable, Cloneable
     /**
      *
      */
-    protected IntegerProperty bridge_flow_ratio = new SimpleIntegerProperty(1);
+    protected FloatProperty bridge_flow_ratio = new SimpleFloatProperty(1);
 
     /**
      *
@@ -1964,7 +1964,7 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      * @return
      */
-    public IntegerProperty getBridge_flow_ratio()
+    public FloatProperty getBridge_flow_ratio()
     {
         return bridge_flow_ratio;
     }
@@ -1973,7 +1973,7 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      * @param bridge_flow_ratio
      */
-    public void setBridge_flow_ratio(IntegerProperty bridge_flow_ratio)
+    public void setBridge_flow_ratio(FloatProperty bridge_flow_ratio)
     {
         this.bridge_flow_ratio = bridge_flow_ratio;
     }
@@ -3096,7 +3096,7 @@ public class RoboxProfile implements Serializable, Cloneable
         out.writeInt(slowdown_below_layer_time.get());
         out.writeInt(min_print_speed.get());
         out.writeBoolean(avoid_crossing_perimeters.get());
-        out.writeInt(bridge_flow_ratio.get());
+        out.writeFloat(bridge_flow_ratio.get());
         out.writeInt(brim_width.get());
         out.writeBoolean(complete_objects.get());
         out.writeBoolean(external_perimeters_first.get());
@@ -3228,7 +3228,7 @@ public class RoboxProfile implements Serializable, Cloneable
         slowdown_below_layer_time = new SimpleIntegerProperty(in.readInt());
         min_print_speed = new SimpleIntegerProperty(in.readInt());
         avoid_crossing_perimeters = new SimpleBooleanProperty(in.readBoolean());
-        bridge_flow_ratio = new SimpleIntegerProperty(in.readInt());
+        bridge_flow_ratio = new SimpleFloatProperty(in.readFloat());
         brim_width = new SimpleIntegerProperty(in.readInt());
         complete_objects = new SimpleBooleanProperty(in.readBoolean());
         external_perimeters_first = new SimpleBooleanProperty(in.readBoolean());

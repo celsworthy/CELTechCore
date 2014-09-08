@@ -6,6 +6,7 @@ package celtech.services.printing;
 
 import celtech.appManager.Project;
 import celtech.appManager.ProjectMode;
+import celtech.appManager.TaskController;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PauseStatus;
 import celtech.coreUI.DisplayManager;
@@ -13,11 +14,13 @@ import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.printerControl.PrintJob;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
+import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.ListFilesResponse;
 import celtech.services.ControllableService;
 import celtech.services.postProcessor.GCodePostProcessingResult;
 import celtech.services.postProcessor.PostProcessorService;
+import celtech.services.roboxmoviemaker.MovieMakerTask;
 import celtech.services.slicer.AbstractSlicerService;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
@@ -145,6 +148,11 @@ public class PrintQueue implements ControllableService
      * The total number of layers in the model being printed
      */
     private final IntegerProperty progressNumLayers = new SimpleIntegerProperty();
+
+    /**
+     * The movie maker task
+     */
+    private MovieMakerTask movieMakerTask = null;
 
     public PrintQueue(Printer associatedPrinter)
     {
@@ -616,6 +624,41 @@ public class PrintQueue implements ControllableService
                                                         project,
                                                         acceptedPrintRequest);
             }
+
+            movieMakerTask = new MovieMakerTask(project.getUUID(), associatedPrinter);
+            movieMakerTask.setOnSucceeded(new EventHandler<WorkerStateEvent>()
+            {
+
+                @Override
+                public void handle(WorkerStateEvent event)
+                {
+                    steno.info("Movie maker succeeded");
+                }
+            });
+            movieMakerTask.setOnFailed(new EventHandler<WorkerStateEvent>()
+            {
+
+                @Override
+                public void handle(WorkerStateEvent event)
+                {
+                    steno.info("Movie maker failed");
+                }
+            });
+            movieMakerTask.setOnCancelled(new EventHandler<WorkerStateEvent>()
+            {
+
+                @Override
+                public void handle(WorkerStateEvent event)
+                {
+                    steno.info("Movie maker was cancelled");
+                }
+            });
+
+            TaskController.getInstance().manageTask(movieMakerTask);
+
+            Thread movieThread = new Thread(movieMakerTask);
+            movieThread.setName("Movie Maker - " + project.getUUID());
+            movieThread.start();
         }
 
         return acceptedPrintRequest;
@@ -700,7 +743,7 @@ public class PrintQueue implements ControllableService
             } catch (IOException ex)
             {
                 steno.error(
-                    "Error whilt preparing for print. Can't copy "
+                    "Error whilst preparing for print. Can't copy "
                     + fileToCopyname + " to " + printjobFilename);
             }
         }
@@ -771,6 +814,14 @@ public class PrintQueue implements ControllableService
         switch (newState)
         {
             case IDLE:
+                if (movieMakerTask != null)
+                {
+                    if (movieMakerTask.isRunning())
+                    {
+                        movieMakerTask.shutdown();
+                    }
+                    movieMakerTask = null;
+                }
                 printProgressMessage.unbind();
                 setPrintProgressMessage("");
                 primaryProgressPercent.unbind();
@@ -1003,7 +1054,8 @@ public class PrintQueue implements ControllableService
      */
     public boolean abortPrint()
     {
-        boolean cancelledRun = false;
+        boolean fullAbort = false;
+        boolean heatersOff = false;
 
         switch (printState)
         {
@@ -1012,7 +1064,7 @@ public class PrintQueue implements ControllableService
                 {
                     slicerService.cancelRun();
                     setPrintStatus(PrinterStatusEnumeration.IDLE);
-                    cancelledRun = true;
+                    heatersOff = true;
                 }
                 break;
             case POST_PROCESSING:
@@ -1020,7 +1072,7 @@ public class PrintQueue implements ControllableService
                 {
                     gcodePostProcessorService.cancelRun();
                     setPrintStatus(PrinterStatusEnumeration.IDLE);
-                    cancelledRun = true;
+                    heatersOff = true;
                 }
                 break;
             case PAUSED:
@@ -1043,7 +1095,7 @@ public class PrintQueue implements ControllableService
                 }
                 setPrintStatus(PrinterStatusEnumeration.IDLE);
 //                fxToJMEInterface.clearGCodeDisplay();
-                cancelledRun = true;
+                fullAbort = true;
                 break;
             default:
                 steno.warning("Attempt to abort print in print state "
@@ -1051,7 +1103,19 @@ public class PrintQueue implements ControllableService
                 break;
         }
 
-        if (cancelledRun)
+        if (heatersOff)
+        {
+            try
+            {
+                associatedPrinter.transmitDirectGCode(GCodeConstants.switchBedHeaterOff, false);
+                associatedPrinter.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+            } catch (RoboxCommsException ex)
+            {
+                steno.error(
+                    "Robox comms exception when sending heaters off gcode " + ex);
+            }
+        }
+        else if (fullAbort)
         {
             try
             {
@@ -1062,7 +1126,7 @@ public class PrintQueue implements ControllableService
                     "Robox comms exception when sending abort print gcode " + ex);
             }
         }
-        return cancelledRun;
+        return fullAbort;
     }
 
     /**

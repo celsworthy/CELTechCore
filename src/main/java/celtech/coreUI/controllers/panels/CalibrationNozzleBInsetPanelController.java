@@ -15,7 +15,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -81,8 +80,9 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
     }
 
     @FXML
-    void closeWindow(ActionEvent event)
+    void saveSettings(ActionEvent event)
     {
+        calibrationHelper.saveSettings();
         calibrationHelper.setState(NozzleBCalibrationState.IDLE);
         ApplicationStatus.getInstance().returnToLastMode();
     }
@@ -93,7 +93,8 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
     public void cancelCalibrationAction()
     {
         calibrationHelper.cancelCalibrationAction();
-        closeWindow(null);
+        calibrationHelper.setState(NozzleBCalibrationState.IDLE);
+        ApplicationStatus.getInstance().returnToLastMode();
     }
 
     @Override
@@ -240,9 +241,18 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
                 calibrationStatus.setText(state.getStepTitle(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
                 calibrationInstruction.setText(state.getStepInstruction(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
                 break;
+            case PARKING:
+                startCalibrationButton.setVisible(false);
+                cancelCalibrationButton.setVisible(true);
+                yesButton.setVisible(false);
+                noButton.setVisible(false);
+                saveSettingsButton.setVisible(false);
+                calibrationStatus.setText(state.getStepTitle());
+                calibrationInstruction.setText(state.getStepInstruction());
+                break;
             case FINISHED:
-                startCalibrationButton.setVisible(true);
-                cancelCalibrationButton.setVisible(false);
+                startCalibrationButton.setVisible(false);
+                cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(false);
                 noButton.setVisible(false);
                 saveSettingsButton.setVisible(true);

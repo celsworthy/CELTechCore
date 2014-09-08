@@ -53,7 +53,7 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class LayoutStatusMenuStripController
 {
-    
+
     private Stenographer steno = StenographerFactory.getStenographer(LayoutStatusMenuStripController.class.getName());
     private SettingsScreenState settingsScreenState = null;
     private ApplicationStatus applicationStatus = null;
@@ -61,6 +61,7 @@ public class LayoutStatusMenuStripController
     private final FileChooser modelFileChooser = new FileChooser();
     private Project boundProject = null;
     private PrinterUtils printerUtils = null;
+    private PurgeInsetPanelController purgePanelController = null;
 
     @FXML
     private ResourceBundle resources;
@@ -123,7 +124,7 @@ public class LayoutStatusMenuStripController
 
         if (purgeConsent)
         {
-            PrinterUtils.runPurge(currentProject, settingsScreenState.getFilament(),
+            purgePanelController.purgeAndPrint(currentProject, settingsScreenState.getFilament(),
                                   settingsScreenState.getPrintQuality(),
                                   settingsScreenState.getSettings(), printer);
         } else
@@ -154,7 +155,7 @@ public class LayoutStatusMenuStripController
     void addModel(ActionEvent event)
     {
 //        applicationStatus.setMode(ApplicationMode.ADD_MODEL);
-         Platform.runLater(() ->
+        Platform.runLater(() ->
         {
             ListIterator iterator = modelFileChooser.getExtensionFilters().listIterator();
 
@@ -257,6 +258,8 @@ public class LayoutStatusMenuStripController
         settingsScreenState = SettingsScreenState.getInstance();
         printerUtils = PrinterUtils.getInstance();
 
+        purgePanelController = displayManager.getPurgeInsetPanelController();
+
         backwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(
             ApplicationMode.STATUS));
 //        forwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS).and(printerOKToPrint));
@@ -289,9 +292,9 @@ public class LayoutStatusMenuStripController
                 }
             }
         });
-        
+
         layoutButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LAYOUT));
-     modelFileChooser.setTitle(DisplayManager.getLanguageBundle().getString("dialogs.modelFileChooser"));
+        modelFileChooser.setTitle(DisplayManager.getLanguageBundle().getString("dialogs.modelFileChooser"));
         modelFileChooser.getExtensionFilters().addAll(
             new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString(
                     "dialogs.modelFileChooserDescription"),
@@ -316,14 +319,14 @@ public class LayoutStatusMenuStripController
         snapToGroundButton.disableProperty().unbind();
         distributeModelsButton.disableProperty().unbind();
 
-        BooleanBinding snapToGroundOrNoSelectedModels = 
-            Bindings.equal(LayoutSubmode.SNAP_TO_GROUND, viewManager.layoutSubmodeProperty()).or(
+        BooleanBinding snapToGroundOrNoSelectedModels
+            = Bindings.equal(LayoutSubmode.SNAP_TO_GROUND, viewManager.layoutSubmodeProperty()).or(
                 Bindings.equal(0, selectionModel.getNumModelsSelectedProperty()));
-        BooleanBinding snapToGroundOrNoLoadedModels = 
-            Bindings.equal(LayoutSubmode.SNAP_TO_GROUND, viewManager.layoutSubmodeProperty()).or(
-                Bindings.isEmpty(viewManager.getLoadedModels()));        
-        BooleanBinding snapToGround = 
-            Bindings.equal(LayoutSubmode.SNAP_TO_GROUND, viewManager.layoutSubmodeProperty());
+        BooleanBinding snapToGroundOrNoLoadedModels
+            = Bindings.equal(LayoutSubmode.SNAP_TO_GROUND, viewManager.layoutSubmodeProperty()).or(
+                Bindings.isEmpty(viewManager.getLoadedModels()));
+        BooleanBinding snapToGround
+            = Bindings.equal(LayoutSubmode.SNAP_TO_GROUND, viewManager.layoutSubmodeProperty());
         BooleanBinding noLoadedModels = Bindings.isEmpty(viewManager.getLoadedModels());
         deleteModelButton.disableProperty().bind(snapToGroundOrNoSelectedModels);
         duplicateModelButton.disableProperty().bind(snapToGroundOrNoSelectedModels);
@@ -344,14 +347,15 @@ public class LayoutStatusMenuStripController
         forwardButton.visibleProperty().bind((applicationStatus.modeProperty().isEqualTo(
             ApplicationMode.LAYOUT).and(Bindings.isNotEmpty(boundProject.getLoadedModels())).or(
                 applicationStatus.modeProperty().isEqualTo(ApplicationMode.STATUS))));
-        
-        ChangeListener<LayoutSubmode> whenSubModeChanges =
-            (ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode oldMode, LayoutSubmode newMode) ->
-        {
-            if (oldMode.equals(LayoutSubmode.SNAP_TO_GROUND) && newMode.equals(LayoutSubmode.SELECT)) {
-                snapToGroundButton.setSelected(false);
-            }
-        };
-        viewManager.layoutSubmodeProperty().addListener(whenSubModeChanges);        
+
+        ChangeListener<LayoutSubmode> whenSubModeChanges
+            = (ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode oldMode, LayoutSubmode newMode) ->
+            {
+                if (oldMode.equals(LayoutSubmode.SNAP_TO_GROUND) && newMode.equals(LayoutSubmode.SELECT))
+                {
+                    snapToGroundButton.setSelected(false);
+                }
+            };
+        viewManager.layoutSubmodeProperty().addListener(whenSubModeChanges);
     }
 }
