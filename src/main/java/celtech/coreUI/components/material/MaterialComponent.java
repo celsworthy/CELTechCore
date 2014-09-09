@@ -78,6 +78,7 @@ public class MaterialComponent extends AnchorPane
         reelNumberMaterial.setText(numberMaterial);
         materialRemaining.setText(materialRemainingString);
         String colourString = colourToString(colour);
+        reelNumberMaterial.setStyle("-fx-fill:" + colourString + ";");
         materialColourContainer.setStyle("-fx-background-color:" + colourString + ";");
         reel1SVG.setStyle("-fx-fill:" + colourString + ";");
 

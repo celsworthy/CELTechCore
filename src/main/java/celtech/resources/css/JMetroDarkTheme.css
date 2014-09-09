@@ -8,8 +8,8 @@
 
 @font-face {
     font-family: SourceSansPro;
-    font-weight: bold;
-    font-style: normal;
+    font-weight: normal;
+    font-style: Semibold;
     src: url('/celtech/resources/fonts/SourceSansPro-Semibold.ttf') format(ttf);
 }
 
