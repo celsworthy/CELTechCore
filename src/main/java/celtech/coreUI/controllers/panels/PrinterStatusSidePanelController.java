@@ -15,7 +15,9 @@ import celtech.printerControl.Printer;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
@@ -48,13 +50,13 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     @FXML
     private MaterialComponent material1;
-    
+
     @FXML
     private HBox materialContainer;
-    
-    @FXML 
+
+    @FXML
     private HBox temperatureChartXLabels;
-    
+
     @FXML
     private HBox legendContainer;
 
@@ -69,6 +71,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     @FXML
     private NumberAxis temperatureAxis;
+    @FXML
     private NumberAxis timeAxis;
 
     private ObservableList<Printer> printerStatusList = null;
@@ -80,8 +83,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private final Map<Printer, PrinterComponent> printerComponentsByPrinter = new HashMap<>();
 
     private final int MAX_DATA_POINTS = 210;
-    
+
     private ChangeListener reelDataChangedListener;
+    
+    private final List<Printer> activePrinters = new ArrayList<>();
 
     private LineChart.Series<Number, Number> currentAmbientTemperatureHistory = null;
 
@@ -107,7 +112,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         }
     };
 
-  
     private PrinterColourMap colourMap = PrinterColourMap.getInstance();
 
     /**
@@ -161,6 +165,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                     {
                         for (Printer printer : change.getAddedSubList())
                         {
+                            activePrinters.add(printer);
+                            System.out.println("add printer " + printer);
                             clearAndAddAllPrintersToGrid();
                             selectPrinter(printer);
                         }
@@ -168,12 +174,18 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                     {
                         for (Printer printer : change.getRemoved())
                         {
+                            System.out.println("remove printer " + printer);
                             removePrinter(printer);
+                            activePrinters.remove(printer);
+                            clearAndAddAllPrintersToGrid();
+                            selectOnePrinter();
                         }
                     } else if (change.wasReplaced())
                     {
+                        System.out.println("printer replaced");
                     } else if (change.wasUpdated())
                     {
+                        System.out.println("printer updated");
                     }
                 }
             }
@@ -187,14 +199,14 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         removeAllPrintersFromGrid();
         int row = 0;
         int column = 0;
-        for (Printer printer : printerStatusList)
+        for (Printer printer : activePrinters)
         {
             PrinterComponent printerComponent = createPrinterComponentForPrinter(printer);
             addPrinterComponentToGrid(printerComponent, row, column);
             column += 1;
         }
     }
-    
+
     /**
      * Add the given printer component to the given grid coordinates.
      */
@@ -202,19 +214,24 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         int column)
     {
         PrinterComponent.Size size;
-        if (printerStatusList.size() > 1) {
+        if (activePrinters.size() > 1)
+        {
             size = PrinterComponent.Size.SIZE_MEDIUM;
-        } else {
+        } else
+        {
             size = PrinterComponent.Size.SIZE_LARGE;
         }
+        System.out.println("set size to " + size + " for printerC " + printerComponent);
         printerComponent.setSize(size);
         printerStatusGrid.add(printerComponent, column, row);
-    }    
-    
-    private void removeAllPrintersFromGrid() {
-        for (Printer printer : printerStatusList)
+    }
+
+    private void removeAllPrintersFromGrid()
+    {
+        for (Printer printer : activePrinters)
         {
-            removePrinter(printer);
+            PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
+            removePrinterComponentFromGrid(printerComponent);
         }
     }
 
@@ -224,9 +241,16 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
      */
     private void removePrinter(Printer printer)
     {
-        PrinterComponent printerComponent = printerComponentsByPrinter.get(selectedPrinter);
+        PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
         removePrinterComponentFromGrid(printerComponent);
-        selectPrinter(null);
+    }
+    
+    private void selectOnePrinter() {
+        if (activePrinters.size() > 0) {
+            selectPrinter(activePrinters.get(0));
+        } else {
+            selectPrinter(null);
+        }
     }
 
     /**
@@ -239,6 +263,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         if (selectedPrinter != null)
         {
             PrinterComponent printerComponent = printerComponentsByPrinter.get(selectedPrinter);
+//            statusScreenState.setCurrentlySelectedPrinter(null);
             printerComponent.setSelected(false);
         }
 
@@ -247,9 +272,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         {
             PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
             printerComponent.setSelected(true);
+            statusScreenState.setCurrentlySelectedPrinter(printer);
+            bindDetails(printer);
         }
-        statusScreenState.setCurrentlySelectedPrinter(printer);
-        bindDetails(printer);
         controlDetailsVisibility();
 
     }
@@ -370,17 +395,17 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         temperatureChart.getData().add(printer.ambientTargetTemperatureHistory());
         temperatureChart.getData().add(printer.bedTargetTemperatureHistory());
         temperatureChart.getData().add(printer.nozzleTargetTemperatureHistory());
-        
-//        updateReelMaterial(printer);
 
     }
 
     /**
      * Update the material component with the appropriate details.
-     * @param printer 
+     *
+     * @param printer
      */
     private void updateReelMaterial(Printer printer)
     {
+        System.out.println("update material for printer " + printer);
         if (printer.reelEEPROMStatusProperty().get().equals(EEPROMState.PROGRAMMED))
         {
             material1.setMaterial(1, printer.getReelMaterialType(),
@@ -400,7 +425,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private void unbindPrinter(Printer printer)
     {
-        if (reelDataChangedListener != null) {
+        if (reelDataChangedListener != null)
+        {
             printer.reelDataChangedProperty().removeListener(reelDataChangedListener);
         }
         temperatureChart.getData().remove(printer.ambientTemperatureHistory());
@@ -421,7 +447,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         temperatureChart.setVisible(visible);
         temperatureChartXLabels.setVisible(visible);
         materialContainer.setVisible(visible);
-        
+
         legendContainer.setVisible(visible);
     }
 
