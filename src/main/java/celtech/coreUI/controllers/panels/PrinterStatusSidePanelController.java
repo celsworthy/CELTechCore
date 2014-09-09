@@ -130,8 +130,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private ObservableList<Printer> printerStatusList = null;
     private StatusScreenState statusScreenState = null;
 
-    private String filamentNotLoadedString;
-    private String reelNotFormattedString;
     private String headNotAttachedString;
     private String headNotFormattedString;
     private String tempOutOfRangeHighString;
@@ -314,8 +312,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private void initialiseMessages(ResourceBundle languageBundle)
     {
-        filamentNotLoadedString = languageBundle.getString("smartReelProgrammer.noReelLoaded");
-        reelNotFormattedString = languageBundle.getString("smartReelProgrammer.reelNotFormatted");
         headNotAttachedString = languageBundle.getString("sidePanel_printerStatus.headNotAttached");
         headNotFormattedString = languageBundle.getString("smartheadProgrammer.headNotFormatted");
         tempOutOfRangeHighString = languageBundle.getString("printerStatus.tempOutOfRangeHigh");
@@ -888,10 +884,11 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         } else if (printer.reelEEPROMStatusProperty().get().equals(
             EEPROMState.NOT_PROGRAMMED))
         {
-//            material1.setMaterial(1, "ERROR", reelNotFormattedString, Color.BLACK, 0f, 0f);
+            material1.showReelNotFormatted();
         } else
         {
-//            material1.setMaterial(1, "", filamentNotLoadedString, Color.BLACK, 0f, 0f);
+            
+            material1.showFilamentNotLoaded();
         }
     }
 

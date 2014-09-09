@@ -107,7 +107,6 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
 
         name.setFill(Color.WHITE);
         name.setText(printer.getPrinterFriendlyName());
-//        name.getStyleClass().add("printer-component-label");
         setColour(printer.getPrinterColour());
 
         progressListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->

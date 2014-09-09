@@ -310,8 +310,6 @@
     -fx-shape: "M0,3 L5,0 L5,6 L0,3 Z";
 }
 
-
-
 #ambientTempLegend { -fx-fill: green; }
 #bedTempLegend { -fx-fill: yellow; }
 #nozzleTempLegend { -fx-fill: darkviolet; }

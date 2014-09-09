@@ -4,11 +4,11 @@
 package celtech.coreUI.components.material;
 
 import celtech.configuration.MaterialType;
+import celtech.coreUI.DisplayManager;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.AnchorPane;
@@ -23,7 +23,7 @@ import javafx.scene.text.Text;
  */
 public class MaterialComponent extends AnchorPane
 {
-    
+
     @FXML
     private Text reelNumberMaterial;
 
@@ -61,8 +61,22 @@ public class MaterialComponent extends AnchorPane
         Color colour, double remainingFilament, double filamentDiameter)
     {
         String numberMaterial = String.valueOf(reelNumber) + ":" + materialType.getFriendlyName();
-        reelNumberMaterial.setText(numberMaterial);
 
+        double remainingLengthMeters = remainingFilament / 1000d;
+        double densityKGM2 = materialType.getDensity() * 1000d;
+        double crossSectionM2 = Math.PI * filamentDiameter * filamentDiameter / 4d * 1e-6;
+        double remainingWeightG = remainingLengthMeters * crossSectionM2 * densityKGM2 * 1000d;
+        String remaining = ((int) remainingLengthMeters) + "m / " + ((int) remainingWeightG)
+            + "g remaining";
+
+        showDetails(numberMaterial, remaining, materialColourString, colour);
+    }
+
+    private void showDetails(String numberMaterial, String materialRemainingString,
+        String materialColourString, Color colour)
+    {
+        reelNumberMaterial.setText(numberMaterial);
+        materialRemaining.setText(materialRemainingString);
         String colourString = colourToString(colour);
         materialColourContainer.setStyle("-fx-background-color:" + colourString + ";");
         reel1SVG.setStyle("-fx-fill:" + colourString + ";");
@@ -71,14 +85,29 @@ public class MaterialComponent extends AnchorPane
         if (colour.getBrightness() < 0.5)
         {
             materialColour.setStyle("-fx-fill:white;");
-        } else {
+        } else
+        {
             materialColour.setStyle("-fx-fill:black;");
         }
-        
-        double remainingLengthMeters = remainingFilament / 1000d;
-        double densityKGM2 = materialType.getDensity() * 1000d;
-        double crossSectionM2 = Math.PI * filamentDiameter * filamentDiameter  / 4d * 1e-6;
-        double remainingWeightG = remainingLengthMeters * crossSectionM2 * densityKGM2 * 1000d;
-        materialRemaining.setText(((int) remainingLengthMeters) + "m / " + ((int) remainingWeightG) + "g remaining");
     }
+
+    /**
+     * Indicate that the reel is not formatted
+     */
+    public void showReelNotFormatted()
+    {
+        ResourceBundle languageBundle = DisplayManager.getLanguageBundle();
+        String reelNotFormattedString = languageBundle.getString(
+            "smartReelProgrammer.reelNotFormatted");
+        showDetails("1:ERROR", "Not available", reelNotFormattedString, Color.BLACK);
+
+    }
+
+    public void showFilamentNotLoaded()
+    {
+        ResourceBundle languageBundle = DisplayManager.getLanguageBundle();
+        String filamentNotLoadedString = languageBundle.getString("smartReelProgrammer.noReelLoaded");
+        showDetails("1:", "Please create a profile", filamentNotLoadedString, Color.BLACK);
+    }
+
 }
