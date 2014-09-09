@@ -274,7 +274,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             printerComponent.setSelected(false);
         }
 
-        selectedPrinter = printer;
         if (printer != null)
         {
             PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
@@ -283,7 +282,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             bindDetails(printer);
         }
         controlDetailsVisibility();
-
+        
+        selectedPrinter = printer;
     }
 
     /**
@@ -384,6 +384,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private void bindPrinter(Printer printer)
     {
         System.out.println("bind printer " + printer);
+        updateReelMaterial(printer);
         reelDataChangedListener = (ChangeListener) (ObservableValue observable, Object oldValue, Object newValue) ->
         {
             updateReelMaterial(printer);

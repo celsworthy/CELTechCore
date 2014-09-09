@@ -100,6 +100,9 @@ public class Filament implements Serializable, Cloneable
     public Filament(ReelEEPROMDataResponse response)
     {
         this.filamentID.set(response.getReelFilamentID());
+        this.friendlyFilamentName.set(response.getReelFriendlyName());
+        this.material.set(response.getReelMaterialType());
+        this.displayColour.set(response.getReelDisplayColour());
         this.diameter.set(response.getFilamentDiameter());
         this.filamentMultiplier.set(response.getFilamentMultiplier());
         this.feedRateMultiplier.set(response.getFeedRateMultiplier());
@@ -573,7 +576,7 @@ public class Filament implements Serializable, Cloneable
                 {
                     String receivedTypeCode = response.getReelFilamentID();
 
-                    // If we recognise a Robox filament check that it has the right settings 
+                    // Check that the filament has the right settings 
                     if (receivedTypeCode != null)
                     {
                         boolean needToWriteFilamentData = false;
@@ -647,6 +650,30 @@ public class Filament implements Serializable, Cloneable
                             {
                                 filamentToWrite.setNozzleTemperature(
                                     referenceFilament.getNozzleTemperature());
+                                needToWriteFilamentData = true;
+                            }
+                            
+                            if (! response.getReelDisplayColour().equals(
+                                    referenceFilament.getDisplayColour()))
+                            {
+                                filamentToWrite.setDisplayColour(
+                                    referenceFilament.getDisplayColour());
+                                needToWriteFilamentData = true;
+                            }
+                            
+                            if (! response.getReelFriendlyName().equals(
+                                    referenceFilament.getFriendlyFilamentName()))
+                            {
+                                filamentToWrite.setFriendlyFilamentName(
+                                    referenceFilament.getFriendlyFilamentName());
+                                needToWriteFilamentData = true;
+                            }
+                            
+                            if (! response.getReelMaterialType().equals(
+                                    referenceFilament.getMaterial()))
+                            {
+                                filamentToWrite.setMaterial(
+                                    referenceFilament.getMaterial());
                                 needToWriteFilamentData = true;
                             }
 
