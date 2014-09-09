@@ -127,7 +127,7 @@
                             </rowConstraints>
                         </GridPane>
                         <Pane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="20.0" />
-                        <HBox id="materialContainer" fx:id="materialContainer" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="statusPanelChild" translateX="20.0">
+                        <HBox fx:id="materialContainer" id="materialContainer" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="statusPanelChild" translateX="20.0">
                             <children>
                                 <MaterialComponent fx:id="material1" translateX="10.0" />
                             </children>
@@ -140,6 +140,90 @@
              
                         <VBox alignment="TOP_CENTER" fillWidth="true" BorderPane.alignment="CENTER">
                             <children>
+                                <GridPane fx:id="targetTemperatureGrid" alignment="CENTER" hgap="5.0" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" vgap="5.0">
+                                    <children>
+                                        <Label styleClass="sidePanelInformationLabel" text="%sidePanel_printerStatus.nozzleLabel" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                            <graphic>
+                                                <Rectangle id="nozzleTempLegend" arcHeight="0.0" arcWidth="0.0" fill="#41cc00" height="20.0" stroke="BLACK" strokeType="INSIDE" width="20.0" />
+                                            </graphic>
+                                        </Label>
+                                        <HBox GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                        <Label fx:id="nozzleTemperatureLabel" styleClass="sidePanelInformationLabel" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                        <Label styleClass="sidePanelInformationLabel" text="%sidePanel_printerStatus.bedLabel" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                                            <graphic>
+                                                <Rectangle id="bedTempLegend" arcHeight="0.0" arcWidth="0.0" height="20.0" stroke="BLACK" strokeType="INSIDE" width="20.0">
+                                                    <fill>
+                                                        <Color blue="0.000" green="0.800" red="0.255" fx:id="x2" />
+                                                    </fill>
+                                                </Rectangle>
+                                            </graphic>
+                                        </Label>
+                                        <Label fx:id="bedTemperatureLabel" styleClass="sidePanelInformationLabel" text="-" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                        <Label fx:id="ambientTemperatureLabel" styleClass="sidePanelInformationLabel" text="-" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                        <Label id="ambientTempLegend" styleClass="sidePanelInformationLabel" text="%sidePanel_printerStatus.ambientLabel" GridPane.columnIndex="0" GridPane.rowIndex="3">
+                                            <graphic>
+                                                <Rectangle id="ambientTempLegend" arcHeight="0.0" arcWidth="0.0" fill="$x2" height="20.0" stroke="BLACK" strokeType="INSIDE" width="20.0" />
+                                            </graphic>
+                                        </Label>
+                                        <HBox id="HBox" fx:id="targetNozzleTempHBox" alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                                            <children>
+                                                <StackPane>
+                                                    <children>
+                                                        <Label fx:id="nozzleTemperaturePlaceholder" text="-" />
+                                                        <RestrictedNumberField fx:id="nozzleFirstLayerTargetTemperature" maxLength="4" onAction="#setNozzleFirstLayerTargetTemp" prefColumnCount="3" />
+                                                        <RestrictedNumberField fx:id="nozzleTargetTemperature" alignment="CENTER_RIGHT" maxLength="4" onAction="#setNozzleTargetTemp" prefColumnCount="3" text="555">
+                                                            <font>
+                                                                <Font size="10.0" />
+                                                            </font>
+                                                        </RestrictedNumberField>
+                                                    </children>
+                                                </StackPane>
+                                                <Label text="%misc.degreesC" />
+                                            </children>
+                                        </HBox>
+                                        <HBox id="HBox" fx:id="targetBedTempHBox" alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                                            <children>
+                                                <StackPane>
+                                                    <children>
+                                                        <RestrictedNumberField fx:id="bedFirstLayerTargetTemperature" maxLength="4" onAction="#setBedFirstLayerTargetTemp" prefColumnCount="3" />
+                                                        <RestrictedNumberField fx:id="bedTargetTemperature" maxLength="4" onAction="#setBedTargetTemp" prefColumnCount="3" text="666">
+                                                        </RestrictedNumberField>
+                                                        <Label fx:id="bedTemperaturePlaceholder" text="-" />
+                                                    </children>
+                                                </StackPane>
+                                                <Label text="%misc.degreesC" />
+                                            </children>
+                                        </HBox>
+                                        <HBox id="HBox" fx:id="targetAmbientTempHBox" alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                                            <children>
+                                                <RestrictedNumberField fx:id="ambientTargetTemperature" maxHeight="20.0" maxLength="50" minHeight="0.0" minWidth="0.0" onAction="#setAmbientTargetTemp" prefColumnCount="3" HBox.hgrow="NEVER">
+                                                </RestrictedNumberField>
+                                                <Label text="%misc.degreesC" />
+                                            </children>
+                                        </HBox>
+                                        <Label text="%sidePanel_settings.currentTemperature" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                        <Label fx:id="targetTempLabel" alignment="CENTER" text="%sidePanel_settings.targetTemperature" textAlignment="LEFT" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                                        <Label fx:id="heaterStatusLabel" alignment="CENTER" text="%sidePanel_settings.heaters" textAlignment="LEFT" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+                                        <CheckBox fx:id="nozzleHeaterCheckBox" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                                        <CheckBox fx:id="bedHeaterCheckBox" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.halignment="RIGHT" GridPane.rowIndex="2">
+                                            <cursor>
+                                                <Cursor fx:constant="DEFAULT" />
+                                            </cursor>
+                                        </CheckBox>
+                                    </children>
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="SOMETIMES" />
+                                        <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" />
+                                        <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" />
+                                        <ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="SOMETIMES" />
+                                    </columnConstraints>
+                                    <rowConstraints>
+                                        <RowConstraints vgrow="SOMETIMES" />
+                                        <RowConstraints vgrow="NEVER" />
+                                        <RowConstraints vgrow="SOMETIMES" />
+                                        <RowConstraints vgrow="SOMETIMES" />
+                                    </rowConstraints>
+                                </GridPane>
                                 <VBox prefWidth="300.0">
                                     <VBox.margin>
                                         <Insets />
@@ -161,16 +245,16 @@
                         </NumberAxis>
                     </yAxis>
                 </LineChart>
-                <HBox id="temperatureChartXLabels" fx:id="temperatureChartXLabels" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="260.0" style="-fx-background-color: dark_grey;" translateX="20.0" AnchorPane.bottomAnchor="40.0">
+                <HBox fx:id="temperatureChartXLabels" id="temperatureChartXLabels" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="260.0" style="-fx-background-color: dark_grey;" translateX="20.0" AnchorPane.bottomAnchor="40.0">
                     <children>
-                        <Text fill="#ffffff" style="-fx-font-size: 9;" styleClass="temperatureXLabel" text="-3" translateX="-57.0" translateY="-4.0" HBox.hgrow="NEVER">
+                        <Text fill="#ffffff" style="-fx-font-size: 9;" styleClass="temperatureXLabel" text="-3" translateX="-55.0" HBox.hgrow="NEVER">
                         </Text>
-                        <Text fill="#ffffff" style="-fx-font-size: 9;" styleClass="temperatureXLabel" text="-2" translateX="-12.0" translateY="-4.0">
+                        <Text fill="#ffffff" style="-fx-font-size: 9;" styleClass="temperatureXLabel" text="-2" translateX="-15.0">
                         </Text>
-                        <Text fill="#ffffff" style="-fx-font-size: 12;" styleClass="temperatureXLabel" text="Mins" translateX="-5.0" translateY="-4.0" />
-                        <Text fill="#ffffff" style="-fx-font-size: 9;" styleClass="temperatureXLabel" text="-1" translateX="3.0" translateY="-4.0">
+                        <Text fill="#ffffff" style="-fx-font-size: 12;" styleClass="temperatureXLabel" text="Mins" translateX="-10.0" />
+                        <Text fill="#ffffff" style="-fx-font-size: 9;" styleClass="temperatureXLabel" text="-1">
                         </Text>
-                        <Text fill="#ffffff" style="-fx-font-size: 9;" styleClass="temperatureXLabel" text="Now" translateX="36.0" translateY="-4.0" HBox.hgrow="NEVER">
+                        <Text fill="#ffffff" style="-fx-font-size: 9;" styleClass="temperatureXLabel" text="Now" translateX="36.0" HBox.hgrow="NEVER">
                         </Text>
                     </children>
                 </HBox>
