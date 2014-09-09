@@ -2571,6 +2571,7 @@ public class PrinterImpl implements Printer
 
     private void handlePrinterStatusUpdate(RoboxEvent printerEvent)
     {
+        System.out.println("printer status update for " + getPrinterFriendlyName());
         StatusResponse statusResponse = (StatusResponse) printerEvent.getPayload();
 //                steno.info("Got:" + statusResponse.toString());
         

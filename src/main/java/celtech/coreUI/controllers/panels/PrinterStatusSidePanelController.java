@@ -26,6 +26,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.geometry.Side;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -85,7 +86,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private final int MAX_DATA_POINTS = 210;
 
     private ChangeListener reelDataChangedListener;
-    
+
     private final List<Printer> activePrinters = new ArrayList<>();
 
     private LineChart.Series<Number, Number> currentAmbientTemperatureHistory = null;
@@ -244,11 +245,17 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
         removePrinterComponentFromGrid(printerComponent);
     }
-    
-    private void selectOnePrinter() {
-        if (activePrinters.size() > 0) {
+
+    /**
+     * Select any one of the active printers.
+     */
+    private void selectOnePrinter()
+    {
+        if (activePrinters.size() > 0)
+        {
             selectPrinter(activePrinters.get(0));
-        } else {
+        } else
+        {
             selectPrinter(null);
         }
     }
@@ -376,13 +383,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private void bindPrinter(Printer printer)
     {
-        reelDataChangedListener = new ChangeListener()
+        System.out.println("bind printer " + printer);
+        reelDataChangedListener = (ChangeListener) (ObservableValue observable, Object oldValue, Object newValue) ->
         {
-            @Override
-            public void changed(ObservableValue observable, Object oldValue, Object newValue)
-            {
-                updateReelMaterial(printer);
-            }
+            updateReelMaterial(printer);
         };
         printer.reelDataChangedProperty().addListener(reelDataChangedListener);
 

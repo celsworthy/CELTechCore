@@ -51,8 +51,12 @@
     graph_setpoint_green: #145019;
     graph_setpoint_yellow: #a07800;    
     /*-fx-font-family: 'CrazyZoo';*/
+
+}
+
+.root {
     -fx-font-family: 'SourceSansPro';
-    -fx-font-weight: light; 
+    -fx-font-weight: lighter; 
 }
 
 .standardPanel{

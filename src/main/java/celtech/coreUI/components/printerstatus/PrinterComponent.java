@@ -4,7 +4,6 @@
 package celtech.coreUI.components.printerstatus;
 
 import celtech.configuration.PrinterColourMap;
-import celtech.coreUI.DisplayManager;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
