@@ -25,8 +25,7 @@
     dark_grey: rgb(48,48,48);
     mid_grey: rgb(64,64,64);
     light_grey: rgb(99,99,99);
-    entrybox_background_grey: rgb(180,180,180);
-    blue_colour: rgb(0, 157, 226);
+    highlight_colour: rgb(0, 157, 226);
     background_colour: rgb(0,0,0);
     unselected_colour: #1d1d1d;
     selected_colour: #ffffff;
@@ -730,7 +729,7 @@
 }
 
 .combo-box-popup .list-view .list-cell:filled:selected{
-    -fx-background-color: blue_colour;
+    -fx-background-color: highlight_colour;
 }
 
 .combo-box-popup .list-view .list-cell:filled:selected:hover {
@@ -981,8 +980,8 @@
 }
 
 .tab:selected, .tab:selected .tab-label{
-    -fx-background-color: blue_colour;
-    -fx-border-color: blue_colour;
+    -fx-background-color: highlight_colour;
+    -fx-border-color: highlight_colour;
 }
 
 .tab .tab-label{
@@ -1149,7 +1148,7 @@ table-view .column-header-background {
 }
 
 .sidePanelTitle{
-    -fx-text-fill: blue_colour;
+    -fx-text-fill: highlight_colour;
     -fx-pref-height: 60;
     -fx-scale-x: 1.7;
     -fx-scale-y: 1.7;
@@ -1421,7 +1420,7 @@ table-view .column-header-background {
 }    
 
 .blue-inset-panel{
-    -fx-background-color: blue_colour;
+    -fx-background-color: highlight_colour;
 }
 
 .blue-inset-panel-text{
