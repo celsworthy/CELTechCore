@@ -55,6 +55,8 @@ import celtech.utils.PrinterUtils;
 import celtech.utils.SystemUtils;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
@@ -2714,7 +2716,17 @@ public class PrinterImpl implements Printer
         
         reelEEPROMStatus.set(statusResponse.getReelEEPROMState());
         
-        EEPROMState lastHeadState = headEEPROMStatus.get();
+        if (statusResponse.getReelEEPROMState() == EEPROMState.NOT_PROGRAMMED) {
+            if (Head.checkHead(this)) {
+                try
+                {
+                    transmitFormatHeadEEPROM();
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Did not format head successfully");
+                }
+            }
+        }        
         
         if (headEEPROMStatus.get() != EEPROMState.PROGRAMMED
             && statusResponse.getHeadEEPROMState() == EEPROMState.PROGRAMMED)
@@ -3068,6 +3080,7 @@ public class PrinterImpl implements Printer
     @Override
     public AckResponse transmitFormatHeadEEPROM() throws RoboxCommsException
     {
+        System.out.println("XXX format head");
         FormatHeadEEPROM formatHead = (FormatHeadEEPROM) RoboxTxPacketFactory.createPacket(
             TxPacketTypeEnum.FORMAT_HEAD_EEPROM);
         return (AckResponse) printerCommsManager.submitForWrite(portName, formatHead);

@@ -11,7 +11,13 @@ import celtech.coreUI.controllers.utilityPanels.MaintenancePanelController;
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
+import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.utils.SystemUtils;
+import static java.lang.Thread.sleep;
+import java.util.ResourceBundle;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import javafx.application.Platform;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.SimpleFloatProperty;
@@ -726,6 +732,79 @@ public class Head implements Cloneable
             steno.error("Error during hard reset of head");
         }
     }
+    
+/**
+     * Check the head and if it is unformatted then offer to format it. If it is not programmed then
+     * offer to reset it.
+     */
+    public static boolean checkHead(Printer printer)
+    {
+        try
+        {
+            printer.transmitStatusRequest();
+            StatusResponse response = printer.transmitStatusRequest();
+            if (response != null)
+            {
+                if (response.getHeadEEPROMState() == EEPROMState.NOT_PROGRAMMED)
+                {
+                    return askIfFormatHead();
+                }
+            }
+        } catch (RoboxCommsException ex)
+        {
+            try
+            {
+                sleep(100);
+            } catch (InterruptedException ex1)
+            {
+                steno.info("Wait for printer to return status in checking head");
+            }
+        }
+        return false;
+
+    }
+
+    /**
+     * Ask the user if the unformatted head should be formatted.
+     *
+     * @return true if a format is requested, else false.
+     */
+    private static boolean askIfFormatHead()
+    {
+        ResourceBundle languageBundle = DisplayManager.getLanguageBundle();
+        
+        Callable<Boolean> askFormatDialog = new Callable()
+        {
+
+            @Override
+            public Boolean call() throws Exception
+            {
+                Dialogs.CommandLink formatHeadOK = new Dialogs.CommandLink(
+                    languageBundle.getString("dialogs.formatHeadOkQuestion"),
+                    languageBundle.getString("dialogs.formatHeadOkMessage"));
+                Dialogs.CommandLink formatHeadNotOK = new Dialogs.CommandLink(
+                    languageBundle.getString("dialogs.formatHeadNotOkQuestion"),
+                    languageBundle.getString("dialogs.formatHeadNotOkMessage"));
+                Action formatHeadResponse = Dialogs.create().title(languageBundle.getString(
+                    "dialogs.unformattedHeadDetected"))
+                    .message(languageBundle.getString("dialogs.unformattedHead"))
+                    .masthead(null)
+                    .showCommandLinks(formatHeadOK, formatHeadOK,
+                                      formatHeadNotOK);
+                return formatHeadResponse.equals(formatHeadOK);
+            }
+        };
+        FutureTask<Boolean> askFormatTask = new FutureTask<>(askFormatDialog);
+        Platform.runLater(askFormatTask);
+        try
+        {
+            return askFormatTask.get();
+        } catch (InterruptedException | ExecutionException ex)
+        {
+            return false;
+        }
+    }
+    
 
     /**
      *
