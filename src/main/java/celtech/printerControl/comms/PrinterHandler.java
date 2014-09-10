@@ -103,7 +103,6 @@ public class PrinterHandler extends Thread
     public PrinterHandler(PrinterControlInterface controlInterface, String portName,
         boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
-        System.out.println("PORT NAME IS " + portName);
         this.controlInterface = controlInterface;
         this.portName = portName;
         this.suppressPrinterIDChecks = suppressPrinterIDChecks;
@@ -234,10 +233,8 @@ public class PrinterHandler extends Thread
                     break;
 
                 case CHECKING_FIRMWARE:
-                    System.out.println("CHECK FIRMWARE FOR PORT NAME " + portName);
                     if (dontCheckFirmwareForPortName.contains(portName))
                     {
-                        System.out.println("SKIP CHECK");
                         setCommsState(RoboxCommsState.CHECKING_ID);
                         break;
                     }
@@ -589,7 +586,7 @@ public class PrinterHandler extends Thread
      */
     public synchronized RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite) throws RoboxCommsException
     {
-        steno.info("WRITE " + messageToWrite);
+//        steno.info("WRITE " + messageToWrite);
 //        System.out.println("WRITE");
         RoboxRxPacket receivedPacket = null;
 

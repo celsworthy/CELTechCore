@@ -55,8 +55,6 @@ import celtech.utils.PrinterUtils;
 import celtech.utils.SystemUtils;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
@@ -275,6 +273,8 @@ public class PrinterImpl implements Printer
     private static final Dialogs.CommandLink abortJob = new Dialogs.CommandLink(
         DisplayManager.getLanguageBundle().getString("dialogs.error.abortJob"), null);
     private boolean errorDialogOnDisplay = false;
+    
+    private boolean formatDenied = false;
 
     /**
      *
@@ -288,17 +288,7 @@ public class PrinterImpl implements Printer
 
         languageBundle = DisplayManager.getLanguageBundle();
 
-        Platform.runLater(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                noSDDialog = new ModalDialog();
-                noSDDialog.setTitle(languageBundle.getString("dialogs.noSDCardTitle"));
-                noSDDialog.setMessage(languageBundle.getString("dialogs.noSDCardMessage"));
-                noSDDialog.addButton(languageBundle.getString("dialogs.noSDCardOK"));
-            }
-        });
+        initialiseSDDialog();
 
         ambientTemperatureHistory.setName(languageBundle.getString(
             "printerStatus.temperatureGraphAmbientLabel"));
@@ -328,6 +318,21 @@ public class PrinterImpl implements Printer
         whyAreWeWaiting_cooling = i18nBundle.getString("printerStatus.printerCooling");
         whyAreWeWaiting_heatingBed = i18nBundle.getString("printerStatus.printerBedHeating");
         whyAreWeWaiting_heatingNozzle = i18nBundle.getString("printerStatus.printerNozzleHeating");
+    }
+
+    void initialiseSDDialog()
+    {
+        Platform.runLater(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                noSDDialog = new ModalDialog();
+                noSDDialog.setTitle(languageBundle.getString("dialogs.noSDCardTitle"));
+                noSDDialog.setMessage(languageBundle.getString("dialogs.noSDCardMessage"));
+                noSDDialog.addButton(languageBundle.getString("dialogs.noSDCardOK"));
+            }
+        });
     }
     
     public StringProperty getPrinterUniqueIDProperty()
@@ -2573,9 +2578,7 @@ public class PrinterImpl implements Printer
 
     private void handlePrinterStatusUpdate(RoboxEvent printerEvent)
     {
-        System.out.println("printer status update for " + getPrinterFriendlyName());
         StatusResponse statusResponse = (StatusResponse) printerEvent.getPayload();
-//                steno.info("Got:" + statusResponse.toString());
         
         setAmbientTemperature(statusResponse.getAmbientTemperature());
         setAmbientTargetTemperature(statusResponse.getAmbientTargetTemperature());
@@ -2592,8 +2595,8 @@ public class PrinterImpl implements Printer
         {
             lastTimestamp = now;
             
-            for (int pointCounter = 0; pointCounter < NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP
-                - 1; pointCounter++)
+            for (int pointCounter = 0; pointCounter < NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1;
+                pointCounter++)
             {
                 ambientTemperatureDataPoints.get(pointCounter).setYValue(
                     ambientTemperatureDataPoints.get(pointCounter + 1).getYValue());
@@ -2689,8 +2692,6 @@ public class PrinterImpl implements Printer
         setLidOpen(statusResponse.isLidSwitchStatus());
         setReelButton(statusResponse.isReelButtonStatus());
         
-        EEPROMState lastReelState = reelEEPROMStatus.get();
-        
         if (reelEEPROMStatus.get() != EEPROMState.PROGRAMMED
             && statusResponse.getReelEEPROMState() == EEPROMState.PROGRAMMED)
         {
@@ -2716,7 +2717,7 @@ public class PrinterImpl implements Printer
         
         reelEEPROMStatus.set(statusResponse.getReelEEPROMState());
         
-        if (statusResponse.getReelEEPROMState() == EEPROMState.NOT_PROGRAMMED) {
+        if (statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PROGRAMMED && ! formatDenied) {
             if (Head.checkHead(this)) {
                 try
                 {
@@ -2725,6 +2726,8 @@ public class PrinterImpl implements Printer
                 {
                     steno.error("Did not format head successfully");
                 }
+            } else {
+                formatDenied = true;
             }
         }        
         
@@ -2755,20 +2758,8 @@ public class PrinterImpl implements Printer
         headEEPROMStatus.set(statusResponse.getHeadEEPROMState());
         
         sdCardPresent.set(statusResponse.isSDCardPresent());
-        if (statusResponse.isSDCardPresent() == false)
-        {
-            if (!noSDDialog.isShowing())
-            {
-                Platform.runLater(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        noSDDialog.show();
-                    }
-                });
-            }
-        }
+        showSDDialogIfNotShowing(statusResponse);
+        
         setHeadXPosition(statusResponse.getHeadXPosition());
         setHeadYPosition(statusResponse.getHeadYPosition());
         setHeadZPosition(statusResponse.getHeadZPosition());
@@ -2794,6 +2785,24 @@ public class PrinterImpl implements Printer
         }
         
         setPrinterStatus(printQueue.getPrintStatus());
+    }
+
+    void showSDDialogIfNotShowing(StatusResponse statusResponse)
+    {
+        if (statusResponse.isSDCardPresent() == false)
+        {
+            if (!noSDDialog.isShowing())
+            {
+                Platform.runLater(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        noSDDialog.show();
+                    }
+                });
+            }
+        }
     }
 
     private void setupErrorList(AckResponse response)
@@ -3080,7 +3089,6 @@ public class PrinterImpl implements Printer
     @Override
     public AckResponse transmitFormatHeadEEPROM() throws RoboxCommsException
     {
-        System.out.println("XXX format head");
         FormatHeadEEPROM formatHead = (FormatHeadEEPROM) RoboxTxPacketFactory.createPacket(
             TxPacketTypeEnum.FORMAT_HEAD_EEPROM);
         return (AckResponse) printerCommsManager.submitForWrite(portName, formatHead);
