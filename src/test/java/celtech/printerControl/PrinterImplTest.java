@@ -46,7 +46,8 @@ public class PrinterImplTest extends JavaFXConfiguredTest
         t.start();
     }
 
-    @Test
+    // This test must be run manually only as it needs a GUI action to be performed
+//    @Test
     public void testFormatHeadIsTriggeredForNOTPROGRAMMEDHead()
     {
         RoboxCommsManager roboxCommsManager = RoboxCommsManager.getInstance("/path/to/bin");

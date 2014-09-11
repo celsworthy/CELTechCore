@@ -153,6 +153,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private void initialisePrinterStatusGrid()
     {
+        activePrinters.addAll(printerStatusList);
         clearAndAddAllPrintersToGrid();
 
         printerStatusList.addListener(new ListChangeListener<Printer>()
