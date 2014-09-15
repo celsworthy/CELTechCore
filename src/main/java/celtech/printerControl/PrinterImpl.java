@@ -327,7 +327,7 @@ public class PrinterImpl implements Printer
         whyAreWeWaiting_heatingBed = i18nBundle.getString("printerStatus.printerBedHeating");
         whyAreWeWaiting_heatingNozzle = i18nBundle.getString("printerStatus.printerNozzleHeating");
     }
-    
+
     public StringProperty getPrinterUniqueIDProperty()
     {
         return printerUniqueID;
@@ -2349,21 +2349,7 @@ public class PrinterImpl implements Printer
                         steno.error("Couldn't reset errors after error detection");
                     }
 
-                    if (errorHandlingResponse == clearAndContinue)
-                    {
-                        try
-                        {
-                            if (pauseStatus.get() == PauseStatus.PAUSED
-                                || pauseStatus.get() == PauseStatus.PAUSE_PENDING)
-                            {
-                                transmitResumePrint();
-                            }
-                        } catch (RoboxCommsException ex)
-                        {
-                            steno.error("Couldn't reset errors and resume after error");
-                        }
-
-                    } else if (errorHandlingResponse == abortJob)
+                    if (errorHandlingResponse == abortJob)
                     {
                         try
                         {
@@ -2372,7 +2358,7 @@ public class PrinterImpl implements Printer
                             {
                                 transmitPausePrint();
                             }
-                            transmitAbortPrint();
+                            printQueue.abortPrint();
                         } catch (RoboxCommsException ex)
                         {
                             steno.error("Couldn't abort print after error");
@@ -2434,7 +2420,7 @@ public class PrinterImpl implements Printer
                         bedTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(
                             statusResponse.getBedTemperature());
                     }
-                    
+
                     nozzleTemperatureDataPoints.add(bedTargetPoint);
 
                     if (statusResponse.getNozzleTemperature()
@@ -3502,7 +3488,9 @@ public class PrinterImpl implements Printer
     public void printProject(Project project, Filament filament,
         PrintQualityEnumeration printQuality, RoboxProfile settings)
     {
-        if (filament != null)
+
+        if (filament != null
+            && filament != loadedFilamentProperty().get())
         {
             try
             {

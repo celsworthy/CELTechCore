@@ -426,7 +426,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     if (newValue == FilamentContainer.createNewFilament)
                     {
                         showCreateMaterialDialogue();
-                    } else if (newValue == null || currentPrinter == null || newValue == currentPrinter.loadedFilamentProperty().get())
+                    } else if (newValue == null)
                     {
                         if (slideOutController != null)
                         {

@@ -850,36 +850,39 @@ public class PrinterStatusPageController implements Initializable
 
     private void processPrinterStatusChange(PauseStatus pauseStatus, PrinterStatusEnumeration printerStatus)
     {
-        switch (pauseStatus)
+        if (pauseStatus != null)
         {
-            case NOT_PAUSED:
-                resumePrintButton.setVisible(false);
-                resumePrintButton.setDisable(true);
-                pausePrintButton.setVisible(true);
-                pausePrintButton.setDisable(false);
-                cancelPrintButton.setVisible(false);
-                break;
-            case PAUSED:
-                resumePrintButton.setVisible(true);
-                resumePrintButton.setDisable(false);
-                pausePrintButton.setVisible(false);
-                pausePrintButton.setDisable(true);
-                cancelPrintButton.setVisible(true);
-                break;
-            case PAUSE_PENDING:
-                resumePrintButton.setVisible(true);
-                resumePrintButton.setDisable(false);
-                pausePrintButton.setVisible(false);
-                pausePrintButton.setDisable(false);
-                cancelPrintButton.setVisible(true);
-                break;
-            case RESUME_PENDING:
-                resumePrintButton.setVisible(true);
-                resumePrintButton.setDisable(true);
-                pausePrintButton.setVisible(false);
-                pausePrintButton.setDisable(false);
-                cancelPrintButton.setVisible(false);
-                break;
+            switch (pauseStatus)
+            {
+                case NOT_PAUSED:
+                    resumePrintButton.setVisible(false);
+                    resumePrintButton.setDisable(true);
+                    pausePrintButton.setVisible(true);
+                    pausePrintButton.setDisable(false);
+                    cancelPrintButton.setVisible(false);
+                    break;
+                case PAUSED:
+                    resumePrintButton.setVisible(true);
+                    resumePrintButton.setDisable(false);
+                    pausePrintButton.setVisible(false);
+                    pausePrintButton.setDisable(true);
+                    cancelPrintButton.setVisible(true);
+                    break;
+                case PAUSE_PENDING:
+                    resumePrintButton.setVisible(true);
+                    resumePrintButton.setDisable(false);
+                    pausePrintButton.setVisible(false);
+                    pausePrintButton.setDisable(false);
+                    cancelPrintButton.setVisible(true);
+                    break;
+                case RESUME_PENDING:
+                    resumePrintButton.setVisible(true);
+                    resumePrintButton.setDisable(true);
+                    pausePrintButton.setVisible(false);
+                    pausePrintButton.setDisable(false);
+                    cancelPrintButton.setVisible(false);
+                    break;
+            }
         }
 
         if (printerStatus == null)
@@ -892,13 +895,13 @@ public class PrinterStatusPageController implements Initializable
                 case PAUSED:
                 case SENDING_TO_PRINTER:
                 case PRINTING:
-                case EXECUTING_MACRO:
                     printControlButtons.setVisible(true);
                     break;
                 case SLICING:
                 case POST_PROCESSING:
                     printControlButtons.setVisible(true);
-                    cancelPrintButton.setVisible(headLEDOn);
+                    cancelPrintButton.setVisible(true);
+                    pausePrintButton.setVisible(false);
                     break;
                 default:
                     printControlButtons.setVisible(false);

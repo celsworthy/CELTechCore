@@ -471,10 +471,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 {
                     if (newTab == addPageTab)
                     {
-                        ProjectTab projectTab = new ProjectTab(instance, tabDisplay.widthProperty(),
-                                                               tabDisplay.heightProperty());
-                        tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, projectTab);
-                        tabDisplaySelectionModel.select(projectTab);
+                        createAndAddNewProjectTab();
                     } else if (newTab instanceof ProjectTab)
                     {
                         if (applicationStatus.getMode() != ApplicationMode.LAYOUT)
@@ -560,6 +557,16 @@ public class DisplayManager implements EventHandler<KeyEvent>
         loadProjectsAtStartup();
 
         root.layout();
+    }
+
+    private ProjectTab createAndAddNewProjectTab()
+    {
+        ProjectTab projectTab = new ProjectTab(instance, tabDisplay.widthProperty(),
+                                               tabDisplay.heightProperty());
+        tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, projectTab);
+        tabDisplaySelectionModel.select(projectTab);
+
+        return projectTab;
     }
 
     /**
@@ -684,18 +691,45 @@ public class DisplayManager implements EventHandler<KeyEvent>
     }
 
     /**
-     * Load each model in modelsToLoad and then optionally lay them out on the bed. If there are already models loaded in the project then do not relayout even if relayout=true;
+     * Load each model in modelsToLoad and then optionally lay them out on the bed.
+     *
+     * @param modelsToLoad
+     * @param relayout
      */
     public void loadExternalModels(List<File> modelsToLoad, boolean relayout)
     {
-        if (!modelLoaderService.isRunning()
-            && tabDisplaySelectionModel.selectedItemProperty().get() instanceof ProjectTab)
+        loadExternalModels(modelsToLoad, false, relayout);
+    }
+
+    /**
+     * Load each model in modelsToLoad, do not lay them out on the bed. , If there are already models loaded in the project then do not relayout even if relayout=true;
+     *
+     * @param modelsToLoad
+     * @param newTab
+     * @param relayout
+     */
+    public void loadExternalModels(List<File> modelsToLoad, boolean newTab, boolean relayout)
+    {
+        ProjectTab tabToUse = null;
+
+        if (!modelsToLoad.isEmpty())
         {
-            modelLoaderService.reset();
-            modelLoaderService.setModelFilesToLoad(modelsToLoad, relayout);
-            modelLoaderService.setTargetTab(
-                (ProjectTab) (tabDisplaySelectionModel.selectedItemProperty().get()));
-            modelLoaderService.start();
+            if (newTab)
+            {
+                tabToUse = createAndAddNewProjectTab();
+            } else if (!modelLoaderService.isRunning()
+                && tabDisplaySelectionModel.selectedItemProperty().get() instanceof ProjectTab)
+            {
+                tabToUse = (ProjectTab) (tabDisplaySelectionModel.selectedItemProperty().get());
+            }
+
+            if (tabToUse != null)
+            {
+                modelLoaderService.reset();
+                modelLoaderService.setModelFilesToLoad(modelsToLoad, relayout);
+                modelLoaderService.setTargetTab(tabToUse);
+                modelLoaderService.start();
+            }
         }
     }
 

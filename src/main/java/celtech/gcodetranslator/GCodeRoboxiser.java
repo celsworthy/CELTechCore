@@ -19,20 +19,29 @@ import celtech.gcodetranslator.events.TravelEvent;
 import celtech.gcodetranslator.events.UnretractEvent;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.services.slicer.RoboxProfile;
+import celtech.utils.Math.MathUtils;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.beans.property.DoubleProperty;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.math3.geometry.euclidean.twod.Line;
+import org.apache.commons.math3.geometry.euclidean.twod.Segment;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 /**
@@ -85,8 +94,11 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     private int tempNozzleMemory = 0;
     private int nozzleInUse = -1;
     private int forcedNozzleOnFirstLayer = -1;
+    private boolean nozzleHasBeenForced = false;
+    private boolean nozzleHasBeenReinstated = false;
 
     private boolean internalClose = true;
+    private boolean autoGenerateNozzleChangeEvents = true;
 
     private double predictedDurationInLayer = 0.0;
     private double volumeUsed = 0.0;
@@ -117,6 +129,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     private Nozzle point8mmNozzle = null;
 
     private RoboxProfile currentSettings = null;
+    private int wipeFeedRate_mmPerMin = 0;
 
     // Causes home and return events to be inserted, triggering the camera
     private boolean movieMakerEnabled = false;
@@ -273,7 +286,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
         nozzles.add(point8mmNozzle);
 
-        currentNozzle = point3mmNozzle;
+        wipeFeedRate_mmPerMin = currentSettings.perimeter_speedProperty().get() * 60;
 
         try
         {
@@ -464,9 +477,83 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 {
                     lineNumberOfFirstExtrusion = event.getLinesSoFar();
                 }
+
+                if (layer == 2 && forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenReinstated == false)
+                {
+                    nozzleHasBeenReinstated = true;
+                    int nozzleToUse = chooseNozzleByTask(event);
+
+                    if (nozzleToUse >= 0)
+                    {
+                        NozzleChangeEvent nozzleChangeEvent = new NozzleChangeEvent();
+                        nozzleChangeEvent.setNozzleNumber(nozzleToUse);
+                        nozzleChangeEvent.setComment("return to required nozzle");
+                        extrusionBuffer.add(nozzleChangeEvent);
+
+//                        //Open the nozzle fully                         
+//                        NozzleOpenFullyEvent openNozzle = new NozzleOpenFullyEvent();
+//                        openNozzle.setComment("Open nozzle");
+//                        extrusionBuffer.add(openNozzle);
+                        currentNozzle = nozzles.get(nozzleToUse);
+//                        currentNozzle.openNozzleFully();
+                    } else
+                    {
+                        steno.warning("Couldn't derive required nozzle to return to...");
+                    }
+                } else if (autoGenerateNozzleChangeEvents && ((forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenReinstated)
+                    || forcedNozzleOnFirstLayer < 0))
+                {
+                    int requiredNozzle = chooseNozzleByTask(event);
+
+                    if (currentNozzle != null && requiredNozzle != currentNozzle.getReferenceNumber())
+                    {
+                        // Close the old nozzle
+                        writeEventsWithNozzleClose("Closing last used nozzle");
+                    }
+
+                    if (currentNozzle == null || requiredNozzle != currentNozzle.getReferenceNumber())
+                    {
+                        //Select the nozzle
+                        NozzleChangeEvent nozzleChangeEvent = new NozzleChangeEvent();
+                        nozzleChangeEvent.setComment("Selecting nozzle " + requiredNozzle);
+                        nozzleChangeEvent.setNozzleNumber(requiredNozzle);
+                        extrusionBuffer.add(nozzleChangeEvent);
+
+//                        //Open the nozzle fully                         
+//                        NozzleOpenFullyEvent openNozzle = new NozzleOpenFullyEvent();
+//                        openNozzle.setComment("Open nozzle");
+//                        extrusionBuffer.add(openNozzle);
+                        currentNozzle = nozzles.get(requiredNozzle);
+
+//                        currentNozzle.openNozzleFully();
+//                        nozzleLastOpenedAt = lastPoint;
+                    }
+                }
+
                 ExtrusionEvent extrusionEvent = (ExtrusionEvent) event;
                 currentPoint = new Vector2D(extrusionEvent.getX(),
                                             extrusionEvent.getY());
+
+                totalExtrudedVolume += extrusionEvent.getE() + extrusionEvent.getD();
+
+                if (currentNozzle.getState() != NozzleState.OPEN
+                    && currentNozzle.getOpenOverVolume() == 0)
+                {
+                    // Unretract and open
+                    NozzleOpenFullyEvent openNozzle = new NozzleOpenFullyEvent();
+                    openNozzle.setComment("Open and replenish");
+                    openNozzle.setE(autoUnretractEValue);
+                    openNozzle.setD(autoUnretractDValue);
+
+                    autoUnretractEValue = 0;
+                    autoUnretractDValue = 0;
+
+                    extrusionBuffer.add(openNozzle);
+                    currentNozzle.openNozzleFully();
+                    nozzleLastOpenedAt = lastPoint;
+                }
+
+                resetMeasuringThing();
 
                 // Open the nozzle if it isn't already open
                 // This will always be a single event prior to extrusion
@@ -549,30 +636,32 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
                 currentZHeight = layerChangeEvent.getZ();
 
-                if (layer == 0 && forcedNozzleOnFirstLayer >= 0)
+                if (layer == 0 && forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenForced == false)
                 {
+                    nozzleHasBeenForced = true;
                     NozzleChangeEvent nozzleChangeEvent = new NozzleChangeEvent();
                     //Force to required nozzle
                     nozzleChangeEvent.setNozzleNumber(forcedNozzleOnFirstLayer);
-                    nozzleChangeEvent.setComment(
-                        nozzleChangeEvent.getComment()
-                        + " - force to nozzle " + forcedNozzleOnFirstLayer + " on first layer");
+                    if (nozzleChangeEvent.getComment() != null)
+                    {
+                        nozzleChangeEvent.setComment(
+                            nozzleChangeEvent.getComment()
+                            + " - force to nozzle " + forcedNozzleOnFirstLayer + " on first layer");
+                    } else
+                    {
+                        nozzleChangeEvent.setComment(" - force to nozzle " + forcedNozzleOnFirstLayer + " on first layer");
+                    }
                     tempNozzleMemory = 0;
                     extrusionBuffer.add(nozzleChangeEvent);
                     nozzleInUse = forcedNozzleOnFirstLayer;
-                    forcedNozzleOnFirstLayer = -1;
                     currentNozzle = nozzles.get(nozzleInUse);
                 }
 
-                if (layer == 1)
+                if (layer == 1 && forcedNozzleOnFirstLayer >= 0)
                 {
                     writeEventsWithNozzleClose(
                         "closing nozzle after forced nozzle select on layer 0");
                     insertSubsequentLayerTemperatures();
-                    NozzleChangeEvent nozzleChangeEvent = new NozzleChangeEvent();
-                    nozzleChangeEvent.setNozzleNumber(tempNozzleMemory);
-                    nozzleChangeEvent.setComment("return to intended nozzle");
-                    extrusionBuffer.add(nozzleChangeEvent);
                 }
 
                 layer++;
@@ -605,12 +694,13 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 }
 
                 extrusionBuffer.add(event);
-            } else if (event instanceof NozzleChangeEvent)
+            } else if (event instanceof NozzleChangeEvent && !autoGenerateNozzleChangeEvents)
             {
                 NozzleChangeEvent nozzleChangeEvent = (NozzleChangeEvent) event;
 
-                if (layer == 0 && forcedNozzleOnFirstLayer >= 0)
+                if (layer == 0 && forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenForced == false)
                 {
+                    nozzleHasBeenForced = true;
                     tempNozzleMemory = nozzleChangeEvent.getNozzleNumber();
                     //Force to required nozzle
                     nozzleChangeEvent.setNozzleNumber(forcedNozzleOnFirstLayer);
@@ -619,7 +709,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                         + " - force to nozzle " + forcedNozzleOnFirstLayer + " on first layer");
                     extrusionBuffer.add(nozzleChangeEvent);
                     nozzleInUse = forcedNozzleOnFirstLayer;
-                    forcedNozzleOnFirstLayer = -1;
                     currentNozzle = nozzles.get(nozzleInUse);
                 } else if (layer < 1)
                 {
@@ -641,7 +730,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 }
 
                 resetMeasuringThing();
-            } else if (event instanceof UnretractEvent)
+            } else if (event instanceof UnretractEvent && !autoGenerateNozzleChangeEvents)
             {
                 UnretractEvent unretractEvent = (UnretractEvent) event;
 
@@ -672,8 +761,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 }
 
                 resetMeasuringThing();
-//                unretractEvent.setE(autoUnretractEValue);
-//                unretractEvent.setD(autoUnretractDValue);
                 autoUnretractEValue = 0;
                 autoUnretractDValue = 0;
             } else if (event instanceof MCodeEvent)
@@ -718,6 +805,58 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             steno.error("Exception whilst processing event " + event.toString());
             e.printStackTrace();
         }
+    }
+
+    private int chooseNozzleByTask(GCodeParseEvent event)
+    {
+        int nozzleToUse = -1;
+        switch (getExtrusionType((ExtrusionEvent) event))
+        {
+            case Perimeter:
+                nozzleToUse = currentSettings.getPerimeterNozzleProperty().get();
+                break;
+            case Infill:
+                nozzleToUse = currentSettings.getFillNozzleProperty().get();
+                break;
+            case Support:
+                nozzleToUse = currentSettings.getSupportNozzleProperty().get();
+                break;
+            case Support_Interface:
+                nozzleToUse = currentSettings.getSupportInterfaceNozzleProperty().get();
+                break;
+            default:
+                break;
+        }
+        return nozzleToUse;
+    }
+
+    private ExtrusionTask getExtrusionType(ExtrusionEvent eventToAssess)
+    {
+        ExtrusionTask determinedTask = ExtrusionTask.Perimeter;
+
+        String comment = eventToAssess.getComment();
+
+        if (comment != null)
+        {
+            if (comment.contains("perimeter"))
+            {
+                determinedTask = ExtrusionTask.Perimeter;
+            } else if (comment.contains("fill"))
+            {
+                determinedTask = ExtrusionTask.Infill;
+            } else if (comment.contains("support"))
+            {
+                determinedTask = ExtrusionTask.Support;
+            } else
+            {
+                steno.warning("Couldn't determine type of extrusion event using comment: " + comment);
+            }
+        } else
+        {
+            steno.warning("Couldn't determine type of extrusion event using comment because comment was null");
+        }
+
+        return determinedTask;
     }
 
     private void writeEventToFile(GCodeParseEvent event)
@@ -796,129 +935,69 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             //Quick check to see if the extrusion volumes are sufficient to allow normal close
             double totalExtrusionForPath = 0;
 
+            ArrayList<Integer> inwardsMoveIndexList = new ArrayList<>();
+
+            int extrusionBufferIndex = 0;
+
             for (GCodeParseEvent event : extrusionBuffer)
             {
                 if (event instanceof ExtrusionEvent)
                 {
                     totalExtrusionForPath += ((ExtrusionEvent) event).getE() + ((ExtrusionEvent) event).getD();
+                } else if (event instanceof TravelEvent)
+                {
+                    String eventComment = event.getComment();
+                    if (eventComment != null)
+                    {
+                        //TODO Slic3r specific code!
+                        if (eventComment.contains("move inwards"))
+                        {
+                            inwardsMoveIndexList.add(extrusionBufferIndex);
+                        }
+                    }
+                }
+
+                extrusionBufferIndex++;
+            }
+
+            TravelEvent lastInwardsMove = null;
+
+            if (!inwardsMoveIndexList.isEmpty())
+            {
+                int lastInwardsMoveIndex = inwardsMoveIndexList.get(inwardsMoveIndexList.size() - 1);
+                int currentFinalExtrusionEventIndex = getPreviousExtrusionEventIndex(extrusionBuffer.size() - 1);
+
+                if (lastInwardsMoveIndex > currentFinalExtrusionEventIndex)
+                {
+                    lastInwardsMove = (TravelEvent) extrusionBuffer.get(inwardsMoveIndexList.get(inwardsMoveIndexList.size() - 1));
+                }
+
+                for (int i = inwardsMoveIndexList.size() - 1; i >= 0; i--)
+                {
+                    int indexToRemove = inwardsMoveIndexList.get(i);
+                    extrusionBuffer.remove(indexToRemove);
                 }
             }
 
-            if (internalClose)
+            int finalExtrusionEventIndex = getPreviousExtrusionEventIndex(extrusionBuffer.size() - 1);
+
+            if (finalExtrusionEventIndex >= 0)
             {
-                if ((totalExtrusionForPath >= currentNozzle.getOpenOverVolume()
-                    + currentNozzle.getPreejectionVolume())
-                    && (totalExtrusionForPath >= currentNozzle.getEjectionVolume()
-                    + currentNozzle.getWipeVolume()))
+                ExtrusionTask extrusionTask = getExtrusionType((ExtrusionEvent) extrusionBuffer.get(finalExtrusionEventIndex));
+
+                if (extrusionTask != ExtrusionTask.Infill)
                 {
-                    // Get rid of inward moves - these seem only to occur as the last event in a line...
-                    GCodeParseEvent eventToCheckForInwardsMove = extrusionBuffer.get(extrusionBuffer.size() - 1);
-                    if (eventToCheckForInwardsMove instanceof TravelEvent)
+
+                    if ((totalExtrusionForPath >= currentNozzle.getOpenOverVolume()
+                        + currentNozzle.getPreejectionVolume())
+                        && (totalExtrusionForPath >= currentNozzle.getEjectionVolume()
+                        + currentNozzle.getWipeVolume()))
                     {
-                        steno.debug("Removing travel event with comment: " + eventToCheckForInwardsMove.getComment());
-                        extrusionBuffer.remove(extrusionBuffer.size() - 1);
-                    }
-
-                    //OK - we're go for a normal close   
-                    nozzleStartPosition = 1.0;
-                    nozzleCloseOverVolume = currentNozzle.getEjectionVolume();
-
-                    if (currentNozzle.getOpenOverVolume() > 0)
-                    {
-                        insertVolumeBreak(extrusionBuffer,
-                                          eventIndices,
-                                          EventType.NOZZLE_OPEN_END,
-                                          currentNozzle.getOpenOverVolume(),
-                                          comment,
-                                          FindEventDirection.FORWARDS_FROM_START);
-                    }
-
-                    // Calculate the pre-ejection point (if we need to...)
-                    if (currentNozzle.getPreejectionVolume() > 0)
-                    {
-                        insertVolumeBreak(extrusionBuffer,
-                                          eventIndices,
-                                          EventType.PRE_CLOSE_STARVATION_START,
-                                          currentNozzle.getPreejectionVolume()
-                                          + currentNozzle.getEjectionVolume()
-                                          + currentNozzle.getWipeVolume(),
-                                          comment,
-                                          FindEventDirection.BACKWARDS_FROM_END);
-                    }
-
-                    int finalExtrusionEventIndex = getPreviousExtrusionEventIndex(extrusionBuffer.size() - 1);
-
-                    int startOfClose = insertTravelAndClosePath(finalExtrusionEventIndex, "Move to start of wipe", false);
-
-                    if (currentNozzle.getWipeVolume() > 0)
-                    {
-
-                        insertVolumeBreak(extrusionBuffer,
-                                          eventIndices,
-                                          EventType.WIPE_START,
-                                          currentNozzle.getWipeVolume(),
-                                          comment,
-                                          FindEventDirection.BACKWARDS_FROM_END);
-                    }
-
-                    eventIndices.put(EventType.NOZZLE_CLOSE_START, startOfClose);
-
-                    // Now the nozzle close starting point
-//                    insertVolumeBreak(extrusionBuffer,
-//                                      eventIndices,
-//                                      EventType.NOZZLE_CLOSE_START,
-//                                      currentNozzle.getEjectionVolume()
-//                                      + currentNozzle.getWipeVolume(),
-//                                      comment,
-//                                      FindEventDirection.BACKWARDS_FROM_END);
-                } else if (totalExtrusionForPath > 0)
-                {
-                    double volumeToConsider = 2 * totalExtrusionForPath;
-
-                    if (volumeToConsider < currentNozzle.getOpenOverVolume() + currentNozzle.getEjectionVolume())
-                    {
-                        // We don't have enough volume to open and close as per settings
-                        double bValue = Math.min(1, totalExtrusionForPath / currentNozzle.getEjectionVolume());
-                        bValue = Math.max(currentNozzle.getPartialBMinimum(), bValue);
-
-                        nozzleStartPosition = bValue;
-                        nozzleCloseOverVolume = Math.min(currentNozzle.getEjectionVolume(), totalExtrusionForPath);
-
-                        if (currentNozzle.getOpenOverVolume() > 0)
-                        {
-                            NozzleChangeBValueEvent partialOpen = new NozzleChangeBValueEvent();
-                            partialOpen.setB(bValue);
-                            int firstExtrusion = getNextExtrusionEventIndex(0);
-                            extrusionBuffer.add(firstExtrusion, partialOpen);
-                        } else
-                        {
-                            replaceOpenNozzleWithPartialOpen(bValue);
-                        }
-
-                        int finalExtrusionEventIndex = getPreviousExtrusionEventIndex(extrusionBuffer.size() - 1);
-
-                        int penultimateExtrusionEventIndex = getPreviousExtrusionEventIndex(finalExtrusionEventIndex);
-
-                        if (penultimateExtrusionEventIndex < 0)
-                        {
-                            // There is only one extrusion event, so nothing to copy
-                            // Close the nozzle at the end of the line...
-                            closeAtEndOfPath = true;
-                            NozzleCloseFullyEvent closeNozzle = new NozzleCloseFullyEvent();
-                            closeNozzle.setComment("Single element path - closing at end");
-                            closeNozzle.setLength(0);
-                        } else
-                        {
-                            int nozzleCloseStartIndex = insertTravelAndClosePath(finalExtrusionEventIndex, "Move to start of wipe - partial open", false);
-
-                            eventIndices.put(EventType.NOZZLE_CLOSE_START, nozzleCloseStartIndex);
-                        }
-                    } else
-                    {
-                        //Full open and close
+                        //OK - we're go for a normal close   
                         nozzleStartPosition = 1.0;
-                        nozzleCloseOverVolume = Math.min(currentNozzle.getWipeVolume(), totalExtrusionForPath);
+                        nozzleCloseOverVolume = currentNozzle.getEjectionVolume();
 
+                        //Always insert the open first
                         if (currentNozzle.getOpenOverVolume() > 0)
                         {
                             insertVolumeBreak(extrusionBuffer,
@@ -928,6 +1007,113 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                               comment,
                                               FindEventDirection.FORWARDS_FROM_START);
                         }
+
+                        int sizeOfBuffer = extrusionBuffer.size();
+                        int startOfClose = insertTravelAndClosePath(finalExtrusionEventIndex, "Move to start of wipe", false, lastInwardsMove);
+                        int newSizeOfBuffer = extrusionBuffer.size();
+
+//                    if (currentNozzle.getWipeVolume() > 0)
+//                    {
+//
+//                        insertVolumeBreak(extrusionBuffer,
+//                                          eventIndices,
+//                                          EventType.WIPE_START,
+//                                          currentNozzle.getWipeVolume(),
+//                                          comment,
+//                                          FindEventDirection.BACKWARDS_FROM_END);
+//                    }
+                        eventIndices.put(EventType.NOZZLE_CLOSE_START, startOfClose);
+
+                    } else if (totalExtrusionForPath > 0)
+                    {
+                        double volumeToConsider = 2 * totalExtrusionForPath;
+
+                        if (totalExtrusionForPath < currentNozzle.getOpenOverVolume()
+                            || totalExtrusionForPath < currentNozzle.getEjectionVolume())
+                        {
+                            // We don't have enough volume to open and close as per settings
+                            double bValue = Math.min(1, totalExtrusionForPath / currentNozzle.getEjectionVolume());
+                            bValue = Math.max(currentNozzle.getPartialBMinimum(), bValue);
+
+                            nozzleStartPosition = bValue;
+                            nozzleCloseOverVolume = Math.min(currentNozzle.getEjectionVolume(), totalExtrusionForPath);
+
+                            if (currentNozzle.getOpenOverVolume() > 0)
+                            {
+                                NozzleChangeBValueEvent partialOpen = new NozzleChangeBValueEvent();
+                                partialOpen.setB(bValue);
+                                int firstExtrusion = getNextExtrusionEventIndex(0);
+                                extrusionBuffer.add(firstExtrusion, partialOpen);
+                            } else
+                            {
+                                replaceOpenNozzleWithPartialOpen(bValue);
+                            }
+
+                            int penultimateExtrusionEventIndex = getPreviousExtrusionEventIndex(finalExtrusionEventIndex - 1);
+
+                            if (penultimateExtrusionEventIndex < 0)
+                            {
+                                // There is only one extrusion event, so nothing to copy
+                                int previousTravelEventIndex = getPreviousEventIndex(finalExtrusionEventIndex - 1, TravelEvent.class);
+
+                                if (previousTravelEventIndex
+                                    >= 0)
+                                {
+                                    ExtrusionEvent finalExtrusionEvent = (ExtrusionEvent) extrusionBuffer.get(finalExtrusionEventIndex);
+                                    TravelEvent previousTravelEvent = (TravelEvent) extrusionBuffer.get(previousTravelEventIndex);
+
+                                    ExtrusionEvent reverseEvent = new ExtrusionEvent();
+                                    reverseEvent.setComment("Synthesised extrusion for close");
+                                    reverseEvent.setE(finalExtrusionEvent.getE());
+                                    reverseEvent.setD(finalExtrusionEvent.getD());
+                                    reverseEvent.setX(previousTravelEvent.getX());
+                                    reverseEvent.setY(previousTravelEvent.getY());
+                                    reverseEvent.setFeedRate(wipeFeedRate_mmPerMin);
+
+                                    extrusionBuffer.add(reverseEvent);
+
+                                    eventIndices.put(EventType.NOZZLE_CLOSE_START, finalExtrusionEventIndex + 1);
+                                } else
+                                {
+                                    // Last ditch...
+                                    // Close the nozzle at the end of the line...
+                                    closeAtEndOfPath = true;
+                                    NozzleCloseFullyEvent closeNozzle = new NozzleCloseFullyEvent();
+                                    closeNozzle.setComment("Single element path - closing at end");
+                                    closeNozzle.setLength(0);
+
+                                    if (extrusionBuffer.get(extrusionBuffer.size() - 1) instanceof LayerChangeEvent)
+                                    {
+                                        extrusionBuffer.add(extrusionBuffer.size() - 1, closeNozzle);
+                                    } else
+                                    {
+                                        extrusionBuffer.add(closeNozzle);
+                                    }
+                                }
+                            } else
+                            {
+                                int nozzleCloseStartIndex = insertTravelAndClosePath(finalExtrusionEventIndex, "Move to start of wipe - partial open", false, lastInwardsMove);
+
+                                eventIndices.put(EventType.NOZZLE_CLOSE_START, nozzleCloseStartIndex);
+
+                                ExtrusionEvent finalExtrusionEvent = ((ExtrusionEvent) extrusionBuffer.get(finalExtrusionEventIndex));
+                                nozzleCloseOverVolume = totalExtrusionForPath - (finalExtrusionEvent.getE() + finalExtrusionEvent.getD());
+                            }
+                        } else
+                        {
+                            //Full open and close
+                            nozzleStartPosition = 1.0;
+                            nozzleCloseOverVolume = Math.min(currentNozzle.getWipeVolume(), totalExtrusionForPath);
+
+                            if (currentNozzle.getOpenOverVolume() > 0)
+                            {
+                                insertVolumeBreak(extrusionBuffer,
+                                                  eventIndices,
+                                                  EventType.NOZZLE_OPEN_END,
+                                                  currentNozzle.getOpenOverVolume(),
+                                                  comment,
+                                                  FindEventDirection.FORWARDS_FROM_START);
+                            }
 
 //                        if (currentNozzle.getPreejectionVolume() > 0)
 //                        {
@@ -943,8 +1129,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 //                                                  FindEventDirection.BACKWARDS_FROM_END);
 //                            }
 //                        }
-                        int finalExtrusionEventIndex = getPreviousExtrusionEventIndex(extrusionBuffer.size() - 1);
-                        int nozzleCloseStartIndex = insertTravelAndClosePath(finalExtrusionEventIndex, "Move to start of wipe - full open", true);
+                            int nozzleCloseStartIndex = insertTravelAndClosePath(finalExtrusionEventIndex, "Move to start of wipe - full open", true, lastInwardsMove);
 
 //                        double wipeVolume = Math.min(currentNozzle.getWipeVolume(), totalExtrusionForPath - currentNozzle.getEjectionVolume());
 //
@@ -964,7 +1149,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 //                        {
 //                            wipeVolume = 0;
 //                        }
-                        eventIndices.put(EventType.NOZZLE_CLOSE_START, nozzleCloseStartIndex);
+                            eventIndices.put(EventType.NOZZLE_CLOSE_START, nozzleCloseStartIndex);
 
 //                        // Now the nozzle close starting point
 //                        insertVolumeBreak(extrusionBuffer,
@@ -974,188 +1159,190 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 //                                          + wipeVolume,
 //                                          comment,
 //                                          FindEventDirection.BACKWARDS_FROM_END);
+                        }
                     }
-                }
-            } else
-            {
-                if (totalExtrusionForPath >= currentNozzle.getOpenOverVolume()
-                    + currentNozzle.getPreejectionVolume()
-                    + currentNozzle.getEjectionVolume()
-                    + currentNozzle.getWipeVolume())
+                } else
                 {
-                    //OK - we're go for a normal close   
-                    nozzleStartPosition = 1.0;
-                    nozzleCloseOverVolume = currentNozzle.getEjectionVolume();
-
-                    if (currentNozzle.getOpenOverVolume() > 0)
+                    // Infill 
+                    if (totalExtrusionForPath >= currentNozzle.getOpenOverVolume()
+                        + currentNozzle.getPreejectionVolume()
+                        + currentNozzle.getEjectionVolume()
+                        + currentNozzle.getWipeVolume())
                     {
+                        //OK - we're go for a normal close   
+                        nozzleStartPosition = 1.0;
+                        nozzleCloseOverVolume = currentNozzle.getEjectionVolume();
 
-                        insertVolumeBreak(extrusionBuffer,
-                                          eventIndices,
-                                          EventType.NOZZLE_OPEN_END,
-                                          currentNozzle.getOpenOverVolume(),
-                                          comment,
-                                          FindEventDirection.FORWARDS_FROM_START);
-                    }
-
-                    // Calculate the wipe point (if we need to...)
-                    if (currentNozzle.getWipeVolume() > 0)
-                    {
-
-                        insertVolumeBreak(extrusionBuffer,
-                                          eventIndices,
-                                          EventType.WIPE_START,
-                                          currentNozzle.getWipeVolume(),
-                                          comment,
-                                          FindEventDirection.BACKWARDS_FROM_END);
-                    }
-
-                    // Calculate the pre-ejection point (if we need to...)
-                    if (currentNozzle.getPreejectionVolume() > 0)
-                    {
-                        insertVolumeBreak(extrusionBuffer,
-                                          eventIndices,
-                                          EventType.PRE_CLOSE_STARVATION_START,
-                                          currentNozzle.getPreejectionVolume()
-                                          + currentNozzle.getEjectionVolume()
-                                          + currentNozzle.getWipeVolume(),
-                                          comment,
-                                          FindEventDirection.BACKWARDS_FROM_END);
-                    }
-
-                    // Now the nozzle close starting point
-                    insertVolumeBreak(extrusionBuffer,
-                                      eventIndices,
-                                      EventType.NOZZLE_CLOSE_START,
-                                      currentNozzle.getEjectionVolume()
-                                      + currentNozzle.getWipeVolume(),
-                                      comment,
-                                      FindEventDirection.BACKWARDS_FROM_END);
-
-                    if (currentNozzle.getOpenAtMidPoint() > 0)
-                    {
-                        // Now the nozzle close break point
-                        insertVolumeBreak(extrusionBuffer,
-                                          eventIndices,
-                                          EventType.NOZZLE_CLOSE_MIDPOINT,
-                                          currentNozzle.getEjectionVolume() * (1
-                                          - (currentNozzle.getMidPointPercent() / 100.0))
-                                          + currentNozzle.getWipeVolume(),
-                                          comment,
-                                          FindEventDirection.BACKWARDS_FROM_END);
-                    }
-                } else if (totalExtrusionForPath > 0)
-                {
-                    //Keep the wipe volume until the minimum B is exceeded
-                    double extrusionVolumeAfterWipe = totalExtrusionForPath
-                        - currentNozzle.getWipeVolume();
-                    double bValue = Math.min(1, extrusionVolumeAfterWipe
-                                             / currentNozzle.getEjectionVolume());
-
-                    double minimumBEjectionVolume = currentNozzle.getEjectionVolume()
-                        * currentNozzle.getPartialBMinimum();
-
-                    if (bValue < currentNozzle.getPartialBMinimum())
-                    {
-                        //Shorten the wipe
-                        double requiredWipeVolume = totalExtrusionForPath
-                            - minimumBEjectionVolume;
-
-                        if (requiredWipeVolume <= 0)
+                        if (currentNozzle.getOpenOverVolume() > 0)
                         {
-                            //Not enough volume for the wipe even at minimum B
-                            nozzleStartPosition = currentNozzle.getPartialBMinimum();
-                            nozzleCloseOverVolume = totalExtrusionForPath;
 
-                            if (currentNozzle.getOpenOverVolume() > 0)
-                            {
-                                NozzleChangeBValueEvent partialOpen = new NozzleChangeBValueEvent();
-                                partialOpen.setB(currentNozzle.getPartialBMinimum());
-                                int firstExtrusion = getNextExtrusionEventIndex(0);
-                                extrusionBuffer.add(firstExtrusion, partialOpen);
-                            } else
-                            {
-                                replaceOpenNozzleWithPartialOpen(currentNozzle.getPartialBMinimum());
-                            }
+                            insertVolumeBreak(extrusionBuffer,
+                                              eventIndices,
+                                              EventType.NOZZLE_OPEN_END,
+                                              currentNozzle.getOpenOverVolume(),
+                                              comment,
+                                              FindEventDirection.FORWARDS_FROM_START);
+                        }
 
-                            int nozzleCloseStartIndex = getNextExtrusionEventIndex(0);
-                            eventIndices.put(EventType.NOZZLE_CLOSE_START, nozzleCloseStartIndex);
-                            extrusionBuffer.get(nozzleCloseStartIndex).setComment("Short path");
-                            eventIndices.put(EventType.WIPE_START,
-                                             getPreviousExtrusionEventIndex(extrusionBuffer.size()
-                                                 - 1));
-                        } else
+                        // Calculate the wipe point (if we need to...)
+                        if (currentNozzle.getWipeVolume() > 0)
                         {
-                            //We can use a shortened wipe with minimum B
-                            nozzleStartPosition = currentNozzle.getPartialBMinimum();
-                            nozzleCloseOverVolume = minimumBEjectionVolume;
-
-                            if (currentNozzle.getOpenOverVolume() > 0)
-                            {
-                                NozzleChangeBValueEvent partialOpen = new NozzleChangeBValueEvent();
-                                partialOpen.setB(currentNozzle.getPartialBMinimum());
-                                int firstExtrusion = getNextExtrusionEventIndex(0);
-                                extrusionBuffer.add(firstExtrusion, partialOpen);
-                            } else
-                            {
-                                replaceOpenNozzleWithPartialOpen(currentNozzle.getPartialBMinimum());
-                            }
 
                             insertVolumeBreak(extrusionBuffer,
                                               eventIndices,
                                               EventType.WIPE_START,
-                                              requiredWipeVolume,
+                                              currentNozzle.getWipeVolume(),
                                               comment,
                                               FindEventDirection.BACKWARDS_FROM_END);
-
-                            int closeStartIndex = getNextExtrusionEventIndex(0);
-                            eventIndices.put(EventType.NOZZLE_CLOSE_START, closeStartIndex);
-                            extrusionBuffer.get(closeStartIndex).setComment("Shortened wipe volume");
                         }
-                    } else
+
+                        // Calculate the pre-ejection point (if we need to...)
+                        if (currentNozzle.getPreejectionVolume() > 0)
+                        {
+                            insertVolumeBreak(extrusionBuffer,
+                                              eventIndices,
+                                              EventType.PRE_CLOSE_STARVATION_START,
+                                              currentNozzle.getPreejectionVolume()
+                                              + currentNozzle.getEjectionVolume()
+                                              + currentNozzle.getWipeVolume(),
+                                              comment,
+                                              FindEventDirection.BACKWARDS_FROM_END);
+                        }
+
+                        // Now the nozzle close starting point
+                        insertVolumeBreak(extrusionBuffer,
+                                          eventIndices,
+                                          EventType.NOZZLE_CLOSE_START,
+                                          currentNozzle.getEjectionVolume()
+                                          + currentNozzle.getWipeVolume(),
+                                          comment,
+                                          FindEventDirection.BACKWARDS_FROM_END);
+
+                        if (currentNozzle.getOpenAtMidPoint() > 0)
+                        {
+                            // Now the nozzle close break point
+                            insertVolumeBreak(extrusionBuffer,
+                                              eventIndices,
+                                              EventType.NOZZLE_CLOSE_MIDPOINT,
+                                              currentNozzle.getEjectionVolume() * (1
+                                              - (currentNozzle.getMidPointPercent() / 100.0))
+                                              + currentNozzle.getWipeVolume(),
+                                              comment,
+                                              FindEventDirection.BACKWARDS_FROM_END);
+                        }
+                    } else if (totalExtrusionForPath > 0)
                     {
-                        //Retain the full wipe but open partially and use a proportionately smaller ejection volume
-                        nozzleStartPosition = bValue;
-                        nozzleCloseOverVolume = Math.min(currentNozzle.getEjectionVolume(), extrusionVolumeAfterWipe);
+                        //Keep the wipe volume until the minimum B is exceeded
+                        double extrusionVolumeAfterWipe = totalExtrusionForPath
+                            - currentNozzle.getWipeVolume();
+                        double bValue = Math.min(1, extrusionVolumeAfterWipe
+                                                 / currentNozzle.getEjectionVolume());
 
-                        if (currentNozzle.getOpenOverVolume() > 0)
+                        double minimumBEjectionVolume = currentNozzle.getEjectionVolume()
+                            * currentNozzle.getPartialBMinimum();
+
+                        if (bValue < currentNozzle.getPartialBMinimum())
                         {
-                            NozzleChangeBValueEvent partialOpen = new NozzleChangeBValueEvent();
-                            partialOpen.setB(bValue);
-                            int firstExtrusion = getNextExtrusionEventIndex(0);
-                            extrusionBuffer.add(firstExtrusion, partialOpen);
+                            //Shorten the wipe
+                            double requiredWipeVolume = totalExtrusionForPath
+                                - minimumBEjectionVolume;
+
+                            if (requiredWipeVolume <= 0)
+                            {
+                                //Not enough volume for the wipe even at minimum B
+                                nozzleStartPosition = currentNozzle.getPartialBMinimum();
+                                nozzleCloseOverVolume = totalExtrusionForPath;
+
+                                if (currentNozzle.getOpenOverVolume() > 0)
+                                {
+                                    NozzleChangeBValueEvent partialOpen = new NozzleChangeBValueEvent();
+                                    partialOpen.setB(currentNozzle.getPartialBMinimum());
+                                    int firstExtrusion = getNextExtrusionEventIndex(0);
+                                    extrusionBuffer.add(firstExtrusion, partialOpen);
+                                } else
+                                {
+                                    replaceOpenNozzleWithPartialOpen(currentNozzle.getPartialBMinimum());
+                                }
+
+                                int nozzleCloseStartIndex = getNextExtrusionEventIndex(0);
+                                eventIndices.put(EventType.NOZZLE_CLOSE_START, nozzleCloseStartIndex);
+                                extrusionBuffer.get(nozzleCloseStartIndex).setComment("Short path");
+                                eventIndices.put(EventType.WIPE_START,
+                                                 getPreviousExtrusionEventIndex(extrusionBuffer.size()
+                                                     - 1));
+                            } else
+                            {
+                                //We can use a shortened wipe with minimum B
+                                nozzleStartPosition = currentNozzle.getPartialBMinimum();
+                                nozzleCloseOverVolume = minimumBEjectionVolume;
+
+                                if (currentNozzle.getOpenOverVolume() > 0)
+                                {
+                                    NozzleChangeBValueEvent partialOpen = new NozzleChangeBValueEvent();
+                                    partialOpen.setB(currentNozzle.getPartialBMinimum());
+                                    int firstExtrusion = getNextExtrusionEventIndex(0);
+                                    extrusionBuffer.add(firstExtrusion, partialOpen);
+                                } else
+                                {
+                                    replaceOpenNozzleWithPartialOpen(currentNozzle.getPartialBMinimum());
+                                }
+
+                                insertVolumeBreak(extrusionBuffer,
+                                                  eventIndices,
+                                                  EventType.WIPE_START,
+                                                  requiredWipeVolume,
+                                                  comment,
+                                                  FindEventDirection.BACKWARDS_FROM_END);
+
+                                int closeStartIndex = getNextExtrusionEventIndex(0);
+                                eventIndices.put(EventType.NOZZLE_CLOSE_START, closeStartIndex);
+                                extrusionBuffer.get(closeStartIndex).setComment("Shortened wipe volume");
+                            }
                         } else
                         {
-                            replaceOpenNozzleWithPartialOpen(bValue);
-                        }
+                            //Retain the full wipe but open partially and use a proportionately smaller ejection volume
+                            nozzleStartPosition = bValue;
+                            nozzleCloseOverVolume = Math.min(currentNozzle.getEjectionVolume(), extrusionVolumeAfterWipe);
 
-                        if (currentNozzle.getWipeVolume() > 0)
-                        {
-                            insertVolumeBreak(
-                                extrusionBuffer,
-                                eventIndices,
-                                EventType.WIPE_START,
-                                currentNozzle.getWipeVolume(),
-                                comment,
-                                FindEventDirection.BACKWARDS_FROM_END);
-                        }
+                            if (currentNozzle.getOpenOverVolume() > 0)
+                            {
+                                NozzleChangeBValueEvent partialOpen = new NozzleChangeBValueEvent();
+                                partialOpen.setB(bValue);
+                                int firstExtrusion = getNextExtrusionEventIndex(0);
+                                extrusionBuffer.add(firstExtrusion, partialOpen);
+                            } else
+                            {
+                                replaceOpenNozzleWithPartialOpen(bValue);
+                            }
 
-                        int nozzleCloseStartIndex = insertVolumeBreak(extrusionBuffer,
-                                                                      eventIndices,
-                                                                      EventType.NOZZLE_CLOSE_START,
-                                                                      nozzleCloseOverVolume
-                                                                      + currentNozzle.getWipeVolume(),
-                                                                      comment,
-                                                                      FindEventDirection.BACKWARDS_FROM_END);
+                            if (currentNozzle.getWipeVolume() > 0)
+                            {
+                                insertVolumeBreak(
+                                    extrusionBuffer,
+                                    eventIndices,
+                                    EventType.WIPE_START,
+                                    currentNozzle.getWipeVolume(),
+                                    comment,
+                                    FindEventDirection.BACKWARDS_FROM_END);
+                            }
 
-                        if (compareDouble(nozzleCloseOverVolume, currentNozzle.getEjectionVolume()) == EQUAL)
-                        {
-                            extrusionBuffer.get(nozzleCloseStartIndex).setComment(
-                                "Full open - full eject volume full wipe volume");
-                        } else
-                        {
-                            extrusionBuffer.get(nozzleCloseStartIndex).setComment(
-                                "Partial open - full wipe volume");
+                            int nozzleCloseStartIndex = insertVolumeBreak(extrusionBuffer,
+                                                                          eventIndices,
+                                                                          EventType.NOZZLE_CLOSE_START,
+                                                                          nozzleCloseOverVolume
+                                                                          + currentNozzle.getWipeVolume(),
+                                                                          comment,
+                                                                          FindEventDirection.BACKWARDS_FROM_END);
+
+                            if (compareDouble(nozzleCloseOverVolume, currentNozzle.getEjectionVolume()) == EQUAL)
+                            {
+                                extrusionBuffer.get(nozzleCloseStartIndex).setComment(
+                                    "Full open - full eject volume full wipe volume");
+                            } else
+                            {
+                                extrusionBuffer.get(nozzleCloseStartIndex).setComment(
+                                    "Partial open - full wipe volume");
+                            }
                         }
                     }
                 }
@@ -1349,6 +1536,10 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                 nozzleStartPosition = 0;
                                 nozzleEvent.setB(0);
                                 nozzleEvent.setNoExtrusionFlag(true);
+                                // Set E and D so we have a record of the elided extrusion
+                                nozzleEvent.setE(event.getE());
+                                nozzleEvent.setD(event.getD());
+
                                 writeEventToFile(nozzleEvent);
                                 if (mixExtruderOutputs)
                                 {
@@ -1358,7 +1549,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                         * currentDMixValue;
                                 } else
                                 {
-                                    autoUnretractEValue += event.getE();
+                                    autoUnretractEValue += event.getE() + event.getD();
                                 }
                             } else if (eventWriteIndex <= nozzleOpenEndIndex
                                 && nozzleOpenEndIndex != -1)
@@ -1425,6 +1616,10 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                 }
                                 nozzleEvent.setB(currentNozzlePosition);
                                 nozzleEvent.setNoExtrusionFlag(true);
+                                // Set E and D so we have a record of the elided extrusion
+                                nozzleEvent.setE(event.getE());
+                                nozzleEvent.setD(event.getD());
+
                                 writeEventToFile(nozzleEvent);
                                 if (mixExtruderOutputs)
                                 {
@@ -1434,7 +1629,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                         * currentDMixValue;
                                 } else
                                 {
-                                    autoUnretractEValue += event.getE();
+                                    autoUnretractEValue += event.getE() + event.getD();
                                 }
                             } else if (nozzleCloseMidpointIndex != -1
                                 && eventWriteIndex >= nozzleCloseMidpointIndex)
@@ -1460,6 +1655,10 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                 }
                                 nozzleEvent.setB(currentNozzlePosition);
                                 nozzleEvent.setNoExtrusionFlag(true);
+                                // Set E and D so we have a record of the elided extrusion
+                                nozzleEvent.setE(event.getE());
+                                nozzleEvent.setD(event.getD());
+
                                 writeEventToFile(nozzleEvent);
                                 if (mixExtruderOutputs)
                                 {
@@ -1469,12 +1668,12 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                         * currentDMixValue;
                                 } else
                                 {
-                                    autoUnretractEValue += event.getE();
+                                    autoUnretractEValue += event.getE() + event.getD();
                                 }
                             } else if (preCloseStarveIndex != -1
                                 && eventWriteIndex >= preCloseStarveIndex)
                             {
-                                outputNoBNoE(event, "Pre-close starvation");
+                                outputNoBNoE(event, "Pre-close starvation - eliding " + event.getE() + event.getD());
                             } else
                             {
                                 volumeUsed += event.getE();
@@ -1506,11 +1705,24 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                     "Error locating start / end of close");
                 writeEventToFile(failureComment);
                 throw new PostProcessingError("Didn't locate start / end of close");
+            } else
+            {
+                // Pass through the events - no extrusions to deal with
+                for (GCodeParseEvent event : extrusionBuffer)
+                {
+                    writeEventToFile(event);
+                    if (event instanceof NozzleChangeEvent)
+                    {
+                        Nozzle newNozzle = nozzles.get(
+                            ((NozzleChangeEvent) event).getNozzleNumber());
+                        currentNozzle = newNozzle;
+                    }
+                }
             }
         }
     }
 
-    private int insertTravelAndClosePath(final int finalExtrusionEventIndex, final String comment, boolean forceReverse) throws PostProcessingError
+    private int insertTravelAndClosePath(final int finalExtrusionEventIndex, final String comment, boolean forceReverse, TravelEvent lastInwardsMove) throws PostProcessingError
     {
         boolean reverseWipePath = forceReverse;
 
@@ -1520,6 +1732,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
         ExtrusionEvent finalExtrusionEvent = (ExtrusionEvent) extrusionBuffer.get(finalExtrusionEventIndex);
         Vector2D endOfExtrusion = new Vector2D(finalExtrusionEvent.getX(), finalExtrusionEvent.getY());
+        int penultimateExtrusionEventIndex = getPreviousExtrusionEventIndex(finalExtrusionEventIndex);
 
         // Fairly horrible, but we're going to scan through the events to find the start of the perimeter
         // by looking for the ketword - this is because Slic3r chops up the perimeter into pieces in some circumstances.
@@ -1530,10 +1743,10 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         boolean finalExtrusionWasPerimeter = false;
 
         int indexToCopyFrom = -1;
+        int minimumIndexToCopyFrom = 0;
 
-        if (reverseWipePath == false)
+        if (reverseWipePath == false && penultimateExtrusionEventIndex >= 0)
         {
-
             String finalExtrusionEventComment = finalExtrusionEvent.getComment();
 
             if (finalExtrusionEventComment != null)
@@ -1542,92 +1755,184 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 {
                     finalExtrusionWasPerimeter = true;
 
-                    for (int eventScanIndex = 0; eventScanIndex < finalExtrusionEventIndex; eventScanIndex++)
+                    // We can't go back over a layer boundary to wipe...
+                    int lastLayerChangeIndex = getPreviousEventIndex(finalExtrusionEventIndex, LayerChangeEvent.class
+                    );
+
+                    if (lastLayerChangeIndex
+                        <= 0)
                     {
-                        if (extrusionBuffer.get(eventScanIndex).getClass() == ExtrusionEvent.class)
+                        lastLayerChangeIndex = 0;
+                    }
+
+                    Segment orthogonalSegment = null;
+                    Vector2D lastPointConsidered = null;
+
+                    Comparator<Double> intersectedPointComparator = new Comparator<Double>()
+                    {
+                        @Override
+                        public int compare(Double t, Double t1)
                         {
-                            ExtrusionEvent eventToAnalyse = (ExtrusionEvent) extrusionBuffer.get(eventScanIndex);
-                            String commentToAnalyse = eventToAnalyse.getComment();
-                            if (commentToAnalyse != null)
+                            return compareDouble(t, t1);
+                        }
+                    };
+                    TreeMap<Double, Integer> intersectedPointDistances = new TreeMap<>();
+
+                    int intersectionCounter = 0;
+                    int maxNumberOfIntersectionsToConsider = currentSettings.perimetersProperty().get();
+                    float maxDistanceFromEndPoint = currentSettings.getPerimeter_extrusion_width().get() * maxNumberOfIntersectionsToConsider * 4;
+
+                    // Attempt to use the inwards move to find the innermost perimeter
+                    if (lastInwardsMove
+                        != null)
+                    {
+                        Vector2D inwardsMoveEndPoint = new Vector2D(lastInwardsMove.getX(), lastInwardsMove.getY());
+                        inwardsMoveEndPoint.scalarMultiply(4);
+                        orthogonalSegment = new Segment(endOfExtrusion, inwardsMoveEndPoint, new Line(endOfExtrusion, inwardsMoveEndPoint, 1e-12));
+                    }
+
+                    for (int eventIndex = finalExtrusionEventIndex - 1;
+                        eventIndex > lastLayerChangeIndex && intersectionCounter <= maxNumberOfIntersectionsToConsider;
+                        eventIndex--)
+                    {
+                        if (extrusionBuffer.get(eventIndex) instanceof MovementEvent)
+                        {
+                            MovementEvent thisMovementEvent = (MovementEvent) extrusionBuffer.get(eventIndex);
+                            Vector2D thisMovement = new Vector2D(thisMovementEvent.getX(), thisMovementEvent.getY());
+
+                            // Default 
+                            if (orthogonalSegment == null)
                             {
-                                if (commentToAnalyse.contains(perimeterKey))
+                                orthogonalSegment = MathUtils.getOrthogonalLineToLinePoints(maxDistanceFromEndPoint, thisMovement, endOfExtrusion);
+                            } else if (extrusionBuffer.get(eventIndex) instanceof ExtrusionEvent && lastPointConsidered != null)
+                            {
+                                // Detect intersections
+                                Segment segmentUnderConsideration = new Segment(lastPointConsidered, thisMovement, new Line(lastPointConsidered, thisMovement, 1e-12));
+                                Vector2D intersectionPoint = MathUtils.getSegmentIntersection(orthogonalSegment, segmentUnderConsideration);
+                                if (intersectionPoint != null)
                                 {
-                                    startOfPerimeter = eventScanIndex;
-                                    break;
+                                    double distanceFromEndPoint = intersectionPoint.distance(endOfExtrusion);
+                                    intersectedPointDistances.put(distanceFromEndPoint, eventIndex);
+                                    intersectionCounter++;
                                 }
                             }
+
+                            lastPointConsidered = thisMovement;
                         }
                     }
 
-                    if (startOfPerimeter >= 0)
+                    if (intersectedPointDistances.size()
+                        >= maxNumberOfIntersectionsToConsider)
                     {
-                        int travelBeforeFinalExtrusionIndex = getPreviousEventIndex(finalExtrusionEventIndex, TravelEvent.class);
+                        closestEventIndex = (int) intersectedPointDistances.values().toArray()[maxNumberOfIntersectionsToConsider - 1];
+                    } else if (intersectedPointDistances.size()
+                        > 0)
+                    {
+                        closestEventIndex = (int) intersectedPointDistances.values().toArray()[intersectedPointDistances.size() - 1];
+                    }
 
-                        if (travelBeforeFinalExtrusionIndex > 0)
-                        {
-                            for (int eventScanIndex = travelBeforeFinalExtrusionIndex - 1; eventScanIndex > 0; eventScanIndex--)
-                            {
-                                if (extrusionBuffer.get(eventScanIndex).getClass() == ExtrusionEvent.class)
-                                {
-                                    ExtrusionEvent eventToAnalyse = (ExtrusionEvent) extrusionBuffer.get(eventScanIndex);
-                                    String commentToAnalyse = eventToAnalyse.getComment();
-                                    if (commentToAnalyse != null)
-                                    {
-                                        if (commentToAnalyse.contains(perimeterKey))
-                                        {
-                                            endOfPenultimatePerimeterSegment = eventScanIndex;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (endOfPenultimatePerimeterSegment > 0)
-                            {
-                                //Success!
-                                // We can now look for the closest point
-                                double smallestDistance = Double.MAX_VALUE;
-                                for (int eventIndex = startOfPerimeter; eventIndex <= endOfPenultimatePerimeterSegment; eventIndex++)
-                                {
-                                    if (extrusionBuffer.get(eventIndex) instanceof ExtrusionEvent)
-                                    {
-                                        ExtrusionEvent eventBeingConsidered = (ExtrusionEvent) extrusionBuffer.get(eventIndex);
-                                        Vector2D pointBeingConsidered = new Vector2D(eventBeingConsidered.getX(), eventBeingConsidered.getY());
-
-                                        double distance = endOfExtrusion.distance(pointBeingConsidered);
-
-                                        if (distance < smallestDistance)
-                                        {
-                                            closestEventIndex = eventIndex;
-                                            smallestDistance = distance;
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (closestEventIndex < 0)
-                            {
-                                steno.warning("Couldn't find closest point to end of line when analysing inward wipe - defaulting to reverse");
-                                finalExtrusionWasPerimeter = false;
-                            } else
-                            {
-                                if (closestEventIndex == endOfPenultimatePerimeterSegment)
-                                {
-                                    closestEventIndex = startOfPerimeter;
-                                    indexToCopyFrom = startOfPerimeter + 1;
-                                }
-                            }
-                        } else
-                        {
-                            closestEventIndex = startOfPerimeter;
-                        }
+                    if (closestEventIndex < 0)
+                    {
+                        steno.warning("Couldn't find closest point to end of line when analysing inward wipe - defaulting to reverse");
+                        finalExtrusionWasPerimeter = false;
                     } else
                     {
-                        steno.warning("Couldn't determine start of extrusion when analysing inward wipe - defaulting to reverse - single extrusion path?");
-                        finalExtrusionWasPerimeter = false;
+                        indexToCopyFrom = closestEventIndex;
                     }
                 }
             }
+
+//
+//                    for (int eventScanIndex = lastLayerChangeIndex; eventScanIndex < finalExtrusionEventIndex; eventScanIndex++)
+//                    {
+//                        if (extrusionBuffer.get(eventScanIndex).getClass() == ExtrusionEvent.class)
+//                        {
+//                            ExtrusionEvent eventToAnalyse = (ExtrusionEvent) extrusionBuffer.get(eventScanIndex);
+//                            String commentToAnalyse = eventToAnalyse.getComment();
+//                            if (commentToAnalyse
+//                                != null)
+//                            {
+//                                if (commentToAnalyse.contains(perimeterKey))
+//                                {
+//                                    startOfPerimeter = eventScanIndex;
+//                                    break;
+//                                }
+//                            }
+//                        }
+//
+//                    }
+//
+//                    if (startOfPerimeter >= 0)
+//                    {
+//                        int travelBeforeFinalExtrusionIndex = getPreviousEventIndex(finalExtrusionEventIndex, TravelEvent.class
+//                        );
+//
+//                        if (travelBeforeFinalExtrusionIndex
+//                            > 0)
+//                        {
+//                            for (int eventScanIndex = travelBeforeFinalExtrusionIndex - 1; eventScanIndex > 0; eventScanIndex--)
+//                            {
+//                                if (extrusionBuffer.get(eventScanIndex).getClass() == ExtrusionEvent.class)
+//                                {
+//                                    ExtrusionEvent eventToAnalyse = (ExtrusionEvent) extrusionBuffer.get(eventScanIndex);
+//                                    String commentToAnalyse = eventToAnalyse.getComment();
+//                                    if (commentToAnalyse != null)
+//                                    {
+//                                        if (commentToAnalyse.contains(perimeterKey))
+//                                        {
+//                                            endOfPenultimatePerimeterSegment = eventScanIndex;
+//                                            break;
+//                                        }
+//                                    }
+//                                }
+//                            }
+//
+//                            if (endOfPenultimatePerimeterSegment > 0)
+//                            {
+//                                //Success!
+//                                // We can now look for the closest point
+//                                double smallestDistance = Double.MAX_VALUE;
+//                                for (int eventIndex = startOfPerimeter; eventIndex <= endOfPenultimatePerimeterSegment; eventIndex++)
+//                                {
+//                                    if (extrusionBuffer.get(eventIndex) instanceof ExtrusionEvent)
+//                                    {
+//                                        ExtrusionEvent eventBeingConsidered = (ExtrusionEvent) extrusionBuffer.get(eventIndex);
+//                                        Vector2D pointBeingConsidered = new Vector2D(eventBeingConsidered.getX(), eventBeingConsidered.getY());
+//
+//                                        double distance = endOfExtrusion.distance(pointBeingConsidered);
+//
+//                                        if (distance < smallestDistance)
+//                                        {
+//                                            closestEventIndex = eventIndex;
+//                                            smallestDistance = distance;
+//                                        }
+//                                    }
+//                                }
+//                            }
+//
+//                            if (closestEventIndex < 0)
+//                            {
+//                                steno.warning("Couldn't find closest point to end of line when analysing inward wipe - defaulting to reverse");
+//                                finalExtrusionWasPerimeter = false;
+//                            } else
+//                            {
+//                                if (closestEventIndex == endOfPenultimatePerimeterSegment)
+//                                {
+//                                    closestEventIndex = startOfPerimeter;
+//                                    indexToCopyFrom = startOfPerimeter + 1;
+//                                }
+//                            }
+//                        } else
+//                        {
+//                            closestEventIndex = startOfPerimeter;
+//                        }
+//                    } else
+//                    {
+//                        steno.warning("Couldn't determine start of extrusion when analysing inward wipe - defaulting to reverse - single extrusion path?");
+//                        finalExtrusionWasPerimeter = false;
+//                    }
+//                }
+//            }
         }
 
         int insertedEventIndex = finalExtrusionEventIndex + 1;
@@ -1646,6 +1951,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             travelToClosestPoint.setX(closestEvent.getX());
             travelToClosestPoint.setY(closestEvent.getY());
             travelToClosestPoint.setComment(comment);
+            travelToClosestPoint.setFeedRate(wipeFeedRate_mmPerMin);
 
             extrusionBuffer.add(insertedEventIndex, travelToClosestPoint);
             insertedEventIndex++;
@@ -1656,6 +1962,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
             reverseWipePath = true;
             indexToCopyFrom = finalExtrusionEventIndex - 1;
+            minimumIndexToCopyFrom = getNextExtrusionEventIndex(0);
         }
 
         startOfClose = insertedEventIndex;
@@ -1666,11 +1973,12 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
         MovementEvent lastMovement = null;
 
-        int indexDelta = (reverseWipePath == true) ? -1 : 1;
+//        int indexDelta = (reverseWipePath == true) ? -1 : 1;
+        int indexDelta = -1;
 
         while (cumulativeExtrusionVolume < targetVolume
             && indexToCopyFrom <= finalExtrusionEventIndex
-            && indexToCopyFrom >= 0)
+            && indexToCopyFrom >= minimumIndexToCopyFrom)
         {
             if (extrusionBuffer.get(indexToCopyFrom) instanceof ExtrusionEvent)
             {
@@ -1687,6 +1995,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                     ExtrusionEvent eventToInsert = new ExtrusionEvent();
                     eventToInsert.setE(eventToCopy.getE() * segmentAlterationRatio);
                     eventToInsert.setD(eventToCopy.getD() * segmentAlterationRatio);
+                    eventToInsert.setFeedRate(wipeFeedRate_mmPerMin);
 
                     Vector2D fromPosition = null;
 
@@ -1730,6 +2039,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                     eventToInsert.setX(eventToCopy.getX());
                     eventToInsert.setY(eventToCopy.getY());
                     eventToInsert.setComment(wipeTypeComment + " start");
+                    eventToInsert.setFeedRate(wipeFeedRate_mmPerMin);
 
                     extrusionBuffer.add(insertedEventIndex, eventToInsert);
                     cumulativeExtrusionVolume += eventToCopy.getE() + eventToCopy.getD();
@@ -1742,9 +2052,19 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 if (event instanceof TravelEvent)
                 {
                     lastMovement = (TravelEvent) event;
-                }
 
-                extrusionBuffer.add(insertedEventIndex, extrusionBuffer.get(indexToCopyFrom));
+                    TravelEvent eventToCopy = (TravelEvent) event;
+                    TravelEvent eventToInsert = new TravelEvent();
+                    eventToInsert.setX(eventToCopy.getX());
+                    eventToInsert.setY(eventToCopy.getY());
+                    eventToInsert.setComment(eventToCopy.getComment());
+                    eventToInsert.setFeedRate(wipeFeedRate_mmPerMin);
+
+                    extrusionBuffer.add(insertedEventIndex, eventToInsert);
+                } else
+                {
+                    extrusionBuffer.add(insertedEventIndex, extrusionBuffer.get(indexToCopyFrom));
+                }
             }
 
             insertedEventIndex++;

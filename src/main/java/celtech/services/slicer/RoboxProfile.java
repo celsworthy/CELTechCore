@@ -672,6 +672,26 @@ public class RoboxProfile implements Serializable, Cloneable
     /**
      *
      */
+    protected IntegerProperty perimeter_nozzle = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
+    protected IntegerProperty fill_nozzle = new SimpleIntegerProperty(1);
+
+    /**
+     *
+     */
+    protected IntegerProperty support_nozzle = new SimpleIntegerProperty(1);
+
+    /**
+     *
+     */
+    protected IntegerProperty support_interface_nozzle = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
     public RoboxProfile()
     {
         this.LOCAL_numberFormatter.setMaximumFractionDigits(2);
@@ -2616,7 +2636,7 @@ public class RoboxProfile implements Serializable, Cloneable
     {
         return LOCAL_profileName;
     }
-    
+
     /**
      *
      * @return
@@ -2651,6 +2671,42 @@ public class RoboxProfile implements Serializable, Cloneable
     public IntegerProperty getForce_nozzle_on_first_layer()
     {
         return force_nozzle_on_first_layer;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public IntegerProperty getPerimeterNozzleProperty()
+    {
+        return perimeter_nozzle;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public IntegerProperty getSupportNozzleProperty()
+    {
+        return support_nozzle;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public IntegerProperty getSupportInterfaceNozzleProperty()
+    {
+        return support_interface_nozzle;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public IntegerProperty getFillNozzleProperty()
+    {
+        return fill_nozzle;
     }
 
     /**
@@ -2887,10 +2943,10 @@ public class RoboxProfile implements Serializable, Cloneable
                             fileWriter.write(name);
 
                             fileWriter.write(
-                                    " = ");
+                                " = ");
                             fileWriter.write(value.get());
                             fileWriter.write(
-                                    "\n");
+                                "\n");
                         } else if (fieldClass.equals(IntegerProperty.class))
                         {
                             String name = field.getName();
@@ -2922,8 +2978,8 @@ public class RoboxProfile implements Serializable, Cloneable
                             int length = fieldValue.size();
 
                             for (int i = 0;
-                                    i < length;
-                                    i++)
+                                i < length;
+                                i++)
                             {
                                 Object arrayElement = fieldValue.get(i);
                                 if (arrayElement instanceof IntegerProperty)
@@ -2962,9 +3018,9 @@ public class RoboxProfile implements Serializable, Cloneable
                             fileWriter.write(name);
 
                             fileWriter.write(
-                                    " = ");
+                                " = ");
                             if (value.get()
-                                    == true)
+                                == true)
                             {
                                 fileWriter.write("1");
                             } else
@@ -2973,7 +3029,7 @@ public class RoboxProfile implements Serializable, Cloneable
                             }
 
                             fileWriter.write(
-                                    "\n");
+                                "\n");
                         } else
                         {
 //                field.setAccessible(true);
@@ -3001,7 +3057,7 @@ public class RoboxProfile implements Serializable, Cloneable
     }
 
     private void writeObject(ObjectOutputStream out)
-            throws IOException
+        throws IOException
     {
         out.writeFloat(filament_diameter.get());
 
@@ -3174,10 +3230,14 @@ public class RoboxProfile implements Serializable, Cloneable
         out.writeFloat(standby_temperature_delta.get());
         out.writeInt(support_material_interface_speed.get());
         out.writeInt(force_nozzle_on_first_layer.get());
+        out.writeInt(perimeter_nozzle.get());
+        out.writeInt(support_nozzle.get());
+        out.writeInt(support_interface_nozzle.get());
+        out.writeInt(fill_nozzle.get());
     }
 
     private void readObject(ObjectInputStream in)
-            throws IOException, ClassNotFoundException
+        throws IOException, ClassNotFoundException
     {
         filament_diameter = new SimpleFloatProperty(in.readFloat());
 
@@ -3312,6 +3372,10 @@ public class RoboxProfile implements Serializable, Cloneable
             standby_temperature_delta = new SimpleFloatProperty(in.readFloat());
             support_material_interface_speed = new SimpleIntegerProperty(in.readInt());
             force_nozzle_on_first_layer = new SimpleIntegerProperty(in.readInt());
+            perimeter_nozzle = new SimpleIntegerProperty(in.readInt());
+            support_nozzle = new SimpleIntegerProperty(in.readInt());
+            support_interface_nozzle = new SimpleIntegerProperty(in.readInt());
+            fill_nozzle = new SimpleIntegerProperty(in.readInt());
         } catch (IOException ex)
         {
             LOCAL_steno.warning("Variables missing from config file - using defaults");
@@ -3319,7 +3383,7 @@ public class RoboxProfile implements Serializable, Cloneable
     }
 
     private void readObjectNoData()
-            throws ObjectStreamException
+        throws ObjectStreamException
     {
 
     }
@@ -3395,8 +3459,8 @@ public class RoboxProfile implements Serializable, Cloneable
 
                             int length = originFieldValue.size();
                             for (int index = 0;
-                                    index < length;
-                                    index++)
+                                index < length;
+                                index++)
                             {
                                 Object originArrayElement = originFieldValue.get(index);
                                 Object cloneArrayElement = cloneFieldValue.get(index);

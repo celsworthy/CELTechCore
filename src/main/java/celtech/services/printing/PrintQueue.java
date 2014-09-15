@@ -625,40 +625,40 @@ public class PrintQueue implements ControllableService
                                                         acceptedPrintRequest);
             }
 
-            movieMakerTask = new MovieMakerTask(project.getUUID(), associatedPrinter);
-            movieMakerTask.setOnSucceeded(new EventHandler<WorkerStateEvent>()
-            {
-
-                @Override
-                public void handle(WorkerStateEvent event)
-                {
-                    steno.info("Movie maker succeeded");
-                }
-            });
-            movieMakerTask.setOnFailed(new EventHandler<WorkerStateEvent>()
-            {
-
-                @Override
-                public void handle(WorkerStateEvent event)
-                {
-                    steno.info("Movie maker failed");
-                }
-            });
-            movieMakerTask.setOnCancelled(new EventHandler<WorkerStateEvent>()
-            {
-
-                @Override
-                public void handle(WorkerStateEvent event)
-                {
-                    steno.info("Movie maker was cancelled");
-                }
-            });
-
-            TaskController.getInstance().manageTask(movieMakerTask);
-
-            Thread movieThread = new Thread(movieMakerTask);
-            movieThread.setName("Movie Maker - " + project.getUUID());
-            movieThread.start();
+//            movieMakerTask = new MovieMakerTask(project.getUUID(), associatedPrinter);
+//            movieMakerTask.setOnSucceeded(new EventHandler<WorkerStateEvent>()
+//            {
+//
+//                @Override
+//                public void handle(WorkerStateEvent event)
+//                {
+//                    steno.info("Movie maker succeeded");
+//                }
+//            });
+//            movieMakerTask.setOnFailed(new EventHandler<WorkerStateEvent>()
+//            {
+//
+//                @Override
+//                public void handle(WorkerStateEvent event)
+//                {
+//                    steno.info("Movie maker failed");
+//                }
+//            });
+//            movieMakerTask.setOnCancelled(new EventHandler<WorkerStateEvent>()
+//            {
+//
+//                @Override
+//                public void handle(WorkerStateEvent event)
+//                {
+//                    steno.info("Movie maker was cancelled");
+//                }
+//            });
+//
+//            TaskController.getInstance().manageTask(movieMakerTask);
+//
+//            Thread movieThread = new Thread(movieMakerTask);
+//            movieThread.setName("Movie Maker - " + project.getUUID());
+//            movieThread.start();
         }
 
         return acceptedPrintRequest;
@@ -685,14 +685,7 @@ public class PrintQueue implements ControllableService
                         f1.lastModified()).compareTo(f2.lastModified()));
             for (int i = 0; i < filesToDelete; i++)
             {
-                try
-                {
-                    FileUtils.deleteDirectory(filesOnDisk[i]);
-                } catch (IOException ex)
-                {
-                    steno.error(
-                        "Error whilst deleting " + filesOnDisk[i].toString());
-                }
+                FileUtils.deleteQuietly(filesOnDisk[i]);
             }
         }
 
@@ -1114,8 +1107,7 @@ public class PrintQueue implements ControllableService
                 steno.error(
                     "Robox comms exception when sending heaters off gcode " + ex);
             }
-        }
-        else if (fullAbort)
+        } else if (fullAbort)
         {
             try
             {
@@ -1256,7 +1248,7 @@ public class PrintQueue implements ControllableService
         File printjobFile = new File(printjobFilename);
         File fileToCopy = new File(filename);
 
-        setPrintStatus(PrinterStatusEnumeration.EXECUTING_MACRO);
+        setPrintStatus(PrinterStatusEnumeration.SENDING_TO_PRINTER);
         try
         {
             Files.copy(fileToCopy.toPath(), printjobFile.toPath(),

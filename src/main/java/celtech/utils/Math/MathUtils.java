@@ -8,6 +8,9 @@ package celtech.utils.Math;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.Node;
+import org.apache.commons.math3.geometry.euclidean.twod.Segment;
+import org.apache.commons.math3.geometry.euclidean.twod.Line;
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 /**
  *
@@ -145,8 +148,8 @@ public class MathUtils
         // theta = arcsin(-y / r)
         // phi = arctan(z / x)
         double r = Math.sqrt((cartesianCoordinate.getX() * cartesianCoordinate.getX())
-                + (cartesianCoordinate.getY() * cartesianCoordinate.getY())
-                + (cartesianCoordinate.getZ() * cartesianCoordinate.getZ()));
+            + (cartesianCoordinate.getY() * cartesianCoordinate.getY())
+            + (cartesianCoordinate.getZ() * cartesianCoordinate.getZ()));
         double theta = Math.asin(-cartesianCoordinate.getY() / r);
         double phi = Math.atan2(cartesianCoordinate.getZ(), cartesianCoordinate.getX());
 
@@ -209,8 +212,8 @@ public class MathUtils
         // theta = arcsin(-y / r)
         // phi = arctan(z / x)
         double r = Math.sqrt((cartesianCoordinate.getX() * cartesianCoordinate.getX())
-                + (cartesianCoordinate.getY() * cartesianCoordinate.getY())
-                + (cartesianCoordinate.getZ() * cartesianCoordinate.getZ()));
+            + (cartesianCoordinate.getY() * cartesianCoordinate.getY())
+            + (cartesianCoordinate.getZ() * cartesianCoordinate.getZ()));
         double theta = Math.asin(-cartesianCoordinate.getY() / r);
         double phi = Math.atan2(cartesianCoordinate.getZ(), cartesianCoordinate.getX());
 
@@ -252,7 +255,7 @@ public class MathUtils
     {
         // Returns an angle assuming the input is relative to a zero centre point
         // Rotation is clockwise
-        
+
         angle += Math.PI;
         double xPos = Math.sin(DEG_TO_RAD * angle) * radius;
         double yPos = Math.cos(DEG_TO_RAD * angle) * radius;
@@ -297,7 +300,7 @@ public class MathUtils
 
         return outputAzimuth;
     }
-    
+
     /**
      *
      * @param azimuth
@@ -318,5 +321,52 @@ public class MathUtils
         }
 
         return outputAzimuth;
+    }
+
+    public static Segment getOrthogonalLineToLinePoints(double orthogonalLength, Vector2D startPoint, Vector2D endPoint)
+    {
+        Vector2D originalVector = endPoint.subtract(startPoint);
+        Vector2D midPoint = originalVector.scalarMultiply(0.5);
+        Vector2D normalisedOrthogonal = (new Vector2D(-midPoint.getY(), midPoint.getX())).normalize();
+        Vector2D scaledOrthogonal = normalisedOrthogonal.scalarMultiply(orthogonalLength);
+
+        Vector2D newStartPoint = endPoint.add(scaledOrthogonal);
+        Vector2D newEndPoint = endPoint.subtract(scaledOrthogonal);
+
+        Line resultantLine = new Line(newStartPoint, newEndPoint, 1e-12);
+
+        return new Segment(newStartPoint, newEndPoint, resultantLine);
+    }
+
+    public static Vector2D getSegmentIntersection(Segment firstSegment, Segment secondSegment)
+    {
+        Vector2D intersectionPoint = firstSegment.getLine().intersection(secondSegment.getLine());
+
+        if (intersectionPoint != null)
+        {
+            boolean withinFirstSegment = doesPointLieWithinSegment(intersectionPoint, firstSegment);
+            boolean withinSecondSegment = doesPointLieWithinSegment(intersectionPoint, secondSegment);
+            
+            if (!withinFirstSegment || !withinSecondSegment)
+            {
+                intersectionPoint = null;
+            }
+        }
+        return intersectionPoint;
+    }
+
+    public static boolean doesPointLieWithinSegment(Vector2D pointToTest, Segment segmentToTest)
+    {
+        boolean pointWithinSegment = false;
+
+        if (pointToTest.getX() >= Math.min(segmentToTest.getStart().getX(), segmentToTest.getEnd().getX())
+            && pointToTest.getX() <= Math.max(segmentToTest.getStart().getX(), segmentToTest.getEnd().getX())
+            && pointToTest.getY() >= Math.min(segmentToTest.getStart().getY(), segmentToTest.getEnd().getY())
+            && pointToTest.getY() <= Math.max(segmentToTest.getStart().getY(), segmentToTest.getEnd().getY()))
+        {
+            pointWithinSegment = true;
+        }
+
+        return pointWithinSegment;
     }
 }
