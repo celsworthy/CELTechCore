@@ -37,7 +37,7 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class RoboxProfile implements Serializable, Cloneable
 {
-
+    private int LOCAL_version_number = 1;
     private Stenographer LOCAL_steno = StenographerFactory.getStenographer(RoboxProfile.class.getName());
     private StringProperty LOCAL_profileName = new SimpleStringProperty("");
     private boolean LOCAL_mutable = false;
@@ -940,25 +940,25 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      * @return
      */
-    public IntegerProperty perimeter_nozzleProperty()
+    public IntegerProperty perimeter_extruderProperty()
     {
         return perimeter_extruder;
     }
 
     /**
      *
-     * @param perimeter_nozzle
+     * @param perimeter_extruder
      */
-    public void setPerimeter_nozzle(int perimeter_nozzle)
+    public void setPerimeter_extruder(int perimeter_extruder)
     {
-        this.perimeter_extruder.set(perimeter_nozzle);
+        this.perimeter_extruder.set(perimeter_extruder);
     }
 
     /**
      *
      * @return
      */
-    public IntegerProperty infill_nozzleProperty()
+    public IntegerProperty infill_extruderProperty()
     {
         return infill_extruder;
     }
@@ -967,7 +967,7 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      * @param infill_nozzle
      */
-    public void setInfill_nozzle(int infill_nozzle)
+    public void setInfill_extruder(int infill_nozzle)
     {
         this.infill_extruder.set(infill_nozzle);
     }
@@ -976,36 +976,36 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      * @return
      */
-    public IntegerProperty support_material_nozzleProperty()
+    public IntegerProperty support_material_extruderProperty()
     {
         return support_material_extruder;
     }
 
     /**
      *
-     * @param support_material_nozzle
+     * @param support_material_extruder
      */
-    public void setSupport_material_nozzle(int support_material_nozzle)
+    public void setSupport_material_extruder(int support_material_extruder)
     {
-        this.support_material_extruder.set(support_material_nozzle);
+        this.support_material_extruder.set(support_material_extruder);
     }
 
     /**
      *
      * @return
      */
-    public IntegerProperty support_material_interface_nozzleProperty()
+    public IntegerProperty support_material_interface_extruderProperty()
     {
         return support_material_interface_extruder;
     }
 
     /**
      *
-     * @param support_material_interface_nozzle
+     * @param support_material_interface_extruder
      */
-    public void setSupport_material_interface_nozzle(int support_material_interface_nozzle)
+    public void setSupport_material_interface_extruder(int support_material_interface_extruder)
     {
-        this.support_material_interface_extruder.set(support_material_interface_nozzle);
+        this.support_material_interface_extruder.set(support_material_interface_extruder);
     }
 
     /**
@@ -2717,6 +2717,7 @@ public class RoboxProfile implements Serializable, Cloneable
      */
     public void readFromFile(String profileName, boolean mutable, String filename)
     {
+        LOCAL_version_number = -1;
         LOCAL_profileName.set(profileName);
         LOCAL_mutable = mutable;
         File inputFile = new File(filename);
@@ -2840,6 +2841,19 @@ public class RoboxProfile implements Serializable, Cloneable
                         {
                             LOCAL_steno.error("Couldn't parse settings for field " + lineParts[0] + " " + ex);
                         }
+                        else
+                        {
+                            // Special case for intercepting commented fields
+                            // The version number will be stored like this
+                            if (lineParts[0].trim().contains("Version"))
+                            {
+                                String versionField = lineParts[1];
+                                if (versionField != null)
+                                {
+                                    LOCAL_version_number = Integer.valueOf(versionField);
+                                }
+                            }
+                        }
                     } catch (IllegalAccessException ex)
                     {
                         LOCAL_steno.error("Access exception whilst setting " + lineParts[0] + " " + ex);
@@ -2883,6 +2897,7 @@ public class RoboxProfile implements Serializable, Cloneable
             fileWriter = new FileWriter(outputFile);
 
             fileWriter.append("#Profile: " + LOCAL_profileName.get() + "\n");
+            fileWriter.append("#Version = " + LOCAL_version_number + "\n");
 
             Field[] fields = this.getClass().getDeclaredFields();
 
@@ -3517,5 +3532,15 @@ public class RoboxProfile implements Serializable, Cloneable
     public String toString()
     {
         return LOCAL_profileName.get();
+    }
+    
+    public int getVersionNumber()
+    {
+        return LOCAL_version_number;
+    }
+
+    public void setVersionNumber(int versionNumber)
+    {
+        LOCAL_version_number = versionNumber;
     }
 }
