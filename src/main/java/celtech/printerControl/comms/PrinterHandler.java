@@ -792,7 +792,7 @@ public class PrinterHandler extends Thread
     {
         sleepBetweenStatusChecks = sleepMillis;
     }
-    
+
     private boolean askIfUpgradeFirmware(int firmwareRevision)
     {
         Callable<Boolean> askUpgradeFirmware = new Callable()
@@ -827,7 +827,7 @@ public class PrinterHandler extends Thread
                 return (upgradeApplicationResponse == firmwareUpgradeOK);
             }
         };
-        
+
         FutureTask<Boolean> askFirmwareUpgradeTask = new FutureTask<>(askUpgradeFirmware);
         Platform.runLater(askFirmwareUpgradeTask);
         try

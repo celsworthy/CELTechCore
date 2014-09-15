@@ -13,14 +13,11 @@ import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.events.RoboxEvent;
-import celtech.printerControl.comms.events.RoboxEventProducer;
 import celtech.printerControl.comms.events.RoboxEventType;
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,11 +47,7 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
     private final String roboxProductID = "081B";
 
     private final String notConnectedString = "NOT_CONNECTED";
-    private InputStream inputStream = null;
-    private OutputStream outputStream = null;
-    private DataInputStream dataInputStream = null;
     private Stenographer steno = null;
-    private RoboxEventProducer eventProducer = new RoboxEventProducer();
     private final HashMap<String, PrinterHandler> pendingPrinterConnections = new HashMap<>();
     private final HashMap<String, Printer> pendingPrinters = new HashMap<>();
     private final HashMap<String, PrinterHandler> activePrinterConnections = new HashMap<>();
