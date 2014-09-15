@@ -19,7 +19,6 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import celtech.gcodetranslator.GCodeRoboxiser;
 
 /**
  *
@@ -45,7 +44,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
         RoboxiserResult roboxiserResult = gCodeRoboxiser.roboxiseFile(
             inputURL.getFile(), outputFilePath,
             roboxProfile, progressProperty);
-        assertEquals(34, (long) roboxiserResult.getPrintJobStatistics().getLineNumberOfFirstExtrusion());
+        assertEquals(20, (long) roboxiserResult.getPrintJobStatistics().getLineNumberOfFirstExtrusion());
     }
     
     @Test
@@ -71,7 +70,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
         {
             totalDuration += duration;
         }
-        assertEquals(552d, totalDuration, 1);
+        assertEquals(487d, totalDuration, 1);
 
     }
 

@@ -2737,122 +2737,125 @@ public class RoboxProfile implements Serializable, Cloneable
 
             while ((lineToProcess = fileReader.readLine()) != null)
             {
-                String[] lineParts = lineToProcess.trim().split("[ ]*=[ ]*");
-                try
+                if (lineToProcess.equals("") == false)
                 {
-                    Field field = this.getClass().getDeclaredField(lineParts[0]);
-                    Class<?> fieldClass = field.getType();
+                    String[] lineParts = lineToProcess.trim().split("[ ]*=[ ]*");
+                    try
+                    {
+                        Field field = this.getClass().getDeclaredField(lineParts[0]);
+                        Class<?> fieldClass = field.getType();
 
-                    if (fieldClass.equals(boolean.class))
-                    {
-                        boolean value = false;
+                        if (fieldClass.equals(boolean.class))
+                        {
+                            boolean value = false;
 
-                        if (lineParts.length == 2 && lineParts[1].equalsIgnoreCase("1"))
-                        {
-                            value = true;
-                        }
-
-                        field.setBoolean(this, value);
-                    } else if (fieldClass.equals(BooleanProperty.class))
-                    {
-                        boolean value = false;
-
-                        if (lineParts.length == 2 && lineParts[1].equalsIgnoreCase("1"))
-                        {
-                            value = true;
-                        }
-                        setBooleanProperty.invoke(field.get(this), value);
-                    } else if (fieldClass.equals(StringProperty.class))
-                    {
-                        String value = "";
-                        if (lineParts.length == 2)
-                        {
-                            value = lineParts[1];
-                        }
-                        setStringProperty.invoke(field.get(this), value);
-                    } else if (fieldClass.equals(IntegerProperty.class))
-                    {
-                        int value = 0;
-                        if (lineParts.length == 2)
-                        {
-                            value = Integer.valueOf(lineParts[1]);
-                        } else
-                        {
-                            LOCAL_steno.warning("Field " + lineParts[0] + " is missing a value");
-                        }
-                        setIntegerProperty.invoke(field.get(this), value);
-                    } else if (fieldClass.equals(FloatProperty.class))
-                    {
-                        float value = 0;
-                        if (lineParts.length == 2)
-                        {
-                            value = Float.valueOf(lineParts[1]);
-                        } else
-                        {
-                            LOCAL_steno.warning("Field " + lineParts[0] + " is missing a value");
-                        }
-                        setFloatProperty.invoke(field.get(this), value);
-                    } else if (fieldClass.equals(ObservableList.class))
-                    {
-                        Type genericType = field.getGenericType();
-                        Class<?> fieldContentClass = (Class<?>) ((ParameterizedType) genericType).getActualTypeArguments()[0];
-                        String[] elements = lineParts[1].split(",");
-                        int elementCounter = 0;
-
-                        for (String element : elements)
-                        {
-                            if (fieldContentClass.equals(IntegerProperty.class))
+                            if (lineParts.length == 2 && lineParts[1].equalsIgnoreCase("1"))
                             {
-                                IntegerProperty property = (IntegerProperty) observableListGet.invoke(field.get(this), elementCounter);
-                                property.set(Integer.valueOf(element));
-                            } else if (fieldContentClass.equals(FloatProperty.class))
-                            {
-                                FloatProperty property = (FloatProperty) observableListGet.invoke(field.get(this), elementCounter);
-                                property.set(Float.valueOf(element));
-                            } else if (fieldContentClass.equals(StringProperty.class))
-                            {
-                                StringProperty property = (StringProperty) observableListGet.invoke(field.get(this), elementCounter);
-                                property.set(element);
-                            } else if (fieldContentClass.equals(BooleanProperty.class))
-                            {
-                                BooleanProperty property = (BooleanProperty) observableListGet.invoke(field.get(this), elementCounter);
-
-                                if (element.equalsIgnoreCase("1"))
-                                {
-                                    property.set(true);
-                                } else
-                                {
-                                    property.set(false);
-                                }
+                                value = true;
                             }
 
-                            elementCounter++;
+                            field.setBoolean(this, value);
+                        } else if (fieldClass.equals(BooleanProperty.class))
+                        {
+                            boolean value = false;
+
+                            if (lineParts.length == 2 && lineParts[1].equalsIgnoreCase("1"))
+                            {
+                                value = true;
+                            }
+                            setBooleanProperty.invoke(field.get(this), value);
+                        } else if (fieldClass.equals(StringProperty.class))
+                        {
+                            String value = "";
+                            if (lineParts.length == 2)
+                            {
+                                value = lineParts[1];
+                            }
+                            setStringProperty.invoke(field.get(this), value);
+                        } else if (fieldClass.equals(IntegerProperty.class))
+                        {
+                            int value = 0;
+                            if (lineParts.length == 2)
+                            {
+                                value = Integer.valueOf(lineParts[1]);
+                            } else
+                            {
+                                LOCAL_steno.warning("Field " + lineParts[0] + " is missing a value");
+                            }
+                            setIntegerProperty.invoke(field.get(this), value);
+                        } else if (fieldClass.equals(FloatProperty.class))
+                        {
+                            float value = 0;
+                            if (lineParts.length == 2)
+                            {
+                                value = Float.valueOf(lineParts[1]);
+                            } else
+                            {
+                                LOCAL_steno.warning("Field " + lineParts[0] + " is missing a value");
+                            }
+                            setFloatProperty.invoke(field.get(this), value);
+                        } else if (fieldClass.equals(ObservableList.class))
+                        {
+                            Type genericType = field.getGenericType();
+                            Class<?> fieldContentClass = (Class<?>) ((ParameterizedType) genericType).getActualTypeArguments()[0];
+                            String[] elements = lineParts[1].split(",");
+                            int elementCounter = 0;
+
+                            for (String element : elements)
+                            {
+                                if (fieldContentClass.equals(IntegerProperty.class))
+                                {
+                                    IntegerProperty property = (IntegerProperty) observableListGet.invoke(field.get(this), elementCounter);
+                                    property.set(Integer.valueOf(element));
+                                } else if (fieldContentClass.equals(FloatProperty.class))
+                                {
+                                    FloatProperty property = (FloatProperty) observableListGet.invoke(field.get(this), elementCounter);
+                                    property.set(Float.valueOf(element));
+                                } else if (fieldContentClass.equals(StringProperty.class))
+                                {
+                                    StringProperty property = (StringProperty) observableListGet.invoke(field.get(this), elementCounter);
+                                    property.set(element);
+                                } else if (fieldContentClass.equals(BooleanProperty.class))
+                                {
+                                    BooleanProperty property = (BooleanProperty) observableListGet.invoke(field.get(this), elementCounter);
+
+                                    if (element.equalsIgnoreCase("1"))
+                                    {
+                                        property.set(true);
+                                    } else
+                                    {
+                                        property.set(false);
+                                    }
+                                }
+
+                                elementCounter++;
+                            }
+                        } else
+                        {
+                            LOCAL_steno.error("Couldn't process field " + lineParts[0]);
                         }
-                    } else
+                    } catch (NoSuchFieldException ex)
                     {
-                        LOCAL_steno.error("Couldn't process field " + lineParts[0]);
-                    }
-                } catch (NoSuchFieldException ex)
-                {
-                    if (lineParts[0].trim().startsWith("#") == false)
+                        if (lineParts[0].trim().startsWith("#") == false)
+                        {
+                            LOCAL_steno.error("Couldn't parse settings for field " + lineParts[0] + " " + ex);
+                        }
+                    } catch (IllegalAccessException ex)
                     {
-                        LOCAL_steno.error("Couldn't parse settings for field " + lineParts[0] + " " + ex);
+                        LOCAL_steno.error("Access exception whilst setting " + lineParts[0] + " " + ex);
+                    } catch (IllegalArgumentException ex)
+                    {
+                        LOCAL_steno.error("Illegal argument exception whilst setting " + lineParts[0] + " " + ex);
+                    } catch (SecurityException ex)
+                    {
+                        LOCAL_steno.error("Security exception whilst setting " + lineParts[0] + " " + ex);
+                    } catch (InvocationTargetException ex)
+                    {
+                        LOCAL_steno.error("Couldn't set up field " + lineParts[0] + " " + ex);
+                    } catch (IndexOutOfBoundsException ex)
+                    {
+                        LOCAL_steno.error("Index out of bounds  " + lineParts[0] + " " + ex);
                     }
-                } catch (IllegalAccessException ex)
-                {
-                    LOCAL_steno.error("Access exception whilst setting " + lineParts[0] + " " + ex);
-                } catch (IllegalArgumentException ex)
-                {
-                    LOCAL_steno.error("Illegal argument exception whilst setting " + lineParts[0] + " " + ex);
-                } catch (SecurityException ex)
-                {
-                    LOCAL_steno.error("Security exception whilst setting " + lineParts[0] + " " + ex);
-                } catch (InvocationTargetException ex)
-                {
-                    LOCAL_steno.error("Couldn't set up field " + lineParts[0] + " " + ex);
-                } catch (IndexOutOfBoundsException ex)
-                {
-                    LOCAL_steno.error("Index out of bounds  " + lineParts[0] + " " + ex);
                 }
             }
 
