@@ -125,7 +125,7 @@ public class PurgeHelper
                     float temperatureDifference = reelNozzleTemperature - savedHeadData.getLastFilamentTemperature();
                     lastDisplayTemperature = (int) savedHeadData.getLastFilamentTemperature();
                     currentDisplayTemperature = (int) reelNozzleTemperature;
-                    purgeTemperature = (int) Math.max(150.0, savedHeadData.getLastFilamentTemperature() + (temperatureDifference / 2));
+                    purgeTemperature = (int) Math.min(savedHeadData.getMaximumTemperature(), Math.max(150.0, savedHeadData.getLastFilamentTemperature() + (temperatureDifference / 2)));
                     setState(state.getNextState());
                 } catch (RoboxCommsException ex)
                 {
@@ -176,7 +176,7 @@ public class PurgeHelper
                                                                                    savedHeadData.getNozzle2YOffset(),
                                                                                    savedHeadData.getNozzle2ZOffset(),
                                                                                    savedHeadData.getNozzle2BOffset(),
-                                                                                   reelNozzleTemperature,
+                                                                                   purgeTemperature,
                                                                                    savedHeadData.getHeadHours());
 
                     printerToUse.transmitDirectGCode("G0 B0", false);
@@ -215,6 +215,6 @@ public class PurgeHelper
 
     public int getPurgeTemperature()
     {
-        return lastDisplayTemperature;
+        return purgeTemperature;
     }
 }
