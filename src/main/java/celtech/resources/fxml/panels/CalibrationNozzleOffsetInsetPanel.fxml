@@ -26,7 +26,7 @@
                                 </Text>
                                 <ImageView fx:id="headImage" pickOnBounds="true" preserveRatio="true">
                                     <image>
-                                        <Image url="@../images/HeadOutlineImage.png" />
+                                        <Image url="@../../images/HeadOutlineImage.png" />
                                     </image>
                                 </ImageView>
                                 <VBox fx:id="nudgeControlVBox" alignment="CENTER">

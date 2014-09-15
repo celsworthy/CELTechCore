@@ -403,30 +403,22 @@ public class CalibrationNozzleBHelper
                 confirmMaterialExtrudingTaskThread.setName("Calibration - extruding");
                 confirmMaterialExtrudingTaskThread.start();
                 break;
+            case PARKING:
+                calibrationTask = new CalibrateBTask(state);
+                calibrationTask.setOnFailed(failedTaskHandler);
+                TaskController.getInstance().manageTask(calibrationTask);
+
+                Thread parkingTaskThread = new Thread(calibrationTask);
+                parkingTaskThread.setName("Calibration - parking");
+                parkingTaskThread.start();
+                parkRequired = false;
+                break;
             case FINISHED:
                 try
                 {
-                    printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                                         savedHeadData.getUniqueID(),
-                                                         savedHeadData.getMaximumTemperature(),
-                                                         savedHeadData.getBeta(),
-                                                         savedHeadData.getTCal(),
-                                                         savedHeadData.getNozzle1XOffset(),
-                                                         savedHeadData.getNozzle1YOffset(),
-                                                         savedHeadData.getNozzle1ZOffset(),
-                                                         nozzle0BOffset,
-                                                         savedHeadData.getNozzle2XOffset(),
-                                                         savedHeadData.getNozzle2YOffset(),
-                                                         savedHeadData.getNozzle2ZOffset(),
-                                                         nozzle1BOffset,
-                                                         savedHeadData.getLastFilamentTemperature(),
-                                                         savedHeadData.getHeadHours());
-
                     printerToUse.transmitDirectGCode("G0 B0", false);
                     printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
                     printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
-                    printerToUse.transmitStoredGCode("Park");
-                    parkRequired = false;
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in needle valve calibration - mode=" + state.name());
@@ -449,6 +441,32 @@ public class CalibrationNozzleBHelper
                     steno.error("Error clearing up after failed calibration");
                 }
                 break;
+        }
+    }
+
+    public void saveSettings()
+    {
+        try
+        {
+            printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+                                                 savedHeadData.getUniqueID(),
+                                                 savedHeadData.getMaximumTemperature(),
+                                                 savedHeadData.getBeta(),
+                                                 savedHeadData.getTCal(),
+                                                 savedHeadData.getNozzle1XOffset(),
+                                                 savedHeadData.getNozzle1YOffset(),
+                                                 savedHeadData.getNozzle1ZOffset(),
+                                                 nozzle0BOffset,
+                                                 savedHeadData.getNozzle2XOffset(),
+                                                 savedHeadData.getNozzle2YOffset(),
+                                                 savedHeadData.getNozzle2ZOffset(),
+                                                 nozzle1BOffset,
+                                                 savedHeadData.getLastFilamentTemperature(),
+                                                 savedHeadData.getHeadHours());
+
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error in needle valve calibration - saving settings");
         }
     }
 }

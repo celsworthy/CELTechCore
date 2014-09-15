@@ -745,7 +745,7 @@ public class Head implements Cloneable
                     String receivedTypeCode = response.getTypeCode();
                     boolean calibrationRequired = false;
 
-                    if (receivedTypeCode == null || receivedTypeCode.equals(""))
+                    if (receivedTypeCode == null || receivedTypeCode.equals("") || receivedTypeCode.equals("null"))
                     {
                         // Force the defaults - we only have one head at the moment so pick the first...
                         Head headToWrite = HeadContainer.getCompleteHeadList().get(0).clone();

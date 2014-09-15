@@ -337,10 +337,7 @@ public class MaintenancePanelController implements Initializable
     @FXML
     void purge(ActionEvent event)
     {
-        if (connectedPrinter != null)
-        {
-            PrinterUtils.runPurge(connectedPrinter);
-        }
+        DisplayManager.getInstance().getPurgeInsetPanelController().purge(connectedPrinter);
     }
 
     /**

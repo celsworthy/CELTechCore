@@ -79,10 +79,10 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                     if (PrinterUtils.waitOnBusy(printerToUse, this) == false)
                     {
                         printerToUse.transmitStoredGCode("Home_all");
-                        if (PrinterUtils.waitOnMacroFinished(printerToUse, this) == false)
+                        if (PrinterUtils.waitOnMacroFinished(printerToUse, this) == false && isCancelled() == false)
                         {
                             printerToUse.transmitDirectGCode("G0 Z50", false);
-                            if (PrinterUtils.waitOnBusy(printerToUse, this) == false)
+                            if (PrinterUtils.waitOnBusy(printerToUse, this) == false && isCancelled() == false)
                             {
                                 success = true;
                             }
@@ -99,10 +99,10 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                     printerToUse.transmitDirectGCode("M104", false);
                     if (printerToUse.getNozzleHeaterMode() == HeaterMode.FIRST_LAYER)
                     {
-                        waitUntilNozzleReaches(printerToUse.getNozzleFirstLayerTargetTemperature(), 5);
+                        PrinterUtils.waitUntilTemperatureIsReached(printerToUse.extruderTemperatureProperty(), this, printerToUse.getNozzleFirstLayerTargetTemperature(), 5, 300);
                     } else
                     {
-                        waitUntilNozzleReaches(printerToUse.getNozzleTargetTemperature(), 5);
+                        PrinterUtils.waitUntilTemperatureIsReached(printerToUse.extruderTemperatureProperty(), this, printerToUse.getNozzleTargetTemperature(), 5, 300);
                     }
                     printerToUse.transmitDirectGCode(GCodeConstants.switchOnHeadLEDs, false);
                 } catch (RoboxCommsException ex)
@@ -159,6 +159,16 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                     steno.error("Error in needle valve calibration - mode=" + desiredState.name());
                 }
                 break;
+            case PARKING:
+                try
+                {
+                    printerToUse.transmitStoredGCode("Park");
+                    success = true;
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
+                }
+                break;
         }
 
         return new NozzleBCalibrationStepResult(desiredState, success);
@@ -169,40 +179,9 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
         boolean success = false;
         try
         {
-            printerToUse.transmitDirectGCode("M909 S4", false);
-            PrinterUtils.waitOnBusy(printerToUse, this);
-
             printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
 
-            AckResponse errors = printerToUse.transmitReportErrors();
-            if (errors.isError())
-            {
-                printerToUse.transmitResetErrors();
-            }
-
-            // High speed until slip
-            while (errors.isEFilamentSlipError() == false && isCancelled() == false)
-            {
-                printerToUse.transmitDirectGCode("G0 E10", false);
-                PrinterUtils.waitOnBusy(printerToUse, this);
-
-                errors = printerToUse.transmitReportErrors();
-            }
-
-            printerToUse.transmitResetErrors();
-
-            //Low speed, low torque
-            while (errors.isEFilamentSlipError() == false && isCancelled() == false)
-            {
-                printerToUse.transmitDirectGCode("G1 E10 F50", false);
-                PrinterUtils.waitOnBusy(printerToUse, this);
-
-                errors = printerToUse.transmitReportErrors();
-            }
-
-            printerToUse.transmitResetErrors();
-
-            printerToUse.transmitDirectGCode("M909 S100", false);
+            printerToUse.transmitDirectGCode("G36 E700 F2000", false);
             PrinterUtils.waitOnBusy(printerToUse, this);
 
             success = true;
@@ -222,17 +201,6 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
         }
         keyPressed = false;
         lookingForKeyPress = false;
-    }
-
-    private void waitUntilNozzleReaches(int temperature, int tolerance) throws InterruptedException
-    {
-        int minTemp = temperature - tolerance;
-        int maxTemp = temperature + tolerance;
-
-        while ((printerToUse.extruderTemperatureProperty().get() < minTemp || printerToUse.extruderTemperatureProperty().get() > maxTemp) && isCancelled() == false)
-        {
-            Thread.sleep(100);
-        }
     }
 
     /**

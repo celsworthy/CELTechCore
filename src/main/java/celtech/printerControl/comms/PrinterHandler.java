@@ -38,6 +38,7 @@ import celtech.printerControl.comms.events.RoboxEvent;
 import celtech.printerControl.comms.events.RoboxEventType;
 import celtech.services.firmware.FirmwareLoadService;
 import celtech.services.firmware.FirmwareLoadTask;
+import static java.lang.Thread.sleep;
 import java.util.ResourceBundle;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;

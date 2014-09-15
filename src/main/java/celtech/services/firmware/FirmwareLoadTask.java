@@ -99,6 +99,7 @@ public class FirmwareLoadTask extends Task<Integer>
                 if (!isCancelled())
                 {
                     printerToUpdate.transmitUpdateFirmware(firmwareID);
+                    // 
                     returnValue = SUCCESS;
                 }
             }
@@ -108,7 +109,7 @@ public class FirmwareLoadTask extends Task<Integer>
             returnValue = SDCARD_ERROR;
         }catch (RoboxCommsException ex)
         {
-            steno.error("Other comms exception whilst updating firmware");
+            steno.error("Other comms exception whilst updating firmware " + ex);
             returnValue = OTHER_ERROR;
         } catch (IOException ex)
         {

@@ -8,48 +8,8 @@ import java.util.Locale;
  *
  * @author Ian
  */
-public class TravelEvent extends GCodeParseEvent
+public class TravelEvent extends MovementEvent
 {
-
-    private double x;
-    private double y;
-
-    /**
-     *
-     * @return
-     */
-    public double getX()
-    {
-        return x;
-    }
-
-    /**
-     *
-     * @param x
-     */
-    public void setX(double x)
-    {
-        this.x = x;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public double getY()
-    {
-        return y;
-    }
-
-    /**
-     *
-     * @param y
-     */
-    public void setY(double y)
-    {
-        this.y = y;
-    }
-
     /**
      *
      * @return
@@ -65,7 +25,7 @@ public class TravelEvent extends GCodeParseEvent
         fiveDPformatter.setMaximumFractionDigits(5);
         fiveDPformatter.setGroupingUsed(false);
 
-        String stringToReturn = "G1 X" + threeDPformatter.format(x) + " Y" + threeDPformatter.format(y);
+        String stringToReturn = "G1 X" + threeDPformatter.format(getX()) + " Y" + threeDPformatter.format(getY());
 
         if (getFeedRate() > 0)
         {

@@ -5,133 +5,90 @@
  */
 package celtech.services.purge;
 
-import celtech.appManager.Project;
-import celtech.configuration.Filament;
-import celtech.coreUI.DisplayManager;
+import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
-import celtech.printerControl.comms.commands.GCodeMacros;
-import celtech.printerControl.comms.commands.rx.AckResponse;
-import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
+import celtech.printerControl.comms.commands.GCodeConstants;
+import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.services.ControllableService;
-import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.services.slicer.RoboxProfile;
 import celtech.utils.PrinterUtils;
-import javafx.application.Platform;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.dialog.Dialogs;
 
 /**
  *
  * @author Ian
  */
-public class PurgeTask extends Task<Void> implements ControllableService
+public class PurgeTask extends Task<PurgeStepResult> implements ControllableService
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(PurgeTask.class.getName());
-    private Project project = null;
-    private Filament filament = null;
-    private PrintQualityEnumeration printQuality = null;
-    private RoboxProfile settings = null;
+    private PurgeState desiredState = null;
+    private int nozzleNumber = -1;
+
     private Printer printerToUse = null;
-    private String macroName = null;
+    private boolean keyPressed = false;
+
+    private int purgeTemperature = 0;
 
     /**
      *
-     * @param printerToUse
+     * @param desiredState
      */
-    public PurgeTask(Printer printerToUse)
+    public PurgeTask(PurgeState desiredState)
     {
-        this.printerToUse = printerToUse;
-    }
-
-    public PurgeTask(Printer printerToUse, String macroName)
-    {
-        this.printerToUse = printerToUse;
-        this.macroName = macroName;
-    }
-
-    /**
-     *
-     * @param project
-     * @param filament
-     * @param printQuality
-     * @param settings
-     * @param printerToUse
-     */
-    public PurgeTask(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings, Printer printerToUse)
-    {
-        this.project = project;
-        this.filament = filament;
-        this.printQuality = printQuality;
-        this.settings = settings;
-        this.printerToUse = printerToUse;
+        this.desiredState = desiredState;
     }
 
     @Override
-    protected Void call() throws Exception
+    protected PurgeStepResult call() throws Exception
     {
-        // put the write after the purge routine once the firmware no longer raises an error whilst connected to the host computer
-        HeadEEPROMDataResponse savedHeadData = printerToUse.transmitReadHeadEEPROM();
-        AckResponse ackResponse = printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                                                       savedHeadData.getUniqueID(),
-                                                                       savedHeadData.getMaximumTemperature(),
-                                                                       savedHeadData.getBeta(),
-                                                                       savedHeadData.getTCal(),
-                                                                       savedHeadData.getNozzle1XOffset(),
-                                                                       savedHeadData.getNozzle1YOffset(),
-                                                                       savedHeadData.getNozzle1ZOffset(),
-                                                                       savedHeadData.getNozzle1BOffset(),
-                                                                       savedHeadData.getNozzle2XOffset(),
-                                                                       savedHeadData.getNozzle2YOffset(),
-                                                                       savedHeadData.getNozzle2ZOffset(),
-                                                                       savedHeadData.getNozzle2BOffset(),
-                                                                       (float) (printerToUse.getNozzleTargetTemperature()),
-                                                                       savedHeadData.getHeadHours());
-        if (ackResponse.isNozzleFlushNeededError())
+        boolean success = false;
+
+        StatusScreenState statusScreenState = StatusScreenState.getInstance();
+        printerToUse = statusScreenState.getCurrentlySelectedPrinter();
+
+        switch (desiredState)
         {
-            printerToUse.transmitResetErrors();
+            case HEATING:
+                try
+                {
+                    //Set the bed to 90 degrees C
+                    int desiredBedTemperature = 90;
+                    printerToUse.transmitDirectGCode(GCodeConstants.setBedTemperatureTarget + desiredBedTemperature, false);
+                    printerToUse.transmitDirectGCode(GCodeConstants.goToTargetBedTemperature, false);
+                    boolean bedHeatedOK = PrinterUtils.waitUntilTemperatureIsReached(printerToUse.bedTemperatureProperty(), this, desiredBedTemperature, 5, 600);
+
+                    printerToUse.transmitDirectGCode(GCodeConstants.setFirstLayerNozzleTemperatureTarget + purgeTemperature, false);
+                    printerToUse.transmitDirectGCode(GCodeConstants.goToTargetFirstLayerNozzleTemperature, false);
+                    boolean extruderHeatedOK = PrinterUtils.waitUntilTemperatureIsReached(printerToUse.extruderTemperatureProperty(), this, purgeTemperature, 5, 300);
+
+                    if (bedHeatedOK && extruderHeatedOK)
+                    {
+                        success = true;
+                    }
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error in purge - mode=" + desiredState.name());
+                } catch (InterruptedException ex)
+                {
+                    steno.error("Interrrupted during purge - mode=" + desiredState.name());
+                }
+
+                break;
+
+            case RUNNING_PURGE:
+                printerToUse.transmitStoredGCode("Purge Material", false);
+                PrinterUtils.waitOnMacroFinished(printerToUse, this);
+                break;
         }
 
-        printerToUse.transmitStoredGCode("Purge Material", false);
-        PrinterUtils.waitOnMacroFinished(printerToUse, this);
+        return new PurgeStepResult(desiredState, success);
+    }
 
-        if (project != null)
-        {
-            Platform.runLater(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    Dialogs.create()
-                            .owner(null)
-                            .title(DisplayManager.getLanguageBundle().getString("dialogs.clearBedTitle"))
-                            .masthead(null)
-                            .message(DisplayManager.getLanguageBundle().getString("dialogs.clearBedInstruction"))
-                            .showWarning();
-                    printerToUse.printProject(project, filament, printQuality, settings);
-                }
-            });
-        } else if (macroName != null)
-        {
-            Platform.runLater(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    Dialogs.create()
-                            .owner(null)
-                            .title(DisplayManager.getLanguageBundle().getString("dialogs.clearBedTitle"))
-                            .masthead(null)
-                            .message(DisplayManager.getLanguageBundle().getString("dialogs.clearBedInstruction"))
-                            .showWarning();
-                    printerToUse.getPrintQueue().printGCodeFile(GCodeMacros.getFilename(macroName), true);
-                }
-            });
-        }
-
-        return null;
+    public void setPurgeTemperature(int purgeTemperature)
+    {
+        this.purgeTemperature = purgeTemperature;
     }
 
     /**
@@ -143,5 +100,4 @@ public class PurgeTask extends Task<Void> implements ControllableService
     {
         return cancel();
     }
-
 }

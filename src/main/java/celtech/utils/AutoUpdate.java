@@ -188,6 +188,7 @@ public class AutoUpdate extends Thread
             //add request header
             con.setRequestProperty("User-Agent", ApplicationConfiguration.getApplicationName());
 
+            con.setConnectTimeout(5000); 
             int responseCode = con.getResponseCode();
 
             if (responseCode == 200)

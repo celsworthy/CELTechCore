@@ -199,7 +199,7 @@ public class ApplicationConfiguration
      */
     public static final float filamentDiameterToYieldVolumetricExtrusion = 1.1283791670955125738961589031215f;
 
-    private static final String commonFileDirectoryPath = "CEL Robox/";
+    private static final String commonFileDirectoryPath = "CEL Robox";
 
     private static String headFileDirectory = null;
 

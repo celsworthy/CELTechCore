@@ -100,6 +100,9 @@ public class Filament implements Serializable, Cloneable
     public Filament(ReelEEPROMDataResponse response)
     {
         this.filamentID.set(response.getReelFilamentID());
+        this.friendlyFilamentName.set(response.getReelFriendlyName());
+        this.material.set(response.getReelMaterialType());
+        this.displayColour.set(response.getReelDisplayColour());
         this.diameter.set(response.getFilamentDiameter());
         this.filamentMultiplier.set(response.getFilamentMultiplier());
         this.feedRateMultiplier.set(response.getFeedRateMultiplier());
@@ -647,6 +650,30 @@ public class Filament implements Serializable, Cloneable
                             {
                                 filamentToWrite.setNozzleTemperature(
                                     referenceFilament.getNozzleTemperature());
+                                needToWriteFilamentData = true;
+                            }
+
+                            if (!response.getReelDisplayColour().equals(
+                                referenceFilament.getDisplayColour()))
+                            {
+                                filamentToWrite.setDisplayColour(
+                                    referenceFilament.getDisplayColour());
+                                needToWriteFilamentData = true;
+                            }
+
+                            if (!response.getReelFriendlyName().equals(
+                                referenceFilament.getFriendlyFilamentName()))
+                            {
+                                filamentToWrite.setFriendlyFilamentName(
+                                    referenceFilament.getFriendlyFilamentName());
+                                needToWriteFilamentData = true;
+                            }
+
+                            if (!response.getReelMaterialType().equals(
+                                referenceFilament.getMaterial()))
+                            {
+                                filamentToWrite.setMaterial(
+                                    referenceFilament.getMaterial());
                                 needToWriteFilamentData = true;
                             }
 
