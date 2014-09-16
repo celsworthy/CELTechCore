@@ -16,8 +16,6 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -28,7 +26,6 @@ import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -196,45 +193,51 @@ public class ReelDataPanelController implements Initializable
             Boolean newValue)
         {
 
-            if (connectedPrinter.getReelFilamentIsMutable().get())
-            {
-                reelContainer.disableProperty().set(false);
-                reelWriteConfig.disableProperty().set(false);
-            } else
-            {
-                reelContainer.disableProperty().set(true);
-                reelWriteConfig.disableProperty().set(true);
-            }
-
-            filamentID.setText(connectedPrinter.getReelFilamentID().get());
-            reelAmbientTemperature.setText(String.format("%d",
-                                                         connectedPrinter.getReelAmbientTemperature().get()));
-            reelFirstLayerBedTemperature.setText(String.format("%d",
-                                                               connectedPrinter.getReelFirstLayerBedTemperature().get()));
-            reelBedTemperature.setText(String.format("%d",
-                                                     connectedPrinter.getReelBedTemperature().get()));
-            reelFirstLayerNozzleTemperature.setText(String.format("%d",
-                                                                  connectedPrinter.getReelFirstLayerNozzleTemperature().get()));
-            reelNozzleTemperature.setText(String.format("%d",
-                                                        connectedPrinter.getReelNozzleTemperature().get()));
-            reelFilamentMultiplier.setText(String.format("%.2f",
-                                                         connectedPrinter.getReelFilamentMultiplier().get()));
-            reelFeedRateMultiplier.setText(String.format("%.2f",
-                                                         connectedPrinter.getReelFeedRateMultiplier().get()));
-            reelRemainingFilament.setText(String.format("%.0f",
-                                                        connectedPrinter.getReelRemainingFilament().get()));
-            reelFilamentDiameter.setText(String.format("%.2f",
-                                                       connectedPrinter.getReelFilamentDiameter().get()));
-            reelFilamentName.setText(connectedPrinter.getReelFriendlyName());
-            MaterialType reelMaterialTypeVal = connectedPrinter.getReelMaterialType();
-            reelMaterialType.getSelectionModel().select(reelMaterialTypeVal);
-            reelDisplayColor.setValue(connectedPrinter.getReelDisplayColour());
+            populateFieldsForConnectedPrinter();
         }
+
     };
+
+    private void populateFieldsForConnectedPrinter()
+    {
+        if (connectedPrinter.getReelFilamentIsMutable().get())
+        {
+            reelContainer.disableProperty().set(false);
+            reelWriteConfig.disableProperty().set(false);
+        } else
+        {
+            reelContainer.disableProperty().set(true);
+            reelWriteConfig.disableProperty().set(true);
+        }
+
+        filamentID.setText(connectedPrinter.getReelFilamentID().get());
+        reelAmbientTemperature.setText(String.format("%d",
+                                                     connectedPrinter.getReelAmbientTemperature().get()));
+        reelFirstLayerBedTemperature.setText(String.format("%d",
+                                                           connectedPrinter.getReelFirstLayerBedTemperature().get()));
+        reelBedTemperature.setText(String.format("%d",
+                                                 connectedPrinter.getReelBedTemperature().get()));
+        reelFirstLayerNozzleTemperature.setText(String.format("%d",
+                                                              connectedPrinter.getReelFirstLayerNozzleTemperature().get()));
+        reelNozzleTemperature.setText(String.format("%d",
+                                                    connectedPrinter.getReelNozzleTemperature().get()));
+        reelFilamentMultiplier.setText(String.format("%.2f",
+                                                     connectedPrinter.getReelFilamentMultiplier().get()));
+        reelFeedRateMultiplier.setText(String.format("%.2f",
+                                                     connectedPrinter.getReelFeedRateMultiplier().get()));
+        reelRemainingFilament.setText(String.format("%.0f",
+                                                    connectedPrinter.getReelRemainingFilament().get()));
+        reelFilamentDiameter.setText(String.format("%.2f",
+                                                   connectedPrinter.getReelFilamentDiameter().get()));
+        reelFilamentName.setText(connectedPrinter.getReelFriendlyName());
+        MaterialType reelMaterialTypeVal = connectedPrinter.getReelMaterialType();
+        reelMaterialType.getSelectionModel().select(reelMaterialTypeVal);
+        reelDisplayColor.setValue(connectedPrinter.getReelDisplayColour());
+    }
+
     /*
      * Initializes the controller class.
      */
-
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
@@ -296,6 +299,8 @@ public class ReelDataPanelController implements Initializable
                 connectedPrinter.reelEEPROMStatusProperty().isNotEqualTo(EEPROMState.NOT_PRESENT));
             saveFilamentAs.visibleProperty().bind(
                 connectedPrinter.reelEEPROMStatusProperty().isNotEqualTo(EEPROMState.NOT_PRESENT));
+
+            populateFieldsForConnectedPrinter();
         }
     }
 
