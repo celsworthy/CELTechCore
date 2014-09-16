@@ -64,16 +64,13 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
 //    @FXML
 //    private Label nozzleCloseBValueLabel;
-
     @FXML
     private RestrictedNumberField fillDensity;
 
 //    @FXML
 //    private Label retractSpeedLabel;
-
 //    @FXML
 //    private RestrictedNumberField nozzleCloseBValue;
-
 //    @FXML
 //    private RestrictedNumberField nozzleCloseMidpoint;
 //
@@ -109,7 +106,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
 //    @FXML
 //    private Label nozzleWipeVolumeLabel;
-
     @FXML
     private ComboBox<String> supportNozzleChoice;
 
@@ -139,7 +135,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
 //    @FXML
 //    private RestrictedNumberField nozzleWipeVolume;
-
     @FXML
     private RestrictedNumberField minFanSpeed;
 
@@ -181,7 +176,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
 //    @FXML
 //    private HBox retractLengthHBox;
-
     @FXML
     private ComboBox<String> supportPattern;
 
@@ -196,7 +190,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
 //    @FXML
 //    private Label nozzleCloseMidpointLabel;
-
     @FXML
     private GridPane extrusionGrid;
 
@@ -214,7 +207,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
 //    @FXML
 //    private RestrictedNumberField nozzlePreejectionVolume;
-
     @FXML
     private RestrictedNumberField slowFanIfLayerTimeBelow;
 
@@ -250,7 +242,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
 //    @FXML
 //    private Label nozzlePreejectionVolumeLabel;
-
     @FXML
     private ComboBox<String> fillNozzleChoice;
 
@@ -268,7 +259,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
 //    @FXML
 //    private HBox nozzleCloseMidpointHBox;
-
     @FXML
     private RestrictedNumberField topSolidInfillSpeed;
 
@@ -292,7 +282,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
 //    @FXML
 //    private RestrictedNumberField retractLength;
-
     @FXML
     private ComboBox<String> fillPatternChoice;
 
@@ -301,7 +290,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
 //    @FXML
 //    private HBox nozzlePreejectionVolumeHBox;
-
     @FXML
     private RestrictedNumberField infillSpeed;
 
@@ -346,13 +334,10 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
 //    @FXML
 //    private HBox nozzleWipeVolumeHBox;
-
 //    @FXML
 //    private Label retractLengthLabel;
-
 //    @FXML
 //    private RestrictedNumberField retractSpeed;
-
     @FXML
     private RestrictedNumberField bridgesFanSpeed;
 
@@ -370,7 +355,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
 //    @FXML
 //    private ToggleSwitch spiralPrintToggle;
-    
     @FXML
     void saveData(ActionEvent event)
     {
@@ -378,7 +362,9 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         saveNozzleParametersToWorkingProfile();
         if (commandReceiver != null)
         {
+            inhibitAutoExtrusionWidth = true;
             commandReceiver.triggerSave(workingProfile);
+            inhibitAutoExtrusionWidth = false;
         }
         isDirty.set(false);
     }
@@ -460,6 +446,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private final float minPoint3ExtrusionWidth = 0.2f;
     private final float maxPoint3ExtrusionWidth = 0.6f;
 
+    private boolean inhibitAutoExtrusionWidth = false;
+
     /**
      * Initializes the controller class.
      *
@@ -538,8 +526,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
         nozzleChoiceGroup.selectedToggleProperty().addListener(nozzleSelectionListener);
 
-        forceNozzleFirstLayerOptions.addAll(DisplayManager.getLanguageBundle().getString("misc.auto"), new String("0.3mm"), new String("0.8mm"));
-
+        forceNozzleFirstLayerOptions.addAll(nozzleOptions);
         firstLayerNozzleChoice.setItems(forceNozzleFirstLayerOptions);
         firstLayerNozzleChoice.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>()
         {
@@ -550,20 +537,20 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
                 switch (newValue.intValue())
                 {
                     case 0:
-                        // Auto has been selected - offer a bigger range
-                        firstLayerExtrusionWidth.floatValueProperty().set(0.5f);
-                        firstLayerExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                        firstLayerExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                        break;
-                    case 1:
                         // The point 3 nozzle has been selected
-                        firstLayerExtrusionWidth.floatValueProperty().set(0.3f);
+                        if (!inhibitAutoExtrusionWidth)
+                        {
+                            firstLayerExtrusionWidth.floatValueProperty().set(0.3f);
+                        }
                         firstLayerExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
                         firstLayerExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
                         break;
-                    case 2:
+                    case 1:
                         // The point 8 nozzle has been selected
-                        firstLayerExtrusionWidth.floatValueProperty().set(0.8f);
+                        if (!inhibitAutoExtrusionWidth)
+                        {
+                            firstLayerExtrusionWidth.floatValueProperty().set(0.8f);
+                        }
                         firstLayerExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
                         firstLayerExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
                         break;
@@ -582,13 +569,19 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
                 {
                     case 0:
                         // The point 3 nozzle has been selected
-                        perimeterExtrusionWidth.floatValueProperty().set(0.3f);
+                        if (!inhibitAutoExtrusionWidth)
+                        {
+                            perimeterExtrusionWidth.floatValueProperty().set(0.3f);
+                        }
                         perimeterExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
                         perimeterExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
                         break;
                     case 1:
                         // The point 8 nozzle has been selected
-                        perimeterExtrusionWidth.floatValueProperty().set(0.8f);
+                        if (!inhibitAutoExtrusionWidth)
+                        {
+                            perimeterExtrusionWidth.floatValueProperty().set(0.8f);
+                        }
                         perimeterExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
                         perimeterExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
                         break;
@@ -607,56 +600,73 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
                 {
                     case 0:
                         // The point 3 nozzle has been selected
-                        infillExtrusionWidth.floatValueProperty().set(0.3f);
+                        if (!inhibitAutoExtrusionWidth)
+                        {
+                            infillExtrusionWidth.floatValueProperty().set(0.3f);
+                            solidInfillExtrusionWidth.floatValueProperty().set(0.3f);
+                            topSolidInfillExtrusionWidth.floatValueProperty().set(0.3f);
+                        }
                         infillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
                         infillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                        solidInfillExtrusionWidth.floatValueProperty().set(0.3f);
                         solidInfillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
                         solidInfillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                        topSolidInfillExtrusionWidth.floatValueProperty().set(0.3f);
                         topSolidInfillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
                         topSolidInfillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
                         break;
                     case 1:
                         // The point 8 nozzle has been selected
-                        infillExtrusionWidth.floatValueProperty().set(0.8f);
+                        if (!inhibitAutoExtrusionWidth)
+                        {
+                            infillExtrusionWidth.floatValueProperty().set(0.8f);
+                            solidInfillExtrusionWidth.floatValueProperty().set(0.8f);
+                            topSolidInfillExtrusionWidth.floatValueProperty().set(0.8f);
+                        }
                         infillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
                         infillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                        solidInfillExtrusionWidth.floatValueProperty().set(0.8f);
                         solidInfillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
                         solidInfillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                        topSolidInfillExtrusionWidth.floatValueProperty().set(0.8f);
                         topSolidInfillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
                         topSolidInfillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
                         break;
                 }
             }
-        });
+        }
+        );
 
         supportNozzleChoice.setItems(nozzleOptions);
-        supportNozzleChoice.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(
-                ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
-            {
-                switch (newValue.intValue())
+
+        supportNozzleChoice.getSelectionModel()
+            .selectedIndexProperty().addListener(new ChangeListener<Number>()
                 {
-                    case 0:
-                        // The point 3 nozzle has been selected
-                        supportExtrusionWidth.floatValueProperty().set(0.3f);
-                        supportExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                        supportExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                        break;
-                    case 1:
-                        // The point 8 nozzle has been selected
-                        supportExtrusionWidth.floatValueProperty().set(0.8f);
-                        supportExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                        supportExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                        break;
-                }
+                    @Override
+                    public void changed(
+                        ObservableValue<? extends Number> observable, Number oldValue, Number newValue
+                    )
+                    {
+                        switch (newValue.intValue())
+                        {
+                            case 0:
+                                // The point 3 nozzle has been selected
+                                if (!inhibitAutoExtrusionWidth)
+                                {
+                                    supportExtrusionWidth.floatValueProperty().set(0.3f);
+                                }
+                                supportExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
+                                supportExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
+                                break;
+                            case 1:
+                                // The point 8 nozzle has been selected
+                                if (!inhibitAutoExtrusionWidth)
+                                {
+                                    supportExtrusionWidth.floatValueProperty().set(0.8f);
+                                }
+                                supportExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
+                                supportExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
+                                break;
+                        }
+                    }
             }
-        });
+            );
         supportInterfaceNozzleChoice.setItems(nozzleOptions);
 
         fillPatternChoice.setItems(fillPatternOptions);
@@ -664,88 +674,143 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         supportPattern.setItems(supportPatternOptions);
 
         //Dirty listeners...
-        profileNameField.textProperty().addListener(dirtyStringListener);
+        profileNameField.textProperty()
+            .addListener(dirtyStringListener);
 
         //Nozzle Page
-        firstLayerExtrusionWidthSlider.valueProperty().bindBidirectional(firstLayerExtrusionWidth.floatValueProperty());
-        firstLayerExtrusionWidth.textProperty().addListener(dirtyStringListener);
-        firstLayerNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
+        firstLayerExtrusionWidthSlider.valueProperty()
+            .bindBidirectional(firstLayerExtrusionWidth.floatValueProperty());
+        firstLayerExtrusionWidth.textProperty()
+            .addListener(dirtyStringListener);
+        firstLayerNozzleChoice.getSelectionModel()
+            .selectedItemProperty().addListener(dirtyStringListener);
 
-        perimeterExtrusionWidthSlider.valueProperty().bindBidirectional(perimeterExtrusionWidth.floatValueProperty());
-        perimeterExtrusionWidth.textProperty().addListener(dirtyStringListener);
-        perimeterNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
+        perimeterExtrusionWidthSlider.valueProperty()
+            .bindBidirectional(perimeterExtrusionWidth.floatValueProperty());
+        perimeterExtrusionWidth.textProperty()
+            .addListener(dirtyStringListener);
+        perimeterNozzleChoice.getSelectionModel()
+            .selectedItemProperty().addListener(dirtyStringListener);
 
-        infillExtrusionWidthSlider.valueProperty().bindBidirectional(infillExtrusionWidth.floatValueProperty());
-        infillExtrusionWidth.textProperty().addListener(dirtyStringListener);
-        solidInfillExtrusionWidthSlider.valueProperty().bindBidirectional(solidInfillExtrusionWidth.floatValueProperty());
-        solidInfillExtrusionWidth.textProperty().addListener(dirtyStringListener);
-        fillNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
-        topSolidInfillExtrusionWidthSlider.valueProperty().bindBidirectional(topSolidInfillExtrusionWidth.floatValueProperty());
-        topSolidInfillExtrusionWidth.textProperty().addListener(dirtyStringListener);
+        infillExtrusionWidthSlider.valueProperty()
+            .bindBidirectional(infillExtrusionWidth.floatValueProperty());
+        infillExtrusionWidth.textProperty()
+            .addListener(dirtyStringListener);
+        solidInfillExtrusionWidthSlider.valueProperty()
+            .bindBidirectional(solidInfillExtrusionWidth.floatValueProperty());
+        solidInfillExtrusionWidth.textProperty()
+            .addListener(dirtyStringListener);
+        fillNozzleChoice.getSelectionModel()
+            .selectedItemProperty().addListener(dirtyStringListener);
+        topSolidInfillExtrusionWidthSlider.valueProperty()
+            .bindBidirectional(topSolidInfillExtrusionWidth.floatValueProperty());
+        topSolidInfillExtrusionWidth.textProperty()
+            .addListener(dirtyStringListener);
 
-        supportExtrusionWidthSlider.valueProperty().bindBidirectional(supportExtrusionWidth.floatValueProperty());
-        supportExtrusionWidth.textProperty().addListener(dirtyStringListener);
-        supportNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
+        supportExtrusionWidthSlider.valueProperty()
+            .bindBidirectional(supportExtrusionWidth.floatValueProperty());
+        supportExtrusionWidth.textProperty()
+            .addListener(dirtyStringListener);
+        supportNozzleChoice.getSelectionModel()
+            .selectedItemProperty().addListener(dirtyStringListener);
 
-        supportInterfaceNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
+        supportInterfaceNozzleChoice.getSelectionModel()
+            .selectedItemProperty().addListener(dirtyStringListener);
 
-        fillDensity.textProperty().addListener(dirtyStringListener);
-        slowFanIfLayerTimeBelow.textProperty().addListener(dirtyStringListener);
-        enableFanIfLayerTimeBelow.textProperty().addListener(dirtyStringListener);
-        solidInfillSpeed.textProperty().addListener(dirtyStringListener);
-        supportMaterialEnabled.textProperty().addListener(dirtyStringListener);
-        supportOverhangThreshold.textProperty().addListener(dirtyStringListener);
-        solidLayersTop.textProperty().addListener(dirtyStringListener);
-        solidLayersBottom.textProperty().addListener(dirtyStringListener);
-        numberOfPerimeters.textProperty().addListener(dirtyStringListener);
-        topSolidInfillSpeed.textProperty().addListener(dirtyStringListener);
-        perimeterSpeed.textProperty().addListener(dirtyStringListener);
-        gapFillSpeed.textProperty().addListener(dirtyStringListener);
-        fillPatternChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
-        supportMaterialSpeed.textProperty().addListener(dirtyStringListener);
-        brimWidth.textProperty().addListener(dirtyStringListener);
-        infillSpeed.textProperty().addListener(dirtyStringListener);
-        minPrintSpeed.textProperty().addListener(dirtyStringListener);
-        minFanSpeed.textProperty().addListener(dirtyStringListener);
-        infillEveryN.textProperty().addListener(dirtyStringListener);
-        forcedSupportLayers.textProperty().addListener(dirtyStringListener);
-        supportPatternSpacing.textProperty().addListener(dirtyStringListener);
-        smallPerimeterSpeed.textProperty().addListener(dirtyStringListener);
-        maxFanSpeed.textProperty().addListener(dirtyStringListener);
-        disableFanForFirstNLayers.textProperty().addListener(dirtyStringListener);
-        bridgesFanSpeed.textProperty().addListener(dirtyStringListener);
-        bridgesSpeed.textProperty().addListener(dirtyStringListener);
-        layerHeight.textProperty().addListener(dirtyStringListener);
-        externalPerimeterSpeed.textProperty().addListener(dirtyStringListener);
-        supportPatternAngle.textProperty().addListener(dirtyStringListener);
+        fillDensity.textProperty()
+            .addListener(dirtyStringListener);
+        slowFanIfLayerTimeBelow.textProperty()
+            .addListener(dirtyStringListener);
+        enableFanIfLayerTimeBelow.textProperty()
+            .addListener(dirtyStringListener);
+        solidInfillSpeed.textProperty()
+            .addListener(dirtyStringListener);
+        supportMaterialEnabled.textProperty()
+            .addListener(dirtyStringListener);
+        supportOverhangThreshold.textProperty()
+            .addListener(dirtyStringListener);
+        solidLayersTop.textProperty()
+            .addListener(dirtyStringListener);
+        solidLayersBottom.textProperty()
+            .addListener(dirtyStringListener);
+        numberOfPerimeters.textProperty()
+            .addListener(dirtyStringListener);
+        topSolidInfillSpeed.textProperty()
+            .addListener(dirtyStringListener);
+        perimeterSpeed.textProperty()
+            .addListener(dirtyStringListener);
+        gapFillSpeed.textProperty()
+            .addListener(dirtyStringListener);
+        fillPatternChoice.getSelectionModel()
+            .selectedItemProperty().addListener(dirtyStringListener);
+        supportMaterialSpeed.textProperty()
+            .addListener(dirtyStringListener);
+        brimWidth.textProperty()
+            .addListener(dirtyStringListener);
+        infillSpeed.textProperty()
+            .addListener(dirtyStringListener);
+        minPrintSpeed.textProperty()
+            .addListener(dirtyStringListener);
+        minFanSpeed.textProperty()
+            .addListener(dirtyStringListener);
+        infillEveryN.textProperty()
+            .addListener(dirtyStringListener);
+        forcedSupportLayers.textProperty()
+            .addListener(dirtyStringListener);
+        supportPatternSpacing.textProperty()
+            .addListener(dirtyStringListener);
+        smallPerimeterSpeed.textProperty()
+            .addListener(dirtyStringListener);
+        maxFanSpeed.textProperty()
+            .addListener(dirtyStringListener);
+        disableFanForFirstNLayers.textProperty()
+            .addListener(dirtyStringListener);
+        bridgesFanSpeed.textProperty()
+            .addListener(dirtyStringListener);
+        bridgesSpeed.textProperty()
+            .addListener(dirtyStringListener);
+        layerHeight.textProperty()
+            .addListener(dirtyStringListener);
+        externalPerimeterSpeed.textProperty()
+            .addListener(dirtyStringListener);
+        supportPatternAngle.textProperty()
+            .addListener(dirtyStringListener);
 
-        supportMaterialEnabled.selectedProperty().addListener(dirtyBooleanListener);
-        enableAutoCooling.selectedProperty().addListener(dirtyBooleanListener);
+        supportMaterialEnabled.selectedProperty()
+            .addListener(dirtyBooleanListener);
+        enableAutoCooling.selectedProperty()
+            .addListener(dirtyBooleanListener);
 
-        perimeterNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
-        fillNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
-        supportNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
-        supportInterfaceNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
-        supportPattern.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
-        
+        perimeterNozzleChoice.getSelectionModel()
+            .selectedItemProperty().addListener(dirtyStringListener);
+        fillNozzleChoice.getSelectionModel()
+            .selectedItemProperty().addListener(dirtyStringListener);
+        supportNozzleChoice.getSelectionModel()
+            .selectedItemProperty().addListener(dirtyStringListener);
+        supportInterfaceNozzleChoice.getSelectionModel()
+            .selectedItemProperty().addListener(dirtyStringListener);
+        supportPattern.getSelectionModel()
+            .selectedItemProperty().addListener(dirtyStringListener);
+
 //        spiralPrintToggle.selectedProperty().addListener(dirtyBooleanListener);
-
-        isDirty.addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-        {
-            if (newValue == true)
+        isDirty.addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
-                DisplayManager displayManager = DisplayManager.getInstance();
-                if (displayManager != null)
+                if (newValue == true)
                 {
-                    Project currentProject = displayManager.getCurrentlyVisibleProject();
-
-                    if (currentProject != null)
+                    DisplayManager displayManager = DisplayManager.getInstance();
+                    if (displayManager != null)
                     {
-                        currentProject.projectModified();
+                        Project currentProject = displayManager.getCurrentlyVisibleProject();
+
+                        if (currentProject != null)
+                        {
+                            currentProject.projectModified();
+                        }
                     }
                 }
             }
-        });
+        );
     }
 
     private void bindNozzleParameters(int nozzleNumber, RoboxProfile newSettings)
@@ -771,7 +836,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
 //        nozzleCloseMidpoint.textProperty().addListener(dirtyStringListener);
 //        nozzleCloseBValue.textProperty().addListener(dirtyStringListener);
-
 //        nozzleWipeVolume.textProperty().addListener(dirtyStringListener);
         nozzlePartialOpen.textProperty().addListener(dirtyStringListener);
 //        retractLength.textProperty().addListener(dirtyStringListener);
@@ -833,7 +897,9 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
         profileNameField.setText(newSettings.getProfileName());
 
+        inhibitAutoExtrusionWidth = true;
         updateGUIFromSettings(newSettings);
+        inhibitAutoExtrusionWidth = false;
 
         if (lastNozzleSelected == 0)
         {
@@ -863,7 +929,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
         //Nozzle tab
         firstLayerExtrusionWidth.floatValueProperty().set(newSettings.getFirst_layer_extrusion_width().get());
-        firstLayerNozzleChoice.getSelectionModel().select(newSettings.getForce_nozzle_on_first_layer().get() + 1);
+        firstLayerNozzleChoice.getSelectionModel().select(newSettings.getForce_nozzle_on_first_layer().get());
 
         perimeterExtrusionWidth.floatValueProperty().set(newSettings.getPerimeter_extrusion_width().get());
         perimeterNozzleChoice.getSelectionModel().select(newSettings.getPerimeterNozzleProperty().get());
@@ -923,7 +989,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
         //Nozzle tab
         settingsToUpdate.getFirst_layer_extrusion_width().set(firstLayerExtrusionWidth.floatValueProperty().get());
-        settingsToUpdate.getForce_nozzle_on_first_layer().set(firstLayerNozzleChoice.getSelectionModel().getSelectedIndex() - 1);
+        settingsToUpdate.getForce_nozzle_on_first_layer().set(firstLayerNozzleChoice.getSelectionModel().getSelectedIndex());
 
         settingsToUpdate.getPerimeter_extrusion_width().set(perimeterExtrusionWidth.floatValueProperty().get());
         settingsToUpdate.getPerimeterNozzleProperty().set(perimeterNozzleChoice.getSelectionModel().getSelectedIndex());

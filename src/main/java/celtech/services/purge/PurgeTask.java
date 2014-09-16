@@ -98,6 +98,10 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
     @Override
     public boolean cancelRun()
     {
+        if (desiredState == PurgeState.RUNNING_PURGE)
+        {
+            printerToUse.getPrintQueue().abortPrint();
+        }
         return cancel();
     }
 }

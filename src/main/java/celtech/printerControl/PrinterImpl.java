@@ -3453,7 +3453,7 @@ public class PrinterImpl implements Printer
              */
             if (dataIngested && lastPacket)
             {
-                steno.info("Final complete chunk:" + outputBuffer.toString() + " seq:"
+                steno.debug("Final complete chunk:" + outputBuffer.toString() + " seq:"
                     + sequenceNumber);
                 AckResponse response = transmitDataFileEnd(outputBuffer.toString(), sequenceNumber);
                 if (response.isError())
