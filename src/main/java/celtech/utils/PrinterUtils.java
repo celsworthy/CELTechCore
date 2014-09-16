@@ -5,21 +5,16 @@
  */
 package celtech.utils;
 
-import celtech.appManager.Project;
 import celtech.appManager.TaskController;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.Filament;
-import celtech.configuration.Head;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
-import celtech.services.purge.PurgeTask;
-import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.services.slicer.RoboxProfile;
 import java.util.ResourceBundle;
+import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -76,7 +71,8 @@ public class PrinterUtils
 
         if (task != null)
         {
-            while ((printerToCheck.getPrintQueue().isConsideringPrintRequest() == true || printerToCheck.getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.IDLE) && task.isCancelled() == false && !TaskController.isShuttingDown())
+            while ((printerToCheck.getPrintQueue().isConsideringPrintRequest() == true || printerToCheck.getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.IDLE) && task.isCancelled()
+                == false && !TaskController.isShuttingDown())
             {
                 try
                 {
@@ -89,7 +85,8 @@ public class PrinterUtils
             }
         } else
         {
-            while ((printerToCheck.getPrintQueue().isConsideringPrintRequest() == true || printerToCheck.getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.IDLE) && !TaskController.isShuttingDown())
+            while ((printerToCheck.getPrintQueue().isConsideringPrintRequest() == true || printerToCheck.getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.IDLE) && !TaskController.
+                isShuttingDown())
             {
                 try
                 {
@@ -190,9 +187,9 @@ public class PrinterUtils
             purgeDialogVisible = true;
 
             Action nozzleFlushResponse = Dialogs.create().title(i18nBundle.getString("dialogs.purgeRequiredTitle"))
-                    .message(i18nBundle.getString("dialogs.purgeRequiredInstruction"))
-                    .masthead(null)
-                    .showCommandLinks(goForPurge, goForPurge, dontGoForPurge);
+                .message(i18nBundle.getString("dialogs.purgeRequiredInstruction"))
+                .masthead(null)
+                .showCommandLinks(goForPurge, goForPurge, dontGoForPurge);
 
             if (nozzleFlushResponse == goForPurge)
             {
@@ -204,47 +201,61 @@ public class PrinterUtils
         return purgeConsent;
     }
 
-    /**
-     *
-     * @param project
-     * @param filament
-     * @param printQuality
-     * @param settings
-     * @param printerToUse
-     */
-    public static void runPurge(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings, Printer printerToUse)
+    public static boolean waitUntilTemperatureIsReached(ReadOnlyIntegerProperty temperatureProperty, Task task, int temperature, int tolerance, int timeoutSec) throws InterruptedException
     {
-        PurgeTask purgeTask = new PurgeTask(project, filament, printQuality, settings, printerToUse);
-        TaskController.getInstance().manageTask(purgeTask);
-        Thread purgeThread = new Thread(purgeTask);
-        purgeThread.setName("Purge and Print Task");
-        purgeThread.start();
+        boolean failed = false;
+
+        int minTemp = temperature - tolerance;
+        int maxTemp = temperature + tolerance;
+        long timestampAtStart = System.currentTimeMillis();
+        long timeoutMillis = timeoutSec * 1000;
+
+        if (task != null)
+        {
+            try
+            {
+                while ((temperatureProperty.get() < minTemp
+                    || temperatureProperty.get() > maxTemp)
+                    && task.isCancelled() == false)
+                {
+                    Thread.sleep(100);
+
+                    long currentTimeMillis = System.currentTimeMillis();
+                    if ((currentTimeMillis - timestampAtStart) >= timeoutMillis)
+                    {
+                        failed = true;
+                        break;
+                    }
+                }
+            } catch (InterruptedException ex)
+            {
+                steno.error("Interrupted during busy check");
+                failed = true;
+            }
+        } else
+        {
+            try
+            {
+                while (temperatureProperty.get() < minTemp
+                    || temperatureProperty.get() > maxTemp)
+                {
+                    Thread.sleep(100);
+
+                    long currentTimeMillis = System.currentTimeMillis();
+                    if ((currentTimeMillis - timestampAtStart) >= timeoutMillis)
+                    {
+                        failed = true;
+                        break;
+                    }
+                }
+            } catch (InterruptedException ex)
+            {
+                steno.error("Interrupted during busy check");
+                failed = true;
+            }
+        }
+
+        return failed;
     }
 
-    /**
-     *
-     * @param printerToUse
-     */
-    public static void runPurge(Printer printerToUse)
-    {
-        PurgeTask purgeTask = new PurgeTask(printerToUse);
-        TaskController.getInstance().manageTask(purgeTask);
-        Thread purgeThread = new Thread(purgeTask);
-        purgeThread.setName("Purge Task");
-        purgeThread.start();
-    }
-
-    /**
-     *
-     * @param printerToUse
-     * @param macroName
-     */
-    public static void runPurge(Printer printerToUse, String macroName)
-    {
-        PurgeTask purgeTask = new PurgeTask(printerToUse, macroName);
-        TaskController.getInstance().manageTask(purgeTask);
-        Thread purgeThread = new Thread(purgeTask);
-        purgeThread.setName("Purge Task");
-        purgeThread.start();
-    }
 }

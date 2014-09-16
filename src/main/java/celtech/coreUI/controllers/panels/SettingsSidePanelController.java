@@ -8,7 +8,6 @@ import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
 import celtech.configuration.MaterialType;
 import celtech.configuration.PrintProfileContainer;
-import static celtech.utils.DeDuplicator.suggestNonDuplicateName;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.MaterialChoiceListCell;
 import celtech.coreUI.components.ModalDialog;
@@ -21,6 +20,7 @@ import celtech.printerControl.Printer;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
+import static celtech.utils.DeDuplicator.suggestNonDuplicateName;
 import celtech.utils.SystemUtils;
 import java.net.URL;
 import java.util.Collection;
@@ -38,10 +38,8 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -425,7 +423,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     if (newValue == FilamentContainer.createNewFilament)
                     {
                         showCreateMaterialDialogue();
-                    } else if (newValue == null || currentPrinter == null || newValue == currentPrinter.loadedFilamentProperty().get())
+                    } else if (newValue == null)
                     {
                         if (slideOutController != null)
                         {

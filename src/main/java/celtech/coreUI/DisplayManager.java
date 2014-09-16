@@ -16,10 +16,11 @@ import celtech.coreUI.components.ProjectLoader;
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.components.SlideoutAndProjectHolder;
 import celtech.coreUI.controllers.InfoScreenIndicatorController;
-import celtech.coreUI.controllers.panels.LayoutStatusMenuStripController;
 import celtech.coreUI.controllers.PrinterStatusPageController;
 import celtech.coreUI.controllers.panels.LayoutSidePanelController;
 import celtech.coreUI.controllers.panels.LayoutSlideOutPanelController;
+import celtech.coreUI.controllers.panels.LayoutStatusMenuStripController;
+import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
 import celtech.coreUI.controllers.panels.SettingsSidePanelController;
 import celtech.coreUI.controllers.panels.SidePanelManager;
 import celtech.coreUI.visualisation.ThreeDViewManager;
@@ -461,10 +462,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 {
                     if (newTab == addPageTab)
                     {
-                        ProjectTab projectTab = new ProjectTab(instance, tabDisplay.widthProperty(),
-                                                               tabDisplay.heightProperty());
-                        tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, projectTab);
-                        tabDisplaySelectionModel.select(projectTab);
+                        createAndAddNewProjectTab();
                     } else if (newTab instanceof ProjectTab)
                     {
                         if (applicationStatus.getMode() != ApplicationMode.LAYOUT)
@@ -547,6 +545,16 @@ public class DisplayManager implements EventHandler<KeyEvent>
         loadProjectsAtStartup();
 
         root.layout();
+    }
+
+    private ProjectTab createAndAddNewProjectTab()
+    {
+        ProjectTab projectTab = new ProjectTab(instance, tabDisplay.widthProperty(),
+                                               tabDisplay.heightProperty());
+        tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, projectTab);
+        tabDisplaySelectionModel.select(projectTab);
+
+        return projectTab;
     }
 
     /**
@@ -676,14 +684,38 @@ public class DisplayManager implements EventHandler<KeyEvent>
      */
     public void loadExternalModels(List<File> modelsToLoad, boolean relayout)
     {
-        if (!modelLoaderService.isRunning()
-            && tabDisplaySelectionModel.selectedItemProperty().get() instanceof ProjectTab)
+        loadExternalModels(modelsToLoad, false, relayout);
+    }
+
+    /**
+     * Load each model in modelsToLoad, do not lay them out on the bed. , If there are already models loaded in the project then do not relayout even if relayout=true;
+     *
+     * @param modelsToLoad
+     * @param newTab
+     * @param relayout
+     */
+    public void loadExternalModels(List<File> modelsToLoad, boolean newTab, boolean relayout)
+    {
+        ProjectTab tabToUse = null;
+
+        if (!modelsToLoad.isEmpty())
         {
-            modelLoaderService.reset();
-            modelLoaderService.setModelFilesToLoad(modelsToLoad, relayout);
-            modelLoaderService.setTargetTab(
-                (ProjectTab) (tabDisplaySelectionModel.selectedItemProperty().get()));
-            modelLoaderService.start();
+            if (newTab)
+            {
+                tabToUse = createAndAddNewProjectTab();
+            } else if (!modelLoaderService.isRunning()
+                && tabDisplaySelectionModel.selectedItemProperty().get() instanceof ProjectTab)
+            {
+                tabToUse = (ProjectTab) (tabDisplaySelectionModel.selectedItemProperty().get());
+            }
+
+            if (tabToUse != null)
+            {
+                modelLoaderService.reset();
+                modelLoaderService.setModelFilesToLoad(modelsToLoad, relayout);
+                modelLoaderService.setTargetTab(tabToUse);
+                modelLoaderService.start();
+            }
         }
     }
 
@@ -882,4 +914,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
         return usersLocale;
     }
 
+    public PurgeInsetPanelController getPurgeInsetPanelController()
+    {
+        return (PurgeInsetPanelController) insetPanelControllers.get(ApplicationMode.PURGE);
+    }
 }

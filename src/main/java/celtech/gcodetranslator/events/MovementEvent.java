@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.gcodetranslator.events;
 
 import java.text.DecimalFormat;
@@ -13,46 +8,46 @@ import java.util.Locale;
  *
  * @author Ian
  */
-public class ExtrusionEvent extends MovementEvent
+public class MovementEvent extends GCodeParseEvent
 {
 
-    private double e;
-    private double d;
+    private double x;
+    private double y;
 
     /**
      *
      * @return
      */
-    public double getE()
+    public double getX()
     {
-        return e;
+        return x;
     }
 
     /**
      *
-     * @param e
+     * @param x
      */
-    public void setE(double e)
+    public void setX(double x)
     {
-        this.e = e;
+        this.x = x;
     }
 
     /**
      *
      * @return
      */
-    public double getD()
+    public double getY()
     {
-        return d;
+        return y;
     }
 
     /**
      *
-     * @param d
+     * @param y
      */
-    public void setD(double d)
+    public void setY(double y)
     {
-        this.d = d;
+        this.y = y;
     }
 
     /**
@@ -70,14 +65,14 @@ public class ExtrusionEvent extends MovementEvent
         fiveDPformatter.setMaximumFractionDigits(5);
         fiveDPformatter.setGroupingUsed(false);
 
-        String stringToReturn = "G1 X" + threeDPformatter.format(getX()) + " Y" + threeDPformatter.format(getY()) + " E" + fiveDPformatter.format(e) + " D" + fiveDPformatter.format(d);
+        String stringToReturn = "G1 X" + threeDPformatter.format(x) + " Y" + threeDPformatter.format(y);
 
         if (getFeedRate() > 0)
         {
             stringToReturn += " F" + threeDPformatter.format(getFeedRate());
         }
 
-        stringToReturn += " ; ->L" + getLength() + " ->E" + getE() + " ->D" + getD();
+        stringToReturn += " ; ->" + getLength() + " ";
 
         if (getComment() != null)
         {

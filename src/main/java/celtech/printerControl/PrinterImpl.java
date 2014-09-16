@@ -2939,7 +2939,7 @@ public class PrinterImpl implements Printer
 
                 if (purgeConsent)
                 {
-                    PrinterUtils.runPurge(this, macroName);
+                    DisplayManager.getInstance().getPurgeInsetPanelController().purgeAndRunMacro(macroName, this);
                 } else
                 {
                     printQueue.printGCodeFile(GCodeMacros.getFilename(macroName), true);
@@ -3549,7 +3549,9 @@ public class PrinterImpl implements Printer
     public void printProject(Project project, Filament filament,
         PrintQualityEnumeration printQuality, RoboxProfile settings)
     {
-        if (filament != null)
+
+        if (filament != null
+            && filament != loadedFilamentProperty().get())
         {
             try
             {

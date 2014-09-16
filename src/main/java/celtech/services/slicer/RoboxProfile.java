@@ -37,7 +37,7 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class RoboxProfile implements Serializable, Cloneable
 {
-
+    private int LOCAL_version_number = 1;
     private Stenographer LOCAL_steno = StenographerFactory.getStenographer(RoboxProfile.class.getName());
     private StringProperty LOCAL_profileName = new SimpleStringProperty("");
     private boolean LOCAL_mutable = false;
@@ -257,7 +257,7 @@ public class RoboxProfile implements Serializable, Cloneable
     /**
      *
      */
-    protected IntegerProperty bridge_flow_ratio = new SimpleIntegerProperty(1);
+    protected FloatProperty bridge_flow_ratio = new SimpleFloatProperty(1);
 
     /**
      *
@@ -672,6 +672,26 @@ public class RoboxProfile implements Serializable, Cloneable
     /**
      *
      */
+    protected IntegerProperty perimeter_nozzle = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
+    protected IntegerProperty fill_nozzle = new SimpleIntegerProperty(1);
+
+    /**
+     *
+     */
+    protected IntegerProperty support_nozzle = new SimpleIntegerProperty(1);
+
+    /**
+     *
+     */
+    protected IntegerProperty support_interface_nozzle = new SimpleIntegerProperty(0);
+
+    /**
+     *
+     */
     public RoboxProfile()
     {
         this.LOCAL_numberFormatter.setMaximumFractionDigits(2);
@@ -920,25 +940,25 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      * @return
      */
-    public IntegerProperty perimeter_nozzleProperty()
+    public IntegerProperty perimeter_extruderProperty()
     {
         return perimeter_extruder;
     }
 
     /**
      *
-     * @param perimeter_nozzle
+     * @param perimeter_extruder
      */
-    public void setPerimeter_nozzle(int perimeter_nozzle)
+    public void setPerimeter_extruder(int perimeter_extruder)
     {
-        this.perimeter_extruder.set(perimeter_nozzle);
+        this.perimeter_extruder.set(perimeter_extruder);
     }
 
     /**
      *
      * @return
      */
-    public IntegerProperty infill_nozzleProperty()
+    public IntegerProperty infill_extruderProperty()
     {
         return infill_extruder;
     }
@@ -947,7 +967,7 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      * @param infill_nozzle
      */
-    public void setInfill_nozzle(int infill_nozzle)
+    public void setInfill_extruder(int infill_nozzle)
     {
         this.infill_extruder.set(infill_nozzle);
     }
@@ -956,36 +976,36 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      * @return
      */
-    public IntegerProperty support_material_nozzleProperty()
+    public IntegerProperty support_material_extruderProperty()
     {
         return support_material_extruder;
     }
 
     /**
      *
-     * @param support_material_nozzle
+     * @param support_material_extruder
      */
-    public void setSupport_material_nozzle(int support_material_nozzle)
+    public void setSupport_material_extruder(int support_material_extruder)
     {
-        this.support_material_extruder.set(support_material_nozzle);
+        this.support_material_extruder.set(support_material_extruder);
     }
 
     /**
      *
      * @return
      */
-    public IntegerProperty support_material_interface_nozzleProperty()
+    public IntegerProperty support_material_interface_extruderProperty()
     {
         return support_material_interface_extruder;
     }
 
     /**
      *
-     * @param support_material_interface_nozzle
+     * @param support_material_interface_extruder
      */
-    public void setSupport_material_interface_nozzle(int support_material_interface_nozzle)
+    public void setSupport_material_interface_extruder(int support_material_interface_extruder)
     {
-        this.support_material_interface_extruder.set(support_material_interface_nozzle);
+        this.support_material_interface_extruder.set(support_material_interface_extruder);
     }
 
     /**
@@ -1964,7 +1984,7 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      * @return
      */
-    public IntegerProperty getBridge_flow_ratio()
+    public FloatProperty getBridge_flow_ratio()
     {
         return bridge_flow_ratio;
     }
@@ -1973,7 +1993,7 @@ public class RoboxProfile implements Serializable, Cloneable
      *
      * @param bridge_flow_ratio
      */
-    public void setBridge_flow_ratio(IntegerProperty bridge_flow_ratio)
+    public void setBridge_flow_ratio(FloatProperty bridge_flow_ratio)
     {
         this.bridge_flow_ratio = bridge_flow_ratio;
     }
@@ -2616,7 +2636,7 @@ public class RoboxProfile implements Serializable, Cloneable
     {
         return LOCAL_profileName;
     }
-    
+
     /**
      *
      * @return
@@ -2655,12 +2675,49 @@ public class RoboxProfile implements Serializable, Cloneable
 
     /**
      *
+     * @return
+     */
+    public IntegerProperty getPerimeterNozzleProperty()
+    {
+        return perimeter_nozzle;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public IntegerProperty getSupportNozzleProperty()
+    {
+        return support_nozzle;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public IntegerProperty getSupportInterfaceNozzleProperty()
+    {
+        return support_interface_nozzle;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public IntegerProperty getFillNozzleProperty()
+    {
+        return fill_nozzle;
+    }
+
+    /**
+     *
      * @param profileName
      * @param mutable
      * @param filename
      */
     public void readFromFile(String profileName, boolean mutable, String filename)
     {
+        LOCAL_version_number = -1;
         LOCAL_profileName.set(profileName);
         LOCAL_mutable = mutable;
         File inputFile = new File(filename);
@@ -2681,122 +2738,138 @@ public class RoboxProfile implements Serializable, Cloneable
 
             while ((lineToProcess = fileReader.readLine()) != null)
             {
-                String[] lineParts = lineToProcess.trim().split("[ ]*=[ ]*");
-                try
+                if (lineToProcess.equals("") == false)
                 {
-                    Field field = this.getClass().getDeclaredField(lineParts[0]);
-                    Class<?> fieldClass = field.getType();
+                    String[] lineParts = lineToProcess.trim().split("[ ]*=[ ]*");
+                    try
+                    {
+                        Field field = this.getClass().getDeclaredField(lineParts[0]);
+                        Class<?> fieldClass = field.getType();
 
-                    if (fieldClass.equals(boolean.class))
-                    {
-                        boolean value = false;
+                        if (fieldClass.equals(boolean.class))
+                        {
+                            boolean value = false;
 
-                        if (lineParts.length == 2 && lineParts[1].equalsIgnoreCase("1"))
-                        {
-                            value = true;
-                        }
-
-                        field.setBoolean(this, value);
-                    } else if (fieldClass.equals(BooleanProperty.class))
-                    {
-                        boolean value = false;
-
-                        if (lineParts.length == 2 && lineParts[1].equalsIgnoreCase("1"))
-                        {
-                            value = true;
-                        }
-                        setBooleanProperty.invoke(field.get(this), value);
-                    } else if (fieldClass.equals(StringProperty.class))
-                    {
-                        String value = "";
-                        if (lineParts.length == 2)
-                        {
-                            value = lineParts[1];
-                        }
-                        setStringProperty.invoke(field.get(this), value);
-                    } else if (fieldClass.equals(IntegerProperty.class))
-                    {
-                        int value = 0;
-                        if (lineParts.length == 2)
-                        {
-                            value = Integer.valueOf(lineParts[1]);
-                        } else
-                        {
-                            LOCAL_steno.warning("Field " + lineParts[0] + " is missing a value");
-                        }
-                        setIntegerProperty.invoke(field.get(this), value);
-                    } else if (fieldClass.equals(FloatProperty.class))
-                    {
-                        float value = 0;
-                        if (lineParts.length == 2)
-                        {
-                            value = Float.valueOf(lineParts[1]);
-                        } else
-                        {
-                            LOCAL_steno.warning("Field " + lineParts[0] + " is missing a value");
-                        }
-                        setFloatProperty.invoke(field.get(this), value);
-                    } else if (fieldClass.equals(ObservableList.class))
-                    {
-                        Type genericType = field.getGenericType();
-                        Class<?> fieldContentClass = (Class<?>) ((ParameterizedType) genericType).getActualTypeArguments()[0];
-                        String[] elements = lineParts[1].split(",");
-                        int elementCounter = 0;
-
-                        for (String element : elements)
-                        {
-                            if (fieldContentClass.equals(IntegerProperty.class))
+                            if (lineParts.length == 2 && lineParts[1].equalsIgnoreCase("1"))
                             {
-                                IntegerProperty property = (IntegerProperty) observableListGet.invoke(field.get(this), elementCounter);
-                                property.set(Integer.valueOf(element));
-                            } else if (fieldContentClass.equals(FloatProperty.class))
-                            {
-                                FloatProperty property = (FloatProperty) observableListGet.invoke(field.get(this), elementCounter);
-                                property.set(Float.valueOf(element));
-                            } else if (fieldContentClass.equals(StringProperty.class))
-                            {
-                                StringProperty property = (StringProperty) observableListGet.invoke(field.get(this), elementCounter);
-                                property.set(element);
-                            } else if (fieldContentClass.equals(BooleanProperty.class))
-                            {
-                                BooleanProperty property = (BooleanProperty) observableListGet.invoke(field.get(this), elementCounter);
-
-                                if (element.equalsIgnoreCase("1"))
-                                {
-                                    property.set(true);
-                                } else
-                                {
-                                    property.set(false);
-                                }
+                                value = true;
                             }
 
-                            elementCounter++;
+                            field.setBoolean(this, value);
+                        } else if (fieldClass.equals(BooleanProperty.class))
+                        {
+                            boolean value = false;
+
+                            if (lineParts.length == 2 && lineParts[1].equalsIgnoreCase("1"))
+                            {
+                                value = true;
+                            }
+                            setBooleanProperty.invoke(field.get(this), value);
+                        } else if (fieldClass.equals(StringProperty.class))
+                        {
+                            String value = "";
+                            if (lineParts.length == 2)
+                            {
+                                value = lineParts[1];
+                            }
+                            setStringProperty.invoke(field.get(this), value);
+                        } else if (fieldClass.equals(IntegerProperty.class))
+                        {
+                            int value = 0;
+                            if (lineParts.length == 2)
+                            {
+                                value = Integer.valueOf(lineParts[1]);
+                            } else
+                            {
+                                LOCAL_steno.warning("Field " + lineParts[0] + " is missing a value");
+                            }
+                            setIntegerProperty.invoke(field.get(this), value);
+                        } else if (fieldClass.equals(FloatProperty.class))
+                        {
+                            float value = 0;
+                            if (lineParts.length == 2)
+                            {
+                                value = Float.valueOf(lineParts[1]);
+                            } else
+                            {
+                                LOCAL_steno.warning("Field " + lineParts[0] + " is missing a value");
+                            }
+                            setFloatProperty.invoke(field.get(this), value);
+                        } else if (fieldClass.equals(ObservableList.class))
+                        {
+                            Type genericType = field.getGenericType();
+                            Class<?> fieldContentClass = (Class<?>) ((ParameterizedType) genericType).getActualTypeArguments()[0];
+                            String[] elements = lineParts[1].split(",");
+                            int elementCounter = 0;
+
+                            for (String element : elements)
+                            {
+                                if (fieldContentClass.equals(IntegerProperty.class))
+                                {
+                                    IntegerProperty property = (IntegerProperty) observableListGet.invoke(field.get(this), elementCounter);
+                                    property.set(Integer.valueOf(element));
+                                } else if (fieldContentClass.equals(FloatProperty.class))
+                                {
+                                    FloatProperty property = (FloatProperty) observableListGet.invoke(field.get(this), elementCounter);
+                                    property.set(Float.valueOf(element));
+                                } else if (fieldContentClass.equals(StringProperty.class))
+                                {
+                                    StringProperty property = (StringProperty) observableListGet.invoke(field.get(this), elementCounter);
+                                    property.set(element);
+                                } else if (fieldContentClass.equals(BooleanProperty.class))
+                                {
+                                    BooleanProperty property = (BooleanProperty) observableListGet.invoke(field.get(this), elementCounter);
+
+                                    if (element.equalsIgnoreCase("1"))
+                                    {
+                                        property.set(true);
+                                    } else
+                                    {
+                                        property.set(false);
+                                    }
+                                }
+
+                                elementCounter++;
+                            }
+                        } else
+                        {
+                            LOCAL_steno.error("Couldn't process field " + lineParts[0]);
                         }
-                    } else
+                    } catch (NoSuchFieldException ex)
                     {
-                        LOCAL_steno.error("Couldn't process field " + lineParts[0]);
-                    }
-                } catch (NoSuchFieldException ex)
-                {
-                    if (lineParts[0].trim().startsWith("#") == false)
+                        if (lineParts[0].trim().startsWith("#") == false)
+                        {
+                            LOCAL_steno.error("Couldn't parse settings for field " + lineParts[0] + " " + ex);
+                        }
+                        else
+                        {
+                            // Special case for intercepting commented fields
+                            // The version number will be stored like this
+                            if (lineParts[0].trim().contains("Version"))
+                            {
+                                String versionField = lineParts[1];
+                                if (versionField != null)
+                                {
+                                    LOCAL_version_number = Integer.valueOf(versionField);
+                                }
+                            }
+                        }
+                    } catch (IllegalAccessException ex)
                     {
-                        LOCAL_steno.error("Couldn't parse settings for field " + lineParts[0] + " " + ex);
+                        LOCAL_steno.error("Access exception whilst setting " + lineParts[0] + " " + ex);
+                    } catch (IllegalArgumentException ex)
+                    {
+                        LOCAL_steno.error("Illegal argument exception whilst setting " + lineParts[0] + " " + ex);
+                    } catch (SecurityException ex)
+                    {
+                        LOCAL_steno.error("Security exception whilst setting " + lineParts[0] + " " + ex);
+                    } catch (InvocationTargetException ex)
+                    {
+                        LOCAL_steno.error("Couldn't set up field " + lineParts[0] + " " + ex);
+                    } catch (IndexOutOfBoundsException ex)
+                    {
+                        LOCAL_steno.error("Index out of bounds  " + lineParts[0] + " " + ex);
                     }
-                } catch (IllegalAccessException ex)
-                {
-                    LOCAL_steno.error("Access exception whilst setting " + lineParts[0] + " " + ex);
-                } catch (IllegalArgumentException ex)
-                {
-                    LOCAL_steno.error("Illegal argument exception whilst setting " + lineParts[0] + " " + ex);
-                } catch (SecurityException ex)
-                {
-                    LOCAL_steno.error("Security exception whilst setting " + lineParts[0] + " " + ex);
-                } catch (InvocationTargetException ex)
-                {
-                    LOCAL_steno.error("Couldn't set up field " + lineParts[0] + " " + ex);
-                } catch (IndexOutOfBoundsException ex)
-                {
-                    LOCAL_steno.error("Index out of bounds  " + lineParts[0] + " " + ex);
                 }
             }
 
@@ -2824,6 +2897,7 @@ public class RoboxProfile implements Serializable, Cloneable
             fileWriter = new FileWriter(outputFile);
 
             fileWriter.append("#Profile: " + LOCAL_profileName.get() + "\n");
+            fileWriter.append("#Version = " + LOCAL_version_number + "\n");
 
             Field[] fields = this.getClass().getDeclaredFields();
 
@@ -2887,10 +2961,10 @@ public class RoboxProfile implements Serializable, Cloneable
                             fileWriter.write(name);
 
                             fileWriter.write(
-                                    " = ");
+                                " = ");
                             fileWriter.write(value.get());
                             fileWriter.write(
-                                    "\n");
+                                "\n");
                         } else if (fieldClass.equals(IntegerProperty.class))
                         {
                             String name = field.getName();
@@ -2922,8 +2996,8 @@ public class RoboxProfile implements Serializable, Cloneable
                             int length = fieldValue.size();
 
                             for (int i = 0;
-                                    i < length;
-                                    i++)
+                                i < length;
+                                i++)
                             {
                                 Object arrayElement = fieldValue.get(i);
                                 if (arrayElement instanceof IntegerProperty)
@@ -2962,9 +3036,9 @@ public class RoboxProfile implements Serializable, Cloneable
                             fileWriter.write(name);
 
                             fileWriter.write(
-                                    " = ");
+                                " = ");
                             if (value.get()
-                                    == true)
+                                == true)
                             {
                                 fileWriter.write("1");
                             } else
@@ -2973,7 +3047,7 @@ public class RoboxProfile implements Serializable, Cloneable
                             }
 
                             fileWriter.write(
-                                    "\n");
+                                "\n");
                         } else
                         {
 //                field.setAccessible(true);
@@ -3001,7 +3075,7 @@ public class RoboxProfile implements Serializable, Cloneable
     }
 
     private void writeObject(ObjectOutputStream out)
-            throws IOException
+        throws IOException
     {
         out.writeFloat(filament_diameter.get());
 
@@ -3096,7 +3170,7 @@ public class RoboxProfile implements Serializable, Cloneable
         out.writeInt(slowdown_below_layer_time.get());
         out.writeInt(min_print_speed.get());
         out.writeBoolean(avoid_crossing_perimeters.get());
-        out.writeInt(bridge_flow_ratio.get());
+        out.writeFloat(bridge_flow_ratio.get());
         out.writeInt(brim_width.get());
         out.writeBoolean(complete_objects.get());
         out.writeBoolean(external_perimeters_first.get());
@@ -3174,10 +3248,14 @@ public class RoboxProfile implements Serializable, Cloneable
         out.writeFloat(standby_temperature_delta.get());
         out.writeInt(support_material_interface_speed.get());
         out.writeInt(force_nozzle_on_first_layer.get());
+        out.writeInt(perimeter_nozzle.get());
+        out.writeInt(support_nozzle.get());
+        out.writeInt(support_interface_nozzle.get());
+        out.writeInt(fill_nozzle.get());
     }
 
     private void readObject(ObjectInputStream in)
-            throws IOException, ClassNotFoundException
+        throws IOException, ClassNotFoundException
     {
         filament_diameter = new SimpleFloatProperty(in.readFloat());
 
@@ -3228,7 +3306,7 @@ public class RoboxProfile implements Serializable, Cloneable
         slowdown_below_layer_time = new SimpleIntegerProperty(in.readInt());
         min_print_speed = new SimpleIntegerProperty(in.readInt());
         avoid_crossing_perimeters = new SimpleBooleanProperty(in.readBoolean());
-        bridge_flow_ratio = new SimpleIntegerProperty(in.readInt());
+        bridge_flow_ratio = new SimpleFloatProperty(in.readFloat());
         brim_width = new SimpleIntegerProperty(in.readInt());
         complete_objects = new SimpleBooleanProperty(in.readBoolean());
         external_perimeters_first = new SimpleBooleanProperty(in.readBoolean());
@@ -3312,6 +3390,10 @@ public class RoboxProfile implements Serializable, Cloneable
             standby_temperature_delta = new SimpleFloatProperty(in.readFloat());
             support_material_interface_speed = new SimpleIntegerProperty(in.readInt());
             force_nozzle_on_first_layer = new SimpleIntegerProperty(in.readInt());
+            perimeter_nozzle = new SimpleIntegerProperty(in.readInt());
+            support_nozzle = new SimpleIntegerProperty(in.readInt());
+            support_interface_nozzle = new SimpleIntegerProperty(in.readInt());
+            fill_nozzle = new SimpleIntegerProperty(in.readInt());
         } catch (IOException ex)
         {
             LOCAL_steno.warning("Variables missing from config file - using defaults");
@@ -3319,7 +3401,7 @@ public class RoboxProfile implements Serializable, Cloneable
     }
 
     private void readObjectNoData()
-            throws ObjectStreamException
+        throws ObjectStreamException
     {
 
     }
@@ -3395,8 +3477,8 @@ public class RoboxProfile implements Serializable, Cloneable
 
                             int length = originFieldValue.size();
                             for (int index = 0;
-                                    index < length;
-                                    index++)
+                                index < length;
+                                index++)
                             {
                                 Object originArrayElement = originFieldValue.get(index);
                                 Object cloneArrayElement = cloneFieldValue.get(index);
@@ -3450,5 +3532,15 @@ public class RoboxProfile implements Serializable, Cloneable
     public String toString()
     {
         return LOCAL_profileName.get();
+    }
+    
+    public int getVersionNumber()
+    {
+        return LOCAL_version_number;
+    }
+
+    public void setVersionNumber(int versionNumber)
+    {
+        LOCAL_version_number = versionNumber;
     }
 }

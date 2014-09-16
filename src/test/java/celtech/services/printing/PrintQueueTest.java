@@ -132,10 +132,11 @@ public class PrintQueueTest extends JavaFXConfiguredTest
             }
         }
 
-        testPrinter.setPrintJobLineNumber(1702);
+        int linesInFile = printQueue.linesInPrintingFileProperty().get();
+        testPrinter.setPrintJobLineNumber(linesInFile);
+
         ReadOnlyDoubleProperty progress = printQueue.progressProperty();
         assertEquals(1.0d, progress.get(), 0.001);
-
     }
 
     /**
@@ -173,7 +174,8 @@ public class PrintQueueTest extends JavaFXConfiguredTest
         Thread.sleep(2000);
         testPrinter.setPrintJobLineNumber(1);
 
-        testPrinter.setPrintJobLineNumber(1702);
+        int linesInFile = printQueue.linesInPrintingFileProperty().get();
+        testPrinter.setPrintJobLineNumber(linesInFile);
 
         int ETC = printQueue.progressETCProperty().get();
         assertEquals(0, ETC);
@@ -210,9 +212,11 @@ public class PrintQueueTest extends JavaFXConfiguredTest
         Thread.sleep(1000);
         testPrinter.setPrintJobLineNumber(1);
 
-        testPrinter.setPrintJobLineNumber(1702);
+        int linesInFile = printQueue.linesInPrintingFileProperty().get();
+        testPrinter.setPrintJobLineNumber(linesInFile);
+
         int currentLayer = printQueue.progressCurrentLayerProperty().get();
-        assertEquals(61, currentLayer);
+        assertEquals(67, currentLayer);
     }
 
     @Test

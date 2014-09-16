@@ -1,4 +1,4 @@
-package celtech.services.calibration;
+package celtech.services.purge;
 
 import celtech.coreUI.DisplayManager;
 
@@ -6,93 +6,48 @@ import celtech.coreUI.DisplayManager;
  *
  * @author Ian
  */
-public enum NozzleBCalibrationState
+public enum PurgeState
 {
 
     /**
      *
      */
-    IDLE("calibrationPanel.readyToBeginNozzleOpeningCalibration", null),
+    IDLE("purgeMaterial.explanation", null),
 
     /**
      *
      */
-    INITIALISING("calibrationPanel.calibrationInitialising", null),
-
-    /**
-     *
-     */
-    HEATING("calibrationPanel.heating", null),
-
-    /**
-     *
-     */
-    PRIMING("calibrationPanel.primingNozzle", null),
-
-    /**
-     *
-     */
-    NO_MATERIAL_CHECK("calibrationPanel.valvesClosedNoMaterial", "calibrationPanel.isMaterialExtrudingEitherNozzle"),
-
-    /**
-     *
-     */
-    MATERIAL_EXTRUDING_CHECK("calibrationPanel.valvesOpenMaterialExtruding", "calibrationPanel.isMaterialExtrudingNozzle"),
-
-    /**
-     *
-     */
-    HEAD_CLEAN_CHECK("calibrationPanel.ensureHeadIsCleanBMessage", "calibrationPanel.ensureHeadIsCleanInstruction"),
-
-    /**
-     *
-     */
-    PRE_CALIBRATION_PRIMING("calibrationPanel.primingNozzle", null),
-
-    /**
-     *
-     */
-    CALIBRATE_NOZZLE("calibrationPanel.calibrationCommencedMessage", null),
-
-    /**
-     *
-     */
-    HEAD_CLEAN_CHECK_POST_CALIBRATION("calibrationPanel.ensureHeadIsCleanBMessage", null),
-
-    /**
-     *
-     */
-    POST_CALIBRATION_PRIMING("calibrationPanel.primingNozzle", null),
-
-    /**
-     *
-     */
-    CONFIRM_NO_MATERIAL("calibrationPanel.valvesClosedNoMaterial", "calibrationPanel.isMaterialExtrudingEitherNozzle"),
-
-    /**
-     *
-     */
-    CONFIRM_MATERIAL_EXTRUDING("calibrationPanel.valvesOpenMaterialExtruding", "calibrationPanel.isMaterialExtrudingNozzle"),
-
-    /**
-     *
-     */
-    PARKING("calibrationPanel.calibrationParkingMessage", null),
+    INITIALISING("purgeMaterial.temperatureInstruction", null),
     
     /**
      *
      */
-    FINISHED("calibrationPanel.calibrationSucceededBMessage", null),
+    CONFIRM_TEMPERATURE("purgeMaterial.temperatureInstruction", null),
 
     /**
      *
      */
-    FAILED("calibrationPanel.nozzleCalibrationFailed", null);
+    HEATING("purgeMaterial.heating", null),
+
+    /**
+     *
+     */
+    RUNNING_PURGE("purgeMaterial.inProgress", null),
+
+    /**
+     *
+     */
+    FINISHED("purgeMaterial.purgeComplete", null),
+
+    /**
+     *
+     */
+    FAILED("purgeMaterial.failed", null);
 
     private String stepTitleResource = null;
     private String stepInstructionResource = null;
 
-    private NozzleBCalibrationState(String stepTitleResource, String stepInstructionResource)
+    private PurgeState(String stepTitleResource, String stepInstructionResource)
     {
         this.stepTitleResource = stepTitleResource;
         this.stepInstructionResource = stepInstructionResource;
@@ -102,11 +57,11 @@ public enum NozzleBCalibrationState
      *
      * @return
      */
-    public NozzleBCalibrationState getNextState()
+    public PurgeState getNextState()
     {
-        NozzleBCalibrationState returnState = null;
+        PurgeState returnState = null;
 
-        NozzleBCalibrationState[] values = NozzleBCalibrationState.values();
+        PurgeState[] values = PurgeState.values();
 
         if (this != FINISHED && this != FAILED)
         {
