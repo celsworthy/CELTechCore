@@ -15,6 +15,8 @@ import celtech.services.slicer.RoboxProfile;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -45,6 +47,16 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     private RoboxProfile settings = null;
     private Printer printerToUse = null;
     private String macroToExecuteAfterPurge = null;
+
+    private ChangeListener<Number> purgeTempEntryListener = new ChangeListener<Number>()
+    {
+        @Override
+        public void changed(
+            ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+        {
+            purgeHelper.setPurgeTemperature(newValue.intValue());
+        }
+    };
 
     @FXML
     private VBox container;
@@ -183,6 +195,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 proceedButton.setVisible(false);
                 okButton.setVisible(false);
                 purgeStatus.setText(state.getStepTitle());
+                purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
                 break;
             case INITIALISING:
                 startPurgeButton.setVisible(false);
@@ -200,6 +213,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 lastMaterialTemperature.setText(String.valueOf(purgeHelper.getLastMaterialTemperature()));
                 currentMaterialTemperature.setText(String.valueOf(purgeHelper.getCurrentMaterialTemperature()));
                 purgeTemperature.setText(String.valueOf(purgeHelper.getPurgeTemperature()));
+                purgeTemperature.intValueProperty().addListener(purgeTempEntryListener);
                 purgeDetailsGrid.setVisible(true);
                 purgeStatus.setText(state.getStepTitle());
                 break;
@@ -210,6 +224,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 okButton.setVisible(false);
                 purgeDetailsGrid.setVisible(false);
                 purgeStatus.setText(state.getStepTitle());
+                purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
                 break;
             case RUNNING_PURGE:
                 startPurgeButton.setVisible(false);
@@ -226,6 +241,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 okButton.setVisible(true);
                 purgeDetailsGrid.setVisible(false);
                 purgeStatus.setText(state.getStepTitle());
+                purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
                 break;
             case FAILED:
                 startPurgeButton.setVisible(true);
@@ -234,6 +250,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 okButton.setVisible(false);
                 purgeDetailsGrid.setVisible(false);
                 purgeStatus.setText(state.getStepTitle());
+                purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
                 break;
         }
     }

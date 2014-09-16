@@ -217,4 +217,9 @@ public class PurgeHelper
     {
         return purgeTemperature;
     }
+    
+    public void setPurgeTemperature(int newPurgeTemperature)
+    {
+        purgeTemperature = newPurgeTemperature;
+    }
 }
