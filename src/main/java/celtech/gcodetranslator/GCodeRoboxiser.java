@@ -1996,8 +1996,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
                 indexToCopyFrom += indexDelta;
             }
-        }
-        else
+        } else
         {
             steno.warning("Failed to close nozzle correctly");
         }
@@ -2104,21 +2103,24 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
     private int getStartOfExtrusionEventBoundaryIndex(int startingIndex)
     {
-        ExtrusionTask currentTask = getExtrusionType((ExtrusionEvent) extrusionBuffer.get(startingIndex));
-
         int lastValidExtrusionIndex = startingIndex;
 
-        for (int index = startingIndex; index >= 0; index--)
+        if (startingIndex > 0)
         {
-            if (extrusionBuffer.get(index).getClass() == ExtrusionEvent.class)
+            ExtrusionTask currentTask = getExtrusionType((ExtrusionEvent) extrusionBuffer.get(startingIndex));
+
+            for (int index = startingIndex; index >= 0; index--)
             {
-                ExtrusionEvent extrusionEvent = (ExtrusionEvent) extrusionBuffer.get(index);
-                if (getExtrusionType(extrusionEvent) == currentTask)
+                if (extrusionBuffer.get(index).getClass() == ExtrusionEvent.class)
                 {
-                    lastValidExtrusionIndex = index;
-                } else
-                {
-                    break;
+                    ExtrusionEvent extrusionEvent = (ExtrusionEvent) extrusionBuffer.get(index);
+                    if (getExtrusionType(extrusionEvent) == currentTask)
+                    {
+                        lastValidExtrusionIndex = index;
+                    } else
+                    {
+                        break;
+                    }
                 }
             }
         }
