@@ -168,7 +168,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                         for (Printer printer : change.getAddedSubList())
                         {
                             activePrinters.add(printer);
-                            System.out.println("add printer " + printer);
                             clearAndAddAllPrintersToGrid();
                             selectPrinter(printer);
                         }
@@ -176,7 +175,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                     {
                         for (Printer printer : change.getRemoved())
                         {
-                            System.out.println("remove printer " + printer);
                             removePrinter(printer);
                             activePrinters.remove(printer);
                             clearAndAddAllPrintersToGrid();
@@ -184,10 +182,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                         }
                     } else if (change.wasReplaced())
                     {
-                        System.out.println("printer replaced");
                     } else if (change.wasUpdated())
                     {
-                        System.out.println("printer updated");
                     }
                 }
             }
@@ -223,7 +219,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         {
             size = PrinterComponent.Size.SIZE_LARGE;
         }
-        System.out.println("set size to " + size + " for printerC " + printerComponent);
         printerComponent.setSize(size);
         printerStatusGrid.add(printerComponent, column, row);
     }
@@ -384,7 +379,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private void bindPrinter(Printer printer)
     {
-        System.out.println("bind printer " + printer);
         updateReelMaterial(printer);
         reelDataChangedListener = (ChangeListener) (ObservableValue observable, Object oldValue, Object newValue) ->
         {
@@ -411,7 +405,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
      */
     private void updateReelMaterial(Printer printer)
     {
-        System.out.println("update material for printer " + printer);
         if (printer.reelEEPROMStatusProperty().get().equals(EEPROMState.PROGRAMMED))
         {
             material1.setMaterial(1, printer.getReelMaterialType(),
