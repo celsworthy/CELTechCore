@@ -464,6 +464,53 @@ public class PrinterStatusSidePanelControllerWithTargetTempsXXX implements Initi
                 }
             }
         };
+        
+        // XXX Change to ask to purge when nozzle heater turned on
+        
+  /*      nozzleHeaterCheckBoxListener = new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                if (t1 == true)
+                {
+                    try
+                    {
+                        if (lastSelectedPrinter != null)
+                        {
+                            if (lastSelectedPrinter.getNozzleHeaterMode() == HeaterMode.OFF)
+                            {
+                                boolean purgeConsent = printerUtils.offerPurgeIfNecessary(lastSelectedPrinter);
+                                if (purgeConsent)
+                                {
+                                    purgePanelController.purge(lastSelectedPrinter);
+                                }
+                                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.goToTargetNozzleTemperature, false);
+                            }
+                        }
+                    } catch (RoboxCommsException ex)
+                    {
+                        steno.error("Error whilst setting nozzle target temperature");
+                    }
+                } else
+                {
+                    try
+                    {
+                        if (lastSelectedPrinter != null)
+                        {
+                            if (lastSelectedPrinter.getNozzleHeaterMode() != HeaterMode.OFF)
+                            {
+                                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+                            }
+                        }
+                    } catch (RoboxCommsException ex)
+                    {
+                        steno.error("Error whilst setting nozzle target temperature");
+                    }
+                }
+            }
+        };
+        */
 
         nozzleHeaterCheckBoxListener = new ChangeListener<Boolean>()
         {
@@ -483,7 +530,7 @@ public class PrinterStatusSidePanelControllerWithTargetTempsXXX implements Initi
                                 if (purgeConsent)
                                 {
                                     applicationStatus.setMode(ApplicationMode.STATUS);
-                                    PrinterUtils.runPurge(selectedPrinter);
+//                                    PrinterUtils.runPurge(selectedPrinter);
                                 }
                                 selectedPrinter.transmitDirectGCode(
                                     GCodeConstants.goToTargetNozzleTemperature, false);

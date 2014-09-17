@@ -26,7 +26,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
 import javafx.geometry.Side;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -202,6 +201,19 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             PrinterComponent printerComponent = createPrinterComponentForPrinter(printer);
             addPrinterComponentToGrid(printerComponent, row, column);
             column += 1;
+            if (column == 2) {
+                column = 0;
+                row += 1;
+            }
+        }
+        // UGH shouldnt need this here but can't get PrinterComponent / Grid to negotiate size
+        if (activePrinters.size() == 1) {
+            printerStatusGrid.setPrefSize(260, 260);
+            
+        } else if (activePrinters.size() == 2) {
+            printerStatusGrid.setPrefSize(260, 120);
+        } else {
+            printerStatusGrid.setPrefSize(260, 260);
         }
     }
 

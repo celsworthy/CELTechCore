@@ -7,6 +7,7 @@ import celtech.configuration.PrinterColourMap;
 import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
+import static celtech.utils.StringMetrics.getWidthOfString;
 import com.sun.javafx.tk.FontMetrics;
 import com.sun.javafx.tk.Toolkit;
 import java.beans.PropertyChangeEvent;
@@ -33,6 +34,8 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
 
     private boolean selected;
     private Size currentSize;
+    private double sizePixels = 80;
+    private int fontSize;
 
     public enum Size
     {
@@ -80,15 +83,16 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
 
         initialise();
     }
-    
+
     public void setStatus(Status status)
     {
         printerSVG.setStatus(status);
     }
 
-    public void setName(String value)
+    public void setName(String newName)
     {
-        nameTextProperty().set(value);
+        newName = fitNameToWidth(newName);
+        nameTextProperty().set(newName);
     }
 
     public StringProperty nameTextProperty()
@@ -105,7 +109,9 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
         setStyle("-fx-background-color: white;");
 
         name.setFill(Color.WHITE);
-        name.setText(printer.getPrinterFriendlyName());
+        String nameText = printer.getPrinterFriendlyName();
+        nameText = fitNameToWidth(nameText);
+        name.setText(nameText);
         setColour(printer.getPrinterColour());
 
         progressListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
@@ -204,8 +210,6 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
      */
     private void redraw()
     {
-        int sizePixels;
-        int fontSize;
         int progressBarWidth;
         int progressBarHeight;
         double progressBarYOffset;
@@ -244,7 +248,7 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
                 progressBarYOffset = 55;
                 break;
         }
-        
+
         setPrefWidth(sizePixels);
         setMinWidth(sizePixels);
         setMaxWidth(sizePixels);
@@ -275,22 +279,75 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
 
         name.setStyle("-fx-font-size: " + fontSize + "pt !important;");
         name.setLayoutX(progressBarX);
-        
+
         Font font = name.getFont();
         Font actualFont = new Font(font.getName(), fontSize);
         FontMetrics fontMetrics = Toolkit.getToolkit().getFontLoader().getFontMetrics(actualFont);
 
         nameLayoutY = sizePixels - (progressBarYOffset / 2) + fontMetrics.getDescent();
         name.setLayoutY(nameLayoutY);
+
+        updateBounds();
         
-        
+        setPrefSize(sizePixels, sizePixels);
+
     }
-    
+
+    @Override
+    public double computeMinHeight(double width)
+    {
+        return sizePixels;
+    }
+
+    @Override
+    public double computeMinWidth(double height)
+    {
+        return sizePixels;
+    }
+
+    @Override
+    public double computeMaxHeight(double width)
+    {
+        return sizePixels;
+    }
+
+    @Override
+    public double computeMaxWidth(double height)
+    {
+        return sizePixels;
+    }
+
+    @Override
+    public double computePrefHeight(double width)
+    {
+        return sizePixels;
+    }
+
+    @Override
+    public double computePrefWidth(double height)
+    {
+        return sizePixels;
+    }
+
     /**
      * Fit the printer name to the available space
      */
-    public void fitNameToWidth() {
-        float stringWidth;
-    }
+    public String fitNameToWidth(String name)
+    {
         
+        int FONT_SIZE = 14;
+        int AVAILABLE_WIDTH = 115;
+        double stringWidth = getWidthOfString(name, FONT_SIZE);
+        int i = 0;
+        while (stringWidth > AVAILABLE_WIDTH) {
+            name = name.substring(0, name.length() - 1);
+            stringWidth = getWidthOfString(name, FONT_SIZE);
+            if (i > 100) {
+                break;
+            }
+            i++;
+        }
+        return name;
+    }
+
 }
