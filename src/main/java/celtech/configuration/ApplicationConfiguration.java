@@ -199,7 +199,7 @@ public class ApplicationConfiguration
      */
     public static final float filamentDiameterToYieldVolumetricExtrusion = 1.1283791670955125738961589031215f;
 
-    private static final String commonFileDirectoryPath = "CEL Robox";
+    private static final String commonFileDirectoryPath = "CEL Robox" + File.separator;
 
     private static String headFileDirectory = null;
 
@@ -578,7 +578,7 @@ public class ApplicationConfiguration
                     if (regKey.hasValue(regValueToUse))
                     {
                         RegistryValue value = regKey.getValue(regValueToUse);
-                        userStorageDirectory = value.getStringValue() + "\\" + commonFileDirectoryPath + "\\";
+                        userStorageDirectory = value.getStringValue() + "\\" + commonFileDirectoryPath;
                     }
                 }
             }
