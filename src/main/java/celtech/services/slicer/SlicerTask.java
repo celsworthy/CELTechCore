@@ -114,7 +114,7 @@ public class SlicerTask extends Task<SliceResult>
         if (commands.size() > 0)
         {
             ProcessBuilder slicerProcessBuilder = new ProcessBuilder(commands);
-            if (machineType != MachineType.WINDOWS && machineType == MachineType.WINDOWS_95)
+            if (machineType != MachineType.WINDOWS && machineType != MachineType.WINDOWS_95)
             {
                 slicerProcessBuilder.directory(new File(workingDirectory));
             }
