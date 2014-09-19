@@ -2626,47 +2626,10 @@ public class PrinterImpl implements Printer
                 break;
             case REEL_EEPROM_DATA:
                 ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) printerEvent.getPayload();
-                reelFilamentID.set(reelResponse.getReelFilamentID());
-                try
-                {
-                    Filament loadedFilamentCandidate = FilamentContainer.getFilamentByID(
-                        reelFilamentID.get());
-                    if (loadedFilamentCandidate != null)
-                    {
-                        temporaryFilament.setFriendlyFilamentName(
-                            loadedFilamentCandidate.getFriendlyFilamentName());
-                        temporaryFilament.setMaterial(loadedFilamentCandidate.getMaterial());
-                        temporaryFilament.setFilamentID(reelResponse.getReelFilamentID());
-                        temporaryFilament.setDisplayColour(
-                            loadedFilamentCandidate.getDisplayColour());
-                        temporaryFilament.setAmbientTemperature(reelResponse.getAmbientTemperature());
-                        temporaryFilament.setBedTemperature(reelResponse.getBedTemperature());
-                        temporaryFilament.setFirstLayerBedTemperature(
-                            reelResponse.getFirstLayerBedTemperature());
-                        temporaryFilament.setNozzleTemperature(reelResponse.getNozzleTemperature());
-                        temporaryFilament.setFirstLayerNozzleTemperature(
-                            reelResponse.getFirstLayerNozzleTemperature());
-                        temporaryFilament.setMutable(reelResponse.getReelFilamentID().startsWith(USER_FILAMENT_PREFIX));
-                        temporaryFilament.setFilamentMultiplier(reelResponse.getFilamentMultiplier());
-                        temporaryFilament.setFeedRateMultiplier(reelResponse.getFeedRateMultiplier());
-                        temporaryFilament.setRemainingFilament(
-                            reelResponse.getReelRemainingFilament());
-                        temporaryFilament.setFilamentDiameter(reelResponse.getFilamentDiameter());
-                        loadedFilament.set(temporaryFilament);
-                        reelFriendlyName.set(loadedFilamentCandidate.toString());
-                    } else
-                    {
-                        reelFriendlyName.set(DisplayManager.getLanguageBundle().getString(
-                            "sidePanel_settings.filamentUnknown"));
-                        loadedFilament.set(null);
-                    }
-                } catch (IllegalArgumentException ex)
-                {
-                    reelFriendlyName.set(DisplayManager.getLanguageBundle().getString(
-                        "sidePanel_settings.filamentUnknown"));
-                    loadedFilament.set(null);
-                }
+                
+                loadedFilament.set(new Filament(reelResponse));
 
+                reelFilamentID.set(reelResponse.getReelFilamentID());
                 reelFriendlyName.set(reelResponse.getReelFriendlyName());
                 reelMaterialType = reelResponse.getReelMaterialType();
                 reelDisplayColour = reelResponse.getReelDisplayColour();
