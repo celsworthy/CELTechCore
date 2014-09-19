@@ -679,8 +679,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
     }
 
     /**
-     * Load each model in modelsToLoad and then optionally lay them out on the bed. If there are
-     * already models loaded in the project then do not relayout even if relayout=true;
+     * Load each model in modelsToLoad and then optionally lay them out on the bed.
+     *
+     * @param modelsToLoad
+     * @param relayout
      */
     public void loadExternalModels(List<File> modelsToLoad, boolean relayout)
     {

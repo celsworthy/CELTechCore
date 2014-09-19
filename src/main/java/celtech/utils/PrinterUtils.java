@@ -7,6 +7,7 @@ package celtech.utils;
 
 import celtech.appManager.TaskController;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.Filament;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.printerControl.Printer;
@@ -164,9 +165,20 @@ public class PrinterUtils
     public boolean isPurgeNecessary(Printer printer)
     {
         boolean purgeIsNecessary = false;
+        float targetNozzleTemperature = 0;
+        SettingsScreenState settingsScreenState = SettingsScreenState.getInstance();
+        Filament settingsFilament = settingsScreenState.getFilament();
+
+        if (settingsFilament != null)
+        {
+            targetNozzleTemperature = settingsFilament.getNozzleTemperature();
+        } else
+        {
+            targetNozzleTemperature = (float) printer.getReelNozzleTemperature().get();
+        }
 
         // A reel is attached - check to see if the temperature is different from that stored on the head
-        if (Math.abs(printer.getNozzleTargetTemperature() - printer.getLastFilamentTemperature().get()) > ApplicationConfiguration.maxPermittedTempDifferenceForPurge)
+        if (Math.abs(targetNozzleTemperature - printer.getLastFilamentTemperature().get()) > ApplicationConfiguration.maxPermittedTempDifferenceForPurge)
         {
             purgeIsNecessary = true;
         }

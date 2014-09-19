@@ -6,6 +6,8 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.TaskController;
+import celtech.configuration.Filament;
+import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -66,7 +68,7 @@ public class PurgeHelper
         {
             if (purgeTask.isRunning())
             {
-                purgeTask.cancel();
+                purgeTask.cancelRun();
             }
         }
         if (state != PurgeState.IDLE)
@@ -121,11 +123,22 @@ public class PurgeHelper
                     savedHeadData = printerToUse.transmitReadHeadEEPROM();
 
                     // The nozzle should be heated to a temperature halfway between the last temperature stored on the head and the current required temperature stored on the reel
-                    reelNozzleTemperature = (float) printerToUse.getNozzleTargetTemperature();
+                    SettingsScreenState settingsScreenState = SettingsScreenState.getInstance();
+
+                    Filament settingsFilament = settingsScreenState.getFilament();
+
+                    if (settingsFilament != null)
+                    {
+                        reelNozzleTemperature = settingsFilament.getNozzleTemperature();
+                    } else
+                    {
+                        reelNozzleTemperature = (float) printerToUse.getReelNozzleTemperature().get();
+                    }
+
                     float temperatureDifference = reelNozzleTemperature - savedHeadData.getLastFilamentTemperature();
                     lastDisplayTemperature = (int) savedHeadData.getLastFilamentTemperature();
                     currentDisplayTemperature = (int) reelNozzleTemperature;
-                    purgeTemperature = (int) Math.min(savedHeadData.getMaximumTemperature(), Math.max(150.0, savedHeadData.getLastFilamentTemperature() + (temperatureDifference / 2)));
+                    purgeTemperature = (int) Math.min(savedHeadData.getMaximumTemperature(), Math.max(180.0, savedHeadData.getLastFilamentTemperature() + (temperatureDifference / 2)));
                     setState(state.getNextState());
                 } catch (RoboxCommsException ex)
                 {
@@ -133,13 +146,13 @@ public class PurgeHelper
                     cancelPurgeAction();
                 }
                 break;
-                
+
             case RUNNING_PURGE:
                 purgeTask = new PurgeTask(state);
                 purgeTask.setOnSucceeded(succeededTaskHandler);
                 purgeTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(purgeTask);
-                
+
                 purgeTask.setPurgeTemperature(purgeTemperature);
 
                 Thread purgingTaskThread = new Thread(purgeTask);
@@ -152,7 +165,7 @@ public class PurgeHelper
                 purgeTask.setOnSucceeded(succeededTaskHandler);
                 purgeTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(purgeTask);
-                
+
                 purgeTask.setPurgeTemperature(purgeTemperature);
 
                 Thread heatingTaskThread = new Thread(purgeTask);
@@ -176,7 +189,7 @@ public class PurgeHelper
                                                                                    savedHeadData.getNozzle2YOffset(),
                                                                                    savedHeadData.getNozzle2ZOffset(),
                                                                                    savedHeadData.getNozzle2BOffset(),
-                                                                                   purgeTemperature,
+                                                                                   reelNozzleTemperature,
                                                                                    savedHeadData.getHeadHours());
 
                     printerToUse.transmitDirectGCode("G0 B0", false);
@@ -216,5 +229,10 @@ public class PurgeHelper
     public int getPurgeTemperature()
     {
         return purgeTemperature;
+    }
+
+    public void setPurgeTemperature(int newPurgeTemperature)
+    {
+        purgeTemperature = newPurgeTemperature;
     }
 }

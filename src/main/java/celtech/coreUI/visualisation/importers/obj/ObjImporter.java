@@ -288,7 +288,6 @@ public class ObjImporter
                 {
                     addMesh(key);
                     key = line.length() > 2 ? line.substring(2) : "default";
-                    steno.info("key = " + key);
                 } else if (line.startsWith("v "))
                 {
                     String[] split = line.substring(2).trim().split(" +");
@@ -450,7 +449,7 @@ public class ObjImporter
                     normals.add(z);
                 } else
                 {
-                    steno.info("line skipped: " + line);
+                    steno.debug("line skipped: " + line);
                 }
             } catch (Exception ex)
             {
@@ -459,7 +458,7 @@ public class ObjImporter
         }
         addMesh(key);
 
-        steno.info(
+        steno.debug(
                 "Totally loaded " + (vertexes.size() / 3.) + " vertexes, "
                 + (uvs.size() / 2.) + " uvs, "
                 + (faces.size() / 6.) + " faces, "
@@ -575,8 +574,8 @@ public class ObjImporter
 //                + mesh.getTexCoords().size() / TriangleMesh.NUM_COMPONENTS_PER_TEXCOORD + " uvs, "
 //                + mesh.getFaces().size() / TriangleMesh.NUM_COMPONENTS_PER_FACE + " faces, "
 //                + mesh.getFaceSmoothingGroups().size() + " smoothing groups.");
-        steno.info("material diffuse color = " + ((PhongMaterial) material).getDiffuseColor());
-        steno.info("material diffuse map = " + ((PhongMaterial) material).getDiffuseMap());
+        steno.debug("material diffuse color = " + ((PhongMaterial) material).getDiffuseColor());
+        steno.debug("material diffuse map = " + ((PhongMaterial) material).getDiffuseMap());
 
         facesStart = faces.size();
         facesNormalStart = faceNormals.size();

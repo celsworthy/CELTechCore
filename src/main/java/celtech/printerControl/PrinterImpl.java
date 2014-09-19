@@ -273,7 +273,7 @@ public class PrinterImpl implements Printer
     private static final Dialogs.CommandLink abortJob = new Dialogs.CommandLink(
         DisplayManager.getLanguageBundle().getString("dialogs.error.abortJob"), null);
     private boolean errorDialogOnDisplay = false;
-    
+
     private boolean formatDenied = false;
 
     /**
@@ -334,7 +334,7 @@ public class PrinterImpl implements Printer
             }
         });
     }
-    
+
     public StringProperty getPrinterUniqueIDProperty()
     {
         return printerUniqueID;
@@ -2392,7 +2392,7 @@ public class PrinterImpl implements Printer
         {
             headType.set("Unknown");
         }
-        
+
         headUniqueID.set(headResponse.getUniqueID());
         lastFilamentTemperature.set(headResponse.getLastFilamentTemperature());
         headHoursCounter.set(headResponse.getHeadHours());
@@ -2407,54 +2407,17 @@ public class PrinterImpl implements Printer
         headNozzle2ZOffset.set(headResponse.getNozzle2ZOffset());
         headThermistorBeta.set(headResponse.getBeta());
         headThermistorTCal.set(headResponse.getTCal());
-        
+
         headDataChangedToggle.set(!headDataChangedToggle.get());
     }
 
     private void handleReelEEPROMData(RoboxEvent printerEvent)
     {
         ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) printerEvent.getPayload();
+
+        loadedFilament.set(new Filament(reelResponse));
+
         reelFilamentID.set(reelResponse.getReelFilamentID());
-        try
-        {
-            Filament loadedFilamentCandidate = FilamentContainer.getFilamentByID(
-                reelFilamentID.get());
-            if (loadedFilamentCandidate != null)
-            {
-                temporaryFilament.setFriendlyFilamentName(
-                    loadedFilamentCandidate.getFriendlyFilamentName());
-                temporaryFilament.setMaterial(loadedFilamentCandidate.getMaterial());
-                temporaryFilament.setFilamentID(reelResponse.getReelFilamentID());
-                temporaryFilament.setDisplayColour(
-                    loadedFilamentCandidate.getDisplayColour());
-                temporaryFilament.setAmbientTemperature(reelResponse.getAmbientTemperature());
-                temporaryFilament.setBedTemperature(reelResponse.getBedTemperature());
-                temporaryFilament.setFirstLayerBedTemperature(
-                    reelResponse.getFirstLayerBedTemperature());
-                temporaryFilament.setNozzleTemperature(reelResponse.getNozzleTemperature());
-                temporaryFilament.setFirstLayerNozzleTemperature(
-                    reelResponse.getFirstLayerNozzleTemperature());
-                temporaryFilament.setMutable(reelResponse.getReelFilamentID().startsWith(USER_FILAMENT_PREFIX));
-                temporaryFilament.setFilamentMultiplier(reelResponse.getFilamentMultiplier());
-                temporaryFilament.setFeedRateMultiplier(reelResponse.getFeedRateMultiplier());
-                temporaryFilament.setRemainingFilament(
-                    reelResponse.getReelRemainingFilament());
-                temporaryFilament.setFilamentDiameter(reelResponse.getFilamentDiameter());
-                loadedFilament.set(temporaryFilament);
-                reelFriendlyName.set(loadedFilamentCandidate.toString());
-            } else
-            {
-                reelFriendlyName.set(DisplayManager.getLanguageBundle().getString(
-                    "sidePanel_settings.filamentUnknown"));
-                loadedFilament.set(null);
-            }
-        } catch (IllegalArgumentException ex)
-        {
-            reelFriendlyName.set(DisplayManager.getLanguageBundle().getString(
-                "sidePanel_settings.filamentUnknown"));
-            loadedFilament.set(null);
-        }
-        
         reelFriendlyName.set(reelResponse.getReelFriendlyName());
         reelMaterialType = reelResponse.getReelMaterialType();
         reelDisplayColour = reelResponse.getReelDisplayColour();
@@ -2487,7 +2450,7 @@ public class PrinterImpl implements Printer
         try
         {
             transmitSetAmbientLEDColour(idResponse.getPrinterColour());
-            
+
         } catch (RoboxCommsException ex)
         {
             steno.warning("Couldn't set printer LED colour");
@@ -2498,13 +2461,13 @@ public class PrinterImpl implements Printer
     private void handlePrinterAck(RoboxEvent printerEvent)
     {
         AckResponse ackResponse = (AckResponse) printerEvent.getPayload();
-        
+
         if (ackResponse.isError() && !errorDialogOnDisplay)
         {
             errorDialogOnDisplay = true;
-            
+
             Action errorHandlingResponse = null;
-            
+
             if (getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.IDLE
                 && getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.ERROR)
             {
@@ -2523,7 +2486,7 @@ public class PrinterImpl implements Printer
                     .masthead(null)
                     .showCommandLinks(clearOnly, clearOnly);
             }
-            
+
             try
             {
                 transmitResetErrors();
@@ -2531,7 +2494,7 @@ public class PrinterImpl implements Printer
             {
                 steno.error("Couldn't reset errors after error detection");
             }
-            
+
             if (errorHandlingResponse == clearAndContinue)
             {
                 try
@@ -2545,7 +2508,7 @@ public class PrinterImpl implements Printer
                 {
                     steno.error("Couldn't reset errors and resume after error");
                 }
-                
+
             } else if (errorHandlingResponse == abortJob)
             {
                 try
@@ -2561,10 +2524,10 @@ public class PrinterImpl implements Printer
                     steno.error("Couldn't abort print after error");
                 }
             }
-            
+
             errorDialogOnDisplay = false;
         }
-        
+
         setErrorsDetected(ackResponse.isError());
         setSDCardError(ackResponse.isSdCardError());
         setChunkSequenceError(ackResponse.isChunkSequenceError());
@@ -2579,7 +2542,7 @@ public class PrinterImpl implements Printer
     private void handlePrinterStatusUpdate(RoboxEvent printerEvent)
     {
         StatusResponse statusResponse = (StatusResponse) printerEvent.getPayload();
-        
+
         setAmbientTemperature(statusResponse.getAmbientTemperature());
         setAmbientTargetTemperature(statusResponse.getAmbientTargetTemperature());
         setBedTemperature(statusResponse.getBedTemperature());
@@ -2589,12 +2552,12 @@ public class PrinterImpl implements Printer
         setNozzleFirstLayerTargetTemperature(
             statusResponse.getNozzleFirstLayerTargetTemperature());
         setNozzleTargetTemperature(statusResponse.getNozzleTargetTemperature());
-        
+
         long now = System.currentTimeMillis();
         if ((now - lastTimestamp) >= 999)
         {
             lastTimestamp = now;
-            
+
             for (int pointCounter = 0; pointCounter < NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1;
                 pointCounter++)
             {
@@ -2605,10 +2568,10 @@ public class PrinterImpl implements Printer
                 nozzleTemperatureDataPoints.get(pointCounter).setYValue(
                     nozzleTemperatureDataPoints.get(pointCounter + 1).getYValue());
             }
-            
+
             ambientTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(
                 statusResponse.getAmbientTemperature());
-            
+
             if (statusResponse.getBedTemperature()
                 < ApplicationConfiguration.maxTempToDisplayOnGraph
                 && statusResponse.getBedTemperature()
@@ -2617,9 +2580,9 @@ public class PrinterImpl implements Printer
                 bedTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(
                     statusResponse.getBedTemperature());
             }
-            
+
             nozzleTemperatureDataPoints.add(bedTargetPoint);
-            
+
             if (statusResponse.getNozzleTemperature()
                 < ApplicationConfiguration.maxTempToDisplayOnGraph
                 && statusResponse.getNozzleTemperature()
@@ -2629,7 +2592,7 @@ public class PrinterImpl implements Printer
                     statusResponse.getNozzleTemperature());
             }
         }
-        
+
         ambientTargetPoint.setYValue(statusResponse.getAmbientTargetTemperature());
         switch (statusResponse.getBedHeaterMode())
         {
@@ -2660,13 +2623,13 @@ public class PrinterImpl implements Printer
             default:
                 break;
         }
-        
+
         setAmbientFanOn(statusResponse.isAmbientFanOn());
         bedHeaterMode.set(statusResponse.getBedHeaterMode());
         nozzleHeaterMode.set(statusResponse.getNozzleHeaterMode());
         setHeadFanOn(statusResponse.isHeadFanOn());
         setBusy(statusResponse.isBusyStatus());
-        
+
         if (pauseStatus.get() != statusResponse.getPauseStatus()
             && statusResponse.getPauseStatus() == PauseStatus.PAUSED)
         {
@@ -2677,7 +2640,7 @@ public class PrinterImpl implements Printer
             printQueue.printerHasResumed();
         }
         setPauseStatus(statusResponse.getPauseStatus());
-        
+
         setPrintJobLineNumber(statusResponse.getPrintJobLineNumber());
         setPrintJobID(statusResponse.getRunningPrintJobID());
         setXStopSwitch(statusResponse.isxSwitchStatus());
@@ -2691,7 +2654,7 @@ public class PrinterImpl implements Printer
         setNozzleHomed(statusResponse.isNozzleSwitchStatus());
         setLidOpen(statusResponse.isLidSwitchStatus());
         setReelButton(statusResponse.isReelButtonStatus());
-        
+
         if (reelEEPROMStatus.get() != EEPROMState.PROGRAMMED
             && statusResponse.getReelEEPROMState() == EEPROMState.PROGRAMMED)
         {
@@ -2714,11 +2677,13 @@ public class PrinterImpl implements Printer
             reelFilamentIsMutable.set(false);
             reelDataChangedToggle.set(!reelDataChangedToggle.get());
         }
-        
+
         reelEEPROMStatus.set(statusResponse.getReelEEPROMState());
-        
-        if (statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PROGRAMMED && ! formatDenied) {
-            if (Head.checkHead(this)) {
+
+        if (statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PROGRAMMED && !formatDenied)
+        {
+            if (Head.checkHead(this))
+            {
                 try
                 {
                     transmitFormatHeadEEPROM();
@@ -2726,11 +2691,12 @@ public class PrinterImpl implements Printer
                 {
                     steno.error("Did not format head successfully");
                 }
-            } else {
+            } else
+            {
                 formatDenied = true;
             }
-        }        
-        
+        }
+
         if (headEEPROMStatus.get() != EEPROMState.PROGRAMMED
             && statusResponse.getHeadEEPROMState() == EEPROMState.PROGRAMMED)
         {
@@ -2754,16 +2720,16 @@ public class PrinterImpl implements Printer
             temporaryHead.setBeta(0);
             temporaryHead.setTcal(0);
         }
-        
+
         headEEPROMStatus.set(statusResponse.getHeadEEPROMState());
-        
+
         sdCardPresent.set(statusResponse.isSDCardPresent());
         showSDDialogIfNotShowing(statusResponse);
-        
+
         setHeadXPosition(statusResponse.getHeadXPosition());
         setHeadYPosition(statusResponse.getHeadYPosition());
         setHeadZPosition(statusResponse.getHeadZPosition());
-        
+
         setWhyAreWeWaiting(statusResponse.getWhyAreWeWaitingState());
         switch (statusResponse.getWhyAreWeWaitingState())
         {
@@ -2783,7 +2749,7 @@ public class PrinterImpl implements Printer
                 whyAreWeWaitingString.set("");
                 break;
         }
-        
+
         setPrinterStatus(printQueue.getPrintStatus());
     }
 
@@ -3514,7 +3480,7 @@ public class PrinterImpl implements Printer
              */
             if (dataIngested && lastPacket)
             {
-                steno.info("Final complete chunk:" + outputBuffer.toString() + " seq:"
+                steno.debug("Final complete chunk:" + outputBuffer.toString() + " seq:"
                     + sequenceNumber);
                 AckResponse response = transmitDataFileEnd(outputBuffer.toString(), sequenceNumber);
                 if (response.isError())

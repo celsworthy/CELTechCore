@@ -202,7 +202,7 @@ public class PrinterComponentTest
     {
         System.out.println("fitNameToWidth");
         PrinterComponent instance = null;
-        instance.fitNameToWidth();
+//        instance.fitNameToWidth();
         fail("The test case is a prototype.");
     }
     
