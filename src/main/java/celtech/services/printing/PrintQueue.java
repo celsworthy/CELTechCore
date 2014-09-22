@@ -154,11 +154,6 @@ public class PrintQueue implements ControllableService
      */
     private MovieMakerTask movieMakerTask = null;
 
-    /**
-     * The movie maker task
-     */
-    private MovieMakerTask movieMakerTask = null;
-
     public PrintQueue(Printer associatedPrinter)
     {
         this(associatedPrinter, new NotificationsHandlerImpl(),

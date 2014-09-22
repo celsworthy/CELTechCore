@@ -24,12 +24,12 @@ public class TestPrinterImpl extends PrinterImpl
     }
 
     @Override
-    void initialiseSDDialog()
+    public void initialiseSDDialog()
     {
     }
 
     @Override
-    void showSDDialogIfNotShowing(StatusResponse statusResponse)
+    public void showSDDialogIfNotShowing(StatusResponse statusResponse)
     {
     }
 

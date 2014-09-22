@@ -1543,4 +1543,8 @@ public interface Printer
      */
     public BooleanProperty getReelFilamentIsMutable();
     
+    void initialiseSDDialog();
+
+    void showSDDialogIfNotShowing(StatusResponse statusResponse);
+    
 }

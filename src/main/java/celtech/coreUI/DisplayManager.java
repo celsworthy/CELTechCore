@@ -921,8 +921,4 @@ public class DisplayManager implements EventHandler<KeyEvent>
         return (PurgeInsetPanelController) insetPanelControllers.get(ApplicationMode.PURGE);
     }
 
-    public PurgeInsetPanelController getPurgeInsetPanelController()
-    {
-        return (PurgeInsetPanelController) insetPanelControllers.get(ApplicationMode.PURGE);
-    }
 }
