@@ -1,3 +1,26 @@
+
+
+@font-face {
+    font-family: SourceSansPro;
+    font-weight: light;
+    font-style: normal;
+    src: url('/celtech/resources/fonts/SourceSansPro-Light.ttf') format(ttf);
+}
+
+@font-face {
+    font-family: SourceSansPro;
+    font-weight: normal;
+    font-style: Semibold;
+    src: url('/celtech/resources/fonts/SourceSansPro-Semibold.ttf') format(ttf);
+}
+
+@font-face {
+    font-family: CrazyZoo;
+    font-weight: normal;
+    font-style: normal;
+    src: url('/celtech/resources/fonts/crazyzoo.ttf') format(ttf);
+}
+
 *{
     black: rgb(0,0,0);
     dark_grey: rgb(48,48,48);
@@ -1461,9 +1484,9 @@ table-view .column-header-background {
     -fx-opacity: 0.4;
 }
 
-#calibrationMenuSeparator {
+#calibrationMenuSeparator *.line {
 -fx-border-style: solid;
--fx-border-width: 0px;
+-fx-border-width: 2px;
 -fx-fill: black;
 -fx-background-color: black;
 -fx-border-color: black black black black;
@@ -1501,4 +1524,5 @@ table-view .column-header-background {
 
 .calibrationMenuOption {
  -fx-font-size:36px;
+ -fx-font-weight: light;
 }
