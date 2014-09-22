@@ -206,11 +206,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
-    private void switchPagesForMode(ApplicationMode oldMode,
-        ApplicationMode newMode)
+    private void switchPagesForMode(ApplicationMode oldMode, ApplicationMode newMode)
     {
-        infoScreenIndicatorController.setSelected(newMode
-            == ApplicationMode.STATUS);
+        infoScreenIndicatorController.setSelected(newMode == ApplicationMode.STATUS);
 
         // Remove the existing side panel
         if (oldMode != null)

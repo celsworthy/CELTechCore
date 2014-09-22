@@ -1591,3 +1591,46 @@ table-view .column-header-background {
 {
     -fx-opacity: 0.4;
 }
+
+#calibrationMenuSeparator *.line {
+-fx-border-style: solid;
+-fx-border-width: 2px;
+-fx-fill: black;
+-fx-background-color: black;
+-fx-border-color: black black black black;
+}
+
+#calibrationMenuTitle {
+ -fx-font-size:60px;
+ -fx-fill: white;
+}
+
+#calibrationTopMenu {
+    -fx-background-color: black;
+}
+
+#calibrationStatus {
+     -fx-font-size:16px;
+}
+
+#calibrateBottomMenu {
+    -fx-background-color: black;
+}
+
+#calibrationLeftBorder {
+    -fx-background-color: black;
+}
+
+.calibrationMenuSquare {
+    -fx-fill: blue_colour;
+    -fx-border-width: 0;
+}
+
+.calibrationSelectedMenuOption {
+    -fx-fill: white;
+}
+
+.calibrationMenuOption {
+ -fx-font-size:36px;
+ -fx-font-weight: light;
+}

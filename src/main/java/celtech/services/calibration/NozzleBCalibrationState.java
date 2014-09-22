@@ -90,7 +90,7 @@ public enum NozzleBCalibrationState
     FAILED("calibrationPanel.nozzleCalibrationFailed", null);
 
     private String stepTitleResource = null;
-    private String stepInstructionResource = null;
+        private String stepInstructionResource = null;
 
     private NozzleBCalibrationState(String stepTitleResource, String stepInstructionResource)
     {
