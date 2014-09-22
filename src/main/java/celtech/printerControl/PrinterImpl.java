@@ -4,7 +4,6 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
-import celtech.configuration.FilamentContainer;
 import celtech.configuration.Head;
 import celtech.configuration.HeadContainer;
 import celtech.configuration.HeaterMode;
@@ -106,7 +105,7 @@ public class PrinterImpl implements Printer
     /*
      * Temperature-related data
      */
-    private final int NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP = 210;
+    private final int NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP = 180;
     private final IntegerProperty ambientTemperature = new SimpleIntegerProperty(0);
     private IntegerProperty ambientTargetTemperature = new SimpleIntegerProperty(0);
     private IntegerProperty bedTemperature = new SimpleIntegerProperty(0);
@@ -126,11 +125,11 @@ public class PrinterImpl implements Printer
     private final LineChart.Series<Number, Number> bedTargetTemperatureSeries = new LineChart.Series<>();
     private final LineChart.Series<Number, Number> nozzleTargetTemperatureSeries = new LineChart.Series<>();
     private final LineChart.Data<Number, Number> ambientTargetPoint = new LineChart.Data<>(
-        NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 10, 0);
+        NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP + 5, 0);
     private final LineChart.Data<Number, Number> bedTargetPoint = new LineChart.Data<>(
-        NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 10, 0);
+        NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP + 5, 0);
     private final LineChart.Data<Number, Number> nozzleTargetPoint = new LineChart.Data<>(
-        NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 10, 0);
+        NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP + 5, 0);
 
     private long lastTimestamp = System.currentTimeMillis();
 
@@ -155,7 +154,8 @@ public class PrinterImpl implements Printer
     private final ObjectProperty<WhyAreWeWaitingState> whyAreWeWaitingState = new SimpleObjectProperty(
         WhyAreWeWaitingState.NOT_WAITING);
     private final StringProperty whyAreWeWaitingString = new SimpleStringProperty("");
-    private ObjectProperty<PauseStatus> pauseStatus = new SimpleObjectProperty(PauseStatus.NOT_PAUSED);
+    private ObjectProperty<PauseStatus> pauseStatus = new SimpleObjectProperty(
+        PauseStatus.NOT_PAUSED);
     private final BooleanProperty SDCardError = new SimpleBooleanProperty(false);
     private final BooleanProperty ChunkSequenceError = new SimpleBooleanProperty(false);
     private final BooleanProperty FileTooLargeError = new SimpleBooleanProperty(false);
@@ -211,7 +211,8 @@ public class PrinterImpl implements Printer
      * Reel data
      */
     private final Filament temporaryFilament = new Filament(null, null, null,
-                                                            0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, false);
+                                                            0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE,
+                                                            false);
     private final BooleanProperty reelDataChangedToggle = new SimpleBooleanProperty(false);
     private final BooleanProperty reelFilamentIsMutable = new SimpleBooleanProperty(false);
     private final IntegerProperty reelAmbientTemperature = new SimpleIntegerProperty(0);
@@ -274,8 +275,6 @@ public class PrinterImpl implements Printer
         DisplayManager.getLanguageBundle().getString("dialogs.error.abortJob"), null);
     private boolean errorDialogOnDisplay = false;
 
-    private boolean formatDenied = false;
-
     /**
      *
      * @param portName
@@ -287,8 +286,6 @@ public class PrinterImpl implements Printer
         this.printerCommsManager = commsManager;
 
         languageBundle = DisplayManager.getLanguageBundle();
-
-        initialiseSDDialog();
 
         ambientTemperatureHistory.setName(languageBundle.getString(
             "printerStatus.temperatureGraphAmbientLabel"));
@@ -318,21 +315,6 @@ public class PrinterImpl implements Printer
         whyAreWeWaiting_cooling = i18nBundle.getString("printerStatus.printerCooling");
         whyAreWeWaiting_heatingBed = i18nBundle.getString("printerStatus.printerBedHeating");
         whyAreWeWaiting_heatingNozzle = i18nBundle.getString("printerStatus.printerNozzleHeating");
-    }
-
-    void initialiseSDDialog()
-    {
-        Platform.runLater(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                noSDDialog = new ModalDialog();
-                noSDDialog.setTitle(languageBundle.getString("dialogs.noSDCardTitle"));
-                noSDDialog.setMessage(languageBundle.getString("dialogs.noSDCardMessage"));
-                noSDDialog.addButton(languageBundle.getString("dialogs.noSDCardOK"));
-            }
-        });
     }
 
     public StringProperty getPrinterUniqueIDProperty()
@@ -2321,11 +2303,269 @@ public class PrinterImpl implements Printer
                 setPrinterConnected(false);
                 break;
             case PRINTER_ACK:
-                handlePrinterAck(printerEvent);
+                AckResponse ackResponse = (AckResponse) printerEvent.getPayload();
+
+                if (ackResponse.isError() && !errorDialogOnDisplay)
+                {
+                    errorDialogOnDisplay = true;
+
+                    Action errorHandlingResponse = null;
+
+                    if (getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.IDLE
+                        && getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.ERROR)
+                    {
+                        errorHandlingResponse = Dialogs.create().title(
+                            DisplayManager.getLanguageBundle().getString(
+                                "dialogs.error.errorEncountered"))
+                            .message(ackResponse.getErrorsAsString())
+                            .masthead(null)
+                            .showCommandLinks(clearAndContinue, clearAndContinue, abortJob);
+                    } else
+                    {
+                        errorHandlingResponse = Dialogs.create().title(
+                            DisplayManager.getLanguageBundle().getString(
+                                "dialogs.error.errorEncountered"))
+                            .message(ackResponse.getErrorsAsString())
+                            .masthead(null)
+                            .showCommandLinks(clearOnly, clearOnly);
+                    }
+
+                    try
+                    {
+                        transmitResetErrors();
+                    } catch (RoboxCommsException ex)
+                    {
+                        steno.error("Couldn't reset errors after error detection");
+                    }
+
+                    if (errorHandlingResponse == abortJob)
+                    {
+                        try
+                        {
+                            if (pauseStatus.get() == PauseStatus.NOT_PAUSED
+                                || pauseStatus.get() == PauseStatus.RESUME_PENDING)
+                            {
+                                transmitPausePrint();
+                            }
+                            printQueue.abortPrint();
+                        } catch (RoboxCommsException ex)
+                        {
+                            steno.error("Couldn't abort print after error");
+                        }
+                    }
+
+                    errorDialogOnDisplay = false;
+                }
+
+                setErrorsDetected(ackResponse.isError());
+                setSDCardError(ackResponse.isSdCardError());
+                setChunkSequenceError(ackResponse.isChunkSequenceError());
+                setFileTooLargeError(ackResponse.isFileTooLargeError());
+                setGCodeLineTooLongError(ackResponse.isGcodeLineTooLongError());
+                setUSBRxError(ackResponse.isUsbRXError());
+                setUSBTxError(ackResponse.isUsbTXError());
+                setBadCommandError(ackResponse.isBadCommandError());
+                setEEPROMError(ackResponse.isHeadEepromError());
                 break;
 
             case PRINTER_STATUS_UPDATE:
-                handlePrinterStatusUpdate(printerEvent);
+                StatusResponse statusResponse = (StatusResponse) printerEvent.getPayload();
+//                steno.info("Got:" + statusResponse.toString());
+
+                setAmbientTemperature(statusResponse.getAmbientTemperature());
+                setAmbientTargetTemperature(statusResponse.getAmbientTargetTemperature());
+                setBedTemperature(statusResponse.getBedTemperature());
+                setExtruderTemperature(statusResponse.getNozzleTemperature());
+                setBedFirstLayerTargetTemperature(statusResponse.getBedFirstLayerTargetTemperature());
+                setBedTargetTemperature(statusResponse.getBedTargetTemperature());
+                setNozzleFirstLayerTargetTemperature(
+                    statusResponse.getNozzleFirstLayerTargetTemperature());
+                setNozzleTargetTemperature(statusResponse.getNozzleTargetTemperature());
+
+                long now = System.currentTimeMillis();
+                if ((now - lastTimestamp) >= 999)
+                {
+                    lastTimestamp = now;
+
+                    for (int pointCounter = 0; pointCounter < NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP
+                        - 1; pointCounter++)
+                    {
+                        ambientTemperatureDataPoints.get(pointCounter).setYValue(
+                            ambientTemperatureDataPoints.get(pointCounter + 1).getYValue());
+                        bedTemperatureDataPoints.get(pointCounter).setYValue(
+                            bedTemperatureDataPoints.get(pointCounter + 1).getYValue());
+                        nozzleTemperatureDataPoints.get(pointCounter).setYValue(
+                            nozzleTemperatureDataPoints.get(pointCounter + 1).getYValue());
+                    }
+
+                    ambientTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(
+                        statusResponse.getAmbientTemperature());
+
+                    if (statusResponse.getBedTemperature()
+                        < ApplicationConfiguration.maxTempToDisplayOnGraph
+                        && statusResponse.getBedTemperature()
+                        > ApplicationConfiguration.minTempToDisplayOnGraph)
+                    {
+                        bedTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(
+                            statusResponse.getBedTemperature());
+                    }
+
+                    nozzleTemperatureDataPoints.add(bedTargetPoint);
+
+                    if (statusResponse.getNozzleTemperature()
+                        < ApplicationConfiguration.maxTempToDisplayOnGraph
+                        && statusResponse.getNozzleTemperature()
+                        > ApplicationConfiguration.minTempToDisplayOnGraph)
+                    {
+                        nozzleTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(
+                            statusResponse.getNozzleTemperature());
+                    }
+                }
+
+                ambientTargetPoint.setYValue(statusResponse.getAmbientTargetTemperature());
+                switch (statusResponse.getBedHeaterMode())
+                {
+                    case OFF:
+                        bedTargetPoint.setYValue(0);
+                        break;
+                    case FIRST_LAYER:
+                        bedTargetPoint.setYValue(statusResponse.getBedFirstLayerTargetTemperature());
+                        break;
+                    case NORMAL:
+                        bedTargetPoint.setYValue(statusResponse.getBedTargetTemperature());
+                        break;
+                    default:
+                        break;
+                }
+                switch (statusResponse.getNozzleHeaterMode())
+                {
+                    case OFF:
+                        nozzleTargetPoint.setYValue(0);
+                        break;
+                    case FIRST_LAYER:
+                        nozzleTargetPoint.setYValue(
+                            statusResponse.getNozzleFirstLayerTargetTemperature());
+                        break;
+                    case NORMAL:
+                        nozzleTargetPoint.setYValue(statusResponse.getNozzleTargetTemperature());
+                        break;
+                    default:
+                        break;
+                }
+
+                setAmbientFanOn(statusResponse.isAmbientFanOn());
+                bedHeaterMode.set(statusResponse.getBedHeaterMode());
+                nozzleHeaterMode.set(statusResponse.getNozzleHeaterMode());
+                setHeadFanOn(statusResponse.isHeadFanOn());
+                setBusy(statusResponse.isBusyStatus());
+
+                if (pauseStatus.get() != statusResponse.getPauseStatus()
+                    && statusResponse.getPauseStatus() == PauseStatus.PAUSED)
+                {
+                    printQueue.printerHasPaused();
+                } else if (pauseStatus.get() != statusResponse.getPauseStatus()
+                    && statusResponse.getPauseStatus() == PauseStatus.NOT_PAUSED)
+                {
+                    printQueue.printerHasResumed();
+                }
+                setPauseStatus(statusResponse.getPauseStatus());
+
+                setPrintJobLineNumber(statusResponse.getPrintJobLineNumber());
+                setPrintJobID(statusResponse.getRunningPrintJobID());
+                setXStopSwitch(statusResponse.isxSwitchStatus());
+                setYStopSwitch(statusResponse.isySwitchStatus());
+                setZStopSwitch(statusResponse.iszSwitchStatus());
+                setZTopStopSwitch(statusResponse.isTopZSwitchStatus());
+                setFilament1Loaded(statusResponse.isFilament1SwitchStatus());
+                setFilament2Loaded(statusResponse.isFilament2SwitchStatus());
+                setFilament1Index(statusResponse.isEIndexStatus());
+                setFilament2Index(statusResponse.isDIndexStatus());
+                setNozzleHomed(statusResponse.isNozzleSwitchStatus());
+                setLidOpen(statusResponse.isLidSwitchStatus());
+                setReelButton(statusResponse.isReelButtonStatus());
+
+                EEPROMState lastReelState = reelEEPROMStatus.get();
+
+                if (reelEEPROMStatus.get() != EEPROMState.PROGRAMMED
+                    && statusResponse.getReelEEPROMState() == EEPROMState.PROGRAMMED)
+                {
+                    Filament.repairFilamentIfNecessary(this);
+                } else if (reelEEPROMStatus.get() != EEPROMState.NOT_PRESENT
+                    && statusResponse.getReelEEPROMState() == EEPROMState.NOT_PRESENT)
+                {
+                    loadedFilament.set(null);
+                    reelFriendlyName.set(DisplayManager.getLanguageBundle().getString(
+                        "smartReelProgrammer.noReelLoaded"));
+                    reelAmbientTemperature.set(0);
+                    reelBedTemperature.set(0);
+                    reelFirstLayerBedTemperature.set(0);
+                    reelNozzleTemperature.set(0);
+                    reelFirstLayerNozzleTemperature.set(0);
+                    reelFilamentMultiplier.set(0);
+                    reelFeedRateMultiplier.set(0);
+                    reelRemainingFilament.set(0);
+                    reelFilamentDiameter.set(0);
+                    reelFilamentIsMutable.set(false);
+                    reelDataChangedToggle.set(!reelDataChangedToggle.get());
+                }
+
+                reelEEPROMStatus.set(statusResponse.getReelEEPROMState());
+
+                EEPROMState lastHeadState = headEEPROMStatus.get();
+
+                if (headEEPROMStatus.get() != EEPROMState.PROGRAMMED
+                    && statusResponse.getHeadEEPROMState() == EEPROMState.PROGRAMMED)
+                {
+                    Head.repairHeadIfNecessary(this);
+                } else if (headEEPROMStatus.get() != EEPROMState.NOT_PRESENT
+                    && statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PRESENT)
+                {
+                    attachedHead.set(null);
+                    headType.set(null);
+                    temporaryHead.setUniqueID(null);
+                    temporaryHead.setHeadHours(0);
+                    temporaryHead.setMaximumTemperature(0);
+                    temporaryHead.setNozzle1_B_offset(0);
+                    temporaryHead.setNozzle1_X_offset(0);
+                    temporaryHead.setNozzle1_Y_offset(0);
+                    temporaryHead.setNozzle1_Z_offset(0);
+                    temporaryHead.setNozzle2_B_offset(0);
+                    temporaryHead.setNozzle2_X_offset(0);
+                    temporaryHead.setNozzle2_Y_offset(0);
+                    temporaryHead.setNozzle2_Z_offset(0);
+                    temporaryHead.setBeta(0);
+                    temporaryHead.setTcal(0);
+                }
+
+                headEEPROMStatus.set(statusResponse.getHeadEEPROMState());
+
+                showSDDialogIfNotShowing(statusResponse);
+
+                setHeadXPosition(statusResponse.getHeadXPosition());
+                setHeadYPosition(statusResponse.getHeadYPosition());
+                setHeadZPosition(statusResponse.getHeadZPosition());
+
+                setWhyAreWeWaiting(statusResponse.getWhyAreWeWaitingState());
+                switch (statusResponse.getWhyAreWeWaitingState())
+                {
+                    case NOT_WAITING:
+                        whyAreWeWaitingString.set("");
+                        break;
+                    case BED_HEATING:
+                        whyAreWeWaitingString.set(whyAreWeWaiting_heatingBed);
+                        break;
+                    case NOZZLE_HEATING:
+                        whyAreWeWaitingString.set(whyAreWeWaiting_heatingNozzle);
+                        break;
+                    case COOLING:
+                        whyAreWeWaitingString.set(whyAreWeWaiting_cooling);
+                        break;
+                    default:
+                        whyAreWeWaitingString.set("");
+                        break;
+                }
+
+                setPrinterStatus(printQueue.getPrintStatus());
                 break;
 
             case PRINTER_INVALID_RESPONSE:
@@ -2339,435 +2579,107 @@ public class PrinterImpl implements Printer
                 setFirmwareVersion(fwResponse.getFirmwareRevision());
                 break;
             case PRINTER_ID_INFO:
-                handlePrinterIDInfo(printerEvent);
+                PrinterIDResponse idResponse = (PrinterIDResponse) printerEvent.getPayload();
+                printermodel.set(idResponse.getModel());
+                printeredition.set(idResponse.getEdition());
+                printerweekOfManufacture.set(idResponse.getWeekOfManufacture());
+                printeryearOfManufacture.set(idResponse.getYearOfManufacture());
+                printerpoNumber.set(idResponse.getPoNumber());
+                printerserialNumber.set(idResponse.getSerialNumber());
+                printercheckByte.set(idResponse.getCheckByte());
+                printerFriendlyName.set(idResponse.getPrinterFriendlyName());
+                printerUniqueID.set(getPrinterUniqueID());
+                setPrinterColour(idResponse.getPrinterColour());
+                try
+                {
+                    transmitSetAmbientLEDColour(idResponse.getPrinterColour());
+
+                } catch (RoboxCommsException ex)
+                {
+                    steno.warning("Couldn't set printer LED colour");
+                }
+                printerIDDataChangedToggle.set(!printerIDDataChangedToggle.get());
                 break;
             case REEL_EEPROM_DATA:
-                handleReelEEPROMData(printerEvent);
+                ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) printerEvent.getPayload();
+
+                loadedFilament.set(new Filament(reelResponse));
+
+                reelFilamentID.set(reelResponse.getReelFilamentID());
+                reelFriendlyName.set(reelResponse.getReelFriendlyName());
+                reelMaterialType = reelResponse.getReelMaterialType();
+                reelDisplayColour = reelResponse.getReelDisplayColour();
+                reelAmbientTemperature.set(reelResponse.getAmbientTemperature());
+                reelBedTemperature.set(reelResponse.getBedTemperature());
+                reelFirstLayerBedTemperature.set(reelResponse.getFirstLayerBedTemperature());
+                reelNozzleTemperature.set(reelResponse.getNozzleTemperature());
+                reelFirstLayerNozzleTemperature.set(reelResponse.getFirstLayerNozzleTemperature());
+                reelFilamentMultiplier.set(reelResponse.getFilamentMultiplier());
+                reelFeedRateMultiplier.set(reelResponse.getFeedRateMultiplier());
+                reelRemainingFilament.set(reelResponse.getReelRemainingFilament());
+                reelFilamentDiameter.set(reelResponse.getFilamentDiameter());
+                reelFilamentIsMutable.set(reelFilamentID.get().startsWith(USER_FILAMENT_PREFIX));
+                reelDataChangedToggle.set(!reelDataChangedToggle.get());
                 break;
             case HEAD_EEPROM_DATA:
-                handleHeadEEPROMData(printerEvent);
+                HeadEEPROMDataResponse headResponse = (HeadEEPROMDataResponse) printerEvent.getPayload();
+                String headTypeCodeString = headResponse.getTypeCode();
+                headTypeCode.set(headTypeCodeString);
+                try
+                {
+                    Head attachedHeadCandidate = HeadContainer.getHeadByID(headTypeCodeString);
+                    if (attachedHeadCandidate != null)
+                    {
+                        headType.set(
+                            PrintHead.getPrintHeadForType(headTypeCodeString).getShortName());
+                        temporaryHead.setUniqueID(headResponse.getUniqueID());
+                        temporaryHead.setHeadHours(headResponse.getHeadHours());
+                        temporaryHead.setLastFilamentTemperature(
+                            headResponse.getLastFilamentTemperature());
+                        temporaryHead.setMaximumTemperature(headResponse.getMaximumTemperature());
+                        temporaryHead.setNozzle1_B_offset(headResponse.getNozzle1BOffset());
+                        temporaryHead.setNozzle1_X_offset(headResponse.getNozzle1XOffset());
+                        temporaryHead.setNozzle1_Y_offset(headResponse.getNozzle1YOffset());
+                        temporaryHead.setNozzle1_Z_offset(headResponse.getNozzle1ZOffset());
+                        temporaryHead.setNozzle2_B_offset(headResponse.getNozzle2BOffset());
+                        temporaryHead.setNozzle2_X_offset(headResponse.getNozzle2XOffset());
+                        temporaryHead.setNozzle2_Y_offset(headResponse.getNozzle2YOffset());
+                        temporaryHead.setNozzle2_Z_offset(headResponse.getNozzle2ZOffset());
+                        temporaryHead.setBeta(headResponse.getBeta());
+                        temporaryHead.setTcal(headResponse.getTCal());
+                        temporaryHead.setFriendlyName(attachedHeadCandidate.getFriendlyName());
+                        attachedHead.set(temporaryHead);
+                    } else
+                    {
+                        headType.set("Unknown");
+                        attachedHead.set(null);
+                    }
+                } catch (IllegalArgumentException ex)
+                {
+                    headType.set("Unknown");
+                }
+
+                headUniqueID.set(headResponse.getUniqueID());
+                lastFilamentTemperature.set(headResponse.getLastFilamentTemperature());
+                headHoursCounter.set(headResponse.getHeadHours());
+                headMaximumTemperature.set(headResponse.getMaximumTemperature());
+                headNozzle1BOffset.set(headResponse.getNozzle1BOffset());
+                headNozzle1XOffset.set(headResponse.getNozzle1XOffset());
+                headNozzle1YOffset.set(headResponse.getNozzle1YOffset());
+                headNozzle1ZOffset.set(headResponse.getNozzle1ZOffset());
+                headNozzle2BOffset.set(headResponse.getNozzle2BOffset());
+                headNozzle2XOffset.set(headResponse.getNozzle2XOffset());
+                headNozzle2YOffset.set(headResponse.getNozzle2YOffset());
+                headNozzle2ZOffset.set(headResponse.getNozzle2ZOffset());
+                headThermistorBeta.set(headResponse.getBeta());
+                headThermistorTCal.set(headResponse.getTCal());
+
+                headDataChangedToggle.set(!headDataChangedToggle.get());
                 break;
             default:
                 steno.warning("Unknown packet type delivered to Printer Status: "
                     + printerEvent.getEventType().name());
                 break;
-        }
-    }
-
-    private void handleHeadEEPROMData(RoboxEvent printerEvent)
-    {
-        HeadEEPROMDataResponse headResponse = (HeadEEPROMDataResponse) printerEvent.getPayload();
-        String headTypeCodeString = headResponse.getTypeCode();
-        headTypeCode.set(headTypeCodeString);
-        try
-        {
-            Head attachedHeadCandidate = HeadContainer.getHeadByID(headTypeCodeString);
-            if (attachedHeadCandidate != null)
-            {
-                headType.set(
-                    PrintHead.getPrintHeadForType(headTypeCodeString).getShortName());
-                temporaryHead.setUniqueID(headResponse.getUniqueID());
-                temporaryHead.setHeadHours(headResponse.getHeadHours());
-                temporaryHead.setLastFilamentTemperature(
-                    headResponse.getLastFilamentTemperature());
-                temporaryHead.setMaximumTemperature(headResponse.getMaximumTemperature());
-                temporaryHead.setNozzle1_B_offset(headResponse.getNozzle1BOffset());
-                temporaryHead.setNozzle1_X_offset(headResponse.getNozzle1XOffset());
-                temporaryHead.setNozzle1_Y_offset(headResponse.getNozzle1YOffset());
-                temporaryHead.setNozzle1_Z_offset(headResponse.getNozzle1ZOffset());
-                temporaryHead.setNozzle2_B_offset(headResponse.getNozzle2BOffset());
-                temporaryHead.setNozzle2_X_offset(headResponse.getNozzle2XOffset());
-                temporaryHead.setNozzle2_Y_offset(headResponse.getNozzle2YOffset());
-                temporaryHead.setNozzle2_Z_offset(headResponse.getNozzle2ZOffset());
-                temporaryHead.setBeta(headResponse.getBeta());
-                temporaryHead.setTcal(headResponse.getTCal());
-                temporaryHead.setFriendlyName(attachedHeadCandidate.getFriendlyName());
-                attachedHead.set(temporaryHead);
-            } else
-            {
-                headType.set("Unknown");
-                attachedHead.set(null);
-            }
-        } catch (IllegalArgumentException ex)
-        {
-            headType.set("Unknown");
-        }
-
-        headUniqueID.set(headResponse.getUniqueID());
-        lastFilamentTemperature.set(headResponse.getLastFilamentTemperature());
-        headHoursCounter.set(headResponse.getHeadHours());
-        headMaximumTemperature.set(headResponse.getMaximumTemperature());
-        headNozzle1BOffset.set(headResponse.getNozzle1BOffset());
-        headNozzle1XOffset.set(headResponse.getNozzle1XOffset());
-        headNozzle1YOffset.set(headResponse.getNozzle1YOffset());
-        headNozzle1ZOffset.set(headResponse.getNozzle1ZOffset());
-        headNozzle2BOffset.set(headResponse.getNozzle2BOffset());
-        headNozzle2XOffset.set(headResponse.getNozzle2XOffset());
-        headNozzle2YOffset.set(headResponse.getNozzle2YOffset());
-        headNozzle2ZOffset.set(headResponse.getNozzle2ZOffset());
-        headThermistorBeta.set(headResponse.getBeta());
-        headThermistorTCal.set(headResponse.getTCal());
-
-        headDataChangedToggle.set(!headDataChangedToggle.get());
-    }
-
-    private void handleReelEEPROMData(RoboxEvent printerEvent)
-    {
-        ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) printerEvent.getPayload();
-
-        loadedFilament.set(new Filament(reelResponse));
-
-        reelFilamentID.set(reelResponse.getReelFilamentID());
-        reelFriendlyName.set(reelResponse.getReelFriendlyName());
-        reelMaterialType = reelResponse.getReelMaterialType();
-        reelDisplayColour = reelResponse.getReelDisplayColour();
-        reelAmbientTemperature.set(reelResponse.getAmbientTemperature());
-        reelBedTemperature.set(reelResponse.getBedTemperature());
-        reelFirstLayerBedTemperature.set(reelResponse.getFirstLayerBedTemperature());
-        reelNozzleTemperature.set(reelResponse.getNozzleTemperature());
-        reelFirstLayerNozzleTemperature.set(reelResponse.getFirstLayerNozzleTemperature());
-        reelFilamentMultiplier.set(reelResponse.getFilamentMultiplier());
-        reelFeedRateMultiplier.set(reelResponse.getFeedRateMultiplier());
-        reelRemainingFilament.set(reelResponse.getReelRemainingFilament());
-        reelFilamentDiameter.set(reelResponse.getFilamentDiameter());
-        reelFilamentIsMutable.set(reelFilamentID.get().startsWith(USER_FILAMENT_PREFIX));
-        reelDataChangedToggle.set(!reelDataChangedToggle.get());
-    }
-
-    private void handlePrinterIDInfo(RoboxEvent printerEvent)
-    {
-        PrinterIDResponse idResponse = (PrinterIDResponse) printerEvent.getPayload();
-        printermodel.set(idResponse.getModel());
-        printeredition.set(idResponse.getEdition());
-        printerweekOfManufacture.set(idResponse.getWeekOfManufacture());
-        printeryearOfManufacture.set(idResponse.getYearOfManufacture());
-        printerpoNumber.set(idResponse.getPoNumber());
-        printerserialNumber.set(idResponse.getSerialNumber());
-        printercheckByte.set(idResponse.getCheckByte());
-        printerFriendlyName.set(idResponse.getPrinterFriendlyName());
-        printerUniqueID.set(getPrinterUniqueID());
-        setPrinterColour(idResponse.getPrinterColour());
-        try
-        {
-            transmitSetAmbientLEDColour(idResponse.getPrinterColour());
-
-        } catch (RoboxCommsException ex)
-        {
-            steno.warning("Couldn't set printer LED colour");
-        }
-        printerIDDataChangedToggle.set(!printerIDDataChangedToggle.get());
-    }
-
-    private void handlePrinterAck(RoboxEvent printerEvent)
-    {
-        AckResponse ackResponse = (AckResponse) printerEvent.getPayload();
-
-        if (ackResponse.isError() && !errorDialogOnDisplay)
-        {
-            errorDialogOnDisplay = true;
-
-            Action errorHandlingResponse = null;
-
-            if (getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.IDLE
-                && getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.ERROR)
-            {
-                errorHandlingResponse = Dialogs.create().title(
-                    DisplayManager.getLanguageBundle().getString(
-                        "dialogs.error.errorEncountered"))
-                    .message(ackResponse.getErrorsAsString())
-                    .masthead(null)
-                    .showCommandLinks(clearAndContinue, clearAndContinue, abortJob);
-            } else
-            {
-                errorHandlingResponse = Dialogs.create().title(
-                    DisplayManager.getLanguageBundle().getString(
-                        "dialogs.error.errorEncountered"))
-                    .message(ackResponse.getErrorsAsString())
-                    .masthead(null)
-                    .showCommandLinks(clearOnly, clearOnly);
-            }
-
-            try
-            {
-                transmitResetErrors();
-            } catch (RoboxCommsException ex)
-            {
-                steno.error("Couldn't reset errors after error detection");
-            }
-
-            if (errorHandlingResponse == clearAndContinue)
-            {
-                try
-                {
-                    if (pauseStatus.get() == PauseStatus.PAUSED
-                        || pauseStatus.get() == PauseStatus.PAUSE_PENDING)
-                    {
-                        transmitResumePrint();
-                    }
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Couldn't reset errors and resume after error");
-                }
-
-            } else if (errorHandlingResponse == abortJob)
-            {
-                try
-                {
-                    if (pauseStatus.get() == PauseStatus.NOT_PAUSED
-                        || pauseStatus.get() == PauseStatus.RESUME_PENDING)
-                    {
-                        transmitPausePrint();
-                    }
-                    transmitAbortPrint();
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Couldn't abort print after error");
-                }
-            }
-
-            errorDialogOnDisplay = false;
-        }
-
-        setErrorsDetected(ackResponse.isError());
-        setSDCardError(ackResponse.isSdCardError());
-        setChunkSequenceError(ackResponse.isChunkSequenceError());
-        setFileTooLargeError(ackResponse.isFileTooLargeError());
-        setGCodeLineTooLongError(ackResponse.isGcodeLineTooLongError());
-        setUSBRxError(ackResponse.isUsbRXError());
-        setUSBTxError(ackResponse.isUsbTXError());
-        setBadCommandError(ackResponse.isBadCommandError());
-        setEEPROMError(ackResponse.isHeadEepromError());
-    }
-
-    private void handlePrinterStatusUpdate(RoboxEvent printerEvent)
-    {
-        StatusResponse statusResponse = (StatusResponse) printerEvent.getPayload();
-
-        setAmbientTemperature(statusResponse.getAmbientTemperature());
-        setAmbientTargetTemperature(statusResponse.getAmbientTargetTemperature());
-        setBedTemperature(statusResponse.getBedTemperature());
-        setExtruderTemperature(statusResponse.getNozzleTemperature());
-        setBedFirstLayerTargetTemperature(statusResponse.getBedFirstLayerTargetTemperature());
-        setBedTargetTemperature(statusResponse.getBedTargetTemperature());
-        setNozzleFirstLayerTargetTemperature(
-            statusResponse.getNozzleFirstLayerTargetTemperature());
-        setNozzleTargetTemperature(statusResponse.getNozzleTargetTemperature());
-
-        long now = System.currentTimeMillis();
-        if ((now - lastTimestamp) >= 999)
-        {
-            lastTimestamp = now;
-
-            for (int pointCounter = 0; pointCounter < NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1;
-                pointCounter++)
-            {
-                ambientTemperatureDataPoints.get(pointCounter).setYValue(
-                    ambientTemperatureDataPoints.get(pointCounter + 1).getYValue());
-                bedTemperatureDataPoints.get(pointCounter).setYValue(
-                    bedTemperatureDataPoints.get(pointCounter + 1).getYValue());
-                nozzleTemperatureDataPoints.get(pointCounter).setYValue(
-                    nozzleTemperatureDataPoints.get(pointCounter + 1).getYValue());
-            }
-
-            ambientTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(
-                statusResponse.getAmbientTemperature());
-
-            if (statusResponse.getBedTemperature()
-                < ApplicationConfiguration.maxTempToDisplayOnGraph
-                && statusResponse.getBedTemperature()
-                > ApplicationConfiguration.minTempToDisplayOnGraph)
-            {
-                bedTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(
-                    statusResponse.getBedTemperature());
-            }
-
-            nozzleTemperatureDataPoints.add(bedTargetPoint);
-
-            if (statusResponse.getNozzleTemperature()
-                < ApplicationConfiguration.maxTempToDisplayOnGraph
-                && statusResponse.getNozzleTemperature()
-                > ApplicationConfiguration.minTempToDisplayOnGraph)
-            {
-                nozzleTemperatureDataPoints.get(NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1).setYValue(
-                    statusResponse.getNozzleTemperature());
-            }
-        }
-
-        ambientTargetPoint.setYValue(statusResponse.getAmbientTargetTemperature());
-        switch (statusResponse.getBedHeaterMode())
-        {
-            case OFF:
-                bedTargetPoint.setYValue(0);
-                break;
-            case FIRST_LAYER:
-                bedTargetPoint.setYValue(statusResponse.getBedFirstLayerTargetTemperature());
-                break;
-            case NORMAL:
-                bedTargetPoint.setYValue(statusResponse.getBedTargetTemperature());
-                break;
-            default:
-                break;
-        }
-        switch (statusResponse.getNozzleHeaterMode())
-        {
-            case OFF:
-                nozzleTargetPoint.setYValue(0);
-                break;
-            case FIRST_LAYER:
-                nozzleTargetPoint.setYValue(
-                    statusResponse.getNozzleFirstLayerTargetTemperature());
-                break;
-            case NORMAL:
-                nozzleTargetPoint.setYValue(statusResponse.getNozzleTargetTemperature());
-                break;
-            default:
-                break;
-        }
-
-        setAmbientFanOn(statusResponse.isAmbientFanOn());
-        bedHeaterMode.set(statusResponse.getBedHeaterMode());
-        nozzleHeaterMode.set(statusResponse.getNozzleHeaterMode());
-        setHeadFanOn(statusResponse.isHeadFanOn());
-        setBusy(statusResponse.isBusyStatus());
-
-        if (pauseStatus.get() != statusResponse.getPauseStatus()
-            && statusResponse.getPauseStatus() == PauseStatus.PAUSED)
-        {
-            printQueue.printerHasPaused();
-        } else if (pauseStatus.get() != statusResponse.getPauseStatus()
-            && statusResponse.getPauseStatus() == PauseStatus.NOT_PAUSED)
-        {
-            printQueue.printerHasResumed();
-        }
-        setPauseStatus(statusResponse.getPauseStatus());
-
-        setPrintJobLineNumber(statusResponse.getPrintJobLineNumber());
-        setPrintJobID(statusResponse.getRunningPrintJobID());
-        setXStopSwitch(statusResponse.isxSwitchStatus());
-        setYStopSwitch(statusResponse.isySwitchStatus());
-        setZStopSwitch(statusResponse.iszSwitchStatus());
-        setZTopStopSwitch(statusResponse.isTopZSwitchStatus());
-        setFilament1Loaded(statusResponse.isFilament1SwitchStatus());
-        setFilament2Loaded(statusResponse.isFilament2SwitchStatus());
-        setFilament1Index(statusResponse.isEIndexStatus());
-        setFilament2Index(statusResponse.isDIndexStatus());
-        setNozzleHomed(statusResponse.isNozzleSwitchStatus());
-        setLidOpen(statusResponse.isLidSwitchStatus());
-        setReelButton(statusResponse.isReelButtonStatus());
-
-        if (reelEEPROMStatus.get() != EEPROMState.PROGRAMMED
-            && statusResponse.getReelEEPROMState() == EEPROMState.PROGRAMMED)
-        {
-            Filament.repairFilamentIfNecessary(this);
-        } else if (reelEEPROMStatus.get() != EEPROMState.NOT_PRESENT
-            && statusResponse.getReelEEPROMState() == EEPROMState.NOT_PRESENT)
-        {
-            loadedFilament.set(null);
-            reelFriendlyName.set(DisplayManager.getLanguageBundle().getString(
-                "smartReelProgrammer.noReelLoaded"));
-            reelAmbientTemperature.set(0);
-            reelBedTemperature.set(0);
-            reelFirstLayerBedTemperature.set(0);
-            reelNozzleTemperature.set(0);
-            reelFirstLayerNozzleTemperature.set(0);
-            reelFilamentMultiplier.set(0);
-            reelFeedRateMultiplier.set(0);
-            reelRemainingFilament.set(0);
-            reelFilamentDiameter.set(0);
-            reelFilamentIsMutable.set(false);
-            reelDataChangedToggle.set(!reelDataChangedToggle.get());
-        }
-
-        reelEEPROMStatus.set(statusResponse.getReelEEPROMState());
-
-        if (statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PROGRAMMED && !formatDenied)
-        {
-            if (Head.checkHead(this))
-            {
-                try
-                {
-                    transmitFormatHeadEEPROM();
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Did not format head successfully");
-                }
-            } else
-            {
-                formatDenied = true;
-            }
-        }
-
-        if (headEEPROMStatus.get() != EEPROMState.PROGRAMMED
-            && statusResponse.getHeadEEPROMState() == EEPROMState.PROGRAMMED)
-        {
-            Head.repairHeadIfNecessary(this);
-        } else if (headEEPROMStatus.get() != EEPROMState.NOT_PRESENT
-            && statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PRESENT)
-        {
-            attachedHead.set(null);
-            headType.set(null);
-            temporaryHead.setUniqueID(null);
-            temporaryHead.setHeadHours(0);
-            temporaryHead.setMaximumTemperature(0);
-            temporaryHead.setNozzle1_B_offset(0);
-            temporaryHead.setNozzle1_X_offset(0);
-            temporaryHead.setNozzle1_Y_offset(0);
-            temporaryHead.setNozzle1_Z_offset(0);
-            temporaryHead.setNozzle2_B_offset(0);
-            temporaryHead.setNozzle2_X_offset(0);
-            temporaryHead.setNozzle2_Y_offset(0);
-            temporaryHead.setNozzle2_Z_offset(0);
-            temporaryHead.setBeta(0);
-            temporaryHead.setTcal(0);
-        }
-
-        headEEPROMStatus.set(statusResponse.getHeadEEPROMState());
-
-        sdCardPresent.set(statusResponse.isSDCardPresent());
-        showSDDialogIfNotShowing(statusResponse);
-
-        setHeadXPosition(statusResponse.getHeadXPosition());
-        setHeadYPosition(statusResponse.getHeadYPosition());
-        setHeadZPosition(statusResponse.getHeadZPosition());
-
-        setWhyAreWeWaiting(statusResponse.getWhyAreWeWaitingState());
-        switch (statusResponse.getWhyAreWeWaitingState())
-        {
-            case NOT_WAITING:
-                whyAreWeWaitingString.set("");
-                break;
-            case BED_HEATING:
-                whyAreWeWaitingString.set(whyAreWeWaiting_heatingBed);
-                break;
-            case NOZZLE_HEATING:
-                whyAreWeWaitingString.set(whyAreWeWaiting_heatingNozzle);
-                break;
-            case COOLING:
-                whyAreWeWaitingString.set(whyAreWeWaiting_cooling);
-                break;
-            default:
-                whyAreWeWaitingString.set("");
-                break;
-        }
-
-        setPrinterStatus(printQueue.getPrintStatus());
-    }
-
-    void showSDDialogIfNotShowing(StatusResponse statusResponse)
-    {
-        if (statusResponse.isSDCardPresent() == false)
-        {
-            if (!noSDDialog.isShowing())
-            {
-                Platform.runLater(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        noSDDialog.show();
-                    }
-                });
-            }
         }
     }
 
@@ -2905,7 +2817,8 @@ public class PrinterImpl implements Printer
 
                 if (purgeConsent)
                 {
-                    DisplayManager.getInstance().getPurgeInsetPanelController().purgeAndRunMacro(macroName, this);
+                    DisplayManager.getInstance().getPurgeInsetPanelController().purgeAndRunMacro(
+                        macroName, this);
                 } else
                 {
                     printQueue.printGCodeFile(GCodeMacros.getFilename(macroName), true);
@@ -3607,5 +3520,43 @@ public class PrinterImpl implements Printer
     public BooleanProperty getReelFilamentIsMutable()
     {
         return reelFilamentIsMutable;
+    }
+
+    @Override
+    public void initialiseSDDialog()
+    {
+        Platform.runLater(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                noSDDialog = new ModalDialog();
+                noSDDialog.setTitle(languageBundle.getString("dialogs.noSDCardTitle"));
+                noSDDialog.setMessage(languageBundle.getString("dialogs.noSDCardMessage"));
+                noSDDialog.addButton(languageBundle.getString("dialogs.noSDCardOK"));
+            }
+        });
+
+    }
+
+    @Override
+    public void showSDDialogIfNotShowing(StatusResponse statusResponse)
+    {
+        sdCardPresent.set(statusResponse.isSDCardPresent());
+        if (statusResponse.isSDCardPresent() == false)
+        {
+
+            if (!noSDDialog.isShowing())
+            {
+                Platform.runLater(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        noSDDialog.show();
+                    }
+                });
+            }
+        }
     }
 }

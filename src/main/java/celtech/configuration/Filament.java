@@ -749,6 +749,30 @@ public class Filament implements Serializable, Cloneable
                                 needToWriteFilamentData = true;
                             }
 
+                            if (!response.getReelDisplayColour().equals(
+                                referenceFilament.getDisplayColour()))
+                            {
+                                filamentToWrite.setDisplayColour(
+                                    referenceFilament.getDisplayColour());
+                                needToWriteFilamentData = true;
+                            }
+
+                            if (!response.getReelFriendlyName().equals(
+                                referenceFilament.getFriendlyFilamentName()))
+                            {
+                                filamentToWrite.setFriendlyFilamentName(
+                                    referenceFilament.getFriendlyFilamentName());
+                                needToWriteFilamentData = true;
+                            }
+
+                            if (!response.getReelMaterialType().equals(
+                                referenceFilament.getMaterial()))
+                            {
+                                filamentToWrite.setMaterial(
+                                    referenceFilament.getMaterial());
+                                needToWriteFilamentData = true;
+                            }
+
                             if (needToWriteFilamentData)
                             {
                                 printer.transmitWriteReelEEPROM(filamentToWrite);

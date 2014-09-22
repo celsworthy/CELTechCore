@@ -11,6 +11,7 @@ package celtech.configuration;
  */
 public enum PrinterEdition
 {
+
     /**
      *
      */
@@ -39,7 +40,22 @@ public enum PrinterEdition
      *
      */
     FirstEditionSouthAsia_Australia(
-        "BA", "First Edition South Asia / Australia");
+        "BA", "First Edition South Asia / Australia"),
+    /**
+     *
+     */
+    FirstEditionJapan(
+        "BN", "First Edition Japan"),
+    /**
+     *
+     */
+    FirstEditionChina(
+        "BC", "First Edition China"),
+    /**
+     *
+     */
+    FirstEditionSwitzerland(
+        "BV", "First Edition Switzerland");
 
     private String codeName;
     private String friendlyName;

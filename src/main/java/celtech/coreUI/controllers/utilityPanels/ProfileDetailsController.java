@@ -207,7 +207,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
 //    @FXML
 //    private RestrictedNumberField nozzlePreejectionVolume;
-
     @FXML
     private RestrictedNumberField slowFanIfLayerTimeBelow;
 
@@ -243,7 +242,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
 //    @FXML
 //    private Label nozzlePreejectionVolumeLabel;
-
     @FXML
     private ComboBox<String> fillNozzleChoice;
 
@@ -261,7 +259,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
 //    @FXML
 //    private HBox nozzleCloseMidpointHBox;
-
     @FXML
     private RestrictedNumberField topSolidInfillSpeed;
 
@@ -285,7 +282,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
 //    @FXML
 //    private RestrictedNumberField retractLength;
-
     @FXML
     private ComboBox<String> fillPatternChoice;
 
@@ -294,7 +290,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
 //    @FXML
 //    private HBox nozzlePreejectionVolumeHBox;
-
     @FXML
     private RestrictedNumberField infillSpeed;
 
@@ -339,13 +334,10 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
 //    @FXML
 //    private HBox nozzleWipeVolumeHBox;
-
 //    @FXML
 //    private Label retractLengthLabel;
-
 //    @FXML
 //    private RestrictedNumberField retractSpeed;
-
     @FXML
     private RestrictedNumberField bridgesFanSpeed;
 
