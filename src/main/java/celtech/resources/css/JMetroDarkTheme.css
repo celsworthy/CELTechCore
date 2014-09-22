@@ -1595,9 +1595,9 @@ table-view .column-header-background {
 #calibrationMenuSeparator *.line {
 -fx-border-style: solid;
 -fx-border-width: 2px;
--fx-fill: black;
--fx-background-color: black;
--fx-border-color: black black black black;
+-fx-fill: dark_grey;
+-fx-background-color: dark_grey;
+-fx-border-color: dark_grey dark_grey dark_grey dark_grey;
 }
 
 #calibrationMenuTitle {
@@ -1610,7 +1610,7 @@ table-view .column-header-background {
 }
 
 #calibrationStatus {
-     -fx-font-size:16px;
+     -fx-font-size: 24px;
 }
 
 #calibrateBottomMenu {
