@@ -80,12 +80,18 @@ public class LayoutStatusMenuStripController
 
     @FXML
     private HBox layoutButtonHBox;
+    
+    @FXML
+    private HBox statusButtonHBox;    
 
     @FXML
     private Button addModelButton;
 
     @FXML
     private Button deleteModelButton;
+    
+    @FXML
+    private Button calibrateButton;    
 
     @FXML
     private Button duplicateModelButton;
@@ -149,6 +155,12 @@ public class LayoutStatusMenuStripController
             default:
                 break;
         }
+    }
+    
+    @FXML
+    void calibrate(ActionEvent event) {
+        System.out.println("calibrate");
+        ApplicationStatus.getInstance().setMode(ApplicationMode.NOZZLE_OPEN_CALIBRATION);
     }
 
     @FXML
@@ -294,6 +306,7 @@ public class LayoutStatusMenuStripController
         });
 
         layoutButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LAYOUT));
+        statusButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.STATUS));
         modelFileChooser.setTitle(DisplayManager.getLanguageBundle().getString("dialogs.modelFileChooser"));
         modelFileChooser.getExtensionFilters().addAll(
             new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString(

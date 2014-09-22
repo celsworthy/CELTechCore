@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import celtech.coreUI.components.buttons.*?>
 <?import celtech.coreUI.components.buttons.* ?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
@@ -13,23 +14,36 @@
     <right>
         <StackPane>
             <children>
-                <ForwardButton fx:id="forwardButton" onAction="#forwardPressed"/>
-                <PrintButton fx:id="printButton" onAction="#printPressed"/>
+                <ForwardButton fx:id="forwardButton" onAction="#forwardPressed" />
+                <PrintButton fx:id="printButton" onAction="#printPressed" />
             </children>
         </StackPane>
     </right>
     <left>
-        <BackwardButton fx:id="backwardButton" onAction="#backwardPressed"/>
+        <BackwardButton fx:id="backwardButton" onAction="#backwardPressed" />
     </left>
     <center>
-        <HBox fx:id="layoutButtonHBox" alignment="CENTER">
+        <VBox alignment="CENTER">
             <children>
-                <LoadModelButton fx:id="addModelButton" onAction="#addModel" />
-                <DeleteModelButton fx:id="deleteModelButton" onAction="#deleteModel" />
-                <CopyModelButton fx:id="duplicateModelButton" onAction="#copyModel" />
-                <SnapToGroundButton fx:id="snapToGroundButton" onAction="#snapToGround" />
-                <LayoutModelButton fx:id="distributeModelsButton" onAction="#autoLayoutModels" />
+            <StackPane prefHeight="80.0" prefWidth="200.0">
+               <children>
+                      <HBox fx:id="statusButtonHBox" alignment="CENTER">
+                          <children>
+                              <Button fx:id="calibrateButton" onAction="#calibrate" />
+                          </children>
+                      </HBox>
+                      <HBox fx:id="layoutButtonHBox" alignment="CENTER">
+                          <children>
+                              <LoadModelButton fx:id="addModelButton" onAction="#addModel" />
+                              <DeleteModelButton fx:id="deleteModelButton" onAction="#deleteModel" />
+                              <CopyModelButton fx:id="duplicateModelButton" onAction="#copyModel" />
+                              <SnapToGroundButton fx:id="snapToGroundButton" onAction="#snapToGround" />
+                              <LayoutModelButton fx:id="distributeModelsButton" onAction="#autoLayoutModels" />
+                          </children>
+                      </HBox>
+               </children>
+            </StackPane>
             </children>
-        </HBox>
+        </VBox>
     </center>
 </BorderPane>
