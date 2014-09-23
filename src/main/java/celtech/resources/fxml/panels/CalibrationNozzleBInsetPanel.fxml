@@ -1,161 +1,161 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.*?>
 <?import javafx.scene.shape.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
+<?import celtech.coreUI.components.calibration.*?>
 
-<VBox fx:id="container" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="550.0" pickOnBounds="false" styleClass="inset-panel" stylesheets="@../../../../../../../../../CELTechCore/src/main/java/celtech/resources/css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationNozzleBInsetPanelController">
+<VBox fx:id="container" maxHeight="1E308" maxWidth="1E308" minHeight="550.0" pickOnBounds="false" prefWidth="1000.0" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationNozzleBInsetPanelController">
     <children>
-      <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
-         <center>
-            <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
-               <children>
-                  <BorderPane prefHeight="200.0" prefWidth="200.0">
-                     <top>
-                        <VBox id="calibrationMenu" maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="410.0" BorderPane.alignment="CENTER">
-                           <children>
-                              <GridPane>
-                                <columnConstraints>
-                                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="10.0" prefWidth="25.0" />
-                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                </columnConstraints>
-                                <rowConstraints>
-                                  <RowConstraints minHeight="10.0" prefHeight="60.0" vgrow="SOMETIMES" />
-                                    <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                  <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
-                                  <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
-                                    <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
-                                    <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
-                                </rowConstraints>
-                                 <children>
-                                    <Text id="calibrationMenuTitle" strokeType="OUTSIDE" strokeWidth="0.0" text="Calibration" GridPane.columnIndex="1" />
-                                    <Rectangle fill="DODGERBLUE" height="16.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" styleClass="calibrationMenuSquare" width="16.0" GridPane.rowIndex="2" />
-                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Nozzle Opening" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                                       <styleClass>
-                                          <String fx:value="calibrationMenuOption" />
-                                          <String fx:value="calibrationSelectedMenuOption" />
-                                       </styleClass>
-                                    </Text>
-                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="calibrationMenuOption" text="Nozzle Height" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="calibrationMenuOption" text="Gantry Level" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="calibrationMenuOption" text="X and Y Offset" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                                 </children>
-                              </GridPane>
-                           </children>
-                           <padding>
-                              <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
-                           </padding>
-                        </VBox>
-                     </top>
-                     <bottom>
-                        <GridPane BorderPane.alignment="CENTER">
-                           <children>
-                              <Text id="stepNumber" fx:id="stepNumber" strokeType="OUTSIDE" strokeWidth="0.0" text="Step 1 of 10" GridPane.columnIndex="1" GridPane.valignment="BOTTOM">
-                                 <styleClass>
-                                    <String fx:value="calibrationMenuOption" />
-                                    <String fx:value="calibrationSelectedMenuOption" />
-                                 </styleClass>
-                              </Text>
-                           </children>
-                           <columnConstraints>
-                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="10.0" prefWidth="25.0" />
-                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                           </columnConstraints>
-                           <rowConstraints>
-                              <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
-                           </rowConstraints>
-                           <BorderPane.margin>
-                              <Insets bottom="30.0" left="30.0" />
-                           </BorderPane.margin>
-                        </GridPane>
-                     </bottom>
-                  </BorderPane>
-                  <Separator id="calibrationMenuSeparator" maxWidth="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefWidth="5.0">
-                     <HBox.margin>
-                        <Insets bottom="30.0" top="30.0" />
-                     </HBox.margin>
-                  </Separator>
-                    <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" pickOnBounds="false">
-                        <top>
-                            <VBox alignment="TOP_CENTER" BorderPane.alignment="CENTER">
-                                <padding>
-                                    <Insets bottom="5.0" top="5.0" />
-                                </padding>
-                           <children>
-                                    <Label id="calibrationStatus" fx:id="calibrationStatus" prefWidth="800.0" text="%calibrationPanel.readyToBeginNozzleOpeningCalibration" wrapText="true">
-                                 <padding>
-                                    <Insets left="30.0" />
-                                 </padding></Label>
-                           </children>
-                           <BorderPane.margin>
-                              <Insets top="120.0" />
-                           </BorderPane.margin>
-                            </VBox>
-                        </top>
-                        <bottom>
-                            <VBox alignment="CENTER" pickOnBounds="false" spacing="5.0" BorderPane.alignment="CENTER">
-                                <children>
-                                    <Text fx:id="calibrationInstruction" fill="WHITE" layoutX="278.0" layoutY="177.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER">
-                                        <font>
-                                            <Font name="Segoe UI" size="18.0" />
-                                        </font>
-                                    </Text>
-                                </children>
-                            </VBox>
-                        </bottom>
-                    </BorderPane>
-               </children>
-            </HBox>
-         </center>
-         <bottom>
-                  <StackPane id="calibrateBottomMenu" maxHeight="-Infinity" minHeight="-Infinity" pickOnBounds="false" prefHeight="60.0" BorderPane.alignment="CENTER">
-                      <children>
-                          <HBox alignment="CENTER_LEFT" pickOnBounds="false">
-                              <children>
-                                  <Button fx:id="cancelCalibrationButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#cancelCalibration" text="%calibrationPanel.cancelCalibration">
-                                      <StackPane.margin>
-                                          <Insets />
-                                      </StackPane.margin>
-                                  </Button>
-                              </children>
-                          </HBox>
-<StackPane alignment="CENTER_RIGHT" maxHeight="-Infinity" pickOnBounds="false">
-<children>
-<Button fx:id="saveSettingsButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#saveSettings" text="%calibrationPanel.saveSettings">
-<StackPane.margin>
-<Insets />
-</StackPane.margin>
-</Button>
-                                  <Button fx:id="startCalibrationButton" layoutX="5.0" mnemonicParsing="false" onAction="#startCalibration" text="%calibrationPanel.startCalibration" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
-</children>
-</StackPane>
-                          <HBox alignment="CENTER" layoutX="10.0" layoutY="10.0" pickOnBounds="false" spacing="10.0">
-                              <children>
-                                  <Button fx:id="yesButton" mnemonicParsing="false" onAction="#yesButtonAction" text="%misc.Yes" />
-                                  <Button fx:id="noButton" layoutX="5.0" mnemonicParsing="false" onAction="#noButtonAction" text="%misc.No" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
-                              </children>
-                     <StackPane.margin>
-                        <Insets />
-                     </StackPane.margin>
-                          </HBox>
-                      </children>
-               <BorderPane.margin>
-                  <Insets />
-               </BorderPane.margin>
-               <padding>
-                  <Insets left="30.0" />
-               </padding>
-                  </StackPane>
-         </bottom>
-         <top>
-            <HBox id="calibrationTopMenu" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="60.0" BorderPane.alignment="CENTER" />
-         </top>
-         <left>
-            <Pane id="calibrationLeftBorder" prefWidth="30.0" BorderPane.alignment="CENTER" />
-         </left>
-      </BorderPane>
+        <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
+            <center>
+                <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
+                    <children>
+                        <BorderPane prefHeight="200.0" prefWidth="200.0">
+                            <top>
+                                <CalibrationMenu maxWidth="-Infinity" minWidth="-Infinity" prefWidth="410.0" />
+                            </top>
+                            <bottom>
+                                <GridPane BorderPane.alignment="CENTER">
+                                    <children>
+                                        <Text id="stepNumber" fx:id="stepNumber" strokeType="OUTSIDE" strokeWidth="0.0" text="Step 1 of 10" GridPane.columnIndex="1" GridPane.valignment="BOTTOM">
+                                            <styleClass>
+                                                <String fx:value="calibrationMenuOption" />
+                                                <String fx:value="calibrationSelectedMenuOption" />
+                                            </styleClass>
+                                        </Text>
+                                    </children>
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="10.0" prefWidth="25.0" />
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    </columnConstraints>
+                                    <rowConstraints>
+                                        <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                                    </rowConstraints>
+                                    <BorderPane.margin>
+                                        <Insets bottom="30.0" left="30.0" />
+                                    </BorderPane.margin>
+                                </GridPane>
+                            </bottom>
+                        </BorderPane>
+                        <Separator id="calibrationMenuSeparator" maxWidth="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefWidth="5.0">
+                            <HBox.margin>
+                                <Insets bottom="30.0" top="30.0" />
+                            </HBox.margin>
+                        </Separator>
+                        <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" pickOnBounds="false">
+                            <top>
+                                <VBox alignment="TOP_CENTER" BorderPane.alignment="CENTER">
+                                    <padding>
+                                        <Insets bottom="5.0" top="5.0" />
+                                    </padding>
+                                    <children>
+                                        <Label id="calibrationStatus" fx:id="calibrationStatus" prefWidth="800.0" text="%calibrationPanel.readyToBeginNozzleOpeningCalibration" wrapText="true">
+                                            <padding>
+                                                <Insets left="30.0" right="30.0" />
+                                            </padding>
+                                        </Label>
+                                    </children>
+                                    <BorderPane.margin>
+                                        <Insets top="120.0" />
+                                    </BorderPane.margin>
+                                </VBox>
+                            </top>
+                            <bottom>
+                                <VBox alignment="CENTER" pickOnBounds="false" spacing="5.0" BorderPane.alignment="CENTER">
+                                    <children>
+                                        <Text fx:id="calibrationInstruction" fill="WHITE" layoutX="278.0" layoutY="177.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER">
+                                            <font>
+                                                <Font name="Segoe UI" size="18.0" />
+                                            </font>
+                                        </Text>
+                                    </children>
+                                </VBox>
+                            </bottom>
+                        </BorderPane>
+                    </children>
+                </HBox>
+            </center>
+            <bottom>
+                <VBox id="calibrationBottomArea">
+                    <children>
+                        <BorderPane id="calibrationProgressContainer" prefHeight="60.0">
+                            <VBox.margin>
+                                <Insets left="30.0" />
+                            </VBox.margin>
+                            <left>
+                                <Label id="calibrationProgressLabel" text="HEATING..." BorderPane.alignment="CENTER">
+                                    <BorderPane.margin>
+                                        <Insets left="30.0" />
+                                    </BorderPane.margin>
+                                </Label>
+                            </left>
+                            <right>
+                                <VBox alignment="CENTER" BorderPane.alignment="CENTER">
+                                    <children>
+                                        <Label id="calibrationProgressLegend" text="Target Temperature:" />
+                                        <Label id="calibrationProgressValue" text="240C" />
+                                    </children>
+                                    <BorderPane.margin>
+                                        <Insets right="30.0" />
+                                    </BorderPane.margin>
+                                </VBox>
+                            </right>
+                            <center>
+                                <HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+                            </center>
+                        </BorderPane>
+                        <StackPane id="calibrateBottomMenu" maxHeight="-Infinity" minHeight="-Infinity" pickOnBounds="false" prefHeight="60.0" BorderPane.alignment="CENTER">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" pickOnBounds="false">
+                                    <children>
+                                        <Button fx:id="cancelCalibrationButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#cancelCalibration" text="%calibrationPanel.cancelCalibration">
+                                            <StackPane.margin>
+                                                <Insets />
+                                            </StackPane.margin>
+                                        </Button>
+                                    </children>
+                                </HBox>
+                                <StackPane alignment="CENTER_RIGHT" maxHeight="-Infinity" pickOnBounds="false">
+                                    <children>
+                                        <Button fx:id="saveSettingsButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#saveSettings" text="%calibrationPanel.saveSettings">
+                                            <StackPane.margin>
+                                                <Insets />
+                                            </StackPane.margin>
+                                        </Button>
+                                        <Button fx:id="startCalibrationButton" layoutX="5.0" mnemonicParsing="false" onAction="#startCalibration" text="%calibrationPanel.startCalibration" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
+                                    </children>
+                                </StackPane>
+                                <HBox alignment="CENTER" layoutX="10.0" layoutY="10.0" pickOnBounds="false" spacing="10.0">
+                                    <children>
+                                        <Button fx:id="yesButton" mnemonicParsing="false" onAction="#yesButtonAction" text="%misc.Yes" />
+                                        <Button fx:id="noButton" layoutX="5.0" mnemonicParsing="false" onAction="#noButtonAction" text="%misc.No" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
+                                    </children>
+                                    <StackPane.margin>
+                                        <Insets />
+                                    </StackPane.margin>
+                                </HBox>
+                            </children>
+                            <BorderPane.margin>
+                                <Insets />
+                            </BorderPane.margin>
+                            <padding>
+                                <Insets left="30.0" />
+                            </padding>
+                        </StackPane>
+                    </children>
+                </VBox>
+            </bottom>
+            <top>
+                <HBox id="calibrationTopMenu" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="60.0" BorderPane.alignment="CENTER" />
+            </top>
+            <left>
+                <Pane id="calibrationLeftBorder" prefWidth="30.0" BorderPane.alignment="CENTER" />
+            </left>
+        </BorderPane>
     </children>
 </VBox>

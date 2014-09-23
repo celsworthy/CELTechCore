@@ -1,22 +1,18 @@
 
 @font-face {
     font-family: SourceSansPro;
-    font-weight: light;
-    font-style: normal;
+    font-weight: 100;
     src: url('/celtech/resources/fonts/SourceSansPro-Light.ttf') format(ttf);
 }
 
 @font-face {
     font-family: SourceSansPro;
-    font-weight: normal;
-    font-style: Semibold;
     src: url('/celtech/resources/fonts/SourceSansPro-Semibold.ttf') format(ttf);
 }
 
 @font-face {
     font-family: CrazyZoo;
     font-weight: normal;
-    font-style: normal;
     src: url('/celtech/resources/fonts/crazyzoo.ttf') format(ttf);
 }
 
@@ -25,6 +21,7 @@
     dark_grey: rgb(48,48,48);
     mid_grey: rgb(64,64,64);
     light_grey: rgb(99,99,99);
+    robox_blue: #0096e1;
     highlight_colour: rgb(0, 157, 226);
     background_colour: rgb(0,0,0);
     unselected_colour: #1d1d1d;
@@ -1628,6 +1625,31 @@ table-view .column-header-background {
 
 .calibrationMenuOption {
  -fx-font-size:36px;
+ -fx-font-weight:100;
+}
+
+#calibrationMenuGrid {
+    -fx-background-color: light_grey;
+}
+
+#calibrationProgressContainer {
+    -fx-background-color: robox_blue;
+}
+
+#calibrationProgressLabel {
+    -fx-font-size: 42px;
+}
+
+#calibrationBottomArea {
+    -fx-background-color: black;
+}
+
+#calibrationProgressLegend {
+    -fx-font-size: 19px;
+}
+
+#calibrationProgressValue {
+    -fx-font-size: 36px;
 }
 
 #printerStatusTitle {
