@@ -85,13 +85,6 @@
     -fx-fill-color: grey;
 }
 
-/*
- * Text area
- */
-.text{
-    -fx-font-size: 10pt;
-}
-
 .text-field {
     -fx-font-size: 10pt;
     -fx-background-radius: 0px;
@@ -1632,5 +1625,4 @@ table-view .column-header-background {
 
 .calibrationMenuOption {
  -fx-font-size:36px;
- -fx-font-weight: light;
 }

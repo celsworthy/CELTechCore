@@ -13,6 +13,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
@@ -47,7 +48,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
     private Button saveSettingsButton;
 
     @FXML
-    private Text calibrationStatus;
+    private Label calibrationStatus;
 
     @FXML
     private Button yesButton;

@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<VBox fx:id="container" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="800.0" pickOnBounds="false" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationNozzleBInsetPanelController">
+<VBox fx:id="container" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="550.0" pickOnBounds="false" styleClass="inset-panel" stylesheets="@../../../../../../../../../CELTechCore/src/main/java/celtech/resources/css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationNozzleBInsetPanelController">
     <children>
       <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
          <center>
@@ -53,7 +53,7 @@
                      <bottom>
                         <GridPane BorderPane.alignment="CENTER">
                            <children>
-                              <Text id="stepNumber" fx:id="stepNumber" strokeType="OUTSIDE" strokeWidth="0.0" text="Step 1 of 10" GridPane.columnIndex="1" GridPane.valignment="BASELINE">
+                              <Text id="stepNumber" fx:id="stepNumber" strokeType="OUTSIDE" strokeWidth="0.0" text="Step 1 of 10" GridPane.columnIndex="1" GridPane.valignment="BOTTOM">
                                  <styleClass>
                                     <String fx:value="calibrationMenuOption" />
                                     <String fx:value="calibrationSelectedMenuOption" />
@@ -65,7 +65,7 @@
                               <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                            </columnConstraints>
                            <rowConstraints>
-                              <RowConstraints minHeight="10.0" prefHeight="35.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
                            </rowConstraints>
                            <BorderPane.margin>
                               <Insets bottom="30.0" left="30.0" />
@@ -85,19 +85,26 @@
                                     <Insets bottom="5.0" top="5.0" />
                                 </padding>
                            <children>
-                                    <Text id="calibrationStatus" fx:id="calibrationStatus" fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="%calibrationPanel.readyToBeginNozzleOpeningCalibration" wrappingWidth="620.0">
-                                        <font>
-                                            <Font name="Segoe UI" size="18.0" />
-                                        </font>
-                                 <VBox.margin>
-                                    <Insets left="30.0" right="30.0" top="120.0" />
-                                 </VBox.margin>
-                                    </Text>
+                                    <Label id="calibrationStatus" fx:id="calibrationStatus" prefWidth="800.0" text="%calibrationPanel.readyToBeginNozzleOpeningCalibration" wrapText="true">
+                                 <padding>
+                                    <Insets left="30.0" />
+                                 </padding></Label>
                            </children>
+                           <BorderPane.margin>
+                              <Insets top="120.0" />
+                           </BorderPane.margin>
                             </VBox>
                         </top>
                         <bottom>
-                            <VBox alignment="CENTER" pickOnBounds="false" spacing="5.0" BorderPane.alignment="CENTER" />
+                            <VBox alignment="CENTER" pickOnBounds="false" spacing="5.0" BorderPane.alignment="CENTER">
+                                <children>
+                                    <Text fx:id="calibrationInstruction" fill="WHITE" layoutX="278.0" layoutY="177.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER">
+                                        <font>
+                                            <Font name="Segoe UI" size="18.0" />
+                                        </font>
+                                    </Text>
+                                </children>
+                            </VBox>
                         </bottom>
                     </BorderPane>
                </children>
@@ -130,8 +137,14 @@
                                   <Button fx:id="yesButton" mnemonicParsing="false" onAction="#yesButtonAction" text="%misc.Yes" />
                                   <Button fx:id="noButton" layoutX="5.0" mnemonicParsing="false" onAction="#noButtonAction" text="%misc.No" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
                               </children>
+                     <StackPane.margin>
+                        <Insets />
+                     </StackPane.margin>
                           </HBox>
                       </children>
+               <BorderPane.margin>
+                  <Insets />
+               </BorderPane.margin>
                <padding>
                   <Insets left="30.0" />
                </padding>
