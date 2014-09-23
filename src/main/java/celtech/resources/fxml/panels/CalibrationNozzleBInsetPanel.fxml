@@ -83,32 +83,7 @@
             <bottom>
                 <VBox id="calibrationBottomArea">
                     <children>
-                        <BorderPane id="calibrationProgressContainer" prefHeight="60.0">
-                            <VBox.margin>
-                                <Insets left="30.0" />
-                            </VBox.margin>
-                            <left>
-                                <Label id="calibrationProgressLabel" text="HEATING..." BorderPane.alignment="CENTER">
-                                    <BorderPane.margin>
-                                        <Insets left="30.0" />
-                                    </BorderPane.margin>
-                                </Label>
-                            </left>
-                            <right>
-                                <VBox alignment="CENTER" BorderPane.alignment="CENTER">
-                                    <children>
-                                        <Label id="calibrationProgressLegend" text="Target Temperature:" />
-                                        <Label id="calibrationProgressValue" text="240C" />
-                                    </children>
-                                    <BorderPane.margin>
-                                        <Insets right="30.0" />
-                                    </BorderPane.margin>
-                                </VBox>
-                            </right>
-                            <center>
-                                <HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
-                            </center>
-                        </BorderPane>
+                        <CalibrationProgress id="calibrationProgressContainer" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="60.0" />
                         <StackPane id="calibrateBottomMenu" maxHeight="-Infinity" minHeight="-Infinity" pickOnBounds="false" prefHeight="60.0" BorderPane.alignment="CENTER">
                             <children>
                                 <HBox alignment="CENTER_LEFT" pickOnBounds="false">
