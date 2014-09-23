@@ -8,6 +8,7 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.FilamentContainer;
 import celtech.configuration.MachineType;
+import celtech.configuration.SlicerType;
 import celtech.coreUI.visualisation.exporters.STLOutputConverter;
 import celtech.printerControl.Printer;
 import java.io.File;
@@ -72,13 +73,52 @@ public class SlicerTask extends Task<SliceResult>
         MachineType machineType = ApplicationConfiguration.getMachineType();
         ArrayList<String> commands = new ArrayList<>();
 
+        SlicerType slicerType = ApplicationConfiguration.getSlicerChoice();
+        String windowsSlicerCommand = null;
+        String macSlicerCommand = null;
+        String linuxSlicerCommand = null;
+        String configLoadCommand = null;
+        String combinedConfigSection = null;
+
+        String curaCommands = "-v -p -s initialSpeedupLayers=4 -s minimalFeedrate=10 "
+            + " -s supportXYDistance=700 -s insetXSpeed=50 -s retractionZHop=0 -s extruderOffset[3].X=0 -s extruderOffset[3].Y=0"
+            + " -s retractionSpeed=40 -s filamentFlow=100 -s infillOverlap=15 -s inset0Speed=50 -s coolHeadLift=0 -s extrusionWidth=800 -s upSkinCount=7 "
+            + "-s initialLayerSpeed=20 -s minimalLayerTime=5 -s infillSpeed=50 -s supportExtruder=-1 -s fanSpeedMax=100 -s supportType=1 -s enableCombing=1 "
+            + "-s fanSpeedMin=100 -s supportZDistance=150 -s supportEverywhere=0 -s filamentDiameter=1128 -s initialLayerThickness=300 -s supportAngle=60 "
+            + "-s fanFullOnLayerNr=2 -s extruderOffset[1].X=0 -s extruderOffset[1].Y=21600 -s layerThickness=100 "
+            + " -s minimalExtrusionBeforeRetraction=20 -s retractionMinimalDistance=1500 -s skirtMinLength=150000 -s objectSink=0 -s retractionAmount=4500 "
+            + "-s skirtLineCount=1 "
+            + " -s skirtDistance=3000 -s extruderOffset[2].Y=0 -s extruderOffset[2].X=0 -s printSpeed=50 -s fixHorrible=1 -s layer0extrusionWidth=800 -s moveSpeed=300 -s supportLineDistance=5333 -s retractionAmountExtruderSwitch=16500 -s sparseInfillLineDistance=4000 -s insetCount=2 -s downSkinCount=7 -s multiVolumeOverlap=150 -g 49674 -s posx=19706 -s posy=24187";
+
+        switch (slicerType)
+        {
+            case Slic3r:
+                windowsSlicerCommand = "\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\"";
+                macSlicerCommand = "Slic3r.app/Contents/MacOS/slic3r";
+                linuxSlicerCommand = "Slic3r/bin/slic3r";
+                configLoadCommand = "--load";
+                combinedConfigSection = configLoadCommand + " " + configFile;
+                break;
+            case Cura:
+                windowsSlicerCommand = "\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Cura\\CuraEngine.exe\"";
+                macSlicerCommand = "?";
+                linuxSlicerCommand = "Cura/bin/CuraEngine";
+                configLoadCommand = "-c";
+                configFile = "\"" + ApplicationConfiguration.getUserPrintProfileDirectory() + "curaProfile.ini\"";
+                combinedConfigSection = curaCommands;
+                break;
+        }
+
+        steno.info("Selected slicer is " + slicerType);
+
         switch (machineType)
         {
             case WINDOWS_95:
                 commands.add("command.com");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"pushd \"" + workingDirectory + "\" && \"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\" --load " + configFile + " -o "
+                commands.add("\"pushd \"" + workingDirectory + "\" && "
+                    + windowsSlicerCommand + " " + combinedConfigSection + " -o "
                     + tempGcodeFilename + " " + tempModelFilename
                     + " && popd\"");
                 break;
@@ -86,13 +126,14 @@ public class SlicerTask extends Task<SliceResult>
                 commands.add("cmd.exe");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"pushd \"" + workingDirectory + "\" && \"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\" --load " + configFile + " -o "
+                commands.add("\"pushd \"" + workingDirectory + "\" && "
+                    + windowsSlicerCommand + " " + combinedConfigSection + " -o "
                     + tempGcodeFilename + " " + tempModelFilename
                     + " && popd\"");
                 break;
             case MAC:
-                commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r.app/Contents/MacOS/slic3r");
-                commands.add("--load");
+                commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + macSlicerCommand);
+                commands.add(configLoadCommand);
                 commands.add(configFile);
                 commands.add("-o");
                 commands.add(tempGcodeFilename);
@@ -100,8 +141,8 @@ public class SlicerTask extends Task<SliceResult>
                 break;
             case LINUX_X86:
             case LINUX_X64:
-                commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r/bin/slic3r");
-                commands.add("--load");
+                commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + linuxSlicerCommand);
+                commands.add(configLoadCommand);
                 commands.add(configFile);
                 commands.add("-o");
                 commands.add(tempGcodeFilename);
@@ -118,7 +159,7 @@ public class SlicerTask extends Task<SliceResult>
             {
                 slicerProcessBuilder.directory(new File(workingDirectory));
             }
-            
+
             Process slicerProcess = null;
 
             try
