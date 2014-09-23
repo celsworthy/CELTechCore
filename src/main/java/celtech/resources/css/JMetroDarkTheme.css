@@ -1585,6 +1585,9 @@ table-view .column-header-background {
     -fx-opacity: 0.4;
 }
 
+/**
+* Calibration
+*/
 #calibrationMenuSeparator *.line {
 -fx-border-style: solid;
 -fx-border-width: 2px;
@@ -1625,4 +1628,8 @@ table-view .column-header-background {
 
 .calibrationMenuOption {
  -fx-font-size:36px;
+}
+
+#printerStatusTitle {
+    -fx-font-size: 22px;
 }

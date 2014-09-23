@@ -30,11 +30,6 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
 
     private CalibrationNozzleBHelper calibrationHelper = new CalibrationNozzleBHelper();
 
-    private ResourceBundle i18nBundle = null;
-
-    @FXML
-    private VBox container;
-
     @FXML
     private Text calibrationInstruction;
 
@@ -101,8 +96,6 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        i18nBundle = DisplayManager.getLanguageBundle();
-
         StatusScreenState statusScreenState = StatusScreenState.getInstance();
 
         calibrationHelper.setPrinterToUse(statusScreenState.currentlySelectedPrinterProperty().get());

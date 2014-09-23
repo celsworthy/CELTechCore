@@ -22,7 +22,7 @@
                     <children>
                         <HBox alignment="TOP_CENTER" VBox.vgrow="NEVER">
                             <children>
-                                <Label styleClass="sidePanelTitle" text="%sidePanel_printerStatus.title">
+                                <Label id="printerStatusTitle" styleClass="sidePanelTitle" text="%sidePanel_printerStatus.title">
                                     <graphic>
                                         <Group>
                                             <children>
@@ -110,9 +110,6 @@
                                             </children>
                                         </Group>
                                     </graphic>
-                                    <font>
-                                        <Font size="4.0" />
-                                    </font>
                                 </Label>
                             </children>
                         </HBox>
