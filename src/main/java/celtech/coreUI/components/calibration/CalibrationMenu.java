@@ -41,7 +41,6 @@ public class CalibrationMenu extends VBox
     @FXML
     private GridPane calibrationMenuGrid;
 
-    private List<Callable> itemCallbacks = new ArrayList<>();
     /**
      * The row number of the next item to be added
      */
@@ -67,7 +66,6 @@ public class CalibrationMenu extends VBox
 
     public void addItem(String itemName, Callable<Object> callback)
     {
-        itemCallbacks.add(callback);
         Text text = new Text(itemName);
         text.getStyleClass().add("calibrationMenuOption");
         Rectangle square = new Rectangle();
