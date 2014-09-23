@@ -3,6 +3,7 @@
  */
 package celtech.coreUI.components.calibration;
 
+import celtech.coreUI.StandardColours;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -16,8 +17,9 @@ import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -25,24 +27,25 @@ import javafx.scene.text.Text;
  */
 public class CalibrationMenu extends VBox
 {
-    
+
+    private Stenographer steno = StenographerFactory.getStenographer(CalibrationMenu.class.getName());
+
     private static int SQUARE_SIZE = 16;
     private static int ROW_HEIGHT = 50;
-    
-    @FXML
-    private Rectangle square;
-    
-    @FXML
-    private Text T1;
-    
+
+    private static String SELECTED_STYLE_CLASS = "calibrationSelectedMenuOption";
+
+    private Text selectedItem;
+    private Rectangle selectedSquare;
+
     @FXML
     private GridPane calibrationMenuGrid;
-    
+
     private List<Callable> itemCallbacks = new ArrayList<>();
     /**
      * The row number of the next item to be added
      */
-    private int nextRowNum = 3;
+    private int nextRowNum = 2;
 
     public CalibrationMenu()
     {
@@ -59,37 +62,70 @@ public class CalibrationMenu extends VBox
         {
             throw new RuntimeException(exception);
         }
-        
+
     }
-    
-    public void addItem(String itemName, Callable callback) {
+
+    public void addItem(String itemName, Callable<Object> callback)
+    {
         itemCallbacks.add(callback);
         Text text = new Text(itemName);
         text.getStyleClass().add("calibrationMenuOption");
-        Rectangle rectangle = new Rectangle();
-        rectangle.getStyleClass().add("calibrationMenuSquare");
-        rectangle.setHeight(SQUARE_SIZE);
-        rectangle.setWidth(SQUARE_SIZE);
-        addRow(calibrationMenuGrid, rectangle, text);
+        Rectangle square = new Rectangle();
+        square.getStyleClass().add("calibrationMenuSquare");
+        square.setHeight(SQUARE_SIZE);
+        square.setWidth(SQUARE_SIZE);
+        addRow(calibrationMenuGrid, square, text);
+        setUpEventHandlersForItem(square, text, callback);
     }
 
-    private void setUpEventHandlersForItem(Shape square, Text itemName)
+    private void setUpEventHandlersForItem(Rectangle square, Text itemName,
+        Callable<Object> callback)
     {
         square.setVisible(false);
-        itemName.setOnMouseEntered((MouseEvent e) -> {
-            square.setVisible(true);
-            square.setFill(Color.WHITE);
+        itemName.setOnMouseEntered((MouseEvent e) ->
+        {
+            if (itemName != selectedItem)
+            {
+                square.setVisible(true);
+                square.setFill(Color.WHITE);
+            }
         });
-        itemName.setOnMouseExited((MouseEvent e) -> {
-            square.setVisible(false);
+        itemName.setOnMouseExited((MouseEvent e) ->
+        {
+            if (itemName != selectedItem)
+            {
+                square.setVisible(false);
+                if (itemName.getStyleClass().contains(SELECTED_STYLE_CLASS))
+                {
+                    itemName.getStyleClass().remove(SELECTED_STYLE_CLASS);
+                }
+            }
+
         });
-        itemName.setOnMouseClicked((MouseEvent e) -> {
-            square.setVisible(true);
-            itemName.setFill(Color.WHITE);
-            square.setFill(Color.BLUE);
+        itemName.setOnMouseClicked((MouseEvent e) ->
+        {
+            if (itemName != selectedItem)
+            {
+                if (selectedItem != null)
+                {
+                    deselect(selectedItem, selectedSquare);
+                }
+
+                selectedItem = itemName;
+                selectedSquare = square;
+                select(selectedItem, selectedSquare);
+                try
+                {
+                    callback.call();
+                } catch (Exception ex)
+                {
+                    steno.error("Error calling menu callback: " + ex);
+                    ex.printStackTrace();
+                }
+            }
         });
     }
-    
+
     /**
      * Add the given controls to a new row in the grid pane.
      */
@@ -98,9 +134,23 @@ public class CalibrationMenu extends VBox
         menuGrid.add(square, 0, nextRowNum);
         menuGrid.add(itemName, 1, nextRowNum);
         menuGrid.getRowConstraints().add(nextRowNum, new RowConstraints(ROW_HEIGHT, ROW_HEIGHT,
-                                                            ROW_HEIGHT));
-        setUpEventHandlersForItem(square, itemName);
+                                                                        ROW_HEIGHT));
         nextRowNum++;
+    }
+
+    private void deselect(Text selectedItem, Rectangle square)
+    {
+        square.setVisible(false);
+        selectedItem.getStyleClass().remove(SELECTED_STYLE_CLASS);
+        square.setFill(Color.WHITE);
+    }
+
+    private void select(Text selectedItem, Rectangle square)
+    {
+        square.setVisible(true);
+        selectedItem.getStyleClass().add(SELECTED_STYLE_CLASS);
+        square.setFill(StandardColours.ROBOX_BLUE);
+
     }
 
 }
