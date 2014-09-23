@@ -17,7 +17,7 @@
                     <children>
                         <BorderPane prefHeight="200.0" prefWidth="200.0">
                             <top>
-                                <CalibrationMenu maxWidth="-Infinity" minWidth="-Infinity" prefWidth="410.0" />
+                                <CalibrationMenu fx:id="calibrationMenu" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="410.0" />
                             </top>
                             <bottom>
                                 <GridPane BorderPane.alignment="CENTER">

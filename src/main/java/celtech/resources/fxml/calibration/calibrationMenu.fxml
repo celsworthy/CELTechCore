@@ -19,9 +19,6 @@
                 <RowConstraints minHeight="10.0" prefHeight="60.0" vgrow="SOMETIMES" />
                 <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <children>
                 <Text id="calibrationMenuTitle" strokeType="OUTSIDE" strokeWidth="0.0" text="Calibration" GridPane.columnIndex="1" />
@@ -31,10 +28,6 @@
                   <String fx:value="calibrationMenuOption" />
                   <String fx:value="calibrationSelectedMenuOption" />
                </styleClass></Text>
-                <Text fx:id="T1" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="calibrationMenuOption" text="Nozzle Height" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="calibrationMenuOption" text="Gantry Level" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="calibrationMenuOption" text="X and Y Offset" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-            <Rectangle fx:id="square" height="16.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" styleClass="calibrationMenuSquare" width="16.0" GridPane.rowIndex="3" />
             </children>
         </GridPane>
     </children>

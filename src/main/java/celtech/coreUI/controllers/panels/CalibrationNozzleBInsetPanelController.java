@@ -30,8 +30,8 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
 
     private CalibrationNozzleBHelper calibrationHelper = new CalibrationNozzleBHelper();
 
-//    @FXML
-//    private CalibrationMenu calibrationMenu;
+    @FXML
+    private CalibrationMenu calibrationMenu;
     
     @FXML
     private Text calibrationInstruction;
@@ -115,15 +115,26 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
         calibrationHelper.addStateListener(this);
         calibrationHelper.setState(NozzleBCalibrationState.IDLE);
         
-//        calibrationMenu.addItem("TLX", new Callable()
-//        {
-//
-//            public Object call()
-//            {
-//                System.out.println("Called TLX");
-//                return null;
-//            }
-//        });
+        calibrationMenu.addItem("Nozzle Opening", (Callable) () ->
+        {
+            System.out.println("Called NO");
+            return null;
+        });
+        calibrationMenu.addItem("Nozzle Height", (Callable) () ->
+        {
+            System.out.println("Called NH");
+            return null;
+        });
+        calibrationMenu.addItem("X And Y Offset", (Callable) () ->
+        {
+            System.out.println("Called XY");
+            return null;
+        });       
+        calibrationMenu.addItem("Gantry Level", (Callable) () ->
+        {
+            System.out.println("Called GL");
+            return null;
+        });          
     }
 
     @Override

@@ -8,7 +8,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.input.MouseEvent;
@@ -37,13 +36,13 @@ public class CalibrationMenu extends VBox
     private Text T1;
     
     @FXML
-    private GridPane menuGrid;
+    private GridPane calibrationMenuGrid;
     
     private List<Callable> itemCallbacks = new ArrayList<>();
     /**
      * The row number of the next item to be added
      */
-    private int nextRowNum = 5;
+    private int nextRowNum = 3;
 
     public CalibrationMenu()
     {
@@ -61,19 +60,17 @@ public class CalibrationMenu extends VBox
             throw new RuntimeException(exception);
         }
         
-        setUpEventHandlersForItem(square, T1);
-        
     }
     
     public void addItem(String itemName, Callable callback) {
         itemCallbacks.add(callback);
-        Text text = new Text();
+        Text text = new Text(itemName);
         text.getStyleClass().add("calibrationMenuOption");
         Rectangle rectangle = new Rectangle();
         rectangle.getStyleClass().add("calibrationMenuSquare");
         rectangle.setHeight(SQUARE_SIZE);
         rectangle.setWidth(SQUARE_SIZE);
-        addRow(menuGrid, rectangle, text);
+        addRow(calibrationMenuGrid, rectangle, text);
     }
 
     private void setUpEventHandlersForItem(Shape square, Text itemName)
