@@ -1633,3 +1633,7 @@ table-view .column-header-background {
 #printerStatusTitle {
     -fx-font-size: 22px;
 }
+
+.table-view .column-header .label { 
+     -fx-font-size: 12px; 
+ }
