@@ -8,9 +8,9 @@
 <?import javafx.scene.text.*?>
 <?import javafx.geometry.*?>
 
-<fx:root type="javafx.scene.layout.VBox" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8">
+<fx:root type="javafx.scene.layout.VBox" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <GridPane id="calibrationMenuGrid">
+        <GridPane id="calibrationMenuGrid" fx:id="calibrationMenuGrid">
             <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="10.0" prefWidth="25.0" />
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
@@ -25,15 +25,16 @@
             </rowConstraints>
             <children>
                 <Text id="calibrationMenuTitle" strokeType="OUTSIDE" strokeWidth="0.0" text="Calibration" GridPane.columnIndex="1" />
-                <Rectangle fill="DODGERBLUE" height="16.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" styleClass="calibrationMenuSquare" width="16.0" GridPane.rowIndex="2" />
+                <Rectangle height="16.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" styleClass="calibrationMenuSquare" width="16.0" GridPane.rowIndex="2" />
                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Nozzle Opening" GridPane.columnIndex="1" GridPane.rowIndex="2">
                <styleClass>
                   <String fx:value="calibrationMenuOption" />
                   <String fx:value="calibrationSelectedMenuOption" />
                </styleClass></Text>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="calibrationMenuOption" text="Nozzle Height" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                <Text fx:id="T1" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="calibrationMenuOption" text="Nozzle Height" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                 <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="calibrationMenuOption" text="Gantry Level" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                 <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="calibrationMenuOption" text="X and Y Offset" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <Rectangle fx:id="square" height="16.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" styleClass="calibrationMenuSquare" width="16.0" GridPane.rowIndex="3" />
             </children>
         </GridPane>
     </children>

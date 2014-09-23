@@ -9,7 +9,7 @@
 <?import javafx.scene.text.*?>
 <?import celtech.coreUI.components.calibration.*?>
 
-<VBox fx:id="container" maxHeight="1E308" maxWidth="1E308" minHeight="550.0" pickOnBounds="false" prefWidth="1000.0" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationNozzleBInsetPanelController">
+<VBox fx:id="container" maxHeight="1E308" maxWidth="1E308" minHeight="700.0" pickOnBounds="false" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationNozzleBInsetPanelController">
     <children>
         <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
             <center>
@@ -83,7 +83,7 @@
             <bottom>
                 <VBox id="calibrationBottomArea">
                     <children>
-                        <CalibrationProgress id="calibrationProgressContainer" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="60.0" />
+                        <CalibrationProgress maxHeight="-Infinity" minHeight="-Infinity" prefHeight="60.0" />
                         <StackPane id="calibrateBottomMenu" maxHeight="-Infinity" minHeight="-Infinity" pickOnBounds="false" prefHeight="60.0" BorderPane.alignment="CENTER">
                             <children>
                                 <HBox alignment="CENTER_LEFT" pickOnBounds="false">

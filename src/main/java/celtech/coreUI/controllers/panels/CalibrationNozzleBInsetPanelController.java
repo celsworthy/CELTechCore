@@ -1,12 +1,13 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.ApplicationStatus;
-import celtech.coreUI.DisplayManager;
+import celtech.coreUI.components.calibration.CalibrationMenu;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
 import celtech.services.calibration.NozzleBCalibrationState;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.concurrent.Callable;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -14,7 +15,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -30,6 +30,9 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
 
     private CalibrationNozzleBHelper calibrationHelper = new CalibrationNozzleBHelper();
 
+//    @FXML
+//    private CalibrationMenu calibrationMenu;
+    
     @FXML
     private Text calibrationInstruction;
 
@@ -111,6 +114,16 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
 
         calibrationHelper.addStateListener(this);
         calibrationHelper.setState(NozzleBCalibrationState.IDLE);
+        
+//        calibrationMenu.addItem("TLX", new Callable()
+//        {
+//
+//            public Object call()
+//            {
+//                System.out.println("Called TLX");
+//                return null;
+//            }
+//        });
     }
 
     @Override

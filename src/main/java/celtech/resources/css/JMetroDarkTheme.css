@@ -52,7 +52,6 @@
 
 .root {
     -fx-font-family: 'SourceSansPro';
-    -fx-font-weight: lighter; 
 }
 
 .standardPanel{
@@ -1625,7 +1624,11 @@ table-view .column-header-background {
 
 .calibrationMenuOption {
  -fx-font-size:36px;
- -fx-font-weight:100;
+ -fx-font-weight: lighter;
+}
+
+.calibrationMenuSquare {
+    -fx-fill: robox_blue;
 }
 
 #calibrationMenuGrid {
@@ -1638,6 +1641,16 @@ table-view .column-header-background {
 
 #calibrationProgressLabel {
     -fx-font-size: 42px;
+}
+
+#calibrationProgressBarBack {
+    -fx-border-color: white;
+    -fx-border-width: 3px;
+}
+
+#calibrationProgressBarInner {
+    -fx-fill: white;
+    -fx-stroke-width: 0px;
 }
 
 #calibrationBottomArea {
