@@ -7,7 +7,7 @@ package celtech.printerControl.comms.commands.rx;
 public class AckResponse extends RoboxRxPacket
 {
     /*
-     Error flags as at firmware v577
+     Error flags as at firmware v681
      ERROR_SD_CARD 0
      ERROR_CHUNK_SEQUENCE 1
      ERROR_FILE_TOO_LARGE 2
@@ -25,6 +25,8 @@ public class AckResponse extends RoboxRxPacket
      ERROR_E_FILAMENT_SLIP 14
      ERROR_D_FILAMENT_SLIP 15
      ERROR_NOZZLE_FLUSH_NEEDED 16
+     ERROR_Z_TOP_SWITCH 17
+     ERROR_B_STUCK 18
      */
 
     private final String charsetToUse = "US-ASCII";
@@ -52,6 +54,7 @@ public class AckResponse extends RoboxRxPacket
     private boolean dFilamentSlipError = false;
     private boolean nozzleFlushNeededError = false;
     private boolean zTopSwitchError = false;
+    private boolean bStuckError = false;
     private boolean unknown_error_code = false;
 
     /**
@@ -229,6 +232,15 @@ public class AckResponse extends RoboxRxPacket
      *
      * @return
      */
+    public boolean isBStuckError()
+    {
+        return bStuckError;
+    }
+
+    /**
+     *
+     * @return
+     */
     public boolean isError()
     {
         return sdCardError
@@ -249,6 +261,7 @@ public class AckResponse extends RoboxRxPacket
             || dFilamentSlipError
             || nozzleFlushNeededError
             || zTopSwitchError
+            || bStuckError
             || unknown_error_code;
     }
 
@@ -329,6 +342,9 @@ public class AckResponse extends RoboxRxPacket
         this.zTopSwitchError = (byteData[byteOffset] & 1) > 0 ? true : false;
         byteOffset += 1;
 
+        this.bStuckError = (byteData[byteOffset] & 1) > 0 ? true : false;
+        byteOffset += 1;
+
         unknown_error_code = false;
         for (; byteOffset < this.getPacketType().getPacketSize(); byteOffset++)
         {
@@ -351,61 +367,83 @@ public class AckResponse extends RoboxRxPacket
 
         if (isSdCardError())
         {
-            outputString.append("SD card error");
-        } else if (isChunkSequenceError())
+            outputString.append("SD card error\n");
+        }
+        if (isChunkSequenceError())
         {
-            outputString.append("Chunk sequence error");
-        } else if (isFileTooLargeError())
+            outputString.append("Chunk sequence error\n");
+        }
+        if (isFileTooLargeError())
         {
-            outputString.append("File too large error");
-        } else if (isGcodeLineTooLongError())
+            outputString.append("File too large error\n");
+        }
+        if (isGcodeLineTooLongError())
         {
-            outputString.append("GCode line too long error");
-        } else if (isUsbRXError())
+            outputString.append("GCode line too long error\n");
+        }
+        if (isUsbRXError())
         {
-            outputString.append("USB RX error");
-        } else if (isUsbTXError())
+            outputString.append("USB RX error\n");
+        }
+        if (isUsbTXError())
         {
-            outputString.append("USB TX error");
-        } else if (isBadCommandError())
+            outputString.append("USB TX error\n");
+        }
+        if (isBadCommandError())
         {
-            outputString.append("Bad command error");
-        } else if (isHeadEepromError())
+            outputString.append("Bad command error\n");
+        }
+        if (isHeadEepromError())
         {
-            outputString.append("Head EEPROM error");
-        } else if (isBadFirmwareFileError())
+            outputString.append("Head EEPROM error\n");
+        }
+        if (isBadFirmwareFileError())
         {
-            outputString.append("Bad firmware error");
-        } else if (isFlashChecksumError())
+            outputString.append("Bad firmware error\n");
+        }
+        if (isFlashChecksumError())
         {
-            outputString.append("Flash Checksum error");
-        } else if (isGCodeBufferOverrunError())
+            outputString.append("Flash Checksum error\n");
+        }
+        if (isGCodeBufferOverrunError())
         {
-            outputString.append("GCode overrun error");
-        } else if (isFileReadClobbered())
+            outputString.append("GCode overrun error\n");
+        }
+        if (isFileReadClobbered())
         {
-            outputString.append("File read clobbered error");
-        } else if (isMaxGantryAdjustment())
+            outputString.append("File read clobbered error\n");
+        }
+        if (isMaxGantryAdjustment())
         {
-            outputString.append("Max gantry adjustment error");
-        } else if (isReelEEPROMError())
+            outputString.append("Max gantry adjustment error\n");
+        }
+        if (isReelEEPROMError())
         {
-            outputString.append("Reel EEPROM error");
-        } else if (isEFilamentSlipError())
+            outputString.append("Reel EEPROM error\n");
+        }
+        if (isEFilamentSlipError())
         {
-            outputString.append("Extruder 1 filament slip error");
-        } else if (isDFilamentSlipError())
+            outputString.append("Extruder 1 filament slip error\n");
+        }
+        if (isDFilamentSlipError())
         {
-            outputString.append("Extruder 2 filament slip error");
-        } else if (isNozzleFlushNeededError())
+            outputString.append("Extruder 2 filament slip error\n");
+        }
+        if (isNozzleFlushNeededError())
         {
-            outputString.append("Nozzle flush required error");
-        } else if (isZTopSwitchError())
+            outputString.append("Nozzle flush required error\n");
+        }
+        if (isZTopSwitchError())
         {
-            outputString.append("Z top switch error");
-        } else if (isUnknown_Error_Code())
+            outputString.append("Z top switch error\n");
+        }
+        if (isBStuckError())
         {
-            outputString.append("Unknown error from printer");
+            outputString.append("B axis stuck error\n");
+        }
+        if (isUnknown_Error_Code())
+        {
+            outputString.append("Unknown error from printer\n");
         }
 
         return outputString.toString();
@@ -458,6 +496,8 @@ public class AckResponse extends RoboxRxPacket
         outputString.append("Nozzle flush required error: " + isNozzleFlushNeededError());
         outputString.append("\n");
         outputString.append("Z top switch error: " + isZTopSwitchError());
+        outputString.append("\n");
+        outputString.append("B axis stuck error: " + isBStuckError());
         outputString.append("\n");
         outputString.append("Unknown error: " + isUnknown_Error_Code());
         outputString.append("\n");
