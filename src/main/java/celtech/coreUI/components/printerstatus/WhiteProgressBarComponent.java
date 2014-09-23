@@ -8,6 +8,7 @@ import java.net.URL;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Polygon;
 
@@ -44,8 +45,8 @@ public class WhiteProgressBarComponent extends Pane
             throw new RuntimeException(exception);
         }
         
-        solidBar.setFill(Paint.valueOf("white"));
-        clearBar.setFill(Paint.valueOf("white"));
+        solidBar.setFill(Color.WHITE);
+        clearBar.setFill(Color.WHITE);
         clearBar.setOpacity(0.5);
 
         width = 50;
