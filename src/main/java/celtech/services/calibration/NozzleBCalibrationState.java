@@ -11,13 +11,38 @@ public enum NozzleBCalibrationState
 
     /**
      *
-     */
-    IDLE("calibrationPanel.readyToBeginNozzleOpeningCalibration", null),
-
-    /**
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
      *
      */
-//    INITIALISING("calibrationPanel.calibrationInitialising", null),
+    IDLE("calibrationPanel.readyToBeginNozzleOpeningCalibration", null),
 
     /**
      *
@@ -27,22 +52,27 @@ public enum NozzleBCalibrationState
     /**
      *
      */
-//    PRIMING("calibrationPanel.primingNozzle", null),
-
-    /**
-     *
-     */
     NO_MATERIAL_CHECK("calibrationPanel.valvesClosedNoMaterial", null),
 
     /**
      *
      */
-    MATERIAL_EXTRUDING_CHECK("calibrationPanel.valvesOpenMaterialExtruding", "calibrationPanel.isMaterialExtrudingNozzle"),
+    MATERIAL_EXTRUDING_CHECK_FINE_NOZZLE("calibrationPanel.valvesOpenMaterialExtrudingFine", null),
 
     /**
      *
      */
-    HEAD_CLEAN_CHECK("calibrationPanel.ensureHeadIsCleanBMessage", "calibrationPanel.ensureHeadIsCleanInstruction"),
+    HEAD_CLEAN_CHECK_FINE_NOZZLE("calibrationPanel.ensureHeadIsCleanBMessage", null),
+    
+    /**
+     *
+     */
+    MATERIAL_EXTRUDING_CHECK_FILL_NOZZLE("calibrationPanel.valvesOpenMaterialExtrudingFill", null),
+
+    /**
+     *
+     */
+    HEAD_CLEAN_CHECK_FILL_NOZZLE("calibrationPanel.ensureHeadIsCleanBMessage", null),    
 
     /**
      *

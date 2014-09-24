@@ -25,7 +25,8 @@ import libertysystems.stenographer.StenographerFactory;
 public class CalibrationNozzleBHelper
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(CalibrationNozzleBHelper.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        CalibrationNozzleBHelper.class.getName());
 
     private Printer printerToUse = null;
 
@@ -40,14 +41,14 @@ public class CalibrationNozzleBHelper
     private CalibrateBTask calibrationTask = null;
     private boolean parkRequired = false;
     private NozzleBCalibrationState state = NozzleBCalibrationState.IDLE;
-    private ArrayList<CalibrationBStateListener> stateListeners = new ArrayList<>();
+    private final ArrayList<CalibrationBStateListener> stateListeners = new ArrayList<>();
 
-    private EventHandler<WorkerStateEvent> failedTaskHandler = (WorkerStateEvent event) ->
+    private final EventHandler<WorkerStateEvent> failedTaskHandler = (WorkerStateEvent event) ->
     {
         cancelCalibrationAction();
     };
 
-    private EventHandler<WorkerStateEvent> succeededTaskHandler = (WorkerStateEvent event) ->
+    private final EventHandler<WorkerStateEvent> succeededTaskHandler = (WorkerStateEvent event) ->
     {
         setState(state.getNextState());
     };
@@ -64,7 +65,7 @@ public class CalibrationNozzleBHelper
             case NO_MATERIAL_CHECK:
                 setState(NozzleBCalibrationState.FAILED);
                 break;
-            case MATERIAL_EXTRUDING_CHECK:
+            case MATERIAL_EXTRUDING_CHECK_FINE_NOZZLE:
                 try
                 {
                     printerToUse.transmitDirectGCode("G0 B0", false);
@@ -72,18 +73,22 @@ public class CalibrationNozzleBHelper
                 {
                     steno.error("Error in needle valve calibration - mode=" + state.name());
                 }
-                if (currentNozzleNumber == 0)
-                {
-                    currentNozzleNumber++;
-                    setState(NozzleBCalibrationState.MATERIAL_EXTRUDING_CHECK);
-                } else
-                {
-                    currentNozzleNumber = 0;
-                    setState(NozzleBCalibrationState.HEAD_CLEAN_CHECK);
-                }
+                setState(NozzleBCalibrationState.HEAD_CLEAN_CHECK_FINE_NOZZLE);
                 break;
-            case HEAD_CLEAN_CHECK:
-                currentNozzleNumber = 0;
+            case HEAD_CLEAN_CHECK_FINE_NOZZLE:
+                setState(NozzleBCalibrationState.MATERIAL_EXTRUDING_CHECK_FILL_NOZZLE);
+                break;
+            case MATERIAL_EXTRUDING_CHECK_FILL_NOZZLE:
+                try
+                {
+                    printerToUse.transmitDirectGCode("G0 B0", false);
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error in needle valve calibration - mode=" + state.name());
+                }
+                setState(NozzleBCalibrationState.HEAD_CLEAN_CHECK_FILL_NOZZLE);
+                break;
+            case HEAD_CLEAN_CHECK_FILL_NOZZLE:
                 setState(NozzleBCalibrationState.PRE_CALIBRATION_PRIMING);
                 break;
             case CALIBRATE_NOZZLE:
@@ -154,9 +159,12 @@ public class CalibrationNozzleBHelper
         {
             case NO_MATERIAL_CHECK:
                 currentNozzleNumber = 0;
-                setState(NozzleBCalibrationState.MATERIAL_EXTRUDING_CHECK);
+                setState(NozzleBCalibrationState.MATERIAL_EXTRUDING_CHECK_FINE_NOZZLE);
                 break;
-            case MATERIAL_EXTRUDING_CHECK:
+            case MATERIAL_EXTRUDING_CHECK_FINE_NOZZLE:
+                setState(NozzleBCalibrationState.FAILED);
+                break;
+            case MATERIAL_EXTRUDING_CHECK_FILL_NOZZLE:
                 setState(NozzleBCalibrationState.FAILED);
                 break;
             case CALIBRATE_NOZZLE:
@@ -263,11 +271,11 @@ public class CalibrationNozzleBHelper
         {
             case IDLE:
                 break;
-                
+
             case HEATING:
-                
+
                 currentNozzleNumber = 0;
-                
+
                 try
                 {
                     savedHeadData = printerToUse.transmitReadHeadEEPROM();
@@ -291,7 +299,7 @@ public class CalibrationNozzleBHelper
                 {
                     steno.error("Error in needle valve calibration - mode=" + state.name());
                 }
-                
+
                 calibrationTask = new CalibrateBTask(state, printerToUse);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
@@ -305,7 +313,6 @@ public class CalibrationNozzleBHelper
 
             case NO_MATERIAL_CHECK:
                 calibrationTask = new CalibrateBTask(state, printerToUse);
-                calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
 
@@ -315,16 +322,27 @@ public class CalibrationNozzleBHelper
 
                 parkRequired = true;
                 break;
-            case MATERIAL_EXTRUDING_CHECK:
-                calibrationTask = new CalibrateBTask(state, currentNozzleNumber, printerToUse);
+            case MATERIAL_EXTRUDING_CHECK_FINE_NOZZLE:
+                calibrationTask = new CalibrateBTask(state, 0, printerToUse);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
 
-                Thread materialExtrudingTaskThread = new Thread(calibrationTask);
-                materialExtrudingTaskThread.setName("Calibration - extrusion check");
-                materialExtrudingTaskThread.start();
+                Thread materialExtrudingFineTaskThread = new Thread(calibrationTask);
+                materialExtrudingFineTaskThread.setName("Calibration - extrusion check");
+                materialExtrudingFineTaskThread.start();
                 break;
-            case HEAD_CLEAN_CHECK:
+            case HEAD_CLEAN_CHECK_FINE_NOZZLE:
+                break;
+            case MATERIAL_EXTRUDING_CHECK_FILL_NOZZLE:
+                calibrationTask = new CalibrateBTask(state, 1, printerToUse);
+                calibrationTask.setOnFailed(failedTaskHandler);
+                TaskController.getInstance().manageTask(calibrationTask);
+
+                Thread materialExtrudingFillTaskThread = new Thread(calibrationTask);
+                materialExtrudingFillTaskThread.setName("Calibration - extrusion check");
+                materialExtrudingFillTaskThread.start();
+                break;
+            case HEAD_CLEAN_CHECK_FILL_NOZZLE:
                 break;
             case PRE_CALIBRATION_PRIMING:
                 nozzlePosition = 0;
