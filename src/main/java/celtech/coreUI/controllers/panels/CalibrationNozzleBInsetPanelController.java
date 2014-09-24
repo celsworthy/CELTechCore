@@ -1,5 +1,6 @@
 package celtech.coreUI.controllers.panels;
 
+import celtech.Lookup;
 import celtech.appManager.ApplicationStatus;
 import celtech.coreUI.components.calibration.CalibrationMenu;
 import celtech.coreUI.components.calibration.CalibrationProgress;
@@ -111,18 +112,16 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
     {
         StatusScreenState statusScreenState = StatusScreenState.getInstance();
 
-//        Printer printerToUse = statusScreenState.currentlySelectedPrinterProperty().get();
-//        calibrationHelper.setPrinterToUse(printerToUse);
-        statusScreenState.currentlySelectedPrinterProperty().addListener(
-            new ChangeListener<Printer>()
+        Printer printerToUse = statusScreenState.currentlySelectedPrinterProperty().get();
+        setupChildComponents(printerToUse);
+        
+        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
             {
                 @Override
                 public void changed(ObservableValue<? extends Printer> observable, Printer oldValue,
                     Printer newValue)
                 {
-                    calibrationHelper.setPrinterToUse(newValue);
-                    setupTemperatureProgressListeners(newValue);
-                    currentPrinter = newValue;
+                    setupChildComponents(newValue);
                 }
             });
 
@@ -149,6 +148,13 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
                                 System.out.println("Called GL");
                                 return null;
         });
+    }
+
+    private void setupChildComponents(Printer printerToUse)
+    {
+        calibrationHelper.setPrinterToUse(printerToUse);
+        setupTemperatureProgressListeners(printerToUse);
+        currentPrinter = printerToUse;
     }
 
     @Override
@@ -315,13 +321,13 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
         printer.extruderTemperatureProperty().removeListener(extruderTemperatureListener);
     }
 
-    private ChangeListener<Number> targetTemperatureListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+    private final ChangeListener<Number> targetTemperatureListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
         targetTemperature = newValue.intValue();
         updateCalibrationProgress();
     };
 
-    private ChangeListener<Number> extruderTemperatureListener
+    private final ChangeListener<Number> extruderTemperatureListener
         = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
             currentExtruderTemperature = newValue.doubleValue();
@@ -349,7 +355,8 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
     {
         if (targetTemperature != 0)
         {
-            steno.info("Set temp progress to " + (currentExtruderTemperature / targetTemperature));
+            String targetTempStr = targetTemperature + Lookup.i18("misc.degreesC");
+            calibrationProgress.setTargetValue(targetTempStr);
             calibrationProgress.setProgress(currentExtruderTemperature / targetTemperature);
         }
     }

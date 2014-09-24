@@ -9,6 +9,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
+import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.shape.Rectangle;
@@ -25,6 +26,12 @@ public class CalibrationProgress extends BorderPane
 
     @FXML
     private HBox calibrationProgressBarBack;
+    
+    @FXML
+    private Label calibrationTargetValue;
+    
+    @FXML
+    private Label calibrationTargetLegend;
 
     private double progress = 0;
 
@@ -62,6 +69,10 @@ public class CalibrationProgress extends BorderPane
             this.progress = progress;
             redraw();
         }
+    }
+    
+    public void setTargetValue(String targetValue) {
+        calibrationTargetValue.setText(targetValue);
     }
 
     private void redraw()

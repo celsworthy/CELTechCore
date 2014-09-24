@@ -22,8 +22,8 @@
     <right>
         <VBox alignment="CENTER" BorderPane.alignment="CENTER">
             <children>
-                <Label id="calibrationProgressLegend" text="Target Temperature:" />
-                <Label id="calibrationProgressValue" text="240C" />
+                <Label fx:id="calibrationTargetLegend" id="calibrationTargetLegend" text="Target Temperature:" />
+                <Label fx:id="calibrationTargetValue" id="calibrationTargetValue" text="240C" />
             </children>
             <BorderPane.margin>
                 <Insets bottom="5.0" right="30.0" top="5.0" />
