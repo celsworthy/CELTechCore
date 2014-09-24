@@ -17,6 +17,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -36,6 +38,12 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
 
     @FXML
     private CalibrationMenu calibrationMenu;
+
+    @FXML
+    private StackPane calibrateBottomMenu;
+
+    @FXML
+    private VBox calibrationBottomArea;
 
     @FXML
     CalibrationProgress calibrationProgress;
@@ -114,8 +122,9 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
 
         Printer printerToUse = statusScreenState.currentlySelectedPrinterProperty().get();
         setupChildComponents(printerToUse);
-        
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
+
+        statusScreenState.currentlySelectedPrinterProperty().addListener(
+            new ChangeListener<Printer>()
             {
                 @Override
                 public void changed(ObservableValue<? extends Printer> observable, Printer oldValue,
@@ -163,6 +172,8 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
         switch (state)
         {
             case IDLE:
+                setCalibrationProgressVisible(false);
+                calibrationProgress.setVisible(false);
                 startCalibrationButton.setVisible(true);
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(false);
@@ -172,15 +183,8 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
                 calibrationInstruction.setText(state.getStepInstruction());
                 break;
             case HEATING:
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                yesButton.setVisible(false);
-                noButton.setVisible(false);
-                saveSettingsButton.setVisible(false);
-                calibrationStatus.setText(state.getStepTitle());
-                calibrationInstruction.setText(state.getStepInstruction());
-                break;
-            case PRIMING:
+                setCalibrationProgressVisible(true);
+                calibrationProgress.setVisible(true);
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(false);
@@ -190,6 +194,8 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
                 calibrationInstruction.setText(state.getStepInstruction());
                 break;
             case NO_MATERIAL_CHECK:
+                setCalibrationProgressVisible(false);
+                calibrationProgress.setVisible(false);
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(true);
@@ -306,12 +312,6 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
         }
     }
 
-    private void removeTemperatureProgressListeners(Printer printer)
-    {
-        printer.nozzleTargetTemperatureProperty().removeListener(targetTemperatureListener);
-        printer.extruderTemperatureProperty().removeListener(extruderTemperatureListener);
-    }
-
     private final ChangeListener<Number> targetTemperatureListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
         targetTemperature = newValue.intValue();
@@ -324,6 +324,12 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
             currentExtruderTemperature = newValue.doubleValue();
             updateCalibrationProgress();
         };
+
+    private void removeTemperatureProgressListeners(Printer printer)
+    {
+        printer.nozzleTargetTemperatureProperty().removeListener(targetTemperatureListener);
+        printer.extruderTemperatureProperty().removeListener(extruderTemperatureListener);
+    }
 
     private void setupTemperatureProgressListeners(Printer printer)
     {
@@ -344,7 +350,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
 
     private void updateCalibrationProgress()
     {
-        if (targetTemperature != 0)
+        if (targetTemperature != 0 && calibrationProgress.isVisible())
         {
             String targetTempStr = targetTemperature + Lookup.i18("misc.degreesC");
             String currentTempStr = ((int) currentExtruderTemperature) + Lookup.i18("misc.degreesC");
@@ -352,5 +358,15 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
             calibrationProgress.setTargetValue(targetTempStr);
             calibrationProgress.setProgress(currentExtruderTemperature / targetTemperature);
         }
+    }
+
+    private void setCalibrationProgressVisible(boolean visible)
+    {
+        calibrationBottomArea.getChildren().clear();
+        if (visible)
+        {
+            calibrationBottomArea.getChildren().add(calibrationProgress);
+        }
+        calibrationBottomArea.getChildren().add(calibrateBottomMenu);
     }
 }

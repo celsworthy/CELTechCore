@@ -27,12 +27,12 @@ public enum NozzleBCalibrationState
     /**
      *
      */
-    PRIMING("calibrationPanel.primingNozzle", null),
+//    PRIMING("calibrationPanel.primingNozzle", null),
 
     /**
      *
      */
-    NO_MATERIAL_CHECK("calibrationPanel.valvesClosedNoMaterial", "calibrationPanel.isMaterialExtrudingEitherNozzle"),
+    NO_MATERIAL_CHECK("calibrationPanel.valvesClosedNoMaterial", null),
 
     /**
      *

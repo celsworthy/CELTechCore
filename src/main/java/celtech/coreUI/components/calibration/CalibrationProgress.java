@@ -88,13 +88,22 @@ public class CalibrationProgress extends BorderPane
     {
         double progressBackWidth = calibrationProgressBarBack.boundsInParentProperty().get().getWidth();
         double barWidth = progressBackWidth * progress;
-
         calibrationProgressBarInner.setWidth(barWidth);
+
+        // place currentValue in correct place on progress bar (just to the left of RHS of the bar)
         double barEndXPosition = calibrationProgressBarInner.getLayoutX()
             + calibrationProgressBarInner.boundsInParentProperty().get().getWidth();
+        double barStartXPosition = calibrationProgressBarInner.getLayoutX();
         double currentValueWidth = calibrationProgressCurrentValue.boundsInParentProperty().get().getWidth();
-        double requiredCurrentValueXPosition = barEndXPosition - currentValueWidth - 10;
+        int OFFSET_FROM_PROGRESS_BAR_RHS = 10;  // px
+        double requiredCurrentValueXPosition = barEndXPosition - currentValueWidth
+            - OFFSET_FROM_PROGRESS_BAR_RHS;
         
+        double leftmostValuePositionAllowed = barStartXPosition + 2;
+        if (requiredCurrentValueXPosition < leftmostValuePositionAllowed) {
+            requiredCurrentValueXPosition = leftmostValuePositionAllowed;
+        }
+
         double currentX = calibrationProgressCurrentValue.getLayoutX();
         double requiredTranslate = requiredCurrentValueXPosition - currentX;
         calibrationProgressCurrentValue.setTranslateX(requiredTranslate);

@@ -6,14 +6,11 @@
 package celtech.services.calibration;
 
 import celtech.configuration.HeaterMode;
-import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.services.ControllableService;
 import celtech.utils.PrinterUtils;
-import java.util.ResourceBundle;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -31,17 +28,8 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
     private NozzleBCalibrationState desiredState = null;
     private int nozzleNumber = -1;
 
-    private Printer printerToUse = null;
-    private String progressTitle = null;
-    private String initialisingMessage = null;
-    private String heatingMessage = null;
-    private String readyToBeginMessage = null;
-    private String pressAKeyMessage = null;
-    private String pressAKeyToContinueMessage = null;
-    private String preparingExtruderMessage = null;
-    private ResourceBundle i18nBundle = null;
+    private Printer printer = null;
     private boolean keyPressed = false;
-    private int progressPercent = 0;
     private boolean lookingForKeyPress = false;
 
     /**
@@ -51,7 +39,7 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
     public CalibrateBTask(NozzleBCalibrationState desiredState, Printer printer)
     {
         this.desiredState = desiredState;
-        printerToUse = printer;
+        this.printer = printer;
     }
 
     /**
@@ -63,7 +51,7 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
     {
         this.desiredState = desiredState;
         this.nozzleNumber = nozzleNumber;
-        printerToUse = printer;
+        this.printer = printer;
     }
 
     @Override
@@ -76,30 +64,28 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
             case HEATING:
                 try
                 {
-                    printerToUse.transmitDirectGCode("M104", false);
-                    if (PrinterUtils.waitOnBusy(printerToUse, this) == false)
+                    printer.transmitDirectGCode("M104", false);
+                    if (PrinterUtils.waitOnBusy(printer, this) == false)
                     {
-                        printerToUse.transmitStoredGCode("Home_all");
-                        if (PrinterUtils.waitOnMacroFinished(printerToUse, this) == false
+                        printer.transmitStoredGCode("Home_all");
+                        if (PrinterUtils.waitOnMacroFinished(printer, this) == false
                             && isCancelled() == false)
                         {
-                            printerToUse.transmitDirectGCode("G0 Z50", false);
-                            if (PrinterUtils.waitOnBusy(printerToUse, this) == false
+                            printer.transmitDirectGCode("G0 Z50", false);
+                            if (PrinterUtils.waitOnBusy(printer, this) == false
                                 && isCancelled() == false)
                             {
-                                printerToUse.transmitDirectGCode("M104", false);
-                                if (printerToUse.getNozzleHeaterMode() == HeaterMode.FIRST_LAYER)
+                                printer.transmitDirectGCode("M104", false);
+                                if (printer.getNozzleHeaterMode() == HeaterMode.FIRST_LAYER)
                                 {
-                                    PrinterUtils.waitUntilTemperatureIsReached(
-                                        printerToUse.extruderTemperatureProperty(), this,
-                                        printerToUse.getNozzleFirstLayerTargetTemperature(), 5, 300);
+                                    PrinterUtils.waitUntilTemperatureIsReached(printer.extruderTemperatureProperty(), this,
+                                        printer.getNozzleFirstLayerTargetTemperature(), 5, 300);
                                 } else
                                 {
-                                    PrinterUtils.waitUntilTemperatureIsReached(
-                                        printerToUse.extruderTemperatureProperty(), this,
-                                        printerToUse.getNozzleTargetTemperature(), 5, 300);
+                                    PrinterUtils.waitUntilTemperatureIsReached(printer.extruderTemperatureProperty(), this,
+                                        printer.getNozzleTargetTemperature(), 5, 300);
                                 }
-                                printerToUse.transmitDirectGCode(GCodeConstants.switchOnHeadLEDs,
+                                printer.transmitDirectGCode(GCodeConstants.switchOnHeadLEDs,
                                                                  false);
                             }
                         }
@@ -115,22 +101,22 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                 }
 
                 break;
-            case PRIMING:
+            case NO_MATERIAL_CHECK:
                 extrudeUntilStall();
                 break;
             case MATERIAL_EXTRUDING_CHECK:
                 try
                 {
-                    printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
-                    printerToUse.transmitDirectGCode("G0 B2", false);
+                    printer.transmitDirectGCode("T" + nozzleNumber, false);
+                    printer.transmitDirectGCode("G0 B2", false);
                     if (nozzleNumber == 0)
                     {
-                        printerToUse.transmitDirectGCode("G1 E10 F75", false);
+                        printer.transmitDirectGCode("G1 E10 F75", false);
                     } else
                     {
-                        printerToUse.transmitDirectGCode("G1 E10 F100", false);
+                        printer.transmitDirectGCode("G1 E10 F100", false);
                     }
-                    PrinterUtils.waitOnBusy(printerToUse, this);
+                    PrinterUtils.waitOnBusy(printer, this);
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in needle valve calibration - mode=" + desiredState.name());
@@ -145,16 +131,16 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
             case CONFIRM_MATERIAL_EXTRUDING:
                 try
                 {
-                    printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
-                    printerToUse.transmitDirectGCode("G0 B1", false);
+                    printer.transmitDirectGCode("T" + nozzleNumber, false);
+                    printer.transmitDirectGCode("G0 B1", false);
                     if (nozzleNumber == 0)
                     {
-                        printerToUse.transmitDirectGCode("G1 E10 F75", false);
+                        printer.transmitDirectGCode("G1 E10 F75", false);
                     } else
                     {
-                        printerToUse.transmitDirectGCode("G1 E10 F100", false);
+                        printer.transmitDirectGCode("G1 E10 F100", false);
                     }
-                    PrinterUtils.waitOnBusy(printerToUse, this);
+                    PrinterUtils.waitOnBusy(printer, this);
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in needle valve calibration - mode=" + desiredState.name());
@@ -163,7 +149,7 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
             case PARKING:
                 try
                 {
-                    printerToUse.transmitStoredGCode("Park");
+                    printer.transmitStoredGCode("Park");
                     success = true;
                 } catch (RoboxCommsException ex)
                 {
@@ -180,10 +166,10 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
         boolean success = false;
         try
         {
-            printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
+            printer.transmitDirectGCode("T" + nozzleNumber, false);
 
-            printerToUse.transmitDirectGCode("G36 E700 F2000", false);
-            PrinterUtils.waitOnBusy(printerToUse, this);
+            printer.transmitDirectGCode("G36 E700 F2000", false);
+            PrinterUtils.waitOnBusy(printer, this);
 
             success = true;
         } catch (RoboxCommsException ex)

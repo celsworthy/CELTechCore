@@ -291,7 +291,6 @@ public class CalibrationNozzleBHelper
                 {
                     steno.error("Error in needle valve calibration - mode=" + state.name());
                 }
-
                 
                 calibrationTask = new CalibrateBTask(state, printerToUse);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
@@ -304,19 +303,17 @@ public class CalibrationNozzleBHelper
 
                 break;
 
-            case PRIMING:
+            case NO_MATERIAL_CHECK:
                 calibrationTask = new CalibrateBTask(state, printerToUse);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
 
                 Thread primingTaskThread = new Thread(calibrationTask);
-                primingTaskThread.setName("Calibration - priming");
+                primingTaskThread.setName("Calibration - no material check");
                 primingTaskThread.start();
 
                 parkRequired = true;
-                break;
-            case NO_MATERIAL_CHECK:
                 break;
             case MATERIAL_EXTRUDING_CHECK:
                 calibrationTask = new CalibrateBTask(state, currentNozzleNumber, printerToUse);
