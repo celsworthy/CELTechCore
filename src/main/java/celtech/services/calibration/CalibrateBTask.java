@@ -22,10 +22,12 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implements ControllableService
+public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implements
+    ControllableService
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(CalibrateBTask.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        CalibrateBTask.class.getName());
     private NozzleBCalibrationState desiredState = null;
     private int nozzleNumber = -1;
 
@@ -46,9 +48,10 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
      *
      * @param desiredState
      */
-    public CalibrateBTask(NozzleBCalibrationState desiredState)
+    public CalibrateBTask(NozzleBCalibrationState desiredState, Printer printer)
     {
         this.desiredState = desiredState;
+        printerToUse = printer;
     }
 
     /**
@@ -56,10 +59,11 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
      * @param desiredState
      * @param nozzleNumber
      */
-    public CalibrateBTask(NozzleBCalibrationState desiredState, int nozzleNumber)
+    public CalibrateBTask(NozzleBCalibrationState desiredState, int nozzleNumber, Printer printer)
     {
         this.desiredState = desiredState;
         this.nozzleNumber = nozzleNumber;
+        printerToUse = printer;
     }
 
     @Override
@@ -67,50 +71,47 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
     {
         boolean success = false;
 
-        StatusScreenState statusScreenState = StatusScreenState.getInstance();
-        printerToUse = statusScreenState.getCurrentlySelectedPrinter();
-
         switch (desiredState)
         {
-            case INITIALISING:
+            case HEATING:
                 try
                 {
                     printerToUse.transmitDirectGCode("M104", false);
                     if (PrinterUtils.waitOnBusy(printerToUse, this) == false)
                     {
                         printerToUse.transmitStoredGCode("Home_all");
-                        if (PrinterUtils.waitOnMacroFinished(printerToUse, this) == false && isCancelled() == false)
+                        if (PrinterUtils.waitOnMacroFinished(printerToUse, this) == false
+                            && isCancelled() == false)
                         {
                             printerToUse.transmitDirectGCode("G0 Z50", false);
-                            if (PrinterUtils.waitOnBusy(printerToUse, this) == false && isCancelled() == false)
+                            if (PrinterUtils.waitOnBusy(printerToUse, this) == false
+                                && isCancelled() == false)
                             {
-                                success = true;
+                                printerToUse.transmitDirectGCode("M104", false);
+                                if (printerToUse.getNozzleHeaterMode() == HeaterMode.FIRST_LAYER)
+                                {
+                                    PrinterUtils.waitUntilTemperatureIsReached(
+                                        printerToUse.extruderTemperatureProperty(), this,
+                                        printerToUse.getNozzleFirstLayerTargetTemperature(), 5, 300);
+                                } else
+                                {
+                                    PrinterUtils.waitUntilTemperatureIsReached(
+                                        printerToUse.extruderTemperatureProperty(), this,
+                                        printerToUse.getNozzleTargetTemperature(), 5, 300);
+                                }
+                                printerToUse.transmitDirectGCode(GCodeConstants.switchOnHeadLEDs,
+                                                                 false);
                             }
                         }
                     }
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
-                }
-                break;
-            case HEATING:
-                try
-                {
-                    printerToUse.transmitDirectGCode("M104", false);
-                    if (printerToUse.getNozzleHeaterMode() == HeaterMode.FIRST_LAYER)
-                    {
-                        PrinterUtils.waitUntilTemperatureIsReached(printerToUse.extruderTemperatureProperty(), this, printerToUse.getNozzleFirstLayerTargetTemperature(), 5, 300);
-                    } else
-                    {
-                        PrinterUtils.waitUntilTemperatureIsReached(printerToUse.extruderTemperatureProperty(), this, printerToUse.getNozzleTargetTemperature(), 5, 300);
-                    }
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchOnHeadLEDs, false);
+
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in needle valve calibration - mode=" + desiredState.name());
                 } catch (InterruptedException ex)
                 {
-                    steno.error("Interrrupted during needle valve calibration - mode=" + desiredState.name());
+                    steno.error("Interrrupted during needle valve calibration - mode="
+                        + desiredState.name());
                 }
 
                 break;

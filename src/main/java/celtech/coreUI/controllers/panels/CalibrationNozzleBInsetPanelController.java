@@ -80,7 +80,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
     @FXML
     void startCalibration(ActionEvent event)
     {
-        calibrationHelper.setState(NozzleBCalibrationState.INITIALISING);
+        calibrationHelper.setState(NozzleBCalibrationState.HEATING);
     }
 
     @FXML
@@ -164,15 +164,6 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
         {
             case IDLE:
                 startCalibrationButton.setVisible(true);
-                cancelCalibrationButton.setVisible(true);
-                yesButton.setVisible(false);
-                noButton.setVisible(false);
-                saveSettingsButton.setVisible(false);
-                calibrationStatus.setText(state.getStepTitle());
-                calibrationInstruction.setText(state.getStepInstruction());
-                break;
-            case INITIALISING:
-                startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
                 yesButton.setVisible(false);
                 noButton.setVisible(false);
@@ -356,6 +347,8 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
         if (targetTemperature != 0)
         {
             String targetTempStr = targetTemperature + Lookup.i18("misc.degreesC");
+            String currentTempStr = ((int) currentExtruderTemperature) + Lookup.i18("misc.degreesC");
+            calibrationProgress.setCurrentValue(currentTempStr);
             calibrationProgress.setTargetValue(targetTempStr);
             calibrationProgress.setProgress(currentExtruderTemperature / targetTemperature);
         }

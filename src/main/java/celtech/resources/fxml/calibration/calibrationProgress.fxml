@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.effect.*?>
 <?import java.lang.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
@@ -22,8 +23,8 @@
     <right>
         <VBox alignment="CENTER" BorderPane.alignment="CENTER">
             <children>
-                <Label fx:id="calibrationTargetLegend" id="calibrationTargetLegend" text="Target Temperature:" />
-                <Label fx:id="calibrationTargetValue" id="calibrationTargetValue" text="240C" />
+                <Label id="calibrationTargetLegend" fx:id="calibrationTargetLegend" text="Target Temperature:" />
+                <Label id="calibrationTargetValue" fx:id="calibrationTargetValue" text="240C" />
             </children>
             <BorderPane.margin>
                 <Insets bottom="5.0" right="30.0" top="5.0" />
@@ -31,12 +32,18 @@
         </VBox>
     </right>
     <center>
-        <HBox fx:id="calibrationProgressBarBack" id="calibrationProgressBarBack" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="30.0" prefWidth="300.0" BorderPane.alignment="CENTER">
-         <BorderPane.margin>
-            <Insets bottom="20.0" left="30.0" right="30.0" top="20.0" />
-         </BorderPane.margin>
+      <StackPane>
          <children>
-            <Rectangle fx:id="calibrationProgressBarInner" id="calibrationProgressBarInner" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="24.0" stroke="BLACK" strokeType="INSIDE" width="200.0" />
-         </children></HBox>
+              <HBox id="calibrationProgressBarBack" fx:id="calibrationProgressBarBack" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="38.0" prefWidth="300.0" BorderPane.alignment="CENTER">
+               <BorderPane.margin>
+                  <Insets bottom="20.0" left="30.0" right="30.0" top="20.0" />
+               </BorderPane.margin>
+               <children>
+                  <Rectangle id="calibrationProgressBarInner" fx:id="calibrationProgressBarInner" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="32.0" stroke="BLACK" strokeType="INSIDE" width="130.0" />
+               </children>
+            </HBox>
+            <Label id="calibrationProgressCurrentValue" fx:id="calibrationProgressCurrentValue" alignment="CENTER" contentDisplay="CENTER" text="23%" />
+         </children>
+      </StackPane>
     </center>
 </fx:root>

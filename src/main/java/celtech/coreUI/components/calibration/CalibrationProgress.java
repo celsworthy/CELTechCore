@@ -26,10 +26,13 @@ public class CalibrationProgress extends BorderPane
 
     @FXML
     private HBox calibrationProgressBarBack;
-    
+
     @FXML
     private Label calibrationTargetValue;
-    
+
+    @FXML
+    private Label calibrationProgressCurrentValue;
+
     @FXML
     private Label calibrationTargetLegend;
 
@@ -70,16 +73,31 @@ public class CalibrationProgress extends BorderPane
             redraw();
         }
     }
-    
-    public void setTargetValue(String targetValue) {
+
+    public void setTargetValue(String targetValue)
+    {
         calibrationTargetValue.setText(targetValue);
+    }
+
+    public void setCurrentValue(String currentValue)
+    {
+        calibrationProgressCurrentValue.setText(currentValue);
     }
 
     private void redraw()
     {
-        double barWidth = calibrationProgressBarBack.boundsInLocalProperty().get().getWidth()
-            * progress;
+        double progressBackWidth = calibrationProgressBarBack.boundsInParentProperty().get().getWidth();
+        double barWidth = progressBackWidth * progress;
+
         calibrationProgressBarInner.setWidth(barWidth);
+        double barEndXPosition = calibrationProgressBarInner.getLayoutX()
+            + calibrationProgressBarInner.boundsInParentProperty().get().getWidth();
+        double currentValueWidth = calibrationProgressCurrentValue.boundsInParentProperty().get().getWidth();
+        double requiredCurrentValueXPosition = barEndXPosition - currentValueWidth - 10;
+        
+        double currentX = calibrationProgressCurrentValue.getLayoutX();
+        double requiredTranslate = requiredCurrentValueXPosition - currentX;
+        calibrationProgressCurrentValue.setTranslateX(requiredTranslate);
     }
 
 }

@@ -263,9 +263,11 @@ public class CalibrationNozzleBHelper
         {
             case IDLE:
                 break;
-            case INITIALISING:
+                
+            case HEATING:
+                
                 currentNozzleNumber = 0;
-
+                
                 try
                 {
                     savedHeadData = printerToUse.transmitReadHeadEEPROM();
@@ -290,17 +292,8 @@ public class CalibrationNozzleBHelper
                     steno.error("Error in needle valve calibration - mode=" + state.name());
                 }
 
-                calibrationTask = new CalibrateBTask(state);
-                calibrationTask.setOnSucceeded(succeededTaskHandler);
-                calibrationTask.setOnFailed(failedTaskHandler);
-                TaskController.getInstance().manageTask(calibrationTask);
-
-                Thread initialiseTaskThread = new Thread(calibrationTask);
-                initialiseTaskThread.setName("Calibration - initialiser");
-                initialiseTaskThread.start();
-                break;
-            case HEATING:
-                calibrationTask = new CalibrateBTask(state);
+                
+                calibrationTask = new CalibrateBTask(state, printerToUse);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
@@ -312,7 +305,7 @@ public class CalibrationNozzleBHelper
                 break;
 
             case PRIMING:
-                calibrationTask = new CalibrateBTask(state);
+                calibrationTask = new CalibrateBTask(state, printerToUse);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
@@ -326,7 +319,7 @@ public class CalibrationNozzleBHelper
             case NO_MATERIAL_CHECK:
                 break;
             case MATERIAL_EXTRUDING_CHECK:
-                calibrationTask = new CalibrateBTask(state, currentNozzleNumber);
+                calibrationTask = new CalibrateBTask(state, currentNozzleNumber, printerToUse);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
 
@@ -361,7 +354,7 @@ public class CalibrationNozzleBHelper
                     steno.error("Error in needle valve calibration - mode=" + state.name());
                 }
 
-                calibrationTask = new CalibrateBTask(state, currentNozzleNumber);
+                calibrationTask = new CalibrateBTask(state, currentNozzleNumber, printerToUse);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
@@ -383,7 +376,7 @@ public class CalibrationNozzleBHelper
                 break;
             case POST_CALIBRATION_PRIMING:
                 nozzlePosition = 0;
-                calibrationTask = new CalibrateBTask(state);
+                calibrationTask = new CalibrateBTask(state, printerToUse);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
@@ -395,7 +388,7 @@ public class CalibrationNozzleBHelper
             case CONFIRM_NO_MATERIAL:
                 break;
             case CONFIRM_MATERIAL_EXTRUDING:
-                calibrationTask = new CalibrateBTask(state, currentNozzleNumber);
+                calibrationTask = new CalibrateBTask(state, currentNozzleNumber, printerToUse);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
 
@@ -404,7 +397,7 @@ public class CalibrationNozzleBHelper
                 confirmMaterialExtrudingTaskThread.start();
                 break;
             case PARKING:
-                calibrationTask = new CalibrateBTask(state);
+                calibrationTask = new CalibrateBTask(state, printerToUse);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
 

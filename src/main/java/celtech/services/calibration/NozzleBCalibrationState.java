@@ -17,7 +17,7 @@ public enum NozzleBCalibrationState
     /**
      *
      */
-    INITIALISING("calibrationPanel.calibrationInitialising", null),
+//    INITIALISING("calibrationPanel.calibrationInitialising", null),
 
     /**
      *

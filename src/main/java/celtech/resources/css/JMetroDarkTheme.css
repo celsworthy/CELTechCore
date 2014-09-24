@@ -1657,6 +1657,11 @@ table-view .column-header-background {
     -fx-background-color: black;
 }
 
+#calibrationProgressCurrentValue {
+    -fx-text-fill: robox_blue;
+    -fx-font-size: 36px;
+}
+
 #calibrationTargetLegend {
     -fx-font-size: 19px;
 }
