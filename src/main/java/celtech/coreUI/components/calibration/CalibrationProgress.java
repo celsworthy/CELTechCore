@@ -5,7 +5,6 @@ package celtech.coreUI.components.calibration;
 
 import java.io.IOException;
 import java.net.URL;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -27,7 +26,7 @@ public class CalibrationProgress extends BorderPane
     @FXML
     private HBox calibrationProgressBarBack;
 
-    private double progress;
+    private double progress = 0;
 
     public CalibrationProgress()
     {
@@ -46,14 +45,13 @@ public class CalibrationProgress extends BorderPane
             throw new RuntimeException(exception);
         }
 
-        progress = 0.9;
-        redraw();
-
         calibrationProgressBarBack.boundsInLocalProperty().addListener(
             (ObservableValue<? extends Bounds> observable, Bounds oldValue, Bounds newValue) ->
             {
                 redraw();
             });
+
+        redraw();
 
     }
 
