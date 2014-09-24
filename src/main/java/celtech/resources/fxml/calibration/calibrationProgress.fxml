@@ -27,7 +27,7 @@
                 <Label id="calibrationTargetValue" fx:id="calibrationTargetValue" text="240C" />
             </children>
             <BorderPane.margin>
-                <Insets bottom="5.0" right="30.0" top="5.0" />
+                <Insets bottom="10.0" right="30.0" top="10.0" />
             </BorderPane.margin>
         </VBox>
     </right>
@@ -44,6 +44,9 @@
             </HBox>
             <Label id="calibrationProgressCurrentValue" fx:id="calibrationProgressCurrentValue" alignment="CENTER" contentDisplay="CENTER" text="23%" />
          </children>
+         <BorderPane.margin>
+            <Insets left="30.0" right="30.0" />
+         </BorderPane.margin>
       </StackPane>
     </center>
 </fx:root>

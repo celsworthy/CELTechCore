@@ -83,7 +83,7 @@
             <bottom>
                 <VBox id="calibrationBottomArea">
                     <children>
-                        <CalibrationProgress fx:id="calibrationProgress" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="60.0" />
+                        <CalibrationProgress fx:id="calibrationProgress" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="70.0" />
                         <StackPane id="calibrateBottomMenu" maxHeight="-Infinity" minHeight="-Infinity" pickOnBounds="false" prefHeight="60.0" BorderPane.alignment="CENTER">
                             <children>
                                 <HBox alignment="CENTER_LEFT" pickOnBounds="false">
