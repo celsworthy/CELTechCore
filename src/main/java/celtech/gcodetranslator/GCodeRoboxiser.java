@@ -79,7 +79,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
     private Vector2D lastPoint = null;
     private Vector2D nozzleLastOpenedAt = null;
-    private Vector2D nozzleLastClosedAt = null;
+    private MovementEvent lastProcessedMovementEvent = null;
 
     private ArrayList<GCodeParseEvent> extrusionBuffer = new ArrayList<>();
 //    private Vector2D precursorPoint = null;
@@ -247,7 +247,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
         lastPoint = new Vector2D(0, 0);
         nozzleLastOpenedAt = new Vector2D(0, 0);
-        nozzleLastClosedAt = new Vector2D(0, 0);
 
         initialTemperaturesWritten = false;
         subsequentLayersTemperaturesWritten = false;
@@ -1522,6 +1521,11 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
                         }
 
+                        if (candidateevent instanceof MovementEvent)
+                        {
+                            lastProcessedMovementEvent = (MovementEvent) candidateevent;
+                        }
+
                         if (candidateevent instanceof ExtrusionEvent)
                         {
                             ExtrusionEvent event = (ExtrusionEvent) candidateevent;
@@ -2246,11 +2250,11 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                     fromPosition = lastPosition;
                                 } else
                                 {
-                                    fromPosition = nozzleLastClosedAt;
+                                    fromPosition = new Vector2D(lastProcessedMovementEvent.getX(), lastProcessedMovementEvent.getY());
                                 }
                             } else
                             {
-                                fromPosition = nozzleLastClosedAt;
+                                fromPosition = new Vector2D(lastProcessedMovementEvent.getX(), lastProcessedMovementEvent.getY());
                             }
 
                             Vector2D toPosition = new Vector2D(currentEvent.getX(),

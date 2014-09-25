@@ -279,26 +279,9 @@ public class PrinterHandler extends Thread
                         StatusResponse response = (StatusResponse) writeToPrinter(
                             RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.STATUS_REQUEST));
 
-//                        if (response.isSDCardPresent() == false)
-//                        {
-//                            steno.error("The SD card is missing. Printing cannot continue");
-//                            if (!noSDDialog.isShowing())
-//                            {
-//                                Platform.runLater(new Runnable()
-//                                {
-//                                    @Override
-//                                    public void run()
-//                                    {
-//                                        noSDDialog.show();
-//                                    }
-//                                });
-//                            }
-//                        } else
-//                        {
                         controlInterface.publishEvent(portName, new RoboxEvent(
                                                       RoboxEventType.PRINTER_STATUS_UPDATE, response));
                         commsState = RoboxCommsState.CHECKING_FIRMWARE;
-//                        }
                     } catch (RoboxCommsException ex)
                     {
                         steno.error("Error whilst carrying out firmware POST");
