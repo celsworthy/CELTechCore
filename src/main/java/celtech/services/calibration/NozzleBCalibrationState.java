@@ -8,119 +8,94 @@ import celtech.coreUI.DisplayManager;
  */
 public enum NozzleBCalibrationState
 {
-
     /**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
      *
      *//**
      *
      */
     IDLE("calibrationPanel.readyToBeginNozzleOpeningCalibration", null),
-
     /**
      *
      */
     HEATING("calibrationPanel.heating", null),
-
     /**
      *
      */
     NO_MATERIAL_CHECK("calibrationPanel.valvesClosedNoMaterial", null),
-
     /**
      *
      */
-    MATERIAL_EXTRUDING_CHECK_FINE_NOZZLE("calibrationPanel.valvesOpenMaterialExtrudingFine", null),
-
+    //    MATERIAL_EXTRUDING_CHECK_FINE_NOZZLE("calibrationPanel.valvesOpenMaterialExtrudingFine", null),
+    //    /**
+    //     *
+    //     */
+    //    HEAD_CLEAN_CHECK_FINE_NOZZLE("calibrationPanel.ensureHeadIsCleanBMessage", null),
+    //    /**
+    //     *
+    //     */
+    //    MATERIAL_EXTRUDING_CHECK_FILL_NOZZLE("calibrationPanel.valvesOpenMaterialExtrudingFill", null),
+    //    /**
+    //     *
+    //     */
+    //    HEAD_CLEAN_CHECK_FILL_NOZZLE("calibrationPanel.ensureHeadIsCleanBMessage", null),
+    /**
+     *
+     */
+    PRE_CALIBRATION_PRIMING_FINE("calibrationPanel.primingNozzle", null),
+    /**
+     *
+     */
+    CALIBRATE_FINE_NOZZLE("calibrationPanel.calibrationCommencedMessageFine", null),
     /**
      *
      */
     HEAD_CLEAN_CHECK_FINE_NOZZLE("calibrationPanel.ensureHeadIsCleanBMessage", null),
-    
     /**
      *
      */
-    MATERIAL_EXTRUDING_CHECK_FILL_NOZZLE("calibrationPanel.valvesOpenMaterialExtrudingFill", null),
-
+    PRE_CALIBRATION_PRIMING_FILL("calibrationPanel.primingNozzle", null),
     /**
      *
      */
-    HEAD_CLEAN_CHECK_FILL_NOZZLE("calibrationPanel.ensureHeadIsCleanBMessage", null),    
-
+    CALIBRATE_FILL_NOZZLE("calibrationPanel.calibrationCommencedMessageFill", null),
     /**
      *
      */
-    PRE_CALIBRATION_PRIMING("calibrationPanel.primingNozzle", null),
-
-    /**
-     *
-     */
-    CALIBRATE_NOZZLE("calibrationPanel.calibrationCommencedMessage", null),
-
-    /**
-     *
-     */
-    HEAD_CLEAN_CHECK_POST_CALIBRATION("calibrationPanel.ensureHeadIsCleanBMessage", null),
-
+    HEAD_CLEAN_CHECK_FILL_NOZZLE("calibrationPanel.ensureHeadIsCleanBMessage", null),
     /**
      *
      */
     POST_CALIBRATION_PRIMING("calibrationPanel.primingNozzle", null),
-
     /**
      *
      */
-    CONFIRM_NO_MATERIAL("calibrationPanel.valvesClosedNoMaterial", "calibrationPanel.isMaterialExtrudingEitherNozzle"),
-
+    CONFIRM_NO_MATERIAL("calibrationPanel.valvesClosedNoMaterial",
+                        "calibrationPanel.isMaterialExtrudingEitherNozzle"),
     /**
      *
      */
-    CONFIRM_MATERIAL_EXTRUDING("calibrationPanel.valvesOpenMaterialExtruding", "calibrationPanel.isMaterialExtrudingNozzle"),
-
+    CONFIRM_MATERIAL_EXTRUDING_FINE("calibrationPanel.valvesOpenMaterialExtruding",
+                               "calibrationPanel.isMaterialExtrudingNozzle"),
+    /**
+     *
+     */
+    CONFIRM_MATERIAL_EXTRUDING_FILL("calibrationPanel.valvesOpenMaterialExtruding",
+                               "calibrationPanel.isMaterialExtrudingNozzle"),    
     /**
      *
      */
     PARKING("calibrationPanel.calibrationParkingMessage", null),
-    
     /**
      *
      */
     FINISHED("calibrationPanel.calibrationSucceededBMessage", null),
-
     /**
      *
      */
     FAILED("calibrationPanel.nozzleCalibrationFailed", null);
 
     private String stepTitleResource = null;
-        private String stepInstructionResource = null;
+    private String stepInstructionResource = null;
 
     private NozzleBCalibrationState(String stepTitleResource, String stepInstructionResource)
     {
@@ -167,21 +142,7 @@ public enum NozzleBCalibrationState
         }
     }
 
-    /**
-     *
-     * @param suffix
-     * @return
-     */
-    public String getStepTitle(String suffix)
-    {
-        if (stepTitleResource == null)
-        {
-            return "";
-        } else
-        {
-            return DisplayManager.getLanguageBundle().getString(stepTitleResource + suffix);
-        }
-    }
+
 
     /**
      *

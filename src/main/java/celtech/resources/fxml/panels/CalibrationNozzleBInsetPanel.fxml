@@ -66,22 +66,14 @@
                                 </VBox>
                             </top>
                             <bottom>
-                                <VBox alignment="CENTER" pickOnBounds="false" spacing="5.0" BorderPane.alignment="CENTER">
-                                    <children>
-                                        <Text fx:id="calibrationInstruction" fill="WHITE" layoutX="278.0" layoutY="177.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER">
-                                            <font>
-                                                <Font name="Segoe UI" size="18.0" />
-                                            </font>
-                                        </Text>
-                                    </children>
-                                </VBox>
+                                <VBox alignment="CENTER" pickOnBounds="false" spacing="5.0" BorderPane.alignment="CENTER" />
                             </bottom>
                         </BorderPane>
                     </children>
                 </HBox>
             </center>
             <bottom>
-                <VBox fx:id="calibrationBottomArea" id="calibrationBottomArea" minHeight="0.0">
+                <VBox id="calibrationBottomArea" fx:id="calibrationBottomArea" minHeight="0.0">
                     <children>
                         <CalibrationProgress fx:id="calibrationProgress" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="70.0" />
                         <StackPane id="calibrateBottomMenu" fx:id="calibrateBottomMenu" maxHeight="-Infinity" minHeight="-Infinity" pickOnBounds="false" prefHeight="60.0" BorderPane.alignment="CENTER">

@@ -78,15 +78,17 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                                 printer.transmitDirectGCode("M104", false);
                                 if (printer.getNozzleHeaterMode() == HeaterMode.FIRST_LAYER)
                                 {
-                                    PrinterUtils.waitUntilTemperatureIsReached(printer.extruderTemperatureProperty(), this,
+                                    PrinterUtils.waitUntilTemperatureIsReached(
+                                        printer.extruderTemperatureProperty(), this,
                                         printer.getNozzleFirstLayerTargetTemperature(), 5, 300);
                                 } else
                                 {
-                                    PrinterUtils.waitUntilTemperatureIsReached(printer.extruderTemperatureProperty(), this,
+                                    PrinterUtils.waitUntilTemperatureIsReached(
+                                        printer.extruderTemperatureProperty(), this,
                                         printer.getNozzleTargetTemperature(), 5, 300);
                                 }
                                 printer.transmitDirectGCode(GCodeConstants.switchOnHeadLEDs,
-                                                                 false);
+                                                            false);
                             }
                         }
                     }
@@ -102,44 +104,37 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
 
                 break;
             case NO_MATERIAL_CHECK:
-                extrudeUntilStall();
+                extrudeUntilStall(0);
+                extrudeUntilStall(1);
                 break;
-            case MATERIAL_EXTRUDING_CHECK_FINE_NOZZLE:
-                try
-                {
-                    extrudeForNozzle(0);
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
-                }
+            case PRE_CALIBRATION_PRIMING_FINE:
+                success = extrudeUntilStall(0);
                 break;
-            case MATERIAL_EXTRUDING_CHECK_FILL_NOZZLE:
-                try
-                {
-                    extrudeForNozzle(1);
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
-                }
-                break;                
-            case PRE_CALIBRATION_PRIMING:
-                success = extrudeUntilStall();
+            case PRE_CALIBRATION_PRIMING_FILL:
+                success = extrudeUntilStall(1);
                 break;
             case POST_CALIBRATION_PRIMING:
-                success = extrudeUntilStall();
+                success = extrudeUntilStall(0);
+                success = extrudeUntilStall(1);
                 break;
-            case CONFIRM_MATERIAL_EXTRUDING:
+            case CONFIRM_MATERIAL_EXTRUDING_FINE:
                 try
                 {
-                    printer.transmitDirectGCode("T" + nozzleNumber, false);
+                    printer.transmitDirectGCode("T" + 0, false);
                     printer.transmitDirectGCode("G0 B1", false);
-                    if (nozzleNumber == 0)
-                    {
-                        printer.transmitDirectGCode("G1 E10 F75", false);
-                    } else
-                    {
-                        printer.transmitDirectGCode("G1 E10 F100", false);
-                    }
+                    printer.transmitDirectGCode("G1 E10 F75", false);
+                    PrinterUtils.waitOnBusy(printer, this);
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
+                }
+                break;
+            case CONFIRM_MATERIAL_EXTRUDING_FILL:
+                try
+                {
+                    printer.transmitDirectGCode("T" + 1, false);
+                    printer.transmitDirectGCode("G0 B1", false);
+                    printer.transmitDirectGCode("G1 E10 F100", false);
                     PrinterUtils.waitOnBusy(printer, this);
                 } catch (RoboxCommsException ex)
                 {
@@ -175,13 +170,15 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
         PrinterUtils.waitOnBusy(printer, this);
     }
 
-    private boolean extrudeUntilStall()
+    private boolean extrudeUntilStall(int nozzleNumber)
     {
         boolean success = false;
         try
         {
+            // select nozzle
             printer.transmitDirectGCode("T" + nozzleNumber, false);
-
+            // G36 = extrude until stall E700 = top extruder F2000 = feed rate mm/min (?)
+            // extrude either requested volume or until filament slips
             printer.transmitDirectGCode("G36 E700 F2000", false);
             PrinterUtils.waitOnBusy(printer, this);
 
@@ -192,17 +189,6 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
         }
         return success;
     }
-
-//    private void waitForKeyPress() throws InterruptedException
-//    {
-//        lookingForKeyPress = true;
-//        while (keyPressed == false && isCancelled() == false)
-//        {
-//            Thread.sleep(100);
-//        }
-//        keyPressed = false;
-//        lookingForKeyPress = false;
-//    }
 
     /**
      *
