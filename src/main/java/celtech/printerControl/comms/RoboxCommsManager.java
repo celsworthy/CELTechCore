@@ -155,7 +155,8 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
                         PrinterHandler newPrinterHandler = new PrinterHandler(this, port, suppressPrinterIDChecks, sleepBetweenStatusChecks);
 //                        System.out.println("ADD NEW HANDLER " + newPrinterHandler);
                         pendingPrinterConnections.put(port, newPrinterHandler);
-                        Printer newPrinter = new PrinterImpl(port, this);
+                        HardwareCommandInterface hardwareCommandInterface = new HardwareCommandInterface(newPrinterHandler);
+                        Printer newPrinter = new PrinterImpl(port, this, hardwareCommandInterface);
                         pendingPrinters.put(port, newPrinter);
                         newPrinterHandler.setPrinterToUse(newPrinter);
 
@@ -446,40 +447,40 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
      *
      * @param enable
      */
-    public void enableNullPrinter(boolean enable)
-    {
-
-        if (nullPrinter == null)
-        {
-            nullPrinter = new PrinterImpl(nullPrinterString, this);
-        }
-
-        if (enable)
-        {
-            if (activePrinterStatuses.containsKey(nullPrinterString) == false)
-            {
-                activePrinterStatuses.put(nullPrinterString, nullPrinter);
-                Platform.runLater(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        printerStatus.add(nullPrinter);
-                        nullPrinter.setPrinterConnected(true);
-                    }
-                });
-            }
-        } else
-        {
-            activePrinterStatuses.remove(nullPrinterString);
-            Platform.runLater(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    printerStatus.remove(nullPrinter);
-                }
-            });
-        }
-    }
+//    public void enableNullPrinter(boolean enable)
+//    {
+//
+//        if (nullPrinter == null)
+//        {
+//            nullPrinter = new PrinterImpl(nullPrinterString, this);
+//        }
+//
+//        if (enable)
+//        {
+//            if (activePrinterStatuses.containsKey(nullPrinterString) == false)
+//            {
+//                activePrinterStatuses.put(nullPrinterString, nullPrinter);
+//                Platform.runLater(new Runnable()
+//                {
+//                    @Override
+//                    public void run()
+//                    {
+//                        printerStatus.add(nullPrinter);
+//                        nullPrinter.setPrinterConnected(true);
+//                    }
+//                });
+//            }
+//        } else
+//        {
+//            activePrinterStatuses.remove(nullPrinterString);
+//            Platform.runLater(new Runnable()
+//            {
+//                @Override
+//                public void run()
+//                {
+//                    printerStatus.remove(nullPrinter);
+//                }
+//            });
+//        }
+//    }
 }

@@ -118,10 +118,16 @@ public class PrinterUtils
             {
                 StatusResponse response = printerToCheck.transmitStatusRequest();
 
-                while (response.isBusyStatus() == true && !task.isCancelled() && !TaskController.isShuttingDown())
+                while (response.isBusyStatus() == true && !TaskController.isShuttingDown())
                 {
                     Thread.sleep(100);
                     response = printerToCheck.transmitStatusRequest();
+                    
+                    if (task.isCancelled())
+                    {
+                        failed = true;
+                        break;
+                    }
                 }
             } catch (RoboxCommsException ex)
             {

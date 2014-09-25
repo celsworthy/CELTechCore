@@ -1,10 +1,10 @@
 package celtech.printerControl;
 
 import celtech.appManager.Project;
+import celtech.appManager.TaskController;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
-import celtech.configuration.FilamentContainer;
 import celtech.configuration.Head;
 import celtech.configuration.HeadContainer;
 import celtech.configuration.HeaterMode;
@@ -13,7 +13,7 @@ import celtech.configuration.PauseStatus;
 import celtech.configuration.PrintHead;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
-import celtech.coreUI.components.ModalDialog;
+import celtech.printerControl.comms.CommandInterface;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.GCodeMacros;
@@ -52,9 +52,9 @@ import celtech.services.printing.PrintQueue;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
 import celtech.utils.PrinterUtils;
-import celtech.utils.SystemUtils;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import java.util.concurrent.Callable;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
@@ -68,6 +68,9 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.paint.Color;
@@ -81,9 +84,17 @@ import org.controlsfx.dialog.Dialogs;
  *
  * @author ianhudson
  */
-public class PrinterImpl implements Printer
+public class PrinterImpl extends Printer
 {
+    /*
+     * New Printer section
+     */
 
+    private CommandInterface commandInterface;
+
+    /*
+     * End of New Printer section
+     */
     private String portName = null;
 
     private String whyAreWeWaiting_cooling = null;
@@ -261,7 +272,7 @@ public class PrinterImpl implements Printer
     /*
      * 
      */
-    private ModalDialog noSDDialog = null;
+//    private ModalDialog noSDDialog = null;
     private ResourceBundle languageBundle = null;
 
     private RoboxCommsManager printerCommsManager = null;
@@ -278,26 +289,27 @@ public class PrinterImpl implements Printer
      *
      * @param portName
      * @param commsManager
+     * @param commandInterface
      */
-    public PrinterImpl(String portName, RoboxCommsManager commsManager)
+    public PrinterImpl(String portName, RoboxCommsManager commsManager, CommandInterface commandInterface)
     {
         this.portName = portName;
         this.printerCommsManager = commsManager;
+        this.commandInterface = commandInterface;
 
         languageBundle = DisplayManager.getLanguageBundle();
 
-        Platform.runLater(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                noSDDialog = new ModalDialog();
-                noSDDialog.setTitle(languageBundle.getString("dialogs.noSDCardTitle"));
-                noSDDialog.setMessage(languageBundle.getString("dialogs.noSDCardMessage"));
-                noSDDialog.addButton(languageBundle.getString("dialogs.noSDCardOK"));
-            }
-        });
-
+//        Platform.runLater(new Runnable()
+//        {
+//            @Override
+//            public void run()
+//            {
+//                noSDDialog = new ModalDialog();
+//                noSDDialog.setTitle(languageBundle.getString("dialogs.noSDCardTitle"));
+//                noSDDialog.setMessage(languageBundle.getString("dialogs.noSDCardMessage"));
+//                noSDDialog.addButton(languageBundle.getString("dialogs.noSDCardOK"));
+//            }
+//        });
         ambientTemperatureHistory.setName(languageBundle.getString(
             "printerStatus.temperatureGraphAmbientLabel"));
         bedTemperatureHistory.setName(languageBundle.getString(
@@ -2551,20 +2563,20 @@ public class PrinterImpl implements Printer
                 headEEPROMStatus.set(statusResponse.getHeadEEPROMState());
 
                 sdCardPresent.set(statusResponse.isSDCardPresent());
-                if (statusResponse.isSDCardPresent() == false)
-                {
-                    if (!noSDDialog.isShowing())
-                    {
-                        Platform.runLater(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                noSDDialog.show();
-                            }
-                        });
-                    }
-                }
+//                if (statusResponse.isSDCardPresent() == false)
+//                {
+//                    if (!noSDDialog.isShowing())
+//                    {
+//                        Platform.runLater(new Runnable()
+//                        {
+//                            @Override
+//                            public void run()
+//                            {
+//                                noSDDialog.show();
+//                            }
+//                        });
+//                    }
+//                }
                 setHeadXPosition(statusResponse.getHeadXPosition());
                 setHeadYPosition(statusResponse.getHeadYPosition());
                 setHeadZPosition(statusResponse.getHeadZPosition());
@@ -2626,7 +2638,7 @@ public class PrinterImpl implements Printer
                 break;
             case REEL_EEPROM_DATA:
                 ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) printerEvent.getPayload();
-                
+
                 loadedFilament.set(new Filament(reelResponse));
 
                 reelFilamentID.set(reelResponse.getReelFilamentID());
@@ -2780,18 +2792,8 @@ public class PrinterImpl implements Printer
     @Override
     public String transmitDirectGCode(final String gcodeToSend, boolean addToTranscript) throws RoboxCommsException
     {
-        RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.EXECUTE_GCODE);
+        GCodeDataResponse response = commandInterface.transmitDirectGCode(gcodeToSend);
 
-        String gcodeToSendWithLF = SystemUtils.cleanGCodeForTransmission(gcodeToSend) + "\n";
-
-        gcodePacket.setMessagePayload(gcodeToSendWithLF);
-
-        if (addToTranscript)
-        {
-            addToGCodeTranscript(gcodeToSendWithLF);
-        }
-        GCodeDataResponse response = (GCodeDataResponse) printerCommsManager.submitForWrite(portName,
-                                                                                            gcodePacket);
         if (addToTranscript)
         {
             Platform.runLater(new Runnable()
@@ -3543,5 +3545,91 @@ public class PrinterImpl implements Printer
     public BooleanProperty getReelFilamentIsMutable()
     {
         return reelFilamentIsMutable;
+    }
+
+    /*
+     * New printer section
+     */
+    @Override
+    public boolean canRemoveHead()
+    {
+        return newPrinterStatus == NewPrinterStatus.IDLE;
+    }
+
+    /**
+     *
+     * @throws PrinterException
+     */
+    @Override
+    public void removeHead() throws PrinterException
+    {
+        if (!canRemoveHead())
+        {
+            throw new PrinterException("Cannot remove head", "Cannot remove head");
+        }
+
+        setNewPrinterStatus(NewPrinterStatus.REMOVING_HEAD);
+
+        EventHandler<WorkerStateEvent> actionOnSuccess = (WorkerStateEvent event) ->
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        };
+
+        EventHandler<WorkerStateEvent> actionOnFailure = (WorkerStateEvent event) ->
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        };
+        
+        runInTask((Callable<Boolean>) () ->
+        {
+            doSendRemoveHeadGCode();
+            setNewPrinterStatus(NewPrinterStatus.IDLE);
+            return true;
+        }, actionOnSuccess, actionOnFailure);
+    }
+
+    private void runInTask(Callable<Boolean> operation, EventHandler<WorkerStateEvent> actionOnSuccess, EventHandler<WorkerStateEvent> actionOnFailure)
+    {
+        Task<Boolean> backgroundTask = new Task<Boolean>()
+        {
+            @Override
+            protected Boolean call() throws Exception
+            {
+                return operation.call();
+            }
+        };
+
+        backgroundTask.setOnFailed(actionOnFailure);
+        backgroundTask.setOnSucceeded(actionOnSuccess);
+
+        Thread removeHeadThread = new Thread(backgroundTask, "Remove Head Task");
+        removeHeadThread.start();
+    }
+
+    private void doSendRemoveHeadGCode() throws RoboxCommsException
+    {
+        commandInterface.transmitDirectGCode(GCodeConstants.ejectFilament1);
+        
+        if (PrinterUtils.waitOnBusy(this, thetask))
+        {
+            return;
+        }
+            
+        commandInterface.transmitDirectGCode(GCodeConstants.carriageAbsoluteMoveMode);
+        commandInterface.transmitDirectGCode("G1 X170 Y0 Z20");
+        PrinterUtils.waitOnBusy(this, thetask);
+        
+        // Notify caller that we're done
+    }
+
+    @Override
+    public boolean canPrint()
+    {
+        return false;
+    }
+
+    private void setNewPrinterStatus(NewPrinterStatus newPrinterStatus)
+    {
+        this.newPrinterStatus = newPrinterStatus;
     }
 }

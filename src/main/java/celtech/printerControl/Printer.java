@@ -37,489 +37,489 @@ import javafx.scene.paint.Color;
  *
  * @author tony
  */
-public interface Printer
+public abstract class Printer extends NewPrinter
 {
-    public StringProperty getPrinterUniqueIDProperty();
+    public abstract StringProperty getPrinterUniqueIDProperty();
 
     /**
      *
      * @return
      */
-    public String getPrinterPort();
+    public abstract String getPrinterPort();
 
     /**
      *
      * @return
      */
-    public BooleanProperty getPrinterIDDataChangedToggle();
+    public abstract BooleanProperty getPrinterIDDataChangedToggle();
 
     /**
      *
      * @return
      */
-    public StringProperty getPrintermodel();
+    public abstract StringProperty getPrintermodel();
 
     /**
      *
      * @return
      */
-    public StringProperty getPrinteredition();
+    public abstract StringProperty getPrinteredition();
 
     /**
      *
      * @return
      */
-    public StringProperty getPrinterweekOfManufacture();
+    public abstract StringProperty getPrinterweekOfManufacture();
 
     /**
      *
      * @return
      */
-    public StringProperty getPrinteryearOfManufacture();
+    public abstract StringProperty getPrinteryearOfManufacture();
 
     /**
      *
      * @return
      */
-    public StringProperty getPrinterpoNumber();
+    public abstract StringProperty getPrinterpoNumber();
 
     /**
      *
      * @return
      */
-    public StringProperty getPrinterserialNumber();
+    public abstract StringProperty getPrinterserialNumber();
 
     /**
      *
      * @return
      */
-    public StringProperty getPrintercheckByte();
+    public abstract StringProperty getPrintercheckByte();
 
     /**
      *
      * @return
      */
-    public String getPrinterUniqueID();
+    public abstract String getPrinterUniqueID();
 
     /**
      *
      * @return
      */
-    public StringProperty printerFriendlyNameProperty();
+    public abstract StringProperty printerFriendlyNameProperty();
 
     /**
      *
      * @return
      */
-    public String getPrinterFriendlyName();
+    public abstract String getPrinterFriendlyName();
 
     /**
      *
      * @param value
      */
-    public void setPrinterColour(Color value);
+    public abstract void setPrinterColour(Color value);
 
     /**
      *
      * @return
      */
-    public Color getPrinterColour();
+    public abstract Color getPrinterColour();
 
     /**
      *
      * @return
      */
-    public ObjectProperty<Color> printerColourProperty();
+    public abstract ObjectProperty<Color> printerColourProperty();
 
     /**
      *
      * @param value
      */
-    public void setHeadXPosition(float value);
+    public abstract void setHeadXPosition(float value);
 
     /**
      *
      * @return
      */
-    public float getHeadXPosition();
+    public abstract float getHeadXPosition();
 
     /**
      *
      * @return
      */
-    public FloatProperty headXPositionProperty();
+    public abstract FloatProperty headXPositionProperty();
 
     /**
      *
      * @param value
      */
-    public void setHeadYPosition(float value);
+    public abstract void setHeadYPosition(float value);
 
     /**
      *
      * @return
      */
-    public float getHeadYPosition();
+    public abstract float getHeadYPosition();
 
     /**
      *
      * @return
      */
-    public FloatProperty headYPositionProperty();
+    public abstract FloatProperty headYPositionProperty();
 
     /**
      *
      * @param value
      */
-    public void setHeadZPosition(float value);
+    public abstract void setHeadZPosition(float value);
 
     /**
      *
      * @return
      */
-    public float getHeadZPosition();
+    public abstract float getHeadZPosition();
 
     /**
      *
      * @return
      */
-    public FloatProperty headZPositionProperty();
+    public abstract FloatProperty headZPositionProperty();
 
     /**
      *
      * @param value
      */
-    public void setBPosition(float value);
+    public abstract void setBPosition(float value);
 
     /**
      *
      * @return
      */
-    public float getBPosition();
+    public abstract float getBPosition();
 
     /**
      *
      * @return
      */
-    public FloatProperty BPositionProperty();
+    public abstract FloatProperty BPositionProperty();
 
     /**
      *
      * @param value
      */
-    public void setPrinterConnected(boolean value);
+    public abstract void setPrinterConnected(boolean value);
 
     /**
      *
      * @return
      */
-    public boolean getPrinterConnected();
+    public abstract boolean getPrinterConnected();
 
     /**
      *
      * @return
      */
-    public BooleanProperty printerConnectedProperty();
+    public abstract BooleanProperty printerConnectedProperty();
 
     /**
      *
      * @param value
      */
-    public void setAmbientTemperature(int value);
+    public abstract void setAmbientTemperature(int value);
 
     /**
      *
      * @return
      */
-    public float getAmbientTemperature();
+    public abstract float getAmbientTemperature();
 
     /**
      *
      * @return
      */
-    public IntegerProperty ambientTemperatureProperty();
+    public abstract IntegerProperty ambientTemperatureProperty();
 
     /**
      *
      * @return
      */
-    public XYChart.Series<Number, Number> ambientTemperatureHistory();
+    public abstract XYChart.Series<Number, Number> ambientTemperatureHistory();
 
     /**
      *
      * @return
      */
-    public XYChart.Series<Number, Number> ambientTargetTemperatureHistory();
+    public abstract XYChart.Series<Number, Number> ambientTargetTemperatureHistory();
 
     /**
      *
      * @param value
      */
-    public void setAmbientTargetTemperature(int value);
+    public abstract void setAmbientTargetTemperature(int value);
 
     /**
      *
      * @return
      */
-    public int getAmbientTargetTemperature();
+    public abstract int getAmbientTargetTemperature();
 
     /**
      *
      * @return
      */
-    public IntegerProperty ambientTargetTemperatureProperty();
+    public abstract IntegerProperty ambientTargetTemperatureProperty();
 
     /**
      *
      * @param value
      */
-    public void setAmbientFanOn(boolean value);
+    public abstract void setAmbientFanOn(boolean value);
 
     /**
      *
      * @return
      */
-    public boolean getAmbientFanOn();
+    public abstract boolean getAmbientFanOn();
 
     /**
      *
      * @return
      */
-    public BooleanProperty ambientFanOnProperty();
+    public abstract BooleanProperty ambientFanOnProperty();
 
     /**
      *
      * @return
      */
-    public HeaterMode getBedHeaterMode();
+    public abstract HeaterMode getBedHeaterMode();
 
     /**
      *
      * @return
      */
-    public ObjectProperty<HeaterMode> getBedHeaterModeProperty();
+    public abstract ObjectProperty<HeaterMode> getBedHeaterModeProperty();
 
     /**
      *
      * @return
      */
-    public HeaterMode getNozzleHeaterMode();
+    public abstract HeaterMode getNozzleHeaterMode();
 
     /**
      *
      * @return
      */
-    public ObjectProperty<HeaterMode> getNozzleHeaterModeProperty();
+    public abstract ObjectProperty<HeaterMode> getNozzleHeaterModeProperty();
 
     /**
      *
      * @param value
      */
-    public void setBedTemperature(int value);
+    public abstract void setBedTemperature(int value);
 
     /**
      *
      * @return
      */
-    public int getBedTemperature();
+    public abstract int getBedTemperature();
 
     /**
      *
      * @return
      */
-    public IntegerProperty bedTemperatureProperty();
+    public abstract IntegerProperty bedTemperatureProperty();
 
     /**
      *
      * @return
      */
-    public XYChart.Series<Number, Number> bedTemperatureHistory();
+    public abstract XYChart.Series<Number, Number> bedTemperatureHistory();
 
     /**
      *
      * @return
      */
-    public XYChart.Series<Number, Number> bedTargetTemperatureHistory();
+    public abstract XYChart.Series<Number, Number> bedTargetTemperatureHistory();
 
     /**
      *
      * @param value
      */
-    public void setBedFirstLayerTargetTemperature(int value);
+    public abstract void setBedFirstLayerTargetTemperature(int value);
 
     /**
      *
      * @return
      */
-    public int getBedFirstLayerTargetTemperature();
+    public abstract int getBedFirstLayerTargetTemperature();
 
     /**
      *
      * @return
      */
-    public IntegerProperty bedFirstLayerTargetTemperatureProperty();
+    public abstract IntegerProperty bedFirstLayerTargetTemperatureProperty();
 
     /**
      *
      * @param value
      */
-    public void setBedTargetTemperature(int value);
+    public abstract void setBedTargetTemperature(int value);
 
     /**
      *
      * @return
      */
-    public int getBedTargetTemperature();
+    public abstract int getBedTargetTemperature();
 
     /**
      *
      * @return
      */
-    public IntegerProperty bedTargetTemperatureProperty();
+    public abstract IntegerProperty bedTargetTemperatureProperty();
 
     /**
      *
      * @param value
      */
-    public void setExtruderTemperature(int value);
+    public abstract void setExtruderTemperature(int value);
 
     /**
      *
      * @return
      */
-    public int getExtruderTemperature();
+    public abstract int getExtruderTemperature();
 
     /**
      *
      * @return
      */
-    public IntegerProperty extruderTemperatureProperty();
+    public abstract IntegerProperty extruderTemperatureProperty();
 
     /**
      *
      * @return
      */
-    public XYChart.Series<Number, Number> nozzleTemperatureHistory();
+    public abstract XYChart.Series<Number, Number> nozzleTemperatureHistory();
 
     /**
      *
      * @return
      */
-    public XYChart.Series<Number, Number> nozzleTargetTemperatureHistory();
+    public abstract XYChart.Series<Number, Number> nozzleTargetTemperatureHistory();
 
     /**
      *
      * @param value
      */
-    public void setNozzleFirstLayerTargetTemperature(int value);
+    public abstract void setNozzleFirstLayerTargetTemperature(int value);
 
     /**
      *
      * @return
      */
-    public int getNozzleFirstLayerTargetTemperature();
+    public abstract int getNozzleFirstLayerTargetTemperature();
 
     /**
      *
      * @return
      */
-    public IntegerProperty nozzleFirstLayerTargetTemperatureProperty();
+    public abstract IntegerProperty nozzleFirstLayerTargetTemperatureProperty();
 
     /**
      *
      * @param value
      */
-    public void setNozzleTargetTemperature(int value);
+    public abstract void setNozzleTargetTemperature(int value);
 
     /**
      *
      * @return
      */
-    public int getNozzleTargetTemperature();
+    public abstract int getNozzleTargetTemperature();
 
     /**
      *
      * @return
      */
-    public IntegerProperty nozzleTargetTemperatureProperty();
+    public abstract IntegerProperty nozzleTargetTemperatureProperty();
 
     /**
      *
      * @param value
      */
-    public void setHeadFanOn(boolean value);
+    public abstract void setHeadFanOn(boolean value);
 
     /**
      *
      * @return
      */
-    public boolean getHeadFanOn();
+    public abstract boolean getHeadFanOn();
 
     /**
      *
      * @return
      */
-    public BooleanProperty headFanOnProperty();
+    public abstract BooleanProperty headFanOnProperty();
 
     /**
      *
      * @param value
      */
-    public void setBusy(boolean value);
+    public abstract void setBusy(boolean value);
 
     /**
      *
      * @return
      */
-    public boolean getBusy();
+    public abstract boolean getBusy();
 
     /**
      *
      * @return
      */
-    public BooleanProperty busyProperty();
+    public abstract BooleanProperty busyProperty();
 
     /**
      *
      * @param value
      */
-    public void setPauseStatus(PauseStatus value);
+    public abstract void setPauseStatus(PauseStatus value);
 
     /**
      *
      * @return
      */
-    public PauseStatus getPauseStatus();
+    public abstract PauseStatus getPauseStatus();
 
     /**
      *
      * @return
      */
-    public ObjectProperty<PauseStatus> pauseStatusProperty();
+    public abstract ObjectProperty<PauseStatus> pauseStatusProperty();
 
     /**
      *
      * @param value
      */
-    public void setWhyAreWeWaiting(WhyAreWeWaitingState value);
+    public abstract void setWhyAreWeWaiting(WhyAreWeWaitingState value);
 
     /**
      *
      * @return
      */
-    public WhyAreWeWaitingState getWhyAreWeWaiting();
+    public abstract WhyAreWeWaitingState getWhyAreWeWaiting();
 
     /**
      *
      * @return
      */
-    public StringProperty getWhyAreWeWaitingStringProperty();
+    public abstract StringProperty getWhyAreWeWaitingStringProperty();
 
     /**
      *
      * @return
      */
-    public ObjectProperty<WhyAreWeWaitingState> whyAreWeWaitingProperty();
+    public abstract ObjectProperty<WhyAreWeWaitingState> whyAreWeWaitingProperty();
 
     /*
      * Errors
@@ -528,163 +528,163 @@ public interface Printer
      *
      * @param value
      */
-    public void setErrorsDetected(boolean value);
+    public abstract void setErrorsDetected(boolean value);
 
     /**
      *
      * @return
      */
-    public boolean getErrorsDetected();
+    public abstract boolean getErrorsDetected();
 
     /**
      *
      * @return
      */
-    public BooleanProperty errorsDetectedProperty();
+    public abstract BooleanProperty errorsDetectedProperty();
 
     /**
      *
      * @return
      */
-    public BooleanProperty SDCardErrorProperty();
+    public abstract BooleanProperty SDCardErrorProperty();
 
     /**
      *
      * @return
      */
-    public boolean getSDCardError();
+    public abstract boolean getSDCardError();
 
     /**
      *
      * @param SDCardError
      */
-    public void setSDCardError(boolean SDCardError);
+    public abstract void setSDCardError(boolean SDCardError);
 
     /**
      *
      * @return
      */
-    public BooleanProperty chunkSequenceErrorProperty();
+    public abstract BooleanProperty chunkSequenceErrorProperty();
 
     /**
      *
      * @return
      */
-    public boolean getChunkSequenceError();
+    public abstract boolean getChunkSequenceError();
 
     /**
      *
      * @param ChunkSequenceError
      */
-    public void setChunkSequenceError(boolean ChunkSequenceError);
+    public abstract void setChunkSequenceError(boolean ChunkSequenceError);
 
     /**
      *
      * @return
      */
-    public BooleanProperty fileTooLargeErrorProperty();
+    public abstract BooleanProperty fileTooLargeErrorProperty();
 
     /**
      *
      * @return
      */
-    public boolean getFileTooLargeError();
+    public abstract boolean getFileTooLargeError();
 
     /**
      *
      * @param FileTooLargeError
      */
-    public void setFileTooLargeError(boolean FileTooLargeError);
+    public abstract void setFileTooLargeError(boolean FileTooLargeError);
 
     /**
      *
      * @return
      */
-    public BooleanProperty GCodeLineTooLongErrorProperty();
+    public abstract BooleanProperty GCodeLineTooLongErrorProperty();
 
     /**
      *
      * @return
      */
-    public boolean getGCodeLineTooLongError();
+    public abstract boolean getGCodeLineTooLongError();
 
     /**
      *
      * @param GCodeLineTooLongError
      */
-    public void setGCodeLineTooLongError(boolean GCodeLineTooLongError);
+    public abstract void setGCodeLineTooLongError(boolean GCodeLineTooLongError);
 
     /**
      *
      * @return
      */
-    public BooleanProperty USBRxErrorProperty();
+    public abstract BooleanProperty USBRxErrorProperty();
 
     /**
      *
      * @return
      */
-    public boolean getUSBRxError();
+    public abstract boolean getUSBRxError();
 
     /**
      *
      * @param USBRxError
      */
-    public void setUSBRxError(boolean USBRxError);
+    public abstract void setUSBRxError(boolean USBRxError);
 
     /**
      *
      * @return
      */
-    public BooleanProperty USBTxErrorProperty();
+    public abstract BooleanProperty USBTxErrorProperty();
 
     /**
      *
      * @return
      */
-    public boolean getUSBTxError();
+    public abstract boolean getUSBTxError();
 
     /**
      *
      * @param USBTxError
      */
-    public void setUSBTxError(boolean USBTxError);
+    public abstract void setUSBTxError(boolean USBTxError);
 
     /**
      *
      * @return
      */
-    public BooleanProperty BadCommandErrorProperty();
+    public abstract BooleanProperty BadCommandErrorProperty();
 
     /**
      *
      * @return
      */
-    public boolean getBadCommandError();
+    public abstract boolean getBadCommandError();
 
     /**
      *
      * @param BadCommandError
      */
-    public void setBadCommandError(boolean BadCommandError);
+    public abstract void setBadCommandError(boolean BadCommandError);
 
     /**
      *
      * @return
      */
-    public BooleanProperty EEPROMErrorProperty();
+    public abstract BooleanProperty EEPROMErrorProperty();
 
     /**
      *
      * @return
      */
-    public boolean getEEPROMError();
+    public abstract boolean getEEPROMError();
 
     /**
      *
      * @param EEPROMError
      */
-    public void setEEPROMError(boolean EEPROMError);
+    public abstract void setEEPROMError(boolean EEPROMError);
 
     /*
      * Switches
@@ -693,163 +693,163 @@ public interface Printer
      *
      * @return
      */
-    public BooleanProperty XStopSwitchProperty();
+    public abstract BooleanProperty XStopSwitchProperty();
 
     /**
      *
      * @return
      */
-    public boolean getXStopSwitch();
+    public abstract boolean getXStopSwitch();
 
     /**
      *
      * @param XStopSwitch
      */
-    public void setXStopSwitch(boolean XStopSwitch);
+    public abstract void setXStopSwitch(boolean XStopSwitch);
 
     /**
      *
      * @return
      */
-    public BooleanProperty YStopSwitchProperty();
+    public abstract BooleanProperty YStopSwitchProperty();
 
     /**
      *
      * @return
      */
-    public boolean getYStopSwitch();
+    public abstract boolean getYStopSwitch();
 
     /**
      *
      * @param YStopSwitch
      */
-    public void setYStopSwitch(boolean YStopSwitch);
+    public abstract void setYStopSwitch(boolean YStopSwitch);
 
     /**
      *
      * @return
      */
-    public BooleanProperty ZStopSwitchProperty();
+    public abstract BooleanProperty ZStopSwitchProperty();
 
     /**
      *
      * @return
      */
-    public boolean getZStopSwitch();
+    public abstract boolean getZStopSwitch();
 
     /**
      *
      * @param ZStopSwitch
      */
-    public void setZStopSwitch(boolean ZStopSwitch);
+    public abstract void setZStopSwitch(boolean ZStopSwitch);
 
     /**
      *
      * @return
      */
-    public BooleanProperty ZTopStopSwitchProperty();
+    public abstract BooleanProperty ZTopStopSwitchProperty();
 
     /**
      *
      * @return
      */
-    public boolean getZTopStopSwitch();
+    public abstract boolean getZTopStopSwitch();
 
     /**
      *
      * @param value
      */
-    public void setZTopStopSwitch(boolean value);
+    public abstract void setZTopStopSwitch(boolean value);
 
     /**
      *
      * @return
      */
-    public BooleanProperty Filament1LoadedProperty();
+    public abstract BooleanProperty Filament1LoadedProperty();
 
     /**
      *
      * @return
      */
-    public boolean getFilament1Loaded();
+    public abstract boolean getFilament1Loaded();
 
     /**
      *
      * @param FilamentLoaded
      */
-    public void setFilament1Loaded(boolean FilamentLoaded);
+    public abstract void setFilament1Loaded(boolean FilamentLoaded);
 
     /**
      *
      * @return
      */
-    public BooleanProperty Filament2LoadedProperty();
+    public abstract BooleanProperty Filament2LoadedProperty();
 
     /**
      *
      * @return
      */
-    public boolean getFilament2Loaded();
+    public abstract boolean getFilament2Loaded();
 
     /**
      *
      * @param FilamentLoaded
      */
-    public void setFilament2Loaded(boolean FilamentLoaded);
+    public abstract void setFilament2Loaded(boolean FilamentLoaded);
 
     /**
      *
      * @return
      */
-    public BooleanProperty Filament1IndexProperty();
+    public abstract BooleanProperty Filament1IndexProperty();
 
     /**
      *
      * @return
      */
-    public boolean getFilament1Index();
+    public abstract boolean getFilament1Index();
 
     /**
      *
      * @param FilamentIndex
      */
-    public void setFilament1Index(boolean FilamentIndex);
+    public abstract void setFilament1Index(boolean FilamentIndex);
 
     /**
      *
      * @return
      */
-    public BooleanProperty Filament2IndexProperty();
+    public abstract BooleanProperty Filament2IndexProperty();
 
     /**
      *
      * @return
      */
-    public boolean getFilament2Index();
+    public abstract boolean getFilament2Index();
 
     /**
      *
      * @param FilamentIndex
      */
-    public void setFilament2Index(boolean FilamentIndex);
+    public abstract void setFilament2Index(boolean FilamentIndex);
 
     /**
      *
      * @return
      */
-    public BooleanProperty reelButtonProperty();
+    public abstract BooleanProperty reelButtonProperty();
 
     /**
      *
      * @return
      */
-    public boolean getReelButton();
+    public abstract boolean getReelButton();
 
     /**
      *
      * @param FilamentIndex
      */
-    public void setReelButton(boolean FilamentIndex);
+    public abstract void setReelButton(boolean FilamentIndex);
 
     /*
      * Head data
@@ -858,121 +858,121 @@ public interface Printer
      *
      * @return
      */
-    public ObjectProperty<Head> attachedHeadProperty();
+    public abstract ObjectProperty<Head> attachedHeadProperty();
 
     /**
      *
      * @return
      */
-    public BooleanProperty getHeadDataChangedToggle();
+    public abstract BooleanProperty getHeadDataChangedToggle();
 
     /**
      *
      * @return
      */
-    public ObjectProperty<EEPROMState> headEEPROMStatusProperty();
+    public abstract ObjectProperty<EEPROMState> headEEPROMStatusProperty();
 
     /**
      *
      * @return
      */
-    public EEPROMState getHeadEEPROMStatus();
+    public abstract EEPROMState getHeadEEPROMStatus();
 
     /**
      *
      * @return
      */
-    public StringProperty getHeadTypeCode();
+    public abstract StringProperty getHeadTypeCode();
 
     /**
      *
      * @return
      */
-    public StringProperty getHeadType();
+    public abstract StringProperty getHeadType();
 
     /**
      *
      * @return
      */
-    public StringProperty getHeadUniqueID();
+    public abstract StringProperty getHeadUniqueID();
 
     /**
      *
      * @return
      */
-    public FloatProperty getHeadMaximumTemperature();
+    public abstract FloatProperty getHeadMaximumTemperature();
 
     /**
      *
      * @return
      */
-    public FloatProperty getHeadThermistorBeta();
+    public abstract FloatProperty getHeadThermistorBeta();
 
     /**
      *
      * @return
      */
-    public FloatProperty getHeadThermistorTCal();
+    public abstract FloatProperty getHeadThermistorTCal();
 
     /**
      *
      * @return
      */
-    public FloatProperty getHeadNozzle1XOffset();
+    public abstract FloatProperty getHeadNozzle1XOffset();
 
     /**
      *
      * @return
      */
-    public FloatProperty getHeadNozzle1YOffset();
+    public abstract FloatProperty getHeadNozzle1YOffset();
 
     /**
      *
      * @return
      */
-    public FloatProperty getHeadNozzle1ZOffset();
+    public abstract FloatProperty getHeadNozzle1ZOffset();
 
     /**
      *
      * @return
      */
-    public FloatProperty getHeadNozzle1BOffset();
+    public abstract FloatProperty getHeadNozzle1BOffset();
 
     /**
      *
      * @return
      */
-    public FloatProperty getHeadNozzle2XOffset();
+    public abstract FloatProperty getHeadNozzle2XOffset();
 
     /**
      *
      * @return
      */
-    public FloatProperty getHeadNozzle2YOffset();
+    public abstract FloatProperty getHeadNozzle2YOffset();
 
     /**
      *
      * @return
      */
-    public FloatProperty getHeadNozzle2ZOffset();
+    public abstract FloatProperty getHeadNozzle2ZOffset();
 
     /**
      *
      * @return
      */
-    public FloatProperty getHeadNozzle2BOffset();
+    public abstract FloatProperty getHeadNozzle2BOffset();
 
     /**
      *
      * @return
      */
-    public FloatProperty getHeadHoursCounter();
+    public abstract FloatProperty getHeadHoursCounter();
 
     /**
      *
      * @return
      */
-    public FloatProperty getLastFilamentTemperature();
+    public abstract FloatProperty getLastFilamentTemperature();
     /*
      * Reel data
      */
@@ -981,101 +981,101 @@ public interface Printer
      *
      * @return
      */
-    public ObjectProperty<Filament> loadedFilamentProperty();
+    public abstract ObjectProperty<Filament> loadedFilamentProperty();
 
     /**
      *
      * @return
      */
-    public BooleanProperty reelDataChangedProperty();
+    public abstract BooleanProperty reelDataChangedProperty();
 
     /**
      *
      * @return
      */
-    public ObjectProperty<EEPROMState> reelEEPROMStatusProperty();
+    public abstract ObjectProperty<EEPROMState> reelEEPROMStatusProperty();
 
     /**
      *
      * @return
      */
-    public EEPROMState getReelEEPROMStatus();
+    public abstract EEPROMState getReelEEPROMStatus();
 
     /**
      *
      * @return
      */
-    public StringProperty reelFriendlyNameProperty();
+    public abstract StringProperty reelFriendlyNameProperty();
 
     /**
      *
      * @return
      */
-    public String getReelFriendlyName();
+    public abstract String getReelFriendlyName();
     
-    public MaterialType getReelMaterialType();
+    public abstract MaterialType getReelMaterialType();
     
-    public Color getReelDisplayColour();
+    public abstract Color getReelDisplayColour();
 
     /**
      *
      * @return
      */
-    public IntegerProperty getReelAmbientTemperature();
+    public abstract IntegerProperty getReelAmbientTemperature();
 
     /**
      *
      * @return
      */
-    public IntegerProperty getReelBedTemperature();
+    public abstract IntegerProperty getReelBedTemperature();
 
     /**
      *
      * @return
      */
-    public FloatProperty getReelFilamentDiameter();
+    public abstract FloatProperty getReelFilamentDiameter();
 
     /**
      *
      * @return
      */
-    public IntegerProperty getReelFirstLayerBedTemperature();
+    public abstract IntegerProperty getReelFirstLayerBedTemperature();
 
     /**
      *
      * @return
      */
-    public IntegerProperty getReelFirstLayerNozzleTemperature();
+    public abstract IntegerProperty getReelFirstLayerNozzleTemperature();
 
     /**
      *
      * @return
      */
-    public FloatProperty getReelFilamentMultiplier();
+    public abstract FloatProperty getReelFilamentMultiplier();
 
     /**
      *
      * @return
      */
-    public FloatProperty getReelFeedRateMultiplier();
+    public abstract FloatProperty getReelFeedRateMultiplier();
 
     /**
      *
      * @return
      */
-    public IntegerProperty getReelNozzleTemperature();
+    public abstract IntegerProperty getReelNozzleTemperature();
 
     /**
      *
      * @return
      */
-    public FloatProperty getReelRemainingFilament();
+    public abstract FloatProperty getReelRemainingFilament();
 
     /**
      *
      * @return
      */
-    public StringProperty getReelFilamentID();
+    public abstract StringProperty getReelFilamentID();
 
     /*
      *
@@ -1084,49 +1084,49 @@ public interface Printer
      *
      * @return
      */
-    public BooleanProperty NozzleHomedProperty();
+    public abstract BooleanProperty NozzleHomedProperty();
 
     /**
      *
      * @return
      */
-    public boolean getNozzleHomed();
+    public abstract boolean getNozzleHomed();
 
     /**
      *
      * @param NozzleHomed
      */
-    public void setNozzleHomed(boolean NozzleHomed);
+    public abstract void setNozzleHomed(boolean NozzleHomed);
 
     /**
      *
      * @return
      */
-    public BooleanProperty LidOpenProperty();
+    public abstract BooleanProperty LidOpenProperty();
 
     /**
      *
      * @return
      */
-    public boolean getLidOpen();
+    public abstract boolean getLidOpen();
 
     /**
      *
      * @param LidOpen
      */
-    public void setLidOpen(boolean LidOpen);
+    public abstract void setLidOpen(boolean LidOpen);
 
     /**
      *
      * @return
      */
-    public BooleanProperty sdCardPresentProperty();
+    public abstract BooleanProperty sdCardPresentProperty();
 
     /**
      *
      * @return
      */
-    public boolean sdCardPresent();
+    public abstract boolean sdCardPresent();
 
     /*
      * Firmware
@@ -1135,73 +1135,73 @@ public interface Printer
      *
      * @param value
      */
-    public void setFirmwareVersion(String value);
+    public abstract void setFirmwareVersion(String value);
 
     /**
      *
      * @return
      */
-    public String getFirmwareVersion();
+    public abstract String getFirmwareVersion();
 
     /**
      *
      * @return
      */
-    public StringProperty firmwareVersionProperty();
+    public abstract StringProperty firmwareVersionProperty();
 
     /**
      *
      * @param value
      */
-    public void setPrinterStatus(PrinterStatusEnumeration value);
+    public abstract void setPrinterStatus(PrinterStatusEnumeration value);
 
     /**
      *
      * @return
      */
-    public PrinterStatusEnumeration getPrinterStatus();
+    public abstract PrinterStatusEnumeration getPrinterStatus();
 
     /**
      *
      * @return
      */
-    public ObjectProperty<PrinterStatusEnumeration> printerStatusProperty();
+    public abstract ObjectProperty<PrinterStatusEnumeration> printerStatusProperty();
 
     /**
      *
      * @param value
      */
-    public void setPrintJobLineNumber(int value);
+    public abstract void setPrintJobLineNumber(int value);
 
     /**
      *
      * @return
      */
-    public int getPrintJobLineNumber();
+    public abstract int getPrintJobLineNumber();
 
     /**
      *
      * @return
      */
-    public IntegerProperty printJobLineNumberProperty();
+    public abstract IntegerProperty printJobLineNumberProperty();
 
     /**
      *
      * @param value
      */
-    public void setPrintJobID(String value);
+    public abstract void setPrintJobID(String value);
 
     /**
      *
      * @return
      */
-    public String getPrintJobID();
+    public abstract String getPrintJobID();
 
     /**
      *
      * @return
      */
-    public StringProperty printJobIDProperty();
+    public abstract StringProperty printJobIDProperty();
 
     /*
      * Error lists for tooltips
@@ -1210,43 +1210,43 @@ public interface Printer
      *
      * @param value
      */
-    public void setErrorList(String value);
+    public abstract void setErrorList(String value);
 
     /**
      *
      * @return
      */
-    public String getErrorList();
+    public abstract String getErrorList();
 
     /**
      *
      * @return
      */
-    public StringProperty errorListProperty();
+    public abstract StringProperty errorListProperty();
 
     /**
      *
      * @param printerEvent
      */
-    public void processRoboxEvent(RoboxEvent printerEvent);
+    public abstract void processRoboxEvent(RoboxEvent printerEvent);
 
     /**
      *
      * @param gcodeToSend
      */
-    public void addToGCodeTranscript(String gcodeToSend);
+    public abstract void addToGCodeTranscript(String gcodeToSend);
 
     /**
      *
      * @return
      */
-    public ObservableList<String> gcodeTranscriptProperty();
+    public abstract ObservableList<String> gcodeTranscriptProperty();
 
     /**
      *
      * @return
      */
-    public PrintQueue getPrintQueue();
+    public abstract PrintQueue getPrintQueue();
 
     /*
      * Data transmission commands
@@ -1258,14 +1258,14 @@ public interface Printer
      * @return
      * @throws RoboxCommsException
      */
-    public String transmitDirectGCode(String gcodeToSend, boolean addToTranscript) throws RoboxCommsException;
+    public abstract String transmitDirectGCode(String gcodeToSend, boolean addToTranscript) throws RoboxCommsException;
 
     /**
      *
      * @param macroName
      * @throws RoboxCommsException
      */
-    public void transmitStoredGCode(String macroName) throws RoboxCommsException;
+    public abstract void transmitStoredGCode(String macroName) throws RoboxCommsException;
 
     /**
      *
@@ -1273,57 +1273,57 @@ public interface Printer
      * @param checkForPurge
      * @throws RoboxCommsException
      */
-    public void transmitStoredGCode(String macroName, boolean checkForPurge) throws RoboxCommsException;
+    public abstract void transmitStoredGCode(String macroName, boolean checkForPurge) throws RoboxCommsException;
 
     /**
      *
      * @throws RoboxCommsException
      */
-    public void transmitAbortPrint() throws RoboxCommsException;
+    public abstract void transmitAbortPrint() throws RoboxCommsException;
 
     /**
      *
      * @throws RoboxCommsException
      */
-    public void transmitPausePrint() throws RoboxCommsException;
+    public abstract void transmitPausePrint() throws RoboxCommsException;
 
     /**
      *
      * @throws RoboxCommsException
      */
-    public void transmitResumePrint() throws RoboxCommsException;
+    public abstract void transmitResumePrint() throws RoboxCommsException;
 
     /**
      *
      * @return @throws RoboxCommsException
      */
-    public AckResponse transmitFormatHeadEEPROM() throws RoboxCommsException;
+    public abstract AckResponse transmitFormatHeadEEPROM() throws RoboxCommsException;
 
     /**
      *
      * @return @throws RoboxCommsException
      */
-    public AckResponse transmitFormatReelEEPROM() throws RoboxCommsException;
+    public abstract AckResponse transmitFormatReelEEPROM() throws RoboxCommsException;
 
     /**
      *
      * @return @throws RoboxCommsException
      */
-    public ReelEEPROMDataResponse transmitReadReelEEPROM() throws RoboxCommsException;
+    public abstract ReelEEPROMDataResponse transmitReadReelEEPROM() throws RoboxCommsException;
 
     /**
      *
      * @return @throws RoboxCommsException
      */
-    public HeadEEPROMDataResponse transmitReadHeadEEPROM() throws RoboxCommsException;
+    public abstract HeadEEPROMDataResponse transmitReadHeadEEPROM() throws RoboxCommsException;
 
     
-    public void transmitResetErrors() throws RoboxCommsException;
+    public abstract void transmitResetErrors() throws RoboxCommsException;
     
     
-    public AckResponse transmitReportErrors() throws RoboxCommsException;
+    public abstract AckResponse transmitReportErrors() throws RoboxCommsException;
     
-    public boolean transmitUpdateFirmware(final String firmwareID) throws RoboxCommsException;
+    public abstract boolean transmitUpdateFirmware(final String firmwareID) throws RoboxCommsException;
     
     /**
      *
@@ -1331,7 +1331,7 @@ public interface Printer
      * @return
      * @throws RoboxCommsException
      */
-    public AckResponse transmitWriteReelEEPROM(Filament filament) throws RoboxCommsException;
+    public abstract AckResponse transmitWriteReelEEPROM(Filament filament) throws RoboxCommsException;
 
     /**
      *
@@ -1348,7 +1348,7 @@ public interface Printer
      * @param reelRemainingFilament
      * @throws RoboxCommsException
      */
-    public void transmitWriteReelEEPROM(String reelTypeCode, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
+    public abstract void transmitWriteReelEEPROM(String reelTypeCode, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
             float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter,
             float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament,
             String friendlyName, MaterialType materialType, Color displayColour) throws RoboxCommsException;
@@ -1358,7 +1358,7 @@ public interface Printer
      * @param headToWrite
      * @throws RoboxCommsException
      */
-    public void transmitWriteHeadEEPROM(Head headToWrite) throws RoboxCommsException;
+    public abstract void transmitWriteHeadEEPROM(Head headToWrite) throws RoboxCommsException;
 
     /**
      *
@@ -1380,7 +1380,7 @@ public interface Printer
      * @return
      * @throws RoboxCommsException
      */
-    public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature,
+    public abstract AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature,
             float thermistorBeta, float thermistorTCal,
             float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset,
             float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
@@ -1394,27 +1394,27 @@ public interface Printer
      * @param on
      * @throws RoboxCommsException
      */
-    public void switchOnHeadLEDs(boolean on) throws RoboxCommsException;
+    public abstract void switchOnHeadLEDs(boolean on) throws RoboxCommsException;
 
     /**
      *
      * @param colour
      * @throws RoboxCommsException
      */
-    public void transmitSetAmbientLEDColour(Color colour) throws RoboxCommsException;
+    public abstract void transmitSetAmbientLEDColour(Color colour) throws RoboxCommsException;
 
     /**
      *
      * @param colour
      * @throws RoboxCommsException
      */
-    public void transmitSetReelLEDColour(Color colour) throws RoboxCommsException;
+    public abstract void transmitSetReelLEDColour(Color colour) throws RoboxCommsException;
 
     /**
      *
      * @throws RoboxCommsException
      */
-    public void transmitReadPrinterID() throws RoboxCommsException;
+    public abstract void transmitReadPrinterID() throws RoboxCommsException;
 
     /**
      *
@@ -1430,13 +1430,13 @@ public interface Printer
      * @return
      * @throws RoboxCommsException
      */
-    public boolean transmitWritePrinterID(String model, String edition, String weekOfManufacture, String yearOfManufacture, String poNumber, String serialNumber, String checkByte, String printerFriendlyName, Color colour) throws RoboxCommsException;
+    public abstract boolean transmitWritePrinterID(String model, String edition, String weekOfManufacture, String yearOfManufacture, String poNumber, String serialNumber, String checkByte, String printerFriendlyName, Color colour) throws RoboxCommsException;
 
     /**
      *
      * @return @throws RoboxCommsException
      */
-    public FirmwareResponse transmitReadFirmwareVersion() throws RoboxCommsException;
+    public abstract FirmwareResponse transmitReadFirmwareVersion() throws RoboxCommsException;
 
     /**
      *
@@ -1447,7 +1447,7 @@ public interface Printer
      * @param ambientTarget
      * @throws RoboxCommsException
      */
-    public void transmitSetTemperatures(double nozzleFirstLayerTarget, double nozzleTarget, double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException;
+    public abstract void transmitSetTemperatures(double nozzleFirstLayerTarget, double nozzleTarget, double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException;
 
     /**
      *
@@ -1456,19 +1456,19 @@ public interface Printer
      * @param feedRateMultiplier
      * @throws RoboxCommsException
      */
-    public void transmitSetFilamentInfo(double filamentDiameter, double filamentMultiplier, double feedRateMultiplier) throws RoboxCommsException;
+    public abstract void transmitSetFilamentInfo(double filamentDiameter, double filamentMultiplier, double feedRateMultiplier) throws RoboxCommsException;
 
     /**
      *
      * @return @throws RoboxCommsException
      */
-    public ListFilesResponse transmitListFiles() throws RoboxCommsException;
+    public abstract ListFilesResponse transmitListFiles() throws RoboxCommsException;
 
     /**
      *
      * @return @throws RoboxCommsException
      */
-    public StatusResponse transmitStatusRequest() throws RoboxCommsException;
+    public abstract StatusResponse transmitStatusRequest() throws RoboxCommsException;
 
     /**
      *
@@ -1477,14 +1477,14 @@ public interface Printer
      * @throws DatafileSendAlreadyInProgress
      * @throws RoboxCommsException
      */
-    public boolean initialiseDataFileSend(String fileID) throws DatafileSendAlreadyInProgress, RoboxCommsException;
+    public abstract boolean initialiseDataFileSend(String fileID) throws DatafileSendAlreadyInProgress, RoboxCommsException;
 
     /**
      *
      * @param jobUUID
      * @throws RoboxCommsException
      */
-    public void initiatePrint(String jobUUID) throws RoboxCommsException;
+    public abstract void initiatePrint(String jobUUID) throws RoboxCommsException;
 
     /**
      *
@@ -1494,7 +1494,7 @@ public interface Printer
      * @throws DatafileSendNotInitialised
      * @throws RoboxCommsException
      */
-    public void sendDataFileChunk(String hexDigits, boolean lastPacket, boolean appendCRLF) throws DatafileSendNotInitialised, RoboxCommsException;
+    public abstract void sendDataFileChunk(String hexDigits, boolean lastPacket, boolean appendCRLF) throws DatafileSendNotInitialised, RoboxCommsException;
 
     /**
      *
@@ -1503,44 +1503,45 @@ public interface Printer
      * @param printQuality
      * @param settings
      */
-    public void printProject(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings);
+    public abstract void printProject(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings);
 
     /**
      *
      */
-    public void abortPrint();
+    public abstract void abortPrint();
 
     /**
      *
      */
-    public void pausePrint();
+    public abstract void pausePrint();
 
     /**
      *
      */
-    public void resumePrint();
-
-    /**
-     *
-     * @return
-     */
-    public int getSequenceNumber();
+    public abstract void resumePrint();
 
     /**
      *
      * @return
      */
-    public boolean isPrintInitiated();
+    public abstract int getSequenceNumber();
+
+    /**
+     *
+     * @return
+     */
+    public abstract boolean isPrintInitiated();
 
     /**
      *
      * @param reelNozzleTemperature
      */
-    public void transmitWriteMaterialTemperatureToHeadEEPROM(int reelNozzleTemperature);
+    public abstract void transmitWriteMaterialTemperatureToHeadEEPROM(int reelNozzleTemperature);
 
     /**
      * Return if the filament on the reel is mutable (is a Robox predefined filament or not)
+     * @return 
      */
-    public BooleanProperty getReelFilamentIsMutable();
+    public abstract BooleanProperty getReelFilamentIsMutable();
     
 }
