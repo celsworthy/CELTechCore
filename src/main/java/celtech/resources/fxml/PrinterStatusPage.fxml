@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import celtech.coreUI.components.*?>
+<?import celtech.coreUI.components.buttons.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.*?>
@@ -349,6 +350,7 @@
                         </ImageView>
                     </graphic>
                 </Button>
+                <GraphicButton fx:id="removeHeadButton" fxmlFileName="removeHeadButton" layoutX="328.0" layoutY="293.0" onAction="#removeHead" />
             </children>
         </StackPane>
         <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="55.0" prefWidth="-1.0" spacing="10.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="120.0">
@@ -402,7 +404,7 @@
                             </GridPane.margin>
                         </Text>
                         <Text fx:id="progressPercent" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titleText" text="Text" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
-                        <ProgressBar fx:id="secondProgressBar" prefHeight="30.0" prefWidth="500.0" progress="0.0" GridPane.columnSpan="5" GridPane.rowIndex="3">
+                        <ProgressBar fx:id="secondProgressBar" prefHeight="30.0" prefWidth="500.0" progress="0.0" GridPane.columnSpan="5" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.rowSpan="2147483647">
                             <effect>
                                 <InnerShadow />
                             </effect>

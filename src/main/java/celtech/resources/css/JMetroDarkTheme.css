@@ -139,6 +139,25 @@
 }
 
 /*
+ * Borderless button (typically round)
+ */
+.graphic-button {
+    -fx-padding: 0 0 0 0;
+    -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
+    -fx-background-radius: 50;
+    -fx-content-display: graphic-only;
+    -fx-border-color: transparent;
+}
+
+.graphic-button:focused {
+    -fx-border-color: transparent;
+}
+
+.graphic-button:pressed .graphic {
+    -fx-fill: black;   
+}
+
+/*
  * Jog Button
  */
 

@@ -9,26 +9,26 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.shape.*?>
 
-<BorderPane styleClass="menubar" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.LayoutStatusMenuStripController">
+<BorderPane styleClass="menubar" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.LayoutStatusMenuStripController">
     <right>
         <StackPane>
             <children>
-                <ForwardButton fx:id="forwardButton" onAction="#forwardPressed"/>
-                <PrintButton fx:id="printButton" onAction="#printPressed"/>
+                <GraphicButton fx:id="forwardButton" fxmlFileName="forwardButton" onAction="#forwardPressed"/>
+                <GraphicButton fx:id="printButton" fxmlFileName="printButton" onAction="#printPressed"/>
             </children>
         </StackPane>
     </right>
     <left>
-        <BackwardButton fx:id="backwardButton" onAction="#backwardPressed"/>
+        <GraphicButton fx:id="backwardButton" fxmlFileName="backwardButton" onAction="#backwardPressed"/>
     </left>
     <center>
         <HBox fx:id="layoutButtonHBox" alignment="CENTER">
             <children>
-                <LoadModelButton fx:id="addModelButton" onAction="#addModel" />
-                <DeleteModelButton fx:id="deleteModelButton" onAction="#deleteModel" />
-                <CopyModelButton fx:id="duplicateModelButton" onAction="#copyModel" />
-                <SnapToGroundButton fx:id="snapToGroundButton" onAction="#snapToGround" />
-                <LayoutModelButton fx:id="distributeModelsButton" onAction="#autoLayoutModels" />
+                <GraphicButton fx:id="addModelButton" fxmlFileName="addToProjectButton" onAction="#addModel" />
+                <GraphicButton fx:id="deleteModelButton" fxmlFileName="deleteModelButton" onAction="#deleteModel" />
+                <GraphicButton fx:id="duplicateModelButton" fxmlFileName="copyModelButton" onAction="#copyModel" />
+                <GraphicToggleButton fx:id="snapToGroundButton" fxmlFileName="snapToGroundButton" onAction="#snapToGround" />
+                <GraphicButton fx:id="distributeModelsButton" fxmlFileName="layoutModelButton" onAction="#autoLayoutModels" />
             </children>
         </HBox>
     </center>

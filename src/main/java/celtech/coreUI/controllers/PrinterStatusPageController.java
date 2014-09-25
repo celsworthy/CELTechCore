@@ -172,6 +172,9 @@ public class PrinterStatusPageController implements Initializable
     private Button headFanButton;
 
     @FXML
+    private Button removeHeadButton;
+
+    @FXML
     private JogButton y_plus100;
 
     @FXML
@@ -426,6 +429,18 @@ public class PrinterStatusPageController implements Initializable
         } catch (RoboxCommsException ex)
         {
             steno.error("Failed to send head fan command");
+        }
+    }
+    
+    @FXML
+    void removeHead(ActionEvent event)
+    {
+        try
+        {
+            printerToUse.transmitStoredGCode("RemoveHead", false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Couldn't run remove head macro");
         }
     }
 
@@ -810,7 +825,7 @@ public class PrinterStatusPageController implements Initializable
             z_minus0_1, z_minus1, z_minus10, z_plus0_1, z_plus1, z_plus10,
             openNozzleButton, closeNozzleButton, selectNozzle1, selectNozzle2,
             ambientLEDButton,
-            headFanButton, headLEDButton
+            headFanButton, headLEDButton, removeHeadButton
         };
 
         for (Node node : advancedControls)

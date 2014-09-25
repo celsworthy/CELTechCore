@@ -19,7 +19,7 @@ import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.components.ProjectTab;
-import celtech.coreUI.components.buttons.SnapToGroundButton;
+import celtech.coreUI.components.buttons.GraphicToggleButton;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
@@ -53,8 +53,7 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class LayoutStatusMenuStripController
 {
-
-    private Stenographer steno = StenographerFactory.getStenographer(LayoutStatusMenuStripController.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(LayoutStatusMenuStripController.class.getName());
     private SettingsScreenState settingsScreenState = null;
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
@@ -94,7 +93,7 @@ public class LayoutStatusMenuStripController
     private Button distributeModelsButton;
 
     @FXML
-    private SnapToGroundButton snapToGroundButton;
+    private GraphicToggleButton snapToGroundButton;
 
     @FXML
     void forwardPressed(ActionEvent event)

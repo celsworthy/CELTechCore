@@ -17,12 +17,12 @@
             <right>
                 <StackPane>
                     <children>
-                        <AddToProjectButton fx:id="addToProjectButton" onAction="#addToProjectPressed" />
+                        <GraphicButton fx:id="addToProjectButton" fxmlFileName="addToProjectButton"  onAction="#addToProjectPressed" />
                     </children>
                 </StackPane>
             </right>
             <left>
-                <CancelButton fx:id="backwardButton" onAction="#cancelPressed" />
+                <GraphicButton fx:id="backwardButton" fxmlFileName="cancelButton" onAction="#cancelPressed" />
             </left>
             <center>
             </center>
