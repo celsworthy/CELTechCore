@@ -8,9 +8,8 @@ import celtech.coreUI.DisplayManager;
  */
 public enum NozzleBCalibrationState
 {
+
     /**
-     *
-     *//**
      *
      */
     IDLE("calibrationPanel.readyToBeginNozzleOpeningCalibration", null),
@@ -22,22 +21,6 @@ public enum NozzleBCalibrationState
      *
      */
     NO_MATERIAL_CHECK("calibrationPanel.valvesClosedNoMaterial", null),
-    /**
-     *
-     */
-    //    MATERIAL_EXTRUDING_CHECK_FINE_NOZZLE("calibrationPanel.valvesOpenMaterialExtrudingFine", null),
-    //    /**
-    //     *
-    //     */
-    //    HEAD_CLEAN_CHECK_FINE_NOZZLE("calibrationPanel.ensureHeadIsCleanBMessage", null),
-    //    /**
-    //     *
-    //     */
-    //    MATERIAL_EXTRUDING_CHECK_FILL_NOZZLE("calibrationPanel.valvesOpenMaterialExtrudingFill", null),
-    //    /**
-    //     *
-    //     */
-    //    HEAD_CLEAN_CHECK_FILL_NOZZLE("calibrationPanel.ensureHeadIsCleanBMessage", null),
     /**
      *
      */
@@ -69,18 +52,15 @@ public enum NozzleBCalibrationState
     /**
      *
      */
-    CONFIRM_NO_MATERIAL("calibrationPanel.valvesClosedNoMaterial",
-                        "calibrationPanel.isMaterialExtrudingEitherNozzle"),
+    CONFIRM_NO_MATERIAL("calibrationPanel.valvesClosedNoMaterialPostCalibration", null),
     /**
      *
      */
-    CONFIRM_MATERIAL_EXTRUDING_FINE("calibrationPanel.valvesOpenMaterialExtruding",
-                               "calibrationPanel.isMaterialExtrudingNozzle"),
+    CONFIRM_MATERIAL_EXTRUDING_FINE("calibrationPanel.valvesOpenMaterialExtruding", null),
     /**
      *
      */
-    CONFIRM_MATERIAL_EXTRUDING_FILL("calibrationPanel.valvesOpenMaterialExtruding",
-                               "calibrationPanel.isMaterialExtrudingNozzle"),    
+    CONFIRM_MATERIAL_EXTRUDING_FILL("calibrationPanel.valvesOpenMaterialExtruding", null),
     /**
      *
      */
@@ -141,8 +121,6 @@ public enum NozzleBCalibrationState
             return DisplayManager.getLanguageBundle().getString(stepTitleResource);
         }
     }
-
-
 
     /**
      *

@@ -124,7 +124,7 @@ public class CalibrationNozzleBHelper
                 setState(NozzleBCalibrationState.FAILED);
                 break;
             case CONFIRM_MATERIAL_EXTRUDING_FINE:
-                setState(NozzleBCalibrationState.CONFIRM_MATERIAL_EXTRUDING_FINE);
+                setState(NozzleBCalibrationState.CONFIRM_MATERIAL_EXTRUDING_FILL);
                 break;
             case CONFIRM_MATERIAL_EXTRUDING_FILL:
                 setState(NozzleBCalibrationState.FINISHED);
@@ -165,11 +165,13 @@ public class CalibrationNozzleBHelper
                 }
                 break;
             case CONFIRM_NO_MATERIAL:
-                setState(NozzleBCalibrationState.CONFIRM_MATERIAL_EXTRUDING_FINE);
                 break;
             case CONFIRM_MATERIAL_EXTRUDING_FINE:
                 setState(NozzleBCalibrationState.FAILED);
                 break;
+            case CONFIRM_MATERIAL_EXTRUDING_FILL:
+                setState(NozzleBCalibrationState.FAILED);
+                break;                
         }
 
     }
