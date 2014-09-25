@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import celtech.coreUI.components.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.*?>
@@ -7,7 +8,6 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.shape.*?>
-<?import celtech.coreUI.components.*?>
 
 <HBox maxWidth="360.0" minWidth="-Infinity" prefWidth="360.0" styleClass="sidePanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.LayoutSidePanelController">
 
@@ -107,7 +107,7 @@
                             <children>
                                 <Label text="X Axis" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                                 <Label text="Y Axis" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                                <RestrictedNumberField fx:id="xAxisTextField" allowedDecimalPlaces="1" maxLength="5" prefColumnCount="4" text="-" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                <RestrictedNumberField allowedDecimalPlaces="1" maxLength="5" prefColumnCount="4" text="-" GridPane.columnIndex="1" GridPane.rowIndex="0" fx:id="xAxisTextField" />
                                 <RestrictedNumberField fx:id="yAxisTextField" allowedDecimalPlaces="1" maxLength="5" prefColumnCount="4" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                             </children>
                             <columnConstraints>
@@ -126,20 +126,20 @@
                                 <Label text="%sidePanel_layout.DepthLabel" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                                 <HBox spacing="5.0" GridPane.columnIndex="1">
                                     <children>
-                                        <RestrictedNumberField fx:id="widthTextField" allowedDecimalPlaces="2" maxLength="5" prefColumnCount="4" text="-" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                        <RestrictedNumberField fx:id="widthTextField" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="-" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                                         <Label text="mm" GridPane.columnIndex="2" GridPane.rowIndex="0" />
                                     </children>
                                 </HBox>
                                 <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                     <children>
-                                        <RestrictedNumberField fx:id="depthTextField" allowedDecimalPlaces="2" maxLength="5" prefColumnCount="4" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                        <RestrictedNumberField fx:id="depthTextField" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                         <Label text="mm" GridPane.columnIndex="2" GridPane.rowIndex="1" />
                                     </children>
                                 </HBox>
                                 <Label text="%sidePanel_layout.HeightLabel" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                                 <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                     <children>
-                                        <RestrictedNumberField fx:id="heightTextField" allowedDecimalPlaces="2" maxLength="5" prefColumnCount="4" text="-" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                        <RestrictedNumberField fx:id="heightTextField" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="-" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                         <Label text="mm" GridPane.columnIndex="2" GridPane.rowIndex="2" />
                                     </children>
                                 </HBox>
