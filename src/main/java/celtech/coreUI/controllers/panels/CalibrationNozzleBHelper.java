@@ -60,7 +60,7 @@ public class CalibrationNozzleBHelper
         this.printerToUse = printer;
     }
 
-    public void yesButtonAction()
+    public void buttonBAction()
     {
         switch (state)
         {
@@ -118,7 +118,7 @@ public class CalibrationNozzleBHelper
                 setState(NozzleBCalibrationState.HEAD_CLEAN_CHECK_FILL_NOZZLE);
                 break;
             case HEAD_CLEAN_CHECK_FILL_NOZZLE:
-                setState(NozzleBCalibrationState.POST_CALIBRATION_PRIMING);
+                setState(NozzleBCalibrationState.CONFIRM_NO_MATERIAL);
                 break;
             case CONFIRM_NO_MATERIAL:
                 setState(NozzleBCalibrationState.FAILED);
@@ -138,7 +138,7 @@ public class CalibrationNozzleBHelper
         setState(state.getNextState());
     }
 
-    public void noButtonAction()
+    public void buttonAAction()
     {
         switch (state)
         {
@@ -170,6 +170,7 @@ public class CalibrationNozzleBHelper
                 }
                 break;
             case CONFIRM_NO_MATERIAL:
+                setState(NozzleBCalibrationState.CONFIRM_MATERIAL_EXTRUDING_FINE);
                 break;
             case CONFIRM_MATERIAL_EXTRUDING_FINE:
                 setState(NozzleBCalibrationState.FAILED);
@@ -376,18 +377,8 @@ public class CalibrationNozzleBHelper
                 break;
             case HEAD_CLEAN_CHECK_FILL_NOZZLE:
                 break;
-            case POST_CALIBRATION_PRIMING:
-                nozzlePosition = 0;
-                calibrationTask = new CalibrateBTask(state, printerToUse);
-                calibrationTask.setOnSucceeded(succeededTaskHandler);
-                calibrationTask.setOnFailed(failedTaskHandler);
-                TaskController.getInstance().manageTask(calibrationTask);
-
-                Thread postCalibrationPrimingTaskThread = new Thread(calibrationTask);
-                postCalibrationPrimingTaskThread.setName("Calibration - post calibration priming");
-                postCalibrationPrimingTaskThread.start();
-                break;
             case CONFIRM_NO_MATERIAL:
+                nozzlePosition = 0;
                 break;
             case CONFIRM_MATERIAL_EXTRUDING_FINE:
                 calibrationTask = new CalibrateBTask(state, FINE_NOZZLE, printerToUse);

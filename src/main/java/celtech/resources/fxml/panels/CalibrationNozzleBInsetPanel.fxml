@@ -70,12 +70,12 @@
                            <children>
                               <HBox alignment="CENTER">
                                  <children>
-                                    <Button id="buttonA" fx:id="buttonA" mnemonicParsing="false" text="A">
+                                    <Button id="buttonA" fx:id="buttonA" mnemonicParsing="false" onAction="#yesButtonAction" styleClass="calibrationButtonsAB" text="A">
                                        <HBox.margin>
                                           <Insets left="70.0" right="70.0" />
                                        </HBox.margin>
                                     </Button>
-                                    <Button id="buttonB" fx:id="buttonB" mnemonicParsing="false" text="B">
+                                    <Button id="buttonB" fx:id="buttonB" mnemonicParsing="false" onAction="#noButtonAction" styleClass="calibrationButtonsAB" text="B">
                                        <HBox.margin>
                                           <Insets left="70.0" right="70.0" />
                                        </HBox.margin>
@@ -114,18 +114,9 @@
                                             </StackPane.margin>
                                         </Button>
                                         <Button fx:id="startCalibrationButton" layoutX="5.0" mnemonicParsing="false" onAction="#startCalibration" text="%calibrationPanel.startCalibration" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
-                              <Button id="nextButton" fx:id="nextButton" mnemonicParsing="false" text="Next" onAction="#nextButtonAction"/>
+                              <Button id="nextButton" fx:id="nextButton" mnemonicParsing="false" onAction="#nextButtonAction" text="Next" />
                                     </children>
                                 </StackPane>
-                                <HBox alignment="CENTER" layoutX="10.0" layoutY="10.0" pickOnBounds="false" spacing="10.0">
-                                    <children>
-                                        <Button fx:id="yesButton" mnemonicParsing="false" onAction="#yesButtonAction" text="%misc.Yes" />
-                                        <Button fx:id="noButton" layoutX="5.0" mnemonicParsing="false" onAction="#noButtonAction" text="%misc.No" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
-                                    </children>
-                                    <StackPane.margin>
-                                        <Insets />
-                                    </StackPane.margin>
-                                </HBox>
                             </children>
                             <BorderPane.margin>
                                 <Insets />

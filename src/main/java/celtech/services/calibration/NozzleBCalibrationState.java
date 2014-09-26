@@ -12,75 +12,69 @@ public enum NozzleBCalibrationState
     /**
      *
      */
-    IDLE("calibrationPanel.readyToBeginNozzleOpeningCalibration", null),
+    IDLE("calibrationPanel.readyToBeginNozzleOpeningCalibration"),
     /**
      *
      */
-    HEATING("calibrationPanel.heating", null),
+    HEATING("calibrationPanel.heating"),
     /**
      *
      */
-    NO_MATERIAL_CHECK("calibrationPanel.valvesClosedNoMaterial", null),
+    NO_MATERIAL_CHECK("calibrationPanel.valvesClosedNoMaterial"),
     /**
      *
      */
-    PRE_CALIBRATION_PRIMING_FINE("calibrationPanel.primingNozzle", null),
+    PRE_CALIBRATION_PRIMING_FINE("calibrationPanel.primingNozzle"),
     /**
      *
      */
-    CALIBRATE_FINE_NOZZLE("calibrationPanel.calibrationCommencedMessageFine", null),
+    CALIBRATE_FINE_NOZZLE("calibrationPanel.calibrationCommencedMessageFine"),
     /**
      *
      */
-    HEAD_CLEAN_CHECK_FINE_NOZZLE("calibrationPanel.ensureHeadIsCleanBMessage", null),
+    HEAD_CLEAN_CHECK_FINE_NOZZLE("calibrationPanel.ensureHeadIsCleanBMessage"),
     /**
      *
      */
-    PRE_CALIBRATION_PRIMING_FILL("calibrationPanel.primingNozzle", null),
+    PRE_CALIBRATION_PRIMING_FILL("calibrationPanel.primingNozzle"),
     /**
      *
      */
-    CALIBRATE_FILL_NOZZLE("calibrationPanel.calibrationCommencedMessageFill", null),
+    CALIBRATE_FILL_NOZZLE("calibrationPanel.calibrationCommencedMessageFill"),
     /**
      *
      */
-    HEAD_CLEAN_CHECK_FILL_NOZZLE("calibrationPanel.ensureHeadIsCleanBMessage", null),
+    HEAD_CLEAN_CHECK_FILL_NOZZLE("calibrationPanel.ensureHeadIsCleanBMessage"),
     /**
      *
      */
-    POST_CALIBRATION_PRIMING("calibrationPanel.primingNozzle", null),
+    CONFIRM_NO_MATERIAL("calibrationPanel.valvesClosedNoMaterialPostCalibration"),
     /**
      *
      */
-    CONFIRM_NO_MATERIAL("calibrationPanel.valvesClosedNoMaterialPostCalibration", null),
+    CONFIRM_MATERIAL_EXTRUDING_FINE("calibrationPanel.valvesOpenMaterialExtrudingFine"),
     /**
      *
      */
-    CONFIRM_MATERIAL_EXTRUDING_FINE("calibrationPanel.valvesOpenMaterialExtruding", null),
+    CONFIRM_MATERIAL_EXTRUDING_FILL("calibrationPanel.valvesOpenMaterialExtrudingFill"),
     /**
      *
      */
-    CONFIRM_MATERIAL_EXTRUDING_FILL("calibrationPanel.valvesOpenMaterialExtruding", null),
+    PARKING("calibrationPanel.calibrationParkingMessage"),
     /**
      *
      */
-    PARKING("calibrationPanel.calibrationParkingMessage", null),
+    FINISHED("calibrationPanel.calibrationSucceededBMessage"),
     /**
      *
      */
-    FINISHED("calibrationPanel.calibrationSucceededBMessage", null),
-    /**
-     *
-     */
-    FAILED("calibrationPanel.nozzleCalibrationFailed", null);
+    FAILED("calibrationPanel.nozzleCalibrationFailed");
 
     private String stepTitleResource = null;
-    private String stepInstructionResource = null;
 
-    private NozzleBCalibrationState(String stepTitleResource, String stepInstructionResource)
+    private NozzleBCalibrationState(String stepTitleResource)
     {
         this.stepTitleResource = stepTitleResource;
-        this.stepInstructionResource = stepInstructionResource;
     }
 
     /**
@@ -119,37 +113,6 @@ public enum NozzleBCalibrationState
         } else
         {
             return DisplayManager.getLanguageBundle().getString(stepTitleResource);
-        }
-    }
-
-    /**
-     *
-     * @return
-     */
-    public String getStepInstruction()
-    {
-        if (stepInstructionResource == null)
-        {
-            return "";
-        } else
-        {
-            return DisplayManager.getLanguageBundle().getString(stepInstructionResource);
-        }
-    }
-
-    /**
-     *
-     * @param suffix
-     * @return
-     */
-    public String getStepInstruction(String suffix)
-    {
-        if (stepInstructionResource == null)
-        {
-            return "";
-        } else
-        {
-            return DisplayManager.getLanguageBundle().getString(stepInstructionResource + suffix);
         }
     }
 }

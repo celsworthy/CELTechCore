@@ -113,7 +113,7 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
             case PRE_CALIBRATION_PRIMING_FILL:
                 success = extrudeUntilStall(1);
                 break;
-            case POST_CALIBRATION_PRIMING:
+            case CONFIRM_NO_MATERIAL:
                 success = extrudeUntilStall(0);
                 success = extrudeUntilStall(1);
                 break;

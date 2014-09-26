@@ -72,12 +72,6 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
     @FXML
     private Label calibrationStatus;
 
-    @FXML
-    private Button yesButton;
-
-    @FXML
-    private Button noButton;
-
     private Printer currentPrinter;
     private int targetTemperature;
     private double currentExtruderTemperature;
@@ -85,13 +79,13 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
     @FXML
     void yesButtonAction(ActionEvent event)
     {
-        calibrationHelper.yesButtonAction();
+        calibrationHelper.buttonBAction();
     }
 
     @FXML
     void noButtonAction(ActionEvent event)
     {
-        calibrationHelper.noButtonAction();
+        calibrationHelper.buttonAAction();
     }
     
     @FXML
@@ -193,8 +187,6 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
                 cancelCalibrationButton.setVisible(true);
                 buttonA.setVisible(false);
                 buttonB.setVisible(false);
-                yesButton.setVisible(false);
-                noButton.setVisible(false);
                 nextButton.setVisible(false);
                 saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
@@ -207,8 +199,6 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
                 cancelCalibrationButton.setVisible(true);
                 buttonA.setVisible(false);
                 buttonB.setVisible(false);
-                yesButton.setVisible(false);
-                noButton.setVisible(false);
                 saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText(String.format("Step %s of 10", 2));
@@ -222,8 +212,6 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
                 buttonB.setVisible(true);
                 buttonA.setText("Yes");
                 buttonB.setText("No");
-                yesButton.setVisible(true);
-                noButton.setVisible(true);
                 saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText(String.format("Step %s of 10", 3));
@@ -233,8 +221,6 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
                 cancelCalibrationButton.setVisible(true);
                 buttonA.setVisible(false);
                 buttonB.setVisible(false);
-                yesButton.setVisible(false);
-                noButton.setVisible(false);
                 saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 break;
@@ -245,8 +231,6 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
                 buttonB.setVisible(true);
                 buttonA.setText("Flowing");
                 buttonB.setText("Not flowing");                
-                yesButton.setVisible(true);
-                noButton.setVisible(true);
                 saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText(String.format("Step %s of 10", 4));
@@ -256,8 +240,6 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
                 cancelCalibrationButton.setVisible(true);
                 buttonA.setVisible(false);
                 buttonB.setVisible(false);
-                yesButton.setVisible(true);
-                noButton.setVisible(false);
                 nextButton.setVisible(true);
                 saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
@@ -268,8 +250,6 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
                 cancelCalibrationButton.setVisible(true);
                 buttonA.setVisible(true);
                 buttonB.setVisible(true);
-                yesButton.setVisible(true);
-                noButton.setVisible(true);
                 nextButton.setVisible(false);
                 buttonA.setText("Flowing");
                 buttonB.setText("Not flowing");                   
@@ -282,58 +262,38 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
                 cancelCalibrationButton.setVisible(true);
                 buttonA.setVisible(false);
                 buttonB.setVisible(false);
-                yesButton.setVisible(false);
-                noButton.setVisible(false);
                 nextButton.setVisible(true);
                 saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText(String.format("Step %s of 10", 7));
                 break;                  
-            case POST_CALIBRATION_PRIMING:
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                buttonA.setVisible(false);
-                buttonB.setVisible(false);
-                yesButton.setVisible(false);
-                noButton.setVisible(false);
-                nextButton.setVisible(false);
-                saveSettingsButton.setVisible(false);
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 8));
-                break;
             case CONFIRM_NO_MATERIAL:
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
                 buttonA.setVisible(true);
                 buttonB.setVisible(true);
-                yesButton.setVisible(true);
-                noButton.setVisible(true);
                 nextButton.setVisible(false);
                 buttonA.setText("No");
                 buttonB.setText("Yes");
                 saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 9));
+                stepNumber.setText(String.format("Step %s of 10", 8));
                 break;
             case CONFIRM_MATERIAL_EXTRUDING_FINE:
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
                 buttonA.setVisible(true);
                 buttonB.setVisible(true);
-                yesButton.setVisible(true);
-                noButton.setVisible(true);
                 nextButton.setVisible(false);
                 buttonA.setText("Yes");
                 buttonB.setText("No");                
                 saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 10));
+                stepNumber.setText(String.format("Step %s of 10", 9));
                 break;
             case PARKING:
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
-                yesButton.setVisible(false);
-                noButton.setVisible(false);
                 saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText(String.format("Step %s of 10", 12));
@@ -343,22 +303,20 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
                 cancelCalibrationButton.setVisible(true);
                 buttonA.setVisible(false);
                 buttonB.setVisible(false);
-                yesButton.setVisible(false);
-                noButton.setVisible(false);
                 nextButton.setVisible(false);
                 saveSettingsButton.setVisible(true);
                 calibrationStatus.setText(state.getStepTitle());
+                stepNumber.setText(String.format("Step %s of 10", 10));
                 break;
             case FAILED:
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
                 buttonA.setVisible(false);
                 buttonB.setVisible(false);
-                yesButton.setVisible(false);
-                noButton.setVisible(false);
                 nextButton.setVisible(false);
                 saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
+                stepNumber.setText("");
                 break;
         }
     }
