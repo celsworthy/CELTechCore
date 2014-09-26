@@ -9,7 +9,7 @@
 <?import javafx.scene.text.*?>
 <?import celtech.coreUI.components.calibration.*?>
 
-<VBox fx:id="container" maxHeight="1E308" maxWidth="1E308" minHeight="700.0" pickOnBounds="false" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationNozzleBInsetPanelController">
+<VBox fx:id="container" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="700.0" pickOnBounds="false" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationNozzleBInsetPanelController">
     <children>
         <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
             <center>
@@ -66,7 +66,26 @@
                                 </VBox>
                             </top>
                             <bottom>
-                                <VBox alignment="CENTER" pickOnBounds="false" spacing="5.0" BorderPane.alignment="CENTER" />
+                                <VBox alignment="CENTER" pickOnBounds="false" spacing="5.0" BorderPane.alignment="CENTER">
+                           <children>
+                              <HBox alignment="CENTER">
+                                 <children>
+                                    <Button id="buttonA" fx:id="buttonA" mnemonicParsing="false" text="A">
+                                       <HBox.margin>
+                                          <Insets left="70.0" right="70.0" />
+                                       </HBox.margin>
+                                    </Button>
+                                    <Button id="buttonB" fx:id="buttonB" mnemonicParsing="false" text="B">
+                                       <HBox.margin>
+                                          <Insets left="70.0" right="70.0" />
+                                       </HBox.margin>
+                                    </Button>
+                                 </children>
+                                 <VBox.margin>
+                                    <Insets bottom="30.0" />
+                                 </VBox.margin>
+                              </HBox>
+                           </children></VBox>
                             </bottom>
                         </BorderPane>
                     </children>
@@ -95,6 +114,7 @@
                                             </StackPane.margin>
                                         </Button>
                                         <Button fx:id="startCalibrationButton" layoutX="5.0" mnemonicParsing="false" onAction="#startCalibration" text="%calibrationPanel.startCalibration" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
+                              <Button id="nextButton" fx:id="nextButton" mnemonicParsing="false" text="Next" onAction="#nextButtonAction"/>
                                     </children>
                                 </StackPane>
                                 <HBox alignment="CENTER" layoutX="10.0" layoutY="10.0" pickOnBounds="false" spacing="10.0">

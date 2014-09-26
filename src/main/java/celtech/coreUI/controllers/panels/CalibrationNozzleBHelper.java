@@ -133,6 +133,11 @@ public class CalibrationNozzleBHelper
 
     }
 
+    public void nextButtonAction()
+    {
+        setState(state.getNextState());
+    }
+
     public void noButtonAction()
     {
         switch (state)
@@ -171,7 +176,7 @@ public class CalibrationNozzleBHelper
                 break;
             case CONFIRM_MATERIAL_EXTRUDING_FILL:
                 setState(NozzleBCalibrationState.FAILED);
-                break;                
+                break;
         }
 
     }
