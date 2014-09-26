@@ -103,7 +103,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
 //    @FXML
 //    private ToggleSwitch spiralPrintToggle;
-
     @FXML
     void go(MouseEvent event)
     {
@@ -537,6 +536,13 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     {
         supportToggle.setSelected(settings.support_materialProperty().get());
         fillDensitySlider.setValue(settings.fill_densityProperty().get() * 100.0);
+        if (settings.fill_patternProperty().get().equalsIgnoreCase("line"))
+        {
+            fillDensitySlider.setMax(99);
+        } else
+        {
+            fillDensitySlider.setMax(100);
+        }
         brimSlider.setValue(settings.getBrim_width().get());
     }
 

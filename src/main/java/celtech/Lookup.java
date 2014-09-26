@@ -7,6 +7,8 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.ApplicationEnvironment;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -17,6 +19,7 @@ public class Lookup
 
     private static Lookup instance;
     private ApplicationEnvironment applicationEnvironment;
+    private Stenographer steno = StenographerFactory.getStenographer(Lookup.class.getName());
 
     /**
      * @return the applicationEnvironment
@@ -39,6 +42,7 @@ public class Lookup
         Locale appLocale = Locale.getDefault();
         ResourceBundle i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData", appLocale, new UTF8Control());
         applicationEnvironment = new ApplicationEnvironment(i18nBundle, appLocale);
+        steno.info("Detected locale - " + appLocale.toLanguageTag());
     }
 
     public static void initialise()
