@@ -1814,6 +1814,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                             // Default 
                             if (orthogonalSegment == null)
                             {
+                                steno.warning("Using backup orthogonal segment");
                                 orthogonalSegment = MathUtils.getOrthogonalLineToLinePoints(maxDistanceFromEndPoint, thisMovement, endOfExtrusion);
                             } else if (extrusionBuffer.get(eventIndex) instanceof ExtrusionEvent && lastPointConsidered != null)
                             {
@@ -1823,8 +1824,12 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                 if (intersectionPoint != null)
                                 {
                                     double distanceFromEndPoint = intersectionPoint.distance(endOfExtrusion);
-                                    intersectedPointDistances.put(distanceFromEndPoint, eventIndex);
-                                    intersectionCounter++;
+
+                                    if (distanceFromEndPoint <= maxDistanceFromEndPoint)
+                                    {
+                                        intersectedPointDistances.put(distanceFromEndPoint, eventIndex);
+                                        intersectionCounter++;
+                                    }
                                 }
                             }
 
@@ -1836,8 +1841,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                         >= maxNumberOfIntersectionsToConsider)
                     {
                         closestEventIndex = (int) intersectedPointDistances.values().toArray()[maxNumberOfIntersectionsToConsider - 1];
-                    } else if (intersectedPointDistances.size()
-                        > 0)
+                    } else if (intersectedPointDistances.size() > 0)
                     {
                         closestEventIndex = (int) intersectedPointDistances.values().toArray()[intersectedPointDistances.size() - 1];
                     }
