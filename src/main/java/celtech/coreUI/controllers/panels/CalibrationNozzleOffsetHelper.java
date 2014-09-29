@@ -347,7 +347,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
     @Override
     public void nextButtonAction()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        setState(state.getNextState());
     }
 
     @Override

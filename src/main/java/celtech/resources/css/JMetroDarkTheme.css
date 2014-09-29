@@ -1676,6 +1676,12 @@ table-view .column-header-background {
     -fx-border-width: 3px;
 }
 
+.calibrationAltABButton {
+    -fx-background-color: light_grey;
+    -fx-border-color: light_grey;
+    -fx-border-width: 0px;
+}
+
 #printerStatusTitle {
     -fx-font-size: 22px;
 }

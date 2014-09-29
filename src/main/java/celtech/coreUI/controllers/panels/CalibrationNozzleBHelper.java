@@ -62,7 +62,7 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
     }
 
     @Override
-    public void buttonBAction()
+    public void buttonAAction()
     {
         switch (state)
         {
@@ -142,7 +142,7 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
     }
 
     @Override
-    public void buttonAAction()
+    public void buttonBAction()
     {
         switch (state)
         {

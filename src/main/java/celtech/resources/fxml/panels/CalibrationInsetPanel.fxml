@@ -58,7 +58,44 @@
                                             <padding>
                                                 <Insets left="30.0" right="30.0" />
                                             </padding>
+                                 <VBox.margin>
+                                    <Insets bottom="20.0" />
+                                 </VBox.margin>
                                         </Label>
+                              <Button fx:id="buttonAAlt" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#buttonAAction" prefHeight="60.0" prefWidth="60.0" styleClass="calibrationAltABButton">
+                                 <graphic>
+                                    <Polygon fill="DODGERBLUE" scaleX="0.5" scaleY="0.5" scaleZ="0.5" stroke="BLACK" strokeType="INSIDE">
+                                      <points>
+                                        <Double fx:value="-50.0" />
+                                        <Double fx:value="40.0" />
+                                        <Double fx:value="50.0" />
+                                        <Double fx:value="40.0" />
+                                        <Double fx:value="0.0" />
+                                        <Double fx:value="-60.0" />
+                                      </points>
+                                    </Polygon>
+                                 </graphic>
+                                 <VBox.margin>
+                                    <Insets bottom="10.0" top="10.0" />
+                                 </VBox.margin>
+                              </Button>
+                              <Button fx:id="buttonBAlt" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#buttonBAction" prefHeight="60.0" prefWidth="60.0" styleClass="calibrationAltABButton">
+                                 <graphic>
+                                    <Polygon fill="DODGERBLUE" rotate="180.0" scaleX="0.5" scaleY="0.5" scaleZ="0.5" stroke="BLACK" strokeType="INSIDE">
+                                       <points>
+                                          <Double fx:value="-50.0" />
+                                          <Double fx:value="40.0" />
+                                          <Double fx:value="50.0" />
+                                          <Double fx:value="40.0" />
+                                          <Double fx:value="0.0" />
+                                          <Double fx:value="-60.0" />
+                                       </points>
+                                    </Polygon>
+                                 </graphic>
+                                 <VBox.margin>
+                                    <Insets bottom="10.0" top="10.0" />
+                                 </VBox.margin>
+                              </Button>
                                     </children>
                                     <BorderPane.margin>
                                         <Insets top="120.0" />
@@ -70,12 +107,12 @@
                            <children>
                               <HBox alignment="CENTER">
                                  <children>
-                                    <Button id="buttonA" fx:id="buttonA" mnemonicParsing="false" onAction="#yesButtonAction" styleClass="calibrationButtonsAB" text="A">
+                                    <Button id="buttonA" fx:id="buttonA" mnemonicParsing="false" onAction="#buttonAAction" styleClass="calibrationButtonsAB" text="A">
                                        <HBox.margin>
                                           <Insets left="70.0" right="70.0" />
                                        </HBox.margin>
                                     </Button>
-                                    <Button id="buttonB" fx:id="buttonB" mnemonicParsing="false" onAction="#noButtonAction" styleClass="calibrationButtonsAB" text="B">
+                                    <Button id="buttonB" fx:id="buttonB" mnemonicParsing="false" onAction="#buttonBAction" styleClass="calibrationButtonsAB" text="B">
                                        <HBox.margin>
                                           <Insets left="70.0" right="70.0" />
                                        </HBox.margin>
@@ -108,11 +145,6 @@
                                 </HBox>
                                 <StackPane alignment="CENTER_RIGHT" maxHeight="-Infinity" pickOnBounds="false">
                                     <children>
-                                        <Button fx:id="saveSettingsButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#saveSettings" text="%calibrationPanel.saveSettings">
-                                            <StackPane.margin>
-                                                <Insets />
-                                            </StackPane.margin>
-                                        </Button>
                                         <Button fx:id="startCalibrationButton" layoutX="5.0" mnemonicParsing="false" onAction="#startCalibration" text="%calibrationPanel.startCalibration" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
                               <Button id="nextButton" fx:id="nextButton" mnemonicParsing="false" onAction="#nextButtonAction" text="Next" />
                                     </children>

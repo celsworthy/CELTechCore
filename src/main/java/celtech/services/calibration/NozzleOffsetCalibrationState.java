@@ -8,57 +8,52 @@ import celtech.coreUI.DisplayManager;
  */
 public enum NozzleOffsetCalibrationState
 {
-
-    /**
-     *
-     *//**
-     *
-     */
-    IDLE("calibrationPanel.readyToBeginNozzleOffsetCalibration", null),
     /**
      *
      */
-    INITIALISING("calibrationPanel.initialisingOffset", null),    
+    IDLE("calibrationPanel.readyToBeginNozzleOffsetCalibration"),
     /**
      *
      */
-    HEATING("calibrationPanel.heating", null),
+    INITIALISING("calibrationPanel.initialisingOffset"),    
     /**
      *
      */
-    HEAD_CLEAN_CHECK("calibrationPanel.ensureHeadIsCleanOffsetMessage", null),
+    HEATING("calibrationPanel.heating"),
     /**
      *
      */
-    MEASURE_Z_DIFFERENCE("calibrationPanel.measuringZOffset", null),
+    HEAD_CLEAN_CHECK("calibrationPanel.headCleanCheck"),
     /**
      *
      */
-    INSERT_PAPER("calibrationPanel.insertPieceOfPaper", "calibrationPanel.isThePaperInPlace"),
+    MEASURE_Z_DIFFERENCE("calibrationPanel.measuringZOffset"),
     /**
      *
      */
-    PROBING("calibrationPanel.moveThePaperMessage", null),
+    INSERT_PAPER("calibrationPanel.insertPieceOfPaper"),
     /**
      *
      */
-    FINISHED("calibrationPanel.calibrationSucceededOffsetMessage", null),
+    PROBING("calibrationPanel.moveThePaperMessage"),
     /**
      *
      */
-    FAILED("calibrationPanel.nozzleCalibrationFailed", null),
+    FINISHED("calibrationPanel.calibrationSucceededOffsetMessage"),
     /**
      *
      */
-    NUDGE_MODE(null, null);
+    FAILED("calibrationPanel.nozzleCalibrationFailed"),
+    /**
+     *
+     */
+    NUDGE_MODE(null);
 
     private String stepTitleResource = null;
-    private String stepInstructionResource = null;
 
-    private NozzleOffsetCalibrationState(String stepTitleResource, String stepInstructionResource)
+    private NozzleOffsetCalibrationState(String stepTitleResource)
     {
         this.stepTitleResource = stepTitleResource;
-        this.stepInstructionResource = stepInstructionResource;
     }
 
     /**
@@ -116,35 +111,6 @@ public enum NozzleOffsetCalibrationState
         }
     }
 
-    /**
-     *
-     * @return
-     */
-    public String getStepInstruction()
-    {
-        if (stepInstructionResource == null)
-        {
-            return "";
-        } else
-        {
-            return DisplayManager.getLanguageBundle().getString(stepInstructionResource);
-        }
-    }
-
-    /**
-     *
-     * @param suffix
-     * @return
-     */
-    public String getStepInstruction(String suffix)
-    {
-        if (stepInstructionResource == null)
-        {
-            return "";
-        } else
-        {
-            return DisplayManager.getLanguageBundle().getString(stepInstructionResource + suffix);
-        }
-    }
+ 
 
 }
