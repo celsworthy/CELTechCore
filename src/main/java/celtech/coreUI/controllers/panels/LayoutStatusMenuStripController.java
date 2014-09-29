@@ -152,8 +152,6 @@ public class LayoutStatusMenuStripController
             case SETTINGS:
                 applicationStatus.setMode(ApplicationMode.LAYOUT);
                 break;
-            case CALIBRATION_CHOICE:  
-                applicationStatus.setMode(ApplicationMode.CALIBRATION_CHOICE);
             default:
                 break;
         }
@@ -162,7 +160,7 @@ public class LayoutStatusMenuStripController
     @FXML
     void calibrate(ActionEvent event) {
         System.out.println("calibrate");
-        ApplicationStatus.getInstance().setMode(ApplicationMode.CALIBRATION_CHOICE);
+        ApplicationStatus.getInstance().setMode(ApplicationMode.CALIBRATION);
     }
 
     @FXML
@@ -319,9 +317,8 @@ public class LayoutStatusMenuStripController
     }
 
     /**
-     * Binds button disabled properties to the selection container This disables and enables buttons depending on whether a model is selected
-     *
-     * @param selectionContainer The selection container associated with the currently displayed project.
+     * Binds button disabled properties to the selection container.
+     * This disables and enables buttons depending on whether a model is selected
      */
     public void bindSelectedModels(ProjectTab projectTab)
     {

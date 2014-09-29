@@ -11,7 +11,7 @@ import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.services.calibration.CalibrateBTask;
-import celtech.services.calibration.NozzleBCalibrationState;
+import celtech.services.calibration.NozzleOpeningCalibrationState;
 import java.util.ArrayList;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -22,7 +22,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class CalibrationNozzleBHelper
+public class CalibrationNozzleBHelper implements CalibrationHelper
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -42,7 +42,7 @@ public class CalibrationNozzleBHelper
 
     private CalibrateBTask calibrationTask = null;
     private boolean parkRequired = false;
-    private NozzleBCalibrationState state = NozzleBCalibrationState.IDLE;
+    private NozzleOpeningCalibrationState state = NozzleOpeningCalibrationState.IDLE;
     private final ArrayList<CalibrationBStateListener> stateListeners = new ArrayList<>();
 
     private final EventHandler<WorkerStateEvent> failedTaskHandler = (WorkerStateEvent event) ->
@@ -55,17 +55,19 @@ public class CalibrationNozzleBHelper
         setState(state.getNextState());
     };
 
+    @Override
     public void setPrinterToUse(Printer printer)
     {
         this.printerToUse = printer;
     }
 
+    @Override
     public void buttonBAction()
     {
         switch (state)
         {
             case NO_MATERIAL_CHECK:
-                setState(NozzleBCalibrationState.FAILED);
+                setState(NozzleOpeningCalibrationState.FAILED);
                 break;
             case CALIBRATE_FINE_NOZZLE:
                 try
@@ -78,10 +80,10 @@ public class CalibrationNozzleBHelper
                 }
                 // calculate offset
                 nozzle0BOffset = bOffsetStartingValue - 0.1f + nozzlePosition;
-                setState(NozzleBCalibrationState.HEAD_CLEAN_CHECK_FINE_NOZZLE);
+                setState(NozzleOpeningCalibrationState.HEAD_CLEAN_CHECK_FINE_NOZZLE);
                 break;
             case HEAD_CLEAN_CHECK_FINE_NOZZLE:
-                setState(NozzleBCalibrationState.PRE_CALIBRATION_PRIMING_FILL);
+                setState(NozzleOpeningCalibrationState.PRE_CALIBRATION_PRIMING_FILL);
                 break;
             case CALIBRATE_FILL_NOZZLE:
                 try
@@ -115,35 +117,37 @@ public class CalibrationNozzleBHelper
                 {
                     steno.error("Error in needle valve calibration - mode=" + state.name());
                 }
-                setState(NozzleBCalibrationState.HEAD_CLEAN_CHECK_FILL_NOZZLE);
+                setState(NozzleOpeningCalibrationState.HEAD_CLEAN_CHECK_FILL_NOZZLE);
                 break;
             case HEAD_CLEAN_CHECK_FILL_NOZZLE:
-                setState(NozzleBCalibrationState.CONFIRM_NO_MATERIAL);
+                setState(NozzleOpeningCalibrationState.CONFIRM_NO_MATERIAL);
                 break;
             case CONFIRM_NO_MATERIAL:
-                setState(NozzleBCalibrationState.FAILED);
+                setState(NozzleOpeningCalibrationState.FAILED);
                 break;
             case CONFIRM_MATERIAL_EXTRUDING_FINE:
-                setState(NozzleBCalibrationState.CONFIRM_MATERIAL_EXTRUDING_FILL);
+                setState(NozzleOpeningCalibrationState.CONFIRM_MATERIAL_EXTRUDING_FILL);
                 break;
             case CONFIRM_MATERIAL_EXTRUDING_FILL:
-                setState(NozzleBCalibrationState.FINISHED);
+                setState(NozzleOpeningCalibrationState.FINISHED);
                 break;
         }
 
     }
 
+    @Override
     public void nextButtonAction()
     {
         setState(state.getNextState());
     }
 
+    @Override
     public void buttonAAction()
     {
         switch (state)
         {
             case NO_MATERIAL_CHECK:
-                setState(NozzleBCalibrationState.CALIBRATE_FINE_NOZZLE);
+                setState(NozzleOpeningCalibrationState.CALIBRATE_FINE_NOZZLE);
                 break;
 
             case CALIBRATE_FINE_NOZZLE:
@@ -151,10 +155,10 @@ public class CalibrationNozzleBHelper
                 steno.info("(FINE) nozzle position set to " + nozzlePosition);
                 if (nozzlePosition <= 2f)
                 {
-                    setState(NozzleBCalibrationState.CALIBRATE_FINE_NOZZLE);
+                    setState(NozzleOpeningCalibrationState.CALIBRATE_FINE_NOZZLE);
                 } else
                 {
-                    setState(NozzleBCalibrationState.FAILED);
+                    setState(NozzleOpeningCalibrationState.FAILED);
                 }
                 break;
 
@@ -163,20 +167,20 @@ public class CalibrationNozzleBHelper
                 steno.info("(FILL) nozzle position set to " + nozzlePosition);
                 if (nozzlePosition <= 2f)
                 {
-                    setState(NozzleBCalibrationState.CALIBRATE_FILL_NOZZLE);
+                    setState(NozzleOpeningCalibrationState.CALIBRATE_FILL_NOZZLE);
                 } else
                 {
-                    setState(NozzleBCalibrationState.FAILED);
+                    setState(NozzleOpeningCalibrationState.FAILED);
                 }
                 break;
             case CONFIRM_NO_MATERIAL:
-                setState(NozzleBCalibrationState.CONFIRM_MATERIAL_EXTRUDING_FINE);
+                setState(NozzleOpeningCalibrationState.CONFIRM_MATERIAL_EXTRUDING_FINE);
                 break;
             case CONFIRM_MATERIAL_EXTRUDING_FINE:
-                setState(NozzleBCalibrationState.FAILED);
+                setState(NozzleOpeningCalibrationState.FAILED);
                 break;
             case CONFIRM_MATERIAL_EXTRUDING_FILL:
-                setState(NozzleBCalibrationState.FAILED);
+                setState(NozzleOpeningCalibrationState.FAILED);
                 break;
         }
 
@@ -185,6 +189,7 @@ public class CalibrationNozzleBHelper
     /**
      *
      */
+    @Override
     public void cancelCalibrationAction()
     {
         if (calibrationTask != null)
@@ -194,11 +199,11 @@ public class CalibrationNozzleBHelper
                 calibrationTask.cancel();
             }
         }
-        if (state != NozzleBCalibrationState.IDLE)
+        if (state != NozzleOpeningCalibrationState.IDLE)
         {
             try
             {
-                if (savedHeadData != null && state != NozzleBCalibrationState.FINISHED)
+                if (savedHeadData != null && state != NozzleOpeningCalibrationState.FINISHED)
                 {
                     printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                                                          savedHeadData.getUniqueID(),
@@ -233,7 +238,7 @@ public class CalibrationNozzleBHelper
         }
     }
 
-    public NozzleBCalibrationState getState()
+    public NozzleOpeningCalibrationState getState()
     {
         return state;
     }
@@ -248,14 +253,14 @@ public class CalibrationNozzleBHelper
         stateListeners.remove(stateListener);
     }
 
-    public void setState(NozzleBCalibrationState newState)
+    public void setState(NozzleOpeningCalibrationState newState)
     {
         steno.info("Go to state " + newState);
 
         this.state = newState;
         for (CalibrationBStateListener listener : stateListeners)
         {
-            listener.setState(state);
+            listener.setNozzleOpeningState(state);
         }
 
         switch (state)
@@ -439,6 +444,7 @@ public class CalibrationNozzleBHelper
         }
     }
 
+    @Override
     public void saveSettings()
     {
         try
@@ -463,5 +469,11 @@ public class CalibrationNozzleBHelper
         {
             steno.error("Error in needle valve calibration - saving settings");
         }
+    }
+
+    @Override
+    public void goToIdleState()
+    {
+        setState(NozzleOpeningCalibrationState.IDLE);
     }
 }

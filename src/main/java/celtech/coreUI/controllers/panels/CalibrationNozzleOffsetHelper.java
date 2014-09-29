@@ -15,6 +15,7 @@ import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.services.calibration.CalibrateNozzleOffsetTask;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOffsetCalibrationStepResult;
+import celtech.services.calibration.NozzleOpeningCalibrationState;
 import java.util.ArrayList;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -25,9 +26,8 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class CalibrationNozzleOffsetHelper
+public class CalibrationNozzleOffsetHelper implements CalibrationHelper
 {
-
     private Stenographer steno = StenographerFactory.getStenographer(CalibrationNozzleOffsetHelper.class.getName());
 
     private Printer printerToUse = null;
@@ -79,7 +79,7 @@ public class CalibrationNozzleOffsetHelper
         this.printerToUse = printer;
     }
 
-    public void yesButtonAction()
+    public void buttonBAction()
     {
         switch (state)
         {
@@ -99,7 +99,7 @@ public class CalibrationNozzleOffsetHelper
         }
     }
 
-    public void tooLooseAction()
+    public void buttonAAction()
     {
         zco -= 0.05;
 
@@ -181,16 +181,6 @@ public class CalibrationNozzleOffsetHelper
         {
             steno.info("Cancelling from state " + state.name() + " - no change to head data");
         }
-    }
-
-    public void addStateListener(CalibrationNozzleOffsetStateListener stateListener)
-    {
-        stateListeners.add(stateListener);
-    }
-
-    public void removeStateListener(CalibrationNozzleOffsetStateListener stateListener)
-    {
-        stateListeners.remove(stateListener);
     }
 
     public void setState(NozzleOffsetCalibrationState newState)
@@ -313,11 +303,6 @@ public class CalibrationNozzleOffsetHelper
         }
     }
 
-    public NozzleOffsetCalibrationState getState()
-    {
-        return state;
-    }
-
     public HeadEEPROMDataResponse getSavedHeadData()
     {
         return savedHeadData;
@@ -348,4 +333,23 @@ public class CalibrationNozzleOffsetHelper
             steno.error("Unable to write new nozzle offsets to head");
         }
     }
+
+    @Override
+    public void nextButtonAction()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void saveSettings()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void goToIdleState()
+    {
+        setState(NozzleOffsetCalibrationState.IDLE);
+    }
+
 }

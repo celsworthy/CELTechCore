@@ -16,9 +16,9 @@ public enum ApplicationMode
     /**
      *
      */
-    CALIBRATION_CHOICE("printerStatus", "CalibrationChoice"),
-    NOZZLE_OPEN_CALIBRATION("printerStatus", "CalibrationNozzleB"),
-    NOZZLE_OFFSET_CALIBRATION("printerStatus", "CalibrationNozzleOffset"),
+    CALIBRATION("printerStatus", "Calibration"),
+//    NOZZLE_OPEN_CALIBRATION("printerStatus", "CalibrationNozzleB"),
+//    NOZZLE_OFFSET_CALIBRATION("printerStatus", "CalibrationNozzleOffset"),
     PURGE("printerStatus", "purge"),
     ABOUT("printerStatus", "about"),
     SYSTEM_INFORMATION("printerStatus", "systemInformation"),

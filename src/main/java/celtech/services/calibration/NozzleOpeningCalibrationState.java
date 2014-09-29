@@ -6,7 +6,7 @@ import celtech.coreUI.DisplayManager;
  *
  * @author Ian
  */
-public enum NozzleBCalibrationState
+public enum NozzleOpeningCalibrationState
 {
 
     /**
@@ -72,7 +72,7 @@ public enum NozzleBCalibrationState
 
     private String stepTitleResource = null;
 
-    private NozzleBCalibrationState(String stepTitleResource)
+    private NozzleOpeningCalibrationState(String stepTitleResource)
     {
         this.stepTitleResource = stepTitleResource;
     }
@@ -81,11 +81,11 @@ public enum NozzleBCalibrationState
      *
      * @return
      */
-    public NozzleBCalibrationState getNextState()
+    public NozzleOpeningCalibrationState getNextState()
     {
-        NozzleBCalibrationState returnState = null;
+        NozzleOpeningCalibrationState returnState = null;
 
-        NozzleBCalibrationState[] values = NozzleBCalibrationState.values();
+        NozzleOpeningCalibrationState[] values = NozzleOpeningCalibrationState.values();
 
         if (this != FINISHED && this != FAILED)
         {

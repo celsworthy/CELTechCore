@@ -7,7 +7,8 @@ import celtech.coreUI.components.calibration.CalibrationProgress;
 import celtech.coreUI.controllers.StatusScreenState;
 import static celtech.coreUI.controllers.panels.CalibrationMenuConfiguration.configureCalibrationMenu;
 import celtech.printerControl.Printer;
-import celtech.services.calibration.NozzleBCalibrationState;
+import celtech.services.calibration.NozzleOffsetCalibrationState;
+import celtech.services.calibration.NozzleOpeningCalibrationState;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
@@ -27,14 +28,16 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class CalibrationNozzleBInsetPanelController implements Initializable,
+public class CalibrationInsetPanelController implements Initializable,
     CalibrationBStateListener
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationNozzleBInsetPanelController.class.getName());
+    private CalibrationMode calibrationMode;
 
-    private CalibrationNozzleBHelper calibrationHelper = new CalibrationNozzleBHelper();
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        CalibrationInsetPanelController.class.getName());
+
+    private CalibrationHelper calibrationHelper;
 
     @FXML
     private CalibrationMenu calibrationMenu;
@@ -49,16 +52,16 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
     CalibrationProgress calibrationProgress;
 
     @FXML
-    private Text stepNumber;    
-    
+    private Text stepNumber;
+
     @FXML
     private Button buttonA;
-    
+
     @FXML
-    private Button buttonB;    
-    
+    private Button buttonB;
+
     @FXML
-    private Button nextButton;        
+    private Button nextButton;
 
     @FXML
     private Button startCalibrationButton;
@@ -87,17 +90,28 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
     {
         calibrationHelper.buttonAAction();
     }
-    
+
     @FXML
     void nextButtonAction(ActionEvent event)
     {
         calibrationHelper.nextButtonAction();
-    }    
+    }
 
     @FXML
     void startCalibration(ActionEvent event)
     {
-        calibrationHelper.setState(NozzleBCalibrationState.HEATING);
+        switch (calibrationMode)
+        {
+            case NOZZLE_OPENING:
+                ((CalibrationNozzleBHelper) calibrationHelper).setState(
+                    NozzleOpeningCalibrationState.HEATING);
+                break;
+            case NOZZLE_HEIGHT:
+                ((CalibrationNozzleOffsetHelper) calibrationHelper).setState(
+                    NozzleOffsetCalibrationState.INITIALISING);
+                break;
+        }
+
     }
 
     @FXML
@@ -110,7 +124,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
     void saveSettings(ActionEvent event)
     {
         calibrationHelper.saveSettings();
-        calibrationHelper.setState(NozzleBCalibrationState.IDLE);
+//        calibrationHelper.setState(NozzleOpeningCalibrationState.IDLE);
         ApplicationStatus.getInstance().returnToLastMode();
     }
 
@@ -120,44 +134,41 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
     public void cancelCalibrationAction()
     {
         calibrationHelper.cancelCalibrationAction();
-        calibrationHelper.setState(NozzleBCalibrationState.IDLE);
+//        calibrationHelper.setState(NozzleOpeningCalibrationState.IDLE);
         ApplicationStatus.getInstance().returnToLastMode();
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
+        setCalibrationMode(CalibrationMode.CHOICE);
+
         StatusScreenState statusScreenState = StatusScreenState.getInstance();
 
         Printer printerToUse = statusScreenState.currentlySelectedPrinterProperty().get();
         setupChildComponents(printerToUse);
 
         statusScreenState.currentlySelectedPrinterProperty().addListener(
-            new ChangeListener<Printer>()
+            (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
             {
-                @Override
-                public void changed(ObservableValue<? extends Printer> observable, Printer oldValue,
-                    Printer newValue)
-                {
-                    setupChildComponents(newValue);
-                }
+                setupChildComponents(newValue);
             });
 
-        calibrationHelper.addStateListener(this);
-        calibrationHelper.setState(NozzleBCalibrationState.IDLE);
-
-        configureCalibrationMenu(calibrationMenu);
+        configureCalibrationMenu(calibrationMenu, this);
     }
 
     private void setupChildComponents(Printer printerToUse)
     {
-        calibrationHelper.setPrinterToUse(printerToUse);
+        if (calibrationHelper != null)
+        {
+            calibrationHelper.setPrinterToUse(printerToUse);
+        }
         setupTemperatureProgressListeners(printerToUse);
         currentPrinter = printerToUse;
     }
 
     @Override
-    public void setState(NozzleBCalibrationState state)
+    public void setNozzleOpeningState(NozzleOpeningCalibrationState state)
     {
         switch (state)
         {
@@ -211,7 +222,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
                 buttonA.setVisible(true);
                 buttonB.setVisible(true);
                 buttonA.setText("Flowing");
-                buttonB.setText("Not flowing");                
+                buttonB.setText("Not flowing");
                 saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText(String.format("Step %s of 10", 4));
@@ -225,7 +236,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
                 saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText(String.format("Step %s of 10", 5));
-                break;                
+                break;
             case CALIBRATE_FILL_NOZZLE:
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
@@ -233,11 +244,11 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
                 buttonB.setVisible(true);
                 nextButton.setVisible(false);
                 buttonA.setText("Flowing");
-                buttonB.setText("Not flowing");                   
+                buttonB.setText("Not flowing");
                 saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText(String.format("Step %s of 10", 6));
-                break;            
+                break;
             case HEAD_CLEAN_CHECK_FILL_NOZZLE:
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
@@ -247,7 +258,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
                 saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText(String.format("Step %s of 10", 7));
-                break;                  
+                break;
             case CONFIRM_NO_MATERIAL:
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
@@ -267,7 +278,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
                 buttonB.setVisible(true);
                 nextButton.setVisible(false);
                 buttonA.setText("Yes");
-                buttonB.setText("No");                
+                buttonB.setText("No");
                 saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText(String.format("Step %s of 10", 9));
@@ -342,8 +353,9 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
     {
         if (targetTemperature != 0 && calibrationProgress.isVisible())
         {
-            String targetTempStr = targetTemperature + Lookup.i18("misc.degreesC");
-            String currentTempStr = ((int) currentExtruderTemperature) + Lookup.i18("misc.degreesC");
+            String targetTempStr = targetTemperature + Lookup.i18n("misc.degreesC");
+            String currentTempStr = ((int) currentExtruderTemperature)
+                + Lookup.i18n("misc.degreesC");
             calibrationProgress.setCurrentValue(currentTempStr);
             calibrationProgress.setTargetValue(targetTempStr);
             calibrationProgress.setProgress(currentExtruderTemperature / targetTemperature);
@@ -358,5 +370,34 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
             calibrationBottomArea.getChildren().add(calibrationProgress);
         }
         calibrationBottomArea.getChildren().add(calibrateBottomMenu);
+    }
+
+    public void setCalibrationMode(CalibrationMode calibrationMode)
+    {
+        this.calibrationMode = calibrationMode;
+        switch (calibrationMode)
+        {
+            case NOZZLE_OPENING:
+                calibrationHelper = new CalibrationNozzleBHelper();
+                ((CalibrationNozzleBHelper) calibrationHelper).addStateListener(this);
+                calibrationHelper.goToIdleState();
+                setNozzleOpeningState(NozzleOpeningCalibrationState.IDLE);
+                break;
+
+            case NOZZLE_HEIGHT:
+                calibrationHelper = new CalibrationNozzleOffsetHelper();
+//                ((CalibrationNozzleOffsetHelper)calibrationHelper).addStateListener(this);
+                calibrationHelper.goToIdleState();
+                setNozzleOpeningState(NozzleOpeningCalibrationState.IDLE);
+                break;
+            case CHOICE:
+                calibrationHelper = null;
+                setupChoice();
+        }
+    }
+
+    private void setupChoice()
+    {
+        calibrationStatus.setText(Lookup.i18n("calibrationPanel.chooseCalibration"));
     }
 }

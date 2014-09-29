@@ -15,15 +15,18 @@ import java.util.concurrent.Callable;
 public class CalibrationMenuConfiguration
 {
     
-    public static void configureCalibrationMenu(CalibrationMenu calibrationMenu) {
+    public static void configureCalibrationMenu(CalibrationMenu calibrationMenu,
+        CalibrationInsetPanelController calibrationInsetPanelController) {
         calibrationMenu.addItem("Nozzle Opening", (Callable) () ->
                             {
-                                ApplicationStatus.getInstance().setMode(ApplicationMode.NOZZLE_OPEN_CALIBRATION);
+                                calibrationInsetPanelController.setCalibrationMode(
+                                    CalibrationMode.NOZZLE_OPENING);
                                 return null;
         });
         calibrationMenu.addItem("Nozzle Height", (Callable) () ->
                             {
-                                ApplicationStatus.getInstance().setMode(ApplicationMode.NOZZLE_OFFSET_CALIBRATION);
+                                calibrationInsetPanelController.setCalibrationMode(
+                                    CalibrationMode.NOZZLE_HEIGHT);
                                 return null;
         });
         calibrationMenu.addItem("X And Y Offset", (Callable) () ->

@@ -26,7 +26,7 @@ public class Lookup
         return instance.applicationEnvironment;
     }
     
-    public static String i18(String stringId) {
+    public static String i18n(String stringId) {
         return instance.applicationEnvironment.getLanguageBundle().getString(stringId);
     }
 
