@@ -50,6 +50,16 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
             cancelCalibrationAction();
         }
     };
+    
+    public void addStateListener(CalibrationNozzleOffsetStateListener stateListener)
+    {
+        stateListeners.add(stateListener);
+    }
+
+    public void removeStateListener(CalibrationNozzleOffsetStateListener stateListener)
+    {
+        stateListeners.remove(stateListener);
+    }    
 
     private EventHandler<WorkerStateEvent> succeededTaskHandler = new EventHandler<WorkerStateEvent>()
     {
@@ -145,7 +155,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
             }
         }
 
-        if (state != NozzleOffsetCalibrationState.IDLE && state != NozzleOffsetCalibrationState.CHOOSE_MODE)
+        if (state != NozzleOffsetCalibrationState.IDLE)
         {
             try
             {
@@ -188,14 +198,14 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
         this.state = newState;
         for (CalibrationNozzleOffsetStateListener listener : stateListeners)
         {
-            listener.setState(state);
+            listener.setNozzleHeightState(state);
         }
 
         switch (newState)
         {
             case IDLE:
                 break;
-            case INITIALISING:
+            case HEATING:
                 try
                 {
                     savedHeadData = printerToUse.transmitReadHeadEEPROM();

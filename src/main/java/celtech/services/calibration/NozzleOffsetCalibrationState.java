@@ -11,16 +11,18 @@ public enum NozzleOffsetCalibrationState
 
     /**
      *
-     */
-    CHOOSE_MODE(null, null),
-    /**
+     *//**
      *
      */
     IDLE("calibrationPanel.readyToBeginNozzleOffsetCalibration", null),
     /**
      *
      */
-    INITIALISING("calibrationPanel.heating", null),
+    INITIALISING("calibrationPanel.initialisingOffset", null),    
+    /**
+     *
+     */
+    HEATING("calibrationPanel.heating", null),
     /**
      *
      */

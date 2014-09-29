@@ -69,7 +69,7 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
 
         switch (desiredState)
         {
-            case INITIALISING:
+            case HEATING:
                 try
                 {
                     printerToUse.transmitStoredGCode("Home_all");
