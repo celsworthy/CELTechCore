@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.shape.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import celtech.coreUI.components.calibration.*?>
+
+<VBox fx:id="container" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="700.0" pickOnBounds="false" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationChoiceInsetPanelController">
+    <children>
+        <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
+            <center>
+                <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
+                    <children>
+                        <BorderPane prefHeight="200.0" prefWidth="200.0">
+                            <top>
+                                <CalibrationMenu fx:id="calibrationMenu" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="410.0" />
+                            </top>
+                            <bottom>
+                                <GridPane BorderPane.alignment="CENTER">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="10.0" prefWidth="25.0" />
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    </columnConstraints>
+                                    <rowConstraints>
+                                        <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                                    </rowConstraints>
+                                    <BorderPane.margin>
+                                        <Insets bottom="30.0" left="30.0" />
+                                    </BorderPane.margin>
+                                </GridPane>
+                            </bottom>
+                        </BorderPane>
+                        <Separator id="calibrationMenuSeparator" maxWidth="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefWidth="5.0">
+                            <HBox.margin>
+                                <Insets bottom="30.0" top="30.0" />
+                            </HBox.margin>
+                        </Separator>
+                        <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" pickOnBounds="false">
+                            <top>
+                                <VBox alignment="TOP_CENTER" BorderPane.alignment="CENTER">
+                                    <padding>
+                                        <Insets bottom="5.0" top="5.0" />
+                                    </padding>
+                                    <children>
+                                        <Label id="calibrationStatus" fx:id="calibrationStatus" prefWidth="800.0" text="%calibrationPanel.chooseCalibration" wrapText="true">
+                                            <padding>
+                                                <Insets left="30.0" right="30.0" />
+                                            </padding>
+                                        </Label>
+                                    </children>
+                                    <BorderPane.margin>
+                                        <Insets top="120.0" />
+                                    </BorderPane.margin>
+                                </VBox>
+                            </top>
+                            <bottom>
+                                <VBox alignment="CENTER" pickOnBounds="false" spacing="5.0" BorderPane.alignment="CENTER">
+                           <children>
+                              <HBox alignment="CENTER">
+                                 <VBox.margin>
+                                    <Insets bottom="30.0" />
+                                 </VBox.margin>
+                              </HBox>
+                           </children></VBox>
+                            </bottom>
+                        </BorderPane>
+                    </children>
+                </HBox>
+            </center>
+            <bottom>
+                <VBox id="calibrationBottomArea" fx:id="calibrationBottomArea" minHeight="0.0">
+                    <children>
+                        <StackPane id="calibrateBottomMenu" fx:id="calibrateBottomMenu" maxHeight="-Infinity" minHeight="-Infinity" pickOnBounds="false" prefHeight="60.0" BorderPane.alignment="CENTER">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" pickOnBounds="false">
+                                </HBox>
+                                <StackPane alignment="CENTER_RIGHT" maxHeight="-Infinity" pickOnBounds="false">
+                                    <children>
+
+                           
+                                    </children>
+                                </StackPane>
+                            </children>
+                            <BorderPane.margin>
+                                <Insets />
+                            </BorderPane.margin>
+                            <padding>
+                                <Insets left="30.0" />
+                            </padding>
+                        </StackPane>
+                    </children>
+                </VBox>
+            </bottom>
+            <top>
+                <HBox id="calibrationTopMenu" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="60.0" BorderPane.alignment="CENTER" />
+            </top>
+            <left>
+                <Pane id="calibrationLeftBorder" prefWidth="30.0" BorderPane.alignment="CENTER" />
+            </left>
+        </BorderPane>
+    </children>
+</VBox>

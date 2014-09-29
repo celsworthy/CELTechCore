@@ -152,6 +152,8 @@ public class LayoutStatusMenuStripController
             case SETTINGS:
                 applicationStatus.setMode(ApplicationMode.LAYOUT);
                 break;
+            case CALIBRATION_CHOICE:  
+                applicationStatus.setMode(ApplicationMode.CALIBRATION_CHOICE);
             default:
                 break;
         }
@@ -160,7 +162,7 @@ public class LayoutStatusMenuStripController
     @FXML
     void calibrate(ActionEvent event) {
         System.out.println("calibrate");
-        ApplicationStatus.getInstance().setMode(ApplicationMode.NOZZLE_OPEN_CALIBRATION);
+        ApplicationStatus.getInstance().setMode(ApplicationMode.CALIBRATION_CHOICE);
     }
 
     @FXML

@@ -5,11 +5,11 @@ import celtech.appManager.ApplicationStatus;
 import celtech.coreUI.components.calibration.CalibrationMenu;
 import celtech.coreUI.components.calibration.CalibrationProgress;
 import celtech.coreUI.controllers.StatusScreenState;
+import static celtech.coreUI.controllers.panels.CalibrationMenuConfiguration.configureCalibrationMenu;
 import celtech.printerControl.Printer;
 import celtech.services.calibration.NozzleBCalibrationState;
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.concurrent.Callable;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -146,26 +146,7 @@ public class CalibrationNozzleBInsetPanelController implements Initializable,
         calibrationHelper.addStateListener(this);
         calibrationHelper.setState(NozzleBCalibrationState.IDLE);
 
-        calibrationMenu.addItem("Nozzle Opening", (Callable) () ->
-                            {
-                                System.out.println("Called NO");
-                                return null;
-        });
-        calibrationMenu.addItem("Nozzle Height", (Callable) () ->
-                            {
-                                System.out.println("Called NH");
-                                return null;
-        });
-        calibrationMenu.addItem("X And Y Offset", (Callable) () ->
-                            {
-                                System.out.println("Called XY");
-                                return null;
-        });
-        calibrationMenu.addItem("Gantry Level", (Callable) () ->
-                            {
-                                System.out.println("Called GL");
-                                return null;
-        });
+        configureCalibrationMenu(calibrationMenu);
     }
 
     private void setupChildComponents(Printer printerToUse)
