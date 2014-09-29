@@ -111,7 +111,7 @@ public class CalibrationInsetPanelController implements Initializable,
                 break;
             case NOZZLE_HEIGHT:
                 ((CalibrationNozzleOffsetHelper) calibrationHelper).setState(
-                    NozzleOffsetCalibrationState.HEATING);
+                    NozzleOffsetCalibrationState.INITIALISING);
                 break;
         }
 
@@ -135,6 +135,7 @@ public class CalibrationInsetPanelController implements Initializable,
      */
     public void cancelCalibrationAction()
     {
+        calibrationMenu.enableNonSelectedItems();
         calibrationHelper.cancelCalibrationAction();
 //        calibrationHelper.setState(NozzleOpeningCalibrationState.IDLE);
         ApplicationStatus.getInstance().returnToLastMode();
@@ -189,6 +190,7 @@ public class CalibrationInsetPanelController implements Initializable,
                 stepNumber.setText(String.format("Step %s of 10", 1));
                 break;
             case HEATING:
+                calibrationMenu.disableNonSelectedItems();
                 setCalibrationProgressVisible(true);
                 calibrationProgress.setVisible(true);
                 startCalibrationButton.setVisible(false);
@@ -278,12 +280,6 @@ public class CalibrationInsetPanelController implements Initializable,
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText(String.format("Step %s of 10", 9));
                 break;
-            case PARKING:
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 12));
-                break;
             case FINISHED:
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
@@ -311,6 +307,8 @@ public class CalibrationInsetPanelController implements Initializable,
         switch (state)
         {
             case IDLE:
+                setCalibrationProgressVisible(false);
+                stepNumber.setVisible(true);
                 buttonAAlt.setVisible(false);
                 buttonBAlt.setVisible(false);
                 startCalibrationButton.setVisible(true);
@@ -324,13 +322,14 @@ public class CalibrationInsetPanelController implements Initializable,
             case INITIALISING:
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
-                nextButton.setVisible(false);
+                nextButton.setVisible(true);
                 buttonB.setVisible(false);
                 buttonA.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText(String.format("Step %s of 10", 2));
                 break;
             case HEATING:
+                calibrationMenu.disableNonSelectedItems();
                 setCalibrationProgressVisible(true);
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
@@ -356,7 +355,7 @@ public class CalibrationInsetPanelController implements Initializable,
                 buttonB.setVisible(false);
                 buttonA.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 4));
+                stepNumber.setText(String.format("Step %s of 10", 5));
                 break;
             case INSERT_PAPER:
                 startCalibrationButton.setVisible(false);
@@ -364,7 +363,7 @@ public class CalibrationInsetPanelController implements Initializable,
                 buttonB.setVisible(false);
                 buttonA.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 5));
+                stepNumber.setText(String.format("Step %s of 10", 6));
                 break;
             case PROBING:
                 startCalibrationButton.setVisible(false);

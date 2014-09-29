@@ -141,16 +141,6 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                     steno.error("Error in needle valve calibration - mode=" + desiredState.name());
                 }
                 break;
-            case PARKING:
-                try
-                {
-                    printer.transmitStoredGCode("Park");
-                    success = true;
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
-                }
-                break;
         }
 
         return new NozzleBCalibrationStepResult(desiredState, success);

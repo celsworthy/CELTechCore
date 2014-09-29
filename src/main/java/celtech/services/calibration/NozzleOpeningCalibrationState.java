@@ -60,10 +60,6 @@ public enum NozzleOpeningCalibrationState
     /**
      *
      */
-    PARKING("calibrationPanel.calibrationParkingMessage"),
-    /**
-     *
-     */
     FINISHED("calibrationPanel.calibrationSucceededBMessage"),
     /**
      *

@@ -42,7 +42,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
     private NozzleOffsetCalibrationState state = NozzleOffsetCalibrationState.IDLE;
     private ArrayList<CalibrationNozzleOffsetStateListener> stateListeners = new ArrayList<>();
 
-    private EventHandler<WorkerStateEvent> failedTaskHandler = new EventHandler<WorkerStateEvent>()
+    private final EventHandler<WorkerStateEvent> failedTaskHandler = new EventHandler<WorkerStateEvent>()
     {
         @Override
         public void handle(WorkerStateEvent event)
@@ -61,7 +61,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
         stateListeners.remove(stateListener);
     }    
 
-    private EventHandler<WorkerStateEvent> succeededTaskHandler = new EventHandler<WorkerStateEvent>()
+    private final EventHandler<WorkerStateEvent> succeededTaskHandler = new EventHandler<WorkerStateEvent>()
     {
         @Override
         public void handle(WorkerStateEvent event)
@@ -84,11 +84,13 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
         }
     };
 
+    @Override
     public void setPrinterToUse(Printer printer)
     {
         this.printerToUse = printer;
     }
 
+    @Override
     public void buttonBAction()
     {
         switch (state)
@@ -109,6 +111,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
         }
     }
 
+    @Override
     public void buttonAAction()
     {
         zco -= 0.05;
@@ -145,6 +148,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
         return zco;
     }
 
+    @Override
     public void cancelCalibrationAction()
     {
         if (calibrationTask != null)
@@ -204,6 +208,8 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
         switch (newState)
         {
             case IDLE:
+                break;
+            case INITIALISING:
                 break;
             case HEATING:
                 try
