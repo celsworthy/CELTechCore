@@ -38,48 +38,50 @@ public class CalibrationInsetPanelController implements Initializable,
         CalibrationInsetPanelController.class.getName());
 
     private CalibrationHelper calibrationHelper;
+    private CalibrationNozzleOffsetGUIStateHandler calibrationNozzleOffsetGUIStateHandler;
+    private CalibrationNozzleBGUIStateHandler calibrationNozzleBGUIStateHandler;
 
     @FXML
-    private CalibrationMenu calibrationMenu;
+    protected CalibrationMenu calibrationMenu;
 
     @FXML
-    private StackPane calibrateBottomMenu;
+    protected StackPane calibrateBottomMenu;
 
     @FXML
-    private VBox calibrationBottomArea;
+    protected VBox calibrationBottomArea;
 
     @FXML
-    CalibrationProgress calibrationProgress;
+    protected CalibrationProgress calibrationProgress;
 
     @FXML
-    private Text stepNumber;
+    protected Text stepNumber;
 
     @FXML
-    private Button buttonA;
+    protected Button buttonA;
 
     @FXML
-    private Button buttonB;
+    protected Button buttonB;
 
     @FXML
-    private Button buttonAAlt;
+    protected Button buttonAAlt;
 
     @FXML
-    private Button buttonBAlt;
+    protected Button buttonBAlt;
 
     @FXML
-    private Button nextButton;
+    protected Button nextButton;
 
     @FXML
-    private Button backToStatus;
-    
-    @FXML
-    private Button startCalibrationButton;
+    protected Button backToStatus;
 
     @FXML
-    private Button cancelCalibrationButton;
+    protected Button startCalibrationButton;
 
     @FXML
-    private Label calibrationStatus;
+    protected Button cancelCalibrationButton;
+
+    @FXML
+    protected Label calibrationStatus;
 
     private Printer currentPrinter;
     private int targetTemperature;
@@ -102,11 +104,11 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         calibrationHelper.nextButtonAction();
     }
-    
+
     @FXML
     void backToStatusAction(ActionEvent event)
     {
-    }    
+    }
 
     @FXML
     void startCalibration(ActionEvent event)
@@ -134,7 +136,6 @@ public class CalibrationInsetPanelController implements Initializable,
     void saveSettings(ActionEvent event)
     {
         calibrationHelper.saveSettings();
-//        calibrationHelper.setState(NozzleOpeningCalibrationState.IDLE);
         ApplicationStatus.getInstance().returnToLastMode();
     }
 
@@ -143,18 +144,8 @@ public class CalibrationInsetPanelController implements Initializable,
      */
     public void cancelCalibrationAction()
     {
-        calibrationMenu.enableNonSelectedItems();
-        calibrationHelper.cancelCalibrationAction();
         ApplicationStatus.getInstance().returnToLastMode();
-         switch (calibrationMode)
-        {
-            case NOZZLE_OPENING:
-                ((CalibrationNozzleBHelper)calibrationHelper).setState(NozzleOpeningCalibrationState.IDLE);
-                break;
-            case NOZZLE_HEIGHT:
-                ((CalibrationNozzleOffsetHelper)calibrationHelper).setState(NozzleOffsetCalibrationState.IDLE);
-                break;
-        }
+        calibrationHelper.cancelCalibrationAction();
         setCalibrationMode(CalibrationMode.CHOICE);
     }
 
@@ -190,254 +181,13 @@ public class CalibrationInsetPanelController implements Initializable,
     @Override
     public void setNozzleOpeningState(NozzleOpeningCalibrationState state)
     {
-        switch (state)
-        {
-            case IDLE:
-                backToStatus.setVisible(false);
-                buttonAAlt.setVisible(false);
-                buttonBAlt.setVisible(false);
-                stepNumber.setVisible(true);
-                setCalibrationProgressVisible(false);
-                startCalibrationButton.setVisible(true);
-                cancelCalibrationButton.setVisible(true);
-                buttonA.setVisible(false);
-                buttonB.setVisible(false);
-                nextButton.setVisible(false);
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 1));
-                break;
-            case HEATING:
-                calibrationMenu.disableNonSelectedItems();
-                setCalibrationProgressVisible(true);
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                buttonA.setVisible(false);
-                buttonB.setVisible(false);
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 2));
-                break;
-            case NO_MATERIAL_CHECK:
-                setCalibrationProgressVisible(false);
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                buttonA.setVisible(true);
-                buttonB.setVisible(true);
-                buttonA.setText("Yes");
-                buttonB.setText("No");
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 3));
-                break;
-            case PRE_CALIBRATION_PRIMING_FINE:
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                buttonA.setVisible(false);
-                buttonB.setVisible(false);
-                calibrationStatus.setText(state.getStepTitle());
-                break;
-            case CALIBRATE_FINE_NOZZLE:
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                buttonA.setVisible(true);
-                buttonB.setVisible(true);
-                buttonA.setText("Flowing");
-                buttonB.setText("Not flowing");
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 4));
-                break;
-            case HEAD_CLEAN_CHECK_FINE_NOZZLE:
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                buttonA.setVisible(false);
-                buttonB.setVisible(false);
-                nextButton.setVisible(true);
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 5));
-                break;
-            case CALIBRATE_FILL_NOZZLE:
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                buttonA.setVisible(true);
-                buttonB.setVisible(true);
-                nextButton.setVisible(false);
-                buttonA.setText("Flowing");
-                buttonB.setText("Not flowing");
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 6));
-                break;
-            case HEAD_CLEAN_CHECK_FILL_NOZZLE:
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                buttonA.setVisible(false);
-                buttonB.setVisible(false);
-                nextButton.setVisible(true);
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 7));
-                break;
-            case CONFIRM_NO_MATERIAL:
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                buttonA.setVisible(true);
-                buttonB.setVisible(true);
-                nextButton.setVisible(false);
-                buttonA.setText("No");
-                buttonB.setText("Yes");
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 8));
-                break;
-            case CONFIRM_MATERIAL_EXTRUDING_FINE:
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                buttonA.setVisible(true);
-                buttonB.setVisible(true);
-                nextButton.setVisible(false);
-                buttonA.setText("Yes");
-                buttonB.setText("No");
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 9));
-                break;
-            case FINISHED:
-                backToStatus.setVisible(true);
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                buttonA.setVisible(false);
-                buttonB.setVisible(false);
-                nextButton.setVisible(false);
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 10));
-                setCalibrationMode(CalibrationMode.CHOICE);
-                break;
-            case FAILED:
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                buttonA.setVisible(false);
-                buttonB.setVisible(false);
-                nextButton.setVisible(false);
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText("");
-                setCalibrationMode(CalibrationMode.CHOICE);
-                break;
-        }
+        calibrationNozzleBGUIStateHandler.setNozzleOpeningState(state);
     }
 
     @Override
     public void setNozzleHeightState(NozzleOffsetCalibrationState state)
     {
-        switch (state)
-        {
-            case IDLE:
-                backToStatus.setVisible(false);
-                setCalibrationProgressVisible(false);
-                stepNumber.setVisible(true);
-                buttonAAlt.setVisible(false);
-                buttonBAlt.setVisible(false);
-                startCalibrationButton.setVisible(true);
-                cancelCalibrationButton.setVisible(true);
-                nextButton.setVisible(false);
-                buttonB.setVisible(false);
-                buttonA.setVisible(false);
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 1));
-                break;
-            case INITIALISING:
-                calibrationMenu.disableNonSelectedItems();
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                nextButton.setVisible(true);
-                buttonB.setVisible(false);
-                buttonA.setVisible(false);
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 2));
-                break;
-            case HEATING:
-                setCalibrationProgressVisible(true);
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                nextButton.setVisible(false);
-                buttonB.setVisible(false);
-                buttonA.setVisible(false);
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 3));
-                break;
-            case HEAD_CLEAN_CHECK:
-                setCalibrationProgressVisible(false);
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                buttonA.setVisible(false);
-                buttonB.setVisible(false);
-                nextButton.setVisible(true);
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 4));
-                break;
-            case MEASURE_Z_DIFFERENCE:
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                buttonB.setVisible(false);
-                buttonA.setVisible(false);
-                nextButton.setVisible(false);
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 5));
-                break;
-            case INSERT_PAPER:
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                buttonB.setVisible(false);
-                buttonA.setVisible(false);
-                nextButton.setVisible(true);
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 6));
-                break;
-            case PROBING:
-                buttonAAlt.disableProperty().bind(
-                    ((CalibrationNozzleOffsetHelper) calibrationHelper).showDownButton.not());
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                buttonAAlt.setVisible(true);
-                buttonBAlt.setVisible(true);
-                buttonB.setVisible(false);
-                buttonA.setVisible(false);
-                nextButton.setVisible(true);
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 7));
-                break;
-            case LIFT_HEAD:
-                break;
-            case REPLACE_PEI_BED:    
-                buttonAAlt.disableProperty().unbind();
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                buttonB.setVisible(false);
-                buttonA.setVisible(false);
-                buttonAAlt.setVisible(false);
-                buttonBAlt.setVisible(false);
-                nextButton.setVisible(true);
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 8));
-                break;
-            case FINISHED:
-                backToStatus.setVisible(true);
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                buttonB.setVisible(false);
-                buttonA.setVisible(false);
-                buttonAAlt.setVisible(false);
-                buttonBAlt.setVisible(false);
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 9));
-                setCalibrationMode(CalibrationMode.CHOICE);
-                break;
-            case FAILED:
-                buttonAAlt.disableProperty().unbind();
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(false);
-                buttonB.setVisible(false);
-                buttonA.setVisible(false);
-                buttonAAlt.setVisible(false);
-                buttonBAlt.setVisible(false);
-                calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText("");
-                setCalibrationMode(CalibrationMode.CHOICE);
-                break;
-        }
+        calibrationNozzleOffsetGUIStateHandler.setNozzleHeightState(state);
     }
 
     private final ChangeListener<Number> targetTemperatureListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
@@ -489,7 +239,7 @@ public class CalibrationInsetPanelController implements Initializable,
         }
     }
 
-    private void setCalibrationProgressVisible(boolean visible)
+    protected void setCalibrationProgressVisible(boolean visible)
     {
         calibrationProgress.setVisible(visible);
         calibrationBottomArea.getChildren().clear();
@@ -507,14 +257,17 @@ public class CalibrationInsetPanelController implements Initializable,
         {
             case NOZZLE_OPENING:
                 calibrationHelper = new CalibrationNozzleBHelper();
+                calibrationNozzleOffsetGUIStateHandler = 
+                    new CalibrationNozzleOffsetGUIStateHandler(this, calibrationHelper);
                 ((CalibrationNozzleBHelper) calibrationHelper).addStateListener(this);
                 calibrationHelper.goToIdleState();
                 calibrationHelper.setPrinterToUse(currentPrinter);
                 setNozzleOpeningState(NozzleOpeningCalibrationState.IDLE);
                 break;
-
             case NOZZLE_HEIGHT:
                 calibrationHelper = new CalibrationNozzleOffsetHelper();
+                calibrationNozzleBGUIStateHandler = 
+                    new CalibrationNozzleBGUIStateHandler(this, calibrationHelper);
                 ((CalibrationNozzleOffsetHelper) calibrationHelper).addStateListener(this);
                 calibrationHelper.goToIdleState();
                 calibrationHelper.setPrinterToUse(currentPrinter);
@@ -529,7 +282,7 @@ public class CalibrationInsetPanelController implements Initializable,
     private void setupChoice()
     {
         calibrationStatus.setText(Lookup.i18n("calibrationPanel.chooseCalibration"));
-        calibrationMenu.deselectSelectedItem();
+        calibrationMenu.reset();
         setCalibrationProgressVisible(false);
         backToStatus.setVisible(false);
         stepNumber.setVisible(false);

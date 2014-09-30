@@ -28,10 +28,10 @@ public class CalibrationMenu extends VBox
 
     private Stenographer steno = StenographerFactory.getStenographer(CalibrationMenu.class.getName());
 
-    private static int SQUARE_SIZE = 16;
-    private static int ROW_HEIGHT = 50;
+    private static final int SQUARE_SIZE = 16;
+    private static final int ROW_HEIGHT = 50;
 
-    private static String SELECTED_STYLE_CLASS = "calibrationSelectedMenuOption";
+    private static final String SELECTED_STYLE_CLASS = "calibrationSelectedMenuOption";
 
     private Text selectedItem;
     private Rectangle selectedSquare;
@@ -176,6 +176,14 @@ public class CalibrationMenu extends VBox
         if (selectedItem != null && selectedSquare != null)
         {
             deselect(selectedItem, selectedSquare);
+            selectedItem = null;
+            selectedSquare = null;
         }
+    }
+
+    public void reset()
+    {
+        enableNonSelectedItems();
+        deselectSelectedItem();
     }
 }
