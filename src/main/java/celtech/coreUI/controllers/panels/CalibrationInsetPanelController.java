@@ -145,8 +145,17 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         calibrationMenu.enableNonSelectedItems();
         calibrationHelper.cancelCalibrationAction();
-//        calibrationHelper.setState(NozzleOpeningCalibrationState.IDLE);
         ApplicationStatus.getInstance().returnToLastMode();
+         switch (calibrationMode)
+        {
+            case NOZZLE_OPENING:
+                ((CalibrationNozzleBHelper)calibrationHelper).setState(NozzleOpeningCalibrationState.IDLE);
+                break;
+            case NOZZLE_HEIGHT:
+                ((CalibrationNozzleOffsetHelper)calibrationHelper).setState(NozzleOffsetCalibrationState.IDLE);
+                break;
+        }
+        setCalibrationMode(CalibrationMode.CHOICE);
     }
 
     @Override
@@ -189,7 +198,6 @@ public class CalibrationInsetPanelController implements Initializable,
                 buttonBAlt.setVisible(false);
                 stepNumber.setVisible(true);
                 setCalibrationProgressVisible(false);
-                calibrationProgress.setVisible(false);
                 startCalibrationButton.setVisible(true);
                 cancelCalibrationButton.setVisible(true);
                 buttonA.setVisible(false);
@@ -201,7 +209,6 @@ public class CalibrationInsetPanelController implements Initializable,
             case HEATING:
                 calibrationMenu.disableNonSelectedItems();
                 setCalibrationProgressVisible(true);
-                calibrationProgress.setVisible(true);
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
                 buttonA.setVisible(false);
@@ -211,7 +218,6 @@ public class CalibrationInsetPanelController implements Initializable,
                 break;
             case NO_MATERIAL_CHECK:
                 setCalibrationProgressVisible(false);
-                calibrationProgress.setVisible(false);
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
                 buttonA.setVisible(true);
@@ -485,6 +491,7 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private void setCalibrationProgressVisible(boolean visible)
     {
+        calibrationProgress.setVisible(visible);
         calibrationBottomArea.getChildren().clear();
         if (visible)
         {
@@ -522,7 +529,9 @@ public class CalibrationInsetPanelController implements Initializable,
     private void setupChoice()
     {
         calibrationStatus.setText(Lookup.i18n("calibrationPanel.chooseCalibration"));
+        calibrationMenu.deselectSelectedItem();
         setCalibrationProgressVisible(false);
+        backToStatus.setVisible(false);
         stepNumber.setVisible(false);
         nextButton.setVisible(false);
         startCalibrationButton.setVisible(false);

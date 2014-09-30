@@ -81,7 +81,7 @@ public class CalibrationMenu extends VBox
         square.setVisible(false);
         itemName.setOnMouseEntered((MouseEvent e) ->
         {
-            if (itemName != selectedItem && ! disableNonSelectedItems)
+            if (itemName != selectedItem && !disableNonSelectedItems)
             {
                 square.setVisible(true);
                 square.setFill(Color.WHITE);
@@ -89,7 +89,7 @@ public class CalibrationMenu extends VBox
         });
         itemName.setOnMouseExited((MouseEvent e) ->
         {
-            if (itemName != selectedItem && ! disableNonSelectedItems)
+            if (itemName != selectedItem && !disableNonSelectedItems)
             {
                 square.setVisible(false);
                 if (itemName.getStyleClass().contains(SELECTED_STYLE_CLASS))
@@ -101,7 +101,7 @@ public class CalibrationMenu extends VBox
         });
         itemName.setOnMouseClicked((MouseEvent e) ->
         {
-            if (itemName != selectedItem && ! disableNonSelectedItems)
+            if (itemName != selectedItem && !disableNonSelectedItems)
             {
                 if (selectedItem != null)
                 {
@@ -150,20 +150,32 @@ public class CalibrationMenu extends VBox
 
     }
 
-    /***
+    /**
+     * *
      * Disable all menu items except the currently selected item.
      */
     public void disableNonSelectedItems()
     {
         disableNonSelectedItems = true;
     }
-    
-    /***
+
+    /**
+     * *
      * Enable all menu items.
      */
     public void enableNonSelectedItems()
     {
         disableNonSelectedItems = false;
-    }    
+    }
 
+    /**
+     * If an item is selected then deselect it.
+     */
+    public void deselectSelectedItem()
+    {
+        if (selectedItem != null && selectedSquare != null)
+        {
+            deselect(selectedItem, selectedSquare);
+        }
+    }
 }
