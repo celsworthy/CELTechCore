@@ -182,7 +182,6 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
                 setState(NozzleOpeningCalibrationState.FAILED);
                 break;
         }
-
     }
 
     /**
@@ -221,9 +220,7 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
                                                          savedHeadData.getHeadHours());
                 }
 
-                printerToUse.transmitDirectGCode("G0 B0", false);
-                printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
+                turnHeaterAndLEDSOff();
             } catch (RoboxCommsException ex)
             {
                 steno.error("Error in needle valve calibration - mode=" + state.name());
@@ -398,9 +395,8 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
             case FINISHED:
                 try
                 {
-                    printerToUse.transmitDirectGCode("G0 B0", false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
+                    saveSettings();
+                    turnHeaterAndLEDSOff();
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in needle valve calibration - mode=" + state.name());
@@ -409,9 +405,7 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
             case FAILED:
                 try
                 {
-                    printerToUse.transmitDirectGCode("G0 B0", false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
+                    turnHeaterAndLEDSOff();
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error clearing up after failed calibration");
@@ -420,8 +414,14 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
         }
     }
 
-    @Override
-    public void saveSettings()
+    private void turnHeaterAndLEDSOff() throws RoboxCommsException
+    {
+        printerToUse.transmitDirectGCode("G0 B0", false);
+        printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+        printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
+    }
+
+    private void saveSettings()
     {
         try
         {

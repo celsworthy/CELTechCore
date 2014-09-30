@@ -3,8 +3,6 @@
  */
 package celtech.coreUI.controllers.panels;
 
-import celtech.appManager.ApplicationMode;
-import celtech.appManager.ApplicationStatus;
 import celtech.coreUI.components.calibration.CalibrationMenu;
 import java.util.concurrent.Callable;
 
@@ -37,7 +35,8 @@ public class CalibrationMenuConfiguration
         });        
         calibrationMenu.addItem("X And Y Offset", (Callable) () ->
                             {
-                                System.out.println("Called XY");
+                                calibrationInsetPanelController.setCalibrationMode(
+                                    CalibrationMode.X_AND_Y_OFFSET);
                                 return null;
         });
         calibrationMenu.addItem("Gantry Level", (Callable) () ->

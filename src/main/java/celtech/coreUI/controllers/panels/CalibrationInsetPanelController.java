@@ -7,6 +7,7 @@ import celtech.coreUI.components.calibration.CalibrationProgress;
 import celtech.coreUI.controllers.StatusScreenState;
 import static celtech.coreUI.controllers.panels.CalibrationMenuConfiguration.configureCalibrationMenu;
 import celtech.printerControl.Printer;
+import celtech.services.calibration.CalibrationXAndYState;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOpeningCalibrationState;
 import java.net.URL;
@@ -29,7 +30,8 @@ import libertysystems.stenographer.StenographerFactory;
  * @author Ian
  */
 public class CalibrationInsetPanelController implements Initializable,
-    CalibrationBStateListener, CalibrationNozzleOffsetStateListener
+    CalibrationBStateListener, CalibrationNozzleOffsetStateListener,
+    CalibrationXAndYStateListener
 {
 
     private CalibrationMode calibrationMode;
@@ -40,6 +42,7 @@ public class CalibrationInsetPanelController implements Initializable,
     private CalibrationHelper calibrationHelper;
     private CalibrationNozzleOffsetGUIStateHandler calibrationNozzleOffsetGUIStateHandler;
     private CalibrationNozzleBGUIStateHandler calibrationNozzleBGUIStateHandler;
+    private CalibrationXAndYGUIStateHandler calibrationXAndYGUIStateHandler;
 
     @FXML
     protected CalibrationMenu calibrationMenu;
@@ -113,30 +116,24 @@ public class CalibrationInsetPanelController implements Initializable,
     @FXML
     void startCalibration(ActionEvent event)
     {
-        switch (calibrationMode)
-        {
-            case NOZZLE_OPENING:
-                ((CalibrationNozzleBHelper) calibrationHelper).setState(
-                    NozzleOpeningCalibrationState.HEATING);
-                break;
-            case NOZZLE_HEIGHT:
-                ((CalibrationNozzleOffsetHelper) calibrationHelper).setState(
-                    NozzleOffsetCalibrationState.INITIALISING);
-                break;
-        }
-
+        calibrationHelper.nextButtonAction();
+//        switch (calibrationMode)
+//        {
+//            case NOZZLE_OPENING:
+//                ((CalibrationNozzleBHelper) calibrationHelper).setState(
+//                    NozzleOpeningCalibrationState.HEATING);
+//                break;
+//            case NOZZLE_HEIGHT:
+//                ((CalibrationNozzleOffsetHelper) calibrationHelper).setState(
+//                    NozzleOffsetCalibrationState.INITIALISING);
+//                break;
+//        }
     }
 
     @FXML
     void cancelCalibration(ActionEvent event)
     {
         cancelCalibrationAction();
-    }
-
-    void saveSettings(ActionEvent event)
-    {
-        calibrationHelper.saveSettings();
-        ApplicationStatus.getInstance().returnToLastMode();
     }
 
     /**
@@ -189,6 +186,12 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         calibrationNozzleOffsetGUIStateHandler.setNozzleHeightState(state);
     }
+    
+    @Override
+    public void setXAndYState(CalibrationXAndYState state)
+    {
+        calibrationXAndYGUIStateHandler.setXAndYState(state);
+    }    
 
     private final ChangeListener<Number> targetTemperatureListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
@@ -273,6 +276,15 @@ public class CalibrationInsetPanelController implements Initializable,
                 calibrationHelper.setPrinterToUse(currentPrinter);
                 setNozzleHeightState(NozzleOffsetCalibrationState.IDLE);
                 break;
+            case X_AND_Y_OFFSET:   
+                calibrationHelper = new CalibrationXAndYHelper();
+                calibrationXAndYGUIStateHandler = 
+                    new CalibrationXAndYGUIStateHandler(this, calibrationHelper);
+                ((CalibrationXAndYHelper) calibrationHelper).addStateListener(this);
+                calibrationHelper.goToIdleState();
+                calibrationHelper.setPrinterToUse(currentPrinter);
+                setXAndYState(CalibrationXAndYState.IDLE);
+                break;
             case CHOICE:
                 calibrationHelper = null;
                 setupChoice();
@@ -294,5 +306,4 @@ public class CalibrationInsetPanelController implements Initializable,
         buttonAAlt.setVisible(false);
         buttonBAlt.setVisible(false);
     }
-
 }

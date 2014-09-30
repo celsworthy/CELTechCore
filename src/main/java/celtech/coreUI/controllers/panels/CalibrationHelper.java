@@ -4,7 +4,6 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.printerControl.Printer;
-import celtech.services.calibration.NozzleOpeningCalibrationState;
 
 /**
  *
@@ -19,8 +18,6 @@ public interface CalibrationHelper
     void cancelCalibrationAction();
 
     void nextButtonAction();
-
-    void saveSettings();
 
     void setPrinterToUse(Printer printer);
 

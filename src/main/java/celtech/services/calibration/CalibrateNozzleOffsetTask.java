@@ -10,7 +10,6 @@ import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.services.ControllableService;
 import celtech.utils.PrinterUtils;
@@ -182,43 +181,43 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
         return new NozzleOffsetCalibrationStepResult(desiredState, returnFloat, success);
     }
 
-    private boolean extrudeUntilStall()
-    {
-        boolean success = false;
-        try
-        {
-            printerToUse.transmitDirectGCode("M909 S4", false);
-            PrinterUtils.waitOnBusy(printerToUse, this);
-
-            printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
-
-            AckResponse errors = printerToUse.transmitReportErrors();
-            if (errors.isError())
-            {
-                printerToUse.transmitResetErrors();
-            }
-
-            while (errors.isEFilamentSlipError() == false && isCancelled() == false)
-            {
-                printerToUse.transmitDirectGCode("G0 E10", false);
-                PrinterUtils.waitOnBusy(printerToUse, this);
-
-                errors = printerToUse.transmitReportErrors();
-            }
-
-            printerToUse.transmitResetErrors();
-
-            printerToUse.transmitDirectGCode("M909 S70", false);
-            PrinterUtils.waitOnBusy(printerToUse, this);
-
-            success = true;
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error in needle valve priming - mode=" + desiredState.name());
-        }
-        
-        return success;
-    }
+//    private boolean extrudeUntilStall()
+//    {
+//        boolean success = false;
+//        try
+//        {
+//            printerToUse.transmitDirectGCode("M909 S4", false);
+//            PrinterUtils.waitOnBusy(printerToUse, this);
+//
+//            printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
+//
+//            AckResponse errors = printerToUse.transmitReportErrors();
+//            if (errors.isError())
+//            {
+//                printerToUse.transmitResetErrors();
+//            }
+//
+//            while (errors.isEFilamentSlipError() == false && isCancelled() == false)
+//            {
+//                printerToUse.transmitDirectGCode("G0 E10", false);
+//                PrinterUtils.waitOnBusy(printerToUse, this);
+//
+//                errors = printerToUse.transmitReportErrors();
+//            }
+//
+//            printerToUse.transmitResetErrors();
+//
+//            printerToUse.transmitDirectGCode("M909 S70", false);
+//            PrinterUtils.waitOnBusy(printerToUse, this);
+//
+//            success = true;
+//        } catch (RoboxCommsException ex)
+//        {
+//            steno.error("Error in needle valve priming - mode=" + desiredState.name());
+//        }
+//        
+//        return success;
+//    }
 
     private void waitUntilNozzleReaches(int temperature, int tolerance) throws InterruptedException
     {

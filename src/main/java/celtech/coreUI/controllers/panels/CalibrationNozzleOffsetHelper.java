@@ -16,8 +16,6 @@ import celtech.services.calibration.CalibrateNozzleOffsetTask;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOffsetCalibrationStepResult;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.WorkerStateEvent;
@@ -174,10 +172,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
                                                          savedHeadData.getHeadHours());
                 }
 
-                printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
-                printerToUse.transmitDirectGCode("G90", false);
-                printerToUse.transmitDirectGCode("G0 Z25", false);
+                switchHeaterOffAndRaiseHead();
             } catch (RoboxCommsException ex)
             {
                 steno.error("Error in nozzle offset calibration - mode=" + state.name());
@@ -288,10 +283,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
                                                          savedHeadData.getLastFilamentTemperature(),
                                                          savedHeadData.getHeadHours());
 
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
-                    printerToUse.transmitDirectGCode("G90", false);
-                    printerToUse.transmitDirectGCode("G0 Z25", false);
+                    switchHeaterOffAndRaiseHead();
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in nozzle offset calibration - mode=" + state.name());
@@ -300,10 +292,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
             case FAILED:
                 try
                 {
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
-                    printerToUse.transmitDirectGCode("G90", false);
-                    printerToUse.transmitDirectGCode("G0 Z25", false);
+                    switchHeaterOffAndRaiseHead();
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error clearing up after failed calibration");
@@ -319,6 +308,14 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
                 }
                 break;
         }
+    }
+
+    private void switchHeaterOffAndRaiseHead() throws RoboxCommsException
+    {
+        printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+        printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
+        printerToUse.transmitDirectGCode("G90", false);
+        printerToUse.transmitDirectGCode("G0 Z25", false);
     }
 
     public HeadEEPROMDataResponse getSavedHeadData()
@@ -366,12 +363,6 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
             }
         }
         setState(state.getNextState());
-    }
-
-    @Override
-    public void saveSettings()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
