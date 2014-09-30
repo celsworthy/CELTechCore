@@ -70,6 +70,9 @@ public class CalibrationInsetPanelController implements Initializable,
     private Button nextButton;
 
     @FXML
+    private Button backToStatus;
+    
+    @FXML
     private Button startCalibrationButton;
 
     @FXML
@@ -99,6 +102,11 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         calibrationHelper.nextButtonAction();
     }
+    
+    @FXML
+    void backToStatusAction(ActionEvent event)
+    {
+    }    
 
     @FXML
     void startCalibration(ActionEvent event)
@@ -176,6 +184,7 @@ public class CalibrationInsetPanelController implements Initializable,
         switch (state)
         {
             case IDLE:
+                backToStatus.setVisible(false);
                 buttonAAlt.setVisible(false);
                 buttonBAlt.setVisible(false);
                 stepNumber.setVisible(true);
@@ -281,6 +290,7 @@ public class CalibrationInsetPanelController implements Initializable,
                 stepNumber.setText(String.format("Step %s of 10", 9));
                 break;
             case FINISHED:
+                backToStatus.setVisible(true);
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
                 buttonA.setVisible(false);
@@ -288,6 +298,7 @@ public class CalibrationInsetPanelController implements Initializable,
                 nextButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText(String.format("Step %s of 10", 10));
+                setCalibrationMode(CalibrationMode.CHOICE);
                 break;
             case FAILED:
                 startCalibrationButton.setVisible(false);
@@ -297,6 +308,7 @@ public class CalibrationInsetPanelController implements Initializable,
                 nextButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText("");
+                setCalibrationMode(CalibrationMode.CHOICE);
                 break;
         }
     }
@@ -307,6 +319,7 @@ public class CalibrationInsetPanelController implements Initializable,
         switch (state)
         {
             case IDLE:
+                backToStatus.setVisible(false);
                 setCalibrationProgressVisible(false);
                 stepNumber.setVisible(true);
                 buttonAAlt.setVisible(false);
@@ -380,6 +393,8 @@ public class CalibrationInsetPanelController implements Initializable,
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText(String.format("Step %s of 10", 7));
                 break;
+            case LIFT_HEAD:
+                break;
             case REPLACE_PEI_BED:    
                 buttonAAlt.disableProperty().unbind();
                 startCalibrationButton.setVisible(false);
@@ -393,6 +408,7 @@ public class CalibrationInsetPanelController implements Initializable,
                 stepNumber.setText(String.format("Step %s of 10", 8));
                 break;
             case FINISHED:
+                backToStatus.setVisible(true);
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
                 buttonB.setVisible(false);
@@ -401,6 +417,7 @@ public class CalibrationInsetPanelController implements Initializable,
                 buttonBAlt.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText(String.format("Step %s of 10", 9));
+                setCalibrationMode(CalibrationMode.CHOICE);
                 break;
             case FAILED:
                 buttonAAlt.disableProperty().unbind();
@@ -412,6 +429,7 @@ public class CalibrationInsetPanelController implements Initializable,
                 buttonBAlt.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText("");
+                setCalibrationMode(CalibrationMode.CHOICE);
                 break;
         }
     }

@@ -39,6 +39,10 @@ public enum NozzleOffsetCalibrationState
     /**
      *
      */
+    LIFT_HEAD(""),
+    /**
+     *
+     */    
     REPLACE_PEI_BED("calibrationPanel.replacePEIBed"),
     /**
      *

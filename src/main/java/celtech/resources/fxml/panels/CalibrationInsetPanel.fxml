@@ -131,7 +131,11 @@
             <bottom>
                 <VBox id="calibrationBottomArea" fx:id="calibrationBottomArea" minHeight="0.0">
                     <children>
-                        <CalibrationProgress fx:id="calibrationProgress" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="70.0" />
+                        <CalibrationProgress fx:id="calibrationProgress" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="70.0">
+                     <children>
+                        <Button mnemonicParsing="false" text="Button" />
+                        <Button mnemonicParsing="false" text="Button" />
+                     </children></CalibrationProgress>
                         <StackPane id="calibrateBottomMenu" fx:id="calibrateBottomMenu" maxHeight="-Infinity" minHeight="-Infinity" pickOnBounds="false" prefHeight="60.0" BorderPane.alignment="CENTER">
                             <children>
                                 <HBox alignment="CENTER_LEFT" pickOnBounds="false">
@@ -146,6 +150,7 @@
                                 <StackPane alignment="CENTER_RIGHT" maxHeight="-Infinity" pickOnBounds="false">
                                     <children>
                                         <Button fx:id="startCalibrationButton" layoutX="5.0" mnemonicParsing="false" onAction="#startCalibration" text="%calibrationPanel.startCalibration" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
+                              <Button fx:id="backToStatus" mnemonicParsing="false" onAction="#backToStatusAction" text="Back To Start" />
                               <Button id="nextButton" fx:id="nextButton" mnemonicParsing="false" onAction="#nextButtonAction" text="Next" />
                                     </children>
                                 </StackPane>

@@ -16,6 +16,8 @@ import celtech.services.calibration.CalibrateNozzleOffsetTask;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOffsetCalibrationStepResult;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.WorkerStateEvent;
@@ -257,6 +259,15 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
                 break;
             case PROBING:
                 break;
+            case LIFT_HEAD:
+                try
+                {
+                    printerToUse.transmitDirectGCode("G90", false);
+                    printerToUse.transmitDirectGCode("G0 Z70", false);
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error in nozzle offset calibration - mode=" + state.name());
+                }
             case FINISHED:
                 try
                 {
