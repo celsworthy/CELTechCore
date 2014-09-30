@@ -320,6 +320,7 @@ public class CalibrationInsetPanelController implements Initializable,
                 stepNumber.setText(String.format("Step %s of 10", 1));
                 break;
             case INITIALISING:
+                calibrationMenu.disableNonSelectedItems();
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
                 nextButton.setVisible(true);
@@ -329,7 +330,6 @@ public class CalibrationInsetPanelController implements Initializable,
                 stepNumber.setText(String.format("Step %s of 10", 2));
                 break;
             case HEATING:
-                calibrationMenu.disableNonSelectedItems();
                 setCalibrationProgressVisible(true);
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
@@ -354,6 +354,7 @@ public class CalibrationInsetPanelController implements Initializable,
                 cancelCalibrationButton.setVisible(true);
                 buttonB.setVisible(false);
                 buttonA.setVisible(false);
+                nextButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText(String.format("Step %s of 10", 5));
                 break;
@@ -362,18 +363,34 @@ public class CalibrationInsetPanelController implements Initializable,
                 cancelCalibrationButton.setVisible(true);
                 buttonB.setVisible(false);
                 buttonA.setVisible(false);
+                nextButton.setVisible(true);
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText(String.format("Step %s of 10", 6));
                 break;
             case PROBING:
+                buttonAAlt.disableProperty().bind(
+                    ((CalibrationNozzleOffsetHelper) calibrationHelper).showDownButton.not());
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);
                 buttonAAlt.setVisible(true);
                 buttonBAlt.setVisible(true);
                 buttonB.setVisible(false);
                 buttonA.setVisible(false);
+                nextButton.setVisible(true);
                 calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 6));
+                stepNumber.setText(String.format("Step %s of 10", 7));
+                break;
+            case REPLACE_PEI_BED:    
+                buttonAAlt.disableProperty().unbind();
+                startCalibrationButton.setVisible(false);
+                cancelCalibrationButton.setVisible(true);
+                buttonB.setVisible(false);
+                buttonA.setVisible(false);
+                buttonAAlt.setVisible(false);
+                buttonBAlt.setVisible(false);
+                nextButton.setVisible(true);
+                calibrationStatus.setText(state.getStepTitle());
+                stepNumber.setText(String.format("Step %s of 10", 8));
                 break;
             case FINISHED:
                 startCalibrationButton.setVisible(false);
@@ -383,26 +400,18 @@ public class CalibrationInsetPanelController implements Initializable,
                 buttonAAlt.setVisible(false);
                 buttonBAlt.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
-                stepNumber.setText(String.format("Step %s of 10", 7));
+                stepNumber.setText(String.format("Step %s of 10", 9));
                 break;
             case FAILED:
+                buttonAAlt.disableProperty().unbind();
                 startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
+                cancelCalibrationButton.setVisible(false);
                 buttonB.setVisible(false);
                 buttonA.setVisible(false);
                 buttonAAlt.setVisible(false);
                 buttonBAlt.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle());
                 stepNumber.setText("");
-                break;
-            case NUDGE_MODE:
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                buttonB.setVisible(false);
-                buttonA.setVisible(false);
-                buttonAAlt.setVisible(false);
-                buttonBAlt.setVisible(false);
-                calibrationStatus.setText(state.getStepTitle());
                 break;
         }
     }

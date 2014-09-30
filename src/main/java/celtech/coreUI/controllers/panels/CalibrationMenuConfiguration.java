@@ -29,6 +29,12 @@ public class CalibrationMenuConfiguration
                                     CalibrationMode.NOZZLE_HEIGHT);
                                 return null;
         });
+        calibrationMenu.addItem("Nozzle Offsets", (Callable) () ->
+                            {
+                                calibrationInsetPanelController.setCalibrationMode(
+                                    CalibrationMode.NOZZLE_OFFSETS);
+                                return null;
+        });        
         calibrationMenu.addItem("X And Y Offset", (Callable) () ->
                             {
                                 System.out.println("Called XY");

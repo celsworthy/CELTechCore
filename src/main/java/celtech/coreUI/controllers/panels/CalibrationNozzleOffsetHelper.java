@@ -15,8 +15,9 @@ import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.services.calibration.CalibrateNozzleOffsetTask;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOffsetCalibrationStepResult;
-import celtech.services.calibration.NozzleOpeningCalibrationState;
 import java.util.ArrayList;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import libertysystems.stenographer.Stenographer;
@@ -28,7 +29,9 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class CalibrationNozzleOffsetHelper implements CalibrationHelper
 {
-    private Stenographer steno = StenographerFactory.getStenographer(CalibrationNozzleOffsetHelper.class.getName());
+
+    private Stenographer steno = StenographerFactory.getStenographer(
+        CalibrationNozzleOffsetHelper.class.getName());
 
     private Printer printerToUse = null;
 
@@ -50,7 +53,8 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
             cancelCalibrationAction();
         }
     };
-    
+    public BooleanProperty showDownButton = new SimpleBooleanProperty(true);
+
     public void addStateListener(CalibrationNozzleOffsetStateListener stateListener)
     {
         stateListeners.add(stateListener);
@@ -59,7 +63,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
     public void removeStateListener(CalibrationNozzleOffsetStateListener stateListener)
     {
         stateListeners.remove(stateListener);
-    }    
+    }
 
     private final EventHandler<WorkerStateEvent> succeededTaskHandler = new EventHandler<WorkerStateEvent>()
     {
@@ -91,42 +95,9 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
     }
 
     @Override
-    public void buttonBAction()
+    public void buttonBAction() // Alt = UP button = too tight
     {
-        switch (state)
-        {
-            case INSERT_PAPER:
-                try
-                {
-                    printerToUse.transmitDirectGCode("G28 Z", false);
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in nozzle offset calibration - mode=" + state.name());
-                }
-                setState(NozzleOffsetCalibrationState.PROBING);
-                break;
-            case HEAD_CLEAN_CHECK:
-                setState(NozzleOffsetCalibrationState.MEASURE_Z_DIFFERENCE);
-                break;
-        }
-    }
 
-    @Override
-    public void buttonAAction()
-    {
-        zco -= 0.05;
-
-        try
-        {
-            printerToUse.transmitDirectGCode("G0 Z" + zco, false);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error changing Z height");
-        }
-    }
-
-    public void tooTightAction()
-    {
         zco += 0.05;
 
         if (zco <= 0)
@@ -143,9 +114,27 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
         }
     }
 
-    public double getZCo()
+    @Override
+    public void buttonAAction() // ALT = down button = too loose
+
     {
-        return zco;
+        zco -= 0.05;
+
+        try
+        {
+            printerToUse.transmitDirectGCode("G0 Z" + zco, false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error changing Z height");
+        }
+
+        if (zco <= 0.0001)
+        {
+            showDownButton.set(false);
+        } else
+        {
+            showDownButton.set(true);
+        }
     }
 
     @Override
@@ -216,8 +205,10 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
                 {
                     savedHeadData = printerToUse.transmitReadHeadEEPROM();
 
-                    zco = 0.5 * (savedHeadData.getNozzle1ZOffset() + savedHeadData.getNozzle2ZOffset());
-                    zDifference = savedHeadData.getNozzle2ZOffset() - savedHeadData.getNozzle1ZOffset();
+                    zco = 0.5 * (savedHeadData.getNozzle1ZOffset()
+                        + savedHeadData.getNozzle2ZOffset());
+                    zDifference = savedHeadData.getNozzle2ZOffset()
+                        - savedHeadData.getNozzle1ZOffset();
 
                     Head defaultHead = HeadContainer.getCompleteHeadList().get(0);
                     steno.info("Initialising head data prior to calibration");
@@ -353,6 +344,16 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
     @Override
     public void nextButtonAction()
     {
+        if (state == NozzleOffsetCalibrationState.INSERT_PAPER)
+        {
+            try
+            {
+                printerToUse.transmitDirectGCode("G28 Z", false);
+            } catch (RoboxCommsException ex)
+            {
+                steno.error("Error in nozzle offset calibration - mode=" + state.name());
+            }
+        }
         setState(state.getNextState());
     }
 

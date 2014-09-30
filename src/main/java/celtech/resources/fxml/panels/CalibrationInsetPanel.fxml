@@ -62,7 +62,7 @@
                                     <Insets bottom="20.0" />
                                  </VBox.margin>
                                         </Label>
-                              <Button fx:id="buttonAAlt" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#buttonAAction" prefHeight="60.0" prefWidth="60.0" styleClass="calibrationAltABButton">
+                              <Button fx:id="buttonBAlt" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#buttonBAction" prefHeight="60.0" prefWidth="60.0" styleClass="calibrationAltABButton">
                                  <graphic>
                                     <Polygon fill="DODGERBLUE" scaleX="0.5" scaleY="0.5" scaleZ="0.5" stroke="BLACK" strokeType="INSIDE">
                                       <points>
@@ -79,7 +79,7 @@
                                     <Insets bottom="10.0" top="10.0" />
                                  </VBox.margin>
                               </Button>
-                              <Button fx:id="buttonBAlt" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#buttonBAction" prefHeight="60.0" prefWidth="60.0" styleClass="calibrationAltABButton">
+                              <Button fx:id="buttonAAlt" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#buttonAAction" prefHeight="60.0" prefWidth="60.0" styleClass="calibrationAltABButton">
                                  <graphic>
                                     <Polygon fill="DODGERBLUE" rotate="180.0" scaleX="0.5" scaleY="0.5" scaleZ="0.5" stroke="BLACK" strokeType="INSIDE">
                                        <points>

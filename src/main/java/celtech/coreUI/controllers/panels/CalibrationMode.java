@@ -9,5 +9,5 @@ package celtech.coreUI.controllers.panels;
  */
 public enum CalibrationMode
 {
-    CHOICE, NOZZLE_OPENING, NOZZLE_HEIGHT;
+    CHOICE, NOZZLE_OPENING, NOZZLE_HEIGHT, NOZZLE_OFFSETS;
 }

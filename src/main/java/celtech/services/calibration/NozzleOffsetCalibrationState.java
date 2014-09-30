@@ -39,7 +39,11 @@ public enum NozzleOffsetCalibrationState
     /**
      *
      */
-    FINISHED("calibrationPanel.calibrationSucceededOffsetMessage"),
+    REPLACE_PEI_BED("calibrationPanel.replacePEIBed"),
+    /**
+     *
+     */    
+    FINISHED("calibrationPanel.calibrationSucceededMessage"),
     /**
      *
      */

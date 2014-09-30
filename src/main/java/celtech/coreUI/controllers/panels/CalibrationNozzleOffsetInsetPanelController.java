@@ -229,7 +229,6 @@
 //                nudgeControlVBox.setVisible(false);
 //                headImage.setVisible(false);
 //                calibrationStatus.setText(state.getStepTitle());
-//                calibrationInstruction.setText(state.getStepInstruction());
 //                break;
 //            case IDLE:
 //                startCalibrationButton.setVisible(true);
@@ -244,7 +243,6 @@
 //                nudgeControlVBox.setVisible(false);
 //                headImage.setVisible(false);
 //                calibrationStatus.setText(state.getStepTitle());
-//                calibrationInstruction.setText(state.getStepInstruction());
 //                break;
 //            case INITIALISING:
 //                startCalibrationButton.setVisible(false);
@@ -259,7 +257,6 @@
 //                nudgeControlVBox.setVisible(false);
 //                headImage.setVisible(false);
 //                calibrationStatus.setText(state.getStepTitle());
-//                calibrationInstruction.setText(state.getStepInstruction());
 //                break;
 //            case HEAD_CLEAN_CHECK:
 //                startCalibrationButton.setVisible(false);
@@ -271,7 +268,6 @@
 //                nudgeControlVBox.setVisible(false);
 //                headImage.setVisible(false);
 //                calibrationStatus.setText(state.getStepTitle());
-//                calibrationInstruction.setText(state.getStepInstruction());
 //                break;
 //            case MEASURE_Z_DIFFERENCE:
 //                startCalibrationButton.setVisible(false);
@@ -286,7 +282,6 @@
 //                nudgeControlVBox.setVisible(false);
 //                headImage.setVisible(false);
 //                calibrationStatus.setText(state.getStepTitle());
-//                calibrationInstruction.setText(state.getStepInstruction());
 //                break;
 //            case INSERT_PAPER:
 //                startCalibrationButton.setVisible(false);
@@ -301,7 +296,6 @@
 //                nudgeControlVBox.setVisible(false);
 //                headImage.setVisible(false);
 //                calibrationStatus.setText(state.getStepTitle());
-//                calibrationInstruction.setText(state.getStepInstruction());
 //                break;
 //            case PROBING:
 //                startCalibrationButton.setVisible(false);
@@ -316,7 +310,6 @@
 //                nudgeControlVBox.setVisible(false);
 //                headImage.setVisible(false);
 //                calibrationStatus.setText(state.getStepTitle());
-//                calibrationInstruction.setText(state.getStepInstruction());
 //                break;
 //            case FINISHED:
 //                startCalibrationButton.setVisible(false);
@@ -331,7 +324,6 @@
 //                nudgeControlVBox.setVisible(false);
 //                headImage.setVisible(false);
 //                calibrationStatus.setText(state.getStepTitle());
-//                calibrationInstruction.setText(state.getStepInstruction());
 //                break;
 //            case FAILED:
 //                startCalibrationButton.setVisible(false);
@@ -346,7 +338,6 @@
 //                nudgeControlVBox.setVisible(false);
 //                headImage.setVisible(false);
 //                calibrationStatus.setText(state.getStepTitle());
-//                calibrationInstruction.setText(state.getStepInstruction());
 //                break;
 //            case NUDGE_MODE:
 //                startCalibrationButton.setVisible(false);
@@ -361,7 +352,6 @@
 //                nudgeControlVBox.setVisible(true);
 //                headImage.setVisible(true);
 //                calibrationStatus.setText(state.getStepTitle());
-//                calibrationInstruction.setText(state.getStepInstruction());
 //                break;
 //        }
 //    }
