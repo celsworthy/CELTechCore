@@ -29,6 +29,9 @@ public class CalibrationProgress extends BorderPane
 
     @FXML
     private Label calibrationTargetValue;
+    
+    @FXML
+    private Label calibrationProgressDescription;
 
     @FXML
     private Label calibrationProgressCurrentValue;
@@ -46,6 +49,7 @@ public class CalibrationProgress extends BorderPane
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
+        fxmlLoader.setClassLoader(getClass().getClassLoader());
 
         try
         {
@@ -77,6 +81,14 @@ public class CalibrationProgress extends BorderPane
     public void setTargetValue(String targetValue)
     {
         calibrationTargetValue.setText(targetValue);
+    }
+    
+    public void setProgressDescription(String progressDescription) {
+        calibrationProgressDescription.setText(progressDescription);
+    }
+    
+    public void setTargetLegend(String targetLegend) {
+        calibrationTargetLegend.setText(targetLegend);
     }
 
     public void setCurrentValue(String currentValue)

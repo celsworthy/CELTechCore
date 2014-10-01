@@ -89,32 +89,29 @@ public class CalibrateXAndYTask extends Task<CalibrationXAndYStepResult> impleme
 
                 break;
             case PRINT_PATTERN:
-                printer.transmitStoredGCode("rbx_XY_offset_roboxised");
+//                printer.transmitStoredGCode("rbx_XY_offset_roboxised");
+                printer.transmitStoredGCode("tiny_robox");
                 if (PrinterUtils.waitOnMacroFinished(printer, this) == true
                     || isCancelled())
                 {
                       cancelRun();
                 }
                 break;
+            case PRINT_CIRCLE:
+//                printer.transmitStoredGCode("rbx_XY_offset_roboxised");
+                printer.transmitStoredGCode("tiny_robox");
+                if (PrinterUtils.waitOnMacroFinished(printer, this) == true
+                    || isCancelled())
+                {
+                      cancelRun();
+                }
+                break;                
 
         }
 
         return new CalibrationXAndYStepResult(desiredState, success);
     }
 
-//    private void extrudeForNozzle(int nozzleNumber) throws RoboxCommsException
-//    {
-//        printer.transmitDirectGCode("T" + nozzleNumber, false);
-//        printer.transmitDirectGCode("G0 B2", false);
-//        if (nozzleNumber == 0)
-//        {
-//            printer.transmitDirectGCode("G1 E10 F75", false);
-//        } else
-//        {
-//            printer.transmitDirectGCode("G1 E10 F100", false);
-//        }
-//        PrinterUtils.waitOnBusy(printer, this);
-//    }
     /**
      *
      * @return

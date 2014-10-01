@@ -452,4 +452,20 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
     {
         setState(NozzleOpeningCalibrationState.IDLE);
     }
+
+    @Override
+    public void retryAction()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setXOffset(String toString)
+    {
+    }
+
+    @Override
+    public void setYOffset(Integer integer)
+    {
+    }
 }

@@ -16,8 +16,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
-import libertysystems.stenographer.Stenographer;
-import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -25,8 +23,6 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class CalibrationMenu extends VBox
 {
-
-    private Stenographer steno = StenographerFactory.getStenographer(CalibrationMenu.class.getName());
 
     private static final int SQUARE_SIZE = 16;
     private static final int ROW_HEIGHT = 50;
@@ -52,6 +48,7 @@ public class CalibrationMenu extends VBox
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
+        fxmlLoader.setClassLoader(getClass().getClassLoader());
 
         try
         {
@@ -116,7 +113,6 @@ public class CalibrationMenu extends VBox
                     callback.call();
                 } catch (Exception ex)
                 {
-                    steno.error("Error calling menu callback: " + ex);
                     ex.printStackTrace();
                 }
             }

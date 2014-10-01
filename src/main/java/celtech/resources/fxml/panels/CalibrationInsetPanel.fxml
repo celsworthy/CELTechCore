@@ -62,40 +62,51 @@
                                     <Insets bottom="20.0" />
                                  </VBox.margin>
                                         </Label>
-                              <Button fx:id="buttonBAlt" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#buttonBAction" prefHeight="60.0" prefWidth="60.0" styleClass="calibrationAltABButton">
-                                 <graphic>
-                                    <Polygon fill="DODGERBLUE" scaleX="0.5" scaleY="0.5" scaleZ="0.5" stroke="BLACK" strokeType="INSIDE">
-                                      <points>
-                                        <Double fx:value="-50.0" />
-                                        <Double fx:value="40.0" />
-                                        <Double fx:value="50.0" />
-                                        <Double fx:value="40.0" />
-                                        <Double fx:value="0.0" />
-                                        <Double fx:value="-60.0" />
-                                      </points>
-                                    </Polygon>
-                                 </graphic>
-                                 <VBox.margin>
-                                    <Insets bottom="10.0" top="10.0" />
-                                 </VBox.margin>
-                              </Button>
-                              <Button fx:id="buttonAAlt" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#buttonAAction" prefHeight="60.0" prefWidth="60.0" styleClass="calibrationAltABButton">
-                                 <graphic>
-                                    <Polygon fill="DODGERBLUE" rotate="180.0" scaleX="0.5" scaleY="0.5" scaleZ="0.5" stroke="BLACK" strokeType="INSIDE">
-                                       <points>
-                                          <Double fx:value="-50.0" />
-                                          <Double fx:value="40.0" />
-                                          <Double fx:value="50.0" />
-                                          <Double fx:value="40.0" />
-                                          <Double fx:value="0.0" />
-                                          <Double fx:value="-60.0" />
-                                       </points>
-                                    </Polygon>
-                                 </graphic>
-                                 <VBox.margin>
-                                    <Insets bottom="10.0" top="10.0" />
-                                 </VBox.margin>
-                              </Button>
+                              <HBox>
+                                 <children>
+                                    <VBox fx:id="offsetCombosContainer">
+                                       <children>
+                                          <ComboBox fx:id="cmbYOffset" prefWidth="150.0" />
+                                          <ComboBox fx:id="cmbXOffset" prefWidth="150.0" />
+                                       </children>
+                                    </VBox>
+                                    <VBox fx:id="altButtonContainer">
+                                       <children>
+                                          <Button fx:id="buttonBAlt" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#buttonBAction" prefHeight="60.0" prefWidth="60.0" styleClass="calibrationAltABButton">
+                                             <graphic>
+                                                <Polygon fill="DODGERBLUE" scaleX="0.5" scaleY="0.5" scaleZ="0.5" stroke="BLACK" strokeType="INSIDE">
+                                                  <points>
+                                                    <Double fx:value="-50.0" />
+                                                    <Double fx:value="40.0" />
+                                                    <Double fx:value="50.0" />
+                                                    <Double fx:value="40.0" />
+                                                    <Double fx:value="0.0" />
+                                                    <Double fx:value="-60.0" />
+                                                  </points>
+                                                </Polygon>
+                                             </graphic>
+                                          </Button>
+                                          <Button fx:id="buttonAAlt" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#buttonAAction" prefHeight="60.0" prefWidth="60.0" styleClass="calibrationAltABButton">
+                                             <graphic>
+                                                <Polygon fill="DODGERBLUE" rotate="180.0" scaleX="0.5" scaleY="0.5" scaleZ="0.5" stroke="BLACK" strokeType="INSIDE">
+                                                   <points>
+                                                      <Double fx:value="-50.0" />
+                                                      <Double fx:value="40.0" />
+                                                      <Double fx:value="50.0" />
+                                                      <Double fx:value="40.0" />
+                                                      <Double fx:value="0.0" />
+                                                      <Double fx:value="-60.0" />
+                                                   </points>
+                                                </Polygon>
+                                             </graphic>
+                                             <VBox.margin>
+                                                <Insets bottom="10.0" top="10.0" />
+                                             </VBox.margin>
+                                          </Button>
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
                                     </children>
                                     <BorderPane.margin>
                                         <Insets top="120.0" />
@@ -131,16 +142,22 @@
             <bottom>
                 <VBox id="calibrationBottomArea" fx:id="calibrationBottomArea" minHeight="0.0">
                     <children>
-                        <CalibrationProgress fx:id="calibrationProgress" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="70.0">
-                     <children>
-                        <Button mnemonicParsing="false" text="Button" />
-                        <Button mnemonicParsing="false" text="Button" />
-                     </children></CalibrationProgress>
+                  <CalibrationProgress fx:id="calibrationProgressTemp">
+                    
+                  </CalibrationProgress>
+                  <CalibrationProgress fx:id="calibrationProgressPrint">
+                    
+                  </CalibrationProgress>
                         <StackPane id="calibrateBottomMenu" fx:id="calibrateBottomMenu" maxHeight="-Infinity" minHeight="-Infinity" pickOnBounds="false" prefHeight="60.0" BorderPane.alignment="CENTER">
                             <children>
                                 <HBox alignment="CENTER_LEFT" pickOnBounds="false">
                                     <children>
                                         <Button fx:id="cancelCalibrationButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#cancelCalibration" text="%calibrationPanel.cancelCalibration">
+                                            <StackPane.margin>
+                                                <Insets />
+                                            </StackPane.margin>
+                                        </Button>
+                                        <Button fx:id="retryPrintButton" mnemonicParsing="false" onAction="#retryCalibration" text="%calibrationPanel.retryCalibration">
                                             <StackPane.margin>
                                                 <Insets />
                                             </StackPane.margin>
@@ -163,6 +180,9 @@
                             </padding>
                         </StackPane>
                     </children>
+               <padding>
+                  <Insets left="30.0" />
+               </padding>
                 </VBox>
             </bottom>
             <top>

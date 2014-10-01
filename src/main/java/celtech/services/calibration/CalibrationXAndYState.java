@@ -9,9 +9,6 @@ import celtech.coreUI.DisplayManager;
 public enum CalibrationXAndYState
 {
 
-    /**
-     *
-     */
     IDLE("calibrationPanel.xAndYIntroduction"),
     
     HEATING("calibrationPanel.heating"),
@@ -20,13 +17,13 @@ public enum CalibrationXAndYState
     
     GET_Y_OFFSET("calibrationPanel.xAndYGetOffsets"),
     
+    PRINT_CIRCLE("calibrationPanel.xAndYPrintCircle"),
+    
     FINISHED("calibrationPanel.calibrationSucceededMessage"),
-    /**
-     *
-     */
+
     FAILED("calibrationPanel.nozzleCalibrationFailed");
 
-    private String stepTitleResource = null;
+    private String stepTitleResource;
 
     private CalibrationXAndYState(String stepTitleResource)
     {

@@ -155,21 +155,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
                 if (savedHeadData != null && state != NozzleOffsetCalibrationState.FINISHED)
                 {
                     steno.info("Calibration cancelled - restoring head data");
-                    printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                                         savedHeadData.getUniqueID(),
-                                                         savedHeadData.getMaximumTemperature(),
-                                                         savedHeadData.getBeta(),
-                                                         savedHeadData.getTCal(),
-                                                         savedHeadData.getNozzle1XOffset(),
-                                                         savedHeadData.getNozzle1YOffset(),
-                                                         savedHeadData.getNozzle1ZOffset(),
-                                                         savedHeadData.getNozzle1BOffset(),
-                                                         savedHeadData.getNozzle2XOffset(),
-                                                         savedHeadData.getNozzle2YOffset(),
-                                                         savedHeadData.getNozzle2ZOffset(),
-                                                         savedHeadData.getNozzle2BOffset(),
-                                                         savedHeadData.getLastFilamentTemperature(),
-                                                         savedHeadData.getHeadHours());
+                    restoreHeadData();
                 }
 
                 switchHeaterOffAndRaiseHead();
@@ -181,6 +167,25 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
         {
             steno.info("Cancelling from state " + state.name() + " - no change to head data");
         }
+    }
+
+    private void restoreHeadData() throws RoboxCommsException
+    {
+        printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+                                             savedHeadData.getUniqueID(),
+                                             savedHeadData.getMaximumTemperature(),
+                                             savedHeadData.getBeta(),
+                                             savedHeadData.getTCal(),
+                                             savedHeadData.getNozzle1XOffset(),
+                                             savedHeadData.getNozzle1YOffset(),
+                                             savedHeadData.getNozzle1ZOffset(),
+                                             savedHeadData.getNozzle1BOffset(),
+                                             savedHeadData.getNozzle2XOffset(),
+                                             savedHeadData.getNozzle2YOffset(),
+                                             savedHeadData.getNozzle2ZOffset(),
+                                             savedHeadData.getNozzle2BOffset(),
+                                             savedHeadData.getLastFilamentTemperature(),
+                                             savedHeadData.getHeadHours());
     }
 
     public void setState(NozzleOffsetCalibrationState newState)
@@ -369,6 +374,22 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
     public void goToIdleState()
     {
         setState(NozzleOffsetCalibrationState.IDLE);
+    }
+
+    @Override
+    public void retryAction()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setXOffset(String toString)
+    {
+    }
+
+    @Override
+    public void setYOffset(Integer integer)
+    {
     }
 
 }

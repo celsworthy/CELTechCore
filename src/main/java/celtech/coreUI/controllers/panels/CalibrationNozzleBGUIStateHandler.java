@@ -11,15 +11,17 @@ import celtech.services.calibration.NozzleOpeningCalibrationState;
  */
 public class CalibrationNozzleBGUIStateHandler
 {
+
     private final CalibrationInsetPanelController controller;
     private final CalibrationHelper calibrationHelper;
-    
+
     public CalibrationNozzleBGUIStateHandler(CalibrationInsetPanelController controller,
-        CalibrationHelper calibrationHelper) {
+        CalibrationHelper calibrationHelper)
+    {
         this.controller = controller;
         this.calibrationHelper = calibrationHelper;
     }
-    
+
     public void setNozzleOpeningState(NozzleOpeningCalibrationState state)
     {
         switch (state)
@@ -29,7 +31,10 @@ public class CalibrationNozzleBGUIStateHandler
                 controller.buttonAAlt.setVisible(false);
                 controller.buttonBAlt.setVisible(false);
                 controller.stepNumber.setVisible(true);
-                controller.setCalibrationProgressVisible(false);
+                controller.retryPrintButton.setVisible(false);
+                controller.offsetCombosContainer.setVisible(false);
+                controller.setCalibrationProgressVisible(
+                    CalibrationInsetPanelController.ProgressVisibility.NONE);
                 controller.startCalibrationButton.setVisible(true);
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.buttonA.setVisible(false);
@@ -40,7 +45,8 @@ public class CalibrationNozzleBGUIStateHandler
                 break;
             case HEATING:
                 controller.calibrationMenu.disableNonSelectedItems();
-                controller.setCalibrationProgressVisible(true);
+                controller.setCalibrationProgressVisible(
+                    CalibrationInsetPanelController.ProgressVisibility.TEMP);
                 controller.startCalibrationButton.setVisible(false);
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.buttonA.setVisible(false);
@@ -49,7 +55,8 @@ public class CalibrationNozzleBGUIStateHandler
                 controller.stepNumber.setText(String.format("Step %s of 10", 2));
                 break;
             case NO_MATERIAL_CHECK:
-                controller.setCalibrationProgressVisible(false);
+                controller.setCalibrationProgressVisible(
+                    CalibrationInsetPanelController.ProgressVisibility.NONE);
                 controller.startCalibrationButton.setVisible(false);
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.buttonA.setVisible(true);

@@ -10,11 +10,8 @@
 <?import javafx.geometry.*?>
 
 <fx:root id="calibrationProgressContainer" type="javafx.scene.layout.BorderPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
-    <VBox.margin>
-        <Insets left="30.0" />
-    </VBox.margin>
     <left>
-        <Label id="calibrationProgressLabel" text="HEATING..." BorderPane.alignment="CENTER">
+        <Label id="calibrationProgressLabel" fx:id="calibrationProgressDescription" text="HEATING..." BorderPane.alignment="CENTER">
             <BorderPane.margin>
                 <Insets left="30.0" />
             </BorderPane.margin>

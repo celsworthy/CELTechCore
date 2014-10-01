@@ -9,8 +9,10 @@ import celtech.appManager.TaskController;
 import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.services.calibration.CalibrateXAndYTask;
 import celtech.services.calibration.CalibrationXAndYState;
+import celtech.services.calibration.NozzleOffsetCalibrationState;
 import java.util.ArrayList;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -30,10 +32,14 @@ public class CalibrationXAndYHelper implements CalibrationHelper
         CalibrationXAndYHelper.class.getName());
 
     private Printer printerToUse = null;
+    private HeadEEPROMDataResponse savedHeadData = null;
 
     private CalibrationXAndYState state = CalibrationXAndYState.IDLE;
     private ArrayList<CalibrationXAndYStateListener> stateListeners = new ArrayList<>();
     private CalibrateXAndYTask calibrationTask;
+
+    private int xOffset = 0;
+    private int yOffset = 0;
 
     private final EventHandler<WorkerStateEvent> failedTaskHandler = new EventHandler<WorkerStateEvent>()
     {
@@ -81,7 +87,7 @@ public class CalibrationXAndYHelper implements CalibrationHelper
     {
     }
 
-@Override
+    @Override
     public void cancelCalibrationAction()
     {
         if (calibrationTask != null)
@@ -91,11 +97,31 @@ public class CalibrationXAndYHelper implements CalibrationHelper
                 calibrationTask.cancel();
             }
         }
-        
+        if (state != CalibrationXAndYState.IDLE)
+        {
+            try
+            {
+                if (savedHeadData != null && state != CalibrationXAndYState.FINISHED)
+                {
+                    steno.info("Calibration cancelled - restoring head data");
+                    restoreHeadData();
+                }
+
+                switchHeaterOffAndRaiseHead();
+            } catch (RoboxCommsException ex)
+            {
+                steno.error("Error in nozzle offset calibration - mode=" + state.name());
+            }
+        } else
+        {
+            steno.info("Cancelling from state " + state.name() + " - no change to head data");
+        }
+
     }
 
     public void setState(CalibrationXAndYState newState)
     {
+        steno.debug("Enter state " + newState);
         this.state = newState;
         for (CalibrationXAndYStateListener listener : stateListeners)
         {
@@ -107,15 +133,25 @@ public class CalibrationXAndYHelper implements CalibrationHelper
             case IDLE:
                 break;
             case HEATING:
-                calibrationTask = new CalibrateXAndYTask(state, printerToUse);
-                calibrationTask.setOnSucceeded(succeededTaskHandler);
-                calibrationTask.setOnFailed(failedTaskHandler);
-                TaskController.getInstance().manageTask(calibrationTask);
+            {
+                try
+                {
+                    savedHeadData = printerToUse.transmitReadHeadEEPROM();
+                    calibrationTask = new CalibrateXAndYTask(state, printerToUse);
+                    calibrationTask.setOnSucceeded(succeededTaskHandler);
+                    calibrationTask.setOnFailed(failedTaskHandler);
+                    TaskController.getInstance().manageTask(calibrationTask);
 
-                Thread heatingTaskThread = new Thread(calibrationTask);
-                heatingTaskThread.setName("Calibration - heating");
-                heatingTaskThread.start();
-                break;
+                    Thread heatingTaskThread = new Thread(calibrationTask);
+                    heatingTaskThread.setName("Calibration - heating");
+                    heatingTaskThread.start();
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error in X And Y calibration - mode=" + state.name());
+                }
+            }
+
+            break;
             case PRINT_PATTERN:
                 calibrationTask = new CalibrateXAndYTask(state, printerToUse);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
@@ -126,9 +162,21 @@ public class CalibrationXAndYHelper implements CalibrationHelper
                 printingPatterTaskThread.setName("Calibration - printing pattern");
                 printingPatterTaskThread.start();
                 break;
+            case GET_Y_OFFSET:
+                break;
+            case PRINT_CIRCLE:
+                calibrationTask = new CalibrateXAndYTask(state, printerToUse);
+                calibrationTask.setOnSucceeded(succeededTaskHandler);
+                calibrationTask.setOnFailed(failedTaskHandler);
+                TaskController.getInstance().manageTask(calibrationTask);
+
+                Thread printingCircleTaskThread = new Thread(calibrationTask);
+                printingCircleTaskThread.setName("Calibration - printing circle");
+                printingCircleTaskThread.start();
             case FINISHED:
                 try
                 {
+                    saveSettings();
                     switchHeaterOffAndRaiseHead();
                 } catch (RoboxCommsException ex)
                 {
@@ -139,6 +187,7 @@ public class CalibrationXAndYHelper implements CalibrationHelper
             {
                 try
                 {
+                    restoreHeadData();
                     switchHeaterOffAndRaiseHead();
                 } catch (RoboxCommsException ex)
                 {
@@ -167,6 +216,92 @@ public class CalibrationXAndYHelper implements CalibrationHelper
     public void goToIdleState()
     {
         setState(CalibrationXAndYState.IDLE);
+    }
+
+    @Override
+    public void retryAction()
+    {
+        setState(CalibrationXAndYState.PRINT_PATTERN);
+    }
+
+    private void restoreHeadData() throws RoboxCommsException
+    {
+        printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+                                             savedHeadData.getUniqueID(),
+                                             savedHeadData.getMaximumTemperature(),
+                                             savedHeadData.getBeta(),
+                                             savedHeadData.getTCal(),
+                                             savedHeadData.getNozzle1XOffset(),
+                                             savedHeadData.getNozzle1YOffset(),
+                                             savedHeadData.getNozzle1ZOffset(),
+                                             savedHeadData.getNozzle1BOffset(),
+                                             savedHeadData.getNozzle2XOffset(),
+                                             savedHeadData.getNozzle2YOffset(),
+                                             savedHeadData.getNozzle2ZOffset(),
+                                             savedHeadData.getNozzle2BOffset(),
+                                             savedHeadData.getLastFilamentTemperature(),
+                                             savedHeadData.getHeadHours());
+    }
+
+    private void saveSettings()
+    {
+        try
+        {
+            printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+                                                 savedHeadData.getUniqueID(),
+                                                 savedHeadData.getMaximumTemperature(),
+                                                 savedHeadData.getBeta(),
+                                                 savedHeadData.getTCal(),
+                                                 savedHeadData.getNozzle1XOffset(),
+                                                 savedHeadData.getNozzle1YOffset(),
+                                                 savedHeadData.getNozzle1ZOffset(),
+                                                 savedHeadData.getNozzle1BOffset(),
+                                                 savedHeadData.getNozzle2XOffset(),
+                                                 savedHeadData.getNozzle2YOffset(),
+                                                 savedHeadData.getNozzle2ZOffset(),
+                                                 savedHeadData.getNozzle2BOffset(),
+                                                 savedHeadData.getLastFilamentTemperature(),
+                                                 savedHeadData.getHeadHours());
+
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error in needle valve calibration - saving settings");
+        }
+    }
+
+    @Override
+    public void setXOffset(String xStr)
+    {
+        switch (xStr)
+        {
+            case "A":
+                xOffset = 0;
+                break;
+            case "B":
+                xOffset = 1;
+                break;
+            case "C":
+                xOffset = 2;
+                break;
+            case "D":
+                xOffset = 3;
+                break;
+            case "E":
+                xOffset = 4;
+                break;
+            case "F":
+                xOffset = 5;
+                break;
+            case "G":
+                xOffset = 6;
+                break;
+        }
+    }
+
+    @Override
+    public void setYOffset(Integer yOffset)
+    {
+        this.yOffset = yOffset;
     }
 
 }

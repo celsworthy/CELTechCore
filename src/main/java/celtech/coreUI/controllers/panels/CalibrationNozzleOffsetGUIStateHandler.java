@@ -26,10 +26,12 @@ public class CalibrationNozzleOffsetGUIStateHandler
         {
             case IDLE:
                 controller.backToStatus.setVisible(false);
-                controller.setCalibrationProgressVisible(false);
+                controller.setCalibrationProgressVisible(CalibrationInsetPanelController.ProgressVisibility.NONE);
                 controller.stepNumber.setVisible(true);
                 controller.buttonAAlt.setVisible(false);
                 controller.buttonBAlt.setVisible(false);
+                controller.offsetCombosContainer.setVisible(false);
+                controller.retryPrintButton.setVisible(false);
                 controller.startCalibrationButton.setVisible(true);
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.nextButton.setVisible(false);
@@ -49,7 +51,7 @@ public class CalibrationNozzleOffsetGUIStateHandler
                 controller.stepNumber.setText(String.format("Step %s of 10", 2));
                 break;
             case HEATING:
-                controller.setCalibrationProgressVisible(true);
+                controller.setCalibrationProgressVisible(CalibrationInsetPanelController.ProgressVisibility.TEMP);
                 controller.startCalibrationButton.setVisible(false);
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.nextButton.setVisible(false);
@@ -59,7 +61,7 @@ public class CalibrationNozzleOffsetGUIStateHandler
                 controller.stepNumber.setText(String.format("Step %s of 10", 3));
                 break;
             case HEAD_CLEAN_CHECK:
-                controller.setCalibrationProgressVisible(false);
+                controller.setCalibrationProgressVisible(CalibrationInsetPanelController.ProgressVisibility.NONE);
                 controller.startCalibrationButton.setVisible(false);
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.buttonA.setVisible(false);

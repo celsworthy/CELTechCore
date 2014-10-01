@@ -18,6 +18,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -34,7 +35,11 @@ public class CalibrationInsetPanelController implements Initializable,
     CalibrationXAndYStateListener
 {
 
-    private CalibrationMode calibrationMode;
+    protected static enum ProgressVisibility
+    {
+
+        TEMP, PRINT, NONE;
+    };
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         CalibrationInsetPanelController.class.getName());
@@ -52,9 +57,18 @@ public class CalibrationInsetPanelController implements Initializable,
 
     @FXML
     protected VBox calibrationBottomArea;
+    
+    @FXML
+    protected VBox offsetCombosContainer;
+    
+    @FXML
+    protected VBox altButtonContainer;    
 
     @FXML
-    protected CalibrationProgress calibrationProgress;
+    protected CalibrationProgress calibrationProgressTemp;
+
+    @FXML
+    protected CalibrationProgress calibrationProgressPrint;
 
     @FXML
     protected Text stepNumber;
@@ -73,6 +87,9 @@ public class CalibrationInsetPanelController implements Initializable,
 
     @FXML
     protected Button nextButton;
+    
+    @FXML
+    protected Button retryPrintButton;    
 
     @FXML
     protected Button backToStatus;
@@ -82,6 +99,12 @@ public class CalibrationInsetPanelController implements Initializable,
 
     @FXML
     protected Button cancelCalibrationButton;
+    
+    @FXML
+    protected ComboBox cmbYOffset;
+    
+    @FXML
+    protected ComboBox cmbXOffset;    
 
     @FXML
     protected Label calibrationStatus;
@@ -89,6 +112,8 @@ public class CalibrationInsetPanelController implements Initializable,
     private Printer currentPrinter;
     private int targetTemperature;
     private double currentExtruderTemperature;
+    private int targetETC;
+    private double printPercent;
 
     @FXML
     void buttonAAction(ActionEvent event)
@@ -117,17 +142,6 @@ public class CalibrationInsetPanelController implements Initializable,
     void startCalibration(ActionEvent event)
     {
         calibrationHelper.nextButtonAction();
-//        switch (calibrationMode)
-//        {
-//            case NOZZLE_OPENING:
-//                ((CalibrationNozzleBHelper) calibrationHelper).setState(
-//                    NozzleOpeningCalibrationState.HEATING);
-//                break;
-//            case NOZZLE_HEIGHT:
-//                ((CalibrationNozzleOffsetHelper) calibrationHelper).setState(
-//                    NozzleOffsetCalibrationState.INITIALISING);
-//                break;
-//        }
     }
 
     @FXML
@@ -135,6 +149,12 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         cancelCalibrationAction();
     }
+    
+    @FXML
+    void retryCalibration(ActionEvent event)
+    {
+        calibrationHelper.retryAction();
+    }    
 
     /**
      *
@@ -162,6 +182,9 @@ public class CalibrationInsetPanelController implements Initializable,
                 setupChildComponents(newValue);
             });
 
+        setupProgressBars();
+        setupOffsetCombos();
+
         configureCalibrationMenu(calibrationMenu, this);
     }
 
@@ -172,6 +195,7 @@ public class CalibrationInsetPanelController implements Initializable,
             calibrationHelper.setPrinterToUse(printerToUse);
         }
         setupTemperatureProgressListeners(printerToUse);
+        setupPrintProgressListeners(printerToUse);
         currentPrinter = printerToUse;
     }
 
@@ -186,24 +210,24 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         calibrationNozzleOffsetGUIStateHandler.setNozzleHeightState(state);
     }
-    
+
     @Override
     public void setXAndYState(CalibrationXAndYState state)
     {
         calibrationXAndYGUIStateHandler.setXAndYState(state);
-    }    
+    }
 
     private final ChangeListener<Number> targetTemperatureListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
         targetTemperature = newValue.intValue();
-        updateCalibrationProgress();
+        updateCalibrationProgressTemp();
     };
 
     private final ChangeListener<Number> extruderTemperatureListener
         = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
             currentExtruderTemperature = newValue.doubleValue();
-            updateCalibrationProgress();
+            updateCalibrationProgressTemp();
         };
 
     private void removeTemperatureProgressListeners(Printer printer)
@@ -221,7 +245,7 @@ public class CalibrationInsetPanelController implements Initializable,
 
         if (printer == null)
         {
-            calibrationProgress.setProgress(0);
+            calibrationProgressTemp.setProgress(0);
         } else
         {
             printer.nozzleTargetTemperatureProperty().addListener(targetTemperatureListener);
@@ -229,39 +253,99 @@ public class CalibrationInsetPanelController implements Initializable,
         }
     }
 
-    private void updateCalibrationProgress()
+    private void updateCalibrationProgressTemp()
     {
-        if (targetTemperature != 0 && calibrationProgress.isVisible())
+        if (targetTemperature != 0 && calibrationProgressTemp.isVisible())
         {
             String targetTempStr = targetTemperature + Lookup.i18n("misc.degreesC");
             String currentTempStr = ((int) currentExtruderTemperature)
                 + Lookup.i18n("misc.degreesC");
-            calibrationProgress.setCurrentValue(currentTempStr);
-            calibrationProgress.setTargetValue(targetTempStr);
-            calibrationProgress.setProgress(currentExtruderTemperature / targetTemperature);
+            calibrationProgressTemp.setCurrentValue(currentTempStr);
+            calibrationProgressTemp.setTargetValue(targetTempStr);
+            calibrationProgressTemp.setProgress(currentExtruderTemperature / targetTemperature);
+        }
+    }
+    
+    private final ChangeListener<Number> targetETCListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+    {
+        targetETC = newValue.intValue();
+        updateCalibrationProgressPrint();
+    };
+
+    private final ChangeListener<Number> printPercentListener
+        = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+        {
+            printPercent = newValue.doubleValue();
+            updateCalibrationProgressPrint();
+        };    
+    
+    private void removePrintProgressListeners(Printer printer)
+    {
+        printer.getPrintQueue().progressETCProperty().removeListener(targetETCListener);
+        printer.getPrintQueue().progressProperty().removeListener(printPercentListener);
+    }
+
+    private void setupPrintProgressListeners(Printer printer)
+    {
+        if (currentPrinter != null)
+        {
+            removePrintProgressListeners(currentPrinter);
+        }
+
+        if (printer == null)
+        {
+            calibrationProgressTemp.setProgress(0);
+            calibrationProgressPrint.setProgress(0);
+        } else
+        {
+            printer.getPrintQueue().progressProperty().addListener(printPercentListener);
+            printer.getPrintQueue().progressETCProperty().addListener(targetETCListener);
         }
     }
 
-    protected void setCalibrationProgressVisible(boolean visible)
+    private void updateCalibrationProgressPrint()
     {
-        calibrationProgress.setVisible(visible);
-        calibrationBottomArea.getChildren().clear();
-        if (visible)
+        targetETC = currentPrinter.getPrintQueue().progressETCProperty().get();
+        if (calibrationProgressPrint.isVisible())
         {
-            calibrationBottomArea.getChildren().add(calibrationProgress);
+            steno.debug("print percent is " + printPercent);
+            String targetETCStr = targetETC + "s";
+            String currentPrintPercentStr = ((int) (printPercent * 100)) + "%";
+            calibrationProgressPrint.setCurrentValue(currentPrintPercentStr);
+            calibrationProgressPrint.setTargetValue(targetETCStr);
+            calibrationProgressPrint.setProgress(printPercent);
+        }
+    }    
+
+    protected void setCalibrationProgressVisible(ProgressVisibility visibility)
+    {
+        calibrationProgressTemp.setVisible(false);
+        calibrationProgressPrint.setVisible(false);
+        calibrationBottomArea.getChildren().clear();
+        if (visibility != ProgressVisibility.NONE)
+        {
+            if (visibility == ProgressVisibility.TEMP)
+            {
+                calibrationProgressTemp.setVisible(true);
+                calibrationBottomArea.getChildren().add(calibrationProgressTemp);
+            }
+            if (visibility == ProgressVisibility.PRINT)
+            {
+                calibrationProgressPrint.setVisible(true);
+                calibrationBottomArea.getChildren().add(calibrationProgressPrint);
+            }
         }
         calibrationBottomArea.getChildren().add(calibrateBottomMenu);
     }
 
     public void setCalibrationMode(CalibrationMode calibrationMode)
     {
-        this.calibrationMode = calibrationMode;
         switch (calibrationMode)
         {
             case NOZZLE_OPENING:
                 calibrationHelper = new CalibrationNozzleBHelper();
-                calibrationNozzleBGUIStateHandler = 
-                    new CalibrationNozzleBGUIStateHandler(this, calibrationHelper);
+                calibrationNozzleBGUIStateHandler
+                    = new CalibrationNozzleBGUIStateHandler(this, calibrationHelper);
                 ((CalibrationNozzleBHelper) calibrationHelper).addStateListener(this);
                 calibrationHelper.goToIdleState();
                 calibrationHelper.setPrinterToUse(currentPrinter);
@@ -269,17 +353,17 @@ public class CalibrationInsetPanelController implements Initializable,
                 break;
             case NOZZLE_HEIGHT:
                 calibrationHelper = new CalibrationNozzleOffsetHelper();
-                calibrationNozzleOffsetGUIStateHandler = 
-                    new CalibrationNozzleOffsetGUIStateHandler(this, calibrationHelper);
+                calibrationNozzleOffsetGUIStateHandler
+                    = new CalibrationNozzleOffsetGUIStateHandler(this, calibrationHelper);
                 ((CalibrationNozzleOffsetHelper) calibrationHelper).addStateListener(this);
                 calibrationHelper.goToIdleState();
                 calibrationHelper.setPrinterToUse(currentPrinter);
                 setNozzleHeightState(NozzleOffsetCalibrationState.IDLE);
                 break;
-            case X_AND_Y_OFFSET:   
+            case X_AND_Y_OFFSET:
                 calibrationHelper = new CalibrationXAndYHelper();
-                calibrationXAndYGUIStateHandler = 
-                    new CalibrationXAndYGUIStateHandler(this, calibrationHelper);
+                calibrationXAndYGUIStateHandler
+                    = new CalibrationXAndYGUIStateHandler(this, calibrationHelper);
                 ((CalibrationXAndYHelper) calibrationHelper).addStateListener(this);
                 calibrationHelper.goToIdleState();
                 calibrationHelper.setPrinterToUse(currentPrinter);
@@ -295,8 +379,9 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         calibrationStatus.setText(Lookup.i18n("calibrationPanel.chooseCalibration"));
         calibrationMenu.reset();
-        setCalibrationProgressVisible(false);
+        setCalibrationProgressVisible(ProgressVisibility.NONE);
         backToStatus.setVisible(false);
+        offsetCombosContainer.setVisible(false);
         stepNumber.setVisible(false);
         nextButton.setVisible(false);
         startCalibrationButton.setVisible(false);
@@ -305,5 +390,42 @@ public class CalibrationInsetPanelController implements Initializable,
         buttonB.setVisible(false);
         buttonAAlt.setVisible(false);
         buttonBAlt.setVisible(false);
+    }
+
+    private void setupProgressBars()
+    {
+        calibrationProgressPrint.setTargetLegend("Approximate Build Time Remaining:");
+        calibrationProgressPrint.setProgressDescription("PRINTING...");
+    }
+
+    private void setupOffsetCombos()
+    {
+        cmbXOffset.getItems().add("A");
+        cmbXOffset.getItems().add("B");
+        cmbXOffset.getItems().add("C");
+        cmbXOffset.getItems().add("D");
+        cmbXOffset.getItems().add("E");
+        cmbXOffset.getItems().add("F");
+        cmbXOffset.getItems().add("G");
+        cmbYOffset.getItems().add("0");
+        cmbYOffset.getItems().add("1");
+        cmbYOffset.getItems().add("2");
+        cmbYOffset.getItems().add("3");
+        cmbYOffset.getItems().add("4");
+        cmbYOffset.getItems().add("5");
+        cmbYOffset.getItems().add("6");
+        cmbYOffset.getItems().add("7");
+        cmbYOffset.getItems().add("8");
+        cmbYOffset.getItems().add("9");
+        
+        cmbXOffset.valueProperty().addListener((ObservableValue observable, Object oldValue, Object newValue) ->
+        {
+            calibrationHelper.setXOffset(newValue.toString());
+        });
+        
+        cmbYOffset.valueProperty().addListener((ObservableValue observable, Object oldValue, Object newValue) ->
+        {
+            calibrationHelper.setYOffset(Integer.getInteger(newValue.toString()));
+        });        
     }
 }

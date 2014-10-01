@@ -23,4 +23,10 @@ public interface CalibrationHelper
 
     void goToIdleState();
     
+    void retryAction();
+
+    public void setXOffset(String toString);
+
+    public void setYOffset(Integer integer);
+    
 }
