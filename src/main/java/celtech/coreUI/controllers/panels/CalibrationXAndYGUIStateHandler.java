@@ -27,101 +27,62 @@ public class CalibrationXAndYGUIStateHandler
         switch (state)
         {
             case IDLE:
-                controller.backToStatus.setVisible(false);
-                controller.setCalibrationProgressVisible(
-                    CalibrationInsetPanelController.ProgressVisibility.NONE);
+                controller.hideAllInputControlsExceptStepNumber();
                 controller.stepNumber.setVisible(true);
-                controller.offsetCombosContainer.setVisible(false);
-                controller.buttonAAlt.setVisible(false);
-                controller.buttonBAlt.setVisible(false);
-                controller.retryPrintButton.setVisible(false);
                 controller.startCalibrationButton.setVisible(true);
                 controller.cancelCalibrationButton.setVisible(true);
-                controller.nextButton.setVisible(false);
-                controller.buttonB.setVisible(false);
-                controller.buttonA.setVisible(false);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText(String.format("Step %s of 10", 1));
                 break;
             case HEATING:
+                controller.hideAllInputControlsExceptStepNumber();
                 controller.calibrationMenu.disableNonSelectedItems();
                 controller.setCalibrationProgressVisible(
                     CalibrationInsetPanelController.ProgressVisibility.TEMP);
-                controller.startCalibrationButton.setVisible(false);
                 controller.cancelCalibrationButton.setVisible(true);
-                controller.nextButton.setVisible(false);
-                controller.buttonB.setVisible(false);
-                controller.buttonA.setVisible(false);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText(String.format("Step %s of 10", 2));
                 break;
             case PRINT_PATTERN:
+                controller.hideAllInputControlsExceptStepNumber();
                 controller.setCalibrationProgressVisible(
                     CalibrationInsetPanelController.ProgressVisibility.PRINT);
-                controller.offsetCombosContainer.setVisible(false);
-                controller.retryPrintButton.setVisible(false);
-                controller.startCalibrationButton.setVisible(false);
                 controller.cancelCalibrationButton.setVisible(true);
-                controller.nextButton.setVisible(false);
-                controller.buttonB.setVisible(false);
-                controller.buttonA.setVisible(false);
+                controller.cancelCalibrationButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText(String.format("Step %s of 10", 3));
                 break;
             case GET_Y_OFFSET:
+                controller.hideAllInputControlsExceptStepNumber();
                 controller.setCalibrationProgressVisible(
                     CalibrationInsetPanelController.ProgressVisibility.NONE);
                 controller.offsetCombosContainer.setVisible(true);
                 controller.retryPrintButton.setVisible(true);
-                controller.startCalibrationButton.setVisible(false);
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.nextButton.setVisible(true);
-                controller.buttonB.setVisible(false);
-                controller.buttonA.setVisible(false);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText(String.format("Step %s of 10", 4));
                 break;
             case PRINT_CIRCLE:    
-                controller.setCalibrationProgressVisible(
-                    CalibrationInsetPanelController.ProgressVisibility.NONE);
-                controller.offsetCombosContainer.setVisible(false);
-                controller.retryPrintButton.setVisible(false);
-                controller.startCalibrationButton.setVisible(false);
+                controller.hideAllInputControlsExceptStepNumber();
                 controller.cancelCalibrationButton.setVisible(true);
-                controller.nextButton.setVisible(false);
-                controller.buttonB.setVisible(false);
-                controller.buttonA.setVisible(false);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText(String.format("Step %s of 10", 5));
                 break;     
-            case PRINT_CIRCLE_DONE:  
-                controller.nextButton.setVisible(true);
-                controller.backToStatus.setVisible(false);
-            case FINISHED:
-                controller.setCalibrationProgressVisible(
-                    CalibrationInsetPanelController.ProgressVisibility.NONE);
-                controller.backToStatus.setVisible(true);
-                controller.startCalibrationButton.setVisible(false);
+            case PRINT_CIRCLE_DONE:
+                controller.hideAllInputControlsExceptStepNumber();
                 controller.cancelCalibrationButton.setVisible(true);
-                controller.retryPrintButton.setVisible(false);
-                controller.buttonB.setVisible(false);
-                controller.buttonA.setVisible(false);
-                controller.buttonAAlt.setVisible(false);
-                controller.buttonBAlt.setVisible(false);
-                controller.nextButton.setVisible(false);
+                controller.nextButton.setVisible(true);
+            case FINISHED:
+                controller.hideAllInputControlsExceptStepNumber();
+                controller.backToStatus.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText(String.format("Step %s of 10", 6));
                 break;
             case FAILED:
-                controller.setCalibrationProgressVisible(
-                    CalibrationInsetPanelController.ProgressVisibility.NONE);
+                controller.hideAllInputControlsExceptStepNumber();
                 controller.buttonAAlt.disableProperty().unbind();
-                controller.startCalibrationButton.setVisible(false);
-                controller.cancelCalibrationButton.setVisible(false);
-                controller.buttonB.setVisible(false);
-                controller.buttonA.setVisible(false);
-                controller.buttonAAlt.setVisible(false);
-                controller.buttonBAlt.setVisible(false);
+                controller.backToStatus.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText("");
                 break;

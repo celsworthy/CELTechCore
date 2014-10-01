@@ -57,12 +57,12 @@ public class CalibrationInsetPanelController implements Initializable,
 
     @FXML
     protected VBox calibrationBottomArea;
-    
+
     @FXML
     protected VBox offsetCombosContainer;
-    
+
     @FXML
-    protected VBox altButtonContainer;    
+    protected VBox altButtonContainer;
 
     @FXML
     protected CalibrationProgress calibrationProgressTemp;
@@ -87,9 +87,9 @@ public class CalibrationInsetPanelController implements Initializable,
 
     @FXML
     protected Button nextButton;
-    
+
     @FXML
-    protected Button retryPrintButton;    
+    protected Button retryPrintButton;
 
     @FXML
     protected Button backToStatus;
@@ -99,12 +99,12 @@ public class CalibrationInsetPanelController implements Initializable,
 
     @FXML
     protected Button cancelCalibrationButton;
-    
+
     @FXML
     protected ComboBox cmbYOffset;
-    
+
     @FXML
-    protected ComboBox cmbXOffset;    
+    protected ComboBox cmbXOffset;
 
     @FXML
     protected Label calibrationStatus;
@@ -151,12 +151,12 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         cancelCalibrationAction();
     }
-    
+
     @FXML
     void retryCalibration(ActionEvent event)
     {
         calibrationHelper.retryAction();
-    }    
+    }
 
     /**
      *
@@ -166,6 +166,22 @@ public class CalibrationInsetPanelController implements Initializable,
         ApplicationStatus.getInstance().returnToLastMode();
         calibrationHelper.cancelCalibrationAction();
         setCalibrationMode(CalibrationMode.CHOICE);
+    }
+
+    protected void hideAllInputControlsExceptStepNumber()
+    {
+        backToStatus.setVisible(false);
+        setCalibrationProgressVisible(CalibrationInsetPanelController.ProgressVisibility.NONE);
+        offsetCombosContainer.setVisible(false);
+        buttonAAlt.setVisible(false);
+        buttonBAlt.setVisible(false);
+        retryPrintButton.setVisible(false);
+        startCalibrationButton.setVisible(false);
+        cancelCalibrationButton.setVisible(false);
+        nextButton.setVisible(false);
+        buttonB.setVisible(false);
+        buttonA.setVisible(false);
+        stepNumber.setVisible(true);
     }
 
     @Override
@@ -267,7 +283,7 @@ public class CalibrationInsetPanelController implements Initializable,
             calibrationProgressTemp.setProgress(currentExtruderTemperature / targetTemperature);
         }
     }
-    
+
     private final ChangeListener<Number> targetETCListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
         targetETC = newValue.intValue();
@@ -279,8 +295,8 @@ public class CalibrationInsetPanelController implements Initializable,
         {
             printPercent = newValue.doubleValue();
             updateCalibrationProgressPrint();
-        };    
-    
+        };
+
     private void removePrintProgressListeners(Printer printer)
     {
         printer.getPrintQueue().progressETCProperty().removeListener(targetETCListener);
@@ -317,7 +333,7 @@ public class CalibrationInsetPanelController implements Initializable,
             calibrationProgressPrint.setTargetValue(targetETCStr);
             calibrationProgressPrint.setProgress(printPercent);
         }
-    }    
+    }
 
     protected void setCalibrationProgressVisible(ProgressVisibility visibility)
     {
@@ -381,17 +397,7 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         calibrationStatus.setText(Lookup.i18n("calibrationPanel.chooseCalibration"));
         calibrationMenu.reset();
-        setCalibrationProgressVisible(ProgressVisibility.NONE);
-        backToStatus.setVisible(false);
-        offsetCombosContainer.setVisible(false);
-        stepNumber.setVisible(false);
-        nextButton.setVisible(false);
-        startCalibrationButton.setVisible(false);
-        cancelCalibrationButton.setVisible(false);
-        buttonA.setVisible(false);
-        buttonB.setVisible(false);
-        buttonAAlt.setVisible(false);
-        buttonBAlt.setVisible(false);
+        hideAllInputControlsExceptStepNumber();
     }
 
     private void setupProgressBars()
@@ -420,15 +426,17 @@ public class CalibrationInsetPanelController implements Initializable,
         cmbYOffset.getItems().add("7");
         cmbYOffset.getItems().add("8");
         cmbYOffset.getItems().add("9");
-        
-        cmbXOffset.valueProperty().addListener((ObservableValue observable, Object oldValue, Object newValue) ->
-        {
-            calibrationHelper.setXOffset(newValue.toString());
-        });
-        
-        cmbYOffset.valueProperty().addListener((ObservableValue observable, Object oldValue, Object newValue) ->
-        {
-            calibrationHelper.setYOffset(Integer.parseInt(newValue.toString()));
-        });        
+
+        cmbXOffset.valueProperty().addListener(
+            (ObservableValue observable, Object oldValue, Object newValue) ->
+            {
+                calibrationHelper.setXOffset(newValue.toString());
+            });
+
+        cmbYOffset.valueProperty().addListener(
+            (ObservableValue observable, Object oldValue, Object newValue) ->
+            {
+                calibrationHelper.setYOffset(Integer.parseInt(newValue.toString()));
+            });
     }
 }

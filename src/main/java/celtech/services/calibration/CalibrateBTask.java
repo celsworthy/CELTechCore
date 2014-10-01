@@ -26,11 +26,8 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
     private final Stenographer steno = StenographerFactory.getStenographer(
         CalibrateBTask.class.getName());
     private NozzleOpeningCalibrationState desiredState = null;
-    private int nozzleNumber = -1;
 
     private Printer printer = null;
-    private boolean keyPressed = false;
-    private boolean lookingForKeyPress = false;
 
     /**
      *
@@ -50,7 +47,6 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
     public CalibrateBTask(NozzleOpeningCalibrationState desiredState, int nozzleNumber, Printer printer)
     {
         this.desiredState = desiredState;
-        this.nozzleNumber = nozzleNumber;
         this.printer = printer;
     }
 
