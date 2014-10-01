@@ -260,8 +260,8 @@ public class CalibrationInsetPanelController implements Initializable,
         {
             case NOZZLE_OPENING:
                 calibrationHelper = new CalibrationNozzleBHelper();
-                calibrationNozzleOffsetGUIStateHandler = 
-                    new CalibrationNozzleOffsetGUIStateHandler(this, calibrationHelper);
+                calibrationNozzleBGUIStateHandler = 
+                    new CalibrationNozzleBGUIStateHandler(this, calibrationHelper);
                 ((CalibrationNozzleBHelper) calibrationHelper).addStateListener(this);
                 calibrationHelper.goToIdleState();
                 calibrationHelper.setPrinterToUse(currentPrinter);
@@ -269,8 +269,8 @@ public class CalibrationInsetPanelController implements Initializable,
                 break;
             case NOZZLE_HEIGHT:
                 calibrationHelper = new CalibrationNozzleOffsetHelper();
-                calibrationNozzleBGUIStateHandler = 
-                    new CalibrationNozzleBGUIStateHandler(this, calibrationHelper);
+                calibrationNozzleOffsetGUIStateHandler = 
+                    new CalibrationNozzleOffsetGUIStateHandler(this, calibrationHelper);
                 ((CalibrationNozzleOffsetHelper) calibrationHelper).addStateListener(this);
                 calibrationHelper.goToIdleState();
                 calibrationHelper.setPrinterToUse(currentPrinter);

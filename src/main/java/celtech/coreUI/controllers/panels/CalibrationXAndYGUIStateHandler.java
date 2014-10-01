@@ -57,7 +57,7 @@ public class CalibrationXAndYGUIStateHandler
                 controller.buttonB.setVisible(false);
                 controller.buttonA.setVisible(false);
                 controller.calibrationStatus.setText(state.getStepTitle());
-                controller.stepNumber.setText(String.format("Step %s of 10", 2));
+                controller.stepNumber.setText(String.format("Step %s of 10", 3));
                 break;
             case FINISHED:
                 controller.backToStatus.setVisible(true);
@@ -68,7 +68,7 @@ public class CalibrationXAndYGUIStateHandler
                 controller.buttonAAlt.setVisible(false);
                 controller.buttonBAlt.setVisible(false);
                 controller.calibrationStatus.setText(state.getStepTitle());
-                controller.stepNumber.setText(String.format("Step %s of 10", 9));
+                controller.stepNumber.setText(String.format("Step %s of 10", 4));
                 controller.setCalibrationMode(CalibrationMode.CHOICE);
                 break;
             case FAILED:

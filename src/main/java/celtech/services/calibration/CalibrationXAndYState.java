@@ -18,6 +18,8 @@ public enum CalibrationXAndYState
     
     PRINT_PATTERN("calibrationPanel.xAndYPrintPattern"),
     
+    GET_Y_OFFSET("calibrationPanel.xAndYGetOffsets"),
+    
     FINISHED("calibrationPanel.calibrationSucceededMessage"),
     /**
      *

@@ -159,7 +159,6 @@ public class LayoutStatusMenuStripController
     
     @FXML
     void calibrate(ActionEvent event) {
-        System.out.println("calibrate");
         ApplicationStatus.getInstance().setMode(ApplicationMode.CALIBRATION);
     }
 
@@ -277,7 +276,8 @@ public class LayoutStatusMenuStripController
 //        forwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS).and(printerOKToPrint));
         printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
             ApplicationMode.SETTINGS).and(printerOKToPrint));
-
+        calibrateButton.setDisable(true);
+        
         settingsScreenState.selectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
             @Override
@@ -290,7 +290,10 @@ public class LayoutStatusMenuStripController
                     {
                         printerOKToPrint.unbind();
                         printerOKToPrint.set(false);
+                        calibrateButton.disableProperty().unbind();
                     }
+                    calibrateButton.disableProperty().bind(newValue.printerStatusProperty().isNotEqualTo(
+                        PrinterStatusEnumeration.IDLE));
                     printerOKToPrint.bind(newValue.printerStatusProperty().isEqualTo(
                         PrinterStatusEnumeration.IDLE)
                         .and(newValue.whyAreWeWaitingProperty().isEqualTo(

@@ -81,9 +81,17 @@ public class CalibrationXAndYHelper implements CalibrationHelper
     {
     }
 
-    @Override
+@Override
     public void cancelCalibrationAction()
     {
+        if (calibrationTask != null)
+        {
+            if (calibrationTask.isRunning())
+            {
+                calibrationTask.cancel();
+            }
+        }
+        
     }
 
     public void setState(CalibrationXAndYState newState)
@@ -107,28 +115,37 @@ public class CalibrationXAndYHelper implements CalibrationHelper
                 Thread heatingTaskThread = new Thread(calibrationTask);
                 heatingTaskThread.setName("Calibration - heating");
                 heatingTaskThread.start();
+                break;
+            case PRINT_PATTERN:
+                calibrationTask = new CalibrateXAndYTask(state, printerToUse);
+                calibrationTask.setOnSucceeded(succeededTaskHandler);
+                calibrationTask.setOnFailed(failedTaskHandler);
+                TaskController.getInstance().manageTask(calibrationTask);
+
+                Thread printingPatterTaskThread = new Thread(calibrationTask);
+                printingPatterTaskThread.setName("Calibration - printing pattern");
+                printingPatterTaskThread.start();
+                break;
             case FINISHED:
-        {
-            try
-            {
-                switchHeaterOffAndRaiseHead();
-            } catch (RoboxCommsException ex)
-            {
-                steno.error("Error in x and y calibration - mode=" + state.name());
-            }
-        }
+                try
+                {
+                    switchHeaterOffAndRaiseHead();
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error in x and y calibration - mode=" + state.name());
+                }
                 break;
             case FAILED:
-        {
-            try
             {
-                switchHeaterOffAndRaiseHead();
-            } catch (RoboxCommsException ex)
-            {
-                steno.error("Error in x and y calibration - mode=" + state.name());
+                try
+                {
+                    switchHeaterOffAndRaiseHead();
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error in x and y calibration - mode=" + state.name());
+                }
             }
-        }
-                break;
+            break;
         }
     }
 
@@ -140,7 +157,6 @@ public class CalibrationXAndYHelper implements CalibrationHelper
         printerToUse.transmitDirectGCode("G0 Z25", false);
     }
 
-   
     @Override
     public void nextButtonAction()
     {

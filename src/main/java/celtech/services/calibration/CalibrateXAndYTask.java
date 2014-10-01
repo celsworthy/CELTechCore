@@ -88,6 +88,14 @@ public class CalibrateXAndYTask extends Task<CalibrationXAndYStepResult> impleme
                 }
 
                 break;
+            case PRINT_PATTERN:
+                printer.transmitStoredGCode("rbx_XY_offset_roboxised");
+                if (PrinterUtils.waitOnMacroFinished(printer, this) == true
+                    || isCancelled())
+                {
+                      cancelRun();
+                }
+                break;
 
         }
 
