@@ -96,6 +96,7 @@ public class CalibrationXAndYGUIStateHandler
                 break;     
             case PRINT_CIRCLE_DONE:  
                 controller.nextButton.setVisible(true);
+                controller.backToStatus.setVisible(false);
             case FINISHED:
                 controller.setCalibrationProgressVisible(
                     CalibrationInsetPanelController.ProgressVisibility.NONE);
@@ -107,9 +108,9 @@ public class CalibrationXAndYGUIStateHandler
                 controller.buttonA.setVisible(false);
                 controller.buttonAAlt.setVisible(false);
                 controller.buttonBAlt.setVisible(false);
+                controller.nextButton.setVisible(false);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText(String.format("Step %s of 10", 6));
-                controller.setCalibrationMode(CalibrationMode.CHOICE);
                 break;
             case FAILED:
                 controller.setCalibrationProgressVisible(
@@ -123,7 +124,6 @@ public class CalibrationXAndYGUIStateHandler
                 controller.buttonBAlt.setVisible(false);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText("");
-                controller.setCalibrationMode(CalibrationMode.CHOICE);
                 break;
         }
     }

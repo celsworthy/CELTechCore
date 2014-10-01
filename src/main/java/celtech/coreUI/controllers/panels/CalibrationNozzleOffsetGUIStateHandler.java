@@ -123,9 +123,9 @@ public class CalibrationNozzleOffsetGUIStateHandler
                 controller.buttonA.setVisible(false);
                 controller.buttonAAlt.setVisible(false);
                 controller.buttonBAlt.setVisible(false);
+                controller.nextButton.setVisible(false);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText(String.format("Step %s of 10", 9));
-                controller.setCalibrationMode(CalibrationMode.CHOICE);
                 break;
             case FAILED:
                 controller.buttonAAlt.disableProperty().unbind();
@@ -137,7 +137,6 @@ public class CalibrationNozzleOffsetGUIStateHandler
                 controller.buttonBAlt.setVisible(false);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText("");
-                controller.setCalibrationMode(CalibrationMode.CHOICE);
                 break;
         }
     }

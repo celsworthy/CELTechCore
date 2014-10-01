@@ -143,7 +143,6 @@ public class CalibrationNozzleBGUIStateHandler
                 controller.nextButton.setVisible(false);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText(String.format("Step %s of 10", 10));
-                controller.setCalibrationMode(CalibrationMode.CHOICE);
                 break;
             case FAILED:
                 controller.startCalibrationButton.setVisible(false);
@@ -153,7 +152,6 @@ public class CalibrationNozzleBGUIStateHandler
                 controller.nextButton.setVisible(false);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText("");
-                controller.setCalibrationMode(CalibrationMode.CHOICE);
                 break;
         }
     }

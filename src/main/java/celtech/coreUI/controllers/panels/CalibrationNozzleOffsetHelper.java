@@ -264,6 +264,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
                 {
                     printerToUse.transmitDirectGCode("G90", false);
                     printerToUse.transmitDirectGCode("G0 Z30", false);
+                    printerToUse.transmitDirectGCode("G37 S", false);
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in nozzle offset calibration - mode=" + state.name());

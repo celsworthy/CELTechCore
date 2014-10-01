@@ -136,6 +136,8 @@ public class CalibrationInsetPanelController implements Initializable,
     @FXML
     void backToStatusAction(ActionEvent event)
     {
+        ApplicationStatus.getInstance().returnToLastMode();
+        setCalibrationMode(CalibrationMode.CHOICE);
     }
 
     @FXML
