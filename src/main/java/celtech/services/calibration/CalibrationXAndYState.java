@@ -19,6 +19,8 @@ public enum CalibrationXAndYState
     
     PRINT_CIRCLE("calibrationPanel.xAndYPrintCircle"),
     
+    PRINT_CIRCLE_DONE("calibrationPanel.xAndYPrintCircle"),
+    
     FINISHED("calibrationPanel.calibrationSucceededMessage"),
 
     FAILED("calibrationPanel.nozzleCalibrationFailed");

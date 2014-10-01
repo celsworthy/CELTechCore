@@ -396,6 +396,7 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         calibrationProgressPrint.setTargetLegend("Approximate Build Time Remaining:");
         calibrationProgressPrint.setProgressDescription("PRINTING...");
+        calibrationProgressPrint.setTargetValue("0");
     }
 
     private void setupOffsetCombos()
@@ -425,7 +426,7 @@ public class CalibrationInsetPanelController implements Initializable,
         
         cmbYOffset.valueProperty().addListener((ObservableValue observable, Object oldValue, Object newValue) ->
         {
-            calibrationHelper.setYOffset(Integer.getInteger(newValue.toString()));
+            calibrationHelper.setYOffset(Integer.parseInt(newValue.toString()));
         });        
     }
 }

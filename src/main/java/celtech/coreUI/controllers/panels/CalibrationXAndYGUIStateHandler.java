@@ -88,12 +88,14 @@ public class CalibrationXAndYGUIStateHandler
                 controller.retryPrintButton.setVisible(false);
                 controller.startCalibrationButton.setVisible(false);
                 controller.cancelCalibrationButton.setVisible(true);
-                controller.nextButton.setVisible(true);
+                controller.nextButton.setVisible(false);
                 controller.buttonB.setVisible(false);
                 controller.buttonA.setVisible(false);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText(String.format("Step %s of 10", 5));
-                break;                
+                break;     
+            case PRINT_CIRCLE_DONE:  
+                controller.nextButton.setVisible(true);
             case FINISHED:
                 controller.setCalibrationProgressVisible(
                     CalibrationInsetPanelController.ProgressVisibility.NONE);
