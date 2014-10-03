@@ -52,11 +52,7 @@ public enum NozzleOpeningCalibrationState
     /**
      *
      */
-    CONFIRM_MATERIAL_EXTRUDING_FINE("calibrationPanel.valvesOpenMaterialExtrudingFine"),
-    /**
-     *
-     */
-    CONFIRM_MATERIAL_EXTRUDING_FILL("calibrationPanel.valvesOpenMaterialExtrudingFill"),
+    CONFIRM_MATERIAL_EXTRUDING("calibrationPanel.valvesOpenMaterialExtruding"),
     /**
      *
      */

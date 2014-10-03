@@ -109,22 +109,14 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
             case PRE_CALIBRATION_PRIMING_FILL:
                 success = extrudeUntilStall(1);
                 break;
-            case CONFIRM_MATERIAL_EXTRUDING_FINE:
+            case CONFIRM_MATERIAL_EXTRUDING:
                 try
                 {
-                    printer.transmitDirectGCode("T" + 0, false);
+                    printer.transmitDirectGCode("T0", false);
                     printer.transmitDirectGCode("G0 B1", false);
                     printer.transmitDirectGCode("G1 E10 F75", false);
                     PrinterUtils.waitOnBusy(printer, this);
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
-                }
-                break;                
-            case CONFIRM_MATERIAL_EXTRUDING_FILL:
-                try
-                {
-                    printer.transmitDirectGCode("T" + 1, false);
+                    printer.transmitDirectGCode("T1", false);
                     printer.transmitDirectGCode("G0 B1", false);
                     printer.transmitDirectGCode("G1 E10 F100", false);
                     PrinterUtils.waitOnBusy(printer, this);
@@ -132,10 +124,10 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                 {
                     steno.error("Error in needle valve calibration - mode=" + desiredState.name());
                 }
-                break;
+                break;                
             case CONFIRM_NO_MATERIAL:
+                printer.transmitDirectGCode("B0", false);
                 success = extrudeUntilStall(0);
-                success = extrudeUntilStall(1);
                 break;
         }
 

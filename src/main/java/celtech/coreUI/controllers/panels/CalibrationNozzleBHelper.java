@@ -124,10 +124,7 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
             case CONFIRM_NO_MATERIAL:
                 setState(NozzleOpeningCalibrationState.FAILED);
                 break;
-            case CONFIRM_MATERIAL_EXTRUDING_FINE:
-                setState(NozzleOpeningCalibrationState.CONFIRM_MATERIAL_EXTRUDING_FILL);
-                break;
-            case CONFIRM_MATERIAL_EXTRUDING_FILL:
+            case CONFIRM_MATERIAL_EXTRUDING:
                 setState(NozzleOpeningCalibrationState.FINISHED);
                 break;
         }
@@ -173,12 +170,9 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
                 }
                 break;
             case CONFIRM_NO_MATERIAL:
-                setState(NozzleOpeningCalibrationState.CONFIRM_MATERIAL_EXTRUDING_FINE);
+                setState(NozzleOpeningCalibrationState.CONFIRM_MATERIAL_EXTRUDING);
                 break;
-            case CONFIRM_MATERIAL_EXTRUDING_FINE:
-                setState(NozzleOpeningCalibrationState.FAILED);
-                break;
-            case CONFIRM_MATERIAL_EXTRUDING_FILL:
+            case CONFIRM_MATERIAL_EXTRUDING:
                 setState(NozzleOpeningCalibrationState.FAILED);
                 break;
         }
@@ -349,6 +343,7 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
                 }
                 break;
             case PRE_CALIBRATION_PRIMING_FILL:
+                nozzlePosition = 0;
                 calibrationTask = new CalibrateBTask(state, FILL_NOZZLE, printerToUse);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
@@ -374,7 +369,7 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
             case CONFIRM_NO_MATERIAL:
                 nozzlePosition = 0;
                 break;
-            case CONFIRM_MATERIAL_EXTRUDING_FINE:
+            case CONFIRM_MATERIAL_EXTRUDING:
                 calibrationTask = new CalibrateBTask(state, FINE_NOZZLE, printerToUse);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
@@ -382,15 +377,6 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
                 Thread confirmMaterialExtrudingTaskThread = new Thread(calibrationTask);
                 confirmMaterialExtrudingTaskThread.setName("Calibration - extruding");
                 confirmMaterialExtrudingTaskThread.start();
-                break;
-            case CONFIRM_MATERIAL_EXTRUDING_FILL:
-                calibrationTask = new CalibrateBTask(state, FILL_NOZZLE, printerToUse);
-                calibrationTask.setOnFailed(failedTaskHandler);
-                TaskController.getInstance().manageTask(calibrationTask);
-
-                Thread confirmMaterialExtrudingTaskFillThread = new Thread(calibrationTask);
-                confirmMaterialExtrudingTaskFillThread.setName("Calibration - extruding");
-                confirmMaterialExtrudingTaskFillThread.start();
                 break;
             case FINISHED:
                 try

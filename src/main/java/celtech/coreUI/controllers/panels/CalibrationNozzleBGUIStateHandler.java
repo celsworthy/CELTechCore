@@ -103,7 +103,7 @@ public class CalibrationNozzleBGUIStateHandler
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText(String.format("Step %s of 10", 8));
                 break;
-            case CONFIRM_MATERIAL_EXTRUDING_FINE:
+            case CONFIRM_MATERIAL_EXTRUDING:
                 controller.hideAllInputControlsExceptStepNumber();
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.buttonA.setVisible(true);
