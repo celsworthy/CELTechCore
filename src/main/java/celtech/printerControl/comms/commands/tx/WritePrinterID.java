@@ -7,6 +7,7 @@ package celtech.printerControl.comms.commands.tx;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
 import celtech.printerControl.comms.commands.PrinterIDDataStructure;
 import celtech.printerControl.comms.commands.StringToBase64Encoder;
+import celtech.printerControl.model.PrinterIdentity;
 import java.io.UnsupportedEncodingException;
 import javafx.scene.paint.Color;
 
@@ -92,4 +93,17 @@ public class WritePrinterID extends RoboxTxPacket
         steno.info("Outputting string of length " + payload.length());
         this.setMessagePayload(payload.toString());
     }
+    
+     public void populatePacket(PrinterIdentity printerIdentity)
+     {
+         setIDAndColour(printerIdentity.getPrintermodelProperty().get(),
+                        printerIdentity.getPrintereditionProperty().get(),
+                        printerIdentity.getPrinterweekOfManufactureProperty().get(),
+                        printerIdentity.getPrinteryearOfManufactureProperty().get(),
+                        printerIdentity.getPrinterpoNumberProperty().get(),
+                        printerIdentity.getPrinterserialNumberProperty().get(),
+                        printerIdentity.getPrintercheckByteProperty().get(),
+                        printerIdentity.getPrinterFriendlyNameProperty().get(),
+                        printerIdentity.getPrinterColourProperty().get());
+     }
 }

@@ -1,15 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.controllers.SettingsScreenState;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
@@ -25,19 +20,8 @@ import javafx.scene.control.Label;
  */
 public class AboutPanelController implements Initializable
 {
-
     private SettingsScreenState settingsScreenState = null;
     private Printer currentPrinter = null;
-    private final ChangeListener<Boolean> printerIDListener = new ChangeListener<Boolean>()
-    {
-        @Override
-        public void changed(
-            ObservableValue<? extends Boolean> observable, Boolean oldValue,
-            Boolean newValue)
-        {
-            roboxSerialNumber.setText(currentPrinter.getPrinterUniqueID());
-        }
-    };
 
     @FXML
     private Label roboxSerialNumber;
@@ -68,20 +52,17 @@ public class AboutPanelController implements Initializable
         settingsScreenState.selectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
             @Override
-            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue,
-                Printer newValue)
+            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
             {
                 if (currentPrinter != null)
                 {
-                    currentPrinter.getPrinterIDDataChangedToggle().removeListener(printerIDListener);
                     headSerialNumber.textProperty().unbind();
                 }
 
                 if (newValue != null)
                 {
                     currentPrinter = newValue;
-                    currentPrinter.getPrinterIDDataChangedToggle().addListener(printerIDListener);
-                    headSerialNumber.textProperty().bind(currentPrinter.getHeadUniqueID());
+                    headSerialNumber.textProperty().bind(currentPrinter.getPrinterIdentity().getPrinterUniqueIDProperty());
                 }
             }
         });

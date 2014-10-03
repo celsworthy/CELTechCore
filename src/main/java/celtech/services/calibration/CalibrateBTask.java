@@ -7,10 +7,9 @@ package celtech.services.calibration;
 
 import celtech.configuration.HeaterMode;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.services.ControllableService;
 import celtech.utils.PrinterUtils;
 import java.util.ResourceBundle;
@@ -97,7 +96,8 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                 try
                 {
                     printerToUse.transmitDirectGCode("M104", false);
-                    if (printerToUse.getNozzleHeaterMode() == HeaterMode.FIRST_LAYER)
+                    //TODO make this work with multiple heaters
+                    if (printerToUse.getHeadProperty().getNozzleHeaters().get(0).getHeaterModeProperty().get() == HeaterMode.FIRST_LAYER)
                     {
                         PrinterUtils.waitUntilTemperatureIsReached(printerToUse.extruderTemperatureProperty(), this, printerToUse.getNozzleFirstLayerTargetTemperature(), 5, 300);
                     } else
@@ -154,16 +154,6 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                         printerToUse.transmitDirectGCode("G1 E10 F100", false);
                     }
                     PrinterUtils.waitOnBusy(printerToUse, this);
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
-                }
-                break;
-            case PARKING:
-                try
-                {
-                    printerToUse.transmitStoredGCode("Park");
-                    success = true;
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in needle valve calibration - mode=" + desiredState.name());

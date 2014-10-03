@@ -9,7 +9,7 @@
  */
 package celtech.services.postProcessor;
 
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.services.ControllableService;
 import celtech.services.slicer.RoboxProfile;
 import javafx.concurrent.Service;

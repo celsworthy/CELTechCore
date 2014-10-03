@@ -7,7 +7,7 @@ package celtech.services.calibration;
 
 import celtech.configuration.HeaterMode;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;

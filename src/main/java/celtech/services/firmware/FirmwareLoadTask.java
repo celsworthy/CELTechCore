@@ -5,7 +5,7 @@
 package celtech.services.firmware;
 
 import celtech.coreUI.DisplayManager;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.exceptions.SDCardErrorException;
 import celtech.utils.SystemUtils;

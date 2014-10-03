@@ -55,7 +55,7 @@ public class ETCCalculatorTest
 
         testPrinter = new TestPrinter();
         testPrinter.setBedTargetTemperature(120);
-        testPrinter.setBedTemperature(120);
+        testPrinter.setBedTargetTemperature(120);
 
         etcCalculator = new ETCCalculator(testPrinter,
                                           layerNumberToPredictedDuration,
@@ -90,7 +90,7 @@ public class ETCCalculatorTest
     @Test
     public void testGetProgressAndPredictedETCAtLine55WithBedDifferential30()
     {
-        testPrinter.setBedTemperature(120 - 30);
+        testPrinter.setBedTargetTemperature(120 - 30);
         int ETC = etcCalculator.getETCPredicted(55);
         /**
          * lineNumber = 55, layerNumber = 3 totalDuration = 40 + 10/2 = 45 totalTime = 100
@@ -123,7 +123,7 @@ public class ETCCalculatorTest
 
         testPrinter = new TestPrinter();
         testPrinter.setBedTargetTemperature(120);
-        testPrinter.setBedTemperature(120);
+        testPrinter.setBedTargetTemperature(120);
 
         etcCalculator = new ETCCalculator(testPrinter,
                                           layerNumberToPredictedDuration,
@@ -149,7 +149,7 @@ public class ETCCalculatorTest
 
         testPrinter = new TestPrinter();
         testPrinter.setBedTargetTemperature(120);
-        testPrinter.setBedTemperature(120);
+        testPrinter.setBedTargetTemperature(120);
 
         etcCalculator = new ETCCalculator(testPrinter,
                                           layerNumberToPredictedDuration,
@@ -175,7 +175,7 @@ public class ETCCalculatorTest
 
         testPrinter = new TestPrinter();
         testPrinter.setBedTargetTemperature(120);
-        testPrinter.setBedTemperature(120);
+        testPrinter.setBedTargetTemperature(120);
 
         etcCalculator = new ETCCalculator(testPrinter,
                                           layerNumberToPredictedDuration,
@@ -201,7 +201,7 @@ public class ETCCalculatorTest
 
         testPrinter = new TestPrinter();
         testPrinter.setBedTargetTemperature(120);
-        testPrinter.setBedTemperature(120);
+        testPrinter.setBedTargetTemperature(120);
 
         etcCalculator = new ETCCalculator(testPrinter,
                                           layerNumberToPredictedDuration,
@@ -227,7 +227,7 @@ public class ETCCalculatorTest
 
         testPrinter = new TestPrinter();
         testPrinter.setBedTargetTemperature(120);
-        testPrinter.setBedTemperature(120);
+        testPrinter.setBedTargetTemperature(120);
 
         etcCalculator = new ETCCalculator(testPrinter,
                                           layerNumberToPredictedDuration,
@@ -253,7 +253,7 @@ public class ETCCalculatorTest
 
         testPrinter = new TestPrinter();
         testPrinter.setBedTargetTemperature(120);
-        testPrinter.setBedTemperature(120);
+        testPrinter.setBedTargetTemperature(120);
 
         etcCalculator = new ETCCalculator(testPrinter,
                                           layerNumberToPredictedDuration,
@@ -277,7 +277,7 @@ public class ETCCalculatorTest
 
         testPrinter = new TestPrinter();
         testPrinter.setBedTargetTemperature(120);
-        testPrinter.setBedTemperature(120);
+        testPrinter.setBedTargetTemperature(120);
 
         etcCalculator = new ETCCalculator(testPrinter,
                                           layerNumberToPredictedDuration,
@@ -301,7 +301,7 @@ public class ETCCalculatorTest
 
         testPrinter = new TestPrinter();
         testPrinter.setBedTargetTemperature(120);
-        testPrinter.setBedTemperature(120);
+        testPrinter.setBedTargetTemperature(120);
 
         etcCalculator = new ETCCalculator(testPrinter,
                                           layerNumberToPredictedDuration,
@@ -325,7 +325,7 @@ public class ETCCalculatorTest
 
         testPrinter = new TestPrinter();
         testPrinter.setBedTargetTemperature(120);
-        testPrinter.setBedTemperature(120);
+        testPrinter.setBedTargetTemperature(120);
 
         etcCalculator = new ETCCalculator(testPrinter,
                                           layerNumberToPredictedDuration,
@@ -349,7 +349,7 @@ public class ETCCalculatorTest
 
         testPrinter = new TestPrinter();
         testPrinter.setBedTargetTemperature(120);
-        testPrinter.setBedTemperature(120);
+        testPrinter.setBedTargetTemperature(120);
 
         etcCalculator = new ETCCalculator(testPrinter,
                                           layerNumberToPredictedDuration,

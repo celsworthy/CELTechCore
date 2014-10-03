@@ -1,10 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers;
 
+import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
@@ -14,14 +10,16 @@ import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.AmbientLEDState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.JogButton;
-import celtech.printerControl.Printer;
-import celtech.printerControl.PrinterStatusEnumeration;
-import static celtech.printerControl.PrinterStatusEnumeration.PAUSED;
-import static celtech.printerControl.PrinterStatusEnumeration.PRINTING;
-import static celtech.printerControl.PrinterStatusEnumeration.SENDING_TO_PRINTER;
+import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterException;
+import celtech.printerControl.PrinterStatus;
+import static celtech.printerControl.PrinterStatus.PAUSED;
+import static celtech.printerControl.PrinterStatus.PRINTING;
+import static celtech.printerControl.PrinterStatus.SENDING_TO_PRINTER;
 import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.utils.AxisSpecifier;
+import celtech.utils.tasks.TaskResponse;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -69,7 +67,7 @@ public class PrinterStatusPageController implements Initializable
     private ChangeListener<Boolean> reelDataChangeListener = null;
     private ChangeListener<EEPROMState> reelChangeListener = null;
     private ChangeListener<Color> printerColourChangeListener = null;
-    private ChangeListener<PrinterStatusEnumeration> printerStatusChangeListener = null;
+    private ChangeListener<PrinterStatus> printerStatusChangeListener = null;
     private ChangeListener<PauseStatus> pauseStatusChangeListener = null;
 
     private CommandLink goAheadAndOpenTheLid = null;
@@ -279,19 +277,19 @@ public class PrinterStatusPageController implements Initializable
     @FXML
     void pausePrint(ActionEvent event)
     {
-        printerToUse.getPrintQueue().pausePrint();
+        printerToUse.pause();
     }
 
     @FXML
     void resumePrint(ActionEvent event)
     {
-        printerToUse.getPrintQueue().resumePrint();
+        printerToUse.resume();
     }
 
     @FXML
     void cancelPrint(ActionEvent event)
     {
-        printerToUse.getPrintQueue().abortPrint();
+        printerToUse.abort();
     }
 
     @FXML
@@ -301,7 +299,7 @@ public class PrinterStatusPageController implements Initializable
         {
             try
             {
-                printerToUse.transmitDirectGCode(GCodeConstants.ejectFilament1,
+                printerToUse.transmitDirectGCode(GCodeConstants.ejectFilament,
                                                  false);
             } catch (RoboxCommsException ex)
             {
@@ -332,20 +330,12 @@ public class PrinterStatusPageController implements Initializable
 
         if (openTheLid)
         {
-            if (printerToUse.getPrintQueue().printInProgressProperty().get()
-                == true)
+            if (printerToUse.canAbortPrint())
             {
-                printerToUse.getPrintQueue().abortPrint();
+                printerToUse.abort();
             }
-            try
-            {
-                printerToUse.
-                    transmitDirectGCode(GCodeConstants.goToOpenLidPosition,
-                                        false);
-            } catch (RoboxCommsException ex)
-            {
-                steno.error("Error when moving sending open lid command");
-            }
+            
+            printerToUse.openLid();
         }
     }
 
@@ -417,30 +407,54 @@ public class PrinterStatusPageController implements Initializable
     {
         try
         {
-            if (printerToUse.getHeadFanOn())
+            if (printerToUse.getPrinterAncillarySystems().getHeadFanOnProperty().get())
             {
-                printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadFan,
-                                                 true);
+                printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadFan, true);
             } else
             {
-                printerToUse.transmitDirectGCode(GCodeConstants.switchOnHeadFan,
-                                                 true);
+                printerToUse.transmitDirectGCode(GCodeConstants.switchOnHeadFan, true);
             }
         } catch (RoboxCommsException ex)
         {
             steno.error("Failed to send head fan command");
         }
     }
-    
+
     @FXML
     void removeHead(ActionEvent event)
     {
         try
         {
-            printerToUse.transmitStoredGCode("RemoveHead", false);
-        } catch (RoboxCommsException ex)
+            printerToUse.removeHead((TaskResponse taskResponse) ->
+            {
+                removeHeadFinished(taskResponse);
+            });
+        } catch (PrinterException ex)
         {
-            steno.error("Couldn't run remove head macro");
+            steno.error("PrinterException whilst invoking remove head: " + ex.getMessage());
+        }
+    }
+
+    private void removeHeadFinished(TaskResponse taskResponse)
+    {
+        if (taskResponse.succeeded())
+        {
+            Dialogs.create()
+                .owner(null)
+                .title(Lookup.i18n("removeHead.title"))
+                .masthead(null)
+                .message(Lookup.i18n("removeHead.finished"))
+                .showInformation();
+            steno.debug("Head remove completed");
+        }
+        else
+        {
+            Dialogs.create()
+                .owner(null)
+                .title(Lookup.i18n("removeHead.title"))
+                .masthead(null)
+                .message(Lookup.i18n("removeHead.failed"))
+                .showWarning();
         }
     }
 
@@ -591,7 +605,7 @@ public class PrinterStatusPageController implements Initializable
             }
         };
 
-        printerStatusChangeListener = (ObservableValue<? extends PrinterStatusEnumeration> observable, PrinterStatusEnumeration oldValue, PrinterStatusEnumeration newValue) ->
+        printerStatusChangeListener = (ObservableValue<? extends PrinterStatus> observable, PrinterStatus oldValue, PrinterStatus newValue) ->
         {
             processPrinterStatusChange(printerToUse.getPauseStatus(), printerToUse.getPrinterStatus());
         };
@@ -674,7 +688,7 @@ public class PrinterStatusPageController implements Initializable
                                 100).asString("%.0f%%"));
                         BooleanBinding progressVisible
                         = selectedPrinter.printerStatusProperty().isNotEqualTo(
-                            PrinterStatusEnumeration.PRINTING)
+                            PrinterStatus.PRINTING)
                         .or(Bindings.and(
                                 selectedPrinter.getPrintQueue().
                                 linesInPrintingFileProperty().greaterThan(
@@ -687,9 +701,9 @@ public class PrinterStatusPageController implements Initializable
                             selectedPrinter.getPrintQueue().etcAvailableProperty(),
                             Bindings.or(
                                 selectedPrinter.printerStatusProperty().isEqualTo(
-                                    PrinterStatusEnumeration.PRINTING),
+                                    PrinterStatus.PRINTING),
                                 selectedPrinter.printerStatusProperty().isEqualTo(
-                                    PrinterStatusEnumeration.SENDING_TO_PRINTER)));
+                                    PrinterStatus.SENDING_TO_PRINTER)));
                         progressPercent.visibleProperty().bind(progressVisible);
                         progressETC.visibleProperty().bind(progressETCVisible);
                         progressETC.textProperty().bind(new StringBinding()
@@ -768,7 +782,7 @@ public class PrinterStatusPageController implements Initializable
                             selectedPrinter.Filament1LoadedProperty().and(
                                 selectedPrinter.printerStatusProperty().
                                 isNotEqualTo(
-                                    PrinterStatusEnumeration.PRINTING)));
+                                    PrinterStatus.PRINTING)));
 
                         unlockLidButton.setVisible(true);
                         unlockLidButton.disableProperty().bind(
@@ -803,14 +817,14 @@ public class PrinterStatusPageController implements Initializable
                         advancedControlsVisible.unbind();
                         advancedControlsVisible.bind(
                             (selectedPrinter.printerStatusProperty().isEqualTo(
-                                PrinterStatusEnumeration.IDLE).and(
+                                PrinterStatus.IDLE).and(
                                 selectedPrinter.whyAreWeWaitingProperty().
                                 isEqualTo(
                                     WhyAreWeWaitingState.NOT_WAITING))).
                             or(
                                 selectedPrinter.printerStatusProperty().
                                 isEqualTo(
-                                    PrinterStatusEnumeration.PAUSED)));
+                                    PrinterStatus.PAUSED)));
                     }
 
                     lastSelectedPrinter = selectedPrinter;
@@ -836,9 +850,9 @@ public class PrinterStatusPageController implements Initializable
         if (statusScreenState.getCurrentlySelectedPrinter() != null)
         {
             boolean visible = (statusScreenState.getCurrentlySelectedPrinter().
-                getPrinterStatus() == PrinterStatusEnumeration.IDLE
+                getPrinterStatus() == PrinterStatus.IDLE
                 || statusScreenState.getCurrentlySelectedPrinter().getPrinterStatus()
-                == PrinterStatusEnumeration.PAUSED);
+                == PrinterStatus.PAUSED);
             for (Node node : advancedControls)
             {
                 node.setVisible(visible);
@@ -863,7 +877,7 @@ public class PrinterStatusPageController implements Initializable
         );
     }
 
-    private void processPrinterStatusChange(PauseStatus pauseStatus, PrinterStatusEnumeration printerStatus)
+    private void processPrinterStatusChange(PauseStatus pauseStatus, PrinterStatus printerStatus)
     {
         if (pauseStatus != null)
         {

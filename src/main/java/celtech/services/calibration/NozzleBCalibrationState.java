@@ -77,11 +77,6 @@ public enum NozzleBCalibrationState
     /**
      *
      */
-    PARKING("calibrationPanel.calibrationParkingMessage", null),
-    
-    /**
-     *
-     */
     FINISHED("calibrationPanel.calibrationSucceededBMessage", null),
 
     /**

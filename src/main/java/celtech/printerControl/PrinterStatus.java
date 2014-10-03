@@ -4,19 +4,18 @@
  */
 package celtech.printerControl;
 
-import celtech.coreUI.DisplayManager;
+import celtech.Lookup;
 
 /**
  *
  * @author ianhudson
  */
-public enum PrinterStatusEnumeration
+public enum PrinterStatus
 {
-
     /**
      *
      */
-    IDLE(0, "PrintQueue.Idle"),
+    IDLE(0, "printerStatus.idle"),
 
     /**
      *
@@ -36,7 +35,7 @@ public enum PrinterStatusEnumeration
     /**
      *
      */
-    PRINTING(15, "PrintQueue.Printing"),
+    PRINTING(15, "printerStatus.printing"),
 
     /**
      *
@@ -47,19 +46,23 @@ public enum PrinterStatusEnumeration
      *
      */
     PAUSED(20, "PrintQueue.Paused"),
-
+    
+    REMOVING_HEAD(30, "printerStatus.removingHead"),
+    
+    PURGING_HEAD(40, "printerStatus.purging"),
+    
     /**
      *
      */
     ERROR(90, "PrintQueue.Error");
-    
+        
     private final int statusValue;
-    private final String description;
+    private final String i18nString;
 
-    private PrinterStatusEnumeration(int statusValue, String description)
+    private PrinterStatus(int statusValue, String i18nString)
     {
         this.statusValue = statusValue;
-        this.description = description;
+        this.i18nString = i18nString;
     }
     
     /**
@@ -75,9 +78,9 @@ public enum PrinterStatusEnumeration
      *
      * @return
      */
-    public String getDescription()
+    public String getI18nString()
     {
-        return DisplayManager.getLanguageBundle().getString(description);
+        return Lookup.i18n(i18nString);
     }
     
     /**
@@ -87,6 +90,6 @@ public enum PrinterStatusEnumeration
     @Override
     public String toString()
     {
-        return getDescription();
+        return getI18nString();
     }
 }

@@ -10,10 +10,11 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.SettingsScreenState;
-import celtech.printerControl.Printer;
-import celtech.printerControl.PrinterStatusEnumeration;
+import celtech.printerControl.model.Printer;
+import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
+import celtech.utils.tasks.Cancellable;
 import java.util.ResourceBundle;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.concurrent.Task;
@@ -72,7 +73,7 @@ public class PrinterUtils
 
         if (task != null)
         {
-            while ((printerToCheck.getPrintQueue().isConsideringPrintRequest() == true || printerToCheck.getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.IDLE) && task.isCancelled()
+            while ((printerToCheck.getPrintQueue().isConsideringPrintRequest() == true || printerToCheck.getPrinterStatus().get() != PrinterStatus.IDLE) && task.isCancelled()
                 == false && !TaskController.isShuttingDown())
             {
                 try
@@ -86,7 +87,7 @@ public class PrinterUtils
             }
         } else
         {
-            while ((printerToCheck.getPrintQueue().isConsideringPrintRequest() == true || printerToCheck.getPrintQueue().getPrintStatus() != PrinterStatusEnumeration.IDLE) && !TaskController.
+            while ((printerToCheck.getPrintQueue().isConsideringPrintRequest() == true || printerToCheck.getPrintQueue().getPrintStatus() != PrinterStatus.IDLE) && !TaskController.
                 isShuttingDown())
             {
                 try
@@ -100,6 +101,39 @@ public class PrinterUtils
             }
         }
         return interrupted;
+    }
+
+    /**
+     *
+     * @param printerToCheck
+     * @param cancellable
+     * @return failed
+     */
+    public static boolean waitOnMacroFinished(Printer printerToCheck, Cancellable cancellable)
+    {
+        boolean failed = false;
+
+        while ((printerToCheck.getPrintQueue().isConsideringPrintRequest() == true
+            || printerToCheck.getPrintQueue().getPrintStatus() != PrinterStatus.IDLE)
+            && !TaskController.isShuttingDown())
+        {
+            try
+            {
+                Thread.sleep(100);
+                
+                if (cancellable.cancelled)
+                {
+                    failed = true;
+                    break;
+                }
+            } catch (InterruptedException ex)
+            {
+                failed = true;
+                steno.error("Interrupted whilst waiting on Macro");
+            }
+        }
+
+        return failed;
     }
 
     /**
@@ -122,7 +156,7 @@ public class PrinterUtils
                 {
                     Thread.sleep(100);
                     response = printerToCheck.transmitStatusRequest();
-                    
+
                     if (task.isCancelled())
                     {
                         failed = true;
@@ -158,6 +192,44 @@ public class PrinterUtils
                 steno.error("Interrupted during busy check");
                 failed = true;
             }
+        }
+
+        return failed;
+    }
+
+    /**
+     *
+     * @param printerToCheck
+     * @param cancellable
+     * @return failed
+     */
+    public static boolean waitOnBusy(Printer printerToCheck, Cancellable cancellable)
+    {
+        boolean failed = false;
+
+        try
+        {
+            StatusResponse response = printerToCheck.transmitStatusRequest();
+
+            while (response.isBusyStatus() == true && !TaskController.isShuttingDown())
+            {
+                Thread.sleep(100);
+                response = printerToCheck.transmitStatusRequest();
+
+                if (cancellable.cancelled)
+                {
+                    failed = true;
+                    break;
+                }
+            }
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error requesting status");
+            failed = true;
+        } catch (InterruptedException ex)
+        {
+            steno.error("Interrupted during busy check");
+            failed = true;
         }
 
         return failed;

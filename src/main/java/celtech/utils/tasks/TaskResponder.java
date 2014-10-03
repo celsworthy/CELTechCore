@@ -1,16 +1,13 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright 2014 CEL UK
  */
-
 package celtech.utils.tasks;
 
 /**
  *
- * @author Ian
+ * @author tony
  */
-public abstract class TaskResponder
+public interface TaskResponder
 {
-    public abstract void taskEnded(TaskResult result);
+    public void taskEnded(TaskResponse taskResponse);
 }

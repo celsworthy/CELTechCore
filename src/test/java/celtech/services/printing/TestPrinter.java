@@ -6,13 +6,14 @@ package celtech.services.printing;
 import celtech.appManager.Project;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
-import celtech.configuration.Head;
+import celtech.printerControl.model.Head;
 import celtech.configuration.HeaterMode;
 import celtech.configuration.MaterialType;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.WhyAreWeWaitingState;
-import celtech.printerControl.Printer;
-import celtech.printerControl.PrinterStatusEnumeration;
+import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterException;
+import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
@@ -23,6 +24,8 @@ import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.comms.events.RoboxEvent;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
+import celtech.utils.tasks.Cancellable;
+import celtech.utils.tasks.TaskResponder;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
@@ -38,7 +41,7 @@ import javafx.scene.paint.Color;
  *
  * @author tony
  */
-public class TestPrinter implements Printer
+public class TestPrinter extends Printer
 {
 
     private IntegerProperty printJobLineNumber = new SimpleIntegerProperty(0);
@@ -92,7 +95,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void setBedTemperature(int temperature)
+    public void setBedTargetTemperature(int temperature)
     {
         bedTemperature.set(temperature);
     }
@@ -1166,19 +1169,19 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void setPrinterStatus(PrinterStatusEnumeration value)
+    public void setPrinterStatus(PrinterStatus value)
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public PrinterStatusEnumeration getPrinterStatus()
+    public PrinterStatus getPrinterStatus()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public ObjectProperty<PrinterStatusEnumeration> printerStatusProperty()
+    public ObjectProperty<PrinterStatus> printerStatusProperty()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -1418,25 +1421,25 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void abortPrint()
+    public void abort()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void pausePrint()
+    public void pause()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void resumePrint()
+    public void resume()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public int getSequenceNumber()
+    public int getDataFileSequenceNumber()
     {
         return sequenceNumber;
     }
@@ -1504,21 +1507,38 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public boolean canRemoveHead()
+    public void removeHead(TaskResponder responder) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public boolean removeHead()
+    public void purgeHead(TaskResponder responder) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public boolean canPrint()
+    protected boolean doRemoveHeadActivity(Cancellable cancellable)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @Override
+    protected boolean doPrepareToPurgeHeadActivity(Cancellable cancellable)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setPurgeTemperature(float purgeTemperature)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected boolean doPurgeHeadActivity(Cancellable cancellable)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

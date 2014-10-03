@@ -6,12 +6,12 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.TaskController;
-import celtech.configuration.Head;
 import celtech.configuration.HeadContainer;
-import celtech.printerControl.Printer;
+import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
+import celtech.printerControl.model.Printer;
 import celtech.services.calibration.CalibrateNozzleOffsetTask;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOffsetCalibrationStepResult;
@@ -213,19 +213,20 @@ public class CalibrationNozzleOffsetHelper
                     zco = 0.5 * (savedHeadData.getNozzle1ZOffset() + savedHeadData.getNozzle2ZOffset());
                     zDifference = savedHeadData.getNozzle2ZOffset() - savedHeadData.getNozzle1ZOffset();
 
-                    Head defaultHead = HeadContainer.getCompleteHeadList().get(0);
+                    HeadFile defaultHead = HeadContainer.getHeadByID(HeadContainer.defaultHeadID);
+
                     steno.info("Initialising head data prior to calibration");
                     printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                                                          savedHeadData.getUniqueID(),
                                                          savedHeadData.getMaximumTemperature(),
                                                          savedHeadData.getBeta(),
                                                          savedHeadData.getTCal(),
-                                                         defaultHead.getNozzle1XOffset(),
-                                                         defaultHead.getNozzle1YOffset(),
+                                                         defaultHead.getNozzles().get(0).getDefaultXOffset(),
+                                                         defaultHead.getNozzles().get(0).getDefaultYOffset(),
                                                          0,
                                                          savedHeadData.getNozzle1BOffset(),
-                                                         defaultHead.getNozzle2XOffset(),
-                                                         defaultHead.getNozzle2YOffset(),
+                                                         defaultHead.getNozzles().get(1).getDefaultXOffset(),
+                                                         defaultHead.getNozzles().get(1).getDefaultYOffset(),
                                                          0,
                                                          savedHeadData.getNozzle2BOffset(),
                                                          savedHeadData.getLastFilamentTemperature(),

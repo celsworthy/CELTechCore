@@ -5,7 +5,7 @@
 package celtech.services.roboxmoviemaker;
 
 import celtech.configuration.ApplicationConfiguration;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import java.io.File;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -82,7 +82,7 @@ public class MovieMakerTask extends Task<MovieMakerResult>
 
             if (videoWriter != null)
             {
-                printerToUse.XStopSwitchProperty().addListener(triggerListener);
+                printerToUse.getPrinterAncillarySystems().getXStopSwitchProperty().addListener(triggerListener);
 
                 succeeded = true;
 

@@ -10,7 +10,7 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.EnhancedToggleGroup;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.RoboxCommsManager;
 import java.net.URL;
 import java.util.ResourceBundle;

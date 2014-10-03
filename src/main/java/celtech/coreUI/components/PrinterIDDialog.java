@@ -7,7 +7,7 @@ package celtech.coreUI.components;
 import celtech.coreUI.DisplayManager;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.controllers.PrinterIDDialogController;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import java.io.IOException;
 import java.net.URL;
 import javafx.fxml.FXMLLoader;

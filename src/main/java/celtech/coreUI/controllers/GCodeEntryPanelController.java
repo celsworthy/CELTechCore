@@ -6,7 +6,7 @@
 package celtech.coreUI.controllers;
 
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -63,13 +63,8 @@ public class GCodeEntryPanelController implements Initializable
     private void fireGCodeAtPrinter()
     {
         gcodeEntryField.selectAll();
-        try
-        {
-            statusScreenState.getCurrentlySelectedPrinter().transmitDirectGCode(gcodeEntryField.getText(), true);
-        } catch (RoboxCommsException ex)
-        {
-            steno.info("Error sending GCode");
-        }
+
+        statusScreenState.getCurrentlySelectedPrinter().sendRawGCode(gcodeEntryField.getText(), true);
     }
 
     @Override
@@ -141,48 +136,48 @@ public class GCodeEntryPanelController implements Initializable
         sendGCodeButton.setDefaultButton(true);
 
         gcodeEntryField.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>()
-        {
+                                    {
 
-            @Override
-            public void handle(KeyEvent t)
-            {
-                if (t.getCode() == KeyCode.UP)
-                {
-                    String allText = gcodeListView.getText();
+                                        @Override
+                                        public void handle(KeyEvent t)
+                                        {
+                                            if (t.getCode() == KeyCode.UP)
+                                            {
+                                                String allText = gcodeListView.getText();
 
-                    if (gcodeListView.getSelectedText().length() > 0)
-                    {
-                        int selectionStart = gcodeListView.getSelection().getStart();
-                        int selectionEnd = gcodeListView.getSelection().getEnd();
+                                                if (gcodeListView.getSelectedText().length() > 0)
+                                                {
+                                                    int selectionStart = gcodeListView.getSelection().getStart();
+                                                    int selectionEnd = gcodeListView.getSelection().getEnd();
 
-                        int lastposition = allText.lastIndexOf('\n', selectionStart);
+                                                    int lastposition = allText.lastIndexOf('\n', selectionStart);
 
-                        if (lastposition > 0)
-                        {
-                            int penultimatePosition = allText.lastIndexOf("\n", lastposition - 1);
-                            if (penultimatePosition > 0)
-                            {
-                                gcodeListView.selectRange(penultimatePosition, lastposition);
-                            }
-                        }
-                    } else
-                    {
-                        int lastposition = allText.lastIndexOf('\n');
+                                                    if (lastposition > 0)
+                                                    {
+                                                        int penultimatePosition = allText.lastIndexOf("\n", lastposition - 1);
+                                                        if (penultimatePosition > 0)
+                                                        {
+                                                            gcodeListView.selectRange(penultimatePosition, lastposition);
+                                                        }
+                                                    }
+                                                } else
+                                                {
+                                                    int lastposition = allText.lastIndexOf('\n');
 
-                        if (lastposition > 0)
-                        {
-                            int penultimatePosition = allText.lastIndexOf("\n", lastposition - 1);
-                            if (penultimatePosition > 0)
-                            {
-                                gcodeListView.selectRange(penultimatePosition, lastposition);
-                            }
-                        }
-                    }
-                } else if (t.getCode() == KeyCode.DOWN)
-                {
-                    gcodeListView.selectNextWord();
-                }
-            }
+                                                    if (lastposition > 0)
+                                                    {
+                                                        int penultimatePosition = allText.lastIndexOf("\n", lastposition - 1);
+                                                        if (penultimatePosition > 0)
+                                                        {
+                                                            gcodeListView.selectRange(penultimatePosition, lastposition);
+                                                        }
+                                                    }
+                                                }
+                                            } else if (t.getCode() == KeyCode.DOWN)
+                                            {
+                                                gcodeListView.selectNextWord();
+                                            }
+                                        }
         });
     }
 

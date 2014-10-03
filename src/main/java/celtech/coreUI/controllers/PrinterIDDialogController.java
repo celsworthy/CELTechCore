@@ -7,7 +7,7 @@ package celtech.coreUI.controllers;
 import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.ColourChooserButton;
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import java.net.URL;
 import java.util.ArrayList;

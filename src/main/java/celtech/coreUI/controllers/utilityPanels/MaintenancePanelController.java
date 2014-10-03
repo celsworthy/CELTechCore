@@ -17,8 +17,8 @@ import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.coreUI.controllers.panels.CalibrationNozzleBInsetPanelController;
 import celtech.coreUI.controllers.panels.CalibrationNozzleOffsetInsetPanelController;
-import celtech.printerControl.Printer;
-import celtech.printerControl.PrinterStatusEnumeration;
+import celtech.printerControl.model.Printer;
+import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.services.firmware.FirmwareLoadService;
@@ -78,10 +78,10 @@ public class MaintenancePanelController implements Initializable
     private FileChooser gcodeFileChooser = new FileChooser();
     private final GCodePrintService gcodePrintService = new GCodePrintService();
 
-    private ChangeListener<PrinterStatusEnumeration> printerStatusListener = new ChangeListener<PrinterStatusEnumeration>()
+    private ChangeListener<PrinterStatus> printerStatusListener = new ChangeListener<PrinterStatus>()
     {
         @Override
-        public void changed(ObservableValue<? extends PrinterStatusEnumeration> observable, PrinterStatusEnumeration oldValue, PrinterStatusEnumeration newValue)
+        public void changed(ObservableValue<? extends PrinterStatus> observable, PrinterStatus oldValue, PrinterStatus newValue)
         {
             setButtonVisibility();
         }
@@ -303,7 +303,7 @@ public class MaintenancePanelController implements Initializable
         final File file = gcodeFileChooser.showOpenDialog(container.getScene().getWindow());
         if (file != null)
         {
-            if (connectedPrinter.getPrintQueue().getPrintStatus() == PrinterStatusEnumeration.IDLE)
+            if (connectedPrinter.getPrintQueue().getPrintStatus() == PrinterStatus.IDLE)
             {
                 gcodePrintService.reset();
                 gcodePrintService.setPrintUsingSDCard(false);
@@ -326,7 +326,7 @@ public class MaintenancePanelController implements Initializable
 
         if (file != null)
         {
-            if (connectedPrinter.getPrintQueue().getPrintStatus() == PrinterStatusEnumeration.IDLE)
+            if (connectedPrinter.getPrintQueue().getPrintStatus() == PrinterStatus.IDLE)
             {
                 connectedPrinter.getPrintQueue().printGCodeFile(file.getAbsolutePath(), true);
             }
@@ -479,7 +479,7 @@ public class MaintenancePanelController implements Initializable
             noFilamentOrPrintingdisabled = true;
         } else
         {
-            printingdisabled = connectedPrinter.getPrinterStatus() != PrinterStatusEnumeration.IDLE;
+            printingdisabled = connectedPrinter.getPrinterStatus() != PrinterStatus.IDLE;
             noFilamentOrPrintingdisabled = printingdisabled || (connectedPrinter.getFilament1Loaded() == false && connectedPrinter.getFilament2Loaded() == false);
         }
 

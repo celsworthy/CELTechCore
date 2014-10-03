@@ -7,7 +7,7 @@ package celtech.services.diagnostics;
 
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.services.ControllableService;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;

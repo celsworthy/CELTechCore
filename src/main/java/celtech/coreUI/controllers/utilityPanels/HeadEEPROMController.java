@@ -6,15 +6,16 @@
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.configuration.EEPROMState;
-import celtech.configuration.Head;
 import celtech.configuration.HeadContainer;
+import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.printerControl.Printer;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
+import celtech.printerControl.model.Head;
+import celtech.printerControl.model.Printer;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ResourceBundle;
@@ -117,8 +118,8 @@ public class HeadEEPROMController implements Initializable
     void resetToDefaults(ActionEvent event)
     {
         String headId = headTypeCode.getText();
-        Head currentStandardHead = HeadContainer.getHeadByID(headId);
-        updateOffsetFieldsForHead(currentStandardHead);
+        HeadFile currentStandardHead = HeadContainer.getHeadByID(headId);
+        updateOffsetFieldsForHead(new Head(currentStandardHead));
     }
 
     @FXML

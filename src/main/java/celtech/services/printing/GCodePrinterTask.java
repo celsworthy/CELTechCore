@@ -4,7 +4,7 @@
  */
 package celtech.services.printing;
 
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.utils.SystemUtils;
 import java.io.File;
@@ -101,7 +101,7 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
                     {
 //                        steno.info("Sending line " + lineCounter);
                         printerToUse.sendDataFileChunk(line, lineCounter == numberOfLines - 1, true);
-                        if ((printerToUse.getSequenceNumber() > 1 && printerToUse.isPrintInitiated() == false)
+                        if ((printerToUse.getDataFileSequenceNumber() > 1 && printerToUse.isPrintInitiated() == false)
                                 || (lineCounter == numberOfLines - 1 && printerToUse.isPrintInitiated() == false))
                         {
                             //Start printing!
@@ -127,7 +127,7 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
             steno.error("Error during print operation - abandoning print " + printJobID + " " + ex.getMessage());
             if (printUsingSDCard)
             {
-                printerToUse.abortPrint();
+                printerToUse.abort();
             }
             updateMessage("Printing error");
         } finally

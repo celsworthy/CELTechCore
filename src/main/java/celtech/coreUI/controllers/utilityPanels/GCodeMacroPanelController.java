@@ -5,7 +5,7 @@
  */
 package celtech.coreUI.controllers.utilityPanels;
 
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import javafx.fxml.FXML;
 import javafx.scene.layout.AnchorPane;
 import libertysystems.stenographer.Stenographer;

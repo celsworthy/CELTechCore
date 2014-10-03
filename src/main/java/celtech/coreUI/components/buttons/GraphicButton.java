@@ -3,6 +3,8 @@ package celtech.coreUI.components.buttons;
 import java.io.IOException;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 
@@ -12,15 +14,16 @@ import javafx.scene.control.Button;
  */
 public class GraphicButton extends Button
 {
+
     private final StringProperty fxmlFileName = new SimpleStringProperty("");
 
     public GraphicButton()
     {
         loadFXML();
-        
-        this.getStyleClass().add("graphic-button");
+        getStyleClass().add("graphic-button");
+        setPickOnBounds(false);
     }
-    
+
     public String getFxmlFileName()
     {
         return fxmlFileName.get();
@@ -29,10 +32,10 @@ public class GraphicButton extends Button
     public void setFxmlFileName(String fxmlFileName)
     {
         this.fxmlFileName.set(fxmlFileName);
-        
+
         loadFXML();
     }
-    
+
     public StringProperty getFxmlFileNameProperty()
     {
         return fxmlFileName;

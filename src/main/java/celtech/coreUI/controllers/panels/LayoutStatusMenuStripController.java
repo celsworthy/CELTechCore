@@ -23,8 +23,8 @@ import celtech.coreUI.components.buttons.GraphicToggleButton;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
-import celtech.printerControl.Printer;
-import celtech.printerControl.PrinterStatusEnumeration;
+import celtech.printerControl.model.Printer;
+import celtech.printerControl.PrinterStatus;
 import celtech.utils.PrinterUtils;
 import java.io.File;
 import java.net.URL;
@@ -53,6 +53,7 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class LayoutStatusMenuStripController
 {
+
     private final Stenographer steno = StenographerFactory.getStenographer(LayoutStatusMenuStripController.class.getName());
     private SettingsScreenState settingsScreenState = null;
     private ApplicationStatus applicationStatus = null;
@@ -124,8 +125,8 @@ public class LayoutStatusMenuStripController
         if (purgeConsent)
         {
             purgePanelController.purgeAndPrint(currentProject, settingsScreenState.getFilament(),
-                                  settingsScreenState.getPrintQuality(),
-                                  settingsScreenState.getSettings(), printer);
+                                               settingsScreenState.getPrintQuality(),
+                                               settingsScreenState.getSettings(), printer);
         } else
         {
             printer.printProject(currentProject, settingsScreenState.getFilament(),
@@ -244,7 +245,6 @@ public class LayoutStatusMenuStripController
     }
 
     private Printer currentPrinter = null;
-    private BooleanProperty printerOKToPrint = new SimpleBooleanProperty(false);
 
     /*
      * JavaFX initialisation method
@@ -262,8 +262,7 @@ public class LayoutStatusMenuStripController
         backwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(
             ApplicationMode.STATUS));
 //        forwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS).and(printerOKToPrint));
-        printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
-            ApplicationMode.SETTINGS).and(printerOKToPrint));
+        printButton.setVisible(false);
 
         settingsScreenState.selectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
@@ -275,18 +274,11 @@ public class LayoutStatusMenuStripController
                 {
                     if (currentPrinter != null)
                     {
-                        printerOKToPrint.unbind();
-                        printerOKToPrint.set(false);
+                        printButton.visibleProperty().unbind();
                     }
-                    printerOKToPrint.bind(newValue.printerStatusProperty().isEqualTo(
-                        PrinterStatusEnumeration.IDLE)
-                        .and(newValue.whyAreWeWaitingProperty().isEqualTo(
-                                WhyAreWeWaitingState.NOT_WAITING))
-                        .and(newValue.headEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED))
-                        .and((newValue.Filament1LoadedProperty().or(
-                                newValue.Filament2LoadedProperty())))
-                        .and(settingsScreenState.filamentProperty().isNotNull().or(
-                                newValue.loadedFilamentProperty().isNotNull())));
+                    printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
+                        ApplicationMode.SETTINGS).and(currentPrinter.getCanPrintProperty()));
+
                     currentPrinter = newValue;
                 }
             }

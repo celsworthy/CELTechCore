@@ -155,12 +155,7 @@ public class GCodeConstants
     /**
      *
      */
-    public static final String ejectFilament1 = "M121 E";
-
-    /**
-     *
-     */
-    public static final String ejectFilament2 = "M121 D";
+    public static final String ejectFilament = "M121";
 
     /**
      *

@@ -4,13 +4,13 @@
  * and open the template in the editor.
  */
 
-package celtech.utils.tasks;
+package celtech.printerControl.model;
 
 /**
  *
  * @author Ian
  */
-class TaskResult
+public enum HeadRepairResult
 {
-    
+    NO_REPAIR_NECESSARY, REPAIRED_WRITE_AND_RECALIBRATE, REPAIRED_WRITE_ONLY
 }

@@ -227,7 +227,7 @@ public class FilamentContainer
             {
                 filamentProperties.setProperty(reelIDProperty, filament.getFilamentID());
             }
-            filamentProperties.setProperty(diameterProperty, floatConverter.toString(filament.getFilamentDiameter()));
+            filamentProperties.setProperty(diameterProperty, floatConverter.toString(filament.getDiameter()));
             filamentProperties.setProperty(filamentMultiplierProperty, floatConverter.toString(filament.getFilamentMultiplier()));
             filamentProperties.setProperty(feedRateMultiplierProperty, floatConverter.toString(filament.getFeedRateMultiplier()));
             filamentProperties.setProperty(ambientTempProperty, intConverter.toString(filament.getAmbientTemperature()));

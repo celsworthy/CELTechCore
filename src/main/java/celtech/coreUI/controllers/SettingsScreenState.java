@@ -12,7 +12,7 @@ package celtech.coreUI.controllers;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.PrintProfileContainer;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
 import javafx.beans.property.ObjectProperty;

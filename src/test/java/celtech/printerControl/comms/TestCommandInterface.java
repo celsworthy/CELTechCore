@@ -28,7 +28,7 @@ public class TestCommandInterface implements CommandInterface
     }
 
     @Override
-    public GCodeDataResponse transmitDirectGCode(String gcodeToSend) throws RoboxCommsException
+    public GCodeDataResponse transmitGCode(String gcodeToSend) throws RoboxCommsException
     {
         return null;
     }

@@ -6,7 +6,7 @@
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;

@@ -5,14 +5,19 @@
  */
 package celtech.printerControl;
 
+import celtech.printerControl.model.PrinterException;
+import celtech.printerControl.model.Printer;
 import celtech.JavaFXConfiguredTest;
+import celtech.Lookup;
 import celtech.printerControl.comms.TestCommandInterface;
-import celtech.utils.tasks.TaskResponder;
+import celtech.utils.tasks.TaskResponse;
+import celtech.utils.tasks.TestTaskExecutor;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Before;
 
 /**
  *
@@ -23,6 +28,14 @@ public class PrinterTest extends JavaFXConfiguredTest
 
     public PrinterTest()
     {
+    }
+
+    @Before
+    @Override
+    public void setUp()
+    {
+        super.setUp();
+        Lookup.setTaskExecutor(new TestTaskExecutor());
     }
 
     @BeforeClass
@@ -53,17 +66,11 @@ public class PrinterTest extends JavaFXConfiguredTest
     {
         TestCommandInterface commandInterface = new TestCommandInterface();
         Printer printer = new PrinterImpl(null, null, commandInterface);
-        
-        TaskResponder tr = new TaskResponder()
-        {
 
-            @Override
-            public void taskEnded(TaskResult result)
-            {
-         
-            }
-        }
-        printer.removeHead();
+        printer.removeHead((TaskResponse taskResponse) ->
+        {
+        });
+
         commandInterface.tick(2);
         assertFalse(printer.canPrint());
     }
@@ -73,8 +80,8 @@ public class PrinterTest extends JavaFXConfiguredTest
     {
         TestCommandInterface commandInterface = new TestCommandInterface();
         Printer printer = new PrinterImpl(null, null, commandInterface);
-        
-        assertTrue(printer.removeHead());
+
+//        assertTrue(printer.removeHead());
         commandInterface.tick(4);
         assertFalse(printer.canPrint());
     }

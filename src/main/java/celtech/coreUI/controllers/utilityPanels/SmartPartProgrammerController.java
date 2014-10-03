@@ -9,9 +9,9 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
-import celtech.configuration.Head;
+import celtech.printerControl.model.Head;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -109,7 +109,7 @@ public class SmartPartProgrammerController implements Initializable
                                                      selectedFilament.getFirstLayerBedTemperature(),
                                                      selectedFilament.getBedTemperature(),
                                                      selectedFilament.getAmbientTemperature(),
-                                                     selectedFilament.getFilamentDiameter(),
+                                                     selectedFilament.getDiameter(),
                                                      selectedFilament.getFilamentMultiplier(),
                                                      selectedFilament.getFeedRateMultiplier(),
                                                      remainingFilament,

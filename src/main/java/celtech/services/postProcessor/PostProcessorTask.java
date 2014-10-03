@@ -8,7 +8,7 @@ package celtech.services.postProcessor;
 import celtech.gcodetranslator.GCodeRoboxiser;
 import celtech.gcodetranslator.RoboxiserResult;
 import celtech.printerControl.PrintJob;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.services.slicer.RoboxProfile;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;

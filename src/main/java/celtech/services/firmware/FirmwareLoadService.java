@@ -4,7 +4,7 @@
  */
 package celtech.services.firmware;
 
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.services.ControllableService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;

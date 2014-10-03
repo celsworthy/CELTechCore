@@ -3,7 +3,7 @@
  */
 package celtech.services.printing;
 
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import java.util.ArrayList;
 import java.util.List;
 

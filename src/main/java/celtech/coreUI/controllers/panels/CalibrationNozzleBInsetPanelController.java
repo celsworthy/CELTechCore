@@ -3,7 +3,7 @@ package celtech.coreUI.controllers.panels;
 import celtech.appManager.ApplicationStatus;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.services.calibration.NozzleBCalibrationState;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -240,15 +240,6 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
                 saveSettingsButton.setVisible(false);
                 calibrationStatus.setText(state.getStepTitle(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
                 calibrationInstruction.setText(state.getStepInstruction(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
-                break;
-            case PARKING:
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                yesButton.setVisible(false);
-                noButton.setVisible(false);
-                saveSettingsButton.setVisible(false);
-                calibrationStatus.setText(state.getStepTitle());
-                calibrationInstruction.setText(state.getStepInstruction());
                 break;
             case FINISHED:
                 startCalibrationButton.setVisible(false);

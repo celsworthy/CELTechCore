@@ -34,7 +34,7 @@
                         <Image url="@../images/Printer_open.png" />
                     </image>
                 </ImageView>
-                <ImageView fx:id="reel" fitHeight="0.0" fitWidth="0.0" opacity="0.43" pickOnBounds="true" preserveRatio="true" visible="true">
+                <ImageView fx:id="reel" fitHeight="0.0" fitWidth="0.0" opacity="0.43" preserveRatio="true" visible="true">
                     <image>
                         <Image url="@../images/Filament_reel.png" />
                     </image>
@@ -323,7 +323,7 @@
                         </ImageView>
                     </graphic>
                 </Button>
-                <Button id="ejectReelButton" fx:id="headLEDButton" contentDisplay="GRAPHIC_ONLY" layoutX="336.0" layoutY="315.0" mnemonicParsing="false" onAction="#toggleHeadLED" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="HeadLED" translateX="25.0" translateY="25.0">
+                <Button id="ejectReelButton" fx:id="headLEDButton" contentDisplay="GRAPHIC_ONLY" layoutX="336.0" layoutY="315.0" mnemonicParsing="false" onAction="#toggleHeadLED" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="HeadLED" translateX="25.0" translateY="32.0">
                     <graphic>
                         <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -332,7 +332,7 @@
                         </ImageView>
                     </graphic>
                 </Button>
-                <Button id="ejectReelButton" fx:id="headFanButton" contentDisplay="GRAPHIC_ONLY" layoutX="336.0" layoutY="315.0" mnemonicParsing="false" onAction="#toggleHeadFan" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="HeadFan" translateX="25.0" translateY="-50.0">
+                <Button id="ejectReelButton" fx:id="headFanButton" contentDisplay="GRAPHIC_ONLY" layoutX="336.0" layoutY="315.0" mnemonicParsing="false" onAction="#toggleHeadFan" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="HeadFan" translateX="25.0" translateY="-60.0">
                     <graphic>
                         <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -341,7 +341,7 @@
                         </ImageView>
                     </graphic>
                 </Button>
-                <Button id="ejectReelButton" fx:id="ambientLEDButton" contentDisplay="GRAPHIC_ONLY" layoutX="328.0" layoutY="293.0" mnemonicParsing="false" onAction="#toggleAmbientLED" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="AmbientLED" translateX="26.0" translateY="-96.0">
+                <Button id="ejectReelButton" fx:id="ambientLEDButton" contentDisplay="GRAPHIC_ONLY" layoutX="328.0" layoutY="293.0" mnemonicParsing="false" onAction="#toggleAmbientLED" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="AmbientLED" translateX="26.0" translateY="-110.0">
                     <graphic>
                         <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -350,7 +350,7 @@
                         </ImageView>
                     </graphic>
                 </Button>
-                <GraphicButton fx:id="removeHeadButton" fxmlFileName="removeHeadButton" layoutX="328.0" layoutY="293.0" onAction="#removeHead" />
+                <GraphicButton fx:id="removeHeadButton" fxmlFileName="removeHeadButton" styleClass="jog-button" scaleX="0.9" scaleY="0.9" onAction="#removeHead" translateX="25.0" translateY="-14.0"/>
             </children>
         </StackPane>
         <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="55.0" prefWidth="-1.0" spacing="10.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="120.0">

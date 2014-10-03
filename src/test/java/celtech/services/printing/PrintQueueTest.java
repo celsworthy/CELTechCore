@@ -11,7 +11,7 @@ import celtech.configuration.PrintProfileContainer;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.coreUI.visualisation.importers.stl.STLImporter;
 import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.PrinterStatusEnumeration;
+import celtech.printerControl.PrinterStatus;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
 import java.io.File;
@@ -66,7 +66,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
     {
         testPrinter = new TestPrinter();
         testPrinter.setBedTargetTemperature(120);
-        testPrinter.setBedTemperature(120);
+        testPrinter.setBedTargetTemperature(120);
 
         TestListFilesResponse listFilesResponse = new TestListFilesResponse();
         testPrinter.setListFilesResonse(listFilesResponse);
@@ -119,7 +119,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
         while (true)
         {
             System.out.println("STATUS " + printQueue.getPrintStatus());
-            if (PrinterStatusEnumeration.PRINTING.equals(
+            if (PrinterStatus.PRINTING.equals(
                 printQueue.getPrintStatus()))
             {
                 break;
@@ -157,7 +157,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
         while (true)
         {
             System.out.println("STATUS " + printQueue.getPrintStatus());
-            if (PrinterStatusEnumeration.PRINTING.equals(
+            if (PrinterStatus.PRINTING.equals(
                 printQueue.getPrintStatus()))
             {
                 break;
@@ -195,7 +195,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
         while (true)
         {
             System.out.println("STATUS " + printQueue.getPrintStatus());
-            if (PrinterStatusEnumeration.PRINTING.equals(
+            if (PrinterStatus.PRINTING.equals(
                 printQueue.getPrintStatus()))
             {
                 break;
@@ -231,7 +231,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
         while (true)
         {
             System.out.println("STATUS " + printQueue.getPrintStatus());
-            if (PrinterStatusEnumeration.PRINTING.equals(
+            if (PrinterStatus.PRINTING.equals(
                 printQueue.getPrintStatus()))
             {
                 break;

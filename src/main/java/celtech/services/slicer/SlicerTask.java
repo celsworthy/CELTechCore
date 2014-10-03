@@ -9,7 +9,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.FilamentContainer;
 import celtech.configuration.MachineType;
 import celtech.coreUI.visualisation.exporters.STLOutputConverter;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

@@ -1,12 +1,11 @@
 package celtech.coreUI.controllers.panels;
 
-import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
-import celtech.configuration.Head;
+import celtech.printerControl.model.Head;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.NudgeControlVertical;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -19,7 +18,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -96,7 +94,7 @@ public class CalibrationNozzleOffsetInsetPanelController implements Initializabl
 
         if (nudgeHead != null)
         {
-            fineNozzleNudge.getValueProperty().unbindBidirectional(nudgeHead.getNozzle1_Z_overrunProperty());
+            fineNozzleNudge.getValueProperty().unbindBidirectional(nudgeHead.getNozzles().get(0).getNozzle1_Z_overrunProperty());
             coarseNozzleNudge.getValueProperty().unbindBidirectional(nudgeHead.getNozzle2_Z_overrunProperty());
         }
 

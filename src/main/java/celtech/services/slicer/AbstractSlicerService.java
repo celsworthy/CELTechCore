@@ -4,7 +4,7 @@
 package celtech.services.slicer;
 
 import celtech.appManager.Project;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.services.ControllableService;
 import javafx.concurrent.Service;
 

@@ -4,8 +4,12 @@
  */
 package celtech.printerControl.comms.commands.tx;
 
+import celtech.printerControl.model.Head;
+import celtech.printerControl.model.Nozzle;
+import celtech.printerControl.model.NozzleHeater;
 import celtech.utils.FixedDecimalFloatFormat;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 
 /**
  *
@@ -41,10 +45,10 @@ public class WriteHeadEEPROM extends RoboxTxPacket
      * @param hourCounter
      */
     public void populateEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature,
-            float thermistorBeta, float thermistorTCal,
-            float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset,
-            float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
-            float lastFilamentTemperature, float hourCounter)
+        float thermistorBeta, float thermistorTCal,
+        float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset,
+        float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
+        float lastFilamentTemperature, float hourCounter)
     {
         StringBuilder payload = new StringBuilder();
 
@@ -69,6 +73,30 @@ public class WriteHeadEEPROM extends RoboxTxPacket
         payload.append(decimalFloatFormatter.format(hourCounter));
 
         this.setMessagePayload(payload.toString());
+    }
+
+    public void populateEEPROM(Head head)
+    {
+        //TODO modify to cater for different number of nozzles/heaters
+
+        NozzleHeater heater = head.getNozzleHeaters().get(0);
+        ArrayList<Nozzle> nozzles = head.getNozzles();
+
+        populateEEPROM(head.getTypeCode(),
+                       head.getUniqueID(),
+                       heater.getMaximumTemperatureProperty().get(),
+                       heater.getBetaProperty().get(),
+                       heater.getTcalProperty().get(),
+                       nozzles.get(0).getXOffsetProperty().get(),
+                       nozzles.get(0).getYOffsetProperty().get(),
+                       nozzles.get(0).getZOffsetProperty().get(),
+                       nozzles.get(0).getBOffsetProperty().get(),
+                       nozzles.get(1).getXOffsetProperty().get(),
+                       nozzles.get(1).getYOffsetProperty().get(),
+                       nozzles.get(1).getZOffsetProperty().get(),
+                       nozzles.get(1).getBOffsetProperty().get(),
+                       heater.getLastFilamentTemperatureProperty().get(),
+                       head.getHeadHoursProperty().get());
     }
 
     /**

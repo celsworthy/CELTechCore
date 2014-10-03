@@ -5,6 +5,7 @@
  */
 package celtech.printerControl;
 
+import celtech.printerControl.model.Printer;
 import celtech.coreUI.DisplayManager;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.rx.GCodeDataResponse;

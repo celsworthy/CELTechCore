@@ -6,7 +6,7 @@
 package celtech.services.purge;
 
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.services.ControllableService;
@@ -100,7 +100,7 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
     {
         if (desiredState == PurgeState.RUNNING_PURGE)
         {
-            printerToUse.getPrintQueue().abortPrint();
+            printerToUse.abort();
         }
         return cancel();
     }

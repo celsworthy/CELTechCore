@@ -2,7 +2,7 @@ package celtech.configuration;
 
 import celtech.appManager.Notifier;
 import celtech.coreUI.DisplayManager;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
 import celtech.utils.SystemUtils;
@@ -189,7 +189,7 @@ public class Filament implements Serializable, Cloneable
      *
      * @return
      */
-    public float getFilamentDiameter()
+    public float getDiameter()
     {
         return diameter.get();
     }
@@ -549,7 +549,7 @@ public class Filament implements Serializable, Cloneable
         Filament clone = new Filament(this.getFriendlyFilamentName(),
                                       this.getMaterial(),
                                       this.getFilamentID(),
-                                      this.getFilamentDiameter(),
+                                      this.getDiameter(),
                                       this.getFilamentMultiplier(),
                                       this.getFeedRateMultiplier(),
                                       this.getAmbientTemperature(),
@@ -614,10 +614,10 @@ public class Filament implements Serializable, Cloneable
                             }
 
                             if (Math.abs(response.getFilamentDiameter()
-                                - referenceFilament.getFilamentDiameter()) > epsilon)
+                                - referenceFilament.getDiameter()) > epsilon)
                             {
                                 filamentToWrite.setFilamentDiameter(
-                                    referenceFilament.getFilamentDiameter());
+                                    referenceFilament.getDiameter());
                                 needToWriteFilamentData = true;
                             }
 

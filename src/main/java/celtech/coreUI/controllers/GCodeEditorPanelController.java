@@ -9,7 +9,7 @@ import celtech.appManager.Project;
 import celtech.appManager.ProjectMode;
 import celtech.coreUI.components.SlidingComponentDirection;
 import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.IntegerProperty;

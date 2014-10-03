@@ -11,7 +11,7 @@ import celtech.configuration.FilamentContainer;
 import celtech.configuration.MaterialType;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import java.net.URL;
 import java.text.ParseException;

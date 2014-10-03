@@ -6,7 +6,7 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.TaskController;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
@@ -38,7 +38,6 @@ public class CalibrationNozzleBHelper
     private HeadEEPROMDataResponse savedHeadData = null;
 
     private CalibrateBTask calibrationTask = null;
-    private boolean parkRequired = false;
     private NozzleBCalibrationState state = NozzleBCalibrationState.IDLE;
     private ArrayList<CalibrationBStateListener> stateListeners = new ArrayList<>();
 
@@ -219,11 +218,6 @@ public class CalibrationNozzleBHelper
                 printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
                 printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
 
-                if (parkRequired)
-                {
-                    parkRequired = false;
-                    printerToUse.transmitStoredGCode("Park");
-                }
             } catch (RoboxCommsException ex)
             {
                 steno.error("Error in needle valve calibration - mode=" + state.name());
@@ -321,7 +315,6 @@ public class CalibrationNozzleBHelper
                 primingTaskThread.setName("Calibration - priming");
                 primingTaskThread.start();
 
-                parkRequired = true;
                 break;
             case NO_MATERIAL_CHECK:
                 break;
@@ -403,16 +396,6 @@ public class CalibrationNozzleBHelper
                 confirmMaterialExtrudingTaskThread.setName("Calibration - extruding");
                 confirmMaterialExtrudingTaskThread.start();
                 break;
-            case PARKING:
-                calibrationTask = new CalibrateBTask(state);
-                calibrationTask.setOnFailed(failedTaskHandler);
-                TaskController.getInstance().manageTask(calibrationTask);
-
-                Thread parkingTaskThread = new Thread(calibrationTask);
-                parkingTaskThread.setName("Calibration - parking");
-                parkingTaskThread.start();
-                parkRequired = false;
-                break;
             case FINISHED:
                 try
                 {
@@ -430,12 +413,6 @@ public class CalibrationNozzleBHelper
                     printerToUse.transmitDirectGCode("G0 B0", false);
                     printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
                     printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
-
-                    if (parkRequired)
-                    {
-                        printerToUse.transmitStoredGCode("Park");
-                        parkRequired = false;
-                    }
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error clearing up after failed calibration");

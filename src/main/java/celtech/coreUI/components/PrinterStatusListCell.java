@@ -7,7 +7,7 @@ package celtech.coreUI.components;
 
 import celtech.configuration.PrinterColourMap;
 import celtech.configuration.WhyAreWeWaitingState;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -79,10 +79,10 @@ public class PrinterStatusListCell extends ListCell<Printer>
     private void addContent(Printer printer)
     {
         setText(null);
-        printer.printerColourProperty().addListener(printerColourChangeListener);
-        printerColour.setFill(colourMap.printerToDisplayColour(printer.printerColourProperty().get()));
-        name.textProperty().bind(printer.printerFriendlyNameProperty());
-        status.textProperty().bind(Bindings.when(printer.whyAreWeWaitingProperty().isEqualTo(WhyAreWeWaitingState.NOT_WAITING)).then(printer.printerStatusProperty().asString()).otherwise(Bindings.format("%s - %s", printer.printerStatusProperty(), printer.getWhyAreWeWaitingStringProperty())));
+        printerColour.setFill(colourMap.printerToDisplayColour(printer.getPrinterIdentity().getPrinterColourProperty().get()));
+        printer.getPrinterIdentity().getPrinterColourProperty().addListener(printerColourChangeListener);
+        name.textProperty().bind(printer.getPrinterIdentity().getPrinterFriendlyNameProperty());
+//        status.textProperty().bind(Bindings.when(printer.whyAreWeWaitingProperty().isEqualTo(WhyAreWeWaitingState.NOT_WAITING)).then(printer.printerStatusProperty().asString()).otherwise(Bindings.format("%s - %s", printer.printerStatusProperty(), printer.getWhyAreWeWaitingStringProperty())));
         setGraphic(grid);
     }
 }

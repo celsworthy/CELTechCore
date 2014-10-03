@@ -5,7 +5,7 @@
  */
 package celtech.coreUI.controllers;
 
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
