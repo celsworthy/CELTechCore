@@ -44,7 +44,8 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
      * @param desiredState
      * @param nozzleNumber
      */
-    public CalibrateBTask(NozzleOpeningCalibrationState desiredState, int nozzleNumber, Printer printer)
+    public CalibrateBTask(NozzleOpeningCalibrationState desiredState, int nozzleNumber,
+        Printer printer)
     {
         this.desiredState = desiredState;
         this.printer = printer;
@@ -101,16 +102,11 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                 break;
             case NO_MATERIAL_CHECK:
                 extrudeUntilStall(0);
-                extrudeUntilStall(1);
                 break;
             case PRE_CALIBRATION_PRIMING_FINE:
                 success = extrudeUntilStall(0);
                 break;
             case PRE_CALIBRATION_PRIMING_FILL:
-                success = extrudeUntilStall(1);
-                break;
-            case CONFIRM_NO_MATERIAL:
-                success = extrudeUntilStall(0);
                 success = extrudeUntilStall(1);
                 break;
             case CONFIRM_MATERIAL_EXTRUDING_FINE:
@@ -124,7 +120,7 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                 {
                     steno.error("Error in needle valve calibration - mode=" + desiredState.name());
                 }
-                break;
+                break;                
             case CONFIRM_MATERIAL_EXTRUDING_FILL:
                 try
                 {
@@ -136,6 +132,10 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                 {
                     steno.error("Error in needle valve calibration - mode=" + desiredState.name());
                 }
+                break;
+            case CONFIRM_NO_MATERIAL:
+                success = extrudeUntilStall(0);
+                success = extrudeUntilStall(1);
                 break;
         }
 
@@ -155,7 +155,6 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
 //        }
 //        PrinterUtils.waitOnBusy(printer, this);
 //    }
-
     private boolean extrudeUntilStall(int nozzleNumber)
     {
         boolean success = false;
