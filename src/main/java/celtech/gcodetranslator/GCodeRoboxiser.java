@@ -536,7 +536,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 {
                     // Unretract and open
                     NozzleOpenFullyEvent openNozzle = new NozzleOpenFullyEvent();
-                    openNozzle.setComment("Open and replenish");
+                    openNozzle.setComment("Open and replenish from extrusion");
                     openNozzle.setE(autoUnretractEValue);
                     openNozzle.setD(autoUnretractDValue);
 
@@ -1006,7 +1006,16 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                         }
 
                         int sizeOfBuffer = extrusionBuffer.size();
-                        int startOfClose = insertTravelAndClosePath(firstUsableExtrusionEventIndex, finalExtrusionEventIndex, "Move to start of wipe", false, lastInwardMoveEvent);
+                        int startOfClose = insertTravelAndClosePath(firstUsableExtrusionEventIndex, finalExtrusionEventIndex, "Move to start of wipe", false, lastInwardMoveEvent, currentNozzle.
+                                                                    getEjectionVolume());
+
+                        double actualClosedOverVolumeAvailable = calculateVolume(extrusionBuffer, startOfClose, extrusionBuffer.size() - 1);
+
+                        if (actualClosedOverVolumeAvailable < nozzleCloseOverVolume)
+                        {
+                            nozzleCloseOverVolume = actualClosedOverVolumeAvailable;
+                        }
+
                         int newSizeOfBuffer = extrusionBuffer.size();
 
 //                    if (currentNozzle.getWipeVolume() > 0)
@@ -1090,7 +1099,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                             } else
                             {
                                 int nozzleCloseStartIndex = insertTravelAndClosePath(firstUsableExtrusionEventIndex, finalExtrusionEventIndex, "Move to start of wipe - partial open", false,
-                                                                                     lastInwardMoveEvent);
+                                                                                     lastInwardMoveEvent, currentNozzle.getEjectionVolume());
 
                                 eventIndices.put(EventType.NOZZLE_CLOSE_START, nozzleCloseStartIndex);
 
@@ -1128,7 +1137,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 //                            }
 //                        }
                             int nozzleCloseStartIndex = insertTravelAndClosePath(firstUsableExtrusionEventIndex, finalExtrusionEventIndex, "Move to start of wipe - full open", true,
-                                                                                 lastInwardMoveEvent);
+                                                                                 lastInwardMoveEvent, currentNozzle.getEjectionVolume());
 
 //                        double wipeVolume = Math.min(currentNozzle.getWipeVolume(), totalExtrusionForPath - currentNozzle.getEjectionVolume());
 //
@@ -1732,7 +1741,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         }
     }
 
-    private int insertTravelAndClosePath(final int firstExtrusionEventIndex, final int finalExtrusionEventIndex, final String comment, boolean forceReverse, TravelEvent lastInwardsMoveEvent) throws PostProcessingError
+    private int insertTravelAndClosePath(final int firstExtrusionEventIndex, final int finalExtrusionEventIndex, final String comment, boolean forceReverse, TravelEvent lastInwardsMoveEvent,
+        double targetVolume) throws PostProcessingError
     {
         boolean reverseWipePath = forceReverse;
 
@@ -1904,8 +1914,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
         double cumulativeExtrusionVolume = 0;
 
-        double targetVolume = currentNozzle.getEjectionVolume() + currentNozzle.getWipeVolume();
-
         MovementEvent lastMovement = null;
 
 //        int indexDelta = (reverseWipePath == true) ? -1 : 1;
@@ -1917,6 +1925,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 && indexToCopyFrom <= finalExtrusionEventIndex
                 && indexToCopyFrom >= minimumIndexToCopyFrom)
             {
+                boolean dontIncrementEventIndex = false;
+
                 if (extrusionBuffer.get(indexToCopyFrom) instanceof ExtrusionEvent)
                 {
                     ExtrusionEvent eventToCopy = (ExtrusionEvent) extrusionBuffer.get(indexToCopyFrom);
@@ -2000,11 +2010,16 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                         extrusionBuffer.add(insertedEventIndex, eventToInsert);
                     } else
                     {
-                        extrusionBuffer.add(insertedEventIndex, extrusionBuffer.get(indexToCopyFrom));
+                        dontIncrementEventIndex = true;
+                        steno.info("Warning - elided event of type " + event.getClass().getName());
+//                        extrusionBuffer.add(insertedEventIndex, extrusionBuffer.get(indexToCopyFrom));
                     }
                 }
 
-                insertedEventIndex++;
+                if (!dontIncrementEventIndex)
+                {
+                    insertedEventIndex++;
+                }
 
                 indexToCopyFrom += indexDelta;
             }
@@ -2414,5 +2429,22 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         }
 
         return volumeIndex;
+    }
+
+    private double calculateVolume(ArrayList<GCodeParseEvent> extrusionBufferToAssess, int startIndex, int endIndex)
+    {
+        double totalExtrusionForPath = 0;
+
+        for (int extrusionBufferIndex = startIndex; extrusionBufferIndex <= endIndex; extrusionBufferIndex++)
+        {
+            GCodeParseEvent event = extrusionBufferToAssess.get(extrusionBufferIndex);
+
+            if (event instanceof ExtrusionEvent)
+            {
+                totalExtrusionForPath += ((ExtrusionEvent) event).getE() + ((ExtrusionEvent) event).getD();
+            }
+        }
+
+        return totalExtrusionForPath;
     }
 }
