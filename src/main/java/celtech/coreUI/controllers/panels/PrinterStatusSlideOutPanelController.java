@@ -34,61 +34,55 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class PrinterStatusSlideOutPanelController implements Initializable, SlidablePanel
 {
-    
+
     private StatusScreenState statusScreenState = null;
     private final Stenographer steno = StenographerFactory.getStenographer(PrinterStatusSlideOutPanelController.class.getName());
     private ListChangeListener<String> gcodeTranscriptListener = null;
-    
+
     @FXML
     private SlideOutHandleController SlideOutHandleController;
-    
+
     @FXML
     private VBox gcodeEditParent;
-    
+
     @FXML
     private RestrictedTextField gcodeEntryField;
-    
+
     @FXML
     private TextArea gcodeTranscript;
-    
+
     @FXML
     private Button sendGCodeButton;
-    
+
     @FXML
     void sendGCodeM(MouseEvent event)
     {
         fireGCodeAtPrinter();
     }
-    
+
     @FXML
     void sendGCodeA(ActionEvent event)
     {
         fireGCodeAtPrinter();
     }
-    
+
     private void fireGCodeAtPrinter()
     {
         gcodeEntryField.selectAll();
-        try
-        {
-            statusScreenState.getCurrentlySelectedPrinter().transmitDirectGCode(gcodeEntryField.getText(), true);
-        } catch (RoboxCommsException ex)
-        {
-            steno.info("Error sending GCode");
-        }
+        statusScreenState.getCurrentlySelectedPrinter().sendRawGCode(gcodeEntryField.getText(), true);
     }
-    
+
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
         statusScreenState = StatusScreenState.getInstance();
-        
+
         gcodeTranscript.setEditable(false);
         gcodeTranscript.setScrollTop(Double.MAX_VALUE);
-        
+
         gcodeTranscriptListener = new ListChangeListener<String>()
         {
-            
+
             @Override
             public void onChanged(ListChangeListener.Change<? extends String> change)
             {
@@ -113,9 +107,9 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
                 }
             }
         };
-        
+
         populateGCodeArea();
-        
+
         statusScreenState.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
         {
             if (t1 != null)
@@ -126,7 +120,7 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
             {
                 t.gcodeTranscriptProperty().removeListener(gcodeTranscriptListener);
             }
-            
+
             populateGCodeArea();
         });
 
@@ -146,51 +140,51 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
 
 //        sendGCodeButton.setDefaultButton(true);
         gcodeEntryField.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>()
-        {
-            
-            @Override
-            public void handle(KeyEvent t)
-            {
-                if (t.getCode() == KeyCode.UP)
-                {
-                    String allText = gcodeTranscript.getText();
-                    
-                    if (gcodeTranscript.getSelectedText().length() > 0)
-                    {
-                        int selectionStart = gcodeTranscript.getSelection().getStart();
-                        int selectionEnd = gcodeTranscript.getSelection().getEnd();
-                        
-                        int lastposition = allText.lastIndexOf('\n', selectionStart);
-                        
-                        if (lastposition > 0)
-                        {
-                            int penultimatePosition = allText.lastIndexOf("\n", lastposition - 1);
-                            if (penultimatePosition > 0)
-                            {
-                                gcodeTranscript.selectRange(penultimatePosition, lastposition);
-                            }
-                        }
-                    } else
-                    {
-                        int lastposition = allText.lastIndexOf('\n');
-                        
-                        if (lastposition > 0)
-                        {
-                            int penultimatePosition = allText.lastIndexOf("\n", lastposition - 1);
-                            if (penultimatePosition > 0)
-                            {
-                                gcodeTranscript.selectRange(penultimatePosition, lastposition);
-                            }
-                        }
-                    }
-                } else if (t.getCode() == KeyCode.DOWN)
-                {
-                    gcodeTranscript.selectNextWord();
-                }
-            }
+                                    {
+
+                                        @Override
+                                        public void handle(KeyEvent t)
+                                        {
+                                            if (t.getCode() == KeyCode.UP)
+                                            {
+                                                String allText = gcodeTranscript.getText();
+
+                                                if (gcodeTranscript.getSelectedText().length() > 0)
+                                                {
+                                                    int selectionStart = gcodeTranscript.getSelection().getStart();
+                                                    int selectionEnd = gcodeTranscript.getSelection().getEnd();
+
+                                                    int lastposition = allText.lastIndexOf('\n', selectionStart);
+
+                                                    if (lastposition > 0)
+                                                    {
+                                                        int penultimatePosition = allText.lastIndexOf("\n", lastposition - 1);
+                                                        if (penultimatePosition > 0)
+                                                        {
+                                                            gcodeTranscript.selectRange(penultimatePosition, lastposition);
+                                                        }
+                                                    }
+                                                } else
+                                                {
+                                                    int lastposition = allText.lastIndexOf('\n');
+
+                                                    if (lastposition > 0)
+                                                    {
+                                                        int penultimatePosition = allText.lastIndexOf("\n", lastposition - 1);
+                                                        if (penultimatePosition > 0)
+                                                        {
+                                                            gcodeTranscript.selectRange(penultimatePosition, lastposition);
+                                                        }
+                                                    }
+                                                }
+                                            } else if (t.getCode() == KeyCode.DOWN)
+                                            {
+                                                gcodeTranscript.selectNextWord();
+                                            }
+                                        }
         });
     }
-    
+
     private void populateGCodeArea()
     {
         if (statusScreenState.getCurrentlySelectedPrinter() != null)
@@ -203,7 +197,7 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
         {
             gcodeTranscript.setText("");
         }
-        
+
     }
 
     /**

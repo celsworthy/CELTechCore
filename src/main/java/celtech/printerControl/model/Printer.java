@@ -60,9 +60,12 @@ import celtech.utils.SystemUtils;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponder;
 import com.sun.javafx.print.PrintHelper;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
@@ -99,6 +102,8 @@ public class Printer implements RoboxResponseConsumer
     private SystemNotificationManager systemNotificationManager;
 
     private boolean keepRunning = true;
+
+    private NumberFormat threeDPformatter;
 
     /*
      * State machine data
@@ -148,6 +153,10 @@ public class Printer implements RoboxResponseConsumer
         this.commandInterface = commandInterface;
 
         printHelper = new PrintHelper();
+
+        threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
+        threeDPformatter.setMaximumFractionDigits(3);
+        threeDPformatter.setGroupingUsed(false);
 
         systemNotificationManager = Lookup.getSystemNotificationHandler();
 
@@ -1707,17 +1716,6 @@ public class Printer implements RoboxResponseConsumer
         }
     }
 
-    public void switchNozzleHeaterOff(int heaterNumber)
-    {
-        try
-        {
-            transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error when sending switch nozzle heater off command");
-        }
-    }
-
     public void setNozzleFirstLayerTargetTemperature(int targetTemperature)
     {
         try
@@ -1781,6 +1779,84 @@ public class Printer implements RoboxResponseConsumer
         } catch (RoboxCommsException ex)
         {
             steno.error("Error when sending raw gcode : " + gCode);
+        }
+    }
+
+    public void changeNozzlePosition(float position)
+    {
+        try
+        {
+            transmitDirectGCode("G0 B" + threeDPformatter.format(position), false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error when sending close nozzle command");
+        }
+    }
+
+    public void switchOffHeadLEDs()
+    {
+        try
+        {
+            transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error when sending switch head LED off command");
+        }
+    }
+
+    public void switchNozzleHeaterOff(int heaterNumber)
+    {
+        //TODO modify for multiple heaters
+        try
+        {
+            transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error when sending switch nozzle heater off command");
+        }
+    }
+
+    public void homeZ()
+    {
+        try
+        {
+            transmitDirectGCode("G28 Z", false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error when sending z home command");
+        }
+    }
+
+    public void goToZPosition(double zco)
+    {
+        try
+        {
+            transmitDirectGCode("G0 Z" + sss, false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error when sending z position command");
+        }
+    }
+
+    public void switchToAbsoluteMoveMode()
+    {
+        try
+        {
+            transmitDirectGCode("G90", false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error when sending change to absolute move command");
+        }
+    }
+
+    public void switchToRelativeMoveMode()
+    {
+        try
+        {
+            transmitDirectGCode("G91", false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error when sending change to relative move command");
         }
     }
 }

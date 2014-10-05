@@ -82,8 +82,8 @@ public class WriteHeadEEPROM extends RoboxTxPacket
         NozzleHeater heater = head.getNozzleHeaters().get(0);
         ArrayList<Nozzle> nozzles = head.getNozzles();
 
-        populateEEPROM(head.getTypeCode(),
-                       head.getUniqueID(),
+        populateEEPROM(head.getTypeCodeProperty().get(),
+                       head.getUniqueIDProperty().get(),
                        heater.getMaximumTemperatureProperty().get(),
                        heater.getBetaProperty().get(),
                        heater.getTcalProperty().get(),

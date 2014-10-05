@@ -84,13 +84,7 @@ public class CalibrationNozzleOffsetHelper
         switch (state)
         {
             case INSERT_PAPER:
-                try
-                {
-                    printerToUse.transmitDirectGCode("G28 Z", false);
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in nozzle offset calibration - mode=" + state.name());
-                }
+                printerToUse.homeZ();
                 setState(NozzleOffsetCalibrationState.PROBING);
                 break;
             case HEAD_CLEAN_CHECK:
@@ -103,13 +97,7 @@ public class CalibrationNozzleOffsetHelper
     {
         zco -= 0.05;
 
-        try
-        {
-            printerToUse.transmitDirectGCode("G0 Z" + zco, false);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error changing Z height");
-        }
+        printerToUse.goToZPosition(zco);
     }
 
     public void tooTightAction()
@@ -121,13 +109,7 @@ public class CalibrationNozzleOffsetHelper
             zco = 0;
         }
 
-        try
-        {
-            printerToUse.transmitDirectGCode("G0 Z" + zco, false);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error changing Z height");
-        }
+        printerToUse.goToZPosition(zco);
     }
 
     public double getZCo()
@@ -169,10 +151,11 @@ public class CalibrationNozzleOffsetHelper
                                                          savedHeadData.getHeadHours());
                 }
 
-                printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
-                printerToUse.transmitDirectGCode("G90", false);
-                printerToUse.transmitDirectGCode("G0 Z25", false);
+                //TODO modify for multiple heaters
+                printerToUse.switchNozzleHeaterOff(0);
+                printerToUse.switchOffHeadLEDs();
+                printerToUse.switchToAbsoluteMoveMode();
+                printerToUse.goToZPosition(25);
             } catch (RoboxCommsException ex)
             {
                 steno.error("Error in nozzle offset calibration - mode=" + state.name());
@@ -281,26 +264,21 @@ public class CalibrationNozzleOffsetHelper
                                                          savedHeadData.getLastFilamentTemperature(),
                                                          savedHeadData.getHeadHours());
 
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
-                    printerToUse.transmitDirectGCode("G90", false);
-                    printerToUse.transmitDirectGCode("G0 Z25", false);
+                    //TODO modify for multiple heaters
+                    printerToUse.switchNozzleHeaterOff(0);
+                    printerToUse.switchOffHeadLEDs();
+                    printerToUse.switchToAbsoluteMoveMode();
+                    printerToUse.goToZPosition(25);
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in nozzle offset calibration - mode=" + state.name());
                 }
                 break;
             case FAILED:
-                try
-                {
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
-                    printerToUse.transmitDirectGCode("G90", false);
-                    printerToUse.transmitDirectGCode("G0 Z25", false);
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error clearing up after failed calibration");
-                }
+                printerToUse.switchNozzleHeaterOff(0);
+                printerToUse.switchOffHeadLEDs();
+                printerToUse.switchToAbsoluteMoveMode();
+                printerToUse.goToZPosition(25);
                 break;
             case NUDGE_MODE:
                 try

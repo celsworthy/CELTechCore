@@ -64,13 +64,7 @@ public class CalibrationNozzleBHelper
                 setState(NozzleBCalibrationState.FAILED);
                 break;
             case MATERIAL_EXTRUDING_CHECK:
-                try
-                {
-                    printerToUse.transmitDirectGCode("G0 B0", false);
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in needle valve calibration - mode=" + state.name());
-                }
+                printerToUse.changeNozzlePosition(0);
                 if (currentNozzleNumber == 0)
                 {
                     currentNozzleNumber++;
@@ -86,13 +80,7 @@ public class CalibrationNozzleBHelper
                 setState(NozzleBCalibrationState.PRE_CALIBRATION_PRIMING);
                 break;
             case CALIBRATE_NOZZLE:
-                try
-                {
-                    printerToUse.transmitDirectGCode("G0 B0", false);
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in needle valve calibration - mode=" + state.name());
-                }
+                printerToUse.changeNozzlePosition(0);
                 if (currentNozzleNumber == 0)
                 {
                     nozzle0BOffset = bOffsetStartingValue - 0.1f + nozzlePosition;
@@ -214,9 +202,10 @@ public class CalibrationNozzleBHelper
                                                          savedHeadData.getHeadHours());
                 }
 
-                printerToUse.transmitDirectGCode("G0 B0", false);
-                printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
+                printerToUse.changeNozzlePosition(0);
+                //TODO modify for multiple heaters
+                printerToUse.switchNozzleHeaterOff(0);
+                printerToUse.switchOffHeadLEDs();
 
             } catch (RoboxCommsException ex)
             {
@@ -364,13 +353,7 @@ public class CalibrationNozzleBHelper
                 preCalibrationPrimingTaskThread.start();
                 break;
             case CALIBRATE_NOZZLE:
-                try
-                {
-                    printerToUse.transmitDirectGCode("G0 B" + nozzlePosition, false);
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in needle valve calibration - mode=" + state.name());
-                }
+                printerToUse.changeNozzlePosition(nozzlePosition);
                 break;
             case HEAD_CLEAN_CHECK_POST_CALIBRATION:
                 break;
@@ -397,26 +380,16 @@ public class CalibrationNozzleBHelper
                 confirmMaterialExtrudingTaskThread.start();
                 break;
             case FINISHED:
-                try
-                {
-                    printerToUse.transmitDirectGCode("G0 B0", false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in needle valve calibration - mode=" + state.name());
-                }
+                printerToUse.changeNozzlePosition(0f);
+                //TODO modify to use multiple heaters
+                printerToUse.switchNozzleHeaterOff(0);
+                printerToUse.switchOffHeadLEDs();
                 break;
             case FAILED:
-                try
-                {
-                    printerToUse.transmitDirectGCode("G0 B0", false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error clearing up after failed calibration");
-                }
+                printerToUse.changeNozzlePosition(0);
+                //TODO modify to use multiple heaters
+                printerToUse.switchNozzleHeaterOff(0);
+                printerToUse.switchOffHeadLEDs();
                 break;
         }
     }

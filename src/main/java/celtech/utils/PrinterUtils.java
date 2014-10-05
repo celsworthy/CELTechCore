@@ -73,8 +73,8 @@ public class PrinterUtils
 
         if (task != null)
         {
-            while ((printerToCheck.getPrintQueue().isConsideringPrintRequest() == true || printerToCheck.getPrinterStatus().get() != PrinterStatus.IDLE) && task.isCancelled()
-                == false && !TaskController.isShuttingDown())
+            while (printerToCheck.getPrinterStatusProperty().get() != PrinterStatus.IDLE
+                && task.isCancelled() == false && !TaskController.isShuttingDown())
             {
                 try
                 {
@@ -87,7 +87,7 @@ public class PrinterUtils
             }
         } else
         {
-            while ((printerToCheck.getPrintQueue().isConsideringPrintRequest() == true || printerToCheck.getPrintQueue().getPrintStatus() != PrinterStatus.IDLE) && !TaskController.
+            while (printerToCheck.getPrinterStatusProperty().get() != PrinterStatus.IDLE && !TaskController.
                 isShuttingDown())
             {
                 try

@@ -109,7 +109,7 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
                         }
                     } else
                     {
-                        printerToUse.transmitDirectGCode(line, false);
+                        printerToUse.sendRawGCode(line, false);
                     }
                     lineCounter++;
                 }

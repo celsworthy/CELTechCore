@@ -77,8 +77,8 @@ class ETCCalculator
      */
     private int getBedHeatingTime()
     {
-        int bedTargetTemperature = printer.getBedTargetTemperature();
-        int bedTemperature = printer.getBedTemperature();
+        int bedTargetTemperature = printer.getPrinterAncillarySystems().getBedTargetTemperatureProperty().get();
+        int bedTemperature = printer.getPrinterAncillarySystems().getBedTemperatureProperty().get();
         if (bedTemperature < bedTargetTemperature)
         {
             return (bedTargetTemperature - bedTemperature)
