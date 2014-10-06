@@ -11,15 +11,15 @@ public enum CalibrationXAndYState
 
     IDLE("calibrationPanel.xAndYIntroduction"),
     
-    HEATING("calibrationPanel.heating"),
+//    HEATING("calibrationPanel.heating"),
     
     PRINT_PATTERN("calibrationPanel.xAndYPrintPattern"),
     
     GET_Y_OFFSET("calibrationPanel.xAndYGetOffsets"),
     
-    PRINT_CIRCLE("calibrationPanel.xAndYPrintCircle"),
+    PRINT_CIRCLE("calibrationPanel.xAndYPrintingCircle"),
     
-    PRINT_CIRCLE_DONE("calibrationPanel.xAndYPrintCircle"),
+    PRINT_CIRCLE_CHECK("calibrationPanel.xAndYPrintCircleCheck"),
     
     FINISHED("calibrationPanel.calibrationSucceededMessage"),
 

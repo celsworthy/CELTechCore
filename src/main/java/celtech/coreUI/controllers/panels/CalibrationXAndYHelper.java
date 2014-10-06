@@ -132,26 +132,25 @@ public class CalibrationXAndYHelper implements CalibrationHelper
         {
             case IDLE:
                 break;
-            case HEATING:
-            {
-                try
-                {
-                    savedHeadData = printerToUse.transmitReadHeadEEPROM();
-                    calibrationTask = new CalibrateXAndYTask(state, printerToUse);
-                    calibrationTask.setOnSucceeded(succeededTaskHandler);
-                    calibrationTask.setOnFailed(failedTaskHandler);
-                    TaskController.getInstance().manageTask(calibrationTask);
-
-                    Thread heatingTaskThread = new Thread(calibrationTask);
-                    heatingTaskThread.setName("Calibration - heating");
-                    heatingTaskThread.start();
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in X And Y calibration - mode=" + state.name());
-                }
-            }
-
-            break;
+//            case HEATING:
+//            {
+//                try
+//                {
+//                    savedHeadData = printerToUse.transmitReadHeadEEPROM();
+//                    calibrationTask = new CalibrateXAndYTask(state, printerToUse);
+//                    calibrationTask.setOnSucceeded(succeededTaskHandler);
+//                    calibrationTask.setOnFailed(failedTaskHandler);
+//                    TaskController.getInstance().manageTask(calibrationTask);
+//
+//                    Thread heatingTaskThread = new Thread(calibrationTask);
+//                    heatingTaskThread.setName("Calibration - heating");
+//                    heatingTaskThread.start();
+//                } catch (RoboxCommsException ex)
+//                {
+//                    steno.error("Error in X And Y calibration - mode=" + state.name());
+//                }
+//            }
+//            break;
             case PRINT_PATTERN:
                 calibrationTask = new CalibrateXAndYTask(state, printerToUse);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);

@@ -398,6 +398,8 @@ public class CalibrationInsetPanelController implements Initializable,
         calibrationStatus.setText(Lookup.i18n("calibrationPanel.chooseCalibration"));
         calibrationMenu.reset();
         hideAllInputControlsExceptStepNumber();
+        stepNumber.setVisible(false);
+        backToStatus.setVisible(false);
     }
 
     private void setupProgressBars()
