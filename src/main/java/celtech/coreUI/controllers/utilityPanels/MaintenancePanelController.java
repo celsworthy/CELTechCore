@@ -224,7 +224,7 @@ public class MaintenancePanelController implements Initializable
     @FXML
     void calibrateB(ActionEvent event)
     {
-        ApplicationStatus.getInstance().setMode(ApplicationMode.CALIBRATION);
+        ApplicationStatus.getInstance().setMode(ApplicationMode.CALIBRATION_CHOICE);
     }
 
     public static void calibrateBAction()
@@ -264,7 +264,7 @@ public class MaintenancePanelController implements Initializable
     void calibrateZOffset(ActionEvent event)
     {
 
-        ApplicationStatus.getInstance().setMode(ApplicationMode.CALIBRATION);
+        ApplicationStatus.getInstance().setMode(ApplicationMode.CALIBRATION_CHOICE);
     }
 
     public static void calibrateZOffsetAction()

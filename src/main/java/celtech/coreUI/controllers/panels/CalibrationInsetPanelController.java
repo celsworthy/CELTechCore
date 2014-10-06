@@ -400,6 +400,7 @@ public class CalibrationInsetPanelController implements Initializable,
         hideAllInputControlsExceptStepNumber();
         stepNumber.setVisible(false);
         backToStatus.setVisible(false);
+        cancelCalibrationButton.setVisible(true);
     }
 
     private void setupProgressBars()

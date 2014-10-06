@@ -409,7 +409,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, getLanguageBundle());
             VBox topMenuStripControls = (VBox) menuStripLoader.load();
             VBox.setVgrow(topMenuStripControls, Priority.NEVER);
-//            rhPanel.getChildren().add(topMenuStripControls);
+            rhPanel.getChildren().add(topMenuStripControls);
         } catch (IOException ex)
         {
             steno.error("Failed to load top menu strip controls:" + ex);

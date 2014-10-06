@@ -277,7 +277,7 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
             child.setTranslateY(-borderWidth);
         }
 
-        name.setStyle("-fx-font-size: " + fontSize + "pt !important;");
+        name.setStyle("-fx-font-size: " + fontSize + "px !important; -fx-font-family: 'Source Sans Pro Regular';");
         name.setLayoutX(progressBarX);
 
         Font font = name.getFont();

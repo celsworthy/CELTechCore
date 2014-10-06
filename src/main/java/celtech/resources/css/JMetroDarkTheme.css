@@ -27,6 +27,11 @@
 }
 
 @font-face {
+    font-family: Source Code Pro;
+    src: url('/celtech/resources/fonts/SourceCodePro-Regular.ttf') format(ttf);
+}
+
+@font-face {
     font-family: CrazyZoo;
     font-weight: normal;
     src: url('/celtech/resources/fonts/crazyzoo.ttf') format(ttf);
@@ -1697,6 +1702,33 @@ table-view .column-header-background {
     -fx-background-color: light_grey;
     -fx-border-color: light_grey;
     -fx-border-width: 0px;
+}
+
+/**
+* About Panel
+*/
+
+.aboutVersionText {
+    -fx-font-size: 32px;
+}
+
+.aboutBodyTextRegular {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 21px;
+}
+
+.aboutBodyText {
+    -fx-font-size: 21px;
+}
+
+.aboutSerialTextHeader {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 24px;
+}
+
+.aboutSerialText {
+    -fx-font-family: 'Source Code Pro';
+    -fx-font-size: 24px;
 }
 
 #printerStatusTitle {
