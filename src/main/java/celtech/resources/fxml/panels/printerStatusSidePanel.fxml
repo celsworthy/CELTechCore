@@ -173,10 +173,22 @@
                 </HBox>
                 <HBox fx:id="legendContainer" prefHeight="20.0" prefWidth="260.0" style="-fx-background-color: dark_grey;" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0">
                     <children>
-                        <Text fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-size: 9;" text="Key:" translateX="15.0" />
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="graph-red" text="● Nozzle" translateX="35.0" />
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="graph-yellow" text="● Bed" translateX="70.0" />
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="graph-green" text="● Ambient" translateX="105.0" />
+                        <Text fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="temperatureChartLegend" text="Key:" translateX="15.0" />
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="● Nozzle" translateX="30.0">
+                     <styleClass>
+                        <String fx:value="graph-red" />
+                        <String fx:value="temperatureChartLegend" />
+                     </styleClass></Text>
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="● Bed" translateX="60.0">
+                     <styleClass>
+                        <String fx:value="graph-yellow" />
+                        <String fx:value="temperatureChartLegend" />
+                     </styleClass></Text>
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="● Ambient" translateX="95.0">
+                     <styleClass>
+                        <String fx:value="graph-green" />
+                        <String fx:value="temperatureChartLegend" />
+                     </styleClass></Text>
                     </children>
                 </HBox>
             </children>

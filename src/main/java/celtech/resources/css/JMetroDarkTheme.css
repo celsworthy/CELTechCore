@@ -31,12 +31,6 @@
     src: url('/celtech/resources/fonts/SourceCodePro-Regular.ttf') format(ttf);
 }
 
-@font-face {
-    font-family: CrazyZoo;
-    font-weight: normal;
-    src: url('/celtech/resources/fonts/crazyzoo.ttf') format(ttf);
-}
-
 *{
     black: rgb(0,0,0);
     dark_grey: rgb(48,48,48);
@@ -854,7 +848,7 @@
     -fx-font-size: 32;
 }
 .reelMaterialName {
-     -fx-font-size: 21;
+    -fx-font-size: 21;
 }
 .reelMaterialRemaining {
     -fx-font-size: 18;
@@ -954,20 +948,23 @@
     -fx-font-size: 9;
 }
 
-#ambientTempLegend { -fx-fill: green; }
-#bedTempLegend { -fx-fill: yellow; }
-#nozzleTempLegend { -fx-fill: darkviolet; }
+.temperatureChartLegend {
+    -fx-font-size: 11px;
+    -fx-font-family: 'Source Sans Pro Semibold';
+}
 
 #temperatureGraphTempAxis {
     -fx-tick-label-fill: white;
 }
 
 #temperatureChart {
+    -fx-font-family: 'Source Sans Pro Regular';
     -fx-background-color: dark_grey;
 }
 
 #temperatureChartXLabels {
-    fx-background-color: dark_grey;
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-background-color: dark_grey;
 }
 
 .invisible-graph-node{
@@ -1158,6 +1155,7 @@ table-view .column-header-background {
 }
 
 .sidePanelTitle{
+    -fx-font-family: 'Source Sans Pro Regular';
     -fx-text-fill: highlight_colour;
     -fx-pref-height: 60;
     -fx-scale-x: 1.7;
@@ -1606,16 +1604,16 @@ table-view .column-header-background {
 * Calibration
 */
 #calibrationMenuSeparator *.line {
--fx-border-style: solid;
--fx-border-width: 2px;
--fx-fill: dark_grey;
--fx-background-color: dark_grey;
--fx-border-color: dark_grey dark_grey dark_grey dark_grey;
+    -fx-border-style: solid;
+    -fx-border-width: 2px;
+    -fx-fill: dark_grey;
+    -fx-background-color: dark_grey;
+    -fx-border-color: dark_grey dark_grey dark_grey dark_grey;
 }
 
 #calibrationMenuTitle {
- -fx-font-size:60px;
- -fx-fill: white;
+    -fx-font-size:60px;
+    -fx-fill: white;
 }
 
 #calibrationTopMenu {
@@ -1623,7 +1621,7 @@ table-view .column-header-background {
 }
 
 #calibrationStatus {
-     -fx-font-size: 24px;
+    -fx-font-size: 24px;
 }
 
 #calibrateBottomMenu {
@@ -1644,9 +1642,9 @@ table-view .column-header-background {
 }
 
 .calibrationMenuOption {
- -fx-font-family: 'Source Sans Pro Light';
- -fx-font-size:36px;
- -fx-font-weight: 200;
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-size:36px;
+    -fx-font-weight: 200;
 }
 
 .calibrationMenuSquare {
@@ -1748,5 +1746,5 @@ table-view .column-header-background {
 }
 
 .table-view .column-header .label { 
-     -fx-font-size: 12px; 
- }
+    -fx-font-size: 12px; 
+}

@@ -52,7 +52,7 @@ public class CalibrationXAndYGUIStateHandler
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
-                controller.stepNumber.setText(String.format("Step %s of 10", 3));
+                controller.stepNumber.setText(String.format("Step %s of 10", 2));
                 break;
             case GET_Y_OFFSET:
                 controller.hideAllInputControlsExceptStepNumber();
@@ -63,7 +63,7 @@ public class CalibrationXAndYGUIStateHandler
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.nextButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
-                controller.stepNumber.setText(String.format("Step %s of 10", 4));
+                controller.stepNumber.setText(String.format("Step %s of 10", 3));
                 break;
             case PRINT_CIRCLE:    
                 controller.hideAllInputControlsExceptStepNumber();
@@ -72,19 +72,19 @@ public class CalibrationXAndYGUIStateHandler
                     CalibrationInsetPanelController.ProgressVisibility.PRINT);
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
-                controller.stepNumber.setText(String.format("Step %s of 10", 5));
+                controller.stepNumber.setText(String.format("Step %s of 10", 4));
                 break;     
             case PRINT_CIRCLE_CHECK:
                 controller.hideAllInputControlsExceptStepNumber();
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.nextButton.setVisible(true);
-                controller.stepNumber.setText(String.format("Step %s of 10", 6));
+                controller.stepNumber.setText(String.format("Step %s of 10", 5));
                 break;
             case FINISHED:
                 controller.hideAllInputControlsExceptStepNumber();
                 controller.backToStatus.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
-                controller.stepNumber.setText(String.format("Step %s of 10", 7));
+                controller.stepNumber.setText(String.format("Step %s of 10", 6));
                 break;
             case FAILED:
                 controller.hideAllInputControlsExceptStepNumber();

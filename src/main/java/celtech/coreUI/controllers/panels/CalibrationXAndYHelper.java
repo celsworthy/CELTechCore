@@ -96,6 +96,9 @@ public class CalibrationXAndYHelper implements CalibrationHelper
                 calibrationTask.cancel();
             }
         }
+        if (state == CalibrationXAndYState.PRINT_CIRCLE || state == CalibrationXAndYState.PRINT_PATTERN) {
+            printerToUse.abortPrint();
+        }
         if (state != CalibrationXAndYState.IDLE)
         {
             try
