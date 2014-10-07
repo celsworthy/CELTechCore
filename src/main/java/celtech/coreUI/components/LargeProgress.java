@@ -22,22 +22,22 @@ public class LargeProgress extends BorderPane
 {
 
     @FXML
-    private Rectangle calibrationProgressBarInner;
+    private Rectangle largeProgressBarInner;
 
     @FXML
-    private HBox calibrationProgressBarBack;
+    private HBox largeProgressBarBack;
 
     @FXML
-    private Label calibrationTargetValue;
+    private Label largeTargetValue;
     
     @FXML
-    private Label calibrationProgressDescription;
+    private Label largeProgressDescription;
 
     @FXML
-    private Label calibrationProgressCurrentValue;
+    private Label largeProgressCurrentValue;
 
     @FXML
-    private Label calibrationTargetLegend;
+    private Label largeTargetLegend;
 
     private double progress = 0;
 
@@ -45,7 +45,7 @@ public class LargeProgress extends BorderPane
     {
         super();
         URL fxml = getClass().getResource(
-            "/celtech/resources/fxml/calibration/calibrationProgress.fxml");
+            "/celtech/resources/fxml/components/largeProgress.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
@@ -59,7 +59,7 @@ public class LargeProgress extends BorderPane
             throw new RuntimeException(exception);
         }
 
-        calibrationProgressBarBack.boundsInLocalProperty().addListener(
+        largeProgressBarBack.boundsInLocalProperty().addListener(
             (ObservableValue<? extends Bounds> observable, Bounds oldValue, Bounds newValue) ->
             {
                 redraw();
@@ -80,33 +80,33 @@ public class LargeProgress extends BorderPane
 
     public void setTargetValue(String targetValue)
     {
-        calibrationTargetValue.setText(targetValue);
+        largeTargetValue.setText(targetValue);
     }
     
     public void setProgressDescription(String progressDescription) {
-        calibrationProgressDescription.setText(progressDescription);
+        largeProgressDescription.setText(progressDescription);
     }
     
     public void setTargetLegend(String targetLegend) {
-        calibrationTargetLegend.setText(targetLegend);
+        largeTargetLegend.setText(targetLegend);
     }
 
     public void setCurrentValue(String currentValue)
     {
-        calibrationProgressCurrentValue.setText(currentValue);
+        largeProgressCurrentValue.setText(currentValue);
     }
 
     private void redraw()
     {
-        double progressBackWidth = calibrationProgressBarBack.boundsInParentProperty().get().getWidth();
+        double progressBackWidth = largeProgressBarBack.boundsInParentProperty().get().getWidth();
         double barWidth = progressBackWidth * progress;
-        calibrationProgressBarInner.setWidth(barWidth);
+        largeProgressBarInner.setWidth(barWidth);
 
         // place currentValue in correct place on progress bar (just to the left of RHS of the bar)
-        double barEndXPosition = calibrationProgressBarInner.getLayoutX()
-            + calibrationProgressBarInner.boundsInParentProperty().get().getWidth();
-        double barStartXPosition = calibrationProgressBarInner.getLayoutX();
-        double currentValueWidth = calibrationProgressCurrentValue.boundsInParentProperty().get().getWidth();
+        double barEndXPosition = largeProgressBarInner.getLayoutX()
+            + largeProgressBarInner.boundsInParentProperty().get().getWidth();
+        double barStartXPosition = largeProgressBarInner.getLayoutX();
+        double currentValueWidth = largeProgressCurrentValue.boundsInParentProperty().get().getWidth();
         int OFFSET_FROM_PROGRESS_BAR_RHS = 10;  // px
         double requiredCurrentValueXPosition = barEndXPosition - currentValueWidth
             - OFFSET_FROM_PROGRESS_BAR_RHS;
@@ -116,9 +116,9 @@ public class LargeProgress extends BorderPane
             requiredCurrentValueXPosition = leftmostValuePositionAllowed;
         }
 
-        double currentX = calibrationProgressCurrentValue.getLayoutX();
+        double currentX = largeProgressCurrentValue.getLayoutX();
         double requiredTranslate = requiredCurrentValueXPosition - currentX;
-        calibrationProgressCurrentValue.setTranslateX(requiredTranslate);
+        largeProgressCurrentValue.setTranslateX(requiredTranslate);
     }
 
 }

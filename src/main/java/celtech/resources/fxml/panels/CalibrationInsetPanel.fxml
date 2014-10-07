@@ -25,8 +25,7 @@
                                     <children>
                                         <Text id="stepNumber" fx:id="stepNumber" strokeType="OUTSIDE" strokeWidth="0.0" text="Step 1 of 10" GridPane.columnIndex="1" GridPane.valignment="BOTTOM">
                                             <styleClass>
-                                                <String fx:value="calibrationMenuOption" />
-                                                <String fx:value="calibrationSelectedMenuOption" />
+                                                <String fx:value="verticalMenuOption" />
                                             </styleClass>
                                         </Text>
                                     </children>

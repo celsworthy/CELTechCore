@@ -1615,6 +1615,10 @@ table-view .column-header-background {
     -fx-background-color: black;
 }
 
+#stepNumber {
+    -fx-fill: white;
+}
+
 #calibrationStatus {
     -fx-font-size: 24px;
 }
@@ -1627,39 +1631,8 @@ table-view .column-header-background {
     -fx-background-color: black;
 }
 
-#calibrationProgressContainer {
-    -fx-background-color: robox_blue;
-}
-
-#calibrationProgressLabel {
-    -fx-font-size: 42px;
-}
-
-#calibrationProgressBarBack {
-    -fx-border-color: white;
-    -fx-border-width: 3px;
-}
-
-#calibrationProgressBarInner {
-    -fx-fill: white;
-    -fx-stroke-width: 0px;
-}
-
 #calibrationBottomArea {
     -fx-background-color: black;
-}
-
-#calibrationProgressCurrentValue {
-    -fx-text-fill: robox_blue;
-    -fx-font-size: 36px;
-}
-
-#calibrationTargetLegend {
-    -fx-font-size: 19px;
-}
-
-#calibrationTargetValue {
-    -fx-font-size: 36px;
 }
 
 .calibrationButtonsAB {
@@ -1734,7 +1707,6 @@ table-view .column-header-background {
 
 .verticalMenuOption:selected {
     -fx-fill: white;
-    -fx-font-family: 'Source Sans Pro Regular';
 }
 
 .verticalMenuOption:disabled {
@@ -1748,6 +1720,45 @@ table-view .column-header-background {
 #verticalMenuGrid {
     -fx-background-color: light_grey;
 }
+
+/**
+* Large Progress
+*/
+
+#largeProgressContainer {
+    -fx-background-color: robox_blue;
+}
+
+#largeProgressLabel {
+    -fx-font-size: 42px;
+}
+
+#largeProgressBarBack {
+    -fx-border-color: white;
+    -fx-border-width: 3px;
+}
+
+#largeProgressBarInner {
+    -fx-fill: white;
+    -fx-stroke-width: 0px;
+}
+
+#largeProgressCurrentValue {
+    -fx-text-fill: robox_blue;
+    -fx-font-size: 36px;
+}
+
+#largeProgressTargetLegend {
+    -fx-font-size: 19px;
+}
+
+#largeProgressTargetValue {
+    -fx-font-size: 36px;
+}
+
+/**
+*
+*/
 
 #printerStatusTitle {
     -fx-font-size: 22px;
