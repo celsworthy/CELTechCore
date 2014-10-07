@@ -2,6 +2,8 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.appManager.ApplicationStatus;
+import celtech.configuration.ApplicationConfiguration;
+import static celtech.coreUI.DisplayManager.getLanguageBundle;
 import celtech.coreUI.components.calibration.CalibrationMenu;
 import celtech.coreUI.components.calibration.CalibrationProgress;
 import celtech.coreUI.controllers.StatusScreenState;
@@ -10,16 +12,21 @@ import celtech.printerControl.Printer;
 import celtech.services.calibration.CalibrationXAndYState;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOpeningCalibrationState;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -108,12 +115,16 @@ public class CalibrationInsetPanelController implements Initializable,
 
     @FXML
     protected Label calibrationStatus;
+    
+    @FXML
+    private BorderPane informationCentre;
 
     private Printer currentPrinter;
     private int targetTemperature;
     private double currentExtruderTemperature;
     private int targetETC;
     private double printPercent;
+    private Node waitTimer;
 
     @FXML
     void buttonAAction(ActionEvent event)
@@ -182,11 +193,16 @@ public class CalibrationInsetPanelController implements Initializable,
         buttonB.setVisible(false);
         buttonA.setVisible(false);
         stepNumber.setVisible(true);
+        showWaitTimer(false);
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
+        setupProgressBars();
+        setupOffsetCombos();
+        setupWaitTimer(informationCentre);
+        
         setCalibrationMode(CalibrationMode.CHOICE);
 
         StatusScreenState statusScreenState = StatusScreenState.getInstance();
@@ -200,9 +216,8 @@ public class CalibrationInsetPanelController implements Initializable,
                 setupChildComponents(newValue);
             });
 
-        setupProgressBars();
-        setupOffsetCombos();
-
+        
+        
         configureCalibrationMenu(calibrationMenu, this);
     }
 
@@ -326,7 +341,6 @@ public class CalibrationInsetPanelController implements Initializable,
         targetETC = currentPrinter.getPrintQueue().progressETCProperty().get();
         if (calibrationProgressPrint.isVisible())
         {
-            steno.debug("print percent is " + printPercent);
             String targetETCStr = targetETC + "s";
             String currentPrintPercentStr = ((int) (printPercent * 100)) + "%";
             calibrationProgressPrint.setCurrentValue(currentPrintPercentStr);
@@ -419,7 +433,10 @@ public class CalibrationInsetPanelController implements Initializable,
         cmbXOffset.getItems().add("E");
         cmbXOffset.getItems().add("F");
         cmbXOffset.getItems().add("G");
-        cmbYOffset.getItems().add("0");
+        cmbXOffset.getItems().add("H");
+        cmbXOffset.getItems().add("I");
+        cmbXOffset.getItems().add("J");
+        cmbXOffset.getItems().add("K");
         cmbYOffset.getItems().add("1");
         cmbYOffset.getItems().add("2");
         cmbYOffset.getItems().add("3");
@@ -429,6 +446,8 @@ public class CalibrationInsetPanelController implements Initializable,
         cmbYOffset.getItems().add("7");
         cmbYOffset.getItems().add("8");
         cmbYOffset.getItems().add("9");
+        cmbYOffset.getItems().add("10");
+        cmbYOffset.getItems().add("11");
 
         cmbXOffset.valueProperty().addListener(
             (ObservableValue observable, Object oldValue, Object newValue) ->
@@ -442,4 +461,55 @@ public class CalibrationInsetPanelController implements Initializable,
                 calibrationHelper.setYOffset(Integer.parseInt(newValue.toString()));
             });
     }
+    
+
+    protected void showWaitTimer(boolean show)
+    {
+        waitTimer.setVisible(show);
+    }    
+
+    /**
+     * Initialise the waitTimer and make it remain centred on the given parent.
+     */
+    private void setupWaitTimer(Pane parent)
+    {
+        try
+        {
+            URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlPanelResourcePath
+                + "spinner.fxml");
+            FXMLLoader waitTimerLoader = new FXMLLoader(fxmlFileName, getLanguageBundle());
+            waitTimer = waitTimerLoader.load();
+            waitTimer.scaleXProperty().set(0.5);
+             waitTimer.scaleYProperty().set(0.5);
+            
+            parent.getChildren().add(waitTimer);
+            
+            parent.widthProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                relocateWaitTimer(parent);
+            });
+            
+            parent.heightProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                relocateWaitTimer(parent);
+            });    
+            
+            relocateWaitTimer(parent);
+            waitTimer.setVisible(false);
+            
+            
+        } catch (IOException ex)
+        {
+            ex.printStackTrace();
+            steno.error("Cannot load wait timer " + ex);
+        }
+    }
+    
+    private void relocateWaitTimer(Pane parent) {
+        waitTimer.setTranslateX(parent.getWidth() / 2.0);
+        waitTimer.setTranslateY(parent.getHeight() / 2.0);
+    }
+    
+    
+    
 }

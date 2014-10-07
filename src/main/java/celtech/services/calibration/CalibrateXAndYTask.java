@@ -5,10 +5,7 @@
  */
 package celtech.services.calibration;
 
-import celtech.configuration.HeaterMode;
 import celtech.printerControl.Printer;
-import celtech.printerControl.comms.commands.GCodeConstants;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.services.ControllableService;
 import celtech.utils.PrinterUtils;
 import javafx.concurrent.Task;

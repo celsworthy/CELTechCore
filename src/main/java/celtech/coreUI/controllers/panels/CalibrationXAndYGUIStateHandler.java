@@ -44,7 +44,9 @@ public class CalibrationXAndYGUIStateHandler
 //                controller.stepNumber.setText(String.format("Step %s of 10", 2));
 //                break;
             case PRINT_PATTERN:
+                controller.calibrationMenu.disableNonSelectedItems();
                 controller.hideAllInputControlsExceptStepNumber();
+                controller.showWaitTimer(true);
                 controller.setCalibrationProgressVisible(
                     CalibrationInsetPanelController.ProgressVisibility.PRINT);
                 controller.cancelCalibrationButton.setVisible(true);
@@ -65,6 +67,9 @@ public class CalibrationXAndYGUIStateHandler
                 break;
             case PRINT_CIRCLE:    
                 controller.hideAllInputControlsExceptStepNumber();
+                controller.showWaitTimer(true);
+                controller.setCalibrationProgressVisible(
+                    CalibrationInsetPanelController.ProgressVisibility.PRINT);
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText(String.format("Step %s of 10", 5));

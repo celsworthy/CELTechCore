@@ -35,6 +35,7 @@ public class CalibrationNozzleBGUIStateHandler
                 break;
             case HEATING:
                 controller.hideAllInputControlsExceptStepNumber();
+                controller.showWaitTimer(true);
                 controller.calibrationMenu.disableNonSelectedItems();
                 controller.setCalibrationProgressVisible(
                     CalibrationInsetPanelController.ProgressVisibility.TEMP);

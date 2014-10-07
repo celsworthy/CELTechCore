@@ -47,7 +47,7 @@
                                 <Insets bottom="30.0" top="30.0" />
                             </HBox.margin>
                         </Separator>
-                        <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" pickOnBounds="false">
+                        <BorderPane fx:id="informationCentre" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" pickOnBounds="false">
                             <top>
                                 <VBox alignment="TOP_CENTER" BorderPane.alignment="CENTER">
                                     <padding>

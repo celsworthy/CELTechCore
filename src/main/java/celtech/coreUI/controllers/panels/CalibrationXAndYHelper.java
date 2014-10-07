@@ -12,7 +12,6 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.services.calibration.CalibrateXAndYTask;
 import celtech.services.calibration.CalibrationXAndYState;
-import celtech.services.calibration.NozzleOffsetCalibrationState;
 import java.util.ArrayList;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -294,6 +293,18 @@ public class CalibrationXAndYHelper implements CalibrationHelper
             case "G":
                 xOffset = 6;
                 break;
+            case "H":
+                xOffset = 6;
+                break;
+            case "I":
+                xOffset = 6;
+                break;
+            case "J":
+                xOffset = 6;
+                break;
+            case "K":
+                xOffset = 6;
+                break;                
         }
     }
 

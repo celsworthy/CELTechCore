@@ -1731,6 +1731,18 @@ table-view .column-header-background {
     -fx-font-size: 24px;
 }
 
+/**
+* Spinner
+*/
+
+.spinnerInner {
+    -fx-fill: light_grey;
+}
+
+.spinnerOuter {
+    -fx-fill: white;
+}
+
 #printerStatusTitle {
     -fx-font-size: 22px;
 }
