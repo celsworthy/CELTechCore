@@ -20,7 +20,7 @@
                 <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <children>
-                <Text id="verticalMenuTitle" strokeType="OUTSIDE" strokeWidth="0.0" text="Title" GridPane.columnIndex="1" />
+                <Text fx:id="verticalMenuTitle" id="verticalMenuTitle" strokeType="OUTSIDE" strokeWidth="0.0" text="Title" GridPane.columnIndex="1" />
             </children>
         </GridPane>
     </children>

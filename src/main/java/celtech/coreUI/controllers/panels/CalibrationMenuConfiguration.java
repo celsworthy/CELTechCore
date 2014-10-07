@@ -15,6 +15,7 @@ public class CalibrationMenuConfiguration
     
     public static void configureCalibrationMenu(VerticalMenu calibrationMenu,
         CalibrationInsetPanelController calibrationInsetPanelController) {
+        calibrationMenu.setTitle("Calibration");
         calibrationMenu.addItem("Nozzle Opening", (Callable) () ->
                             {
                                 calibrationInsetPanelController.setCalibrationMode(

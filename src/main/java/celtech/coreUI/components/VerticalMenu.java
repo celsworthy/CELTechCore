@@ -36,12 +36,15 @@ public class VerticalMenu extends VBox
     @FXML
     private GridPane verticalMenuGrid;
 
+    @FXML
+    private Text verticalMenuTitle;
+
     /**
      * The row number of the next item to be added
      */
     private int nextRowNum = 2;
     private boolean disableNonSelectedItems;
-    
+
     private static final PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     private Set<Text> allItems = new HashSet<>();
 
@@ -62,6 +65,11 @@ public class VerticalMenu extends VBox
             throw new RuntimeException(exception);
         }
 
+    }
+
+    public void setTitle(String title)
+    {
+        verticalMenuTitle.setText(title);
     }
 
     public void addItem(String itemName, Callable<Object> callback)
@@ -155,7 +163,8 @@ public class VerticalMenu extends VBox
         disableNonSelectedItems = true;
         for (Text item : allItems)
         {
-            if (item != selectedItem) {
+            if (item != selectedItem)
+            {
                 item.setDisable(true);
             }
         }
@@ -170,7 +179,8 @@ public class VerticalMenu extends VBox
         disableNonSelectedItems = false;
         for (Text item : allItems)
         {
-            if (item != selectedItem) {
+            if (item != selectedItem)
+            {
                 item.setDisable(false);
             }
         }
