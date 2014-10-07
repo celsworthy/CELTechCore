@@ -1,7 +1,7 @@
 /*
  * Copyright 2014 CEL UK
  */
-package celtech.coreUI.components.calibration;
+package celtech.coreUI.components;
 
 import java.io.IOException;
 import java.net.URL;
@@ -18,7 +18,7 @@ import javafx.scene.shape.Rectangle;
  *
  * @author tony
  */
-public class CalibrationProgress extends BorderPane
+public class LargeProgress extends BorderPane
 {
 
     @FXML
@@ -41,7 +41,7 @@ public class CalibrationProgress extends BorderPane
 
     private double progress = 0;
 
-    public CalibrationProgress()
+    public LargeProgress()
     {
         super();
         URL fxml = getClass().getResource(

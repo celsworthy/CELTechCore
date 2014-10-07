@@ -4,8 +4,8 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
 import static celtech.coreUI.DisplayManager.getLanguageBundle;
-import celtech.coreUI.components.calibration.CalibrationMenu;
-import celtech.coreUI.components.calibration.CalibrationProgress;
+import celtech.coreUI.components.VerticalMenu;
+import celtech.coreUI.components.LargeProgress;
 import celtech.coreUI.controllers.StatusScreenState;
 import static celtech.coreUI.controllers.panels.CalibrationMenuConfiguration.configureCalibrationMenu;
 import celtech.printerControl.Printer;
@@ -57,7 +57,7 @@ public class CalibrationInsetPanelController implements Initializable,
     private CalibrationXAndYGUIStateHandler calibrationXAndYGUIStateHandler;
 
     @FXML
-    protected CalibrationMenu calibrationMenu;
+    protected VerticalMenu calibrationMenu;
 
     @FXML
     protected StackPane calibrateBottomMenu;
@@ -72,10 +72,10 @@ public class CalibrationInsetPanelController implements Initializable,
     protected VBox altButtonContainer;
 
     @FXML
-    protected CalibrationProgress calibrationProgressTemp;
+    protected LargeProgress calibrationProgressTemp;
 
     @FXML
-    protected CalibrationProgress calibrationProgressPrint;
+    protected LargeProgress calibrationProgressPrint;
 
     @FXML
     protected Text stepNumber;

@@ -1611,11 +1611,6 @@ table-view .column-header-background {
     -fx-border-color: dark_grey dark_grey dark_grey dark_grey;
 }
 
-#calibrationMenuTitle {
-    -fx-font-size:60px;
-    -fx-fill: white;
-}
-
 #calibrationTopMenu {
     -fx-background-color: black;
 }
@@ -1630,29 +1625,6 @@ table-view .column-header-background {
 
 #calibrationLeftBorder {
     -fx-background-color: black;
-}
-
-.calibrationMenuSquare {
-    -fx-fill: blue_colour;
-    -fx-border-width: 0;
-}
-
-.calibrationSelectedMenuOption {
-    -fx-fill: white;
-}
-
-.calibrationMenuOption {
-    -fx-font-family: 'Source Sans Pro Light';
-    -fx-font-size:36px;
-    -fx-font-weight: 200;
-}
-
-.calibrationMenuSquare {
-    -fx-fill: robox_blue;
-}
-
-#calibrationMenuGrid {
-    -fx-background-color: light_grey;
 }
 
 #calibrationProgressContainer {
@@ -1739,6 +1711,42 @@ table-view .column-header-background {
 
 .spinnerOuter {
     -fx-fill: white;
+}
+
+/**
+* Vertical Menu
+*/
+
+#verticalMenuTitle {
+    -fx-font-size:60px;
+    -fx-fill: white;
+}
+
+.verticalMenuSquare {
+    -fx-fill: blue_colour;
+    -fx-border-width: 0;
+}
+
+.verticalMenuOption {
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-size: 36px;
+}
+
+.verticalMenuOption:selected {
+    -fx-fill: white;
+    -fx-font-family: 'Source Sans Pro Regular';
+}
+
+.verticalMenuOption:disabled {
+    -fx-fill: dark_grey;
+}
+
+.verticalMenuSquare {
+    -fx-fill: robox_blue;
+}
+
+#verticalMenuGrid {
+    -fx-background-color: light_grey;
 }
 
 #printerStatusTitle {

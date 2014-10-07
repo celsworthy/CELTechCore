@@ -1,12 +1,15 @@
 /*
  * Copyright 2014 CEL UK
  */
-package celtech.coreUI.components.calibration;
+package celtech.coreUI.components;
 
 import celtech.coreUI.StandardColours;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Callable;
+import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.input.MouseEvent;
@@ -21,30 +24,31 @@ import javafx.scene.text.Text;
  *
  * @author tony
  */
-public class CalibrationMenu extends VBox
+public class VerticalMenu extends VBox
 {
 
     private static final int SQUARE_SIZE = 16;
     private static final int ROW_HEIGHT = 50;
 
-    private static final String SELECTED_STYLE_CLASS = "calibrationSelectedMenuOption";
-
     private Text selectedItem;
     private Rectangle selectedSquare;
 
     @FXML
-    private GridPane calibrationMenuGrid;
+    private GridPane verticalMenuGrid;
 
     /**
      * The row number of the next item to be added
      */
     private int nextRowNum = 2;
     private boolean disableNonSelectedItems;
+    
+    private static final PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
+    private Set<Text> allItems = new HashSet<>();
 
-    public CalibrationMenu()
+    public VerticalMenu()
     {
         super();
-        URL fxml = getClass().getResource("/celtech/resources/fxml/calibration/calibrationMenu.fxml");
+        URL fxml = getClass().getResource("/celtech/resources/fxml/components/verticalMenu.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
@@ -63,12 +67,13 @@ public class CalibrationMenu extends VBox
     public void addItem(String itemName, Callable<Object> callback)
     {
         Text text = new Text(itemName);
-        text.getStyleClass().add("calibrationMenuOption");
+        allItems.add(text);
+        text.getStyleClass().add("verticalMenuOption");
         Rectangle square = new Rectangle();
-        square.getStyleClass().add("calibrationMenuSquare");
+        square.getStyleClass().add("verticalMenuSquare");
         square.setHeight(SQUARE_SIZE);
         square.setWidth(SQUARE_SIZE);
-        addRow(calibrationMenuGrid, square, text);
+        addRow(verticalMenuGrid, square, text);
         setUpEventHandlersForItem(square, text, callback);
     }
 
@@ -89,10 +94,6 @@ public class CalibrationMenu extends VBox
             if (itemName != selectedItem && !disableNonSelectedItems)
             {
                 square.setVisible(false);
-                if (itemName.getStyleClass().contains(SELECTED_STYLE_CLASS))
-                {
-                    itemName.getStyleClass().remove(SELECTED_STYLE_CLASS);
-                }
             }
 
         });
@@ -134,16 +135,15 @@ public class CalibrationMenu extends VBox
     private void deselect(Text selectedItem, Rectangle square)
     {
         square.setVisible(false);
-        selectedItem.getStyleClass().remove(SELECTED_STYLE_CLASS);
+        selectedItem.pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, false);
         square.setFill(Color.WHITE);
     }
 
     private void select(Text selectedItem, Rectangle square)
     {
         square.setVisible(true);
-        selectedItem.getStyleClass().add(SELECTED_STYLE_CLASS);
+        selectedItem.pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, true);
         square.setFill(StandardColours.ROBOX_BLUE);
-
     }
 
     /**
@@ -153,6 +153,12 @@ public class CalibrationMenu extends VBox
     public void disableNonSelectedItems()
     {
         disableNonSelectedItems = true;
+        for (Text item : allItems)
+        {
+            if (item != selectedItem) {
+                item.setDisable(true);
+            }
+        }
     }
 
     /**
@@ -162,6 +168,12 @@ public class CalibrationMenu extends VBox
     public void enableNonSelectedItems()
     {
         disableNonSelectedItems = false;
+        for (Text item : allItems)
+        {
+            if (item != selectedItem) {
+                item.setDisable(false);
+            }
+        }
     }
 
     /**

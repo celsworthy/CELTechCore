@@ -7,7 +7,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-<?import celtech.coreUI.components.calibration.*?>
+<?import celtech.coreUI.components.*?>
+
 
 <VBox fx:id="container" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="700.0" pickOnBounds="false" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationInsetPanelController">
     <children>
@@ -17,7 +18,7 @@
                     <children>
                         <BorderPane prefHeight="200.0" prefWidth="200.0">
                             <top>
-                                <CalibrationMenu fx:id="calibrationMenu" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="410.0" />
+                                <VerticalMenu fx:id="calibrationMenu" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="410.0" />
                             </top>
                             <bottom>
                                 <GridPane BorderPane.alignment="CENTER">
@@ -58,55 +59,55 @@
                                             <padding>
                                                 <Insets left="30.0" right="30.0" />
                                             </padding>
-                                 <VBox.margin>
-                                    <Insets bottom="20.0" />
-                                 </VBox.margin>
+                                            <VBox.margin>
+                                                <Insets bottom="20.0" />
+                                            </VBox.margin>
                                         </Label>
-                              <HBox>
-                                 <children>
-                                    <VBox fx:id="offsetCombosContainer">
-                                       <children>
-                                          <ComboBox fx:id="cmbYOffset" prefWidth="150.0" />
-                                          <ComboBox fx:id="cmbXOffset" prefWidth="150.0" />
-                                       </children>
-                                    </VBox>
-                                    <VBox fx:id="altButtonContainer">
-                                       <children>
-                                          <Button fx:id="buttonBAlt" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#buttonBAction" prefHeight="60.0" prefWidth="60.0" styleClass="calibrationAltABButton">
-                                             <graphic>
-                                                <Polygon fill="DODGERBLUE" scaleX="0.5" scaleY="0.5" scaleZ="0.5" stroke="BLACK" strokeType="INSIDE">
-                                                  <points>
-                                                    <Double fx:value="-50.0" />
-                                                    <Double fx:value="40.0" />
-                                                    <Double fx:value="50.0" />
-                                                    <Double fx:value="40.0" />
-                                                    <Double fx:value="0.0" />
-                                                    <Double fx:value="-60.0" />
-                                                  </points>
-                                                </Polygon>
-                                             </graphic>
-                                          </Button>
-                                          <Button fx:id="buttonAAlt" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#buttonAAction" prefHeight="60.0" prefWidth="60.0" styleClass="calibrationAltABButton">
-                                             <graphic>
-                                                <Polygon fill="DODGERBLUE" rotate="180.0" scaleX="0.5" scaleY="0.5" scaleZ="0.5" stroke="BLACK" strokeType="INSIDE">
-                                                   <points>
-                                                      <Double fx:value="-50.0" />
-                                                      <Double fx:value="40.0" />
-                                                      <Double fx:value="50.0" />
-                                                      <Double fx:value="40.0" />
-                                                      <Double fx:value="0.0" />
-                                                      <Double fx:value="-60.0" />
-                                                   </points>
-                                                </Polygon>
-                                             </graphic>
-                                             <VBox.margin>
-                                                <Insets bottom="10.0" top="10.0" />
-                                             </VBox.margin>
-                                          </Button>
-                                       </children>
-                                    </VBox>
-                                 </children>
-                              </HBox>
+                                        <HBox>
+                                            <children>
+                                                <VBox fx:id="offsetCombosContainer">
+                                                    <children>
+                                                        <ComboBox fx:id="cmbYOffset" prefWidth="150.0" />
+                                                        <ComboBox fx:id="cmbXOffset" prefWidth="150.0" />
+                                                    </children>
+                                                </VBox>
+                                                <VBox fx:id="altButtonContainer">
+                                                    <children>
+                                                        <Button fx:id="buttonBAlt" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#buttonBAction" prefHeight="60.0" prefWidth="60.0" styleClass="calibrationAltABButton">
+                                                            <graphic>
+                                                                <Polygon fill="DODGERBLUE" scaleX="0.5" scaleY="0.5" scaleZ="0.5" stroke="BLACK" strokeType="INSIDE">
+                                                                    <points>
+                                                                        <Double fx:value="-50.0" />
+                                                                        <Double fx:value="40.0" />
+                                                                        <Double fx:value="50.0" />
+                                                                        <Double fx:value="40.0" />
+                                                                        <Double fx:value="0.0" />
+                                                                        <Double fx:value="-60.0" />
+                                                                    </points>
+                                                                </Polygon>
+                                                            </graphic>
+                                                        </Button>
+                                                        <Button fx:id="buttonAAlt" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#buttonAAction" prefHeight="60.0" prefWidth="60.0" styleClass="calibrationAltABButton">
+                                                            <graphic>
+                                                                <Polygon fill="DODGERBLUE" rotate="180.0" scaleX="0.5" scaleY="0.5" scaleZ="0.5" stroke="BLACK" strokeType="INSIDE">
+                                                                    <points>
+                                                                        <Double fx:value="-50.0" />
+                                                                        <Double fx:value="40.0" />
+                                                                        <Double fx:value="50.0" />
+                                                                        <Double fx:value="40.0" />
+                                                                        <Double fx:value="0.0" />
+                                                                        <Double fx:value="-60.0" />
+                                                                    </points>
+                                                                </Polygon>
+                                                            </graphic>
+                                                            <VBox.margin>
+                                                                <Insets bottom="10.0" top="10.0" />
+                                                            </VBox.margin>
+                                                        </Button>
+                                                    </children>
+                                                </VBox>
+                                            </children>
+                                        </HBox>
                                     </children>
                                     <BorderPane.margin>
                                         <Insets top="120.0" />
@@ -115,25 +116,26 @@
                             </top>
                             <bottom>
                                 <VBox alignment="CENTER" pickOnBounds="false" spacing="5.0" BorderPane.alignment="CENTER">
-                           <children>
-                              <HBox alignment="CENTER">
-                                 <children>
-                                    <Button id="buttonA" fx:id="buttonA" mnemonicParsing="false" onAction="#buttonAAction" styleClass="calibrationButtonsAB" text="A">
-                                       <HBox.margin>
-                                          <Insets left="70.0" right="70.0" />
-                                       </HBox.margin>
-                                    </Button>
-                                    <Button id="buttonB" fx:id="buttonB" mnemonicParsing="false" onAction="#buttonBAction" styleClass="calibrationButtonsAB" text="B">
-                                       <HBox.margin>
-                                          <Insets left="70.0" right="70.0" />
-                                       </HBox.margin>
-                                    </Button>
-                                 </children>
-                                 <VBox.margin>
-                                    <Insets bottom="30.0" />
-                                 </VBox.margin>
-                              </HBox>
-                           </children></VBox>
+                                    <children>
+                                        <HBox alignment="CENTER">
+                                            <children>
+                                                <Button id="buttonA" fx:id="buttonA" mnemonicParsing="false" onAction="#buttonAAction" styleClass="calibrationButtonsAB" text="A">
+                                                    <HBox.margin>
+                                                        <Insets left="70.0" right="70.0" />
+                                                    </HBox.margin>
+                                                </Button>
+                                                <Button id="buttonB" fx:id="buttonB" mnemonicParsing="false" onAction="#buttonBAction" styleClass="calibrationButtonsAB" text="B">
+                                                    <HBox.margin>
+                                                        <Insets left="70.0" right="70.0" />
+                                                    </HBox.margin>
+                                                </Button>
+                                            </children>
+                                            <VBox.margin>
+                                                <Insets bottom="30.0" />
+                                            </VBox.margin>
+                                        </HBox>
+                                    </children>
+                                </VBox>
                             </bottom>
                         </BorderPane>
                     </children>
@@ -142,12 +144,8 @@
             <bottom>
                 <VBox id="calibrationBottomArea" fx:id="calibrationBottomArea" minHeight="0.0">
                     <children>
-                  <CalibrationProgress fx:id="calibrationProgressTemp">
-                    
-                  </CalibrationProgress>
-                  <CalibrationProgress fx:id="calibrationProgressPrint">
-                    
-                  </CalibrationProgress>
+                        <LargeProgress fx:id="calibrationProgressTemp"/>
+                        <LargeProgress fx:id="calibrationProgressPrint"/>
                         <StackPane id="calibrateBottomMenu" fx:id="calibrateBottomMenu" maxHeight="-Infinity" minHeight="-Infinity" pickOnBounds="false" prefHeight="60.0" BorderPane.alignment="CENTER">
                             <children>
                                 <HBox alignment="CENTER_LEFT" pickOnBounds="false">
@@ -167,8 +165,8 @@
                                 <StackPane alignment="CENTER_RIGHT" maxHeight="-Infinity" pickOnBounds="false">
                                     <children>
                                         <Button fx:id="startCalibrationButton" layoutX="5.0" mnemonicParsing="false" onAction="#startCalibration" text="%calibrationPanel.startCalibration" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
-                              <Button fx:id="backToStatus" mnemonicParsing="false" onAction="#backToStatusAction" text="Back To Status" />
-                              <Button id="nextButton" fx:id="nextButton" mnemonicParsing="false" onAction="#nextButtonAction" text="Next" />
+                                        <Button fx:id="backToStatus" mnemonicParsing="false" onAction="#backToStatusAction" text="Back To Status" />
+                                        <Button id="nextButton" fx:id="nextButton" mnemonicParsing="false" onAction="#nextButtonAction" text="Next" />
                                     </children>
                                 </StackPane>
                             </children>
@@ -180,9 +178,9 @@
                             </padding>
                         </StackPane>
                     </children>
-               <padding>
-                  <Insets left="30.0" />
-               </padding>
+                    <padding>
+                        <Insets left="30.0" />
+                    </padding>
                 </VBox>
             </bottom>
             <top>

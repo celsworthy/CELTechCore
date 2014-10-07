@@ -3,7 +3,7 @@
  */
 package celtech.coreUI.controllers.panels;
 
-import celtech.coreUI.components.calibration.CalibrationMenu;
+import celtech.coreUI.components.VerticalMenu;
 import java.util.concurrent.Callable;
 
 /**
@@ -13,7 +13,7 @@ import java.util.concurrent.Callable;
 public class CalibrationMenuConfiguration
 {
     
-    public static void configureCalibrationMenu(CalibrationMenu calibrationMenu,
+    public static void configureCalibrationMenu(VerticalMenu calibrationMenu,
         CalibrationInsetPanelController calibrationInsetPanelController) {
         calibrationMenu.addItem("Nozzle Opening", (Callable) () ->
                             {

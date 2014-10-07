@@ -10,7 +10,7 @@
 
 <fx:root type="javafx.scene.layout.VBox" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <GridPane id="calibrationMenuGrid" fx:id="calibrationMenuGrid">
+        <GridPane id="verticalMenuGrid" fx:id="verticalMenuGrid">
             <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="10.0" prefWidth="25.0" />
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
@@ -20,7 +20,7 @@
                 <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <children>
-                <Text id="calibrationMenuTitle" strokeType="OUTSIDE" strokeWidth="0.0" text="Calibration" GridPane.columnIndex="1" />
+                <Text id="verticalMenuTitle" strokeType="OUTSIDE" strokeWidth="0.0" text="Title" GridPane.columnIndex="1" />
             </children>
         </GridPane>
     </children>
