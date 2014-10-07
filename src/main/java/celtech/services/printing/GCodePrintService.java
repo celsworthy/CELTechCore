@@ -151,7 +151,7 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
         return cancel();
     }
 
-    void setIsMacro(boolean isMacro)
+    public void setIsMacro(boolean isMacro)
     {
         this.isMacro = isMacro;
     }

@@ -7,11 +7,13 @@ import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyFloatProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.chart.LineChart;
+import javafx.scene.chart.XYChart;
 
 /**
  *
@@ -27,15 +29,16 @@ public class NozzleHeater implements Cloneable
     protected final FloatProperty tcal = new SimpleFloatProperty(0);
     protected final FloatProperty lastFilamentTemperature = new SimpleFloatProperty(0);
 
-    private final IntegerProperty nozzleTemperature = new SimpleIntegerProperty(0);
-    private final IntegerProperty nozzleFirstLayerTargetTemperature = new SimpleIntegerProperty(0);
-    private final IntegerProperty nozzleTargetTemperature = new SimpleIntegerProperty(0);
+    protected final IntegerProperty nozzleTemperature = new SimpleIntegerProperty(0);
+    protected final IntegerProperty nozzleFirstLayerTargetTemperature = new SimpleIntegerProperty(0);
+    protected final IntegerProperty nozzleTargetTemperature = new SimpleIntegerProperty(0);
 
     private final LineChart.Series<Number, Number> nozzleTemperatureHistory = new LineChart.Series<>();
     private final ArrayList<LineChart.Data<Number, Number>> nozzleTemperatureDataPoints = new ArrayList<>();
     private final LineChart.Series<Number, Number> nozzleTargetTemperatureSeries = new LineChart.Series<>();
     private final LineChart.Data<Number, Number> nozzleTargetPoint = new LineChart.Data<>(
         ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP + 5, 0);
+    private long lastTemperatureTimestamp = 0;
 
     public NozzleHeater(float maximumTemperature,
         float beta,
@@ -52,6 +55,14 @@ public class NozzleHeater implements Cloneable
         this.nozzleTemperature.set(nozzleTemperature);
         this.nozzleFirstLayerTargetTemperature.set(nozzleFirstLayerTargetTemperature);
         this.nozzleTargetTemperature.set(nozzleTargetTemperature);
+
+        for (int i = 0; i < ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP; i++)
+        {
+            LineChart.Data<Number, Number> newNozzlePoint = new LineChart.Data<>(i, 0);
+            nozzleTemperatureDataPoints.add(newNozzlePoint);
+            nozzleTemperatureHistory.getData().add(newNozzlePoint);
+        }
+        nozzleTargetTemperatureSeries.getData().add(nozzleTargetPoint);
     }
 
     public final ReadOnlyObjectProperty<HeaterMode> heaterModeProperty()
@@ -63,7 +74,7 @@ public class NozzleHeater implements Cloneable
      *
      * @return
      */
-    public ReadOnlyFloatProperty getMaximumTemperatureProperty()
+    public ReadOnlyFloatProperty maximumTemperatureProperty()
     {
         return maximumTemperature;
     }
@@ -72,7 +83,7 @@ public class NozzleHeater implements Cloneable
      *
      * @return
      */
-    public ReadOnlyFloatProperty getBetaProperty()
+    public ReadOnlyFloatProperty betaProperty()
     {
         return beta;
     }
@@ -81,7 +92,7 @@ public class NozzleHeater implements Cloneable
      *
      * @return
      */
-    public ReadOnlyFloatProperty getTcalProperty()
+    public ReadOnlyFloatProperty tCalProperty()
     {
         return tcal;
     }
@@ -90,29 +101,71 @@ public class NozzleHeater implements Cloneable
      *
      * @return
      */
-    public ReadOnlyFloatProperty getLastFilamentTemperatureProperty()
+    public ReadOnlyFloatProperty lastFilamentTemperatureProperty()
     {
         return lastFilamentTemperature;
     }
 
-    public ReadOnlyObjectProperty<HeaterMode> getHeaterModeProperty()
-    {
-        return heaterMode;
-    }
-
-    public IntegerProperty getNozzleTemperatureProperty()
+    public ReadOnlyIntegerProperty nozzleTemperatureProperty()
     {
         return nozzleTemperature;
     }
 
-    public IntegerProperty getNozzleFirstLayerTargetTemperatureProperty()
+    public ReadOnlyIntegerProperty nozzleFirstLayerTargetTemperatureProperty()
     {
         return nozzleFirstLayerTargetTemperature;
     }
 
-    public IntegerProperty getNozzleTargetTemperatureProperty()
+    public ReadOnlyIntegerProperty nozzleTargetTemperatureProperty()
     {
         return nozzleTargetTemperature;
+    }
+    
+    public XYChart.Series<Number, Number> getNozzleTemperatureHistory()
+    {
+        return nozzleTemperatureHistory;
+    }
+
+    protected void updateGraphData()
+    {
+        long now = System.currentTimeMillis();
+        if ((now - lastTemperatureTimestamp) >= 999)
+        {
+            lastTemperatureTimestamp = now;
+
+            for (int pointCounter = 0; pointCounter < ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP
+                - 1; pointCounter++)
+            {
+                nozzleTemperatureDataPoints.get(pointCounter).setYValue(
+                    nozzleTemperatureDataPoints.get(pointCounter + 1).getYValue());
+            }
+
+//            nozzleTemperatureDataPoints.add(bedTargetPoint);
+
+            if (nozzleTemperature.get() < ApplicationConfiguration.maxTempToDisplayOnGraph
+                && nozzleTemperature.get() > ApplicationConfiguration.minTempToDisplayOnGraph)
+            {
+                nozzleTemperatureDataPoints
+                    .get(ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1)
+                    .setYValue(nozzleTemperature.get());
+            }
+        }
+
+        switch (heaterMode.get())
+        {
+            case OFF:
+                nozzleTargetPoint.setYValue(0);
+                break;
+            case FIRST_LAYER:
+                nozzleTargetPoint.setYValue(nozzleFirstLayerTargetTemperature.get());
+                break;
+            case NORMAL:
+                nozzleTargetPoint.setYValue(nozzleTargetTemperature.get());
+                break;
+            default:
+                break;
+        }
+
     }
 
     /**

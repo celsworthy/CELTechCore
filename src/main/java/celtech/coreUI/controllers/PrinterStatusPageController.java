@@ -1,37 +1,16 @@
 package celtech.coreUI.controllers;
 
-import celtech.Lookup;
-import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
-import celtech.configuration.Filament;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterColourMap;
-import celtech.configuration.WhyAreWeWaitingState;
-import celtech.coreUI.AmbientLEDState;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.JogButton;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.PrinterStatus;
-import static celtech.printerControl.PrinterStatus.PAUSED;
-import static celtech.printerControl.PrinterStatus.PRINTING;
-import static celtech.printerControl.PrinterStatus.SENDING_TO_PRINTER;
-import celtech.printerControl.comms.commands.GCodeConstants;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.utils.AxisSpecifier;
-import celtech.utils.tasks.TaskResponse;
-import java.net.URL;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.Locale;
-import java.util.ResourceBundle;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
-import javafx.beans.binding.StringBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -48,8 +27,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.control.action.Action;
-import org.controlsfx.dialog.Dialogs;
 import org.controlsfx.dialog.Dialogs.CommandLink;
 
 /**
@@ -267,8 +244,8 @@ public class PrinterStatusPageController implements Initializable
     {
         try
         {
-            printerToUse.transmitStoredGCode("Home_all", false);
-        } catch (RoboxCommsException ex)
+            printerToUse.runMacro("Home_all");
+        } catch (PrinterException ex)
         {
             steno.error("Couldn't run home macro");
         }
@@ -277,34 +254,49 @@ public class PrinterStatusPageController implements Initializable
     @FXML
     void pausePrint(ActionEvent event)
     {
-        printerToUse.pause();
+        try
+        {
+            printerToUse.pause();
+        } catch (PrinterException ex)
+        {
+            steno.error("Couldn't pause printer");
+        }
     }
 
     @FXML
     void resumePrint(ActionEvent event)
     {
-        printerToUse.resume();
+        try
+        {
+            printerToUse.resume();
+        } catch (PrinterException ex)
+        {
+            steno.error("Couldn't resume print");
+        }
     }
 
     @FXML
     void cancelPrint(ActionEvent event)
     {
-        printerToUse.abort();
+        try
+        {
+            printerToUse.cancel(null);
+        } catch (PrinterException ex)
+        {
+            steno.error("Couldn't resume print");
+        }
     }
 
     @FXML
     void ejectReel(ActionEvent event)
     {
-        if (printerToUse != null)
+        //TODO modify for multiple extruders
+        try
         {
-            try
-            {
-                printerToUse.transmitDirectGCode(GCodeConstants.ejectFilament,
-                                                 false);
-            } catch (RoboxCommsException ex)
-            {
-                steno.error("Error when sending eject filament");
-            }
+            printerToUse.ejectFilament(0, null);
+        } catch (PrinterException ex)
+        {
+            steno.error("Error when sending eject filament - " + ex.getMessage());
         }
     }
 
@@ -334,7 +326,7 @@ public class PrinterStatusPageController implements Initializable
             {
                 printerToUse.abort();
             }
-            
+
             printerToUse.openLid();
         }
     }
@@ -407,7 +399,7 @@ public class PrinterStatusPageController implements Initializable
     {
         try
         {
-            if (printerToUse.getPrinterAncillarySystems().getHeadFanOnProperty().get())
+            if (printerToUse.getPrinterAncillarySystems().headFanOnProperty().get())
             {
                 printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadFan, true);
             } else
@@ -446,8 +438,7 @@ public class PrinterStatusPageController implements Initializable
                 .message(Lookup.i18n("removeHead.finished"))
                 .showInformation();
             steno.debug("Head remove completed");
-        }
-        else
+        } else
         {
             Dialogs.create()
                 .owner(null)

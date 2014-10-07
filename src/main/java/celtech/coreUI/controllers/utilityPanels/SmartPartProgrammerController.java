@@ -94,13 +94,15 @@ public class SmartPartProgrammerController implements Initializable
         {
             float remainingFilament = 0;
 
-            if (connectedPrinter.reelEEPROMStatusProperty().get() == EEPROMState.NOT_PROGRAMMED)
+            //TODO modify for multiple reels
+            if (connectedPrinter.reelsProperty().get(0).getReelEEPROMStatusProperty().get() == EEPROMState.NOT_PROGRAMMED)
             {
                 connectedPrinter.transmitFormatReelEEPROM();
                 remainingFilament = ApplicationConfiguration.mmOfFilamentOnAReel;
             } else
             {
-                remainingFilament = connectedPrinter.getReelRemainingFilament().get();
+                //TODO modify for multiple reels
+                remainingFilament = connectedPrinter.reelsProperty().get(0).getRemainingFilamentProperty().get();
             }
 
             connectedPrinter.transmitWriteReelEEPROM(selectedFilament.getFilamentID(),
@@ -129,7 +131,7 @@ public class SmartPartProgrammerController implements Initializable
     {
         if (connectedPrinter != null)
         {
-            Head.hardResetHead(connectedPrinter);
+            connectedPrinter.forceHeadReset();
         }
     }
 
@@ -147,8 +149,8 @@ public class SmartPartProgrammerController implements Initializable
             {
                 if (connectedPrinter != null)
                 {
-                    connectedPrinter.reelEEPROMStatusProperty().removeListener(reelEEPROMStateChangeListener);
-                    connectedPrinter.reelDataChangedProperty().removeListener(reelDataChangeListener);
+                    //TODO modify to support multiple reels
+                    connectedPrinter.reelsProperty().get(0).getReelEEPROMStatusProperty().removeListener(reelEEPROMStateChangeListener);
                 }
 
                 if (newPrinter == null)
@@ -160,10 +162,10 @@ public class SmartPartProgrammerController implements Initializable
                     materialSelector.setDisable(true);
                 } else
                 {
-                    programReelButton.disableProperty().bind(newPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PRESENT).or(materialSelector.getSelectionModel().selectedItemProperty().isNull()));
-                    materialSelector.disableProperty().bind(newPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PRESENT));
-                    newPrinter.reelEEPROMStatusProperty().addListener(reelEEPROMStateChangeListener);
-                    newPrinter.reelDataChangedProperty().addListener(reelDataChangeListener);
+                    //TODO modify to support multiple reels
+                    programReelButton.disableProperty().bind(newPrinter.reelsProperty().get(0).getReelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PRESENT).or(materialSelector.getSelectionModel().selectedItemProperty().isNull()));
+                    materialSelector.disableProperty().bind(newPrinter.reelsProperty().get(0).getReelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PRESENT));
+                    newPrinter.reelsProperty().get(0).getReelEEPROMStatusProperty().addListener(reelEEPROMStateChangeListener);
                 }
 
                 connectedPrinter = newPrinter;

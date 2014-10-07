@@ -1,14 +1,16 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.ApplicationStatus;
-import celtech.printerControl.model.Head;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.NudgeControlVertical;
 import celtech.coreUI.controllers.StatusScreenState;
+import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.property.FloatProperty;
+import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -34,7 +36,8 @@ public class CalibrationNozzleOffsetInsetPanelController implements Initializabl
 
     private final CalibrationNozzleOffsetHelper calibrationHelper = new CalibrationNozzleOffsetHelper();
 
-    private Head nudgeHead = null;
+    private FloatProperty nozzle1Overrun = new SimpleFloatProperty(0);
+    private FloatProperty nozzle2Overrun = new SimpleFloatProperty(0);
 
     @FXML
     private VBox container;
@@ -101,8 +104,8 @@ public class CalibrationNozzleOffsetInsetPanelController implements Initializabl
         nudgeHead = new Head(calibrationHelper.getSavedHeadData());
         nudgeHead.deriveZOverrunFromOffsets();
 
-        fineNozzleNudge.getValueProperty().bindBidirectional(nudgeHead.getNozzle1_Z_overrunProperty());
-        coarseNozzleNudge.getValueProperty().bindBidirectional(nudgeHead.getNozzle2_Z_overrunProperty());
+        fineNozzleNudge.getValueProperty().bindBidirectional(nozzle1Overrun);
+        coarseNozzleNudge.getValueProperty().bindBidirectional(nozzle2Overrun);
     }
 
     @FXML

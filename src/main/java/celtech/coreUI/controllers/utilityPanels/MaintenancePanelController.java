@@ -180,7 +180,7 @@ public class MaintenancePanelController implements Initializable
             {
                 try
                 {
-                    connectedPrinter.transmitStoredGCode(macroName, false);
+                    connectedPrinter.runMacro(macroName, false);
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error sending macro : " + macroName);
@@ -303,7 +303,7 @@ public class MaintenancePanelController implements Initializable
         final File file = gcodeFileChooser.showOpenDialog(container.getScene().getWindow());
         if (file != null)
         {
-            if (connectedPrinter.getPrintQueue().getPrintStatus() == PrinterStatus.IDLE)
+            if (connectedPrinter.printerStatusProperty().get() == PrinterStatus.IDLE)
             {
                 gcodePrintService.reset();
                 gcodePrintService.setPrintUsingSDCard(false);
@@ -326,9 +326,9 @@ public class MaintenancePanelController implements Initializable
 
         if (file != null)
         {
-            if (connectedPrinter.getPrintQueue().getPrintStatus() == PrinterStatus.IDLE)
+            if (connectedPrinter.printerStatusProperty().get() == PrinterStatus.IDLE)
             {
-                connectedPrinter.getPrintQueue().printGCodeFile(file.getAbsolutePath(), true);
+                connectedPrinter.printGCodeFile(file.getAbsolutePath());
             }
             ApplicationConfiguration.setLastDirectory(DirectoryMemoryProperty.MACRO, file.getParentFile().getAbsolutePath());
         }
@@ -451,7 +451,7 @@ public class MaintenancePanelController implements Initializable
             {
                 if (connectedPrinter != null)
                 {
-                    connectedPrinter.printerStatusProperty().unbind();
+                    connectedPrinter.printerStatusProperty().removeListener(printerStatusListener);
                 }
 
                 connectedPrinter = newValue;
@@ -460,8 +460,9 @@ public class MaintenancePanelController implements Initializable
                 {
                     readFirmwareVersion();
                     connectedPrinter.printerStatusProperty().addListener(printerStatusListener);
-                    connectedPrinter.Filament1LoadedProperty().addListener(filamentLoadedListener);
-                    connectedPrinter.Filament2LoadedProperty().addListener(filamentLoadedListener);
+                    //TODO modify for multiple extruders
+                    connectedPrinter.extrudersProperty().get(0).filamentLoadedProperty().addListener(filamentLoadedListener);
+                    connectedPrinter.extrudersProperty().get(1).filamentLoadedProperty().addListener(filamentLoadedListener);
                     setButtonVisibility();
                 }
             }
@@ -479,8 +480,11 @@ public class MaintenancePanelController implements Initializable
             noFilamentOrPrintingdisabled = true;
         } else
         {
-            printingdisabled = connectedPrinter.getPrinterStatus() != PrinterStatus.IDLE;
-            noFilamentOrPrintingdisabled = printingdisabled || (connectedPrinter.getFilament1Loaded() == false && connectedPrinter.getFilament2Loaded() == false);
+            printingdisabled = connectedPrinter.printerStatusProperty().get() != PrinterStatus.IDLE;
+            //TODO modify for multiple extruders
+            noFilamentOrPrintingdisabled = printingdisabled
+                || (connectedPrinter.extrudersProperty().get(0).filamentLoadedProperty().get() == false
+                && connectedPrinter.extrudersProperty().get(1).filamentLoadedProperty().get() == false);
         }
 
         YTestButton.setDisable(printingdisabled);

@@ -7,18 +7,23 @@ import celtech.configuration.MaterialType;
 import celtech.coreUI.DisplayManager;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
 import celtech.utils.SystemUtils;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyFloatProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.paint.Color;
 
 /**
@@ -43,6 +48,66 @@ public class Reel
     protected final IntegerProperty nozzleTemperatureProperty = new SimpleIntegerProperty(0);
     protected final ObjectProperty<Color> displayColourProperty = new SimpleObjectProperty<>();
     protected final FloatProperty remainingFilamentProperty = new SimpleFloatProperty(0);
+
+    protected final BooleanProperty dataChangedToggle = new SimpleBooleanProperty(false);
+
+    private final ChangeListener<String> stringChangeListener = new ChangeListener<String>()
+    {
+        @Override
+        public void changed(
+            ObservableValue<? extends String> observable, String oldValue, String newValue)
+        {
+            dataChanged();
+        }
+    };
+    private final ChangeListener<Number> numberChangeListener = new ChangeListener<Number>()
+    {
+        @Override
+        public void changed(
+            ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+        {
+            dataChanged();
+        }
+    };
+
+    private void dataChanged()
+    {
+        dataChangedToggle.set(!dataChangedToggle.get());
+    }
+
+    public Reel()
+    {
+        friendlyFilamentNameProperty.addListener(stringChangeListener);
+        materialProperty.addListener(new ChangeListener<MaterialType>()
+        {
+            @Override
+            public void changed(
+                ObservableValue<? extends MaterialType> observable, MaterialType oldValue, MaterialType newValue)
+            {
+                dataChanged();
+            }
+        });
+        filamentIDProperty.addListener(stringChangeListener);
+        diameterProperty.addListener(numberChangeListener);
+
+        filamentMultiplierProperty.addListener(numberChangeListener);
+        feedRateMultiplierProperty.addListener(numberChangeListener);
+        ambientTemperatureProperty.addListener(numberChangeListener);
+        firstLayerBedTemperatureProperty.addListener(numberChangeListener);
+        bedTemperatureProperty.addListener(numberChangeListener);
+        firstLayerNozzleTemperatureProperty.addListener(numberChangeListener);
+        nozzleTemperatureProperty.addListener(numberChangeListener);
+        displayColourProperty.addListener(new ChangeListener<Color>()
+        {
+            @Override
+            public void changed(
+                ObservableValue<? extends Color> observable, Color oldValue, Color newValue)
+            {
+                dataChanged();
+            }
+        });
+        remainingFilamentProperty.addListener(numberChangeListener);
+    }
 
     public ReadOnlyObjectProperty<EEPROMState> getReelEEPROMStatusProperty()
     {
@@ -114,6 +179,11 @@ public class Reel
         return remainingFilamentProperty;
     }
 
+    public ReadOnlyBooleanProperty getDataChangedToggleProperty()
+    {
+        return dataChangedToggle;
+    }
+
     public void updateFromEEPROMData(ReelEEPROMDataResponse eepromData)
     {
         ambientTemperatureProperty.set(eepromData.getAmbientTemperature());
@@ -170,5 +240,10 @@ public class Reel
         friendlyFilamentNameProperty.set(Lookup.i18n("smartReelProgrammer.noReelLoaded"));
         materialProperty.set(MaterialType.ABS);
         remainingFilamentProperty.set(0);
+    }
+
+    public boolean isUserFilament()
+    {
+        return filamentIDProperty.get().startsWith("U");
     }
 }

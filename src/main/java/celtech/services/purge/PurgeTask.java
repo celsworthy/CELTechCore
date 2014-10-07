@@ -55,21 +55,18 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
                 {
                     //Set the bed to 90 degrees C
                     int desiredBedTemperature = 90;
-                    printerToUse.transmitDirectGCode(GCodeConstants.setBedTemperatureTarget + desiredBedTemperature, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.goToTargetBedTemperature, false);
+                    printerToUse.setBedTargetTemperature(desiredBedTemperature);
+                    printerToUse.goToTargetBedTemperature();
                     boolean bedHeatedOK = PrinterUtils.waitUntilTemperatureIsReached(printerToUse.bedTemperatureProperty(), this, desiredBedTemperature, 5, 600);
 
-                    printerToUse.transmitDirectGCode(GCodeConstants.setFirstLayerNozzleTemperatureTarget + purgeTemperature, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.goToTargetFirstLayerNozzleTemperature, false);
+                    printerToUse.setNozzleTargetTemperature(purgeTemperature);
+                    printerToUse.goToTargetNozzleTemperature();
                     boolean extruderHeatedOK = PrinterUtils.waitUntilTemperatureIsReached(printerToUse.extruderTemperatureProperty(), this, purgeTemperature, 5, 300);
 
                     if (bedHeatedOK && extruderHeatedOK)
                     {
                         success = true;
                     }
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in purge - mode=" + desiredState.name());
                 } catch (InterruptedException ex)
                 {
                     steno.error("Interrrupted during purge - mode=" + desiredState.name());
@@ -78,7 +75,7 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
                 break;
 
             case RUNNING_PURGE:
-                printerToUse.transmitStoredGCode("Purge Material", false);
+                printerToUse.runMacro("Purge Material", false);
                 PrinterUtils.waitOnMacroFinished(printerToUse, this);
                 break;
         }

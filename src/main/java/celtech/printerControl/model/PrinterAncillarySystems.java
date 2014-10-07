@@ -19,6 +19,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.chart.LineChart;
+import javafx.scene.chart.XYChart;
 
 /**
  *
@@ -27,22 +28,22 @@ import javafx.scene.chart.LineChart;
 public class PrinterAncillarySystems
 {
 
-    protected final BooleanProperty XStopSwitchProperty = new SimpleBooleanProperty(false);
-    protected final BooleanProperty YStopSwitchProperty = new SimpleBooleanProperty(false);
-    protected final BooleanProperty ZStopSwitchProperty = new SimpleBooleanProperty(false);
-    protected final BooleanProperty ZTopStopSwitchProperty = new SimpleBooleanProperty(false);
-    protected final BooleanProperty reelButtonProperty = new SimpleBooleanProperty(false);
-    protected final BooleanProperty headFanOnProperty = new SimpleBooleanProperty(false);
-    protected final BooleanProperty ambientFanOnProperty = new SimpleBooleanProperty(false);
-    protected final BooleanProperty bAxisHomeProperty = new SimpleBooleanProperty(false);
-    protected final BooleanProperty lidOpenProperty = new SimpleBooleanProperty(false);
-    
-    protected final ObjectProperty<HeaterMode> bedHeaterModeProperty = new SimpleObjectProperty<>(HeaterMode.OFF);
-    private final IntegerProperty ambientTemperature = new SimpleIntegerProperty(0);
-    private final IntegerProperty ambientTargetTemperature = new SimpleIntegerProperty(0);
-    private final IntegerProperty bedTemperature = new SimpleIntegerProperty(0);
-    private final IntegerProperty bedFirstLayerTargetTemperature = new SimpleIntegerProperty(0);
-    private final IntegerProperty bedTargetTemperature = new SimpleIntegerProperty(0);
+    protected final BooleanProperty XStopSwitch = new SimpleBooleanProperty(false);
+    protected final BooleanProperty YStopSwitch = new SimpleBooleanProperty(false);
+    protected final BooleanProperty ZStopSwitch = new SimpleBooleanProperty(false);
+    protected final BooleanProperty ZTopStopSwitch = new SimpleBooleanProperty(false);
+    protected final BooleanProperty reelButton = new SimpleBooleanProperty(false);
+    protected final BooleanProperty headFanOn = new SimpleBooleanProperty(false);
+    protected final BooleanProperty ambientFanOn = new SimpleBooleanProperty(false);
+    protected final BooleanProperty bAxisHome = new SimpleBooleanProperty(false);
+    protected final BooleanProperty lidOpen = new SimpleBooleanProperty(false);
+
+    protected final ObjectProperty<HeaterMode> bedHeaterMode = new SimpleObjectProperty<>(HeaterMode.OFF);
+    protected final IntegerProperty ambientTemperature = new SimpleIntegerProperty(0);
+    protected final IntegerProperty ambientTargetTemperature = new SimpleIntegerProperty(0);
+    protected final IntegerProperty bedTemperature = new SimpleIntegerProperty(0);
+    protected final IntegerProperty bedFirstLayerTargetTemperature = new SimpleIntegerProperty(0);
+    protected final IntegerProperty bedTargetTemperature = new SimpleIntegerProperty(0);
     private final LineChart.Series<Number, Number> ambientTemperatureHistory = new LineChart.Series<>();
     private final ArrayList<LineChart.Data<Number, Number>> ambientTemperatureDataPoints = new ArrayList<>();
     private final LineChart.Series<Number, Number> bedTemperatureHistory = new LineChart.Series<>();
@@ -53,86 +54,159 @@ public class PrinterAncillarySystems
         ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP + 5, 0);
     private final LineChart.Data<Number, Number> bedTargetPoint = new LineChart.Data<>(
         ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP + 5, 0);
-    
+    private long lastTemperatureTimestamp = 0;
+
     protected final ObjectProperty<WhyAreWeWaitingState> whyAreWeWaitingProperty = new SimpleObjectProperty<>(WhyAreWeWaitingState.NOT_WAITING);
 
-    public ReadOnlyBooleanProperty getXStopSwitchProperty()
+    public PrinterAncillarySystems()
     {
-        return XStopSwitchProperty;
+        for (int i = 0; i < ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP; i++)
+        {
+            LineChart.Data<Number, Number> newAmbientPoint = new LineChart.Data<>(i, 0);
+            ambientTemperatureDataPoints.add(newAmbientPoint);
+            ambientTemperatureHistory.getData().add(newAmbientPoint);
+            LineChart.Data<Number, Number> newBedPoint = new LineChart.Data<>(i, 0);
+            bedTemperatureDataPoints.add(newBedPoint);
+            bedTemperatureHistory.getData().add(newBedPoint);
+        }
+        ambientTargetTemperatureSeries.getData().add(ambientTargetPoint);
+        bedTargetTemperatureSeries.getData().add(bedTargetPoint);
     }
 
-    public ReadOnlyBooleanProperty getYStopSwitchProperty()
+    public ReadOnlyBooleanProperty xStopSwitchProperty()
     {
-        return YStopSwitchProperty;
+        return XStopSwitch;
     }
 
-    public ReadOnlyBooleanProperty getZStopSwitchProperty()
+    public ReadOnlyBooleanProperty yStopSwitchProperty()
     {
-        return ZStopSwitchProperty;
+        return YStopSwitch;
     }
 
-    public ReadOnlyBooleanProperty getZTopStopSwitchProperty()
+    public ReadOnlyBooleanProperty zStopSwitchProperty()
     {
-        return ZTopStopSwitchProperty;
+        return ZStopSwitch;
     }
 
-    public ReadOnlyBooleanProperty getReelButtonProperty()
+    public ReadOnlyBooleanProperty zTopStopSwitchProperty()
     {
-        return reelButtonProperty;
+        return ZTopStopSwitch;
     }
 
-    public ReadOnlyBooleanProperty getHeadFanOnProperty()
+    public ReadOnlyBooleanProperty reelButtonProperty()
     {
-        return headFanOnProperty;
+        return reelButton;
     }
 
-    public ReadOnlyBooleanProperty getAmbientFanOnProperty()
+    public ReadOnlyBooleanProperty headFanOnProperty()
     {
-        return ambientFanOnProperty;
+        return headFanOn;
     }
 
-    public ReadOnlyBooleanProperty getBAxisHomeProperty()
+    public ReadOnlyBooleanProperty ambientFanOnProperty()
     {
-        return bAxisHomeProperty;
+        return ambientFanOn;
     }
 
-    public ReadOnlyBooleanProperty getLidOpenProperty()
+    public ReadOnlyBooleanProperty bAxisHomeProperty()
     {
-        return lidOpenProperty;
+        return bAxisHome;
     }
 
-    public ReadOnlyObjectProperty<HeaterMode> getBedHeaterModeProperty()
+    public ReadOnlyBooleanProperty lidOpenProperty()
     {
-        return bedHeaterModeProperty;
+        return lidOpen;
     }
 
-    public ReadOnlyObjectProperty<WhyAreWeWaitingState> getWhyAreWeWaitingProperty()
+    public ReadOnlyObjectProperty<HeaterMode> bedHeaterModeProperty()
+    {
+        return bedHeaterMode;
+    }
+
+    public ReadOnlyObjectProperty<WhyAreWeWaitingState> whyAreWeWaitingProperty()
     {
         return whyAreWeWaitingProperty;
     }
 
-    public ReadOnlyIntegerProperty getAmbientTemperatureProperty()
+    public ReadOnlyIntegerProperty ambientTemperatureProperty()
     {
         return ambientTemperature;
     }
 
-    public ReadOnlyIntegerProperty getAmbientTargetTemperatureProperty()
+    public ReadOnlyIntegerProperty ambientTargetTemperatureProperty()
     {
         return ambientTargetTemperature;
     }
 
-    public ReadOnlyIntegerProperty getBedTemperatureProperty()
+    public ReadOnlyIntegerProperty bedTemperatureProperty()
     {
         return bedTemperature;
     }
 
-    public ReadOnlyIntegerProperty getBedFirstLayerTargetTemperatureProperty()
+    public ReadOnlyIntegerProperty bedFirstLayerTargetTemperatureProperty()
     {
         return bedFirstLayerTargetTemperature;
     }
 
-    public ReadOnlyIntegerProperty getBedTargetTemperatureProperty()
+    public ReadOnlyIntegerProperty bedTargetTemperatureProperty()
     {
         return bedTargetTemperature;
-    } 
+    }
+
+    public XYChart.Series<Number, Number> getAmbientTemperatureHistory()
+    {
+        return ambientTemperatureHistory;
+    }
+
+    public XYChart.Series<Number, Number> getBedTemperatureHistory()
+    {
+        return bedTemperatureHistory;
+    }
+
+    protected void updateGraphData()
+    {
+        long now = System.currentTimeMillis();
+        if ((now - lastTemperatureTimestamp) >= 999)
+        {
+            lastTemperatureTimestamp = now;
+
+            for (int pointCounter = 0; pointCounter < ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP
+                - 1; pointCounter++)
+            {
+                ambientTemperatureDataPoints.get(pointCounter).setYValue(
+                    ambientTemperatureDataPoints.get(pointCounter + 1).getYValue());
+                bedTemperatureDataPoints.get(pointCounter).setYValue(
+                    bedTemperatureDataPoints.get(pointCounter + 1).getYValue());
+            }
+
+            ambientTemperatureDataPoints
+                .get(ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1)
+                .setYValue(ambientTemperature.get());
+
+            if (bedTemperature.get() < ApplicationConfiguration.maxTempToDisplayOnGraph
+                && bedTemperature.get() > ApplicationConfiguration.minTempToDisplayOnGraph)
+            {
+                bedTemperatureDataPoints
+                    .get(ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 1)
+                    .setYValue(bedTemperature.get());
+            }
+        }
+
+        ambientTargetPoint.setYValue(ambientTargetTemperature.get());
+
+        switch (bedHeaterMode.get())
+        {
+            case OFF:
+                bedTargetPoint.setYValue(0);
+                break;
+            case FIRST_LAYER:
+                bedTargetPoint.setYValue(bedFirstLayerTargetTemperature.get());
+                break;
+            case NORMAL:
+                bedTargetPoint.setYValue(bedTargetTemperature.get());
+                break;
+            default:
+                break;
+        }
+    }
 }

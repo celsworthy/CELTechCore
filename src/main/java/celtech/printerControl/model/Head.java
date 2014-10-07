@@ -100,7 +100,7 @@ public class Head implements Cloneable
 //        deriveZOverrunFromOffsets();
 //    }
 
-    public final ReadOnlyObjectProperty<EEPROMState> getHeadEEPROMStatusProperty()
+    public final ReadOnlyObjectProperty<EEPROMState> headEEPROMStatusProperty()
     {
         return headEEPROMStatusProperty;
     }
@@ -109,7 +109,7 @@ public class Head implements Cloneable
      *
      * @return
      */
-    public StringProperty getTypeCodeProperty()
+    public StringProperty typeCodeProperty()
     {
         return typeCode;
     }
@@ -118,7 +118,7 @@ public class Head implements Cloneable
      *
      * @return
      */
-    public StringProperty getNameProperty()
+    public StringProperty nameProperty()
     {
         return name;
     }
@@ -127,7 +127,7 @@ public class Head implements Cloneable
      *
      * @return
      */
-    public StringProperty getUniqueIDProperty()
+    public StringProperty uniqueIDProperty()
     {
         return uniqueID;
     }
@@ -136,7 +136,7 @@ public class Head implements Cloneable
      *
      * @return
      */
-    public FloatProperty getHeadHoursProperty()
+    public FloatProperty headHoursProperty()
     {
         return headHours;
     }
@@ -246,19 +246,19 @@ public class Head implements Cloneable
                     NozzleHeater nozzleHeater = getNozzleHeaters().get(i);
                     NozzleHeaterData nozzleHeaterData = referenceHeadData.getNozzleHeaters().get(i);
 
-                    if (Math.abs(nozzleHeater.getMaximumTemperatureProperty().get() - nozzleHeaterData.getMaximum_temperature_C()) > epsilon)
+                    if (Math.abs(nozzleHeater.maximumTemperatureProperty().get() - nozzleHeaterData.getMaximum_temperature_C()) > epsilon)
                     {
                         nozzleHeater.maximumTemperature.set(nozzleHeaterData.getMaximum_temperature_C());
                         result = HeadRepairResult.REPAIRED_WRITE_ONLY;
                     }
 
-                    if (Math.abs(nozzleHeater.getTcalProperty().get() - nozzleHeaterData.getTcal()) > epsilon)
+                    if (Math.abs(nozzleHeater.tCalProperty().get() - nozzleHeaterData.getTcal()) > epsilon)
                     {
                         nozzleHeater.tcal.set(nozzleHeaterData.getTcal());
                         result = HeadRepairResult.REPAIRED_WRITE_ONLY;
                     }
 
-                    if (Math.abs(nozzleHeater.getBetaProperty().get() - nozzleHeaterData.getBeta()) > epsilon)
+                    if (Math.abs(nozzleHeater.betaProperty().get() - nozzleHeaterData.getBeta()) > epsilon)
                     {
                         nozzleHeater.beta.set(nozzleHeaterData.getBeta());
                         result = HeadRepairResult.REPAIRED_WRITE_ONLY;
@@ -271,25 +271,25 @@ public class Head implements Cloneable
                     Nozzle nozzle = getNozzles().get(i);
                     NozzleData nozzleData = referenceHeadData.getNozzles().get(i);
 
-                    if (nozzle.getXOffsetProperty().get() < nozzleData.getMinXOffset() || nozzle.getXOffsetProperty().get() > nozzleData.getMaxXOffset())
+                    if (nozzle.xOffsetProperty().get() < nozzleData.getMinXOffset() || nozzle.xOffsetProperty().get() > nozzleData.getMaxXOffset())
                     {
                         nozzle.xOffset.set(nozzleData.getDefaultXOffset());
                         result = HeadRepairResult.REPAIRED_WRITE_AND_RECALIBRATE;
                     }
 
-                    if (nozzle.getYOffsetProperty().get() < nozzleData.getMinYOffset() || nozzle.getYOffsetProperty().get() > nozzleData.getMaxYOffset())
+                    if (nozzle.yOffsetProperty().get() < nozzleData.getMinYOffset() || nozzle.yOffsetProperty().get() > nozzleData.getMaxYOffset())
                     {
                         nozzle.yOffset.set(nozzleData.getDefaultYOffset());
                         result = HeadRepairResult.REPAIRED_WRITE_AND_RECALIBRATE;
                     }
 
-                    if (nozzle.getZOffsetProperty().get() < nozzleData.getMinZOffset() || nozzle.getZOffsetProperty().get() > nozzleData.getMaxZOffset())
+                    if (nozzle.zOffsetProperty().get() < nozzleData.getMinZOffset() || nozzle.zOffsetProperty().get() > nozzleData.getMaxZOffset())
                     {
                         nozzle.zOffset.set(nozzleData.getDefaultZOffset());
                         result = HeadRepairResult.REPAIRED_WRITE_AND_RECALIBRATE;
                     }
 
-                    if (nozzle.getBOffsetProperty().get() < nozzleData.getMinBOffset() || nozzle.getBOffsetProperty().get() > nozzleData.getMaxBOffset())
+                    if (nozzle.bOffsetProperty().get() < nozzleData.getMinBOffset() || nozzle.bOffsetProperty().get() > nozzleData.getMaxBOffset())
                     {
                         nozzle.bOffset.set(nozzleData.getDefaultBOffset());
                         result = HeadRepairResult.REPAIRED_WRITE_AND_RECALIBRATE;

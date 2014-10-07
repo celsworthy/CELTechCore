@@ -3,6 +3,7 @@
  */
 package celtech.services.printing;
 
+import celtech.printerControl.model.PrintEngine;
 import celtech.JavaFXConfiguredTest;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectMode;
@@ -43,7 +44,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
     static final String DRAFT_SETTINGS = "DraftSettings";
 
     TestPrinter testPrinter;
-    PrintQueue printQueue;
+    PrintEngine printQueue;
     Project project;
 
     @Rule
@@ -56,7 +57,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
     public void testProgressPropertyIsZeroAtStartOfPrint()
     {
         testPrinter = new TestPrinter();
-        printQueue = new PrintQueue(testPrinter);
+        printQueue = new PrintEngine(testPrinter);
         ReadOnlyDoubleProperty result = printQueue.progressProperty();
         assertEquals(0d, result.get(), 0.001);
     }
@@ -73,7 +74,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
 
         TestSlicerService testSlicerService = new TestSlicerService();
         TestNotificationsHandler testNotificationsHandler = new TestNotificationsHandler();
-        printQueue = new PrintQueue(testPrinter, testNotificationsHandler,
+        printQueue = new PrintEngine(testPrinter, testNotificationsHandler,
                                     testSlicerService);
 
         STLImporter stlImporter = new STLImporter();

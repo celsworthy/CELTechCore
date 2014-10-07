@@ -3,6 +3,7 @@
  */
 package celtech.services.printing;
 
+import celtech.printerControl.model.ETCCalculator;
 import celtech.gcodetranslator.PrintJobStatistics;
 import java.io.IOException;
 import java.net.URL;

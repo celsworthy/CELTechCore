@@ -8,6 +8,7 @@ import celtech.printerControl.model.Printer;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
+import celtech.printerControl.model.PrinterException;
 import javafx.application.Platform;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -51,7 +52,8 @@ public class SystemNotificationManager
     private String gcodePostProcessSuccessfulNotification = null;
     private String gcodePostProcessFailedNotification = null;
     private String detectedPrintInProgressNotification = null;
-    private String notificationTitle = null;
+    private String printQueueNotificationTitle = null;
+    private String reprintInitiatedNotification = null;
 
     public SystemNotificationManager()
     {
@@ -71,8 +73,9 @@ public class SystemNotificationManager
         sliceFailedNotification = Lookup.i18n("notification.sliceFailed");
         gcodePostProcessSuccessfulNotification = Lookup.i18n("notification.gcodePostProcessSuccessful");
         gcodePostProcessFailedNotification = Lookup.i18n("notification.gcodePostProcessFailed");
-        notificationTitle = Lookup.i18n("notification.PrintQueueTitle");
+        printQueueNotificationTitle = Lookup.i18n("notification.PrintQueueTitle");
         detectedPrintInProgressNotification = Lookup.i18n("notification.activePrintDetected");
+        reprintInitiatedNotification = Lookup.i18n("notification.reprintInitiated");
     }
 
     private void showErrorNotification(String title, String message)
@@ -125,8 +128,8 @@ public class SystemNotificationManager
 
                     Action errorHandlingResponse = null;
 
-                    if (printer.getPrinterStatusProperty().get() != PrinterStatus.IDLE
-                        && printer.getPrinterStatusProperty().get() != PrinterStatus.ERROR)
+                    if (printer.printerStatusProperty().get() != PrinterStatus.IDLE
+                        && printer.printerStatusProperty().get() != PrinterStatus.ERROR)
                     {
                         errorHandlingResponse = Dialogs.create().title(
                             DisplayManager.getLanguageBundle().getString(
@@ -154,11 +157,17 @@ public class SystemNotificationManager
 
                     if (errorHandlingResponse == abortJob)
                     {
-                        if (printer.getCanPauseProperty().get())
+                        try
                         {
-                            printer.pause();
+                            if (printer.getCanPauseProperty().get())
+                            {
+                                printer.pause();
+                            }
+                            printer.cancel(null);
+                        } catch (PrinterException ex)
+                        {
+                            steno.error("Error whilst cancelling print from error dialog");
                         }
-                        printer.abort();
                     }
 
                     errorDialogOnDisplay = false;
@@ -221,40 +230,54 @@ public class SystemNotificationManager
 
     public void showSliceFailedNotification()
     {
-        showErrorNotification(notificationTitle, sliceFailedNotification);
+        showErrorNotification(printQueueNotificationTitle, sliceFailedNotification);
     }
 
     public void showSliceSuccessfulNotification()
     {
-        showInformationNotification(notificationTitle, sliceSuccessfulNotification);
+        showInformationNotification(printQueueNotificationTitle, sliceSuccessfulNotification);
     }
 
     public void showGCodePostProcessFailedNotification()
     {
-        showErrorNotification(notificationTitle, gcodePostProcessFailedNotification);
+        showErrorNotification(printQueueNotificationTitle, gcodePostProcessFailedNotification);
     }
 
     public void showGCodePostProcessSuccessfulNotification()
     {
-        showInformationNotification(notificationTitle, gcodePostProcessSuccessfulNotification);
+        showInformationNotification(printQueueNotificationTitle, gcodePostProcessSuccessfulNotification);
     }
 
     public void showPrintJobCancelledNotification()
     {
-        showInformationNotification(notificationTitle, printJobCancelledNotification);
+        showInformationNotification(printQueueNotificationTitle, printJobCancelledNotification);
     }
 
     public void showPrintJobFailedNotification()
     {
-        showErrorNotification(notificationTitle, printJobFailedNotification);
+        showErrorNotification(printQueueNotificationTitle, printJobFailedNotification);
     }
 
     public void showPrintTransferSuccessfulNotification(String printerName)
     {
-        showInformationNotification(notificationTitle,
+        showInformationNotification(printQueueNotificationTitle,
                                     printTransferSuccessfulNotification + " "
                                     + printerName + "\n"
                                     + printTransferSuccessfulNotificationEnd);
     }
 
+    public void showPrintTransferInitiatedNotification()
+    {
+        showInformationNotification(printQueueNotificationTitle, printTransferInitiatedNotification);
+    }
+
+    public void showReprintStartedNotification()
+    {
+        showInformationNotification(printQueueNotificationTitle, reprintInitiatedNotification);
+    }
+
+    public void showDetectedPrintInProgressNotification()
+    {
+        showInformationNotification(printQueueNotificationTitle, detectedPrintInProgressNotification);
+    }
 }

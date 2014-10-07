@@ -130,18 +130,19 @@ public class DiagnosticPanelController implements Initializable
         {
             connectedPrinter = printer;
             
-            printerID.textProperty().bind(printer.getPrinterUniqueIDProperty());
-            headID.textProperty().bind(printer.getHeadUniqueID());
-            xLimitSwitch.textProperty().bind(printer.XStopSwitchProperty().asString());
-            yLimitSwitch.textProperty().bind(printer.YStopSwitchProperty().asString());
-            zLimitSwitch.textProperty().bind(printer.ZStopSwitchProperty().asString());
-            zPositiveLimitSwitch.textProperty().bind(printer.ZTopStopSwitchProperty().asString());
-            lidSwitch.textProperty().bind(printer.LidOpenProperty().asString());
-            reelButtonSwitch.textProperty().bind(printer.reelButtonProperty().asString());
-            extruder1Loaded.textProperty().bind(printer.Filament1LoadedProperty().asString());
-            extruder1Index.textProperty().bind(printer.Filament1IndexProperty().asString());
-            extruder2Loaded.textProperty().bind(printer.Filament2LoadedProperty().asString());
-            extruder2Index.textProperty().bind(printer.Filament2IndexProperty().asString());
+            printerID.textProperty().bind(printer.getPrinterIdentity().getPrinterUniqueIDProperty());
+            headID.textProperty().bind(printer.headProperty().get().uniqueIDProperty());
+            xLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().xStopSwitchProperty().asString());
+            yLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().yStopSwitchProperty().asString());
+            zLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().zStopSwitchProperty().asString());
+            zPositiveLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().zTopStopSwitchProperty().asString());
+            lidSwitch.textProperty().bind(printer.getPrinterAncillarySystems().lidOpenProperty().asString());
+            reelButtonSwitch.textProperty().bind(printer.getPrinterAncillarySystems().reelButtonProperty().asString());
+            //TODO modify to work with multiple extruders
+            extruder1Loaded.textProperty().bind(printer.extrudersProperty().get(0).filamentLoadedProperty().asString());
+            extruder1Index.textProperty().bind(printer.extrudersProperty().get(0).indexWheelStateProperty().asString());
+            extruder2Loaded.textProperty().bind(printer.extrudersProperty().get(0).filamentLoadedProperty().asString());
+            extruder2Index.textProperty().bind(printer.extrudersProperty().get(0).indexWheelStateProperty().asString());
         }
     }
     

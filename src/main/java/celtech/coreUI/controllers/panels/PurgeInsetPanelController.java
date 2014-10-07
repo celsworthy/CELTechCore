@@ -155,7 +155,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                         .masthead(null)
                         .message(DisplayManager.getLanguageBundle().getString("dialogs.clearBedInstruction"))
                         .showWarning();
-                    printerToUse.getPrintQueue().printGCodeFile(GCodeMacros.getFilename(macroToExecuteAfterPurge), true);
+                    printerToUse.printGCodeFile(GCodeMacros.getFilename(macroToExecuteAfterPurge));
                 }
             });
 

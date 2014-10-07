@@ -73,17 +73,11 @@ public class PurgeHelper
         }
         if (state != PurgeState.IDLE)
         {
-            try
-            {
-                printerToUse.transmitDirectGCode("G0 B0", false);
-                printerToUse.transmitDirectGCode(GCodeConstants.switchBedHeaterOff, false);
-                printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
-
-            } catch (RoboxCommsException ex)
-            {
-                steno.error("Error in purge routine - mode=" + state.name());
-            }
+            printerToUse.changeNozzlePosition(0);
+            printerToUse.switchBedHeaterOff();
+            //TODO modify for multiple nozzle heater support
+            printerToUse.switchNozzleHeaterOff(0);
+            printerToUse.switchOffHeadLEDs();
         }
     }
 
@@ -120,7 +114,7 @@ public class PurgeHelper
                 // put the write after the purge routine once the firmware no longer raises an error whilst connected to the host computer
                 try
                 {
-                    savedHeadData = printerToUse.transmitReadHeadEEPROM();
+                    savedHeadData = printerToUse.readHeadEEPROM();
 
                     // The nozzle should be heated to a temperature halfway between the last temperature stored on the head and the current required temperature stored on the reel
                     SettingsScreenState settingsScreenState = SettingsScreenState.getInstance();
@@ -132,7 +126,8 @@ public class PurgeHelper
                         reelNozzleTemperature = settingsFilament.getNozzleTemperature();
                     } else
                     {
-                        reelNozzleTemperature = (float) printerToUse.getReelNozzleTemperature().get();
+                        //TODO modify for multiple reels
+                        reelNozzleTemperature = (float) printerToUse.reelsProperty().get(0).getNozzleTemperatureProperty().get();
                     }
 
                     float temperatureDifference = reelNozzleTemperature - savedHeadData.getLastFilamentTemperature();
@@ -192,26 +187,22 @@ public class PurgeHelper
                                                                                    reelNozzleTemperature,
                                                                                    savedHeadData.getHeadHours());
 
-                    printerToUse.transmitDirectGCode("G0 B0", false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchBedHeaterOff, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
+                    printerToUse.changeNozzlePosition(0);
+                    printerToUse.switchBedHeaterOff();
+                    //TODO modify for multiple nozzle heater support
+                    printerToUse.switchNozzleHeaterOff(0);
+                    printerToUse.switchOffHeadLEDs();
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in purge - mode=" + state.name());
                 }
                 break;
             case FAILED:
-                try
-                {
-                    printerToUse.transmitDirectGCode("G0 B0", false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchBedHeaterOff, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error clearing up after failed purge");
-                }
+                printerToUse.changeNozzlePosition(0);
+                printerToUse.switchBedHeaterOff();
+                //TODO modify for multiple nozzle heater support
+                printerToUse.switchNozzleHeaterOff(0);
+                printerToUse.switchOffHeadLEDs();
                 break;
         }
     }

@@ -373,12 +373,13 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     {
                         if (lastSelectedPrinter != null)
                         {
-                            lastSelectedPrinter.reelDataChangedProperty().removeListener(reelDataChangedListener);
+                            //TODO modify to support multiple reels
+                            lastSelectedPrinter.reelsProperty().get(0).getDataChangedToggleProperty().removeListener(reelDataChangedListener);
                         }
                         if (selectedPrinter != null && selectedPrinter != lastSelectedPrinter)
                         {
                             currentPrinter = selectedPrinter;
-                            selectedPrinter.reelDataChangedProperty().addListener(reelDataChangedListener);
+                            selectedPrinter.reelsProperty().get(0).getDataChangedToggleProperty().addListener(reelDataChangedListener);
                         }
 
                         if (selectedPrinter == null)
@@ -450,7 +451,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             @Override
             public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
             {
-                currentlyLoadedFilament = currentPrinter.loadedFilamentProperty().get();
+                //TODO modify for multiple reels
+                currentlyLoadedFilament = currentPrinter.extrudersProperty().get(0).filamentLoadedProperty().get();
                 updateFilamentList();
                 materialChooser.getSelectionModel().select(currentlyLoadedFilament);
             }

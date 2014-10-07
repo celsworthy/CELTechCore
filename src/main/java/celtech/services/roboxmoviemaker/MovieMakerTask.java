@@ -82,7 +82,7 @@ public class MovieMakerTask extends Task<MovieMakerResult>
 
             if (videoWriter != null)
             {
-                printerToUse.getPrinterAncillarySystems().getXStopSwitchProperty().addListener(triggerListener);
+                printerToUse.getPrinterAncillarySystems().xStopSwitchProperty().addListener(triggerListener);
 
                 succeeded = true;
 

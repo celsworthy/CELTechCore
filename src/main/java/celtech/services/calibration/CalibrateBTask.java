@@ -97,7 +97,7 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                 {
                     printerToUse.transmitDirectGCode("M104", false);
                     //TODO make this work with multiple heaters
-                    if (printerToUse.getHeadProperty().getNozzleHeaters().get(0).getHeaterModeProperty().get() == HeaterMode.FIRST_LAYER)
+                    if (printerToUse.headProperty().getNozzleHeaters().get(0).getHeaterModeProperty().get() == HeaterMode.FIRST_LAYER)
                     {
                         PrinterUtils.waitUntilTemperatureIsReached(printerToUse.extruderTemperatureProperty(), this, printerToUse.getNozzleFirstLayerTargetTemperature(), 5, 300);
                     } else

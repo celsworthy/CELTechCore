@@ -1,7 +1,7 @@
 /*
  * Copyright 2014 CEL UK
  */
-package celtech.services.printing;
+package celtech.printerControl.model;
 
 import celtech.printerControl.model.Printer;
 import java.util.ArrayList;
@@ -77,8 +77,8 @@ class ETCCalculator
      */
     private int getBedHeatingTime()
     {
-        int bedTargetTemperature = printer.getPrinterAncillarySystems().getBedTargetTemperatureProperty().get();
-        int bedTemperature = printer.getPrinterAncillarySystems().getBedTemperatureProperty().get();
+        int bedTargetTemperature = printer.getPrinterAncillarySystems().bedTargetTemperatureProperty().get();
+        int bedTemperature = printer.getPrinterAncillarySystems().bedTemperatureProperty().get();
         if (bedTemperature < bedTargetTemperature)
         {
             return (bedTargetTemperature - bedTemperature)

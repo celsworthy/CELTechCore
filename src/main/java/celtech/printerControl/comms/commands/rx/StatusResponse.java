@@ -14,7 +14,7 @@ import java.text.ParseException;
  */
 public class StatusResponse extends RoboxRxPacket
 {
-    /* Current spec of status response as of v677 firmware */
+    /* Current spec of status response as of v684 firmware */
 
     /*
      status: <0xe1> iiiiiiiiiiiiiiii llllllll p b x y z e d b g h i j a k mmmmmmmm nnnnnnnn cccccccc o pppppppp qqqqqqqq aaaaaaaa r ssssssss tttttttt u c v w s xxxxxxxx yyyyyyyy zzzzzzzz bbbbbbbb eeeeeeee gggggggg ffffffff
@@ -407,6 +407,15 @@ public class StatusResponse extends RoboxRxPacket
     public float getHeadZPosition()
     {
         return headZPosition;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public float getBPosition()
+    {
+        return BPosition;
     }
 
     /**

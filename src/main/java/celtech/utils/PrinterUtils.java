@@ -73,7 +73,7 @@ public class PrinterUtils
 
         if (task != null)
         {
-            while (printerToCheck.getPrinterStatusProperty().get() != PrinterStatus.IDLE
+            while (printerToCheck.printerStatusProperty().get() != PrinterStatus.IDLE
                 && task.isCancelled() == false && !TaskController.isShuttingDown())
             {
                 try
@@ -87,7 +87,7 @@ public class PrinterUtils
             }
         } else
         {
-            while (printerToCheck.getPrinterStatusProperty().get() != PrinterStatus.IDLE && !TaskController.
+            while (printerToCheck.printerStatusProperty().get() != PrinterStatus.IDLE && !TaskController.
                 isShuttingDown())
             {
                 try
@@ -113,14 +113,13 @@ public class PrinterUtils
     {
         boolean failed = false;
 
-        while ((printerToCheck.getPrintQueue().isConsideringPrintRequest() == true
-            || printerToCheck.getPrintQueue().getPrintStatus() != PrinterStatus.IDLE)
+        while (printerToCheck.printerStatusProperty().get() != PrinterStatus.IDLE
             && !TaskController.isShuttingDown())
         {
             try
             {
                 Thread.sleep(100);
-                
+
                 if (cancellable.cancelled)
                 {
                     failed = true;
@@ -252,11 +251,13 @@ public class PrinterUtils
             targetNozzleTemperature = settingsFilament.getNozzleTemperature();
         } else
         {
-            targetNozzleTemperature = (float) printer.getReelNozzleTemperature().get();
+            //TODO modify to work with multiple reels
+            targetNozzleTemperature = (float) printer.reelsProperty().get(0).getNozzleTemperatureProperty().get();
         }
 
         // A reel is attached - check to see if the temperature is different from that stored on the head
-        if (Math.abs(targetNozzleTemperature - printer.getLastFilamentTemperature().get()) > ApplicationConfiguration.maxPermittedTempDifferenceForPurge)
+        //TODO modify to work with multiple heaters
+        if (Math.abs(targetNozzleTemperature - printer.headProperty().get().getNozzleHeaters().get(0).lastFilamentTemperatureProperty().get()) > ApplicationConfiguration.maxPermittedTempDifferenceForPurge)
         {
             purgeIsNecessary = true;
         }
@@ -346,6 +347,48 @@ public class PrinterUtils
         }
 
         return failed;
+    }
+
+    public static float deriveNozzle1OverrunFromOffsets(float nozzle1Offset, float nozzle2Offset)
+    {
+        float delta = nozzle2Offset - nozzle1Offset;
+        float halfdelta = delta / 2;
+
+        float nozzle1Overrun = -(nozzle1Offset + halfdelta);
+        float nozzle2Overrun = nozzle1Overrun + delta;
+
+        return nozzle1Overrun;
+    }
+
+    public static float deriveNozzle2OverrunFromOffsets(float nozzle1Offset, float nozzle2Offset)
+    {
+        float delta = nozzle2Offset - nozzle1Offset;
+        float halfdelta = delta / 2;
+
+        float nozzle1Overrun = -(nozzle1Offset + halfdelta);
+        float nozzle2Overrun = nozzle1Overrun + delta;
+
+        return nozzle2Overrun;
+    }
+
+    public static float deriveNozzle1ZOffsetsFromOverrun(float nozzle1OverrunValue, float nozzle2OverrunValue)
+    {
+        float offsetAverage = -nozzle1OverrunValue;
+        float delta = (nozzle2OverrunValue - nozzle1OverrunValue) / 2;
+        float nozzle1Offset = offsetAverage - delta;
+        float nozzle2Offset = offsetAverage + delta;
+
+        return nozzle1Offset;
+    }
+
+    public static float deriveNozzle2ZOffsetsFromOverrun(float nozzle1OverrunValue, float nozzle2OverrunValue)
+    {
+        float offsetAverage = -nozzle1OverrunValue;
+        float delta = (nozzle2OverrunValue - nozzle1OverrunValue) / 2;
+        float nozzle1Offset = offsetAverage - delta;
+        float nozzle2Offset = offsetAverage + delta;
+
+        return nozzle2Offset;
     }
 
 }

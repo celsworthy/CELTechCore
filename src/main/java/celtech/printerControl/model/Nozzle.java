@@ -42,7 +42,7 @@ public class Nozzle implements Cloneable
      *
      * @return
      */
-    public ReadOnlyFloatProperty getBPositionProperty()
+    public ReadOnlyFloatProperty bPositionProperty()
     {
         return BPosition;
     }
@@ -51,7 +51,7 @@ public class Nozzle implements Cloneable
      *
      * @return
      */
-    public ReadOnlyFloatProperty getDiameterProperty()
+    public ReadOnlyFloatProperty diameterProperty()
     {
         return diameter;
     }
@@ -60,7 +60,7 @@ public class Nozzle implements Cloneable
      *
      * @return
      */
-    public ReadOnlyFloatProperty getXOffsetProperty()
+    public ReadOnlyFloatProperty xOffsetProperty()
     {
         return xOffset;
     }
@@ -69,7 +69,7 @@ public class Nozzle implements Cloneable
      *
      * @return
      */
-    public ReadOnlyFloatProperty getYOffsetProperty()
+    public ReadOnlyFloatProperty yOffsetProperty()
     {
         return yOffset;
     }
@@ -78,7 +78,7 @@ public class Nozzle implements Cloneable
      *
      * @return
      */
-    public ReadOnlyFloatProperty getZOffsetProperty()
+    public ReadOnlyFloatProperty zOffsetProperty()
     {
         return zOffset;
     }
@@ -87,7 +87,7 @@ public class Nozzle implements Cloneable
      *
      * @return
      */
-    public ReadOnlyFloatProperty getBOffsetProperty()
+    public ReadOnlyFloatProperty bOffsetProperty()
     {
         return bOffset;
     }

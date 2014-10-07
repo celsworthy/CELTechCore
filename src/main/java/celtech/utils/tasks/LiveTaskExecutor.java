@@ -11,12 +11,15 @@ public class LiveTaskExecutor implements TaskExecutor
     @Override
     public void runOnGUIThread(TaskResponder responder, boolean success, String message)
     {
-        TaskResponse taskResponse = new TaskResponse(message);
-        taskResponse.setSucceeded(success);
-        
-        Platform.runLater(() ->
+        if (responder != null)
         {
-            responder.taskEnded(taskResponse);
-        });
+            TaskResponse taskResponse = new TaskResponse(message);
+            taskResponse.setSucceeded(success);
+
+            Platform.runLater(() ->
+            {
+                responder.taskEnded(taskResponse);
+            });
+        }
     }
 }

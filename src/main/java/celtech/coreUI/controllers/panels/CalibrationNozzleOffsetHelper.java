@@ -191,7 +191,7 @@ public class CalibrationNozzleOffsetHelper
             case INITIALISING:
                 try
                 {
-                    savedHeadData = printerToUse.transmitReadHeadEEPROM();
+                    savedHeadData = printerToUse.readHeadEEPROM();
 
                     zco = 0.5 * (savedHeadData.getNozzle1ZOffset() + savedHeadData.getNozzle2ZOffset());
                     zDifference = savedHeadData.getNozzle2ZOffset() - savedHeadData.getNozzle1ZOffset();
@@ -283,7 +283,7 @@ public class CalibrationNozzleOffsetHelper
             case NUDGE_MODE:
                 try
                 {
-                    savedHeadData = printerToUse.transmitReadHeadEEPROM();
+                    savedHeadData = printerToUse.readHeadEEPROM();
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error retrieving current settings from the head");

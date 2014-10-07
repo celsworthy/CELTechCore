@@ -44,10 +44,10 @@ public class BedLevelCheckTask extends Task<BedLevelCheckResult> implements Cont
     {
         BedLevelCheckResult result = new BedLevelCheckResult();
         
-        printerToUse.transmitStoredGCode("Home_all", false);
+        printerToUse.runMacro("Home_all", false);
         //Go to centre
-        printerToUse.transmitStoredGCode("level_gantry", false);
-        printerToUse.transmitStoredGCode("level_Y", false);
+        printerToUse.runMacro("level_gantry", false);
+        printerToUse.runMacro("level_Y", false);
         
         return result;
     }
