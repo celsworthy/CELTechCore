@@ -1768,3 +1768,7 @@ table-view .column-header-background {
 .table-view .column-header .label { 
     -fx-font-size: 12px; 
 }
+
+.strokeDashArray2_9878-2_9878 {
+    -fx-stroke-dash-array: 2.98 2.98;
+}

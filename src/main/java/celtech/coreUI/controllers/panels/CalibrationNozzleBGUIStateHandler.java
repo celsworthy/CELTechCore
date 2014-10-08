@@ -31,6 +31,7 @@ public class CalibrationNozzleBGUIStateHandler
                 controller.startCalibrationButton.setVisible(true);
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
+                controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Step 1.fxml");
                 controller.stepNumber.setText(String.format("Step %s of 10", 1));
                 break;
             case HEATING:
@@ -53,6 +54,7 @@ public class CalibrationNozzleBGUIStateHandler
                 controller.buttonA.setText("Yes");
                 controller.buttonB.setText("No");
                 controller.calibrationStatus.setText(state.getStepTitle());
+                controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Step 3.fxml");
                 controller.stepNumber.setText(String.format("Step %s of 10", 3));
                 break;
             case PRE_CALIBRATION_PRIMING_FINE:
@@ -68,6 +70,7 @@ public class CalibrationNozzleBGUIStateHandler
                 controller.buttonA.setText("Flowing");
                 controller.buttonB.setText("Not flowing");
                 controller.calibrationStatus.setText(state.getStepTitle());
+                controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Step 4.fxml");
                 controller.stepNumber.setText(String.format("Step %s of 10", 4));
                 break;
             case HEAD_CLEAN_CHECK_FINE_NOZZLE:
@@ -75,6 +78,7 @@ public class CalibrationNozzleBGUIStateHandler
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.nextButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
+                controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Step 5 and 7.fxml");
                 controller.stepNumber.setText(String.format("Step %s of 10", 5));
                 break;
             case CALIBRATE_FILL_NOZZLE:
@@ -85,6 +89,7 @@ public class CalibrationNozzleBGUIStateHandler
                 controller.buttonA.setText("Flowing");
                 controller.buttonB.setText("Not flowing");
                 controller.calibrationStatus.setText(state.getStepTitle());
+                 controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Step 6.fxml");
                 controller.stepNumber.setText(String.format("Step %s of 10", 6));
                 break;
             case HEAD_CLEAN_CHECK_FILL_NOZZLE:
@@ -92,6 +97,7 @@ public class CalibrationNozzleBGUIStateHandler
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.nextButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
+                controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Step 5 and 7.fxml");
                 controller.stepNumber.setText(String.format("Step %s of 10", 7));
                 break;
             case CONFIRM_NO_MATERIAL:
@@ -102,6 +108,7 @@ public class CalibrationNozzleBGUIStateHandler
                 controller.buttonA.setText("No");
                 controller.buttonB.setText("Yes");
                 controller.calibrationStatus.setText(state.getStepTitle());
+                 controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Step 8.fxml");
                 controller.stepNumber.setText(String.format("Step %s of 10", 8));
                 break;
             case CONFIRM_MATERIAL_EXTRUDING:
@@ -112,6 +119,7 @@ public class CalibrationNozzleBGUIStateHandler
                 controller.buttonA.setText("Yes");
                 controller.buttonB.setText("No");
                 controller.calibrationStatus.setText(state.getStepTitle());
+                 controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Step 9.fxml");
                 controller.stepNumber.setText(String.format("Step %s of 10", 9));
                 break;
             case FINISHED:
@@ -119,6 +127,7 @@ public class CalibrationNozzleBGUIStateHandler
                 controller.backToStatus.setVisible(true);
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
+                 controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Step 10.fxml");
                 controller.stepNumber.setText(String.format("Step %s of 10", 10));
                 break;
             case FAILED:

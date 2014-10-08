@@ -34,7 +34,7 @@ public class CalibrationMenuConfiguration
                                     CalibrationMode.NOZZLE_OFFSETS);
                                 return null;
         });        
-        calibrationMenu.addItem("X And Y Offset", (Callable) () ->
+        calibrationMenu.addItem("Nozzle Alignment", (Callable) () ->
                             {
                                 calibrationInsetPanelController.setCalibrationMode(
                                     CalibrationMode.X_AND_Y_OFFSET);

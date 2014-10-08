@@ -14,6 +14,8 @@ import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOpeningCalibrationState;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -61,6 +63,9 @@ public class CalibrationInsetPanelController implements Initializable,
 
     @FXML
     protected StackPane calibrateBottomMenu;
+
+    @FXML
+    protected VBox container;
 
     @FXML
     protected VBox calibrationBottomArea;
@@ -115,9 +120,12 @@ public class CalibrationInsetPanelController implements Initializable,
 
     @FXML
     protected Label calibrationStatus;
-    
+
     @FXML
     private BorderPane informationCentre;
+
+    @FXML
+    private Pane diagramContainerPane;
 
     private Printer currentPrinter;
     private int targetTemperature;
@@ -125,6 +133,8 @@ public class CalibrationInsetPanelController implements Initializable,
     private int targetETC;
     private double printPercent;
     private Node waitTimer;
+    private Node diagramNode;
+    private Map<String, Node> nameToNodeCache = new HashMap<>();
 
     @FXML
     void buttonAAction(ActionEvent event)
@@ -194,6 +204,10 @@ public class CalibrationInsetPanelController implements Initializable,
         buttonA.setVisible(false);
         stepNumber.setVisible(true);
         showWaitTimer(false);
+        if (diagramNode != null)
+        {
+            diagramNode.setVisible(false);
+        }
     }
 
     @Override
@@ -202,7 +216,7 @@ public class CalibrationInsetPanelController implements Initializable,
         setupProgressBars();
         setupOffsetCombos();
         setupWaitTimer(informationCentre);
-        
+
         setCalibrationMode(CalibrationMode.CHOICE);
 
         StatusScreenState statusScreenState = StatusScreenState.getInstance();
@@ -216,9 +230,91 @@ public class CalibrationInsetPanelController implements Initializable,
                 setupChildComponents(newValue);
             });
 
-        
-        
         configureCalibrationMenu(calibrationMenu, this);
+
+        container.widthProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                resizeDiagram();
+            });
+
+        container.heightProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                resizeDiagram();
+            });
+
+    }
+
+    private void resizeDiagram()
+    {
+//        Node diagramNode = diagramContainerPane.getChildren().get(0);
+//        double diagramWidth = diagramNode.getBoundsInParent().getWidth();
+//        double diagramHeight = diagramNode.getBoundsInParent().getHeight();
+//        double containerWidth = container.getWidth();
+//        double containerHeight = container.getHeight() - calibrationStatus.getHeight() - diagramHeight;
+//        containerHeight = Math.max(100, containerHeight);
+//        containerWidth = Math.max(100, containerWidth);
+//        steno.info("Diagram Height is " + diagramHeight);
+//        steno.info("Container height is now " + containerHeight);
+//        
+//        double requiredScaleX = 1;
+//        double requiredScaleY = 1;
+//        if (diagramWidth != containerWidth) {
+//            requiredScaleX = containerWidth / diagramWidth;
+//        }
+//        if (diagramHeight != containerHeight) {
+//            requiredScaleY = containerHeight / diagramHeight;
+//        }
+//        double requiredScale = 1;
+//        if (requiredScaleX < 1 || requiredScaleY < 1) {
+//            requiredScale = Math.min(requiredScaleX, requiredScaleY);
+//            steno.info("Scaling by " + requiredScale);
+//            diagramContainerPane.setScaleX(requiredScale);
+//            diagramContainerPane.setScaleY(requiredScale);
+//        } 
+
+    }
+
+    /**
+     * If this diagramNode has already been loaded then return that, else create it and return it.
+     *
+     * @param diagramName
+     * @return
+     */
+    private Node getDiagramNode(String section, String diagramName)
+    {
+        Node diagramNode = null;
+        if (!nameToNodeCache.containsKey(diagramName))
+        {
+            URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlResourcePath
+                + "diagrams/" + section + "/" + diagramName);
+            try
+            {
+                diagramNode = FXMLLoader.load(fxmlFileName);
+                nameToNodeCache.put(diagramName, diagramNode);
+            } catch (IOException ex)
+            {
+                steno.error("Could not load diagram: " + diagramName);
+            }
+        }
+        return nameToNodeCache.get(diagramName);
+    }
+
+    protected void showDiagram(String section, String diagramName)
+    {
+        diagramNode = getDiagramNode(section, diagramName);
+        if (diagramNode == null)
+        {
+            return;
+        }
+        diagramContainerPane.getChildren().clear();
+        diagramContainerPane.getChildren().addAll(diagramNode);
+        diagramNode.setLayoutY(0);
+        diagramNode.setLayoutX(0);
+        diagramNode.setScaleX(0.2);
+        diagramNode.setScaleY(0.2);
+        diagramNode.setVisible(true);
     }
 
     private void setupChildComponents(Printer printerToUse)
@@ -461,12 +557,11 @@ public class CalibrationInsetPanelController implements Initializable,
                 calibrationHelper.setYOffset(Integer.parseInt(newValue.toString()));
             });
     }
-    
 
     protected void showWaitTimer(boolean show)
     {
         waitTimer.setVisible(show);
-    }    
+    }
 
     /**
      * Initialise the waitTimer and make it remain centred on the given parent.
@@ -480,36 +575,36 @@ public class CalibrationInsetPanelController implements Initializable,
             FXMLLoader waitTimerLoader = new FXMLLoader(fxmlFileName, getLanguageBundle());
             waitTimer = waitTimerLoader.load();
             waitTimer.scaleXProperty().set(0.5);
-             waitTimer.scaleYProperty().set(0.5);
-            
+            waitTimer.scaleYProperty().set(0.5);
+
             parent.getChildren().add(waitTimer);
-            
-            parent.widthProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                relocateWaitTimer(parent);
-            });
-            
-            parent.heightProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                relocateWaitTimer(parent);
-            });    
-            
+
+            parent.widthProperty().addListener(
+                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+                {
+                    relocateWaitTimer(parent);
+                });
+
+            parent.heightProperty().addListener(
+                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+                {
+                    relocateWaitTimer(parent);
+                });
+
             relocateWaitTimer(parent);
             waitTimer.setVisible(false);
-            
-            
+
         } catch (IOException ex)
         {
             ex.printStackTrace();
             steno.error("Cannot load wait timer " + ex);
         }
     }
-    
-    private void relocateWaitTimer(Pane parent) {
+
+    private void relocateWaitTimer(Pane parent)
+    {
         waitTimer.setTranslateX(parent.getWidth() / 2.0);
         waitTimer.setTranslateY(parent.getHeight() / 2.0);
     }
-    
-    
-    
+
 }

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.transform.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.text.*?>
+<Group xmlns:fx="http://javafx.com/fxml" xmlns:str="http://exslt.org/strings" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="Document">
+   <children>
+      <Group>
+         <children>
+            <Group>
+               <children>
+                  <Group>
+                     <children />
+                  </Group>
+               </children>
+            </Group>
+            <Group>
+               <children>
+                  <Group>
+                     <children>
+                        <Group id="LINE_3010_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_3009_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_3008_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_3007_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_3006_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_3005_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_3004_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_3003_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_3002_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_3001_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_3000_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_2999_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_2998_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_2997_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_2996_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_2995_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_2994_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_2993_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_2992_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_2991_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_2990_">
+                           <children />
+                        </Group>
+                        <Group id="LWPOLYLINE_3300_">
+                           <children />
+                        </Group>
+                        <Group id="LINE_2989_">
+                           <children />
+                        </Group>
+                        <Group id="LWPOLYLINE_3299_">
+                           <children />
+                        </Group>
+                        <Group id="LWPOLYLINE_3298_">
+                           <children />
+                        </Group>
+                        <Group id="LWPOLYLINE_3297_">
+                           <children />
+                        </Group>
+                        <Group id="ARC_26_">
+                           <children>
+                              <SVGPath content="M152.154,199.215      c-0.299,2.418,1.418,4.621,3.836,4.92s4.623-1.418,4.921-3.836c0.046-0.357,0.046-0.719,0.001-1.075">
+                                 <opacity>1</opacity>
+                              </SVGPath>
+                           </children>
+                        </Group>
+                     </children>
+                  </Group>
+               </children>
+            </Group>
+         </children>
+      </Group>
+   </children>
+</Group>
+
+
