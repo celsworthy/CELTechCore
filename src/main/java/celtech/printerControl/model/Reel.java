@@ -33,21 +33,21 @@ import javafx.scene.paint.Color;
 public class Reel
 {
 
-    protected final ObjectProperty<EEPROMState> reelEEPROMStatusProperty = new SimpleObjectProperty<>(EEPROMState.NOT_PRESENT);
+    protected final ObjectProperty<EEPROMState> reelEEPROMStatus = new SimpleObjectProperty<>(EEPROMState.NOT_PRESENT);
 
-    protected final StringProperty friendlyFilamentNameProperty = new SimpleStringProperty("");
-    protected final ObjectProperty<MaterialType> materialProperty = new SimpleObjectProperty();
-    protected final StringProperty filamentIDProperty = new SimpleStringProperty();
-    protected final FloatProperty diameterProperty = new SimpleFloatProperty(0);
-    protected final FloatProperty filamentMultiplierProperty = new SimpleFloatProperty(0);
-    protected final FloatProperty feedRateMultiplierProperty = new SimpleFloatProperty(0);
-    protected final IntegerProperty ambientTemperatureProperty = new SimpleIntegerProperty(0);
-    protected final IntegerProperty firstLayerBedTemperatureProperty = new SimpleIntegerProperty(0);
-    protected final IntegerProperty bedTemperatureProperty = new SimpleIntegerProperty(0);
-    protected final IntegerProperty firstLayerNozzleTemperatureProperty = new SimpleIntegerProperty(0);
-    protected final IntegerProperty nozzleTemperatureProperty = new SimpleIntegerProperty(0);
-    protected final ObjectProperty<Color> displayColourProperty = new SimpleObjectProperty<>();
-    protected final FloatProperty remainingFilamentProperty = new SimpleFloatProperty(0);
+    protected final StringProperty friendlyFilamentName = new SimpleStringProperty("");
+    protected final ObjectProperty<MaterialType> material = new SimpleObjectProperty();
+    protected final StringProperty filamentID = new SimpleStringProperty();
+    protected final FloatProperty diameter = new SimpleFloatProperty(0);
+    protected final FloatProperty filamentMultiplier = new SimpleFloatProperty(0);
+    protected final FloatProperty feedRateMultiplier = new SimpleFloatProperty(0);
+    protected final IntegerProperty ambientTemperature = new SimpleIntegerProperty(0);
+    protected final IntegerProperty firstLayerBedTemperature = new SimpleIntegerProperty(0);
+    protected final IntegerProperty bedTemperature = new SimpleIntegerProperty(0);
+    protected final IntegerProperty firstLayerNozzleTemperature = new SimpleIntegerProperty(0);
+    protected final IntegerProperty nozzleTemperature = new SimpleIntegerProperty(0);
+    protected final ObjectProperty<Color> displayColour = new SimpleObjectProperty<>();
+    protected final FloatProperty remainingFilament = new SimpleFloatProperty(0);
 
     protected final BooleanProperty dataChangedToggle = new SimpleBooleanProperty(false);
 
@@ -77,8 +77,8 @@ public class Reel
 
     public Reel()
     {
-        friendlyFilamentNameProperty.addListener(stringChangeListener);
-        materialProperty.addListener(new ChangeListener<MaterialType>()
+        friendlyFilamentName.addListener(stringChangeListener);
+        material.addListener(new ChangeListener<MaterialType>()
         {
             @Override
             public void changed(
@@ -87,17 +87,17 @@ public class Reel
                 dataChanged();
             }
         });
-        filamentIDProperty.addListener(stringChangeListener);
-        diameterProperty.addListener(numberChangeListener);
+        filamentID.addListener(stringChangeListener);
+        diameter.addListener(numberChangeListener);
 
-        filamentMultiplierProperty.addListener(numberChangeListener);
-        feedRateMultiplierProperty.addListener(numberChangeListener);
-        ambientTemperatureProperty.addListener(numberChangeListener);
-        firstLayerBedTemperatureProperty.addListener(numberChangeListener);
-        bedTemperatureProperty.addListener(numberChangeListener);
-        firstLayerNozzleTemperatureProperty.addListener(numberChangeListener);
-        nozzleTemperatureProperty.addListener(numberChangeListener);
-        displayColourProperty.addListener(new ChangeListener<Color>()
+        filamentMultiplier.addListener(numberChangeListener);
+        feedRateMultiplier.addListener(numberChangeListener);
+        ambientTemperature.addListener(numberChangeListener);
+        firstLayerBedTemperature.addListener(numberChangeListener);
+        bedTemperature.addListener(numberChangeListener);
+        firstLayerNozzleTemperature.addListener(numberChangeListener);
+        nozzleTemperature.addListener(numberChangeListener);
+        displayColour.addListener(new ChangeListener<Color>()
         {
             @Override
             public void changed(
@@ -106,118 +106,118 @@ public class Reel
                 dataChanged();
             }
         });
-        remainingFilamentProperty.addListener(numberChangeListener);
+        remainingFilament.addListener(numberChangeListener);
     }
 
-    public ReadOnlyObjectProperty<EEPROMState> getReelEEPROMStatusProperty()
+    public ReadOnlyObjectProperty<EEPROMState> reelEEPROMStatusProperty()
     {
-        return reelEEPROMStatusProperty;
+        return reelEEPROMStatus;
     }
 
-    public ReadOnlyStringProperty getFriendlyFilamentNameProperty()
+    public ReadOnlyStringProperty friendlyFilamentNameProperty()
     {
-        return friendlyFilamentNameProperty;
+        return friendlyFilamentName;
     }
 
-    public ReadOnlyObjectProperty<MaterialType> getMaterialProperty()
+    public ReadOnlyObjectProperty<MaterialType> materialProperty()
     {
-        return materialProperty;
+        return material;
     }
 
-    public ReadOnlyStringProperty getFilamentIDProperty()
+    public ReadOnlyStringProperty filamentIDProperty()
     {
-        return filamentIDProperty;
+        return filamentID;
     }
 
-    public ReadOnlyFloatProperty getDiameterProperty()
+    public ReadOnlyFloatProperty diameterProperty()
     {
-        return diameterProperty;
+        return diameter;
     }
 
-    public ReadOnlyFloatProperty getFilamentMultiplierProperty()
+    public ReadOnlyFloatProperty filamentMultiplierProperty()
     {
-        return filamentMultiplierProperty;
+        return filamentMultiplier;
     }
 
-    public ReadOnlyFloatProperty getFeedRateMultiplierProperty()
+    public ReadOnlyFloatProperty feedRateMultiplierProperty()
     {
-        return feedRateMultiplierProperty;
+        return feedRateMultiplier;
     }
 
-    public ReadOnlyIntegerProperty getAmbientTemperatureProperty()
+    public ReadOnlyIntegerProperty ambientTemperatureProperty()
     {
-        return ambientTemperatureProperty;
+        return ambientTemperature;
     }
 
-    public ReadOnlyIntegerProperty getFirstLayerBedTemperatureProperty()
+    public ReadOnlyIntegerProperty firstLayerBedTemperatureProperty()
     {
-        return firstLayerBedTemperatureProperty;
+        return firstLayerBedTemperature;
     }
 
-    public ReadOnlyIntegerProperty getBedTemperatureProperty()
+    public ReadOnlyIntegerProperty bedTemperatureProperty()
     {
-        return bedTemperatureProperty;
+        return bedTemperature;
     }
 
-    public ReadOnlyIntegerProperty getFirstLayerNozzleTemperatureProperty()
+    public ReadOnlyIntegerProperty firstLayerNozzleTemperatureProperty()
     {
-        return firstLayerNozzleTemperatureProperty;
+        return firstLayerNozzleTemperature;
     }
 
-    public ReadOnlyIntegerProperty getNozzleTemperatureProperty()
+    public ReadOnlyIntegerProperty nozzleTemperatureProperty()
     {
-        return nozzleTemperatureProperty;
+        return nozzleTemperature;
     }
 
-    public ReadOnlyObjectProperty<Color> getDisplayColourProperty()
+    public ReadOnlyObjectProperty<Color> displayColourProperty()
     {
-        return displayColourProperty;
+        return displayColour;
     }
 
-    public ReadOnlyFloatProperty getRemainingFilamentProperty()
+    public ReadOnlyFloatProperty remainingFilamentProperty()
     {
-        return remainingFilamentProperty;
+        return remainingFilament;
     }
 
-    public ReadOnlyBooleanProperty getDataChangedToggleProperty()
+    public ReadOnlyBooleanProperty dataChangedToggleProperty()
     {
         return dataChangedToggle;
     }
 
     public void updateFromEEPROMData(ReelEEPROMDataResponse eepromData)
     {
-        ambientTemperatureProperty.set(eepromData.getAmbientTemperature());
-        bedTemperatureProperty.set(eepromData.getBedTemperature());
-        feedRateMultiplierProperty.set(eepromData.getFeedRateMultiplier());
-        diameterProperty.set(eepromData.getFilamentDiameter());
-        filamentMultiplierProperty.set(eepromData.getFilamentMultiplier());
-        firstLayerBedTemperatureProperty.set(eepromData.getFirstLayerBedTemperature());
-        firstLayerNozzleTemperatureProperty.set(eepromData.getFirstLayerNozzleTemperature());
-        nozzleTemperatureProperty.set(eepromData.getNozzleTemperature());
-        displayColourProperty.set(eepromData.getReelDisplayColour());
-        filamentIDProperty.set(eepromData.getReelFilamentID());
-        friendlyFilamentNameProperty.set(eepromData.getReelFriendlyName());
-        materialProperty.set(eepromData.getReelMaterialType());
-        remainingFilamentProperty.set(eepromData.getReelRemainingFilament());
+        ambientTemperature.set(eepromData.getAmbientTemperature());
+        bedTemperature.set(eepromData.getBedTemperature());
+        feedRateMultiplier.set(eepromData.getFeedRateMultiplier());
+        diameter.set(eepromData.getFilamentDiameter());
+        filamentMultiplier.set(eepromData.getFilamentMultiplier());
+        firstLayerBedTemperature.set(eepromData.getFirstLayerBedTemperature());
+        firstLayerNozzleTemperature.set(eepromData.getFirstLayerNozzleTemperature());
+        nozzleTemperature.set(eepromData.getNozzleTemperature());
+        displayColour.set(eepromData.getReelDisplayColour());
+        filamentID.set(eepromData.getReelFilamentID());
+        friendlyFilamentName.set(eepromData.getReelFriendlyName());
+        material.set(eepromData.getReelMaterialType());
+        remainingFilament.set(eepromData.getReelRemainingFilament());
     }
 
     public boolean isSameAs(Filament filament)
     {
         boolean same = false;
 
-        if (filament.getAmbientTemperatureProperty().get() == ambientTemperatureProperty.intValue()
-            && filament.getBedTemperatureProperty().get() == bedTemperatureProperty.intValue()
-            && filament.getDiameterProperty().get() == diameterProperty.get()
-            && filament.getDisplayColourProperty().get().equals(displayColourProperty.get())
-            && SystemUtils.isDoubleSame(filament.getFeedRateMultiplierProperty().get(), feedRateMultiplierProperty.get())
-            && filament.getFilamentIDProperty().get().equals(filamentIDProperty.get())
-            && SystemUtils.isDoubleSame(filament.getFilamentMultiplierProperty().get(), filamentMultiplierProperty.get())
-            && SystemUtils.isDoubleSame(filament.getFirstLayerBedTemperatureProperty().get(), firstLayerBedTemperatureProperty.get())
-            && SystemUtils.isDoubleSame(filament.getFirstLayerNozzleTemperatureProperty().get(), firstLayerNozzleTemperatureProperty.get())
-            && filament.getFriendlyFilamentNameProperty().get().equals(friendlyFilamentNameProperty.get())
-            && filament.getMaterialProperty().get() == materialProperty.get()
-            && filament.getNozzleTemperatureProperty().intValue() == nozzleTemperatureProperty.get()
-            && SystemUtils.isDoubleSame(filament.getRemainingFilamentProperty().get(), remainingFilamentProperty.get()))
+        if (filament.getAmbientTemperatureProperty().get() == ambientTemperature.intValue()
+            && filament.getBedTemperatureProperty().get() == bedTemperature.intValue()
+            && filament.getDiameterProperty().get() == diameter.get()
+            && filament.getDisplayColourProperty().get().equals(displayColour.get())
+            && SystemUtils.isDoubleSame(filament.getFeedRateMultiplierProperty().get(), feedRateMultiplier.get())
+            && filament.getFilamentIDProperty().get().equals(filamentID.get())
+            && SystemUtils.isDoubleSame(filament.getFilamentMultiplierProperty().get(), filamentMultiplier.get())
+            && SystemUtils.isDoubleSame(filament.getFirstLayerBedTemperatureProperty().get(), firstLayerBedTemperature.get())
+            && SystemUtils.isDoubleSame(filament.getFirstLayerNozzleTemperatureProperty().get(), firstLayerNozzleTemperature.get())
+            && filament.getFriendlyFilamentNameProperty().get().equals(friendlyFilamentName.get())
+            && filament.getMaterialProperty().get() == material.get()
+            && filament.getNozzleTemperatureProperty().intValue() == nozzleTemperature.get()
+            && SystemUtils.isDoubleSame(filament.getRemainingFilamentProperty().get(), remainingFilament.get()))
         {
             same = true;
         }
@@ -227,23 +227,23 @@ public class Reel
 
     protected void noReelLoaded()
     {
-        ambientTemperatureProperty.set(0);
-        bedTemperatureProperty.set(0);
-        feedRateMultiplierProperty.set(0);
-        diameterProperty.set(0);
-        filamentMultiplierProperty.set(0);
-        firstLayerBedTemperatureProperty.set(0);
-        firstLayerNozzleTemperatureProperty.set(0);
-        nozzleTemperatureProperty.set(0);
-        displayColourProperty.set(Color.ALICEBLUE);
-        filamentIDProperty.set("");
-        friendlyFilamentNameProperty.set(Lookup.i18n("smartReelProgrammer.noReelLoaded"));
-        materialProperty.set(MaterialType.ABS);
-        remainingFilamentProperty.set(0);
+        ambientTemperature.set(0);
+        bedTemperature.set(0);
+        feedRateMultiplier.set(0);
+        diameter.set(0);
+        filamentMultiplier.set(0);
+        firstLayerBedTemperature.set(0);
+        firstLayerNozzleTemperature.set(0);
+        nozzleTemperature.set(0);
+        displayColour.set(Color.ALICEBLUE);
+        filamentID.set("");
+        friendlyFilamentName.set(Lookup.i18n("smartReelProgrammer.noReelLoaded"));
+        material.set(MaterialType.ABS);
+        remainingFilament.set(0);
     }
 
     public boolean isUserFilament()
     {
-        return filamentIDProperty.get().startsWith("U");
+        return filamentID.get().startsWith("U");
     }
 }

@@ -9,6 +9,7 @@ import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.GCodeMacros;
+import celtech.printerControl.model.PrinterException;
 import celtech.services.purge.PurgeState;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
@@ -155,7 +156,13 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                         .masthead(null)
                         .message(DisplayManager.getLanguageBundle().getString("dialogs.clearBedInstruction"))
                         .showWarning();
-                    printerToUse.printGCodeFile(GCodeMacros.getFilename(macroToExecuteAfterPurge));
+                    try
+                    {
+                        printerToUse.runMacro(GCodeMacros.getFilename(macroToExecuteAfterPurge));
+                    } catch (PrinterException ex)
+                    {
+                        steno.error("Error running macro");
+                    }
                 }
             });
 

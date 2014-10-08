@@ -95,14 +95,14 @@ public class CalibrationNozzleOffsetInsetPanelController implements Initializabl
     {
         calibrationHelper.setState(NozzleOffsetCalibrationState.NUDGE_MODE);
 
-        if (nudgeHead != null)
-        {
-            fineNozzleNudge.getValueProperty().unbindBidirectional(nudgeHead.getNozzles().get(0).getNozzle1_Z_overrunProperty());
-            coarseNozzleNudge.getValueProperty().unbindBidirectional(nudgeHead.getNozzle2_Z_overrunProperty());
-        }
-
-        nudgeHead = new Head(calibrationHelper.getSavedHeadData());
-        nudgeHead.deriveZOverrunFromOffsets();
+//        if (nudgeHead != null)
+//        {
+//            fineNozzleNudge.getValueProperty().unbindBidirectional(nudgeHead.getNozzles().get(0).getNozzle1_Z_overrunProperty());
+//            coarseNozzleNudge.getValueProperty().unbindBidirectional(nudgeHead.getNozzle2_Z_overrunProperty());
+//        }
+//
+//        nudgeHead = new Head(calibrationHelper.getSavedHeadData());
+//        nudgeHead.deriveZOverrunFromOffsets();
 
         fineNozzleNudge.getValueProperty().bindBidirectional(nozzle1Overrun);
         coarseNozzleNudge.getValueProperty().bindBidirectional(nozzle2Overrun);
@@ -175,8 +175,8 @@ public class CalibrationNozzleOffsetInsetPanelController implements Initializabl
     {
         if (calibrationHelper.getState() == NozzleOffsetCalibrationState.NUDGE_MODE)
         {
-            nudgeHead.deriveZOffsetsFromOverrun();
-            calibrationHelper.saveNozzleOffsets(nudgeHead.getNozzle1ZOffset(), nudgeHead.getNozzle2ZOffset());
+//            nudgeHead.deriveZOffsetsFromOverrun();
+//            calibrationHelper.saveNozzleOffsets(nudgeHead.getNozzle1ZOffset(), nudgeHead.getNozzle2ZOffset());
         }
         closeAndReset();
     }
@@ -206,10 +206,10 @@ public class CalibrationNozzleOffsetInsetPanelController implements Initializabl
         fineNozzleNudge.setDeltaValue(0.05);
         coarseNozzleNudge.setDeltaValue(0.05);
 
-        fineNozzleNudge.setMaxValue(Head.normalZ1OverrunMax);
-        fineNozzleNudge.setMinValue(Head.normalZ1OverrunMin);
-        coarseNozzleNudge.setMaxValue(Head.normalZ2OverrunMax);
-        coarseNozzleNudge.setMinValue(Head.normalZ2OverrunMin);
+//        fineNozzleNudge.setMaxValue(Head.normalZ1OverrunMax);
+//        fineNozzleNudge.setMinValue(Head.normalZ1OverrunMin);
+//        coarseNozzleNudge.setMaxValue(Head.normalZ2OverrunMax);
+//        coarseNozzleNudge.setMinValue(Head.normalZ2OverrunMin);
     }
 
     @Override

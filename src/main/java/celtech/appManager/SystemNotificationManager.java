@@ -1,7 +1,6 @@
 package celtech.appManager;
 
 import celtech.Lookup;
-import celtech.configuration.PauseStatus;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.utilityPanels.MaintenancePanelController;
 import celtech.printerControl.model.Printer;
@@ -29,54 +28,15 @@ public class SystemNotificationManager
     /*
      * Error dialog
      */
-    private static Dialogs.CommandLink clearOnly;
-    private static Dialogs.CommandLink clearAndContinue;
-    private static Dialogs.CommandLink abortJob;
+    private static Dialogs.CommandLink clearOnly = null;
+    private static Dialogs.CommandLink clearAndContinue = null;
+    private static Dialogs.CommandLink abortJob = null;
 
     /*
      * Calibration dialog
      */
-    private static Dialogs.CommandLink okCalibrate;
-    private static Dialogs.CommandLink dontCalibrate;
-
-    /*
-     * Print Notifications
-     */
-    private String printTransferInitiatedNotification = null;
-    private String printTransferSuccessfulNotification = null;
-    private String printTransferSuccessfulNotificationEnd = null;
-    private String printJobCancelledNotification = null;
-    private String printJobFailedNotification = null;
-    private String sliceSuccessfulNotification = null;
-    private String sliceFailedNotification = null;
-    private String gcodePostProcessSuccessfulNotification = null;
-    private String gcodePostProcessFailedNotification = null;
-    private String detectedPrintInProgressNotification = null;
-    private String printQueueNotificationTitle = null;
-    private String reprintInitiatedNotification = null;
-
-    public SystemNotificationManager()
-    {
-        clearOnly = new Dialogs.CommandLink(Lookup.i18n("dialogs.error.clearOnly"), null);
-        clearAndContinue = new Dialogs.CommandLink(Lookup.i18n("dialogs.error.clearAndContinue"), null);
-        abortJob = new Dialogs.CommandLink(Lookup.i18n("dialogs.error.abortJob"), null);
-
-        okCalibrate = new Dialogs.CommandLink(Lookup.i18n("dialogs.headUpdateCalibrationYes"), null);
-        dontCalibrate = new Dialogs.CommandLink(Lookup.i18n("dialogs.headUpdateCalibrationNo"), null);
-
-        printTransferInitiatedNotification = Lookup.i18n("notification.printTransferInitiated");
-        printTransferSuccessfulNotification = Lookup.i18n("notification.printTransferredSuccessfully");
-        printTransferSuccessfulNotificationEnd = Lookup.i18n("notification.printTransferredSuccessfullyEnd");
-        printJobCancelledNotification = Lookup.i18n("notification.printJobCancelled");
-        printJobFailedNotification = Lookup.i18n("notification.printJobFailed");
-        sliceSuccessfulNotification = Lookup.i18n("notification.sliceSuccessful");
-        sliceFailedNotification = Lookup.i18n("notification.sliceFailed");
-        gcodePostProcessSuccessfulNotification = Lookup.i18n("notification.gcodePostProcessSuccessful");
-        gcodePostProcessFailedNotification = Lookup.i18n("notification.gcodePostProcessFailed");
-        printQueueNotificationTitle = Lookup.i18n("notification.PrintQueueTitle");
-        detectedPrintInProgressNotification = Lookup.i18n("notification.activePrintDetected");
-        reprintInitiatedNotification = Lookup.i18n("notification.reprintInitiated");
-    }
+    private static Dialogs.CommandLink okCalibrate = null;
+    private static Dialogs.CommandLink dontCalibrate = null;
 
     private void showErrorNotification(String title, String message)
     {
@@ -116,83 +76,88 @@ public class SystemNotificationManager
 
     public void processErrorPacketFromPrinter(AckResponse response, Printer printer)
     {
-        Platform.runLater(new Runnable()
+        if (clearOnly == null)
         {
-            @Override
-            public void run()
+            clearOnly = new Dialogs.CommandLink(Lookup.i18n("dialogs.error.clearOnly"), null);
+            clearAndContinue = new Dialogs.CommandLink(Lookup.i18n("dialogs.error.clearAndContinue"), null);
+            abortJob = new Dialogs.CommandLink(Lookup.i18n("dialogs.error.abortJob"), null);
+        }
+
+        Platform.runLater(() ->
+        {
+            if (response.isError()
+                && !errorDialogOnDisplay)
             {
-                if (response.isError()
-                    && !errorDialogOnDisplay)
+                errorDialogOnDisplay = true;
+                
+                Action errorHandlingResponse = null;
+                
+                if (printer.printerStatusProperty().get() != PrinterStatus.IDLE
+                    && printer.printerStatusProperty().get() != PrinterStatus.ERROR)
                 {
-                    errorDialogOnDisplay = true;
-
-                    Action errorHandlingResponse = null;
-
-                    if (printer.printerStatusProperty().get() != PrinterStatus.IDLE
-                        && printer.printerStatusProperty().get() != PrinterStatus.ERROR)
-                    {
-                        errorHandlingResponse = Dialogs.create().title(
-                            DisplayManager.getLanguageBundle().getString(
-                                "dialogs.error.errorEncountered"))
-                            .message(response.getErrorsAsString())
-                            .masthead(null)
-                            .showCommandLinks(clearAndContinue, clearAndContinue, abortJob);
-                    } else
-                    {
-                        errorHandlingResponse = Dialogs.create().title(
-                            DisplayManager.getLanguageBundle().getString(
-                                "dialogs.error.errorEncountered"))
-                            .message(response.getErrorsAsString())
-                            .masthead(null)
-                            .showCommandLinks(clearOnly, clearOnly);
-                    }
-
+                    errorHandlingResponse = Dialogs.create().title(
+                        DisplayManager.getLanguageBundle().getString(
+                            "dialogs.error.errorEncountered"))
+                        .message(response.getErrorsAsString())
+                        .masthead(null)
+                        .showCommandLinks(clearAndContinue, clearAndContinue, abortJob);
+                } else
+                {
+                    errorHandlingResponse = Dialogs.create().title(
+                        DisplayManager.getLanguageBundle().getString(
+                            "dialogs.error.errorEncountered"))
+                        .message(response.getErrorsAsString())
+                        .masthead(null)
+                        .showCommandLinks(clearOnly, clearOnly);
+                }
+                
+                try
+                {
+                    printer.transmitResetErrors();
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Couldn't reset errors after error detection");
+                }
+                
+                if (errorHandlingResponse == abortJob)
+                {
                     try
                     {
-                        printer.transmitResetErrors();
-                    } catch (RoboxCommsException ex)
-                    {
-                        steno.error("Couldn't reset errors after error detection");
-                    }
-
-                    if (errorHandlingResponse == abortJob)
-                    {
-                        try
+                        if (printer.getCanPauseProperty().get())
                         {
-                            if (printer.getCanPauseProperty().get())
-                            {
-                                printer.pause();
-                            }
-                            printer.cancel(null);
-                        } catch (PrinterException ex)
-                        {
-                            steno.error("Error whilst cancelling print from error dialog");
+                            printer.pause();
                         }
+                        printer.cancel(null);
+                    } catch (PrinterException ex)
+                    {
+                        steno.error("Error whilst cancelling print from error dialog");
                     }
-
-                    errorDialogOnDisplay = false;
                 }
+                
+                errorDialogOnDisplay = false;
             }
         });
     }
 
     public void showCalibrationDialogue()
     {
-        Platform.runLater(new Runnable()
+        if (okCalibrate == null)
         {
-            @Override
-            public void run()
-            {
-                Action calibrationResponse = Dialogs.create().title(Lookup.i18n("dialogs.headUpdateCalibrationRequiredTitle"))
-                    .message(Lookup.i18n("dialogs.headUpdateCalibrationRequiredInstruction"))
-                    .masthead(null)
-                    .showCommandLinks(okCalibrate, okCalibrate, dontCalibrate);
+            okCalibrate = new Dialogs.CommandLink(Lookup.i18n("dialogs.headUpdateCalibrationYes"), null);
+            dontCalibrate = new Dialogs.CommandLink(Lookup.i18n("dialogs.headUpdateCalibrationNo"), null);
+        }
 
-                if (calibrationResponse == okCalibrate)
-                {
-                    MaintenancePanelController.calibrateBAction();
-                    MaintenancePanelController.calibrateZOffsetAction();
-                }
+        Platform.runLater(() ->
+        {
+            Action calibrationResponse = Dialogs.create().title(Lookup.i18n("dialogs.headUpdateCalibrationRequiredTitle"))
+                .message(Lookup.i18n("dialogs.headUpdateCalibrationRequiredInstruction"))
+                .masthead(null)
+                .showCommandLinks(okCalibrate, okCalibrate, dontCalibrate);
+            
+            if (calibrationResponse == okCalibrate)
+            {
+                MaintenancePanelController.calibrateBAction();
+                MaintenancePanelController.calibrateZOffsetAction();
             }
         });
     }
@@ -230,54 +195,54 @@ public class SystemNotificationManager
 
     public void showSliceFailedNotification()
     {
-        showErrorNotification(printQueueNotificationTitle, sliceFailedNotification);
+        showErrorNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.sliceFailed"));
     }
 
     public void showSliceSuccessfulNotification()
     {
-        showInformationNotification(printQueueNotificationTitle, sliceSuccessfulNotification);
+        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.sliceSuccessful"));
     }
 
     public void showGCodePostProcessFailedNotification()
     {
-        showErrorNotification(printQueueNotificationTitle, gcodePostProcessFailedNotification);
+        showErrorNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.gcodePostProcessFailed"));
     }
 
     public void showGCodePostProcessSuccessfulNotification()
     {
-        showInformationNotification(printQueueNotificationTitle, gcodePostProcessSuccessfulNotification);
+        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.gcodePostProcessSuccessful"));
     }
 
     public void showPrintJobCancelledNotification()
     {
-        showInformationNotification(printQueueNotificationTitle, printJobCancelledNotification);
+        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.printJobCancelled"));
     }
 
     public void showPrintJobFailedNotification()
     {
-        showErrorNotification(printQueueNotificationTitle, printJobFailedNotification);
+        showErrorNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.printJobFailed"));
     }
 
     public void showPrintTransferSuccessfulNotification(String printerName)
     {
-        showInformationNotification(printQueueNotificationTitle,
-                                    printTransferSuccessfulNotification + " "
+        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.printTransferredSuccessfully")
+                                    + " "
                                     + printerName + "\n"
-                                    + printTransferSuccessfulNotificationEnd);
+                                    + Lookup.i18n("notification.printTransferredSuccessfullyEnd"));
     }
 
     public void showPrintTransferInitiatedNotification()
     {
-        showInformationNotification(printQueueNotificationTitle, printTransferInitiatedNotification);
+        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.printTransferInitiated"));
     }
 
     public void showReprintStartedNotification()
     {
-        showInformationNotification(printQueueNotificationTitle, reprintInitiatedNotification);
+        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.reprintInitiated"));
     }
 
     public void showDetectedPrintInProgressNotification()
     {
-        showInformationNotification(printQueueNotificationTitle, detectedPrintInProgressNotification);
+        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.activePrintDetected"));
     }
 }

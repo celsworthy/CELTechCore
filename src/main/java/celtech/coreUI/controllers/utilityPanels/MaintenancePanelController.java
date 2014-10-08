@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.appManager.ApplicationMode;
@@ -21,11 +16,11 @@ import celtech.printerControl.model.Printer;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
+import celtech.printerControl.model.PrinterException;
 import celtech.services.firmware.FirmwareLoadService;
 import celtech.services.firmware.FirmwareLoadTask;
 import celtech.services.printing.GCodePrintResult;
 import celtech.services.printing.GCodePrintService;
-import celtech.utils.PrinterUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -159,8 +154,8 @@ public class MaintenancePanelController implements Initializable
             {
                 try
                 {
-                    connectedPrinter.transmitStoredGCode(macroName);
-                } catch (RoboxCommsException ex)
+                    connectedPrinter.runMacro(macroName);
+                } catch (PrinterException ex)
                 {
                     steno.error("Error sending macro : " + macroName);
                 }
@@ -180,8 +175,8 @@ public class MaintenancePanelController implements Initializable
             {
                 try
                 {
-                    connectedPrinter.runMacro(macroName, false);
-                } catch (RoboxCommsException ex)
+                    connectedPrinter.runMacroWithoutPurgeCheck(macroName);
+                } catch (PrinterException ex)
                 {
                     steno.error("Error sending macro : " + macroName);
                 }
@@ -211,12 +206,12 @@ public class MaintenancePanelController implements Initializable
     {
         try
         {
-            FirmwareResponse response = connectedPrinter.transmitReadFirmwareVersion();
+            FirmwareResponse response = connectedPrinter.readFirmwareVersion();
             if (response != null)
             {
                 currentFirmwareField.setText(response.getFirmwareRevision());
             }
-        } catch (RoboxCommsException ex)
+        } catch (PrinterException ex)
         {
             steno.error("Error reading firmware version");
         }
@@ -328,7 +323,14 @@ public class MaintenancePanelController implements Initializable
         {
             if (connectedPrinter.printerStatusProperty().get() == PrinterStatus.IDLE)
             {
-                connectedPrinter.printGCodeFile(file.getAbsolutePath());
+                try
+                {
+                connectedPrinter.runMacro(file.getAbsolutePath());
+                }
+                catch (PrinterException ex)
+                {
+                    steno.error("Error sending SD job");
+                }
             }
             ApplicationConfiguration.setLastDirectory(DirectoryMemoryProperty.MACRO, file.getParentFile().getAbsolutePath());
         }

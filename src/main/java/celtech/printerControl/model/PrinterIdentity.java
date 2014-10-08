@@ -1,11 +1,8 @@
 package celtech.printerControl.model;
 
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -20,17 +17,17 @@ import javafx.scene.paint.Color;
 public class PrinterIdentity
 {
 
-    protected final StringProperty printerUniqueIDProperty = new SimpleStringProperty("");
-    protected final StringProperty printermodelProperty = new SimpleStringProperty("");
-    protected final StringProperty printereditionProperty = new SimpleStringProperty("");
-    protected final StringProperty printerweekOfManufactureProperty = new SimpleStringProperty("");
-    protected final StringProperty printeryearOfManufactureProperty = new SimpleStringProperty("");
-    protected final StringProperty printerpoNumberProperty = new SimpleStringProperty("");
-    protected final StringProperty printerserialNumberProperty = new SimpleStringProperty("");
-    protected final StringProperty printercheckByteProperty = new SimpleStringProperty("");
-    protected final StringProperty printerFriendlyNameProperty = new SimpleStringProperty("");
-    protected final ObjectProperty<Color> printerColourProperty = new SimpleObjectProperty<>();
-    protected final StringProperty firmwareVersionProperty = new SimpleStringProperty();
+    protected final StringProperty printerUniqueID = new SimpleStringProperty("");
+    protected final StringProperty printermodel = new SimpleStringProperty("");
+    protected final StringProperty printeredition = new SimpleStringProperty("");
+    protected final StringProperty printerweekOfManufacture = new SimpleStringProperty("");
+    protected final StringProperty printeryearOfManufacture = new SimpleStringProperty("");
+    protected final StringProperty printerpoNumber = new SimpleStringProperty("");
+    protected final StringProperty printerserialNumber = new SimpleStringProperty("");
+    protected final StringProperty printercheckByte = new SimpleStringProperty("");
+    protected final StringProperty printerFriendlyName = new SimpleStringProperty("");
+    protected final ObjectProperty<Color> printerColour = new SimpleObjectProperty<>();
+    protected final StringProperty firmwareVersion = new SimpleStringProperty();
 
     private final ChangeListener<String> stringChangeListener = new ChangeListener<String>()
     {
@@ -44,9 +41,9 @@ public class PrinterIdentity
 
     public PrinterIdentity()
     {
-        firmwareVersionProperty.addListener(stringChangeListener);
+        firmwareVersion.addListener(stringChangeListener);
 
-        printerColourProperty.addListener(new ChangeListener<Color>()
+        printerColour.addListener(new ChangeListener<Color>()
         {
 
             @Override
@@ -57,111 +54,111 @@ public class PrinterIdentity
             }
         });
 
-        printerFriendlyNameProperty.addListener(stringChangeListener);
-        printerUniqueIDProperty.addListener(stringChangeListener);
-        printercheckByteProperty.addListener(stringChangeListener);
-        printereditionProperty.addListener(stringChangeListener);
-        printermodelProperty.addListener(stringChangeListener);
-        printerpoNumberProperty.addListener(stringChangeListener);
-        printerserialNumberProperty.addListener(stringChangeListener);
-        printerweekOfManufactureProperty.addListener(stringChangeListener);
-        printeryearOfManufactureProperty.addListener(stringChangeListener);
+        printerFriendlyName.addListener(stringChangeListener);
+        printerUniqueID.addListener(stringChangeListener);
+        printercheckByte.addListener(stringChangeListener);
+        printeredition.addListener(stringChangeListener);
+        printermodel.addListener(stringChangeListener);
+        printerpoNumber.addListener(stringChangeListener);
+        printerserialNumber.addListener(stringChangeListener);
+        printerweekOfManufacture.addListener(stringChangeListener);
+        printeryearOfManufacture.addListener(stringChangeListener);
 
     }
 
-    public ReadOnlyStringProperty getPrinterUniqueIDProperty()
+    public ReadOnlyStringProperty printerUniqueIDProperty()
     {
-        return printerUniqueIDProperty;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public ReadOnlyStringProperty getPrintermodelProperty()
-    {
-        return printermodelProperty;
+        return printerUniqueID;
     }
 
     /**
      *
      * @return
      */
-    public ReadOnlyStringProperty getPrintereditionProperty()
+    public ReadOnlyStringProperty printermodelProperty()
     {
-        return printereditionProperty;
+        return printermodel;
     }
 
     /**
      *
      * @return
      */
-    public ReadOnlyStringProperty getPrinterweekOfManufactureProperty()
+    public ReadOnlyStringProperty printereditionProperty()
     {
-        return printerweekOfManufactureProperty;
+        return printeredition;
     }
 
     /**
      *
      * @return
      */
-    public ReadOnlyStringProperty getPrinteryearOfManufactureProperty()
+    public ReadOnlyStringProperty printerweekOfManufactureProperty()
     {
-        return printeryearOfManufactureProperty;
+        return printerweekOfManufacture;
     }
 
     /**
      *
      * @return
      */
-    public ReadOnlyStringProperty getPrinterpoNumberProperty()
+    public ReadOnlyStringProperty printeryearOfManufactureProperty()
     {
-        return printerpoNumberProperty;
+        return printeryearOfManufacture;
     }
 
     /**
      *
      * @return
      */
-    public ReadOnlyStringProperty getPrinterserialNumberProperty()
+    public ReadOnlyStringProperty printerpoNumberProperty()
     {
-        return printerserialNumberProperty;
+        return printerpoNumber;
     }
 
     /**
      *
      * @return
      */
-    public ReadOnlyStringProperty getPrintercheckByteProperty()
+    public ReadOnlyStringProperty printerserialNumberProperty()
     {
-        return printercheckByteProperty;
+        return printerserialNumber;
     }
 
     /**
      *
      * @return
      */
-    public ReadOnlyStringProperty getPrinterFriendlyNameProperty()
+    public ReadOnlyStringProperty printercheckByteProperty()
     {
-        return printerFriendlyNameProperty;
+        return printercheckByte;
     }
 
     /**
      *
      * @return
      */
-    public final ReadOnlyObjectProperty<Color> getPrinterColourProperty()
+    public ReadOnlyStringProperty printerFriendlyNameProperty()
     {
-        return printerColourProperty;
+        return printerFriendlyName;
     }
 
     /**
      *
      * @return
      */
-    public final ReadOnlyStringProperty getFirmwareVersionProperty()
+    public final ReadOnlyObjectProperty<Color> printerColourProperty()
     {
-        return firmwareVersionProperty;
+        return printerColour;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public final ReadOnlyStringProperty firmwareVersionProperty()
+    {
+        return firmwareVersion;
     }
 
     /**
@@ -170,30 +167,30 @@ public class PrinterIdentity
      */
     private void updatePrinterUniqueID()
     {
-        printerUniqueIDProperty.set(printermodelProperty.get()
-            + printereditionProperty.get()
-            + printerweekOfManufactureProperty.get()
-            + printeryearOfManufactureProperty.get()
-            + printerpoNumberProperty.get()
-            + printerserialNumberProperty.get()
-            + printercheckByteProperty.get());
+        printerUniqueID.set(printermodel.get()
+            + printeredition.get()
+            + printerweekOfManufacture.get()
+            + printeryearOfManufacture.get()
+            + printerpoNumber.get()
+            + printerserialNumber.get()
+            + printercheckByte.get());
     }
 
     @Override
     public PrinterIdentity clone()
     {
         PrinterIdentity clone = new PrinterIdentity();
-        clone.firmwareVersionProperty.set(firmwareVersionProperty.get());
-        clone.printerColourProperty.set(printerColourProperty.get());
-        clone.printerFriendlyNameProperty.set(printerFriendlyNameProperty.get());
-        clone.printerUniqueIDProperty.set(printerUniqueIDProperty.get());
-        clone.printercheckByteProperty.set(printercheckByteProperty.get());
-        clone.printereditionProperty.set(printereditionProperty.get());
-        clone.printermodelProperty.set(printermodelProperty.get());
-        clone.printerpoNumberProperty.set(printerpoNumberProperty.get());
-        clone.printerserialNumberProperty.set(printerserialNumberProperty.get());
-        clone.printerweekOfManufactureProperty.set(printerweekOfManufactureProperty.get());
-        clone.printeryearOfManufactureProperty.set(printeryearOfManufactureProperty.get());
+        clone.firmwareVersion.set(firmwareVersion.get());
+        clone.printerColour.set(printerColour.get());
+        clone.printerFriendlyName.set(printerFriendlyName.get());
+        clone.printerUniqueID.set(printerUniqueID.get());
+        clone.printercheckByte.set(printercheckByte.get());
+        clone.printeredition.set(printeredition.get());
+        clone.printermodel.set(printermodel.get());
+        clone.printerpoNumber.set(printerpoNumber.get());
+        clone.printerserialNumber.set(printerserialNumber.get());
+        clone.printerweekOfManufacture.set(printerweekOfManufacture.get());
+        clone.printeryearOfManufacture.set(printeryearOfManufacture.get());
 
         return clone;
     }

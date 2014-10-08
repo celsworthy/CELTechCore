@@ -12,37 +12,27 @@ import celtech.Lookup;
  */
 public enum PrinterStatus
 {
-    IDLE(0, "printerStatus.idle"),
-    SLICING(5, "PrintQueue.Slicing"),
-    POST_PROCESSING(6, "PrintQueue.PostProcessing"),
-    SENDING_TO_PRINTER(10, "PrintQueue.SendingToPrinter"),
-    PRINTING(15, "printerStatus.printing"),
-    EXECUTING_MACRO(16, "PrintQueue.ExecutingMacro"),
-    PAUSING(20, "printerStatus.pausing"),
-    PAUSED(21, "printerStatus.paused"),
-    RESUMING(22, "printerStatus.resuming"),
-    REMOVING_HEAD(30, "printerStatus.removingHead"),
-    PURGING_HEAD(40, "printerStatus.purging"),
-    CANCELLING(50, "printerStatus.cancelling"),
-    EJECTING_FILAMENT(60, "printerStatus.ejectingFilament"),
-    ERROR(90, "PrintQueue.Error");
+    IDLE("printerStatus.idle"),
+    SLICING("PrintQueue.Slicing"),
+    POST_PROCESSING("PrintQueue.PostProcessing"),
+    SENDING_TO_PRINTER("PrintQueue.SendingToPrinter"),
+    PRINTING("printerStatus.printing"),
+    EXECUTING_MACRO("PrintQueue.ExecutingMacro"),
+    PAUSING("printerStatus.pausing"),
+    PAUSED("printerStatus.paused"),
+    RESUMING("printerStatus.resuming"),
+    REMOVING_HEAD("printerStatus.removingHead"),
+    PURGING_HEAD("printerStatus.purging"),
+    CANCELLING("printerStatus.cancelling"),
+    EJECTING_FILAMENT("printerStatus.ejectingFilament"),
+    OPENING_DOOR("printerStatus.openingDoor"),
+    ERROR("PrintQueue.Error");
 
-    private final int statusValue;
     private final String i18nString;
 
-    private PrinterStatus(int statusValue, String i18nString)
+    private PrinterStatus(String i18nString)
     {
-        this.statusValue = statusValue;
         this.i18nString = i18nString;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public int getStatusValue()
-    {
-        return statusValue;
     }
 
     /**

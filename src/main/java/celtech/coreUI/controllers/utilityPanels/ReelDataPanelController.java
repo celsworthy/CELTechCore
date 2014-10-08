@@ -207,29 +207,29 @@ public class ReelDataPanelController implements Initializable
             }
 
             //TODO modify for multiple reels
-            filamentID.setText(connectedPrinter.reelsProperty().get(0).getFilamentIDProperty().get());
+            filamentID.setText(connectedPrinter.reelsProperty().get(0).filamentIDProperty().get());
             reelAmbientTemperature.setText(String.format("%d",
-                                                         connectedPrinter.reelsProperty().get(0).getAmbientTemperatureProperty().get()));
+                                                         connectedPrinter.reelsProperty().get(0).ambientTemperatureProperty().get()));
             reelFirstLayerBedTemperature.setText(String.format("%d",
-                                                               connectedPrinter.reelsProperty().get(0).getFirstLayerBedTemperatureProperty().get()));
+                                                               connectedPrinter.reelsProperty().get(0).firstLayerBedTemperatureProperty().get()));
             reelBedTemperature.setText(String.format("%d",
-                                                     connectedPrinter.reelsProperty().get(0).getBedTemperatureProperty().get()));
+                                                     connectedPrinter.reelsProperty().get(0).bedTemperatureProperty().get()));
             reelFirstLayerNozzleTemperature.setText(String.format("%d",
-                                                                  connectedPrinter.reelsProperty().get(0).getFirstLayerNozzleTemperatureProperty().get()));
+                                                                  connectedPrinter.reelsProperty().get(0).firstLayerNozzleTemperatureProperty().get()));
             reelNozzleTemperature.setText(String.format("%d",
-                                                        connectedPrinter.reelsProperty().get(0).getNozzleTemperatureProperty().get()));
+                                                        connectedPrinter.reelsProperty().get(0).nozzleTemperatureProperty().get()));
             reelFilamentMultiplier.setText(String.format("%.2f",
-                                                         connectedPrinter.reelsProperty().get(0).getFilamentMultiplierProperty().get()));
+                                                         connectedPrinter.reelsProperty().get(0).filamentMultiplierProperty().get()));
             reelFeedRateMultiplier.setText(String.format("%.2f",
-                                                         connectedPrinter.reelsProperty().get(0).getFeedRateMultiplierProperty().get()));
+                                                         connectedPrinter.reelsProperty().get(0).feedRateMultiplierProperty().get()));
             reelRemainingFilament.setText(String.format("%.0f",
-                                                        connectedPrinter.reelsProperty().get(0).getRemainingFilamentProperty().get()));
+                                                        connectedPrinter.reelsProperty().get(0).remainingFilamentProperty().get()));
             reelFilamentDiameter.setText(String.format("%.2f",
-                                                       connectedPrinter.reelsProperty().get(0).getDiameterProperty().get()));
-            reelFilamentName.setText(connectedPrinter.reelsProperty().get(0).getFriendlyFilamentNameProperty().get());
-            MaterialType reelMaterialTypeVal = connectedPrinter.reelsProperty().get(0).getMaterialProperty().get();
+                                                       connectedPrinter.reelsProperty().get(0).diameterProperty().get()));
+            reelFilamentName.setText(connectedPrinter.reelsProperty().get(0).friendlyFilamentNameProperty().get());
+            MaterialType reelMaterialTypeVal = connectedPrinter.reelsProperty().get(0).materialProperty().get();
             reelMaterialType.getSelectionModel().select(reelMaterialTypeVal);
-            reelDisplayColor.setValue(connectedPrinter.reelsProperty().get(0).getDisplayColourProperty().get());
+            reelDisplayColor.setValue(connectedPrinter.reelsProperty().get(0).displayColourProperty().get());
         }
     };
     /*
@@ -289,14 +289,14 @@ public class ReelDataPanelController implements Initializable
             connectedPrinter = printer;
 
             reelContainer.visibleProperty().bind(
-                connectedPrinter.reelsProperty().get(0).getReelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
+                connectedPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
 
 //            connectedPrinter.reelDataChangedProperty().addListener(reelDataChangeListener);
 
             reelWriteConfig.visibleProperty().bind(
-                connectedPrinter.reelsProperty().get(0).getReelEEPROMStatusProperty().isNotEqualTo(EEPROMState.NOT_PRESENT));
+                connectedPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().isNotEqualTo(EEPROMState.NOT_PRESENT));
             saveFilamentAs.visibleProperty().bind(
-                connectedPrinter.reelsProperty().get(0).getReelEEPROMStatusProperty().isNotEqualTo(EEPROMState.NOT_PRESENT));
+                connectedPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().isNotEqualTo(EEPROMState.NOT_PRESENT));
         }
     }
 

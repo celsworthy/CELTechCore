@@ -1,13 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.comms;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.MachineType;
 import celtech.printerControl.model.Printer;
-import celtech.printerControl.PrinterImpl;
+import celtech.printerControl.model.PrinterException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -112,7 +108,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     @Override
     public void run()
     {
-        Printer nullPrinter = new PrinterImpl(this, new HardwareCommandInterface(this, nullPrinterString, suppressPrinterIDChecks, sleepBetweenStatusChecks));
+        Printer nullPrinter = new Printer(this, new DummyPrinterCommandInterface(this, nullPrinterString, suppressPrinterIDChecks, sleepBetweenStatusChecks));
         pendingPrinters.put(nullPrinterString, nullPrinter);
 
         while (keepRunning)
@@ -138,7 +134,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
                         // We need to connect!
                         steno.info("Adding new printer on " + port);
 
-                        Printer newPrinter = new PrinterImpl(this, new HardwareCommandInterface(this, port, suppressPrinterIDChecks, sleepBetweenStatusChecks));
+                        Printer newPrinter = new Printer(this, new HardwareCommandInterface(this, port, suppressPrinterIDChecks, sleepBetweenStatusChecks));
                         pendingPrinters.put(port, newPrinter);
                     }
                 }
@@ -162,32 +158,23 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
         for (Printer printer : printerStatus)
         {
 
-            switch (printer.getPrinterStatus())
+            switch (printer.printerStatusProperty().get())
             {
-                case IDLE:
-                case PAUSED:
-                case PRINTING:
-                    break;
                 case SENDING_TO_PRINTER:
                 case POST_PROCESSING:
                 case SLICING:
                 case ERROR:
-                    printer.getPrintQueue().abortPrint();
+                    try
+                    {
+                        printer.cancel(null);
+                    } catch (PrinterException ex)
+                    {
+                        steno.error("Error attempting to cancel print");
+                    }
                     break;
             }
         }
 
-        activePrinters.values().stream().
-            forEach((printer) ->
-        {
-            printer.shutdown();
-        });
-
-        pendingPrinters.values().stream().
-            forEach((printer) ->
-        {
-            printer.shutdown();
-        });
         keepRunning = false;
     }
 
@@ -248,7 +235,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     {
         Printer printer = pendingPrinters.get(portName);
         activePrinters.put(portName, printer);
-        
+
         Platform.runLater(new Runnable()
         {
             @Override

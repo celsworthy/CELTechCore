@@ -1,14 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.services.purge;
 
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.model.Printer;
-import celtech.printerControl.comms.commands.GCodeConstants;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.model.PrinterException;
 import celtech.services.ControllableService;
 import celtech.utils.PrinterUtils;
 import javafx.concurrent.Task;
@@ -51,31 +45,34 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
         switch (desiredState)
         {
             case HEATING:
-                try
-                {
-                    //Set the bed to 90 degrees C
-                    int desiredBedTemperature = 90;
-                    printerToUse.setBedTargetTemperature(desiredBedTemperature);
-                    printerToUse.goToTargetBedTemperature();
-                    boolean bedHeatedOK = PrinterUtils.waitUntilTemperatureIsReached(printerToUse.bedTemperatureProperty(), this, desiredBedTemperature, 5, 600);
 
-                    printerToUse.setNozzleTargetTemperature(purgeTemperature);
-                    printerToUse.goToTargetNozzleTemperature();
-                    boolean extruderHeatedOK = PrinterUtils.waitUntilTemperatureIsReached(printerToUse.extruderTemperatureProperty(), this, purgeTemperature, 5, 300);
+                //Set the bed to 90 degrees C
+                int desiredBedTemperature = 90;
+                printerToUse.setBedTargetTemperature(desiredBedTemperature);
+                printerToUse.goToTargetBedTemperature();
+                boolean bedHeatedOK = PrinterUtils.waitUntilTemperatureIsReached(printerToUse.getPrinterAncillarySystems().bedTemperatureProperty(), this, desiredBedTemperature, 5, 600);
 
-                    if (bedHeatedOK && extruderHeatedOK)
-                    {
-                        success = true;
-                    }
-                } catch (InterruptedException ex)
+                printerToUse.setNozzleTargetTemperature(purgeTemperature);
+                printerToUse.goToTargetNozzleTemperature();
+                //TODO modify to support multiple heaters
+                boolean extruderHeatedOK = PrinterUtils.
+                    waitUntilTemperatureIsReached(printerToUse.headProperty().get().getNozzleHeaters().get(0).nozzleTemperatureProperty(), this, purgeTemperature, 5, 300);
+
+                if (bedHeatedOK && extruderHeatedOK)
                 {
-                    steno.error("Interrrupted during purge - mode=" + desiredState.name());
+                    success = true;
                 }
 
                 break;
 
             case RUNNING_PURGE:
-                printerToUse.runMacro("Purge Material", false);
+                try
+                {
+                    printerToUse.runMacro("Purge Material");
+                } catch (PrinterException ex)
+                {
+                    steno.error("Error running purge");
+                }
                 PrinterUtils.waitOnMacroFinished(printerToUse, this);
                 break;
         }
@@ -97,7 +94,13 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
     {
         if (desiredState == PurgeState.RUNNING_PURGE)
         {
-            printerToUse.abort();
+            try
+            {
+                printerToUse.cancel(null);
+            } catch (PrinterException ex)
+            {
+                steno.error("Error whilst running purge - " + ex.getMessage());
+            }
         }
         return cancel();
     }

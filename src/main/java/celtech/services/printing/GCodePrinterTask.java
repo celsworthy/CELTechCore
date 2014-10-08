@@ -1,11 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.services.printing;
 
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.model.PrinterException;
 import celtech.utils.SystemUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -102,7 +99,7 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
 //                        steno.info("Sending line " + lineCounter);
                         printerToUse.sendDataFileChunk(line, lineCounter == numberOfLines - 1, true);
                         if ((printerToUse.getDataFileSequenceNumber() > 1 && printerToUse.isPrintInitiated() == false)
-                                || (lineCounter == numberOfLines - 1 && printerToUse.isPrintInitiated() == false))
+                            || (lineCounter == numberOfLines - 1 && printerToUse.isPrintInitiated() == false))
                         {
                             //Start printing!
                             printerToUse.initiatePrint(printJobID);
@@ -127,7 +124,13 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
             steno.error("Error during print operation - abandoning print " + printJobID + " " + ex.getMessage());
             if (printUsingSDCard)
             {
-                printerToUse.abort();
+                try
+                {
+                    printerToUse.cancel(null);
+                } catch (PrinterException exp)
+                {
+                    steno.error("Error cancelling print - " + exp.getMessage());
+                }
             }
             updateMessage("Printing error");
         } finally
@@ -136,7 +139,7 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
             {
                 scanner.close();
             }
-            
+
             if (gcodeReader != null)
             {
                 gcodeReader.close();

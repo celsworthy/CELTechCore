@@ -96,14 +96,14 @@ public class WritePrinterID extends RoboxTxPacket
     
      public void populatePacket(PrinterIdentity printerIdentity)
      {
-         setIDAndColour(printerIdentity.getPrintermodelProperty().get(),
-                        printerIdentity.getPrintereditionProperty().get(),
-                        printerIdentity.getPrinterweekOfManufactureProperty().get(),
-                        printerIdentity.getPrinteryearOfManufactureProperty().get(),
-                        printerIdentity.getPrinterpoNumberProperty().get(),
-                        printerIdentity.getPrinterserialNumberProperty().get(),
-                        printerIdentity.getPrintercheckByteProperty().get(),
-                        printerIdentity.getPrinterFriendlyNameProperty().get(),
-                        printerIdentity.getPrinterColourProperty().get());
+         setIDAndColour(printerIdentity.printermodelProperty().get(),
+                        printerIdentity.printereditionProperty().get(),
+                        printerIdentity.printerweekOfManufactureProperty().get(),
+                        printerIdentity.printeryearOfManufactureProperty().get(),
+                        printerIdentity.printerpoNumberProperty().get(),
+                        printerIdentity.printerserialNumberProperty().get(),
+                        printerIdentity.printercheckByteProperty().get(),
+                        printerIdentity.printerFriendlyNameProperty().get(),
+                        printerIdentity.printerColourProperty().get());
      }
 }

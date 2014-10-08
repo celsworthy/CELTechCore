@@ -1,6 +1,6 @@
 package celtech.printerControl.comms;
 
-import celtech.printerControl.comms.commands.GCodeConstants;
+import celtech.printerControl.model.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.GCodeDataResponse;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacket;

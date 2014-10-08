@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
@@ -370,10 +365,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                     if (printerToEdit != null)
                     {
                         printerIDDialog.setPrinterToUse(printerToEdit);
-                        printerIDDialog.setChosenDisplayColour(colourMap.printerToDisplayColour(printerToEdit.getPrinterIdentity().getPrinterColourProperty().get()));
-                        printerIDDialog.setChosenPrinterName(printerToEdit.getPrinterIdentity().getPrinterFriendlyNameProperty().get());
+                        printerIDDialog.setChosenDisplayColour(colourMap.printerToDisplayColour(printerToEdit.getPrinterIdentity().printerColourProperty().get()));
+                        printerIDDialog.setChosenPrinterName(printerToEdit.getPrinterIdentity().printerFriendlyNameProperty().get());
 
-                        Color currentColour = printerToEdit.getPrinterIdentity().getPrinterColourProperty().get();
+                        Color currentColour = printerToEdit.getPrinterIdentity().printerColourProperty().get();
 
                         boolean okPressed = printerIDDialog.show();
 
@@ -733,17 +728,16 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
              * Reel
              */
             //TODO modify to work with multiple reels
-            filamentStatusLabel.textProperty().bind(Bindings.when(selectedPrinter.reelsProperty().get(0).getReelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED))
-                .then(selectedPrinter.getPrinterIdentity().getPrinterFriendlyNameProperty())
-                .otherwise(Bindings.when(selectedPrinter.reelsProperty().get(0).getReelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PROGRAMMED))
+            filamentStatusLabel.textProperty().bind(Bindings.when(selectedPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED))
+                .then(selectedPrinter.getPrinterIdentity().printerFriendlyNameProperty())
+                .otherwise(Bindings.when(selectedPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PROGRAMMED))
                     .then(reelNotFormattedString).otherwise(filamentNotLoadedString)));
 
             /*
              * Head
              */
-            printHeadLabel.textProperty().bind(Bindings.when(selectedPrinter.headProperty().get().headEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED)).then(selectedPrinter.headProperty().
-                get().typeCodeProperty()).otherwise(Bindings.when(
-                        selectedPrinter.headProperty().get().headEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PROGRAMMED)).then(headNotFormattedString).otherwise(headNotAttachedString)));
+            printHeadLabel.textProperty().bind(Bindings.when(selectedPrinter.headProperty().isNotNull()).then(selectedPrinter.headProperty().
+                get().typeCodeProperty()).otherwise(headNotAttachedString));
 
             //TODO modify for multiple heaters
             selectedPrinter.headProperty().get().getNozzleHeaters().get(0).getNozzleTemperatureHistory().getData().addListener(graphDataPointChangeListener);

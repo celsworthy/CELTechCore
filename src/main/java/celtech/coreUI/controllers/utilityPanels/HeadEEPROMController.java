@@ -1,13 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.configuration.EEPROMState;
-import celtech.configuration.HeadContainer;
-import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.RestrictedTextField;
@@ -16,6 +9,7 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterException;
 import celtech.utils.PrinterUtils;
 import java.net.URL;
 import java.text.ParseException;
@@ -104,7 +98,6 @@ public class HeadEEPROMController implements Initializable
     //We'll only deal with the first printer we find.
     private Printer connectedPrinter = null;
 
-    private ChangeListener<EEPROMState> headAttachListener = null;
     private ChangeListener<Boolean> headDataChangeListener = null;
 
     private ModalDialog eepromCommsError = null;
@@ -155,6 +148,7 @@ public class HeadEEPROMController implements Initializable
                 nozzle2ZOffsetCalculated, nozzle2BOffsetVal,
                 lastFilamentTemperatureVal, headHourCounterVal);
             offsetFieldsDirty.set(false);
+            connectedPrinter.readHeadEEPROM();
         } catch (RoboxCommsException ex)
         {
             steno.error("Error writing reel EEPROM");
@@ -165,29 +159,14 @@ public class HeadEEPROMController implements Initializable
         {
             steno.info("Parse error getting head data");
         }
-        readHeadConfig(event);
-    }
-
-    void readHeadConfig(ActionEvent event)
-    {
-        try
-        {
-            connectedPrinter.readHeadEEPROM();
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error reading head EEPROM");
-            eepromCommsError.setMessage(DisplayManager.getLanguageBundle().getString(
-                "eeprom.headReadError"));
-            eepromCommsError.show();
-        }
     }
 
     void readPrinterID(ActionEvent event)
     {
         try
         {
-            connectedPrinter.transmitReadPrinterID();
-        } catch (RoboxCommsException ex)
+            connectedPrinter.readPrinterID();
+        } catch (PrinterException ex)
         {
             steno.error("Error reading printer ID");
         }
@@ -220,7 +199,6 @@ public class HeadEEPROMController implements Initializable
                             {
                                 bindToPrinter(additem);
                                 readPrinterID(null);
-                                readHeadConfig(null);
                                 try
                                 {
                                     additem.transmitResetErrors();
@@ -246,19 +224,6 @@ public class HeadEEPROMController implements Initializable
                     }
                 }
             });
-
-            headAttachListener = new ChangeListener<EEPROMState>()
-            {
-                @Override
-                public void changed(ObservableValue<? extends EEPROMState> ov, EEPROMState t,
-                    EEPROMState t1)
-                {
-                    if (t1 == EEPROMState.PROGRAMMED)
-                    {
-                        readHeadConfig(null);
-                    }
-                }
-            };
 
             headDataChangeListener = new ChangeListener<Boolean>()
             {
@@ -385,10 +350,7 @@ public class HeadEEPROMController implements Initializable
         {
 
 //            connectedPrinter.getHeadDataChangedToggle().removeListener(headDataChangeListener);
-
             headFullContainer.disableProperty().unbind();
-
-            connectedPrinter.headProperty().get().headEEPROMStatusProperty().removeListener(headAttachListener);
 
             connectedPrinter = null;
 
@@ -404,13 +366,10 @@ public class HeadEEPROMController implements Initializable
 //            connectedPrinter.getHeadDataChangedToggle().addListener(headDataChangeListener);
 
             headFullContainer.disableProperty().bind(Bindings.not(
-                connectedPrinter.headProperty().get().headEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED)));
-
-            connectedPrinter.headProperty().get().headEEPROMStatusProperty().addListener(headAttachListener);
-
+                connectedPrinter.headProperty().isNull()));
         }
     }
-    
+
     private void updateFieldsFromAttachedHead()
     {
         headTypeCode.setText(connectedPrinter.headProperty().get().typeCodeProperty().get().trim());

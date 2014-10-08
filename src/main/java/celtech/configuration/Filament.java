@@ -5,6 +5,7 @@ import celtech.coreUI.DisplayManager;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
+import celtech.printerControl.model.Reel;
 import celtech.utils.SystemUtils;
 import java.io.Serializable;
 import javafx.application.Platform;
@@ -111,6 +112,22 @@ public class Filament implements Serializable, Cloneable
         this.requiredBedTemperature.set(response.getBedTemperature());
         this.requiredFirstLayerNozzleTemperature.set(response.getFirstLayerNozzleTemperature());
         this.requiredNozzleTemperature.set(response.getNozzleTemperature());
+    }
+
+    public Filament(Reel reel)
+    {
+        this.filamentID.set(reel.filamentIDProperty().get());
+        this.friendlyFilamentName.set(reel.friendlyFilamentNameProperty().get());
+        this.material.set(reel.materialProperty().get());
+        this.displayColour.set(reel.displayColourProperty().get());
+        this.diameter.set(reel.diameterProperty().get());
+        this.filamentMultiplier.set(reel.filamentMultiplierProperty().get());
+        this.feedRateMultiplier.set(reel.feedRateMultiplierProperty().get());
+        this.requiredAmbientTemperature.set(reel.ambientTemperatureProperty().get());
+        this.requiredFirstLayerBedTemperature.set(reel.firstLayerBedTemperatureProperty().get());
+        this.requiredBedTemperature.set(reel.bedTemperatureProperty().get());
+        this.requiredFirstLayerNozzleTemperature.set(reel.firstLayerNozzleTemperatureProperty().get());
+        this.requiredNozzleTemperature.set(reel.nozzleTemperatureProperty().get());
     }
 
     /**

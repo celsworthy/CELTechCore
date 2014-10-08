@@ -252,7 +252,7 @@ public class PrinterUtils
         } else
         {
             //TODO modify to work with multiple reels
-            targetNozzleTemperature = (float) printer.reelsProperty().get(0).getNozzleTemperatureProperty().get();
+            targetNozzleTemperature = (float) printer.reelsProperty().get(0).nozzleTemperatureProperty().get();
         }
 
         // A reel is attached - check to see if the temperature is different from that stored on the head

@@ -1,14 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.services.calibration;
 
 import celtech.configuration.HeaterMode;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.model.Printer;
-import celtech.printerControl.comms.commands.GCodeConstants;
+import celtech.printerControl.model.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.services.ControllableService;
 import celtech.utils.PrinterUtils;
@@ -69,97 +64,97 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
         StatusScreenState statusScreenState = StatusScreenState.getInstance();
         printerToUse = statusScreenState.getCurrentlySelectedPrinter();
 
-        switch (desiredState)
-        {
-            case INITIALISING:
-                try
-                {
-                    printerToUse.transmitDirectGCode("M104", false);
-                    if (PrinterUtils.waitOnBusy(printerToUse, this) == false)
-                    {
-                        printerToUse.transmitStoredGCode("Home_all");
-                        if (PrinterUtils.waitOnMacroFinished(printerToUse, this) == false && isCancelled() == false)
-                        {
-                            printerToUse.transmitDirectGCode("G0 Z50", false);
-                            if (PrinterUtils.waitOnBusy(printerToUse, this) == false && isCancelled() == false)
-                            {
-                                success = true;
-                            }
-                        }
-                    }
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
-                }
-                break;
-            case HEATING:
-                try
-                {
-                    printerToUse.transmitDirectGCode("M104", false);
-                    //TODO make this work with multiple heaters
-                    if (printerToUse.headProperty().getNozzleHeaters().get(0).getHeaterModeProperty().get() == HeaterMode.FIRST_LAYER)
-                    {
-                        PrinterUtils.waitUntilTemperatureIsReached(printerToUse.extruderTemperatureProperty(), this, printerToUse.getNozzleFirstLayerTargetTemperature(), 5, 300);
-                    } else
-                    {
-                        PrinterUtils.waitUntilTemperatureIsReached(printerToUse.extruderTemperatureProperty(), this, printerToUse.getNozzleTargetTemperature(), 5, 300);
-                    }
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchOnHeadLEDs, false);
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
-                } catch (InterruptedException ex)
-                {
-                    steno.error("Interrrupted during needle valve calibration - mode=" + desiredState.name());
-                }
-
-                break;
-            case PRIMING:
-                extrudeUntilStall();
-                break;
-            case MATERIAL_EXTRUDING_CHECK:
-                try
-                {
-                    printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
-                    printerToUse.transmitDirectGCode("G0 B2", false);
-                    if (nozzleNumber == 0)
-                    {
-                        printerToUse.transmitDirectGCode("G1 E10 F75", false);
-                    } else
-                    {
-                        printerToUse.transmitDirectGCode("G1 E10 F100", false);
-                    }
-                    PrinterUtils.waitOnBusy(printerToUse, this);
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
-                }
-                break;
-            case PRE_CALIBRATION_PRIMING:
-                success = extrudeUntilStall();
-                break;
-            case POST_CALIBRATION_PRIMING:
-                success = extrudeUntilStall();
-                break;
-            case CONFIRM_MATERIAL_EXTRUDING:
-                try
-                {
-                    printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
-                    printerToUse.transmitDirectGCode("G0 B1", false);
-                    if (nozzleNumber == 0)
-                    {
-                        printerToUse.transmitDirectGCode("G1 E10 F75", false);
-                    } else
-                    {
-                        printerToUse.transmitDirectGCode("G1 E10 F100", false);
-                    }
-                    PrinterUtils.waitOnBusy(printerToUse, this);
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
-                }
-                break;
-        }
+//        switch (desiredState)
+//        {
+//            case INITIALISING:
+//                try
+//                {
+////                    printerToUse.transmitDirectGCode("M104", false);
+////                    if (PrinterUtils.waitOnBusy(printerToUse, this) == false)
+////                    {
+////                        printerToUse.transmitStoredGCode("Home_all");
+////                        if (PrinterUtils.waitOnMacroFinished(printerToUse, this) == false && isCancelled() == false)
+////                        {
+////                            printerToUse.transmitDirectGCode("G0 Z50", false);
+////                            if (PrinterUtils.waitOnBusy(printerToUse, this) == false && isCancelled() == false)
+////                            {
+////                                success = true;
+////                            }
+////                        }
+////                    }
+//                } catch (RoboxCommsException ex)
+//                {
+//                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
+//                }
+//                break;
+//            case HEATING:
+//                try
+//                {
+//                    printerToUse.transmitDirectGCode("M104", false);
+//                    //TODO make this work with multiple heaters
+//                    if (printerToUse.headProperty().getNozzleHeaters().get(0).getHeaterModeProperty().get() == HeaterMode.FIRST_LAYER)
+//                    {
+//                        PrinterUtils.waitUntilTemperatureIsReached(printerToUse.extruderTemperatureProperty(), this, printerToUse.getNozzleFirstLayerTargetTemperature(), 5, 300);
+//                    } else
+//                    {
+//                        PrinterUtils.waitUntilTemperatureIsReached(printerToUse.extruderTemperatureProperty(), this, printerToUse.getNozzleTargetTemperature(), 5, 300);
+//                    }
+//                    printerToUse.transmitDirectGCode(GCodeConstants.switchOnHeadLEDs, false);
+//                } catch (RoboxCommsException ex)
+//                {
+//                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
+//                } catch (InterruptedException ex)
+//                {
+//                    steno.error("Interrrupted during needle valve calibration - mode=" + desiredState.name());
+//                }
+//
+//                break;
+//            case PRIMING:
+//                extrudeUntilStall();
+//                break;
+//            case MATERIAL_EXTRUDING_CHECK:
+//                try
+//                {
+//                    printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
+//                    printerToUse.transmitDirectGCode("G0 B2", false);
+//                    if (nozzleNumber == 0)
+//                    {
+//                        printerToUse.transmitDirectGCode("G1 E10 F75", false);
+//                    } else
+//                    {
+//                        printerToUse.transmitDirectGCode("G1 E10 F100", false);
+//                    }
+//                    PrinterUtils.waitOnBusy(printerToUse, this);
+//                } catch (RoboxCommsException ex)
+//                {
+//                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
+//                }
+//                break;
+//            case PRE_CALIBRATION_PRIMING:
+//                success = extrudeUntilStall();
+//                break;
+//            case POST_CALIBRATION_PRIMING:
+//                success = extrudeUntilStall();
+//                break;
+//            case CONFIRM_MATERIAL_EXTRUDING:
+//                try
+//                {
+//                    printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
+//                    printerToUse.transmitDirectGCode("G0 B1", false);
+//                    if (nozzleNumber == 0)
+//                    {
+//                        printerToUse.transmitDirectGCode("G1 E10 F75", false);
+//                    } else
+//                    {
+//                        printerToUse.transmitDirectGCode("G1 E10 F100", false);
+//                    }
+//                    PrinterUtils.waitOnBusy(printerToUse, this);
+//                } catch (RoboxCommsException ex)
+//                {
+//                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
+//                }
+//                break;
+//        }
 
         return new NozzleBCalibrationStepResult(desiredState, success);
     }
@@ -167,18 +162,18 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
     private boolean extrudeUntilStall()
     {
         boolean success = false;
-        try
-        {
-            printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
-
-            printerToUse.transmitDirectGCode("G36 E700 F2000", false);
-            PrinterUtils.waitOnBusy(printerToUse, this);
-
-            success = true;
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error in needle valve priming - mode=" + desiredState.name());
-        }
+//        try
+//        {
+////            printerToUse.transmitDirectGCode("T" + nozzleNumber, false);
+////
+////            printerToUse.transmitDirectGCode("G36 E700 F2000", false);
+//            PrinterUtils.waitOnBusy(printerToUse, this);
+//
+//            success = true;
+//        } catch (RoboxCommsException ex)
+//        {
+//            steno.error("Error in needle valve priming - mode=" + desiredState.name());
+//        }
         return success;
     }
 

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.comms;
 
 import celtech.appManager.Notifier;
@@ -72,8 +67,6 @@ public abstract class CommandInterface extends Thread
     protected int sleepBetweenStatusChecks = 1000;
 
     protected ModalDialog noSDDialog = null;
-    
-    private 
 
     /**
      *
@@ -81,6 +74,7 @@ public abstract class CommandInterface extends Thread
      * @param portName
      * @param suppressPrinterIDChecks
      * @param sleepBetweenStatusChecks
+     * @param printerToUse
      */
     public CommandInterface(PrinterStatusConsumer controlInterface, String portName,
         boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
@@ -101,21 +95,17 @@ public abstract class CommandInterface extends Thread
             steno.error("Couldn't load configuration - will not be able to check firmware version");
         }
 
-        Platform.runLater(new Runnable()
+        Platform.runLater(() ->
         {
-            @Override
-            public void run()
-            {
-                firmwareUpdateProgress = new ProgressDialog(firmwareLoadService);
-
-                printerIDDialog = new PrinterIDDialog();
-
-                noSDDialog = new ModalDialog();
-                noSDDialog.setTitle(languageBundle.getString("dialogs.noSDCardTitle"));
-                noSDDialog.setMessage(languageBundle.getString("dialogs.noSDCardMessage"));
-                noSDDialog.addButton(languageBundle.getString("dialogs.noSDCardOK"));
-                initialised = true;
-            }
+            firmwareUpdateProgress = new ProgressDialog(firmwareLoadService);
+            
+            printerIDDialog = new PrinterIDDialog();
+            
+            noSDDialog = new ModalDialog();
+            noSDDialog.setTitle(languageBundle.getString("dialogs.noSDCardTitle"));
+            noSDDialog.setMessage(languageBundle.getString("dialogs.noSDCardMessage"));
+            noSDDialog.addButton(languageBundle.getString("dialogs.noSDCardOK"));
+            initialised = true;
         });
 
         firmwareUpgradeOK = new Dialogs.CommandLink(languageBundle.getString(
@@ -197,5 +187,10 @@ public abstract class CommandInterface extends Thread
      * @throws RoboxCommsException
      */
     public abstract RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite) throws RoboxCommsException;
+
+    public void setPrinter(Printer printer)
+    {
+        this.printerToUse = printer;
+    }
 
 }

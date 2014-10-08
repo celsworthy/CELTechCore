@@ -1,17 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.TaskController;
 import celtech.configuration.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterException;
 import celtech.services.calibration.CalibrateNozzleOffsetTask;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOffsetCalibrationStepResult;
@@ -151,11 +146,18 @@ public class CalibrationNozzleOffsetHelper
                                                          savedHeadData.getHeadHours());
                 }
 
-                //TODO modify for multiple heaters
-                printerToUse.switchNozzleHeaterOff(0);
-                printerToUse.switchOffHeadLEDs();
-                printerToUse.switchToAbsoluteMoveMode();
-                printerToUse.goToZPosition(25);
+                try
+                {
+                    printerToUse.changeNozzlePosition(0f);
+                    //TODO modify to use multiple heaters
+                    printerToUse.switchNozzleHeaterOff(0);
+                    printerToUse.switchOffHeadLEDs();
+                    printerToUse.switchToAbsoluteMoveMode();
+                    printerToUse.goToZPosition(25);
+                } catch (PrinterException ex)
+                {
+                    steno.error("Error resetting printer");
+                }
             } catch (RoboxCommsException ex)
             {
                 steno.error("Error in nozzle offset calibration - mode=" + state.name());
@@ -264,21 +266,36 @@ public class CalibrationNozzleOffsetHelper
                                                          savedHeadData.getLastFilamentTemperature(),
                                                          savedHeadData.getHeadHours());
 
-                    //TODO modify for multiple heaters
-                    printerToUse.switchNozzleHeaterOff(0);
-                    printerToUse.switchOffHeadLEDs();
-                    printerToUse.switchToAbsoluteMoveMode();
-                    printerToUse.goToZPosition(25);
+                    try
+                    {
+                        printerToUse.changeNozzlePosition(0f);
+                        //TODO modify to use multiple heaters
+                        printerToUse.switchNozzleHeaterOff(0);
+                        printerToUse.switchOffHeadLEDs();
+                        printerToUse.switchToAbsoluteMoveMode();
+                        printerToUse.goToZPosition(25);
+                    } catch (PrinterException ex)
+                    {
+                        steno.error("Error resetting printer");
+                    }
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in nozzle offset calibration - mode=" + state.name());
                 }
                 break;
             case FAILED:
-                printerToUse.switchNozzleHeaterOff(0);
-                printerToUse.switchOffHeadLEDs();
-                printerToUse.switchToAbsoluteMoveMode();
-                printerToUse.goToZPosition(25);
+                try
+                {
+                    printerToUse.changeNozzlePosition(0f);
+                    //TODO modify to use multiple heaters
+                    printerToUse.switchNozzleHeaterOff(0);
+                    printerToUse.switchOffHeadLEDs();
+                    printerToUse.switchToAbsoluteMoveMode();
+                    printerToUse.goToZPosition(25);
+                } catch (PrinterException ex)
+                {
+                    steno.error("Error resetting printer");
+                }
                 break;
             case NUDGE_MODE:
                 try

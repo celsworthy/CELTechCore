@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers;
 
 import celtech.configuration.PrinterColourMap;
@@ -9,6 +5,7 @@ import celtech.coreUI.components.ColourChooserButton;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.model.PrinterException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
@@ -72,8 +69,8 @@ public class PrinterIDDialogController implements Initializable
     {
         try
         {
-            printerToUse.transmitReadPrinterID();
-        } catch (RoboxCommsException ex)
+            printerToUse.readPrinterID();
+        } catch (PrinterException ex)
         {
             steno.error("Error reading printer ID");
         }
@@ -126,8 +123,8 @@ public class PrinterIDDialogController implements Initializable
                 {
                     try
                     {
-                        printerToUse.transmitSetAmbientLEDColour(colourMap.displayToPrinterColour(((ColourChooserButton) newValue).getDisplayColour()));
-                    } catch (RoboxCommsException ex)
+                        printerToUse.setAmbientLEDColour(colourMap.displayToPrinterColour(((ColourChooserButton) newValue).getDisplayColour()));
+                    } catch (PrinterException ex)
                     {
                         steno.error("Error writing printer ID");
                     }

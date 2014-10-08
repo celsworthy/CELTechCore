@@ -313,7 +313,7 @@ public class PrintEngine implements ControllableService
                     }
                 } else
                 {
-                    Lookup.getSystemNotificationHandler().showPrintTransferSuccessfulNotification(associatedPrinter.getPrinterIdentity().getPrinterFriendlyNameProperty().get());
+                    Lookup.getSystemNotificationHandler().showPrintTransferSuccessfulNotification(associatedPrinter.getPrinterIdentity().printerFriendlyNameProperty().get());
                     associatedPrinter.setPrinterStatus(PrinterStatus.PRINTING);
                 }
             } else
@@ -401,8 +401,6 @@ public class PrintEngine implements ControllableService
         gcodePrintService.setOnFailed(failedPrintEventHandler);
 
         gcodePrintService.setOnSucceeded(succeededPrintEventHandler);
-
-        associatedPrinter.setPrinterStatus(PrinterStatus.IDLE);
 
         associatedPrinter.printJobLineNumberProperty.addListener(printLineNumberListener);
         associatedPrinter.printJobIDProperty.addListener(printJobIDListener);

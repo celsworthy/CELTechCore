@@ -69,7 +69,7 @@ public class SystemInformationPanelController implements Initializable
                 if (newValue != null)
                 {
                     currentPrinter = newValue;
-                    headSerialNumber.textProperty().bind(currentPrinter.getPrinterIdentity().getPrinterUniqueIDProperty());
+                    headSerialNumber.textProperty().bind(currentPrinter.getPrinterIdentity().printerUniqueIDProperty());
                 }
             }
         });

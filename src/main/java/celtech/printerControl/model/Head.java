@@ -23,9 +23,6 @@ import javafx.beans.property.StringProperty;
 public class Head implements Cloneable
 {
 
-    protected final ObjectProperty<EEPROMState> headEEPROMStatusProperty = new SimpleObjectProperty<>(
-        EEPROMState.NOT_PRESENT);
-
     protected final FloatProperty headXPosition = new SimpleFloatProperty(0);
     protected final FloatProperty headYPosition = new SimpleFloatProperty(0);
     protected final FloatProperty headZPosition = new SimpleFloatProperty(0);
@@ -84,25 +81,28 @@ public class Head implements Cloneable
         this.nozzleHeaters.addAll(nozzleHeaters);
         this.nozzles.addAll(nozzles);
     }
-//
-//    /**
-//     *
-//     * @param response
-//     */
-//    public Head(HeadEEPROMDataResponse response)
-//    {
-//        this.typeCode.set(response.getTypeCode());
-//        this.name.set("");
-//        this.maximumTemperature.set(response.getMaximumTemperature());
-//        this.beta.set(response.getBeta());
-//        this.tcal.set(response.getTCal());
-//        this.uniqueID.set(response.getUniqueID());
-//        deriveZOverrunFromOffsets();
-//    }
 
-    public final ReadOnlyObjectProperty<EEPROMState> headEEPROMStatusProperty()
+    /**
+     *
+     * @param response
+     */
+    public Head(HeadEEPROMDataResponse response)
     {
-        return headEEPROMStatusProperty;
+        this.typeCode.set(response.getTypeCode());
+        this.name.set("");
+        this.uniqueID.set(response.getUniqueID());
+
+        this.typeCode.set(response.getTypeCode());
+        this.name.set("?");
+        this.uniqueID.set(response.getUniqueID());
+        this.headHours.set(response.getHeadHours());
+
+        HeadFile headData = HeadContainer.getHeadByID(typeCode.get());
+        if (headData != null)
+        {
+            this.nozzleHeaters.ensureCapacity(headData.getNozzleHeaters().size());
+            this.nozzles.ensureCapacity(headData.getNozzles().size());
+        }
     }
 
     /**

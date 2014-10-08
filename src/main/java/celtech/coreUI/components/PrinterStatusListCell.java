@@ -79,9 +79,9 @@ public class PrinterStatusListCell extends ListCell<Printer>
     private void addContent(Printer printer)
     {
         setText(null);
-        printerColour.setFill(colourMap.printerToDisplayColour(printer.getPrinterIdentity().getPrinterColourProperty().get()));
-        printer.getPrinterIdentity().getPrinterColourProperty().addListener(printerColourChangeListener);
-        name.textProperty().bind(printer.getPrinterIdentity().getPrinterFriendlyNameProperty());
+        printerColour.setFill(colourMap.printerToDisplayColour(printer.getPrinterIdentity().printerColourProperty().get()));
+        printer.getPrinterIdentity().printerColourProperty().addListener(printerColourChangeListener);
+        name.textProperty().bind(printer.getPrinterIdentity().printerFriendlyNameProperty());
 //        status.textProperty().bind(Bindings.when(printer.whyAreWeWaitingProperty().isEqualTo(WhyAreWeWaitingState.NOT_WAITING)).then(printer.printerStatusProperty().asString()).otherwise(Bindings.format("%s - %s", printer.printerStatusProperty(), printer.getWhyAreWeWaitingStringProperty())));
         setGraphic(grid);
     }

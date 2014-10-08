@@ -1,18 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.TaskController;
 import celtech.configuration.Filament;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.printerControl.model.Printer;
-import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
+import celtech.printerControl.model.PrinterException;
 import celtech.services.purge.PurgeState;
 import celtech.services.purge.PurgeTask;
 import java.util.ArrayList;
@@ -73,11 +68,17 @@ public class PurgeHelper
         }
         if (state != PurgeState.IDLE)
         {
-            printerToUse.changeNozzlePosition(0);
-            printerToUse.switchBedHeaterOff();
-            //TODO modify for multiple nozzle heater support
-            printerToUse.switchNozzleHeaterOff(0);
-            printerToUse.switchOffHeadLEDs();
+            try
+            {
+                printerToUse.changeNozzlePosition(0);
+                printerToUse.switchBedHeaterOff();
+                //TODO modify for multiple nozzle heater support
+                printerToUse.switchNozzleHeaterOff(0);
+                printerToUse.switchOffHeadLEDs();
+            } catch (PrinterException ex)
+            {
+                steno.error("Error resetting printer");
+            }
         }
     }
 
@@ -127,7 +128,7 @@ public class PurgeHelper
                     } else
                     {
                         //TODO modify for multiple reels
-                        reelNozzleTemperature = (float) printerToUse.reelsProperty().get(0).getNozzleTemperatureProperty().get();
+                        reelNozzleTemperature = (float) printerToUse.reelsProperty().get(0).nozzleTemperatureProperty().get();
                     }
 
                     float temperatureDifference = reelNozzleTemperature - savedHeadData.getLastFilamentTemperature();
@@ -186,23 +187,34 @@ public class PurgeHelper
                                                                                    savedHeadData.getNozzle2BOffset(),
                                                                                    reelNozzleTemperature,
                                                                                    savedHeadData.getHeadHours());
-
-                    printerToUse.changeNozzlePosition(0);
-                    printerToUse.switchBedHeaterOff();
-                    //TODO modify for multiple nozzle heater support
-                    printerToUse.switchNozzleHeaterOff(0);
-                    printerToUse.switchOffHeadLEDs();
+                    try
+                    {
+                        printerToUse.changeNozzlePosition(0);
+                        printerToUse.switchBedHeaterOff();
+                        //TODO modify for multiple nozzle heater support
+                        printerToUse.switchNozzleHeaterOff(0);
+                        printerToUse.switchOffHeadLEDs();
+                    } catch (PrinterException ex)
+                    {
+                        steno.error("Error resetting printer");
+                    }
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in purge - mode=" + state.name());
                 }
                 break;
             case FAILED:
-                printerToUse.changeNozzlePosition(0);
-                printerToUse.switchBedHeaterOff();
-                //TODO modify for multiple nozzle heater support
-                printerToUse.switchNozzleHeaterOff(0);
-                printerToUse.switchOffHeadLEDs();
+                try
+                {
+                    printerToUse.changeNozzlePosition(0);
+                    printerToUse.switchBedHeaterOff();
+                    //TODO modify for multiple nozzle heater support
+                    printerToUse.switchNozzleHeaterOff(0);
+                    printerToUse.switchOffHeadLEDs();
+                } catch (PrinterException ex)
+                {
+                    steno.error("Error resetting printer");
+                }
                 break;
         }
     }

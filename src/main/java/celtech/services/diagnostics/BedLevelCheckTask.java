@@ -8,6 +8,7 @@ package celtech.services.diagnostics;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterException;
 import celtech.services.ControllableService;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
@@ -43,12 +44,17 @@ public class BedLevelCheckTask extends Task<BedLevelCheckResult> implements Cont
     protected BedLevelCheckResult call() throws Exception
     {
         BedLevelCheckResult result = new BedLevelCheckResult();
-        
-        printerToUse.runMacro("Home_all", false);
-        //Go to centre
-        printerToUse.runMacro("level_gantry", false);
-        printerToUse.runMacro("level_Y", false);
-        
+
+        try
+        {
+            printerToUse.runMacro("Home_all");
+            //Go to centre
+            printerToUse.runMacro("level_gantry");
+            printerToUse.runMacro("level_Y");
+        } catch (PrinterException ex)
+        {
+            steno.error("Error levelling bed");
+        }
         return result;
     }
 

@@ -95,14 +95,14 @@ public class SmartPartProgrammerController implements Initializable
             float remainingFilament = 0;
 
             //TODO modify for multiple reels
-            if (connectedPrinter.reelsProperty().get(0).getReelEEPROMStatusProperty().get() == EEPROMState.NOT_PROGRAMMED)
+            if (connectedPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().get() == EEPROMState.NOT_PROGRAMMED)
             {
                 connectedPrinter.transmitFormatReelEEPROM();
                 remainingFilament = ApplicationConfiguration.mmOfFilamentOnAReel;
             } else
             {
                 //TODO modify for multiple reels
-                remainingFilament = connectedPrinter.reelsProperty().get(0).getRemainingFilamentProperty().get();
+                remainingFilament = connectedPrinter.reelsProperty().get(0).remainingFilamentProperty().get();
             }
 
             connectedPrinter.transmitWriteReelEEPROM(selectedFilament.getFilamentID(),
@@ -150,7 +150,7 @@ public class SmartPartProgrammerController implements Initializable
                 if (connectedPrinter != null)
                 {
                     //TODO modify to support multiple reels
-                    connectedPrinter.reelsProperty().get(0).getReelEEPROMStatusProperty().removeListener(reelEEPROMStateChangeListener);
+                    connectedPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().removeListener(reelEEPROMStateChangeListener);
                 }
 
                 if (newPrinter == null)
@@ -163,9 +163,9 @@ public class SmartPartProgrammerController implements Initializable
                 } else
                 {
                     //TODO modify to support multiple reels
-                    programReelButton.disableProperty().bind(newPrinter.reelsProperty().get(0).getReelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PRESENT).or(materialSelector.getSelectionModel().selectedItemProperty().isNull()));
-                    materialSelector.disableProperty().bind(newPrinter.reelsProperty().get(0).getReelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PRESENT));
-                    newPrinter.reelsProperty().get(0).getReelEEPROMStatusProperty().addListener(reelEEPROMStateChangeListener);
+                    programReelButton.disableProperty().bind(newPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PRESENT).or(materialSelector.getSelectionModel().selectedItemProperty().isNull()));
+                    materialSelector.disableProperty().bind(newPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PRESENT));
+                    newPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().addListener(reelEEPROMStateChangeListener);
                 }
 
                 connectedPrinter = newPrinter;

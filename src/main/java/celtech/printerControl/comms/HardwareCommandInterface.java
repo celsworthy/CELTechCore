@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.comms;
 
 import celtech.appManager.ApplicationMode;
@@ -10,12 +5,10 @@ import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
 import celtech.printerControl.model.Printer;
-import celtech.printerControl.comms.commands.exceptions.BadCommandException;
 import celtech.printerControl.comms.commands.exceptions.ConnectionLostException;
 import celtech.printerControl.comms.commands.exceptions.InvalidCommandByteException;
 import celtech.printerControl.comms.commands.exceptions.InvalidResponseFromPrinterException;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.exceptions.SDCardErrorException;
 import celtech.printerControl.comms.commands.exceptions.UnableToGenerateRoboxPacketException;
 import celtech.printerControl.comms.commands.exceptions.UnknownPacketTypeException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
@@ -29,8 +22,6 @@ import celtech.printerControl.comms.commands.tx.FormatHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacketFactory;
 import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
-import celtech.printerControl.comms.events.RoboxEvent;
-import celtech.printerControl.comms.events.RoboxEventType;
 import static java.lang.Thread.sleep;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -49,7 +40,6 @@ import org.controlsfx.dialog.Dialogs.CommandLink;
  */
 public class HardwareCommandInterface extends CommandInterface
 {
-
     public HardwareCommandInterface(PrinterStatusConsumer controlInterface, String portName,
         boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
@@ -122,9 +112,7 @@ public class HardwareCommandInterface extends CommandInterface
                     {
                         StatusResponse response = (StatusResponse) writeToPrinter(
                             RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.STATUS_REQUEST));
-
-                        controlInterface.publishEvent(portName, new RoboxEvent(
-                                                      RoboxEventType.PRINTER_STATUS_UPDATE, response));
+                        printerToUse.processRoboxResponse(response);
                         commsState = RoboxCommsState.CHECKING_FIRMWARE;
                     } catch (RoboxCommsException ex)
                     {
@@ -193,10 +181,7 @@ public class HardwareCommandInterface extends CommandInterface
                                                 == firmwareDowngradeNotOK)
                                             {
 //                                                //Proceed at risk
-                                                controlInterface.publishEvent(portName,
-                                                                              new RoboxEvent(
-                                                                                  RoboxEventType.FIRMWARE_VERSION_INFO,
-                                                                                  response));
+                                                printerToUse.processRoboxResponse(response);
                                                 if (suppressPrinterIDChecks == false)
                                                 {
                                                     commsState = RoboxCommsState.CHECKING_ID;
@@ -251,10 +236,7 @@ public class HardwareCommandInterface extends CommandInterface
                                                 == firmwareUpgradeNotOK)
                                             {
 //                                                //Proceed at risk
-                                                controlInterface.publishEvent(portName,
-                                                                              new RoboxEvent(
-                                                                                  RoboxEventType.FIRMWARE_VERSION_INFO,
-                                                                                  response));
+                                                printerToUse.processRoboxResponse(response);
                                                 if (suppressPrinterIDChecks == false)
                                                 {
                                                     commsState = RoboxCommsState.CHECKING_ID;
@@ -269,9 +251,7 @@ public class HardwareCommandInterface extends CommandInterface
                                     });
                                 } else
                                 {
-                                    controlInterface.publishEvent(portName, new RoboxEvent(
-                                                                  RoboxEventType.FIRMWARE_VERSION_INFO,
-                                                                  response));
+                                    printerToUse.processRoboxResponse(response);
                                     if (suppressPrinterIDChecks == false)
                                     {
                                         commsState = RoboxCommsState.CHECKING_ID;
@@ -289,8 +269,6 @@ public class HardwareCommandInterface extends CommandInterface
                             }
                         } catch (RoboxCommsException ex)
                         {
-                            controlInterface.publishEvent(portName, new RoboxEvent(
-                                                          RoboxEventType.PRINTER_COMMS_ERROR));
                             steno.error("Failure during firmware version request. " + ex.toString());
                         }
                     } else
@@ -366,9 +344,7 @@ public class HardwareCommandInterface extends CommandInterface
                     if (success)
                     {
                         controlInterface.printerConnected(portName);
-                        controlInterface.publishEvent(portName, new RoboxEvent(
-                                                      RoboxEventType.PRINTER_ID_INFO,
-                                                      lastPrinterIDResponse));
+                        printerToUse.processRoboxResponse(lastPrinterIDResponse);
                         commsState = RoboxCommsState.CONNECTED;
                     }
                     break;
@@ -383,13 +359,9 @@ public class HardwareCommandInterface extends CommandInterface
                         if (response != null && response instanceof StatusResponse)
                         {
                             steno.trace("Got " + response.toString() + " from printer.");
-                            controlInterface.publishEvent(portName, new RoboxEvent(
-                                                          RoboxEventType.PRINTER_STATUS_UPDATE,
-                                                          response));
+                            printerToUse.processRoboxResponse(response);
                         } else
                         {
-                            controlInterface.publishEvent(portName, new RoboxEvent(
-                                                          RoboxEventType.PRINTER_INVALID_RESPONSE));
                             steno.warning("No valid response from printer");
                         }
 
@@ -398,13 +370,10 @@ public class HardwareCommandInterface extends CommandInterface
                         if (errors != null)
                         {
                             steno.trace(errors.toString());
-                            controlInterface.publishEvent(portName, new RoboxEvent(
-                                                          RoboxEventType.PRINTER_ACK, errors));
+                            printerToUse.processRoboxResponse(errors);
                         }
                     } catch (RoboxCommsException ex)
                     {
-                        controlInterface.publishEvent(portName, new RoboxEvent(
-                                                      RoboxEventType.PRINTER_COMMS_ERROR));
                         steno.error("Failure during printer status request. " + ex.toString());
                     } catch (InterruptedException ex)
                     {
@@ -584,52 +553,7 @@ public class HardwareCommandInterface extends CommandInterface
                         receivedPacket = RoboxRxPacketFactory.createPacket(inputBuffer);
 //                        steno.info("Got packet of type " + receivedPacket.getPacketType().name());
 
-                        switch (receivedPacket.getPacketType())
-                        {
-                            case STATUS_RESPONSE:
-                                break;
-                            case ACK_WITH_ERRORS:
-                                AckResponse ackResponse = (AckResponse) receivedPacket;
-                                if (ackResponse.isError())
-                                {
-                                    RoboxCommsException exception = null;
-                                    if (ackResponse.isSdCardError())
-                                    {
-                                        exception = new SDCardErrorException("No SD card inserted");
-                                        steno.error("The SD card is missing.");
-                                        throw exception;
-                                    } else if (ackResponse.isBadCommandError())
-                                    {
-                                        exception = new BadCommandException("In response to "
-                                            + messageToWrite);
-                                        throw exception;
-                                    } else
-                                    {
-//                                        exception = new RoboxCommsException("Unspecified cause");
-//                                        steno.error("Got error in response packet:\n" + ackResponse.toString());
-                                    }
-                                }
-                                break;
-                            case FIRMWARE_RESPONSE:
-                                break;
-                            case HEAD_EEPROM_DATA:
-                                controlInterface.publishEvent(portName, new RoboxEvent(
-                                                              RoboxEventType.HEAD_EEPROM_DATA,
-                                                              receivedPacket));
-                                break;
-                            case REEL_EEPROM_DATA:
-                                controlInterface.publishEvent(portName, new RoboxEvent(
-                                                              RoboxEventType.REEL_EEPROM_DATA,
-                                                              receivedPacket));
-                                break;
-                            case PRINTER_ID_RESPONSE:
-                                controlInterface.publishEvent(portName, new RoboxEvent(
-                                                              RoboxEventType.PRINTER_ID_INFO,
-                                                              receivedPacket));
-                                break;
-                            default:
-                                break;
-                        }
+                        printerToUse.processRoboxResponse(receivedPacket);
                     } catch (InvalidCommandByteException ex)
                     {
                         steno.error("Command byte of " + String.format("0x%02X", inputBuffer[0])

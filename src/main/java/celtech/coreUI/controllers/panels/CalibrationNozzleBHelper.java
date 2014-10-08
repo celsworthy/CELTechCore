@@ -1,15 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.TaskController;
 import celtech.printerControl.model.Printer;
-import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
+import celtech.printerControl.model.PrinterException;
 import celtech.services.calibration.CalibrateBTask;
 import celtech.services.calibration.NozzleBCalibrationState;
 import java.util.ArrayList;
@@ -202,11 +197,16 @@ public class CalibrationNozzleBHelper
                                                          savedHeadData.getHeadHours());
                 }
 
-                printerToUse.changeNozzlePosition(0);
-                //TODO modify for multiple heaters
-                printerToUse.switchNozzleHeaterOff(0);
-                printerToUse.switchOffHeadLEDs();
-
+                try
+                {
+                    printerToUse.changeNozzlePosition(0);
+                    //TODO modify for multiple heaters
+                    printerToUse.switchNozzleHeaterOff(0);
+                    printerToUse.switchOffHeadLEDs();
+                } catch (PrinterException ex)
+                {
+                    steno.error("Error resetting printer");
+                }
             } catch (RoboxCommsException ex)
             {
                 steno.error("Error in needle valve calibration - mode=" + state.name());
@@ -380,16 +380,28 @@ public class CalibrationNozzleBHelper
                 confirmMaterialExtrudingTaskThread.start();
                 break;
             case FINISHED:
-                printerToUse.changeNozzlePosition(0f);
-                //TODO modify to use multiple heaters
-                printerToUse.switchNozzleHeaterOff(0);
-                printerToUse.switchOffHeadLEDs();
+                try
+                {
+                    printerToUse.changeNozzlePosition(0f);
+                    //TODO modify to use multiple heaters
+                    printerToUse.switchNozzleHeaterOff(0);
+                    printerToUse.switchOffHeadLEDs();
+                } catch (PrinterException ex)
+                {
+                    steno.error("Error resetting printer");
+                }
                 break;
             case FAILED:
-                printerToUse.changeNozzlePosition(0);
-                //TODO modify to use multiple heaters
-                printerToUse.switchNozzleHeaterOff(0);
-                printerToUse.switchOffHeadLEDs();
+                try
+                {
+                    printerToUse.changeNozzlePosition(0f);
+                    //TODO modify to use multiple heaters
+                    printerToUse.switchNozzleHeaterOff(0);
+                    printerToUse.switchOffHeadLEDs();
+                } catch (PrinterException ex)
+                {
+                    steno.error("Error resetting printer");
+                }
                 break;
         }
     }
