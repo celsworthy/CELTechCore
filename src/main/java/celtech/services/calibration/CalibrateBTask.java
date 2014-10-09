@@ -174,6 +174,9 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
             printerToUse.transmitDirectGCode("G36 E700 F2000", false);
             PrinterUtils.waitOnBusy(printerToUse, this);
 
+            printerToUse.transmitDirectGCode("G1 E3 F400", false);
+            PrinterUtils.waitOnBusy(printerToUse, this);
+            
             success = true;
         } catch (RoboxCommsException ex)
         {
