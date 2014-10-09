@@ -1,5 +1,6 @@
 package celtech.gcodetranslator;
 
+import celtech.configuration.ApplicationConfiguration;
 import celtech.gcodetranslator.events.CommentEvent;
 import celtech.gcodetranslator.events.EndOfFileEvent;
 import celtech.gcodetranslator.events.ExtrusionEvent;
@@ -293,6 +294,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
             SimpleDateFormat formatter = new SimpleDateFormat("EEE d MMM y HH:mm:ss", Locale.UK);
             outputWriter.writeOutput("; File post-processed by the CEL Tech Roboxiser on " + formatter.format(new Date()) + "\n");
+            outputWriter.writeOutput("; " + ApplicationConfiguration.getTitleAndVersion() + "\n");
 
             outputWriter.writeOutput(";\n; Pre print gcode\n");
             for (String macroLine : GCodeMacros.getMacroContents("before_print"))
