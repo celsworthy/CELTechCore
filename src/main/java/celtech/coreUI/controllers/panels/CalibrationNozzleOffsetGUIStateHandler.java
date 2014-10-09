@@ -78,8 +78,6 @@ public class CalibrationNozzleOffsetGUIStateHandler
 //                controller.buttonAAlt.disableProperty().bind(
 //                    ((CalibrationNozzleOffsetHelper) calibrationHelper).showDownButton.not());
                 controller.cancelCalibrationButton.setVisible(true);
-//                controller.buttonAAlt.setVisible(true);
-//                controller.buttonBAlt.setVisible(true);
                 controller.nextButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 7.fxml"); 
@@ -91,7 +89,6 @@ public class CalibrationNozzleOffsetGUIStateHandler
                 break;
             case REPLACE_PEI_BED:
                 controller.hideAllInputControlsExceptStepNumber();
-//                controller.buttonAAlt.disableProperty().unbind();
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.nextButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
@@ -108,7 +105,6 @@ public class CalibrationNozzleOffsetGUIStateHandler
                 break;
             case FAILED:
                 controller.hideAllInputControlsExceptStepNumber();
-//                controller.buttonAAlt.disableProperty().unbind();
                 controller.backToStatus.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Failure.fxml");

@@ -51,6 +51,13 @@ public class CalibrationInsetPanelController implements Initializable,
         topBorderPane.setPrefWidth(topPane.getWidth());
         topBorderPane.setPrefHeight(topPane.getHeight());
     }
+
+    void whenZCoChanged(double zco)
+    {
+        if (diagramController != null) {
+            diagramController.setCalibrationTextField(String.format("%1.2f", zco));
+        }
+    }
     
     protected static enum ProgressVisibility
     {
@@ -136,6 +143,7 @@ public class CalibrationInsetPanelController implements Initializable,
     private double printPercent;
     private Node waitTimer;
     private Node diagramNode;
+    DiagramController diagramController;
     private Map<String, Node> nameToNodeCache = new HashMap<>();
     
     @FXML
@@ -331,7 +339,7 @@ public class CalibrationInsetPanelController implements Initializable,
             try
             {
                 FXMLLoader loader = new FXMLLoader(fxmlFileName);
-                DiagramController diagramController = new DiagramController(this);
+                diagramController = new DiagramController(this);
                 loader.setController(diagramController);
                 diagramNode = loader.load();
                 nameToNodeCache.put(diagramName, diagramNode);
@@ -528,7 +536,7 @@ public class CalibrationInsetPanelController implements Initializable,
                 setNozzleOpeningState(NozzleOpeningCalibrationState.IDLE);
                 break;
             case NOZZLE_HEIGHT:
-                calibrationHelper = new CalibrationNozzleOffsetHelper();
+                calibrationHelper = new CalibrationNozzleOffsetHelper(this);
                 calibrationNozzleOffsetGUIStateHandler
                     = new CalibrationNozzleOffsetGUIStateHandler(this, calibrationHelper);
                 ((CalibrationNozzleOffsetHelper) calibrationHelper).addStateListener(this);

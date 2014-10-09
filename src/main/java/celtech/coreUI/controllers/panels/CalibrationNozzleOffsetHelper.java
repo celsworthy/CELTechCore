@@ -17,7 +17,11 @@ import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOffsetCalibrationStepResult;
 import java.util.ArrayList;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import libertysystems.stenographer.Stenographer;
@@ -35,7 +39,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
 
     private Printer printerToUse = null;
 
-    private double zco = 0;
+    private DoubleProperty zco = new SimpleDoubleProperty(0);
     private double zDifference = 0;
 
     private HeadEEPROMDataResponse savedHeadData = null;
@@ -54,6 +58,21 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
         }
     };
     public BooleanProperty showDownButton = new SimpleBooleanProperty(true);
+    private final CalibrationInsetPanelController parentController;
+
+    CalibrationNozzleOffsetHelper(CalibrationInsetPanelController parentController)
+    {
+        this.parentController = parentController;
+        zco.addListener(new ChangeListener<Number>() {
+
+            @Override
+            public void changed(
+                ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            {
+                parentController.whenZCoChanged(zco.get());
+            }
+        });
+    }
 
     public void addStateListener(CalibrationNozzleOffsetStateListener stateListener)
     {
@@ -98,11 +117,11 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
     public void buttonBAction() // Alt = UP button = too tight
     {
 
-        zco += 0.05;
+        zco.set(zco.get() + 0.05);
 
-        if (zco <= 0)
+        if (zco.get() <= 0)
         {
-            zco = 0;
+            zco.set(0);
         }
 
         try
@@ -118,7 +137,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
     public void buttonAAction() // ALT = down button = too loose
 
     {
-        zco -= 0.05;
+        zco.set(zco.get() - 0.05);
 
         try
         {
@@ -128,7 +147,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
             steno.error("Error changing Z height");
         }
 
-        if (zco <= 0.0001)
+        if (zco.get() <= 0.0001)
         {
             showDownButton.set(false);
         } else
@@ -207,8 +226,8 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
                 {
                     savedHeadData = printerToUse.transmitReadHeadEEPROM();
 
-                    zco = 0.5 * (savedHeadData.getNozzle1ZOffset()
-                        + savedHeadData.getNozzle2ZOffset());
+                    zco.set(0.5 * (savedHeadData.getNozzle1ZOffset()
+                        + savedHeadData.getNozzle2ZOffset()));
                     zDifference = savedHeadData.getNozzle2ZOffset()
                         - savedHeadData.getNozzle1ZOffset();
 
@@ -280,11 +299,11 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
                                                          savedHeadData.getTCal(),
                                                          savedHeadData.getNozzle1XOffset(),
                                                          savedHeadData.getNozzle1YOffset(),
-                                                         (float) (-zco - (0.5 * zDifference)),
+                                                         (float) (-zco.get() - (0.5 * zDifference)),
                                                          savedHeadData.getNozzle1BOffset(),
                                                          savedHeadData.getNozzle2XOffset(),
                                                          savedHeadData.getNozzle2YOffset(),
-                                                         (float) (-zco + (0.5 * zDifference)),
+                                                         (float) (-zco.get() + (0.5 * zDifference)),
                                                          savedHeadData.getNozzle2BOffset(),
                                                          savedHeadData.getLastFilamentTemperature(),
                                                          savedHeadData.getHeadHours());

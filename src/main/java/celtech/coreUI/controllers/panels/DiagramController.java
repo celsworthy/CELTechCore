@@ -34,4 +34,10 @@ class DiagramController
         parentController.buttonBAction();
     }
     
+    protected void setCalibrationTextField(String textFieldData) {
+        if (calibrationTextField != null) {
+            calibrationTextField.setText(textFieldData);
+        }    
+    }
+    
 }
