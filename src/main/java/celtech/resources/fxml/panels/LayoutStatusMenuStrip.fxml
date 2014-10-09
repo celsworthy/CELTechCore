@@ -25,6 +25,7 @@
         <HBox fx:id="layoutButtonHBox" alignment="CENTER">
             <children>
                 <LoadModelButton fx:id="addModelButton" onAction="#addModel" />
+                <LoadMyMiniFactoryButton fx:id="addmyMiniFactoryButton" onAction="#addMyMiniFactoryModel" />
                 <DeleteModelButton fx:id="deleteModelButton" onAction="#deleteModel" />
                 <CopyModelButton fx:id="duplicateModelButton" onAction="#copyModel" />
                 <SnapToGroundButton fx:id="snapToGroundButton" onAction="#snapToGround" />

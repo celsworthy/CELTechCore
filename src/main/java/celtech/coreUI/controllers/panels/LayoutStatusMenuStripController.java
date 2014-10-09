@@ -18,8 +18,11 @@ import celtech.configuration.EEPROMState;
 import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.LayoutSubmode;
+import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.components.buttons.SnapToGroundButton;
+import celtech.coreUI.controllers.ModalDialogController;
+import celtech.coreUI.controllers.MyMiniFactoryLoaderController;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
@@ -27,6 +30,7 @@ import celtech.printerControl.Printer;
 import celtech.printerControl.PrinterStatusEnumeration;
 import celtech.utils.PrinterUtils;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,9 +45,17 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -125,8 +137,8 @@ public class LayoutStatusMenuStripController
         if (purgeConsent)
         {
             purgePanelController.purgeAndPrint(currentProject, settingsScreenState.getFilament(),
-                                  settingsScreenState.getPrintQuality(),
-                                  settingsScreenState.getSettings(), printer);
+                                               settingsScreenState.getPrintQuality(),
+                                               settingsScreenState.getSettings(), printer);
         } else
         {
             printer.printProject(currentProject, settingsScreenState.getFilament(),
@@ -218,6 +230,99 @@ public class LayoutStatusMenuStripController
                 displayManager.loadExternalModels(files, true);
             }
         });
+    }
+
+    @FXML
+    void addMyMiniFactoryModel(ActionEvent event)
+    {
+        URL dialogFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "myMiniFactoryLoader.fxml");
+        FXMLLoader dialogLoader = new FXMLLoader(dialogFXMLURL);
+
+        try
+        {
+            Stage dialogStage = new Stage(StageStyle.UTILITY);
+//            dialogStage.setResizable(false);
+
+            Parent dialogBoxScreen = (Parent) dialogLoader.load();
+            MyMiniFactoryLoaderController miniFactoryController = dialogLoader.getController();
+            Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
+            dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
+            dialogStage.setScene(dialogScene);
+            dialogStage.initOwner(DisplayManager.getMainStage());
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            miniFactoryController.setStage(dialogStage);
+            miniFactoryController.loadWebData();
+            dialogStage.showAndWait();
+        } catch (IOException ex)
+        {
+            steno.error("Couldn't load dialog box FXML");
+            ex.printStackTrace();
+        }
+
+//        applicationStatus.setMode(ApplicationMode.ADD_MODEL);
+//        Platform.runLater(() ->
+//        {
+//            ListIterator iterator = modelFileChooser.getExtensionFilters().listIterator();
+//
+//            while (iterator.hasNext())
+//            {
+//                iterator.next();
+//                iterator.remove();
+//            }
+//
+//            ProjectMode projectMode = ProjectMode.NONE;
+//
+//            if (displayManager.getCurrentlyVisibleProject() != null)
+//            {
+//                projectMode = displayManager.getCurrentlyVisibleProject().getProjectMode();
+//            }
+//
+//            String descriptionOfFile = null;
+//
+//            switch (projectMode)
+//            {
+//                case NONE:
+//                    descriptionOfFile = DisplayManager.getLanguageBundle().getString("dialogs.anyFileChooserDescription");
+//                    break;
+//                case MESH:
+//                    descriptionOfFile = DisplayManager.getLanguageBundle().getString("dialogs.meshFileChooserDescription");
+//                    break;
+//                case GCODE:
+//                    descriptionOfFile = DisplayManager.getLanguageBundle().getString("dialogs.gcodeFileChooserDescription");
+//                    break;
+//                default:
+//                    break;
+//            }
+//            modelFileChooser.getExtensionFilters().addAll(
+//                new FileChooser.ExtensionFilter(descriptionOfFile,
+//                                                ApplicationConfiguration.getSupportedFileExtensionWildcards(
+//                                                    projectMode)));
+//
+//            modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(
+//                DirectoryMemoryProperty.MODEL)));
+//
+//            List<File> files;
+//            if (projectMode == ProjectMode.NONE || projectMode == ProjectMode.MESH)
+//            {
+//                files = modelFileChooser.showOpenMultipleDialog(displayManager.getMainStage());
+//            } else
+//            {
+//                File file = modelFileChooser.showOpenDialog(displayManager.getMainStage());
+//                files = new ArrayList<>();
+//                if (file != null)
+//                {
+//                    files.add(file);
+//                }
+//            }
+//
+//            if (files != null && !files.isEmpty())
+//            {
+//                ApplicationConfiguration.setLastDirectory(
+//                    DirectoryMemoryProperty.MODEL,
+//                    files.get(0).getParentFile().getAbsolutePath());
+//                displayManager.loadExternalModels(files, true);
+//            }
+//        });
     }
 
     @FXML

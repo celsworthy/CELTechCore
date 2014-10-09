@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import celtech.coreUI.components.buttons.*?>
+<?import java.lang.*?>
+<?import javafx.scene.image.*?>
+
+<fx:root styleClass="borderlessGraphicButton" stylesheets="@../../css/JMetroDarkTheme.css" text="" type="celtech.coreUI.components.buttons.LoadMyMiniFactoryButton" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+    <graphic>
+        <ImageView fitHeight="70.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" visible="true">
+            <image>
+                <Image url="@../../images/myMiniFactoryLogo.PNG" />
+            </image>
+        </ImageView>
+    </graphic>
+</fx:root>
