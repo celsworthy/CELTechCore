@@ -217,7 +217,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
         testPrinter.setPrintJobLineNumber(linesInFile);
 
         int currentLayer = printQueue.progressCurrentLayerProperty().get();
-        assertEquals(67, currentLayer);
+        assertEquals(66, currentLayer);
     }
 
     @Test

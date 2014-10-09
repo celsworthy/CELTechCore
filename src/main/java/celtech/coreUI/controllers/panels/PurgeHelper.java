@@ -187,17 +187,6 @@ public class PurgeHelper
                                                                                    savedHeadData.getNozzle2BOffset(),
                                                                                    reelNozzleTemperature,
                                                                                    savedHeadData.getHeadHours());
-                    try
-                    {
-                        printerToUse.changeNozzlePosition(0);
-                        printerToUse.switchBedHeaterOff();
-                        //TODO modify for multiple nozzle heater support
-                        printerToUse.switchNozzleHeaterOff(0);
-                        printerToUse.switchOffHeadLEDs();
-                    } catch (PrinterException ex)
-                    {
-                        steno.error("Error resetting printer");
-                    }
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in purge - mode=" + state.name());

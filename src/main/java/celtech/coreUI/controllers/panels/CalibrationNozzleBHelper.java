@@ -199,8 +199,8 @@ public class CalibrationNozzleBHelper
 
                 try
                 {
-                    printerToUse.changeNozzlePosition(0);
-                    //TODO modify for multiple heaters
+                    printerToUse.changeNozzlePosition(0f);
+                    //TODO modify to use multiple heaters
                     printerToUse.switchNozzleHeaterOff(0);
                     printerToUse.switchOffHeadLEDs();
                 } catch (PrinterException ex)

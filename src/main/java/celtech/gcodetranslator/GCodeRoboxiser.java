@@ -1,5 +1,6 @@
 package celtech.gcodetranslator;
 
+import celtech.configuration.ApplicationConfiguration;
 import celtech.gcodetranslator.events.CommentEvent;
 import celtech.gcodetranslator.events.EndOfFileEvent;
 import celtech.gcodetranslator.events.ExtrusionEvent;
@@ -24,10 +25,14 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -287,7 +292,9 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         {
             outputWriter = new OutputWriter(outputFilename);
 
-            outputWriter.writeOutput("; File post-processed by the CEL Tech Roboxiser\n");
+            SimpleDateFormat formatter = new SimpleDateFormat("EEE d MMM y HH:mm:ss", Locale.UK);
+            outputWriter.writeOutput("; File post-processed by the CEL Tech Roboxiser on " + formatter.format(new Date()) + "\n");
+            outputWriter.writeOutput("; " + ApplicationConfiguration.getTitleAndVersion() + "\n");
 
             outputWriter.writeOutput(";\n; Pre print gcode\n");
             for (String macroLine : GCodeMacros.getMacroContents("before_print"))
@@ -536,7 +543,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 {
                     // Unretract and open
                     NozzleOpenFullyEvent openNozzle = new NozzleOpenFullyEvent();
-                    openNozzle.setComment("Open and replenish");
+                    openNozzle.setComment("Open and replenish from extrusion");
                     openNozzle.setE(autoUnretractEValue);
                     openNozzle.setD(autoUnretractDValue);
 
@@ -1006,7 +1013,16 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                         }
 
                         int sizeOfBuffer = extrusionBuffer.size();
-                        int startOfClose = insertTravelAndClosePath(firstUsableExtrusionEventIndex, finalExtrusionEventIndex, "Move to start of wipe", false, lastInwardMoveEvent);
+                        int startOfClose = insertTravelAndClosePath(firstUsableExtrusionEventIndex, finalExtrusionEventIndex, "Move to start of wipe", false, lastInwardMoveEvent, currentNozzle.
+                                                                    getEjectionVolume());
+
+                        double actualClosedOverVolumeAvailable = calculateVolume(extrusionBuffer, startOfClose, extrusionBuffer.size() - 1);
+
+                        if (actualClosedOverVolumeAvailable < nozzleCloseOverVolume)
+                        {
+                            nozzleCloseOverVolume = actualClosedOverVolumeAvailable;
+                        }
+
                         int newSizeOfBuffer = extrusionBuffer.size();
 
 //                    if (currentNozzle.getWipeVolume() > 0)
@@ -1090,7 +1106,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                             } else
                             {
                                 int nozzleCloseStartIndex = insertTravelAndClosePath(firstUsableExtrusionEventIndex, finalExtrusionEventIndex, "Move to start of wipe - partial open", false,
-                                                                                     lastInwardMoveEvent);
+                                                                                     lastInwardMoveEvent, currentNozzle.getEjectionVolume());
 
                                 eventIndices.put(EventType.NOZZLE_CLOSE_START, nozzleCloseStartIndex);
 
@@ -1128,7 +1144,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 //                            }
 //                        }
                             int nozzleCloseStartIndex = insertTravelAndClosePath(firstUsableExtrusionEventIndex, finalExtrusionEventIndex, "Move to start of wipe - full open", true,
-                                                                                 lastInwardMoveEvent);
+                                                                                 lastInwardMoveEvent, currentNozzle.getEjectionVolume());
 
 //                        double wipeVolume = Math.min(currentNozzle.getWipeVolume(), totalExtrusionForPath - currentNozzle.getEjectionVolume());
 //
@@ -1732,7 +1748,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         }
     }
 
-    private int insertTravelAndClosePath(final int firstExtrusionEventIndex, final int finalExtrusionEventIndex, final String comment, boolean forceReverse, TravelEvent lastInwardsMoveEvent) throws PostProcessingError
+    private int insertTravelAndClosePath(final int firstExtrusionEventIndex, final int finalExtrusionEventIndex, final String comment, boolean forceReverse, TravelEvent lastInwardsMoveEvent,
+        double targetVolume) throws PostProcessingError
     {
         boolean reverseWipePath = forceReverse;
 
@@ -1904,8 +1921,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
         double cumulativeExtrusionVolume = 0;
 
-        double targetVolume = currentNozzle.getEjectionVolume() + currentNozzle.getWipeVolume();
-
         MovementEvent lastMovement = null;
 
 //        int indexDelta = (reverseWipePath == true) ? -1 : 1;
@@ -1917,6 +1932,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 && indexToCopyFrom <= finalExtrusionEventIndex
                 && indexToCopyFrom >= minimumIndexToCopyFrom)
             {
+                boolean dontIncrementEventIndex = false;
+
                 if (extrusionBuffer.get(indexToCopyFrom) instanceof ExtrusionEvent)
                 {
                     ExtrusionEvent eventToCopy = (ExtrusionEvent) extrusionBuffer.get(indexToCopyFrom);
@@ -2000,11 +2017,16 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                         extrusionBuffer.add(insertedEventIndex, eventToInsert);
                     } else
                     {
-                        extrusionBuffer.add(insertedEventIndex, extrusionBuffer.get(indexToCopyFrom));
+                        dontIncrementEventIndex = true;
+                        steno.info("Warning - elided event of type " + event.getClass().getName());
+//                        extrusionBuffer.add(insertedEventIndex, extrusionBuffer.get(indexToCopyFrom));
                     }
                 }
 
-                insertedEventIndex++;
+                if (!dontIncrementEventIndex)
+                {
+                    insertedEventIndex++;
+                }
 
                 indexToCopyFrom += indexDelta;
             }
@@ -2414,5 +2436,22 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         }
 
         return volumeIndex;
+    }
+
+    private double calculateVolume(ArrayList<GCodeParseEvent> extrusionBufferToAssess, int startIndex, int endIndex)
+    {
+        double totalExtrusionForPath = 0;
+
+        for (int extrusionBufferIndex = startIndex; extrusionBufferIndex <= endIndex; extrusionBufferIndex++)
+        {
+            GCodeParseEvent event = extrusionBufferToAssess.get(extrusionBufferIndex);
+
+            if (event instanceof ExtrusionEvent)
+            {
+                totalExtrusionForPath += ((ExtrusionEvent) event).getE() + ((ExtrusionEvent) event).getD();
+            }
+        }
+
+        return totalExtrusionForPath;
     }
 }

@@ -114,9 +114,9 @@ public class MovieMakerTask extends Task<MovieMakerResult>
 
     private void takeImage()
     {
-        steno.info("Movie maker about to grab frame ");
-        IplImage img = opencv_highgui.cvQueryFrame(frameGrabber);
-        opencv_highgui.cvWriteFrame(videoWriter, img);
+//        steno.info("Movie maker about to grab frame ");
+//        IplImage img = opencv_highgui.cvQueryFrame(frameGrabber);
+//        opencv_highgui.cvWriteFrame(videoWriter, img);
     }
 
     public void shutdown()

@@ -145,9 +145,9 @@ public class ThreeDViewManager
         public void handle(long now)
         {
             long difference = now - lastAnimationTrigger;
-            if (difference > 10000000)
+            if (difference > 50000000)
             {
-                rotateCameraAroundAxes(0, 0.2);
+                rotateCameraAroundAxes(0, 0.1);
                 lastAnimationTrigger = now;
             }
         }
