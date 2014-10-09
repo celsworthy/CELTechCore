@@ -88,7 +88,7 @@ public class CalibrationXAndYGUIStateHandler
                 break;
             case FAILED:
                 controller.hideAllInputControlsExceptStepNumber();
-                controller.buttonAAlt.disableProperty().unbind();
+//                controller.buttonAAlt.disableProperty().unbind();
                 controller.backToStatus.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText("");

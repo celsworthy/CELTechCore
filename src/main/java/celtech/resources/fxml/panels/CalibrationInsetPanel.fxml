@@ -9,7 +9,7 @@
 <?import javafx.scene.text.*?>
 <?import celtech.coreUI.components.*?>
 
-<Pane fx:id="topPane" minHeight="700.0" pickOnBounds="false" styleClass="inset-panel"  xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationInsetPanelController">
+<Pane fx:id="topPane" minHeight="700.0" pickOnBounds="false" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationInsetPanelController">
     <children>
         <BorderPane fx:id="topBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
             <center>
@@ -67,41 +67,6 @@
                                                     <children>
                                                         <ComboBox fx:id="cmbYOffset" prefWidth="150.0" />
                                                         <ComboBox fx:id="cmbXOffset" prefWidth="150.0" />
-                                                    </children>
-                                                </VBox>
-                                                <VBox fx:id="altButtonContainer">
-                                                    <children>
-                                                        <Button fx:id="buttonBAlt" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#buttonBAction" prefHeight="60.0" prefWidth="60.0" styleClass="calibrationAltABButton">
-                                                            <graphic>
-                                                                <Polygon fill="DODGERBLUE" scaleX="0.5" scaleY="0.5" scaleZ="0.5" stroke="BLACK" strokeType="INSIDE">
-                                                                    <points>
-                                                                        <Double fx:value="-50.0" />
-                                                                        <Double fx:value="40.0" />
-                                                                        <Double fx:value="50.0" />
-                                                                        <Double fx:value="40.0" />
-                                                                        <Double fx:value="0.0" />
-                                                                        <Double fx:value="-60.0" />
-                                                                    </points>
-                                                                </Polygon>
-                                                            </graphic>
-                                                        </Button>
-                                                        <Button fx:id="buttonAAlt" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#buttonAAction" prefHeight="60.0" prefWidth="60.0" styleClass="calibrationAltABButton">
-                                                            <graphic>
-                                                                <Polygon fill="DODGERBLUE" rotate="180.0" scaleX="0.5" scaleY="0.5" scaleZ="0.5" stroke="BLACK" strokeType="INSIDE">
-                                                                    <points>
-                                                                        <Double fx:value="-50.0" />
-                                                                        <Double fx:value="40.0" />
-                                                                        <Double fx:value="50.0" />
-                                                                        <Double fx:value="40.0" />
-                                                                        <Double fx:value="0.0" />
-                                                                        <Double fx:value="-60.0" />
-                                                                    </points>
-                                                                </Polygon>
-                                                            </graphic>
-                                                            <VBox.margin>
-                                                                <Insets bottom="10.0" top="10.0" />
-                                                            </VBox.margin>
-                                                        </Button>
                                                     </children>
                                                 </VBox>
                                             </children>
