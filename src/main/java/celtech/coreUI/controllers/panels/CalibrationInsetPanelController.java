@@ -308,11 +308,11 @@ public class CalibrationInsetPanelController implements Initializable,
         double xTranslate = 0;
         double yTranslate = 0;
         
-//        double xTranslate = -diagramWidth / 2;
-//        double yTranslate = -diagramHeight / 2;
+        xTranslate = -diagramWidth / 2;
+        yTranslate = -diagramHeight / 2;
 
-        xTranslate += ancestorStatusBounds.getMinX(); // + (ancestorStatusBounds.getWidth() / 2.0d);
-        yTranslate += ancestorStatusBounds.getMaxY();
+        xTranslate += ancestorStatusBounds.getMinX() + (ancestorStatusBounds.getWidth() / 2.0d);
+        yTranslate += upperBoundaryInAncestorCoords + availableHeight / 2.0;
 
 //        diagramNode.setTranslateX(diagramWidth / 2);
 //        diagramNode.setTranslateY(upperBoundaryInRHSCoords); // + availableHeight / 2.0);
@@ -347,8 +347,8 @@ public class CalibrationInsetPanelController implements Initializable,
                 steno.error("Could not load diagram: " + diagramName);
             }
         }
-//        return nameToNodeCache.get(diagramName);
-        return new TextField("ABC");
+        return nameToNodeCache.get(diagramName);
+//        return new TextField("ABC");
     }
 
     protected void showDiagram(String section, String diagramName)
