@@ -241,15 +241,6 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
                 calibrationStatus.setText(state.getStepTitle(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
                 calibrationInstruction.setText(state.getStepInstruction(String.valueOf(calibrationHelper.getCurrentNozzleNumber())));
                 break;
-            case PARKING:
-                startCalibrationButton.setVisible(false);
-                cancelCalibrationButton.setVisible(true);
-                yesButton.setVisible(false);
-                noButton.setVisible(false);
-                saveSettingsButton.setVisible(false);
-                calibrationStatus.setText(state.getStepTitle());
-                calibrationInstruction.setText(state.getStepInstruction());
-                break;
             case FINISHED:
                 startCalibrationButton.setVisible(false);
                 cancelCalibrationButton.setVisible(true);

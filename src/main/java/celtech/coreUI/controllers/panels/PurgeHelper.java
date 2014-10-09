@@ -191,11 +191,6 @@ public class PurgeHelper
                                                                                    savedHeadData.getNozzle2BOffset(),
                                                                                    reelNozzleTemperature,
                                                                                    savedHeadData.getHeadHours());
-
-                    printerToUse.transmitDirectGCode("G0 B0", false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchBedHeaterOff, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in purge - mode=" + state.name());

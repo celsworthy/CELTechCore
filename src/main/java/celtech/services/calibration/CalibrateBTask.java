@@ -159,16 +159,6 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
                     steno.error("Error in needle valve calibration - mode=" + desiredState.name());
                 }
                 break;
-            case PARKING:
-                try
-                {
-                    printerToUse.transmitStoredGCode("Park");
-                    success = true;
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in needle valve calibration - mode=" + desiredState.name());
-                }
-                break;
         }
 
         return new NozzleBCalibrationStepResult(desiredState, success);
@@ -184,6 +174,9 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
             printerToUse.transmitDirectGCode("G36 E700 F2000", false);
             PrinterUtils.waitOnBusy(printerToUse, this);
 
+            printerToUse.transmitDirectGCode("G1 E3 F400", false);
+            PrinterUtils.waitOnBusy(printerToUse, this);
+            
             success = true;
         } catch (RoboxCommsException ex)
         {

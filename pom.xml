@@ -158,11 +158,11 @@
             <artifactId>commons-compress</artifactId>
             <version>1.8</version>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv</artifactId>
             <version>0.8</version>
-        </dependency>
+        </dependency>-->
     </dependencies>
     
     <properties>
