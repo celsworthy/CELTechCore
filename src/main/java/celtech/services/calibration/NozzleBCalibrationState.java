@@ -73,11 +73,6 @@ public enum NozzleBCalibrationState
      *
      */
     CONFIRM_MATERIAL_EXTRUDING("calibrationPanel.valvesOpenMaterialExtruding", "calibrationPanel.isMaterialExtrudingNozzle"),
-
-    /**
-     *
-     */
-    PARKING("calibrationPanel.calibrationParkingMessage", null),
     
     /**
      *
