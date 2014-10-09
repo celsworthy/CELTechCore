@@ -373,13 +373,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     {
                         if (lastSelectedPrinter != null)
                         {
-                            //TODO modify to support multiple reels
-                            lastSelectedPrinter.reelsProperty().get(0).dataChangedToggleProperty().removeListener(reelDataChangedListener);
                         }
                         if (selectedPrinter != null && selectedPrinter != lastSelectedPrinter)
                         {
-                            currentPrinter = selectedPrinter;
-                            selectedPrinter.reelsProperty().get(0).dataChangedToggleProperty().addListener(reelDataChangedListener);
+                            currentPrinter = selectedPrinter;       
                         }
 
                         if (selectedPrinter == null)

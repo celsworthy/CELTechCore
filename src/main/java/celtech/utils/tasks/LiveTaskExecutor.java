@@ -8,6 +8,7 @@ import javafx.application.Platform;
  */
 public class LiveTaskExecutor implements TaskExecutor
 {
+
     @Override
     public void runOnGUIThread(TaskResponder responder, boolean success, String message)
     {
@@ -20,6 +21,18 @@ public class LiveTaskExecutor implements TaskExecutor
             {
                 responder.taskEnded(taskResponse);
             });
+        }
+    }
+
+    @Override
+    public void runOnCurrentThread(TaskResponder responder, boolean success, String message)
+    {
+        if (responder != null)
+        {
+            TaskResponse taskResponse = new TaskResponse(message);
+            taskResponse.setSucceeded(success);
+
+            responder.taskEnded(taskResponse);
         }
     }
 }

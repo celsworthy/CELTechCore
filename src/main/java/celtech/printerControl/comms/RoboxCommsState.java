@@ -16,14 +16,6 @@ public enum RoboxCommsState
      */
     FOUND,
     /**
-     *
-     */
-    CHECKING_HEAD,
-    /**
-     * 
-     */
-    FORMATTING_HEAD,
-    /**
      * 
      */
     POST,

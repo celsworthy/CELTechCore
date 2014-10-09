@@ -9,12 +9,12 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
-import celtech.printerControl.model.Head;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -78,7 +78,6 @@ public class SmartPartProgrammerController implements Initializable
 //                break;
 //        }
 //    }
-
     @FXML
     private ComboBox<Filament> materialSelector;
 
@@ -95,31 +94,26 @@ public class SmartPartProgrammerController implements Initializable
             float remainingFilament = 0;
 
             //TODO modify for multiple reels
-            if (connectedPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().get() == EEPROMState.NOT_PROGRAMMED)
-            {
-                connectedPrinter.transmitFormatReelEEPROM();
-                remainingFilament = ApplicationConfiguration.mmOfFilamentOnAReel;
-            } else
+            if (connectedPrinter.reelsProperty().size() == 1)
             {
                 //TODO modify for multiple reels
                 remainingFilament = connectedPrinter.reelsProperty().get(0).remainingFilamentProperty().get();
+                connectedPrinter.transmitWriteReelEEPROM(selectedFilament.getFilamentID(),
+                                                         selectedFilament.getFirstLayerNozzleTemperature(),
+                                                         selectedFilament.getNozzleTemperature(),
+                                                         selectedFilament.getFirstLayerBedTemperature(),
+                                                         selectedFilament.getBedTemperature(),
+                                                         selectedFilament.getAmbientTemperature(),
+                                                         selectedFilament.getDiameter(),
+                                                         selectedFilament.getFilamentMultiplier(),
+                                                         selectedFilament.getFeedRateMultiplier(),
+                                                         remainingFilament,
+                                                         selectedFilament.getFriendlyFilamentName(),
+                                                         selectedFilament.getMaterial(),
+                                                         selectedFilament.getDisplayColour());
+
+                connectedPrinter.readReelEEPROM();
             }
-
-            connectedPrinter.transmitWriteReelEEPROM(selectedFilament.getFilamentID(),
-                                                     selectedFilament.getFirstLayerNozzleTemperature(),
-                                                     selectedFilament.getNozzleTemperature(),
-                                                     selectedFilament.getFirstLayerBedTemperature(),
-                                                     selectedFilament.getBedTemperature(),
-                                                     selectedFilament.getAmbientTemperature(),
-                                                     selectedFilament.getDiameter(),
-                                                     selectedFilament.getFilamentMultiplier(),
-                                                     selectedFilament.getFeedRateMultiplier(),
-                                                     remainingFilament,
-                                                     selectedFilament.getFriendlyFilamentName(),
-                                                     selectedFilament.getMaterial(),
-                                                     selectedFilament.getDisplayColour());
-
-            connectedPrinter.transmitReadReelEEPROM();
         } catch (RoboxCommsException ex)
         {
             steno.error("Error writing reel EEPROM");
@@ -150,7 +144,7 @@ public class SmartPartProgrammerController implements Initializable
                 if (connectedPrinter != null)
                 {
                     //TODO modify to support multiple reels
-                    connectedPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().removeListener(reelEEPROMStateChangeListener);
+//                    connectedPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().removeListener(reelEEPROMStateChangeListener);
                 }
 
                 if (newPrinter == null)
@@ -163,9 +157,11 @@ public class SmartPartProgrammerController implements Initializable
                 } else
                 {
                     //TODO modify to support multiple reels
-                    programReelButton.disableProperty().bind(newPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PRESENT).or(materialSelector.getSelectionModel().selectedItemProperty().isNull()));
-                    materialSelector.disableProperty().bind(newPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PRESENT));
-                    newPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().addListener(reelEEPROMStateChangeListener);
+                    programReelButton.disableProperty().bind(Bindings.isEmpty(newPrinter.reelsProperty())
+                        .or(materialSelector.getSelectionModel()
+                            .selectedItemProperty().isNull()));
+                    materialSelector.disableProperty().bind(Bindings.isEmpty(newPrinter.reelsProperty()));
+//                    newPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().addListener(reelEEPROMStateChangeListener);
                 }
 
                 connectedPrinter = newPrinter;

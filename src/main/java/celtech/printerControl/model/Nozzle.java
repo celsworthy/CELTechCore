@@ -18,6 +18,10 @@ public class Nozzle implements Cloneable
     protected final FloatProperty zOffset = new SimpleFloatProperty(0);
     protected final FloatProperty bOffset = new SimpleFloatProperty(0);
 
+    public Nozzle()
+    {
+    }
+    
     /**
      * @param diameter
      * @param xOffset

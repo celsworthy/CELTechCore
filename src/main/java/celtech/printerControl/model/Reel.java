@@ -32,9 +32,6 @@ import javafx.scene.paint.Color;
  */
 public class Reel
 {
-
-    protected final ObjectProperty<EEPROMState> reelEEPROMStatus = new SimpleObjectProperty<>(EEPROMState.NOT_PRESENT);
-
     protected final StringProperty friendlyFilamentName = new SimpleStringProperty("");
     protected final ObjectProperty<MaterialType> material = new SimpleObjectProperty();
     protected final StringProperty filamentID = new SimpleStringProperty();
@@ -107,11 +104,6 @@ public class Reel
             }
         });
         remainingFilament.addListener(numberChangeListener);
-    }
-
-    public ReadOnlyObjectProperty<EEPROMState> reelEEPROMStatusProperty()
-    {
-        return reelEEPROMStatus;
     }
 
     public ReadOnlyStringProperty friendlyFilamentNameProperty()

@@ -12,6 +12,7 @@ import celtech.coreUI.components.JogButton;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
+import celtech.printerControl.model.Reel;
 import celtech.utils.tasks.TaskResponse;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -25,6 +26,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -53,12 +55,12 @@ import org.controlsfx.dialog.Dialogs.CommandLink;
 public class PrinterStatusPageController implements Initializable
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(
+    private final Stenographer steno = StenographerFactory.getStenographer(
         PrinterStatusPageController.class.getName());
     private StatusScreenState statusScreenState = null;
     private Printer printerToUse = null;
     private ChangeListener<Boolean> reelDataChangeListener = null;
-    private ChangeListener<EEPROMState> reelChangeListener = null;
+    private ListChangeListener<Reel> reelChangeListener = null;
     private ChangeListener<Color> printerColourChangeListener = null;
     private ChangeListener<PrinterStatus> printerStatusChangeListener = null;
     private ChangeListener<PauseStatus> pauseStatusChangeListener = null;
@@ -564,12 +566,36 @@ public class PrinterStatusPageController implements Initializable
             filamentRectangle.setFill(printerToUse.reelsProperty().get(0).displayColourProperty().get());
         };
 
-        reelChangeListener = (ObservableValue<? extends EEPROMState> ov, EEPROMState t, EEPROMState t1) ->
+        reelChangeListener = new ListChangeListener<Reel>()
         {
-            if (t1 == EEPROMState.PROGRAMMED)
+            @Override
+            public void onChanged(ListChangeListener.Change<? extends Reel> change)
             {
-                //TODO modify to support multiple reels
-                filamentRectangle.setFill(printerToUse.reelsProperty().get(0).displayColourProperty().get());
+                while (change.next())
+                {
+                    if (change.wasAdded())
+                    {
+                        for (Reel changedReel : change.getAddedSubList())
+                        {
+                            //TODO modify to support multiple reels
+                            filamentRectangle.setFill(changedReel.displayColourProperty().get());
+                            filamentRectangle.setVisible(true);
+                            reel.setVisible(true);
+                        }
+                    } else if (change.wasRemoved())
+                    {
+                        for (Reel changedReel : change.getRemoved())
+                        {
+                            //TODO modify to support multiple reels
+                            filamentRectangle.setVisible(false);
+                            reel.setVisible(false);
+                        }
+                    } else if (change.wasReplaced())
+                    {
+                    } else if (change.wasUpdated())
+                    {
+                    }
+                }
             }
         };
 
@@ -757,21 +783,13 @@ public class PrinterStatusPageController implements Initializable
                             .greaterThan(ApplicationConfiguration.bedHotAboveDegrees));
 
                         //TODO modify to support multiple reels
-                        selectedPrinter.reelsProperty().get(0).dataChangedToggleProperty().addListener(
-                            reelDataChangeListener);
-                        //TODO modify to support multiple reels
-                        selectedPrinter.reelsProperty().get(0)
-                        .reelEEPROMStatusProperty().addListener(reelChangeListener);
-                        //TODO modify to support multiple reels
-                        filamentRectangle.setFill(selectedPrinter.reelsProperty().get(0).displayColourProperty().get());
-                        //TODO modify to support multiple reels
-                        filamentRectangle.visibleProperty().bind(
-                            selectedPrinter.reelsProperty().get(0)
-                            .reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
-                        reel.visibleProperty().bind(
-                            selectedPrinter.reelsProperty().get(0)
-                            .reelEEPROMStatusProperty()
-                            .isEqualTo(EEPROMState.PROGRAMMED));
+                        selectedPrinter.reelsProperty().addListener(reelChangeListener);
+
+                        if (selectedPrinter.reelsProperty().isEmpty() == false)
+                        {
+                            //TODO modify to support multiple reels
+                            filamentRectangle.setFill(selectedPrinter.reelsProperty().get(0).displayColourProperty().get());
+                        }
 
                         processPrinterStatusChange(selectedPrinter.printerStatusProperty().get());
                         selectedPrinter.printerStatusProperty().addListener(printerStatusChangeListener);
@@ -975,8 +993,7 @@ public class PrinterStatusPageController implements Initializable
             lastSelectedPrinter.reelsProperty().get(0).dataChangedToggleProperty().removeListener(
                 reelDataChangeListener);
             //TODO modify to support multiple reels
-            lastSelectedPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().removeListener(
-                reelChangeListener);
+            lastSelectedPrinter.reelsProperty().removeListener(reelChangeListener);
             lastSelectedPrinter.printerStatusProperty().removeListener(printerStatusChangeListener);
         }
 

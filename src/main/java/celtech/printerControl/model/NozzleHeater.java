@@ -40,6 +40,11 @@ public class NozzleHeater implements Cloneable
         ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP + 5, 0);
     private long lastTemperatureTimestamp = 0;
 
+    public NozzleHeater()
+    {
+        initialiseTemperatureGraph();
+    }
+    
     public NozzleHeater(float maximumTemperature,
         float beta,
         float tcal,
@@ -56,6 +61,11 @@ public class NozzleHeater implements Cloneable
         this.nozzleFirstLayerTargetTemperature.set(nozzleFirstLayerTargetTemperature);
         this.nozzleTargetTemperature.set(nozzleTargetTemperature);
 
+        initialiseTemperatureGraph();
+    }
+
+    private void initialiseTemperatureGraph()
+    {
         for (int i = 0; i < ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP; i++)
         {
             LineChart.Data<Number, Number> newNozzlePoint = new LineChart.Data<>(i, 0);

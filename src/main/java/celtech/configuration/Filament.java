@@ -585,7 +585,7 @@ public class Filament implements Serializable, Cloneable
     {
         try
         {
-            ReelEEPROMDataResponse response = printer.transmitReadReelEEPROM();
+            ReelEEPROMDataResponse response = printer.readReelEEPROM();
 
             if (ApplicationConfiguration.isAutoRepairReels())
             {
@@ -697,7 +697,7 @@ public class Filament implements Serializable, Cloneable
                             if (needToWriteFilamentData)
                             {
                                 printer.transmitWriteReelEEPROM(filamentToWrite);
-                                printer.transmitReadReelEEPROM();
+                                printer.readReelEEPROM();
                                 steno.info("Automatically updated filament data for "
                                     + receivedTypeCode);
 

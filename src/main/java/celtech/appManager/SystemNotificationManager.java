@@ -3,11 +3,17 @@ package celtech.appManager;
 import celtech.Lookup;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.utilityPanels.MaintenancePanelController;
-import celtech.printerControl.model.Printer;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
+import celtech.services.firmware.FirmwareLoadTask;
+import celtech.utils.tasks.Cancellable;
+import celtech.utils.tasks.TaskResponder;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import javafx.application.Platform;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -21,7 +27,7 @@ import org.controlsfx.dialog.Dialogs;
 public class SystemNotificationManager
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(SystemNotificationManager.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(SystemNotificationManager.class.getName());
     private boolean errorDialogOnDisplay = false;
     private static boolean sdDialogOnDisplay = false;
 
@@ -38,39 +44,35 @@ public class SystemNotificationManager
     private static Dialogs.CommandLink okCalibrate = null;
     private static Dialogs.CommandLink dontCalibrate = null;
 
+    /*
+     * Firmware upgrade dialog
+     */
+    protected Dialogs.CommandLink firmwareUpgradeOK = null;
+    protected Dialogs.CommandLink firmwareUpgradeNotOK = null;
+    protected Dialogs.CommandLink firmwareDowngradeOK = null;
+    protected Dialogs.CommandLink firmwareDowngradeNotOK = null;
+
     private void showErrorNotification(String title, String message)
     {
-        Platform.runLater(new Runnable()
+        Platform.runLater(() ->
         {
-            @Override
-            public void run()
-            {
-                Notifier.showErrorNotification(title, message);
-            }
+            Notifier.showErrorNotification(title, message);
         });
     }
 
     private void showWarningNotification(String title, String message)
     {
-        Platform.runLater(new Runnable()
+        Platform.runLater(() ->
         {
-            @Override
-            public void run()
-            {
-                Notifier.showWarningNotification(title, message);
-            }
+            Notifier.showWarningNotification(title, message);
         });
     }
 
     private void showInformationNotification(String title, String message)
     {
-        Platform.runLater(new Runnable()
+        Platform.runLater(() ->
         {
-            @Override
-            public void run()
-            {
-                Notifier.showInformationNotification(title, message);
-            }
+            Notifier.showInformationNotification(title, message);
         });
     }
 
@@ -89,9 +91,9 @@ public class SystemNotificationManager
                 && !errorDialogOnDisplay)
             {
                 errorDialogOnDisplay = true;
-                
+
                 Action errorHandlingResponse = null;
-                
+
                 if (printer.printerStatusProperty().get() != PrinterStatus.IDLE
                     && printer.printerStatusProperty().get() != PrinterStatus.ERROR)
                 {
@@ -110,7 +112,7 @@ public class SystemNotificationManager
                         .masthead(null)
                         .showCommandLinks(clearOnly, clearOnly);
                 }
-                
+
                 try
                 {
                     printer.transmitResetErrors();
@@ -118,7 +120,7 @@ public class SystemNotificationManager
                 {
                     steno.error("Couldn't reset errors after error detection");
                 }
-                
+
                 if (errorHandlingResponse == abortJob)
                 {
                     try
@@ -133,7 +135,7 @@ public class SystemNotificationManager
                         steno.error("Error whilst cancelling print from error dialog");
                     }
                 }
-                
+
                 errorDialogOnDisplay = false;
             }
         });
@@ -153,7 +155,7 @@ public class SystemNotificationManager
                 .message(Lookup.i18n("dialogs.headUpdateCalibrationRequiredInstruction"))
                 .masthead(null)
                 .showCommandLinks(okCalibrate, okCalibrate, dontCalibrate);
-            
+
             if (calibrationResponse == okCalibrate)
             {
                 MaintenancePanelController.calibrateBAction();
@@ -179,16 +181,12 @@ public class SystemNotificationManager
     {
         if (!sdDialogOnDisplay)
         {
-            Platform.runLater(new Runnable()
+            Platform.runLater(() ->
             {
-                @Override
-                public void run()
-                {
-                    sdDialogOnDisplay = true;
-                    Notifier.showErrorNotification(Lookup.i18n("dialogs.noSDCardTitle"),
-                                                   Lookup.i18n("dialogs.noSDCardMessage"));
-                    sdDialogOnDisplay = false;
-                }
+                sdDialogOnDisplay = true;
+                Notifier.showErrorNotification(Lookup.i18n("dialogs.noSDCardTitle"),
+                                               Lookup.i18n("dialogs.noSDCardMessage"));
+                sdDialogOnDisplay = false;
             });
         }
     }
@@ -244,5 +242,129 @@ public class SystemNotificationManager
     public void showDetectedPrintInProgressNotification()
     {
         showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.activePrintDetected"));
+    }
+
+    public void showFirmwareUpgradeFailedNotification(int error)
+    {
+        switch (error)
+        {
+            case FirmwareLoadTask.SDCARD_ERROR:
+                showErrorNotification(Lookup.i18n("dialogs.firmwareUpgradeFailedTitle"),
+                                      Lookup.i18n("dialogs.sdCardError"));
+                break;
+            case FirmwareLoadTask.FILE_ERROR:
+                showErrorNotification(Lookup.i18n("dialogs.firmwareUpgradeFailedTitle"),
+                                      Lookup.i18n("dialogs.firmwareFileError"));
+                break;
+            case FirmwareLoadTask.OTHER_ERROR:
+                showErrorNotification(Lookup.i18n("dialogs.firmwareUpgradeFailedTitle"),
+                                      Lookup.i18n("dialogs.firmwareUpgradeFailedMessage"));
+                break;
+            case FirmwareLoadTask.SUCCESS:
+                showInformationNotification(Lookup.i18n("dialogs.firmwareUpgradeSuccessTitle"),
+                                            Lookup.i18n("dialogs.firmwareUpgradeSuccessMessage"));
+                break;
+        }
+    }
+
+    /**
+     *
+     * @param requiredFirmwareVersion
+     * @param actualFirmwareVersion
+     * @return True if the user has agreed to downgrade, otherwise false
+     */
+    public boolean askUserToDowngradeFirmware(int requiredFirmwareVersion, int actualFirmwareVersion)
+    {
+        if (firmwareDowngradeOK == null)
+        {
+            firmwareDowngradeOK = new Dialogs.CommandLink(Lookup.i18n("dialogs.firmwareDowngradeOKTitle"),
+                                                          Lookup.i18n("dialogs.firmwareUpgradeOKMessage"));
+            firmwareDowngradeNotOK = new Dialogs.CommandLink(Lookup.i18n("dialogs.firmwareDowngradeNotOKTitle"),
+                                                             Lookup.i18n("dialogs.firmwareUpgradeNotOKMessage"));
+        }
+
+        Callable<Boolean> askUserToDowngradeDialog = new Callable()
+        {
+            @Override
+            public Boolean call() throws Exception
+            {
+                Action downgradeApplicationResponse = Dialogs.create().title(
+                Lookup.i18n(
+                    "dialogs.firmwareVersionTooLowTitle"))
+                .message(Lookup.i18n(
+                        "dialogs.firmwareVersionError1")
+                    + actualFirmwareVersion
+                    + Lookup.i18n(
+                        "dialogs.firmwareVersionError2")
+                    + requiredFirmwareVersion + ".\n"
+                    + Lookup.i18n(
+                        "dialogs.firmwareVersionError3"))
+                .masthead(null)
+                .showCommandLinks(firmwareDowngradeOK,
+                                  firmwareDowngradeOK,
+                                  firmwareDowngradeNotOK);
+
+                return downgradeApplicationResponse.equals(firmwareDowngradeOK);
+            }
+        };
+        FutureTask<Boolean> askUserToUpgradeTask = new FutureTask<>(askUserToDowngradeDialog);
+        Platform.runLater(askUserToUpgradeTask);
+        try
+        {
+            return askUserToUpgradeTask.get();
+        } catch (InterruptedException | ExecutionException ex)
+        {
+            steno.error("Error during firmware upgrade query");
+            return false;
+        }
+
+    }
+
+    /**
+     * Returns 0 for no downgrade and 1 for downgrade
+     *
+     * @param requiredFirmwareVersion
+     * @param actualFirmwareVersion
+     * @return True if the user has agreed to upgrade, otherwise false
+     */
+    public boolean askUserToUpgradeFirmware(int requiredFirmwareVersion, int actualFirmwareVersion)
+    {
+        if (firmwareUpgradeOK == null)
+        {
+            firmwareUpgradeOK = new Dialogs.CommandLink(Lookup.i18n("dialogs.firmwareUpgradeOKTitle"),
+                                                        Lookup.i18n("dialogs.firmwareUpgradeOKMessage"));
+            firmwareUpgradeNotOK = new Dialogs.CommandLink(Lookup.i18n("dialogs.firmwareUpgradeNotOKTitle"),
+                                                           Lookup.i18n("dialogs.firmwareUpgradeNotOKMessage"));
+        }
+
+        Callable<Boolean> askUserToUpgradeDialog = new Callable()
+        {
+            @Override
+            public Boolean call() throws Exception
+            {
+                Action upgradeApplicationResponse = Dialogs.create().title(
+                    Lookup.i18n("dialogs.firmwareUpgradeTitle"))
+                    .message(Lookup.i18n("dialogs.firmwareVersionError1")
+                        + actualFirmwareVersion
+                        + Lookup.i18n("dialogs.firmwareVersionError2")
+                        + requiredFirmwareVersion + ".\n"
+                        + Lookup.i18n("dialogs.firmwareVersionError3"))
+                    .masthead(null)
+                    .showCommandLinks(firmwareUpgradeOK,
+                                      firmwareUpgradeOK,
+                                      firmwareUpgradeNotOK);
+                return upgradeApplicationResponse.equals(firmwareUpgradeOK);
+            }
+        };
+        FutureTask<Boolean> askUserToUpgradeTask = new FutureTask<>(askUserToUpgradeDialog);
+        Platform.runLater(askUserToUpgradeTask);
+        try
+        {
+            return askUserToUpgradeTask.get();
+        } catch (InterruptedException | ExecutionException ex)
+        {
+            steno.error("Error during firmware upgrade query");
+            return false;
+        }
     }
 }

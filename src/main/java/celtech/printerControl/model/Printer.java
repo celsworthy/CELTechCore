@@ -9,7 +9,6 @@ import celtech.configuration.Filament;
 import celtech.configuration.HeadContainer;
 import celtech.configuration.MaterialType;
 import celtech.configuration.PauseStatus;
-import celtech.configuration.WhyAreWeWaitingState;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.printerControl.PrintActionUnavailableException;
@@ -166,8 +165,6 @@ public class Printer implements RoboxResponseConsumer
         threeDPformatter.setGroupingUsed(false);
 
         systemNotificationManager = Lookup.getSystemNotificationHandler();
-
-        reels.add(new Reel());
 
         extruders.add(new Extruder("E"));
         extruders.add(new Extruder("D"));
@@ -491,7 +488,7 @@ public class Printer implements RoboxResponseConsumer
     /*
      * Print
      */
-    public final ReadOnlyBooleanProperty getCanPrintProperty()
+    public final ReadOnlyBooleanProperty canPrintProperty()
     {
         return canPrintProperty;
     }
@@ -499,7 +496,7 @@ public class Printer implements RoboxResponseConsumer
     /*
      * Cancel
      */
-    public final ReadOnlyBooleanProperty getCanCancelProperty()
+    public final ReadOnlyBooleanProperty canCancelProperty()
     {
         return canCancelProperty;
     }
@@ -870,20 +867,31 @@ public class Printer implements RoboxResponseConsumer
 
     /**
      *
-     * @return @throws RoboxCommsException
+     * @return @throws celtech.printerControl.model.PrinterException
      */
-    public AckResponse transmitFormatReelEEPROM() throws RoboxCommsException
+    public AckResponse formatReelEEPROM() throws PrinterException
     {
         FormatReelEEPROM formatReel = (FormatReelEEPROM) RoboxTxPacketFactory.createPacket(
             TxPacketTypeEnum.FORMAT_REEL_EEPROM);
-        return (AckResponse) commandInterface.writeToPrinter(formatReel);
+
+        AckResponse response = null;
+        try
+        {
+            response = (AckResponse) commandInterface.writeToPrinter(formatReel);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error sending format reel");
+            throw new PrinterException("Error formatting reel");
+        }
+
+        return response;
     }
 
     /**
      *
      * @return @throws RoboxCommsException
      */
-    public ReelEEPROMDataResponse transmitReadReelEEPROM() throws RoboxCommsException
+    public ReelEEPROMDataResponse readReelEEPROM() throws RoboxCommsException
     {
         ReadReelEEPROM readReel = (ReadReelEEPROM) RoboxTxPacketFactory.createPacket(
             TxPacketTypeEnum.READ_REEL_EEPROM);
@@ -1224,229 +1232,221 @@ public class Printer implements RoboxResponseConsumer
     @Override
     public void processRoboxResponse(RoboxRxPacket rxPacket)
     {
-        switch (rxPacket.getPacketType())
+        Platform.runLater(() ->
         {
-            case ACK_WITH_ERRORS:
-                systemNotificationManager.processErrorPacketFromPrinter((AckResponse) rxPacket, this);
-                break;
 
-            case STATUS_RESPONSE:
-                StatusResponse statusResponse = (StatusResponse) rxPacket;
+            switch (rxPacket.getPacketType())
+            {
+                case ACK_WITH_ERRORS:
+                    systemNotificationManager.processErrorPacketFromPrinter((AckResponse) rxPacket, this);
+                    break;
 
-                /*
-                 * Ancillary systems
-                 */
-                printerAncillarySystems.ambientTemperature.set(statusResponse.getAmbientTemperature());
-                printerAncillarySystems.ambientTargetTemperature.set(statusResponse.getAmbientTargetTemperature());
-                printerAncillarySystems.bedTemperature.set(statusResponse.getBedTemperature());
-                printerAncillarySystems.bedTargetTemperature.set(statusResponse.getBedTargetTemperature());
-                printerAncillarySystems.bedFirstLayerTargetTemperature.set(statusResponse.getBedFirstLayerTargetTemperature());
-                printerAncillarySystems.ambientFanOn.set(statusResponse.isAmbientFanOn());
-                printerAncillarySystems.bedHeaterMode.set(statusResponse.getBedHeaterMode());
-                printerAncillarySystems.headFanOn.set(statusResponse.isHeadFanOn());
-                printerAncillarySystems.XStopSwitch.set(statusResponse.isxSwitchStatus());
-                printerAncillarySystems.YStopSwitch.set(statusResponse.isySwitchStatus());
-                printerAncillarySystems.ZStopSwitch.set(statusResponse.iszSwitchStatus());
-                printerAncillarySystems.ZTopStopSwitch.set(statusResponse.isTopZSwitchStatus());
-                printerAncillarySystems.bAxisHome.set(statusResponse.isNozzleSwitchStatus());
-                printerAncillarySystems.lidOpen.set(statusResponse.isLidSwitchStatus());
-                printerAncillarySystems.reelButton.set(statusResponse.isReelButtonStatus());
-                printerAncillarySystems.whyAreWeWaitingProperty.set(statusResponse.getWhyAreWeWaitingState());
-                printerAncillarySystems.updateGraphData();
+                case STATUS_RESPONSE:
+                    StatusResponse statusResponse = (StatusResponse) rxPacket;
 
-                /*
-                 * Extruders
-                 */
-                //TODO configure properly for multiple extruders
-                extruders.get(0).filamentLoaded.set(statusResponse.isFilament1SwitchStatus());
-                extruders.get(0).indexWheelState.set(statusResponse.isEIndexStatus());
-                extruders.get(1).filamentLoaded.set(statusResponse.isFilament2SwitchStatus());
-                extruders.get(1).indexWheelState.set(statusResponse.isDIndexStatus());
+                    /*
+                     * Ancillary systems
+                     */
+                    printerAncillarySystems.ambientTemperature.set(statusResponse.getAmbientTemperature());
+                    printerAncillarySystems.ambientTargetTemperature.set(statusResponse.getAmbientTargetTemperature());
+                    printerAncillarySystems.bedTemperature.set(statusResponse.getBedTemperature());
+                    printerAncillarySystems.bedTargetTemperature.set(statusResponse.getBedTargetTemperature());
+                    printerAncillarySystems.bedFirstLayerTargetTemperature.set(statusResponse.getBedFirstLayerTargetTemperature());
+                    printerAncillarySystems.ambientFanOn.set(statusResponse.isAmbientFanOn());
+                    printerAncillarySystems.bedHeaterMode.set(statusResponse.getBedHeaterMode());
+                    printerAncillarySystems.headFanOn.set(statusResponse.isHeadFanOn());
+                    printerAncillarySystems.XStopSwitch.set(statusResponse.isxSwitchStatus());
+                    printerAncillarySystems.YStopSwitch.set(statusResponse.isySwitchStatus());
+                    printerAncillarySystems.ZStopSwitch.set(statusResponse.iszSwitchStatus());
+                    printerAncillarySystems.ZTopStopSwitch.set(statusResponse.isTopZSwitchStatus());
+                    printerAncillarySystems.bAxisHome.set(statusResponse.isNozzleSwitchStatus());
+                    printerAncillarySystems.lidOpen.set(statusResponse.isLidSwitchStatus());
+                    printerAncillarySystems.reelButton.set(statusResponse.isReelButtonStatus());
+                    printerAncillarySystems.whyAreWeWaitingProperty.set(statusResponse.getWhyAreWeWaitingState());
+                    printerAncillarySystems.updateGraphData();
 
-                if (pauseStatusProperty.get() != statusResponse.getPauseStatus()
-                    && statusResponse.getPauseStatus() == PauseStatus.PAUSED)
-                {
-                    lastStateBeforePause = printerStatus.get();
-                    setPrinterStatus(PrinterStatus.PAUSED);
-                } else if (pauseStatusProperty.get() != statusResponse.getPauseStatus()
-                    && statusResponse.getPauseStatus() == PauseStatus.NOT_PAUSED)
-                {
-                    if (lastStateBeforePause != null)
+                    /*
+                     * Extruders
+                     */
+                    //TODO configure properly for multiple extruders
+                    extruders.get(0).filamentLoaded.set(statusResponse.isFilament1SwitchStatus());
+                    extruders.get(0).indexWheelState.set(statusResponse.isEIndexStatus());
+                    extruders.get(1).filamentLoaded.set(statusResponse.isFilament2SwitchStatus());
+                    extruders.get(1).indexWheelState.set(statusResponse.isDIndexStatus());
+
+                    if (pauseStatusProperty.get() != statusResponse.getPauseStatus()
+                        && statusResponse.getPauseStatus() == PauseStatus.PAUSED)
                     {
-                        setPrinterStatus(lastStateBeforePause);
+                        lastStateBeforePause = printerStatus.get();
+                        setPrinterStatus(PrinterStatus.PAUSED);
+                    } else if (pauseStatusProperty.get() != statusResponse.getPauseStatus()
+                        && statusResponse.getPauseStatus() == PauseStatus.NOT_PAUSED)
+                    {
+                        if (lastStateBeforePause != null)
+                        {
+                            setPrinterStatus(lastStateBeforePause);
+                        }
                     }
-                }
 
-                /*
-                 * Generic printer stuff that has no other home :)
-                 */
-                pauseStatusProperty.set(statusResponse.getPauseStatus());
-                printJobLineNumberProperty.set(statusResponse.getPrintJobLineNumber());
-                printJobIDProperty.set(statusResponse.getRunningPrintJobID());
+                    /*
+                     * Generic printer stuff that has no other home :)
+                     */
+                    pauseStatusProperty.set(statusResponse.getPauseStatus());
+                    printJobLineNumberProperty.set(statusResponse.getPrintJobLineNumber());
+                    printJobIDProperty.set(statusResponse.getRunningPrintJobID());
 
-//                /*
-//                 * Reels
-//                 */
-//                EEPROMState lastReelState = null;
-//
-//                if (reels.size() > 0)
-//                {
-//                    //TODO modify to work with multiple reels
-//                    lastReelState = reels.get(0).reelEEPROMStatus.get();
-//                }
-//
-//                if (lastReelState != EEPROMState.PROGRAMMED
-//                    && statusResponse.getReelEEPROMState() == EEPROMState.PROGRAMMED)
-//                {
-//                    Filament.repairFilamentIfNecessary(this);
-//                } else if (lastReelState != EEPROMState.NOT_PRESENT
-//                    && statusResponse.getReelEEPROMState() == EEPROMState.NOT_PRESENT)
-//                {
-////                    loadedFilament.set(null);
-//                    //TODO modify to work with multiple reels
-//                    reels.get(0).noReelLoaded();
-//                }
-//
-//                //TODO modify to work with multiple reels
-//                reels.get(0).reelEEPROMStatus.set(statusResponse.getReelEEPROMState());
+                    if (head.isNotNull().get())
+                    {
+                        /*
+                         * Heater
+                         */
+                        if (head.get().nozzleHeaters.size() > 0)
+                        {
+                            //TODO modify for multiple heaters
+                            head.get().nozzleHeaters.get(0).nozzleTemperature.set(statusResponse.getNozzleTemperature());
+                            head.get().nozzleHeaters.get(0).nozzleFirstLayerTargetTemperature.set(statusResponse.getNozzleFirstLayerTargetTemperature());
+                            head.get().nozzleHeaters.get(0).nozzleTargetTemperature.set(statusResponse.getNozzleTargetTemperature());
 
-                /*
-                 * Core head data
-                 */
-                if (statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PRESENT
-                    && head.isNotNull().get())
-                {
-                    head.set(null);
-                } else if (statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PROGRAMMED)
-                {
+                            //TODO modify for multiple heaters
+                            if (head.get().getNozzleHeaters().size() > 0)
+                            {
+                                head.get().getNozzleHeaters().get(0).heaterMode.set(statusResponse.getNozzleHeaterMode());
+                            }
+                            head.get().nozzleHeaters
+                                .stream()
+                                .forEach(heater -> heater.updateGraphData());
+                        }
+
+                        /*
+                         * Nozzle data
+                         */
+                        if (head.get().nozzles.size() > 0)
+                        {
+                            //TODO modify to work with multiple nozzles
+                            //This is only true for the current cam-based heads that only really have one B axis
+                            head.get().nozzles
+                                .stream()
+                                .forEach(nozzle -> nozzle.BPosition.set(statusResponse.getBPosition()));
+                        }
+
+                        head.get().headXPosition.set(statusResponse.getHeadXPosition());
+                        head.get().headYPosition.set(statusResponse.getHeadYPosition());
+                        head.get().headZPosition.set(statusResponse.getHeadZPosition());
+                    }
+
+                    if (statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PRESENT
+                        && head.isNotNull().get())
+                    {
+                        head.set(null);
+                    } else if (statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PROGRAMMED)
+                    {
+                        try
+                        {
+                            formatHeadEEPROM();
+                        } catch (PrinterException ex)
+                        {
+                            steno.error("Error formatting head");
+                        }
+                    } else if (statusResponse.getHeadEEPROMState() == EEPROMState.PROGRAMMED
+                        && head.isNull().get())
+                    {
+                        try
+                        {
+                            readHeadEEPROM();
+                        } catch (RoboxCommsException ex)
+                        {
+                            steno.error("Error attempting to read head eeprom");
+                        }
+                    }
+
+                    //TODO modify to support multiple reels
+                    if (statusResponse.getReelEEPROMState() == EEPROMState.NOT_PRESENT
+                        && reels.size() == 1)
+                    {
+                        reels.clear();
+                    } else if (statusResponse.getReelEEPROMState() == EEPROMState.NOT_PROGRAMMED)
+                    {
+                        try
+                        {
+                            formatReelEEPROM();
+                        } catch (PrinterException ex)
+                        {
+                            steno.error("Error formatting reel");
+                        }
+                    } else if (statusResponse.getReelEEPROMState() == EEPROMState.PROGRAMMED
+                        && reels.size() == 0)
+                    {
+                        try
+                        {
+                            readReelEEPROM();
+                        } catch (RoboxCommsException ex)
+                        {
+                            steno.error("Error attempting to read reel eeprom");
+                        }
+                    }
+
+                    break;
+
+                case FIRMWARE_RESPONSE:
+                    FirmwareResponse fwResponse = (FirmwareResponse) rxPacket;
+                    printerIdentity.firmwareVersion.set(fwResponse.getFirmwareRevision());
+                    break;
+
+                case PRINTER_ID_RESPONSE:
+                    PrinterIDResponse idResponse = (PrinterIDResponse) rxPacket;
+                    printerIdentity.printermodel.set(idResponse.getModel());
+                    printerIdentity.printeredition.set(idResponse.getEdition());
+                    printerIdentity.printerweekOfManufacture.set(idResponse.getWeekOfManufacture());
+                    printerIdentity.printeryearOfManufacture.set(idResponse.getYearOfManufacture());
+                    printerIdentity.printerpoNumber.set(idResponse.getPoNumber());
+                    printerIdentity.printerserialNumber.set(idResponse.getSerialNumber());
+                    printerIdentity.printercheckByte.set(idResponse.getCheckByte());
+                    printerIdentity.printerFriendlyName.set(idResponse.getPrinterFriendlyName());
+                    printerIdentity.printerColour.set(idResponse.getPrinterColour());
                     try
                     {
-                        formatHeadEEPROM();
+                        setAmbientLEDColour(idResponse.getPrinterColour());
+
                     } catch (PrinterException ex)
                     {
-                        steno.error("Error formatting head");
+                        steno.warning("Couldn't set printer LED colour");
                     }
-                } else if (statusResponse.getHeadEEPROMState() == EEPROMState.PROGRAMMED
-                    && head.isNull().get())
-                {
-                    try
+                    break;
+
+                case REEL_EEPROM_DATA:
+                    ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) rxPacket;
+
+                    //TODO modify to work with multiple reels
+                    if (reels.size() == 0)
                     {
-                        readHeadEEPROM();
-                    } catch (RoboxCommsException ex)
+                        Reel newReel = new Reel();
+                        newReel.updateFromEEPROMData(reelResponse);
+                        reels.add(newReel);
+                    } else
                     {
-                        steno.error("Error attempting to read head eeprom");
+                        reels.get(0).updateFromEEPROMData(reelResponse);
                     }
-                }
+                    break;
 
-//                EEPROMState lastHeadState = null;
-//
-//                if (head.isNotNull().get())
-//                {
-//                    lastHeadState = head.get().headEEPROMStatusProperty.get();
-//                }
-//                if (lastHeadState != EEPROMState.PROGRAMMED
-//                    && statusResponse.getHeadEEPROMState() == EEPROMState.PROGRAMMED)
-//                {
-//                    if ()
-//                    {
-//
-//                    }
-//                } else if (lastHeadState != EEPROMState.NOT_PRESENT
-//                    && statusResponse.getHeadEEPROMState() == EEPROMState.NOT_PRESENT)
-//                {
-//                    head.set(null);
-//                }
-                if (head.isNotNull().get())
-                {
-                    /*
-                     * Heater
-                     */
-                    if (head.get().nozzleHeaters.size() > 0)
+                case HEAD_EEPROM_DATA:
+                    HeadEEPROMDataResponse headResponse = (HeadEEPROMDataResponse) rxPacket;
+
+                    if (head.isNull().get())
                     {
-                        //TODO modify for multiple heaters
-                        head.get().nozzleHeaters.get(0).nozzleTemperature.set(statusResponse.getNozzleTemperature());
-                        head.get().nozzleHeaters.get(0).nozzleFirstLayerTargetTemperature.set(statusResponse.getNozzleFirstLayerTargetTemperature());
-                        head.get().nozzleHeaters.get(0).nozzleTargetTemperature.set(statusResponse.getNozzleTargetTemperature());
-
-                        //TODO modify for multiple heaters
-                        if (head.get().getNozzleHeaters().size() > 0)
-                        {
-                            head.get().getNozzleHeaters().get(0).heaterMode.set(statusResponse.getNozzleHeaterMode());
-                        }
-                        head.get().nozzleHeaters
-                            .stream()
-                            .forEach(heater -> heater.updateGraphData());
-                    }
-
-                    /*
-                     * Nozzle data
-                     */
-                    if (head.get().nozzles.size() > 0)
+                        Head newHead = new Head(headResponse);
+                        head.set(newHead);
+                    } else
                     {
-                        //TODO modify to work with multiple nozzles
-                        //This is only true for the current cam-based heads that only really have one B axis
-                        head.get().nozzles
-                            .stream()
-                            .forEach(nozzle -> nozzle.BPosition.set(statusResponse.getBPosition()));
+                        head.get().updateFromEEPROMData(headResponse);
                     }
+                    break;
 
-                    head.get().headXPosition.set(statusResponse.getHeadXPosition());
-                    head.get().headYPosition.set(statusResponse.getHeadYPosition());
-                    head.get().headZPosition.set(statusResponse.getHeadZPosition());
-                }
-
-                break;
-
-            case FIRMWARE_RESPONSE:
-                FirmwareResponse fwResponse = (FirmwareResponse) rxPacket;
-                printerIdentity.firmwareVersion.set(fwResponse.getFirmwareRevision());
-                break;
-
-            case PRINTER_ID_RESPONSE:
-                PrinterIDResponse idResponse = (PrinterIDResponse) rxPacket;
-                printerIdentity.printermodel.set(idResponse.getModel());
-                printerIdentity.printeredition.set(idResponse.getEdition());
-                printerIdentity.printerweekOfManufacture.set(idResponse.getWeekOfManufacture());
-                printerIdentity.printeryearOfManufacture.set(idResponse.getYearOfManufacture());
-                printerIdentity.printerpoNumber.set(idResponse.getPoNumber());
-                printerIdentity.printerserialNumber.set(idResponse.getSerialNumber());
-                printerIdentity.printercheckByte.set(idResponse.getCheckByte());
-                printerIdentity.printerFriendlyName.set(idResponse.getPrinterFriendlyName());
-                printerIdentity.printerColour.set(idResponse.getPrinterColour());
-                try
-                {
-                    setAmbientLEDColour(idResponse.getPrinterColour());
-
-                } catch (PrinterException ex)
-                {
-                    steno.warning("Couldn't set printer LED colour");
-                }
-                break;
-
-            case REEL_EEPROM_DATA:
-                ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) rxPacket;
-
-                //TODO modify to work with multiple reels
-                reels.get(0).updateFromEEPROMData(reelResponse);
-                break;
-
-            case HEAD_EEPROM_DATA:
-                HeadEEPROMDataResponse headResponse = (HeadEEPROMDataResponse) rxPacket;
-
-                if (head.isNull().get())
-                {
-                    head.set(new Head(headResponse));
-                } else
-                {
-                    head.get().updateFromEEPROMData(headResponse);
-                }
-                break;
-
-            default:
-                steno.warning("Unknown packet type delivered to Printer Status: "
-                    + rxPacket.getPacketType().name());
-                break;
-        }
+                default:
+                    steno.warning("Unknown packet type delivered to Printer Status: "
+                        + rxPacket.getPacketType().name());
+                    break;
+            }
+        });
     }
 
     public void hardResetHead()

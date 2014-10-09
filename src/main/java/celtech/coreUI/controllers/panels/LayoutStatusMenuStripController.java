@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.ApplicationMode;
@@ -14,8 +9,6 @@ import static celtech.appManager.ProjectMode.MESH;
 import static celtech.appManager.ProjectMode.NONE;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
-import celtech.configuration.EEPROMState;
-import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.components.ProjectTab;
@@ -24,7 +17,6 @@ import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.printerControl.model.Printer;
-import celtech.printerControl.PrinterStatus;
 import celtech.utils.PrinterUtils;
 import java.io.File;
 import java.net.URL;
@@ -35,8 +27,6 @@ import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -277,7 +267,7 @@ public class LayoutStatusMenuStripController
                         printButton.visibleProperty().unbind();
                     }
                     printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
-                        ApplicationMode.SETTINGS).and(currentPrinter.getCanPrintProperty()));
+                        ApplicationMode.SETTINGS).and(newValue.canPrintProperty()));
 
                     currentPrinter = newValue;
                 }

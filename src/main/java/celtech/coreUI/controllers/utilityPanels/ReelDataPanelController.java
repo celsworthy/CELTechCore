@@ -13,13 +13,16 @@ import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.model.PrinterException;
+import celtech.printerControl.model.Reel;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -28,7 +31,6 @@ import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -170,7 +172,7 @@ public class ReelDataPanelController implements Initializable
     {
         try
         {
-            connectedPrinter.transmitReadReelEEPROM();
+            connectedPrinter.readReelEEPROM();
         } catch (RoboxCommsException ex)
         {
             steno.error("Error reading reel EEPROM");
@@ -181,8 +183,8 @@ public class ReelDataPanelController implements Initializable
     {
         try
         {
-            connectedPrinter.transmitFormatReelEEPROM();
-        } catch (RoboxCommsException ex)
+            connectedPrinter.formatReelEEPROM();
+        } catch (PrinterException ex)
         {
             steno.error("Error formatting reel EEPROM");
         }
@@ -272,9 +274,6 @@ public class ReelDataPanelController implements Initializable
         if (connectedPrinter != null)
         {
             reelContainer.visibleProperty().unbind();
-
-//            connectedPrinter.reelDataChangedProperty().removeListener(reelDataChangeListener);
-
             reelWriteConfig.visibleProperty().unbind();
             saveFilamentAs.visibleProperty().unbind();
 
@@ -288,16 +287,9 @@ public class ReelDataPanelController implements Initializable
         {
             connectedPrinter = printer;
 
-            reelContainer.visibleProperty().bind(
-                connectedPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
-
-//            connectedPrinter.reelDataChangedProperty().addListener(reelDataChangeListener);
-
-            reelWriteConfig.visibleProperty().bind(
-                connectedPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().isNotEqualTo(EEPROMState.NOT_PRESENT));
-            saveFilamentAs.visibleProperty().bind(
-                connectedPrinter.reelsProperty().get(0).reelEEPROMStatusProperty().isNotEqualTo(EEPROMState.NOT_PRESENT));
+            reelContainer.visibleProperty().bind(Bindings.isNotEmpty(connectedPrinter.reelsProperty()));
+            reelWriteConfig.visibleProperty().bind(Bindings.isNotEmpty(connectedPrinter.reelsProperty()));
+            saveFilamentAs.visibleProperty().bind(Bindings.isNotEmpty(connectedPrinter.reelsProperty()));
         }
     }
-
 }
