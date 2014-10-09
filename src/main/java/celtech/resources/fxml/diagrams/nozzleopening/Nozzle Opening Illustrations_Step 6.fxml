@@ -6,21 +6,21 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<Group xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
-  <Group>
-    <Group>
-      <Line startX="96.676" endX="96.676" stroke="#FFFFFF" startY="285.492" endY="273.361" />
-      <Line startX="133.613" stroke="#FFFFFF" endX="164.356" startY="285.145" endY="284.859" />
-      <Line endX="111.713" startY="285.486" endY="285.347" stroke="#FFFFFF" startX="96.676" />
-      <Line stroke="#FFFFFF" endY="285.091" startX="28.976" startY="284.758" endX="59.681" />
-      <Line endX="96.676" startY="285.259" endY="285.492" stroke="#FFFFFF" startX="75.135" />
-      <Line startX="96.676" endY="281.398" endX="111.237" startY="281.529" stroke="#FFFFFF" />
-      <Line stroke="#FFFFFF" endY="280.918" startY="281.194" startX="133.865" endX="164.395" />
-      <Line endX="96.676" startX="78.574" endY="281.535" startY="281.344" stroke="#FFFFFF" />
-      <Line stroke="#FFFFFF" endY="281.115" startY="280.817" endX="56.999" startX="28.937" />
+<Pane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+  <Pane>
+    <Pane>
+      <Line startX="96.676" endX="96.676" startY="285.492" endY="273.361" stroke="#FFFFFF" />
+      <Line startY="285.145" startX="133.613" endY="284.859" endX="164.356" stroke="#FFFFFF" />
+      <Line startY="285.486" stroke="#FFFFFF" endY="285.347" startX="96.676" endX="111.713" />
+      <Line endY="285.091" endX="59.681" stroke="#FFFFFF" startX="28.976" startY="284.758" />
+      <Line endX="96.676" stroke="#FFFFFF" endY="285.492" startX="75.135" startY="285.259" />
+      <Line stroke="#FFFFFF" endX="111.237" startY="281.529" endY="281.398" startX="96.676" />
+      <Line endX="164.395" startY="281.194" startX="133.865" endY="280.918" stroke="#FFFFFF" />
+      <Line endX="96.676" endY="281.535" startY="281.344" startX="78.574" stroke="#FFFFFF" />
+      <Line stroke="#FFFFFF" endX="56.999" startX="28.937" startY="280.817" endY="281.115" />
       <SVGPath content="M124.742,335.586l-0.218-4.408l-0.366-4.445l-0.471-4.439l-0.516-4.283l-0.494-3.94l-0.459-3.78     l-0.438-4.024l-0.38-4.409l-0.267-4.654l-0.045-2.022h3l0.013,0.862l0.185,3.997l0.332,4.262l0.478,4.659l0.589,4.936     l0.605,4.824l0.543,4.579l0.442,4.468l0.319,4.363l0.182,4.26l0.041,3.139l-0.008,0.309c-0.18,1.01,0.25,1.739-1.598,1.715     c-1.486-0.02-1.516-1.032-1.411-1.979L124.742,335.586z" fill="#009EE3" />
-      <Line startY="6.207" endX="7.629" stroke="#FFFFFF" endY="0.929" startX="2.387" />
-      <Line startX="2.387" stroke="#FFFFFF" endY="0.93" endX="7.631" startY="6.211" />
+      <Line endX="7.629" endY="0.929" startX="2.387" stroke="#FFFFFF" startY="6.207" />
+      <Line startX="2.387" endY="0.93" stroke="#FFFFFF" endX="7.631" startY="6.211" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="2.402" />
@@ -43,7 +43,7 @@
           <Double fx:value="11.755" />
         </points>
       </Polyline>
-      <Line endX="13.877" startY="191.695" startX="14.014" endY="192.131" stroke="#FFFFFF" />
+      <Line startX="14.014" endY="192.131" endX="13.877" stroke="#FFFFFF" startY="191.695" />
       <Line startX="13.877" endX="13.678" startY="192.131" stroke="#FFFFFF" endY="192.68" />
       <Polyline stroke="#FFFFFF">
         <points>
@@ -85,7 +85,7 @@
           <Double fx:value="200.876" />
         </points>
       </Polyline>
-      <Line startX="8.41" endY="173.875" stroke="#FFFFFF" startY="179.963" endX="7.865" />
+      <Line startX="8.41" endX="7.865" endY="173.875" stroke="#FFFFFF" startY="179.963" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="7.865" />
@@ -104,13 +104,13 @@
           <Double fx:value="138.336" />
         </points>
       </Polyline>
-      <Line startX="7.791" startY="173.037" endY="159.242" endX="6.658" stroke="#FFFFFF" />
-      <Line startY="159.242" startX="6.658" endY="145.436" endX="5.658" stroke="#FFFFFF" />
-      <Line startY="140.35" endX="5.259" startX="5.324" endY="139.359" stroke="#FFFFFF" />
-      <Line endX="5.259" startY="138.34" endY="139.359" stroke="#FFFFFF" startX="5.197" />
-      <Line endY="138.336" stroke="#FFFFFF" endX="5.197" startX="5.211" startY="138.608" />
-      <Line endX="5.211" startY="145.436" startX="5.658" endY="138.335" stroke="#FFFFFF" />
-      <Line startX="2.449" endX="2.454" stroke="#FFFFFF" startY="10.996" endY="11.074" />
+      <Line endY="159.242" endX="6.658" startY="173.037" startX="7.791" stroke="#FFFFFF" />
+      <Line endX="5.658" startX="6.658" startY="159.242" endY="145.436" stroke="#FFFFFF" />
+      <Line stroke="#FFFFFF" startY="140.35" startX="5.324" endX="5.259" endY="139.359" />
+      <Line endY="139.359" startX="5.197" stroke="#FFFFFF" startY="138.34" endX="5.259" />
+      <Line endY="138.336" stroke="#FFFFFF" startX="5.211" endX="5.197" startY="138.608" />
+      <Line endY="138.335" startY="145.436" endX="5.211" stroke="#FFFFFF" startX="5.658" />
+      <Line startY="10.996" startX="2.449" endX="2.454" stroke="#FFFFFF" endY="11.074" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="2.8" />
@@ -129,7 +129,7 @@
           <Double fx:value="48.852" />
         </points>
       </Polyline>
-      <Line endX="2.454" startY="66.899" endY="62.459" stroke="#FFFFFF" startX="2.52" />
+      <Line endX="2.454" startX="2.52" startY="66.899" stroke="#FFFFFF" endY="62.459" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="2.454" />
@@ -148,10 +148,10 @@
           <Double fx:value="11.591" />
         </points>
       </Polyline>
-      <Line stroke="#FFFFFF" startX="2.503" endX="2.498" endY="66.467" startY="66.9" />
-      <Line endY="66.9" startY="66.51" startX="2.498" endX="2.503" stroke="#FFFFFF" />
-      <Line endX="2.487" startX="2.498" endY="65.564" stroke="#FFFFFF" startY="66.467" />
-      <Line startX="2.487" stroke="#FFFFFF" endX="2.498" endY="66.51" startY="65.564" />
+      <Line startY="66.9" startX="2.503" stroke="#FFFFFF" endX="2.498" endY="66.467" />
+      <Line endX="2.503" startY="66.51" startX="2.498" stroke="#FFFFFF" endY="66.9" />
+      <Line endY="65.564" startY="66.467" startX="2.498" stroke="#FFFFFF" endX="2.487" />
+      <Line endY="66.51" endX="2.498" stroke="#FFFFFF" startY="65.564" startX="2.487" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="2.487" />
@@ -168,7 +168,7 @@
           <Double fx:value="61.229" />
         </points>
       </Polyline>
-      <Line endX="2.434" stroke="#FFFFFF" startX="2.442" startY="61.229" endY="60.265" />
+      <Line endX="2.434" endY="60.265" startY="61.229" stroke="#FFFFFF" startX="2.442" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="2.434" />
@@ -209,16 +209,16 @@
           <Double fx:value="10.584" />
         </points>
       </Polyline>
-      <Line endY="56.766" startY="57.567" startX="2.415" stroke="#FFFFFF" endX="2.41" />
-      <Line stroke="#FFFFFF" startX="2.41" startY="56.766" endX="2.408" endY="56.19" />
-      <Line endX="2.405" startX="2.408" endY="55.773" startY="56.19" stroke="#FFFFFF" />
-      <Line endX="2.391" startX="2.454" startY="62.459" endY="48.854" stroke="#FFFFFF" />
-      <Line endY="85.03" startY="138.282" startX="0.5" endX="0.5" stroke="#FFFFFF" />
-      <Line startY="6.209" endX="2.387" endY="10.514" startX="2.387" stroke="#FFFFFF" />
-      <Line stroke="#FFFFFF" endY="11.533" startY="10.689" startX="2.387" endX="2.387" />
-      <Line endX="2.387" startX="2.387" endY="11.956" startY="48.584" stroke="#FFFFFF" />
-      <Line endY="48.854" startY="48.617" startX="2.387" stroke="#FFFFFF" endX="2.387" />
-      <Line endX="7.631" startX="7.631" startY="19.152" endY="0.93" stroke="#FFFFFF" />
+      <Line endX="2.41" startX="2.415" stroke="#FFFFFF" startY="57.567" endY="56.766" />
+      <Line endY="56.19" startY="56.766" endX="2.408" startX="2.41" stroke="#FFFFFF" />
+      <Line stroke="#FFFFFF" endX="2.405" startX="2.408" startY="56.19" endY="55.773" />
+      <Line endY="48.854" stroke="#FFFFFF" endX="2.391" startY="62.459" startX="2.454" />
+      <Line startX="0.5" endY="85.03" startY="138.282" stroke="#FFFFFF" endX="0.5" />
+      <Line startY="6.209" startX="2.387" endX="2.387" stroke="#FFFFFF" endY="10.514" />
+      <Line endY="11.533" startY="10.689" stroke="#FFFFFF" startX="2.387" endX="2.387" />
+      <Line stroke="#FFFFFF" startX="2.387" startY="48.584" endX="2.387" endY="11.956" />
+      <Line startY="48.617" endY="48.854" startX="2.387" endX="2.387" stroke="#FFFFFF" />
+      <Line endY="0.93" stroke="#FFFFFF" startX="7.631" startY="19.152" endX="7.631" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="14.197" />
@@ -233,10 +233,10 @@
           <Double fx:value="191.695" />
         </points>
       </Polyline>
-      <Line endX="10.447" startY="200.874" stroke="#FFFFFF" endY="200.473" startX="10.487" />
-      <Line stroke="#FFFFFF" endX="10.398" endY="200.037" startX="10.447" startY="200.473" />
-      <Line startX="10.48" startY="200.809" endY="197.262" stroke="#FFFFFF" endX="10.107" />
-      <Line startX="10.487" endY="200.876" startY="200.877" stroke="#FFFFFF" endX="10.487" />
+      <Line startX="10.487" startY="200.874" stroke="#FFFFFF" endY="200.473" endX="10.447" />
+      <Line startY="200.473" stroke="#FFFFFF" endY="200.037" endX="10.398" startX="10.447" />
+      <Line startX="10.48" stroke="#FFFFFF" endX="10.107" startY="200.809" endY="197.262" />
+      <Line endY="200.876" startX="10.487" stroke="#FFFFFF" endX="10.487" startY="200.877" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="10.398" />
@@ -267,7 +267,7 @@
           <Double fx:value="191.974" />
         </points>
       </Polyline>
-      <Line endX="9.533" endY="191.648" startY="191.974" stroke="#FFFFFF" startX="9.567" />
+      <Line endY="191.648" startX="9.567" startY="191.974" stroke="#FFFFFF" endX="9.533" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="9.567" />
@@ -298,11 +298,11 @@
           <Double fx:value="183.625" />
         </points>
       </Polyline>
-      <Line startX="2.443" endY="10.996" startY="10.92" stroke="#FFFFFF" endX="2.449" />
-      <Line startX="9.533" stroke="#FFFFFF" endX="8.969" startY="191.648" endY="185.896" />
-      <Line endY="182.85" stroke="#FFFFFF" endX="8.684" startY="185.896" startX="8.969" />
-      <Line startY="183.625" endY="182.887" stroke="#FFFFFF" startX="8.75" endX="8.684" />
-      <Line stroke="#FFFFFF" endX="8.626" startY="182.887" endY="182.285" startX="8.684" />
+      <Line endY="10.996" startX="2.443" startY="10.92" endX="2.449" stroke="#FFFFFF" />
+      <Line startX="9.533" endY="185.896" endX="8.969" startY="191.648" stroke="#FFFFFF" />
+      <Line startY="185.896" startX="8.969" endX="8.684" endY="182.85" stroke="#FFFFFF" />
+      <Line startY="183.625" endX="8.684" startX="8.75" stroke="#FFFFFF" endY="182.887" />
+      <Line stroke="#FFFFFF" startY="182.887" endY="182.285" endX="8.626" startX="8.684" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="8.621" />
@@ -369,8 +369,8 @@
           <Double fx:value="39.427" />
         </points>
       </Polyline>
-      <Line endX="12.467" endY="133.688" startX="12.434" startY="133.116" stroke="#FFFFFF" />
-      <Line startY="132.562" endX="12.434" startX="12.398" stroke="#FFFFFF" endY="133.116" />
+      <Line endY="133.688" startY="133.116" endX="12.467" startX="12.434" stroke="#FFFFFF" />
+      <Line stroke="#FFFFFF" endY="133.116" startY="132.562" endX="12.434" startX="12.398" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="21.291" />
@@ -543,13 +543,13 @@
           <Double fx:value="280.813" />
         </points>
       </Polyline>
-      <Line startY="182.229" endX="8.629" startX="8.621" endY="182.285" stroke="#FFFFFF" />
-      <Line endY="48.584" startX="22.078" stroke="#FFFFFF" endX="2.387" startY="213.789" />
-      <Line startX="46.895" endY="263.785" startY="254.926" endX="46.43" stroke="#FFFFFF" />
-      <Line startX="52.223" endX="51.543" endY="267.939" startY="254.973" stroke="#FFFFFF" />
-      <Line startX="52.826" startY="273.762" endX="53.143" endY="270.762" stroke="#009EE3" />
-      <Line stroke="#009EE3" endX="56" startX="56.578" startY="274.156" endY="279.637" />
-      <Line startY="10.584" stroke="#FFFFFF" endX="2.393" startX="2.393" endY="10.584" />
+      <Line endY="182.285" stroke="#FFFFFF" startX="8.621" endX="8.629" startY="182.229" />
+      <Line startY="213.789" endY="48.584" startX="22.078" endX="2.387" stroke="#FFFFFF" />
+      <Line startY="254.926" startX="46.895" endX="46.43" endY="263.785" stroke="#FFFFFF" />
+      <Line endY="267.939" startX="52.223" stroke="#FFFFFF" endX="51.543" startY="254.973" />
+      <Line startX="52.826" stroke="#009EE3" endY="270.762" startY="273.762" endX="53.143" />
+      <Line endY="279.637" stroke="#009EE3" endX="56" startX="56.578" startY="274.156" />
+      <Line endX="2.393" endY="10.584" stroke="#FFFFFF" startY="10.584" startX="2.393" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="2.393" />
@@ -566,8 +566,8 @@
           <Double fx:value="10.92" />
         </points>
       </Polyline>
-      <Line endY="278.744" stroke="#009EE3" startX="67.83" endX="67.471" startY="275.34" />
-      <Line endY="276.521" startY="282.002" stroke="#009EE3" startX="78.508" endX="79.082" />
+      <Line startX="67.83" startY="275.34" endY="278.744" stroke="#009EE3" endX="67.471" />
+      <Line stroke="#009EE3" startX="78.508" endX="79.082" startY="282.002" endY="276.521" />
       <Polyline stroke="#009EE3">
         <points>
           <Double fx:value="67.471" />
@@ -640,7 +640,7 @@
           <Double fx:value="277.562" />
         </points>
       </Polyline>
-      <Line endY="292.039" startX="56" stroke="#009EE3" endX="64.369" startY="279.637" />
+      <Line endX="64.369" endY="292.039" stroke="#009EE3" startY="279.637" startX="56" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="5.158" />
@@ -654,8 +654,8 @@
         </points>
       </Polyline>
       <Line startX="96.676" endY="0.5" endX="96.676" startY="255.36" stroke="#FFFFFF" />
-      <Line startX="82.834" startY="276.916" stroke="#009EE3" endY="273.916" endX="83.148" />
-      <Line startX="78.508" stroke="#009EE3" endX="67.744" startY="282.002" endY="292.395" />
+      <Line startX="82.834" stroke="#009EE3" endY="273.916" endX="83.148" startY="276.916" />
+      <Line endY="292.395" startX="78.508" startY="282.002" stroke="#009EE3" endX="67.744" />
       <Polyline stroke="#009EE3">
         <points>
           <Double fx:value="78.723" />
@@ -771,7 +771,7 @@
         </points>
       </Polyline>
       <Line endX="125.192" endY="295.179" startY="295.179" stroke="#009EE3" startX="119.91" />
-      <Line stroke="#009EE3" startX="64.369" startY="292.039" endX="67.744" endY="292.395" />
+      <Line endX="67.744" stroke="#009EE3" startX="64.369" endY="292.395" startY="292.039" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="31.762" />
@@ -794,8 +794,8 @@
           <Double fx:value="260.625" />
         </points>
       </Polyline>
-      <Line stroke="#009EE3" endY="275.189" startY="278.207" endX="107.464" startX="107.464" />
-      <Line startX="111.237" startY="284.84" endY="278.207" stroke="#009EE3" endX="111.237" />
+      <Line startX="107.464" endY="275.189" startY="278.207" endX="107.464" stroke="#009EE3" />
+      <Line endX="111.237" endY="278.207" startY="284.84" startX="111.237" stroke="#009EE3" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="180.053" />
@@ -968,7 +968,7 @@
           <Double fx:value="273.457" />
         </points>
       </Polyline>
-      <Line startX="96.676" endX="97.992" stroke="#FFFFFF" endY="274.863" startY="275.051" />
+      <Line endX="97.992" endY="274.863" startX="96.676" startY="275.051" stroke="#FFFFFF" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="97.992" />
@@ -979,9 +979,9 @@
           <Double fx:value="274.487" />
         </points>
       </Polyline>
-      <Line startY="273.457" endY="273.457" stroke="#FFFFFF" endX="96.676" startX="96.676" />
-      <Line stroke="#009EE3" endY="278.207" startX="107.464" endX="137.637" startY="278.207" />
-      <Line startY="272.551" endY="272.551" endX="95.412" stroke="#FFFFFF" startX="139.524" />
+      <Line endY="273.457" endX="96.676" startY="273.457" stroke="#FFFFFF" startX="96.676" />
+      <Line startY="278.207" endY="278.207" endX="137.637" stroke="#009EE3" startX="107.464" />
+      <Line stroke="#FFFFFF" startY="272.551" endX="95.412" startX="139.524" endY="272.551" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="96.017" />
@@ -1036,9 +1036,9 @@
           <Double fx:value="271.764" />
         </points>
       </Polyline>
-      <Line endX="96.017" endY="272.6" startY="272.563" stroke="#FFFFFF" startX="95.209" />
+      <Line endY="272.6" endX="96.017" startX="95.209" stroke="#FFFFFF" startY="272.563" />
       <Line endX="46.43" endY="263.785" startX="51.746" stroke="#FFFFFF" startY="264.063" />
-      <Line endX="139.85" startX="139.776" stroke="#FFFFFF" startY="267.725" endY="267.729" />
+      <Line startX="139.776" endX="139.85" endY="267.729" startY="267.725" stroke="#FFFFFF" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="88.164" />
@@ -1049,8 +1049,8 @@
           <Double fx:value="273.988" />
         </points>
       </Polyline>
-      <Line startX="52.826" endY="276.916" stroke="#009EE3" endX="82.834" startY="273.762" />
-      <Line startX="51.543" endX="95.412" startY="267.939" endY="272.551" stroke="#FFFFFF" />
+      <Line stroke="#009EE3" endY="276.916" startX="52.826" endX="82.834" startY="273.762" />
+      <Line startY="267.939" startX="51.543" stroke="#FFFFFF" endY="272.551" endX="95.412" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="92.512" />
@@ -1251,7 +1251,7 @@
           <Double fx:value="190.809" />
         </points>
       </Polyline>
-      <Line stroke="#009EE3" endX="119.91" startX="111.237" startY="284.84" endY="295.179" />
+      <Line startX="111.237" startY="284.84" stroke="#009EE3" endY="295.179" endX="119.91" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="4.932" />
@@ -1262,21 +1262,21 @@
           <Double fx:value="139.699" />
         </points>
       </Polyline>
-      <Line stroke="#009EE3" startX="122.551" startY="278.207" endY="282.754" endX="122.551" />
-      <Line startY="284.84" stroke="#009EE3" endX="133.865" endY="278.207" startX="133.865" />
-      <Line endX="137.637" stroke="#009EE3" startY="278.207" endY="275.189" startX="137.637" />
-      <Line stroke="#FFFFFF" endX="140.44" startY="272.551" startX="139.524" endY="255.049" />
-      <Line startX="140.653" stroke="#FFFFFF" endX="140.643" endY="267.015" startY="266.834" />
-      <Line startX="133.865" stroke="#009EE3" endX="125.192" startY="284.84" endY="295.179" />
-      <Line startX="96.676" endX="176.072" stroke="#FFFFFF" startY="255.354" endY="254.801" />
-      <Line endY="255.043" endX="96.676" startY="255.031" stroke="#FFFFFF" startX="58.932" />
-      <Line startX="96.676" endY="255.152" startY="255.032" endX="125.667" stroke="#FFFFFF" />
-      <Line endX="96.676" endY="255.36" startX="17.253" startY="254.667" stroke="#FFFFFF" />
-      <Line startY="266.89" startX="141.703" endX="139.824" endY="266.791" stroke="#FFFFFF" />
-      <Line endX="51.901" startX="46.586" startY="260.817" endY="261.096" stroke="#FFFFFF" />
-      <Line endY="259.92" stroke="#FFFFFF" startY="257.817" startX="52.072" endX="92.197" />
+      <Line endX="122.551" startY="278.207" startX="122.551" stroke="#009EE3" endY="282.754" />
+      <Line stroke="#009EE3" endY="278.207" startX="133.865" startY="284.84" endX="133.865" />
+      <Line startX="137.637" stroke="#009EE3" endY="275.189" startY="278.207" endX="137.637" />
+      <Line stroke="#FFFFFF" endX="140.44" endY="255.049" startX="139.524" startY="272.551" />
+      <Line startX="140.653" stroke="#FFFFFF" endY="267.015" endX="140.643" startY="266.834" />
+      <Line startX="133.865" stroke="#009EE3" endY="295.179" endX="125.192" startY="284.84" />
+      <Line endY="254.801" startY="255.354" endX="176.072" startX="96.676" stroke="#FFFFFF" />
+      <Line startX="58.932" endX="96.676" endY="255.043" startY="255.031" stroke="#FFFFFF" />
+      <Line startX="96.676" endY="255.152" endX="125.667" startY="255.032" stroke="#FFFFFF" />
+      <Line endY="255.36" startX="17.253" startY="254.667" stroke="#FFFFFF" endX="96.676" />
+      <Line endY="266.791" startY="266.89" endX="139.824" stroke="#FFFFFF" startX="141.703" />
+      <Line startX="46.586" startY="260.817" stroke="#FFFFFF" endY="261.096" endX="51.901" />
+      <Line endY="259.92" startX="52.072" startY="257.817" endX="92.197" stroke="#FFFFFF" />
       <Line startX="99.928" endY="262.429" endX="140.053" stroke="#FFFFFF" startY="260.326" />
-      <Line stroke="#FFFFFF" endY="260.363" startX="142.051" endX="143.447" startY="260.291" />
+      <Line startX="142.051" endX="143.447" endY="260.363" startY="260.291" stroke="#FFFFFF" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="46.789" />
@@ -1351,9 +1351,9 @@
           <Double fx:value="183.328" />
         </points>
       </Polyline>
-      <Line endX="4.932" stroke="#FFFFFF" startY="139.148" startX="4.785" endY="139.316" />
-      <Line startX="141.703" stroke="#FFFFFF" startY="266.889" endY="255.035" endX="142.326" />
-      <Line stroke="#FFFFFF" endX="143.727" startY="260.363" endY="255.025" startX="143.447" />
+      <Line endY="139.316" endX="4.932" startX="4.785" stroke="#FFFFFF" startY="139.148" />
+      <Line endX="142.326" startY="266.889" stroke="#FFFFFF" startX="141.703" endY="255.035" />
+      <Line startX="143.447" endX="143.727" startY="260.363" endY="255.025" stroke="#FFFFFF" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="179.952" />
@@ -1364,7 +1364,7 @@
           <Double fx:value="140.512" />
         </points>
       </Polyline>
-      <Line stroke="#FFFFFF" startY="138.998" startX="4.619" endX="4.785" endY="139.148" />
+      <Line startY="138.998" endY="139.148" stroke="#FFFFFF" endX="4.785" startX="4.619" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="185.715" />
@@ -1467,11 +1467,11 @@
           <Double fx:value="173.875" />
         </points>
       </Polyline>
-      <Line endY="153.736" endX="187.104" startX="187.771" startY="144.232" stroke="#FFFFFF" />
-      <Line startX="187.104" stroke="#FFFFFF" startY="153.736" endY="163.389" endX="186.365" />
-      <Line startX="186.365" startY="163.389" stroke="#FFFFFF" endY="173.037" endX="185.555" />
-      <Line stroke="#FFFFFF" startY="173.037" startX="185.555" endX="185.482" endY="173.875" />
-      <Line endX="171.262" startY="48.584" startX="190.961" stroke="#FFFFFF" endY="213.842" />
+      <Line startX="187.771" endX="187.104" stroke="#FFFFFF" startY="144.232" endY="153.736" />
+      <Line startX="187.104" endY="163.389" endX="186.365" stroke="#FFFFFF" startY="153.736" />
+      <Line startY="163.389" startX="186.365" endY="173.037" stroke="#FFFFFF" endX="185.555" />
+      <Line startY="173.037" stroke="#FFFFFF" startX="185.555" endX="185.482" endY="173.875" />
+      <Line stroke="#FFFFFF" startY="48.584" endX="171.262" endY="213.842" startX="190.961" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="168.442" />
@@ -1532,7 +1532,7 @@
           <Double fx:value="173.875" />
         </points>
       </Polyline>
-      <Line endY="254.8" endX="176.072" startX="176.44" stroke="#FFFFFF" startY="252.229" />
+      <Line endX="176.072" startX="176.44" endY="254.8" startY="252.229" stroke="#FFFFFF" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="172.036" />
@@ -1569,10 +1569,10 @@
           <Double fx:value="254.801" />
         </points>
       </Polyline>
-      <Line endX="185.718" endY="0.929" startY="19.137" stroke="#FFFFFF" startX="185.718" />
-      <Line endY="137.961" startX="192.846" stroke="#FFFFFF" startY="85.399" endX="192.846" />
-      <Line startY="48.852" endY="6.21" endX="190.961" startX="190.961" stroke="#FFFFFF" />
-      <Line endX="190.953" startY="49.338" endY="52.781" stroke="#FFFFFF" startX="190.961" />
+      <Line startY="19.137" startX="185.718" endX="185.718" endY="0.929" stroke="#FFFFFF" />
+      <Line startY="85.399" startX="192.846" endX="192.846" endY="137.961" stroke="#FFFFFF" />
+      <Line endY="6.21" endX="190.961" startY="48.852" startX="190.961" stroke="#FFFFFF" />
+      <Line startX="190.961" endX="190.953" endY="52.781" startY="49.338" stroke="#FFFFFF" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="190.961" />
@@ -1589,7 +1589,7 @@
           <Double fx:value="77.375" />
         </points>
       </Polyline>
-      <Line startY="52.781" stroke="#FFFFFF" endY="56.942" startX="190.953" endX="190.936" />
+      <Line stroke="#FFFFFF" startY="52.781" endY="56.942" endX="190.936" startX="190.953" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="190.936" />
@@ -1600,8 +1600,8 @@
           <Double fx:value="65.266" />
         </points>
       </Polyline>
-      <Line endY="66.899" startX="190.865" stroke="#FFFFFF" endX="190.844" startY="65.266" />
-      <Line stroke="#FFFFFF" endX="190.671" startY="83.094" startX="190.547" endY="77.375" />
+      <Line stroke="#FFFFFF" startY="65.266" endY="66.899" startX="190.865" endX="190.844" />
+      <Line endX="190.671" startX="190.547" stroke="#FFFFFF" endY="77.375" startY="83.094" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="4.24" />
@@ -1612,10 +1612,10 @@
           <Double fx:value="138.998" />
         </points>
       </Polyline>
-      <Line startY="138.681" endX="4.24" endY="138.764" startX="4.03" stroke="#FFFFFF" />
-      <Line startX="181.662" stroke="#FFFFFF" endY="138.337" endX="192.5" startY="139.285" />
-      <Line stroke="#FFFFFF" endX="0.846" endY="138.352" startY="138.592" startX="3.604" />
-      <Line stroke="#FFFFFF" endY="136.848" startX="0.846" startY="136.616" endX="3.494" />
+      <Line startY="138.681" endX="4.24" stroke="#FFFFFF" endY="138.764" startX="4.03" />
+      <Line startX="181.662" endX="192.5" stroke="#FFFFFF" startY="139.285" endY="138.337" />
+      <Line startX="3.604" endX="0.846" endY="138.352" stroke="#FFFFFF" startY="138.592" />
+      <Line endX="3.494" stroke="#FFFFFF" startX="0.846" endY="136.848" startY="136.616" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="3.606" />
@@ -1626,9 +1626,9 @@
           <Double fx:value="138.681" />
         </points>
       </Polyline>
-      <Line endX="13.063" startX="12.871" startY="138.13" endY="138.129" stroke="#FFFFFF" />
-      <Line endX="1.487" startY="85" startX="0.846" endY="84.943" stroke="#FFFFFF" />
-      <Line startY="85.023" endX="191.852" endY="84.967" stroke="#FFFFFF" startX="192.5" />
+      <Line endY="138.129" endX="13.063" stroke="#FFFFFF" startX="12.871" startY="138.13" />
+      <Line startY="85" endX="1.487" stroke="#FFFFFF" startX="0.846" endY="84.943" />
+      <Line startX="192.5" endY="84.967" endX="191.852" stroke="#FFFFFF" startY="85.023" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="166.844" />
@@ -1803,10 +1803,10 @@
           <Double fx:value="35.822" />
         </points>
       </Polyline>
-      <Line startY="39.842" endX="96.676" endY="39.576" startX="28.467" stroke="#FFFFFF" />
-      <Line startY="35.498" startX="96.672" endY="35.759" endX="28.463" stroke="#FFFFFF" />
-      <Line endX="165.358" startY="39.576" endY="39.901" startX="96.676" stroke="#FFFFFF" />
-      <Line startY="35.498" endY="35.822" endX="165.368" stroke="#FFFFFF" startX="96.678" />
+      <Line startX="28.467" endX="96.676" stroke="#FFFFFF" endY="39.576" startY="39.842" />
+      <Line stroke="#FFFFFF" endY="35.759" startX="96.672" endX="28.463" startY="35.498" />
+      <Line endX="165.358" startY="39.576" stroke="#FFFFFF" endY="39.901" startX="96.676" />
+      <Line startX="96.678" endY="35.822" stroke="#FFFFFF" startY="35.498" endX="165.368" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="28.463" />
@@ -1845,8 +1845,8 @@
           <Double fx:value="39.931" />
         </points>
       </Polyline>
-      <Line startX="165.358" stroke="#FFFFFF" endY="39.922" endX="166.197" startY="39.901" />
-      <Line stroke="#FFFFFF" startX="7.631" endY="0.542" endX="63.326" startY="0.93" />
+      <Line stroke="#FFFFFF" endY="39.922" startY="39.901" endX="166.197" startX="165.358" />
+      <Line startX="7.631" endX="63.326" stroke="#FFFFFF" startY="0.93" endY="0.542" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="96.676" />
@@ -1895,31 +1895,31 @@
           <Double fx:value="0.5" />
         </points>
       </Polyline>
-      <Line stroke="#FFFFFF" startY="0.542" endY="0.93" startX="130.021" endX="185.715" />
-      <Line endX="190.961" endY="6.211" startY="0.93" stroke="#FFFFFF" startX="185.715" />
-      <Line stroke="#FFFFFF" startY="6.209" endX="185.718" startX="190.963" endY="0.929" />
-      <SVGPath content="M90.664,255.308      c-0.383,3.101,1.819,5.926,4.918,6.31c3.102,0.385,5.926-1.818,6.311-4.918c0.057-0.459,0.057-0.923,0.002-1.382" stroke="#FFFFFF" />
+      <Line startX="130.021" endY="0.93" startY="0.542" endX="185.715" stroke="#FFFFFF" />
+      <Line endX="190.961" endY="6.211" stroke="#FFFFFF" startY="0.93" startX="185.715" />
+      <Line stroke="#FFFFFF" endY="0.929" startX="190.963" endX="185.718" startY="6.209" />
+      <SVGPath stroke="#FFFFFF" content="M90.664,255.308      c-0.383,3.101,1.819,5.926,4.918,6.31c3.102,0.385,5.926-1.818,6.311-4.918c0.057-0.459,0.057-0.923,0.002-1.382" />
       <SVGPath stroke="#FFFFFF" content="M12.514,134.473      c-0.018-0.315-0.078-0.629-0.174-0.93" />
       <SVGPath stroke="#FFFFFF" content="M5.211,138.608      c-0.056-0.931-0.787-1.679-1.717-1.761" />
       <SVGPath stroke="#FFFFFF" content="M1.08,84.979      c0.989-0.087,1.742-0.929,1.72-1.923" />
-      <SVGPath stroke="#FFFFFF" content="M0.5,136.24      c0,0.195,0.151,0.358,0.346,0.376" />
-      <SVGPath content="M0.5,137.976      c0,0.195,0.151,0.358,0.346,0.376" stroke="#FFFFFF" />
-      <SVGPath stroke="#FFFFFF" content="M0.783,85.011      C0.617,85.054,0.5,85.203,0.5,85.375" />
+      <SVGPath content="M0.5,136.24      c0,0.195,0.151,0.358,0.346,0.376" stroke="#FFFFFF" />
+      <SVGPath stroke="#FFFFFF" content="M0.5,137.976      c0,0.195,0.151,0.358,0.346,0.376" />
+      <SVGPath content="M0.783,85.011      C0.617,85.054,0.5,85.203,0.5,85.375" stroke="#FFFFFF" />
       <SVGPath stroke="#FFFFFF" content="M139.85,267.729      c0.415,0.021,0.772-0.298,0.793-0.714" />
-      <SVGPath stroke="#FFFFFF" content="M190.547,83.079      c-0.022,0.995,0.73,1.837,1.718,1.924" />
+      <SVGPath content="M190.547,83.079      c-0.022,0.995,0.73,1.837,1.718,1.924" stroke="#FFFFFF" />
       <SVGPath stroke="#FFFFFF" content="M192.5,138.337      c0.197-0.018,0.346-0.181,0.346-0.376" />
-      <SVGPath content="M192.846,85.399      c0-0.196-0.148-0.358-0.346-0.376" stroke="#FFFFFF" />
-      <Line startX="51.265" stroke="#FFFFFF" endX="51.543" startY="270.564" endY="267.939" />
-      <Line endY="271.486" endX="85.301" stroke="#FFFFFF" startY="274.111" startX="85.025" />
-      <Line startX="105.58" endY="272.551" endX="105.58" stroke="#FFFFFF" startY="275.189" />
-      <Line endY="275.189" startX="105.58" endX="139.524" stroke="#FFFFFF" startY="275.189" />
-      <Line stroke="#FFFFFF" startY="270.564" endY="274.111" startX="51.265" endX="85.025" />
-      <Line startY="275.189" stroke="#FFFFFF" endY="272.551" endX="139.524" startX="139.524" />
-    </Group>
-    <SVGPath content="M61.029,108.629l-2.57-2.775c-0.295-0.374-0.443-0.773-0.443-1.201c0-0.514,0.202-0.965,0.604-1.369    l7.39-6.946c0.347-0.295,0.762-0.439,1.249-0.439c0.235,0,0.479,0.047,0.72,0.14c0.236,0.092,0.44,0.236,0.604,0.42l20.361,21.965    l35.059-45.136c0.407-0.456,0.885-0.683,1.449-0.683c0.428,0,0.803,0.135,1.125,0.398l8.07,6.225    c0.162,0.139,0.314,0.33,0.463,0.584c0.146,0.254,0.222,0.485,0.222,0.705c0,0.455-0.134,0.883-0.401,1.281l-45.06,57.879    L61.029,108.629z" fill="#00D646" />
-    <Group>
+      <SVGPath stroke="#FFFFFF" content="M192.846,85.399      c0-0.196-0.148-0.358-0.346-0.376" />
+      <Line endX="51.543" endY="267.939" startY="270.564" stroke="#FFFFFF" startX="51.265" />
+      <Line endX="85.301" stroke="#FFFFFF" startY="274.111" startX="85.025" endY="271.486" />
+      <Line endY="272.551" stroke="#FFFFFF" startY="275.189" startX="105.58" endX="105.58" />
+      <Line startX="105.58" startY="275.189" endY="275.189" endX="139.524" stroke="#FFFFFF" />
+      <Line stroke="#FFFFFF" startX="51.265" startY="270.564" endY="274.111" endX="85.025" />
+      <Line startX="139.524" endY="272.551" endX="139.524" stroke="#FFFFFF" startY="275.189" />
+    </Pane>
+    <SVGPath fill="#00D646" content="M61.029,108.629l-2.57-2.775c-0.295-0.374-0.443-0.773-0.443-1.201c0-0.514,0.202-0.965,0.604-1.369    l7.39-6.946c0.347-0.295,0.762-0.439,1.249-0.439c0.235,0,0.479,0.047,0.72,0.14c0.236,0.092,0.44,0.236,0.604,0.42l20.361,21.965    l35.059-45.136c0.407-0.456,0.885-0.683,1.449-0.683c0.428,0,0.803,0.135,1.125,0.398l8.07,6.225    c0.162,0.139,0.314,0.33,0.463,0.584c0.146,0.254,0.222,0.485,0.222,0.705c0,0.455-0.134,0.883-0.401,1.281l-45.06,57.879    L61.029,108.629z" />
+    <Pane>
       <SVGPath fill="#FFFFFF" content="M156.239,193.676c0,9.629-6.112,18.57-14.986,22.244c-9.089,3.762-19.593,1.354-26.356-5.723       c-6.771-7.082-8.608-17.721-4.436-26.605c4.092-8.717,13.309-14.354,22.953-13.879       C145.901,170.326,156.239,181.189,156.239,193.676z M154.034,193.709c0-9.686-6.706-18.367-16.013-20.979       c-9.412-2.639-19.639,1.676-24.578,10.035c-4.996,8.455-3.529,19.422,3.439,26.326c6.786,6.73,17.326,8.387,25.731,3.76       C149.545,209.037,154.034,201.633,154.034,193.709z" />
-      <Group>
+      <Pane>
         <Polygon fill="#FFFFFF">
           <points>
             <Double fx:value="135.225" />
@@ -1938,7 +1938,7 @@
             <Double fx:value="189.641" />
           </points>
         </Polygon>
-        <Group>
+        <Pane>
           <Polygon fill="#009EE3">
             <points>
               <Double fx:value="124.853" />
@@ -1983,23 +1983,23 @@
               <Double fx:value="198.422" />
             </points>
           </Polygon>
-        </Group>
-      </Group>
-    </Group>
-  </Group>
-  <Group>
-    <Group>
-      <Line startY="285.492" endY="273.361" endX="417.653" startX="417.653" stroke="#FFFFFF" />
-      <Line endX="485.333" startY="285.145" startX="454.591" endY="284.859" stroke="#FFFFFF" />
-      <Line endX="432.692" endY="285.347" stroke="#FFFFFF" startY="285.486" startX="417.653" />
-      <Line endX="380.659" startY="284.758" stroke="#FFFFFF" endY="285.091" startX="349.954" />
-      <Line endY="285.492" startY="285.259" stroke="#FFFFFF" endX="417.653" startX="396.113" />
-      <Line startX="417.653" startY="281.529" endX="432.215" endY="281.398" stroke="#FFFFFF" />
-      <Line endY="280.918" stroke="#FFFFFF" startX="454.845" endX="485.372" startY="281.194" />
-      <Line startY="281.344" stroke="#FFFFFF" endX="417.653" startX="399.554" endY="281.535" />
-      <Line stroke="#FFFFFF" endY="281.115" startY="280.817" endX="377.978" startX="349.917" />
-      <Line startY="6.207" endX="328.608" endY="0.929" startX="323.365" stroke="#FFFFFF" />
-      <Line endY="0.93" startX="323.365" stroke="#FFFFFF" startY="6.211" endX="328.608" />
+        </Pane>
+      </Pane>
+    </Pane>
+  </Pane>
+  <Pane>
+    <Pane>
+      <Line startX="417.653" stroke="#FFFFFF" endX="417.653" endY="273.361" startY="285.492" />
+      <Line startY="285.145" endY="284.859" stroke="#FFFFFF" startX="454.591" endX="485.333" />
+      <Line stroke="#FFFFFF" endX="432.692" startY="285.486" startX="417.653" endY="285.347" />
+      <Line endY="285.091" endX="380.659" startX="349.954" stroke="#FFFFFF" startY="284.758" />
+      <Line endY="285.492" endX="417.653" startY="285.259" startX="396.113" stroke="#FFFFFF" />
+      <Line endX="432.215" endY="281.398" startX="417.653" startY="281.529" stroke="#FFFFFF" />
+      <Line startX="454.845" endX="485.372" endY="280.918" startY="281.194" stroke="#FFFFFF" />
+      <Line stroke="#FFFFFF" startY="281.344" startX="399.554" endX="417.653" endY="281.535" />
+      <Line stroke="#FFFFFF" startY="280.817" endX="377.978" startX="349.917" endY="281.115" />
+      <Line endX="328.608" startY="6.207" stroke="#FFFFFF" endY="0.929" startX="323.365" />
+      <Line endX="328.608" startX="323.365" startY="6.211" endY="0.93" stroke="#FFFFFF" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="323.382" />
@@ -2022,8 +2022,8 @@
           <Double fx:value="11.755" />
         </points>
       </Polyline>
-      <Line startY="191.695" endX="334.86" endY="192.131" stroke="#FFFFFF" startX="334.991" />
-      <Line startX="334.86" endY="192.68" stroke="#FFFFFF" endX="334.659" startY="192.131" />
+      <Line startX="334.991" endX="334.86" endY="192.131" startY="191.695" stroke="#FFFFFF" />
+      <Line startY="192.131" endY="192.68" endX="334.659" startX="334.86" stroke="#FFFFFF" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="334.659" />
@@ -2064,7 +2064,7 @@
           <Double fx:value="200.876" />
         </points>
       </Polyline>
-      <Line endX="328.843" startX="329.388" stroke="#FFFFFF" endY="173.875" startY="179.963" />
+      <Line startY="179.963" endX="328.843" endY="173.875" stroke="#FFFFFF" startX="329.388" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="328.843" />
@@ -2083,13 +2083,13 @@
           <Double fx:value="138.336" />
         </points>
       </Polyline>
-      <Line startX="328.771" endY="159.242" startY="173.037" endX="327.638" stroke="#FFFFFF" />
-      <Line stroke="#FFFFFF" startY="159.242" endY="145.436" startX="327.638" endX="326.638" />
-      <Line stroke="#FFFFFF" startY="140.35" startX="326.302" endX="326.239" endY="139.359" />
-      <Line endX="326.239" startX="326.175" startY="138.34" endY="139.359" stroke="#FFFFFF" />
-      <Line endX="326.175" endY="138.336" startY="138.608" stroke="#FFFFFF" startX="326.19" />
-      <Line startX="326.638" stroke="#FFFFFF" startY="145.436" endY="138.335" endX="326.19" />
-      <Line startY="10.995" stroke="#FFFFFF" endY="11.074" startX="323.429" endX="323.433" />
+      <Line endX="327.638" endY="159.242" startY="173.037" startX="328.771" stroke="#FFFFFF" />
+      <Line endY="145.436" startY="159.242" stroke="#FFFFFF" startX="327.638" endX="326.638" />
+      <Line endX="326.239" stroke="#FFFFFF" endY="139.359" startX="326.302" startY="140.35" />
+      <Line endY="139.359" stroke="#FFFFFF" startX="326.175" startY="138.34" endX="326.239" />
+      <Line startY="138.608" endX="326.175" startX="326.19" endY="138.336" stroke="#FFFFFF" />
+      <Line endY="138.335" stroke="#FFFFFF" startX="326.638" endX="326.19" startY="145.436" />
+      <Line startY="10.995" startX="323.429" endX="323.433" endY="11.074" stroke="#FFFFFF" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="323.78" />
@@ -2108,7 +2108,7 @@
           <Double fx:value="48.852" />
         </points>
       </Polyline>
-      <Line endX="323.433" endY="62.459" startY="66.899" stroke="#FFFFFF" startX="323.498" />
+      <Line stroke="#FFFFFF" startY="66.899" endY="62.459" startX="323.498" endX="323.433" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="323.433" />
@@ -2127,10 +2127,10 @@
           <Double fx:value="11.591" />
         </points>
       </Polyline>
-      <Line endY="66.467" startX="323.483" startY="66.9" stroke="#FFFFFF" endX="323.478" />
-      <Line endX="323.483" stroke="#FFFFFF" startX="323.478" startY="66.51" endY="66.9" />
-      <Line startX="323.478" stroke="#FFFFFF" endX="323.466" startY="66.467" endY="65.564" />
-      <Line stroke="#FFFFFF" endY="66.51" startX="323.466" endX="323.478" startY="65.564" />
+      <Line stroke="#FFFFFF" endX="323.478" startX="323.483" startY="66.9" endY="66.467" />
+      <Line startY="66.51" endY="66.9" stroke="#FFFFFF" endX="323.483" startX="323.478" />
+      <Line startX="323.478" startY="66.467" endY="65.564" stroke="#FFFFFF" endX="323.466" />
+      <Line startX="323.466" startY="65.564" stroke="#FFFFFF" endX="323.478" endY="66.51" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="323.466" />
@@ -2147,7 +2147,7 @@
           <Double fx:value="61.229" />
         </points>
       </Polyline>
-      <Line endX="323.413" endY="60.265" startY="61.229" startX="323.423" stroke="#FFFFFF" />
+      <Line startX="323.423" endX="323.413" endY="60.265" stroke="#FFFFFF" startY="61.229" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="323.413" />
@@ -2188,16 +2188,16 @@
           <Double fx:value="10.584" />
         </points>
       </Polyline>
-      <Line startX="323.394" endY="56.766" stroke="#FFFFFF" endX="323.388" startY="57.567" />
-      <Line endY="56.19" stroke="#FFFFFF" endX="323.386" startY="56.766" startX="323.388" />
-      <Line startX="323.386" stroke="#FFFFFF" endX="323.383" startY="56.19" endY="55.773" />
-      <Line stroke="#FFFFFF" endY="48.854" startX="323.433" endX="323.368" startY="62.459" />
-      <Line endX="321.481" startX="321.481" stroke="#FFFFFF" endY="85.03" startY="138.282" />
-      <Line endX="323.365" startY="6.209" stroke="#FFFFFF" startX="323.365" endY="10.514" />
-      <Line startY="10.689" endY="11.533" endX="323.365" stroke="#FFFFFF" startX="323.365" />
-      <Line startY="48.584" endY="11.956" endX="323.365" stroke="#FFFFFF" startX="323.365" />
-      <Line endY="48.854" stroke="#FFFFFF" startX="323.365" endX="323.365" startY="48.617" />
-      <Line endY="0.93" startY="19.152" endX="328.608" stroke="#FFFFFF" startX="328.608" />
+      <Line endX="323.388" startX="323.394" stroke="#FFFFFF" startY="57.567" endY="56.766" />
+      <Line startX="323.388" startY="56.766" endY="56.19" endX="323.386" stroke="#FFFFFF" />
+      <Line endX="323.383" startY="56.19" startX="323.386" endY="55.773" stroke="#FFFFFF" />
+      <Line endX="323.368" stroke="#FFFFFF" startX="323.433" startY="62.459" endY="48.854" />
+      <Line stroke="#FFFFFF" endX="321.481" endY="85.03" startX="321.481" startY="138.282" />
+      <Line stroke="#FFFFFF" endX="323.365" endY="10.514" startY="6.209" startX="323.365" />
+      <Line startX="323.365" endX="323.365" endY="11.533" startY="10.689" stroke="#FFFFFF" />
+      <Line stroke="#FFFFFF" endY="11.956" startX="323.365" endX="323.365" startY="48.584" />
+      <Line endY="48.854" endX="323.365" startY="48.617" stroke="#FFFFFF" startX="323.365" />
+      <Line startX="328.608" endX="328.608" endY="0.93" stroke="#FFFFFF" startY="19.152" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="335.179" />
@@ -2212,10 +2212,10 @@
           <Double fx:value="191.695" />
         </points>
       </Polyline>
-      <Line startX="331.466" endX="331.423" stroke="#FFFFFF" startY="200.874" endY="200.473" />
-      <Line endX="331.376" startY="200.473" stroke="#FFFFFF" endY="200.037" startX="331.423" />
-      <Line startX="331.462" endY="197.262" endX="331.085" startY="200.809" stroke="#FFFFFF" />
-      <Line startY="200.877" endY="200.876" stroke="#FFFFFF" endX="331.466" startX="331.466" />
+      <Line startX="331.466" endX="331.423" endY="200.473" stroke="#FFFFFF" startY="200.874" />
+      <Line endX="331.376" startY="200.473" startX="331.423" endY="200.037" stroke="#FFFFFF" />
+      <Line endX="331.085" startX="331.462" endY="197.262" stroke="#FFFFFF" startY="200.809" />
+      <Line startY="200.877" endX="331.466" endY="200.876" startX="331.466" stroke="#FFFFFF" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="331.376" />
@@ -2246,7 +2246,7 @@
           <Double fx:value="191.974" />
         </points>
       </Polyline>
-      <Line endX="330.511" startX="330.546" endY="191.648" startY="191.974" stroke="#FFFFFF" />
+      <Line endX="330.511" endY="191.648" startX="330.546" startY="191.974" stroke="#FFFFFF" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="330.546" />
@@ -2277,11 +2277,11 @@
           <Double fx:value="183.625" />
         </points>
       </Polyline>
-      <Line endX="323.429" endY="10.995" startX="323.423" stroke="#FFFFFF" startY="10.92" />
-      <Line startX="330.511" endY="185.896" endX="329.946" startY="191.648" stroke="#FFFFFF" />
-      <Line stroke="#FFFFFF" startX="329.946" endX="329.661" endY="182.85" startY="185.896" />
-      <Line startX="329.731" endY="182.887" endX="329.661" stroke="#FFFFFF" startY="183.625" />
-      <Line endX="329.604" startX="329.661" startY="182.887" endY="182.285" stroke="#FFFFFF" />
+      <Line endY="10.995" endX="323.429" stroke="#FFFFFF" startX="323.423" startY="10.92" />
+      <Line startY="191.648" startX="330.511" endY="185.896" endX="329.946" stroke="#FFFFFF" />
+      <Line startX="329.946" endX="329.661" startY="185.896" stroke="#FFFFFF" endY="182.85" />
+      <Line endY="182.887" endX="329.661" startY="183.625" startX="329.731" stroke="#FFFFFF" />
+      <Line endY="182.285" startY="182.887" startX="329.661" stroke="#FFFFFF" endX="329.604" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="329.599" />
@@ -2348,8 +2348,8 @@
           <Double fx:value="39.427" />
         </points>
       </Polyline>
-      <Line startY="133.115" endY="133.688" endX="333.446" startX="333.411" stroke="#FFFFFF" />
-      <Line startX="333.379" endY="133.115" stroke="#FFFFFF" endX="333.411" startY="132.562" />
+      <Line startX="333.411" endY="133.688" stroke="#FFFFFF" endX="333.446" startY="133.115" />
+      <Line startX="333.379" startY="132.562" endY="133.115" stroke="#FFFFFF" endX="333.411" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="342.272" />
@@ -2522,13 +2522,13 @@
           <Double fx:value="280.813" />
         </points>
       </Polyline>
-      <Line endY="182.285" startY="182.229" stroke="#FFFFFF" startX="329.599" endX="329.606" />
-      <Line startY="213.788" endX="323.365" endY="48.584" startX="343.058" stroke="#FFFFFF" />
-      <Line stroke="#FFFFFF" startX="367.874" startY="254.926" endX="367.413" endY="263.785" />
-      <Line startY="254.973" startX="373.2" endX="372.522" endY="267.939" stroke="#FFFFFF" />
-      <Line endY="270.762" startY="273.762" startX="373.806" stroke="#009EE3" endX="374.12" />
-      <Line endX="376.983" startX="377.556" endY="279.637" startY="274.156" stroke="#009EE3" />
-      <Line endY="10.584" stroke="#FFFFFF" startY="10.584" startX="323.37" endX="323.37" />
+      <Line endX="329.606" endY="182.285" startX="329.599" stroke="#FFFFFF" startY="182.229" />
+      <Line startY="213.788" endY="48.584" startX="343.058" stroke="#FFFFFF" endX="323.365" />
+      <Line startX="367.874" stroke="#FFFFFF" startY="254.926" endX="367.413" endY="263.785" />
+      <Line startX="373.2" stroke="#FFFFFF" endY="267.939" startY="254.973" endX="372.522" />
+      <Line startY="273.762" startX="373.806" endX="374.12" stroke="#009EE3" endY="270.762" />
+      <Line startX="377.556" endY="279.637" stroke="#009EE3" startY="274.156" endX="376.983" />
+      <Line stroke="#FFFFFF" startX="323.37" startY="10.584" endX="323.37" endY="10.584" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="323.37" />
@@ -2545,8 +2545,8 @@
           <Double fx:value="10.92" />
         </points>
       </Polyline>
-      <Line endX="388.452" startY="275.34" startX="388.808" endY="278.744" stroke="#009EE3" />
-      <Line startY="282.001" endY="276.521" startX="399.487" stroke="#009EE3" endX="400.06" />
+      <Line startX="388.808" endX="388.452" startY="275.34" endY="278.744" stroke="#009EE3" />
+      <Line startX="399.487" startY="282.001" endX="400.06" stroke="#009EE3" endY="276.521" />
       <Polyline stroke="#009EE3">
         <points>
           <Double fx:value="388.452" />
@@ -2619,7 +2619,7 @@
           <Double fx:value="277.562" />
         </points>
       </Polyline>
-      <Line stroke="#009EE3" startX="376.983" endY="292.039" startY="279.637" endX="385.348" />
+      <Line stroke="#009EE3" endX="385.348" startX="376.983" endY="292.039" startY="279.637" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="326.14" />
@@ -2632,9 +2632,9 @@
           <Double fx:value="140.346" />
         </points>
       </Polyline>
-      <Line startY="255.36" endY="0.5" endX="417.653" startX="417.653" stroke="#FFFFFF" />
-      <Line stroke="#009EE3" startY="276.916" startX="403.813" endX="404.128" endY="273.916" />
-      <Line endX="388.722" endY="292.395" stroke="#009EE3" startY="282.001" startX="399.487" />
+      <Line startY="255.36" endY="0.5" endX="417.653" stroke="#FFFFFF" startX="417.653" />
+      <Line endX="404.128" startY="276.916" stroke="#009EE3" endY="273.916" startX="403.813" />
+      <Line endX="388.722" endY="292.395" startY="282.001" stroke="#009EE3" startX="399.487" />
       <Polyline stroke="#009EE3">
         <points>
           <Double fx:value="399.704" />
@@ -2749,8 +2749,8 @@
           <Double fx:value="280.926" />
         </points>
       </Polyline>
-      <Line startY="295.179" stroke="#009EE3" endX="446.171" startX="440.89" endY="295.179" />
-      <Line startX="385.348" startY="292.039" endY="292.395" endX="388.722" stroke="#009EE3" />
+      <Line startX="440.89" stroke="#009EE3" startY="295.179" endY="295.179" endX="446.171" />
+      <Line endX="388.722" endY="292.395" stroke="#009EE3" startX="385.348" startY="292.039" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="352.739" />
@@ -2773,8 +2773,8 @@
           <Double fx:value="260.625" />
         </points>
       </Polyline>
-      <Line stroke="#009EE3" startX="428.446" endX="428.446" endY="275.189" startY="278.207" />
-      <Line stroke="#009EE3" startX="432.215" startY="284.84" endY="278.207" endX="432.215" />
+      <Line endX="428.446" startX="428.446" endY="275.189" stroke="#009EE3" startY="278.207" />
+      <Line endX="432.215" startY="284.84" startX="432.215" stroke="#009EE3" endY="278.207" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="501.034" />
@@ -2947,7 +2947,7 @@
           <Double fx:value="273.457" />
         </points>
       </Polyline>
-      <Line endY="274.863" endX="418.97" startY="275.051" startX="417.653" stroke="#FFFFFF" />
+      <Line startY="275.051" startX="417.653" endY="274.863" stroke="#FFFFFF" endX="418.97" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="418.97" />
@@ -2958,9 +2958,9 @@
           <Double fx:value="274.487" />
         </points>
       </Polyline>
-      <Line startY="273.457" stroke="#FFFFFF" startX="417.653" endY="273.457" endX="417.653" />
-      <Line startX="428.446" endY="278.207" stroke="#009EE3" endX="458.613" startY="278.207" />
-      <Line startY="272.551" startX="460.503" endX="416.39" endY="272.551" stroke="#FFFFFF" />
+      <Line startY="273.457" stroke="#FFFFFF" endY="273.457" startX="417.653" endX="417.653" />
+      <Line startX="428.446" endY="278.207" endX="458.613" stroke="#009EE3" startY="278.207" />
+      <Line startY="272.551" endX="416.39" stroke="#FFFFFF" endY="272.551" startX="460.503" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="416.995" />
@@ -3015,9 +3015,9 @@
           <Double fx:value="271.764" />
         </points>
       </Polyline>
-      <Line startY="272.563" startX="416.187" endX="416.995" endY="272.6" stroke="#FFFFFF" />
-      <Line endX="367.413" startY="264.063" endY="263.785" stroke="#FFFFFF" startX="372.726" />
-      <Line endX="460.829" startY="267.725" startX="460.753" endY="267.729" stroke="#FFFFFF" />
+      <Line endY="272.6" startY="272.563" stroke="#FFFFFF" startX="416.187" endX="416.995" />
+      <Line stroke="#FFFFFF" startY="264.063" startX="372.726" endY="263.785" endX="367.413" />
+      <Line stroke="#FFFFFF" startY="267.725" endY="267.729" endX="460.829" startX="460.753" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="409.142" />
@@ -3028,8 +3028,8 @@
           <Double fx:value="273.988" />
         </points>
       </Polyline>
-      <Line stroke="#009EE3" endX="403.813" endY="276.916" startY="273.762" startX="373.806" />
-      <Line endX="416.39" startX="372.522" stroke="#FFFFFF" startY="267.939" endY="272.551" />
+      <Line startY="273.762" endY="276.916" stroke="#009EE3" endX="403.813" startX="373.806" />
+      <Line startY="267.939" startX="372.522" stroke="#FFFFFF" endY="272.551" endX="416.39" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="413.491" />
@@ -3230,7 +3230,7 @@
           <Double fx:value="190.809" />
         </points>
       </Polyline>
-      <Line endX="440.89" startY="284.84" stroke="#009EE3" startX="432.215" endY="295.179" />
+      <Line endX="440.89" startX="432.215" endY="295.179" startY="284.84" stroke="#009EE3" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="325.909" />
@@ -3241,21 +3241,21 @@
           <Double fx:value="139.699" />
         </points>
       </Polyline>
-      <Line endY="282.754" endX="443.529" stroke="#009EE3" startX="443.529" startY="278.207" />
-      <Line startX="454.845" endX="454.845" stroke="#009EE3" endY="278.207" startY="284.84" />
-      <Line endY="275.189" stroke="#009EE3" startX="458.613" startY="278.207" endX="458.613" />
-      <Line endX="461.419" startX="460.503" startY="272.551" endY="255.049" stroke="#FFFFFF" />
-      <Line stroke="#FFFFFF" endY="267.015" endX="461.624" startY="266.834" startX="461.632" />
-      <Line startX="454.845" startY="284.84" endX="446.171" endY="295.179" stroke="#009EE3" />
-      <Line endX="497.054" startX="417.653" stroke="#FFFFFF" endY="254.801" startY="255.354" />
-      <Line endY="255.043" startX="379.913" endX="417.653" stroke="#FFFFFF" startY="255.031" />
-      <Line startY="255.032" stroke="#FFFFFF" startX="417.653" endX="446.647" endY="255.152" />
-      <Line startY="254.667" startX="338.233" endX="417.653" stroke="#FFFFFF" endY="255.36" />
-      <Line endY="266.791" startY="266.89" startX="462.685" stroke="#FFFFFF" endX="460.804" />
-      <Line startY="260.817" startX="367.566" endY="261.096" stroke="#FFFFFF" endX="372.882" />
-      <Line stroke="#FFFFFF" endY="259.92" endX="413.175" startX="373.052" startY="257.816" />
-      <Line endX="461.032" endY="262.429" startY="260.326" startX="420.907" stroke="#FFFFFF" />
-      <Line endX="464.425" endY="260.363" stroke="#FFFFFF" startX="463.029" startY="260.291" />
+      <Line startX="443.529" endX="443.529" startY="278.207" endY="282.754" stroke="#009EE3" />
+      <Line endY="278.207" startX="454.845" endX="454.845" stroke="#009EE3" startY="284.84" />
+      <Line endX="458.613" stroke="#009EE3" startX="458.613" startY="278.207" endY="275.189" />
+      <Line startX="460.503" endX="461.419" endY="255.049" stroke="#FFFFFF" startY="272.551" />
+      <Line endY="267.015" startX="461.632" startY="266.834" stroke="#FFFFFF" endX="461.624" />
+      <Line endX="446.171" startX="454.845" startY="284.84" endY="295.179" stroke="#009EE3" />
+      <Line endX="497.054" startX="417.653" stroke="#FFFFFF" startY="255.354" endY="254.801" />
+      <Line endX="417.653" startY="255.031" endY="255.043" stroke="#FFFFFF" startX="379.913" />
+      <Line endX="446.647" stroke="#FFFFFF" startX="417.653" endY="255.152" startY="255.032" />
+      <Line startX="338.233" endX="417.653" stroke="#FFFFFF" endY="255.36" startY="254.667" />
+      <Line endX="460.804" stroke="#FFFFFF" startY="266.89" startX="462.685" endY="266.791" />
+      <Line startY="260.817" endX="372.882" stroke="#FFFFFF" startX="367.566" endY="261.096" />
+      <Line endX="413.175" startX="373.052" endY="259.92" stroke="#FFFFFF" startY="257.816" />
+      <Line startX="420.907" endX="461.032" endY="262.429" startY="260.326" stroke="#FFFFFF" />
+      <Line startY="260.291" endY="260.363" startX="463.029" endX="464.425" stroke="#FFFFFF" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="367.769" />
@@ -3330,9 +3330,9 @@
           <Double fx:value="183.328" />
         </points>
       </Polyline>
-      <Line startY="139.148" endY="139.316" stroke="#FFFFFF" endX="325.909" startX="325.763" />
-      <Line stroke="#FFFFFF" startY="266.889" endY="255.035" startX="462.685" endX="463.306" />
-      <Line startX="464.425" endX="464.706" endY="255.025" startY="260.363" stroke="#FFFFFF" />
+      <Line startY="139.148" stroke="#FFFFFF" endX="325.909" startX="325.763" endY="139.316" />
+      <Line startX="462.685" endX="463.306" stroke="#FFFFFF" startY="266.889" endY="255.035" />
+      <Line startX="464.425" endX="464.706" startY="260.363" stroke="#FFFFFF" endY="255.025" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="500.933" />
@@ -3343,7 +3343,7 @@
           <Double fx:value="140.512" />
         </points>
       </Polyline>
-      <Line startX="325.596" startY="138.998" stroke="#FFFFFF" endY="139.148" endX="325.763" />
+      <Line startX="325.596" endY="139.148" endX="325.763" stroke="#FFFFFF" startY="138.998" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="506.696" />
@@ -3446,11 +3446,11 @@
           <Double fx:value="173.875" />
         </points>
       </Polyline>
-      <Line endY="153.736" stroke="#FFFFFF" startX="508.749" endX="508.085" startY="144.232" />
-      <Line startY="153.736" startX="508.085" endX="507.343" endY="163.389" stroke="#FFFFFF" />
-      <Line endX="506.534" endY="173.037" stroke="#FFFFFF" startX="507.343" startY="163.389" />
-      <Line endX="506.462" stroke="#FFFFFF" startY="173.037" endY="173.875" startX="506.534" />
-      <Line endX="492.241" startX="511.938" startY="48.584" endY="213.842" stroke="#FFFFFF" />
+      <Line endX="508.085" startY="144.232" stroke="#FFFFFF" startX="508.749" endY="153.736" />
+      <Line startX="508.085" stroke="#FFFFFF" startY="153.736" endX="507.343" endY="163.389" />
+      <Line startX="507.343" startY="163.389" endX="506.534" endY="173.037" stroke="#FFFFFF" />
+      <Line endY="173.875" startX="506.534" stroke="#FFFFFF" endX="506.462" startY="173.037" />
+      <Line startY="48.584" stroke="#FFFFFF" startX="511.938" endX="492.241" endY="213.842" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="489.423" />
@@ -3511,7 +3511,7 @@
           <Double fx:value="173.875" />
         </points>
       </Polyline>
-      <Line startX="497.417" endY="254.8" endX="497.05" startY="252.229" stroke="#FFFFFF" />
+      <Line startX="497.417" endX="497.05" endY="254.8" startY="252.229" stroke="#FFFFFF" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="493.015" />
@@ -3548,10 +3548,10 @@
           <Double fx:value="254.801" />
         </points>
       </Polyline>
-      <Line endX="506.696" endY="0.929" startX="506.696" startY="19.137" stroke="#FFFFFF" />
-      <Line endX="513.825" startX="513.825" startY="85.399" endY="137.961" stroke="#FFFFFF" />
-      <Line startY="48.852" startX="511.938" stroke="#FFFFFF" endX="511.938" endY="6.21" />
-      <Line endY="52.781" endX="511.933" startX="511.938" stroke="#FFFFFF" startY="49.338" />
+      <Line endX="506.696" endY="0.929" stroke="#FFFFFF" startX="506.696" startY="19.137" />
+      <Line startX="513.825" endY="137.961" startY="85.399" endX="513.825" stroke="#FFFFFF" />
+      <Line startY="48.852" stroke="#FFFFFF" startX="511.938" endY="6.21" endX="511.938" />
+      <Line endX="511.933" startY="49.338" startX="511.938" stroke="#FFFFFF" endY="52.781" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="511.938" />
@@ -3568,7 +3568,7 @@
           <Double fx:value="77.375" />
         </points>
       </Polyline>
-      <Line startX="511.933" endX="511.913" startY="52.781" endY="56.942" stroke="#FFFFFF" />
+      <Line stroke="#FFFFFF" startX="511.933" startY="52.781" endY="56.942" endX="511.913" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="511.913" />
@@ -3579,8 +3579,8 @@
           <Double fx:value="65.266" />
         </points>
       </Polyline>
-      <Line startX="511.841" endY="66.899" stroke="#FFFFFF" endX="511.821" startY="65.266" />
-      <Line endY="77.375" endX="511.649" startX="511.525" stroke="#FFFFFF" startY="83.094" />
+      <Line endX="511.821" startX="511.841" endY="66.899" stroke="#FFFFFF" startY="65.266" />
+      <Line startY="83.094" stroke="#FFFFFF" endX="511.649" startX="511.525" endY="77.375" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="325.218" />
@@ -3591,10 +3591,10 @@
           <Double fx:value="138.998" />
         </points>
       </Polyline>
-      <Line endY="138.764" startX="325.011" startY="138.681" endX="325.218" stroke="#FFFFFF" />
-      <Line endX="513.481" endY="138.337" stroke="#FFFFFF" startX="502.642" startY="139.285" />
-      <Line startY="138.592" stroke="#FFFFFF" endX="321.825" endY="138.352" startX="324.583" />
-      <Line startX="321.825" endX="324.472" startY="136.616" stroke="#FFFFFF" endY="136.848" />
+      <Line stroke="#FFFFFF" startY="138.681" endX="325.218" endY="138.764" startX="325.011" />
+      <Line stroke="#FFFFFF" startX="502.642" endX="513.481" startY="139.285" endY="138.337" />
+      <Line endX="321.825" stroke="#FFFFFF" endY="138.352" startX="324.583" startY="138.592" />
+      <Line startY="136.616" endX="324.472" endY="136.848" startX="321.825" stroke="#FFFFFF" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="324.583" />
@@ -3605,9 +3605,9 @@
           <Double fx:value="138.681" />
         </points>
       </Polyline>
-      <Line endX="334.04" endY="138.129" startX="333.853" stroke="#FFFFFF" startY="138.13" />
-      <Line startY="85" startX="321.825" endX="322.468" endY="84.943" stroke="#FFFFFF" />
-      <Line endY="84.967" stroke="#FFFFFF" startX="513.481" endX="512.833" startY="85.023" />
+      <Line startX="333.853" endY="138.129" endX="334.04" stroke="#FFFFFF" startY="138.13" />
+      <Line endY="84.943" startY="85" endX="322.468" startX="321.825" stroke="#FFFFFF" />
+      <Line endX="512.833" startY="85.023" startX="513.481" endY="84.967" stroke="#FFFFFF" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="487.821" />
@@ -3782,10 +3782,10 @@
           <Double fx:value="35.822" />
         </points>
       </Polyline>
-      <Line endX="417.653" startX="349.444" endY="39.576" stroke="#FFFFFF" startY="39.842" />
-      <Line startX="417.651" endY="35.759" startY="35.498" stroke="#FFFFFF" endX="349.442" />
-      <Line endX="486.339" startY="39.576" startX="417.653" stroke="#FFFFFF" endY="39.901" />
-      <Line endY="35.822" endX="486.347" startX="417.657" startY="35.498" stroke="#FFFFFF" />
+      <Line endY="39.576" endX="417.653" startX="349.444" startY="39.842" stroke="#FFFFFF" />
+      <Line endX="349.442" endY="35.759" startY="35.498" startX="417.651" stroke="#FFFFFF" />
+      <Line startX="417.653" endY="39.901" stroke="#FFFFFF" endX="486.339" startY="39.576" />
+      <Line endX="486.347" stroke="#FFFFFF" endY="35.822" startY="35.498" startX="417.657" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="349.442" />
@@ -3824,8 +3824,8 @@
           <Double fx:value="39.931" />
         </points>
       </Polyline>
-      <Line stroke="#FFFFFF" endX="487.175" endY="39.922" startY="39.901" startX="486.339" />
-      <Line startY="0.93" endY="0.542" stroke="#FFFFFF" endX="384.306" startX="328.608" />
+      <Line endY="39.922" startY="39.901" startX="486.339" endX="487.175" stroke="#FFFFFF" />
+      <Line startX="328.608" endY="0.542" endX="384.306" stroke="#FFFFFF" startY="0.93" />
       <Polyline stroke="#FFFFFF">
         <points>
           <Double fx:value="417.653" />
@@ -3874,30 +3874,30 @@
           <Double fx:value="0.5" />
         </points>
       </Polyline>
-      <Line stroke="#FFFFFF" startY="0.542" endX="506.696" startX="451" endY="0.93" />
-      <Line endX="511.938" startY="0.93" endY="6.211" startX="506.696" stroke="#FFFFFF" />
-      <Line endX="506.696" startX="511.94" startY="6.209" stroke="#FFFFFF" endY="0.929" />
+      <Line startY="0.542" startX="451" endX="506.696" endY="0.93" stroke="#FFFFFF" />
+      <Line stroke="#FFFFFF" startX="506.696" endX="511.938" startY="0.93" endY="6.211" />
+      <Line startX="511.94" endX="506.696" endY="0.929" startY="6.209" stroke="#FFFFFF" />
       <SVGPath stroke="#FFFFFF" content="M411.644,255.308      c-0.383,3.101,1.816,5.926,4.918,6.31c3.1,0.385,5.928-1.818,6.311-4.918c0.057-0.459,0.057-0.923,0.002-1.382" />
       <SVGPath content="M333.493,134.473      c-0.02-0.315-0.076-0.629-0.176-0.93" stroke="#FFFFFF" />
-      <SVGPath stroke="#FFFFFF" content="M326.19,138.608      c-0.057-0.931-0.787-1.679-1.719-1.761" />
+      <SVGPath content="M326.19,138.608      c-0.057-0.931-0.787-1.679-1.719-1.761" stroke="#FFFFFF" />
       <SVGPath content="M322.058,84.979      c0.994-0.087,1.746-0.929,1.723-1.923" stroke="#FFFFFF" />
-      <SVGPath content="M321.481,136.24      c0,0.195,0.146,0.358,0.344,0.376" stroke="#FFFFFF" />
-      <SVGPath content="M321.481,137.976      c0,0.195,0.146,0.358,0.344,0.376" stroke="#FFFFFF" />
-      <SVGPath stroke="#FFFFFF" content="M321.764,85.011      c-0.168,0.043-0.282,0.192-0.282,0.364" />
-      <SVGPath stroke="#FFFFFF" content="M460.829,267.729      c0.416,0.021,0.771-0.298,0.795-0.714" />
+      <SVGPath stroke="#FFFFFF" content="M321.481,136.24      c0,0.195,0.146,0.358,0.344,0.376" />
+      <SVGPath stroke="#FFFFFF" content="M321.481,137.976      c0,0.195,0.146,0.358,0.344,0.376" />
+      <SVGPath content="M321.764,85.011      c-0.168,0.043-0.282,0.192-0.282,0.364" stroke="#FFFFFF" />
+      <SVGPath content="M460.829,267.729      c0.416,0.021,0.771-0.298,0.795-0.714" stroke="#FFFFFF" />
       <SVGPath content="M511.525,83.079      c-0.024,0.995,0.729,1.837,1.72,1.924" stroke="#FFFFFF" />
       <SVGPath content="M513.481,138.337      c0.195-0.018,0.344-0.181,0.344-0.376" stroke="#FFFFFF" />
       <SVGPath content="M513.825,85.399      c0-0.196-0.148-0.358-0.344-0.376" stroke="#FFFFFF" />
-      <Line startY="270.564" endY="267.939" startX="372.243" endX="372.522" stroke="#FFFFFF" />
-      <Line stroke="#FFFFFF" startX="406.003" endY="271.486" endX="406.28" startY="274.111" />
-      <Line startY="275.189" stroke="#FFFFFF" endY="272.551" startX="426.558" endX="426.558" />
-      <Line startX="426.558" endX="460.503" startY="275.189" stroke="#FFFFFF" endY="275.189" />
-      <Line endX="406.003" startX="372.243" startY="270.564" endY="274.111" stroke="#FFFFFF" />
-      <Line endY="272.551" startX="460.503" endX="460.503" startY="275.189" stroke="#FFFFFF" />
-    </Group>
-    <Group>
-      <SVGPath content="M477.479,193.676c0,9.629-6.114,18.57-14.986,22.244c-9.09,3.762-19.594,1.354-26.357-5.723       c-6.771-7.082-8.607-17.721-4.436-26.605c4.092-8.717,13.309-14.354,22.953-13.879       C467.142,170.326,477.479,181.189,477.479,193.676z M475.274,193.709c0-9.686-6.707-18.367-16.014-20.979       c-9.413-2.639-19.639,1.676-24.578,10.035c-4.998,8.455-3.529,19.422,3.439,26.326c6.787,6.73,17.326,8.387,25.732,3.76       C470.783,209.037,475.274,201.633,475.274,193.709z" fill="#FFFFFF" />
-      <Group>
+      <Line startY="270.564" endX="372.522" endY="267.939" startX="372.243" stroke="#FFFFFF" />
+      <Line stroke="#FFFFFF" endX="406.28" startY="274.111" endY="271.486" startX="406.003" />
+      <Line endY="272.551" stroke="#FFFFFF" endX="426.558" startX="426.558" startY="275.189" />
+      <Line stroke="#FFFFFF" endY="275.189" startX="426.558" startY="275.189" endX="460.503" />
+      <Line endX="406.003" stroke="#FFFFFF" startX="372.243" startY="270.564" endY="274.111" />
+      <Line stroke="#FFFFFF" startY="275.189" startX="460.503" endX="460.503" endY="272.551" />
+    </Pane>
+    <Pane>
+      <SVGPath fill="#FFFFFF" content="M477.479,193.676c0,9.629-6.114,18.57-14.986,22.244c-9.09,3.762-19.594,1.354-26.357-5.723       c-6.771-7.082-8.607-17.721-4.436-26.605c4.092-8.717,13.309-14.354,22.953-13.879       C467.142,170.326,477.479,181.189,477.479,193.676z M475.274,193.709c0-9.686-6.707-18.367-16.014-20.979       c-9.413-2.639-19.639,1.676-24.578,10.035c-4.998,8.455-3.529,19.422,3.439,26.326c6.787,6.73,17.326,8.387,25.732,3.76       C470.783,209.037,475.274,201.633,475.274,193.709z" />
+      <Pane>
         <Polygon fill="#FFFFFF">
           <points>
             <Double fx:value="456.462" />
@@ -3916,7 +3916,7 @@
             <Double fx:value="189.641" />
           </points>
         </Polygon>
-        <Group>
+        <Pane>
           <Polygon fill="#009EE3">
             <points>
               <Double fx:value="446.093" />
@@ -3961,9 +3961,9 @@
               <Double fx:value="198.422" />
             </points>
           </Polygon>
-        </Group>
-      </Group>
-    </Group>
+        </Pane>
+      </Pane>
+    </Pane>
     <SVGPath fill="#FF0000" content="M384.921,129.113l22.975-22.975l-22.975-22.971l9.719-9.761l22.974,22.971l23.011-22.971l9.762,9.715    l-23.016,23.017l23.016,23.009l-9.762,9.726l-23.011-22.977l-22.974,22.977L384.921,129.113z" />
-  </Group>
-</Group>
+  </Pane>
+</Pane>

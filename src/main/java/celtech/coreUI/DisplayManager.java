@@ -58,6 +58,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -88,7 +89,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
     private HBox mainHolder = null;
     private StackPane sidePanelContainer = null;
     private AnchorPane modeSelectionControl = null;
-    private final HashMap<ApplicationMode, VBox> insetPanels = new HashMap<>();
+    private final HashMap<ApplicationMode, Pane> insetPanels = new HashMap<>();
     private final HashMap<ApplicationMode, HBox> sidePanels = new HashMap<>();
     private final HashMap<ApplicationMode, HBox> slideOutPanels = new HashMap<>();
     private final StackPane rhPanel = new StackPane();
@@ -213,7 +214,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
         if (oldMode != null)
         {
             sidePanelContainer.getChildren().remove(sidePanels.get(oldMode));
-            VBox lastInsetPanel = insetPanels.get(oldMode);
+            Pane lastInsetPanel = insetPanels.get(oldMode);
             if (lastInsetPanel != null)
             {
                 rhPanel.getChildren().remove(lastInsetPanel);
@@ -231,7 +232,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         slideoutAndProjectHolder.switchInSlideout(slideOutPanels.get(newMode));
 
-        VBox newInsetPanel = insetPanels.get(newMode);
+        Pane newInsetPanel = insetPanels.get(newMode);
         if (newInsetPanel != null)
         {
             rhPanel.getChildren().add(0, newInsetPanel);
@@ -334,7 +335,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 {
                     steno.debug("About to load inset panel fxml: " + fxmlFileName);
                     FXMLLoader insetPanelLoader = new FXMLLoader(fxmlFileName, getLanguageBundle());
-                    VBox insetPanel = (VBox) insetPanelLoader.load();
+                    Pane insetPanel = (Pane) insetPanelLoader.load();
                     Initializable insetPanelController = insetPanelLoader.getController();
                     insetPanel.setId(mode.name());
                     insetPanels.put(mode, insetPanel);

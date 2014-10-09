@@ -9,9 +9,9 @@
 <?import javafx.scene.text.*?>
 <?import celtech.coreUI.components.*?>
 
-<VBox fx:id="container" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="700.0" pickOnBounds="false" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationInsetPanelController">
+<Pane fx:id="topPane" minHeight="700.0" pickOnBounds="false" styleClass="inset-panel"  xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationInsetPanelController">
     <children>
-        <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
+        <BorderPane fx:id="topBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
             <center>
                 <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
                     <children>
@@ -46,7 +46,7 @@
                                 <Insets bottom="30.0" top="30.0" />
                             </HBox.margin>
                         </Separator>
-                        <BorderPane fx:id="informationCentre" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" pickOnBounds="false">
+                        <BorderPane fx:id="informationCentre" pickOnBounds="false">
                             <top>
                                 <VBox alignment="TOP_CENTER" BorderPane.alignment="CENTER">
                                     <padding>
@@ -61,9 +61,8 @@
                                                 <Insets bottom="20.0" />
                                             </VBox.margin>
                                         </Label>
-                                        <HBox>
+                                        <HBox scaleX="0.1" scaleY="0.1" translateY="-90.0">
                                             <children>
-                                    <Pane fx:id="diagramContainerPane" prefHeight="200.0" prefWidth="200.0" />
                                                 <VBox fx:id="offsetCombosContainer">
                                                     <children>
                                                         <ComboBox fx:id="cmbYOffset" prefWidth="150.0" />
@@ -190,4 +189,4 @@
             </left>
         </BorderPane>
     </children>
-</VBox>
+</Pane>

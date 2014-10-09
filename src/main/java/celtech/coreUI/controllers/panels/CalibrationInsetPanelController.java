@@ -23,12 +23,14 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -43,6 +45,12 @@ public class CalibrationInsetPanelController implements Initializable,
     CalibrationBStateListener, CalibrationNozzleOffsetStateListener,
     CalibrationXAndYStateListener
 {
+
+    private void resizeTopBorderPane()
+    {
+        topBorderPane.setPrefWidth(topPane.getWidth());
+        topBorderPane.setPrefHeight(topPane.getHeight());
+    }
 
     protected static enum ProgressVisibility
     {
@@ -65,16 +73,13 @@ public class CalibrationInsetPanelController implements Initializable,
     protected StackPane calibrateBottomMenu;
 
     @FXML
-    protected VBox container;
+    protected Pane calibrationBottomArea;
 
     @FXML
-    protected VBox calibrationBottomArea;
+    protected Pane offsetCombosContainer;
 
     @FXML
-    protected VBox offsetCombosContainer;
-
-    @FXML
-    protected VBox altButtonContainer;
+    protected Pane altButtonContainer;
 
     @FXML
     protected LargeProgress calibrationProgressTemp;
@@ -125,7 +130,10 @@ public class CalibrationInsetPanelController implements Initializable,
     private BorderPane informationCentre;
 
     @FXML
-    private Pane diagramContainerPane;
+    private BorderPane topBorderPane;
+
+    @FXML
+    private Pane topPane;
 
     private Printer currentPrinter;
     private int targetTemperature;
@@ -133,8 +141,8 @@ public class CalibrationInsetPanelController implements Initializable,
     private int targetETC;
     private double printPercent;
     private Node waitTimer;
-    private Node diagramNode;
-    private Map<String, Node> nameToNodeCache = new HashMap<>();
+    private Pane diagramNode;
+    private Map<String, Pane> nameToNodeCache = new HashMap<>();
 
     @FXML
     void buttonAAction(ActionEvent event)
@@ -232,47 +240,80 @@ public class CalibrationInsetPanelController implements Initializable,
 
         configureCalibrationMenu(calibrationMenu, this);
 
-        container.widthProperty().addListener(
+        addDiagramMoveScaleListeners();
+
+    }
+
+    private void addDiagramMoveScaleListeners()
+    {
+        topPane.widthProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                resizeDiagram();
+                resizeTopBorderPane();
+            });
+
+        topPane.heightProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                resizeDiagram();
+                resizeTopBorderPane();
+            });
+        
+        calibrationStatus.widthProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
                 resizeDiagram();
             });
 
-        container.heightProperty().addListener(
+        calibrationStatus.heightProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
                 resizeDiagram();
-            });
-
+            });        
     }
 
     private void resizeDiagram()
     {
-//        Node diagramNode = diagramContainerPane.getChildren().get(0);
-//        double diagramWidth = diagramNode.getBoundsInParent().getWidth();
-//        double diagramHeight = diagramNode.getBoundsInParent().getHeight();
-//        double containerWidth = container.getWidth();
-//        double containerHeight = container.getHeight() - calibrationStatus.getHeight() - diagramHeight;
-//        containerHeight = Math.max(100, containerHeight);
-//        containerWidth = Math.max(100, containerWidth);
-//        steno.info("Diagram Height is " + diagramHeight);
-//        steno.info("Container height is now " + containerHeight);
+        if (diagramNode == null)
+        {
+            return;
+        }
+
+        diagramNode.setScaleX(0.5);
+        diagramNode.setScaleY(0.5);
+
+        double diagramWidth = diagramNode.getBoundsInLocal().getWidth();
+        double diagramHeight = diagramNode.getBoundsInLocal().getHeight();
+        steno.info("DIAG HEIGHT " + diagramHeight);
+
+        Bounds statusBounds = calibrationStatus.localToScene(calibrationStatus.getBoundsInLocal());
+        Bounds ancestorStatusBounds = topPane.sceneToLocal(statusBounds);
+        double upperBoundaryInAncestorCoords = ancestorStatusBounds.getMaxY();
+        Bounds bottomAreaBounds = calibrationBottomArea.localToScene(
+            calibrationBottomArea.getBoundsInLocal());
+        Bounds ancestorBottomBounds = topPane.sceneToLocal(bottomAreaBounds);
+        double lowerBoundaryInAncestorCoords = ancestorBottomBounds.getMinY();
+        double availableHeight = lowerBoundaryInAncestorCoords - upperBoundaryInAncestorCoords - 120;
+        steno.info("AVAIL HEIGHT " + availableHeight);
+
+        double xTranslate = 0;
+        double yTranslate = 0;
+        
+//        double xTranslate = -diagramWidth / 2;
+//        double yTranslate = -diagramHeight / 2;
+
+//        xTranslate += ancestorStatusBounds.getMinX(); // + (ancestorStatusBounds.getWidth() / 2.0d);
+//        yTranslate += ancestorStatusBounds.getMaxY();
+
+//        diagramNode.setTranslateX(diagramWidth / 2);
+//        diagramNode.setTranslateY(upperBoundaryInRHSCoords); // + availableHeight / 2.0);
 //        
-//        double requiredScaleX = 1;
-//        double requiredScaleY = 1;
-//        if (diagramWidth != containerWidth) {
-//            requiredScaleX = containerWidth / diagramWidth;
-//        }
-//        if (diagramHeight != containerHeight) {
-//            requiredScaleY = containerHeight / diagramHeight;
-//        }
-//        double requiredScale = 1;
-//        if (requiredScaleX < 1 || requiredScaleY < 1) {
-//            requiredScale = Math.min(requiredScaleX, requiredScaleY);
-//            steno.info("Scaling by " + requiredScale);
-//            diagramContainerPane.setScaleX(requiredScale);
-//            diagramContainerPane.setScaleY(requiredScale);
-//        } 
+        diagramNode.setTranslateX(xTranslate);
+        diagramNode.setTranslateY(yTranslate); //
+
+        double requiredScale = availableHeight / diagramHeight * 0.8;
+        steno.info("requiredScale " + requiredScale);
 
     }
 
@@ -282,9 +323,9 @@ public class CalibrationInsetPanelController implements Initializable,
      * @param diagramName
      * @return
      */
-    private Node getDiagramNode(String section, String diagramName)
+    private Pane getDiagramNode(String section, String diagramName)
     {
-        Node diagramNode = null;
+        Pane diagramNode = null;
         if (!nameToNodeCache.containsKey(diagramName))
         {
             URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlResourcePath
@@ -308,12 +349,17 @@ public class CalibrationInsetPanelController implements Initializable,
         {
             return;
         }
-        diagramContainerPane.getChildren().clear();
-        diagramContainerPane.getChildren().addAll(diagramNode);
-        diagramNode.setLayoutY(0);
-        diagramNode.setLayoutX(0);
-        diagramNode.setScaleX(0.2);
-        diagramNode.setScaleY(0.2);
+        if (topPane.getChildren().size() == 1)
+        {
+            topPane.getChildren().add(diagramNode);
+        } else
+        {
+            Node firstChild = topPane.getChildren().get(0);
+            topPane.getChildren().clear();
+            topPane.getChildren().addAll(firstChild, diagramNode);
+        }
+
+        resizeDiagram();
         diagramNode.setVisible(true);
     }
 
