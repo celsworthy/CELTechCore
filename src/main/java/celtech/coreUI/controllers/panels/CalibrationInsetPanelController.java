@@ -17,6 +17,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -28,11 +29,10 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -141,8 +141,8 @@ public class CalibrationInsetPanelController implements Initializable,
     private int targetETC;
     private double printPercent;
     private Node waitTimer;
-    private Pane diagramNode;
-    private Map<String, Pane> nameToNodeCache = new HashMap<>();
+    private Node diagramNode;
+    private Map<String, Node> nameToNodeCache = new HashMap<>();
 
     @FXML
     void buttonAAction(ActionEvent event)
@@ -263,17 +263,24 @@ public class CalibrationInsetPanelController implements Initializable,
         calibrationStatus.widthProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
+                steno.info("STATUS WIDTH CHANGED");
                 resizeDiagram();
             });
 
         calibrationStatus.heightProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
+                steno.info("STATUS HEIGHT CHANGED");
                 resizeDiagram();
-            });        
+            });  
+        
+    }
+    
+    private void resizeDiagram() {
+        Platform.runLater(this::resizeDiagramLater);
     }
 
-    private void resizeDiagram()
+    private void resizeDiagramLater()
     {
         if (diagramNode == null)
         {
@@ -290,6 +297,7 @@ public class CalibrationInsetPanelController implements Initializable,
         Bounds statusBounds = calibrationStatus.localToScene(calibrationStatus.getBoundsInLocal());
         Bounds ancestorStatusBounds = topPane.sceneToLocal(statusBounds);
         double upperBoundaryInAncestorCoords = ancestorStatusBounds.getMaxY();
+        steno.info("STATUS MAX Y IS " + upperBoundaryInAncestorCoords);
         Bounds bottomAreaBounds = calibrationBottomArea.localToScene(
             calibrationBottomArea.getBoundsInLocal());
         Bounds ancestorBottomBounds = topPane.sceneToLocal(bottomAreaBounds);
@@ -303,8 +311,8 @@ public class CalibrationInsetPanelController implements Initializable,
 //        double xTranslate = -diagramWidth / 2;
 //        double yTranslate = -diagramHeight / 2;
 
-//        xTranslate += ancestorStatusBounds.getMinX(); // + (ancestorStatusBounds.getWidth() / 2.0d);
-//        yTranslate += ancestorStatusBounds.getMaxY();
+        xTranslate += ancestorStatusBounds.getMinX(); // + (ancestorStatusBounds.getWidth() / 2.0d);
+        yTranslate += ancestorStatusBounds.getMaxY();
 
 //        diagramNode.setTranslateX(diagramWidth / 2);
 //        diagramNode.setTranslateY(upperBoundaryInRHSCoords); // + availableHeight / 2.0);
@@ -323,7 +331,7 @@ public class CalibrationInsetPanelController implements Initializable,
      * @param diagramName
      * @return
      */
-    private Pane getDiagramNode(String section, String diagramName)
+    private Node getDiagramNode(String section, String diagramName)
     {
         Pane diagramNode = null;
         if (!nameToNodeCache.containsKey(diagramName))
@@ -339,7 +347,8 @@ public class CalibrationInsetPanelController implements Initializable,
                 steno.error("Could not load diagram: " + diagramName);
             }
         }
-        return nameToNodeCache.get(diagramName);
+//        return nameToNodeCache.get(diagramName);
+        return new TextField("ABC");
     }
 
     protected void showDiagram(String section, String diagramName)
