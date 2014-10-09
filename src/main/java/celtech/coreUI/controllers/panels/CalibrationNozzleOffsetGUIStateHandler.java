@@ -82,7 +82,7 @@ public class CalibrationNozzleOffsetGUIStateHandler
                 controller.buttonBAlt.setVisible(true);
                 controller.nextButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
-               controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 7.fxml"); 
+                controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 7.fxml"); 
                 controller.stepNumber.setText(String.format("Step %s of 10", 7));
                 break;
             case LIFT_HEAD:
@@ -111,6 +111,7 @@ public class CalibrationNozzleOffsetGUIStateHandler
                 controller.buttonAAlt.disableProperty().unbind();
                 controller.backToStatus.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
+                controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Failure.fxml");
                 controller.stepNumber.setText("");
                 break;
         }
