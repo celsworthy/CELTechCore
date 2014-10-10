@@ -25,6 +25,7 @@
         <HBox fx:id="layoutButtonHBox" alignment="CENTER">
             <children>
                 <GraphicButton fx:id="addModelButton" fxmlFileName="addToProjectButton" onAction="#addModel" />
+                <GraphicButton fx:id="addmyMiniFactoryButton" fxmlFileName="loadMyMiniFactoryButton" onAction="#addMyMiniFactoryModel" />
                 <GraphicButton fx:id="deleteModelButton" fxmlFileName="deleteModelButton" onAction="#deleteModel" />
                 <GraphicButton fx:id="duplicateModelButton" fxmlFileName="copyModelButton" onAction="#copyModel" />
                 <GraphicToggleButton fx:id="snapToGroundButton" fxmlFileName="snapToGroundButton" onAction="#snapToGround" />

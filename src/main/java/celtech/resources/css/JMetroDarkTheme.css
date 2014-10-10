@@ -1513,3 +1513,8 @@ table-view .column-header-background {
 {
     -fx-opacity: 0.4;
 }
+
+.spinner
+{
+    -fx-background-color: transparent;
+}

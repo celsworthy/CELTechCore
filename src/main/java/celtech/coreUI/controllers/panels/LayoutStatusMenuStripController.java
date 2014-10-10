@@ -11,14 +11,17 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.LayoutSubmode;
+import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.components.buttons.GraphicToggleButton;
+import celtech.coreUI.controllers.MyMiniFactoryLoaderController;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.printerControl.model.Printer;
 import celtech.utils.PrinterUtils;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,9 +34,17 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -52,6 +63,9 @@ public class LayoutStatusMenuStripController
     private Project boundProject = null;
     private PrinterUtils printerUtils = null;
     private PurgeInsetPanelController purgePanelController = null;
+    
+    private MyMiniFactoryLoaderController miniFactoryController = null;
+    private Stage myMiniFactoryLoaderStage = null;
 
     @FXML
     private ResourceBundle resources;
@@ -211,6 +225,13 @@ public class LayoutStatusMenuStripController
     }
 
     @FXML
+    void addMyMiniFactoryModel(ActionEvent event)
+    {
+            miniFactoryController.loadWebData();
+            myMiniFactoryLoaderStage.showAndWait();
+    }
+
+    @FXML
     void deleteModel(ActionEvent event)
     {
         displayManager.deleteSelectedModels();
@@ -282,6 +303,27 @@ public class LayoutStatusMenuStripController
                                             ApplicationConfiguration.getSupportedFileExtensionWildcards(
                                                 ProjectMode.NONE)));
 
+        URL dialogFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "myMiniFactoryLoader.fxml");
+        FXMLLoader dialogLoader = new FXMLLoader(dialogFXMLURL);
+
+        try
+        {
+            myMiniFactoryLoaderStage = new Stage(StageStyle.UTILITY);
+//            dialogStage.setResizable(false);
+
+            Parent dialogBoxScreen = (Parent) dialogLoader.load();
+            miniFactoryController = dialogLoader.getController();
+            Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
+            dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
+            myMiniFactoryLoaderStage.setScene(dialogScene);
+            myMiniFactoryLoaderStage.initOwner(DisplayManager.getMainStage());
+            myMiniFactoryLoaderStage.initModality(Modality.WINDOW_MODAL);
+            miniFactoryController.setStage(myMiniFactoryLoaderStage);
+        } catch (IOException ex)
+        {
+            steno.error("Couldn't load dialog box FXML");
+            ex.printStackTrace();
+        }
     }
 
     /**
