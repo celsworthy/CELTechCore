@@ -17,6 +17,9 @@ class DiagramController
     
     public DiagramController(CalibrationInsetPanelController parentController) {
         this.parentController = parentController;
+        if (calibrationTextField != null) {
+            calibrationTextField.setText("0.00");
+        }
     }
     
     @FXML

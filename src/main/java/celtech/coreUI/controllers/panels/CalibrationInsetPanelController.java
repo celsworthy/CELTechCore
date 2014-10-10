@@ -144,7 +144,7 @@ public class CalibrationInsetPanelController implements Initializable,
     private Node waitTimer;
     private Node diagramNode;
     DiagramController diagramController;
-    private Map<String, Node> nameToNodeCache = new HashMap<>();
+    private final Map<String, Node> nameToNodeCache = new HashMap<>();
     
     @FXML
     void buttonAAction()

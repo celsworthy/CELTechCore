@@ -126,7 +126,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
 
         try
         {
-            printerToUse.transmitDirectGCode("G0 Z" + zco, false);
+            printerToUse.transmitDirectGCode("G0 Z" + zco.get(), false);
         } catch (RoboxCommsException ex)
         {
             steno.error("Error changing Z height");
@@ -141,7 +141,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
 
         try
         {
-            printerToUse.transmitDirectGCode("G0 Z" + zco, false);
+            printerToUse.transmitDirectGCode("G0 Z" + zco.get(), false);
         } catch (RoboxCommsException ex)
         {
             steno.error("Error changing Z height");
