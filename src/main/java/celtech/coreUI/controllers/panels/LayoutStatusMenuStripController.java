@@ -74,6 +74,9 @@ public class LayoutStatusMenuStripController
     private Project boundProject = null;
     private PrinterUtils printerUtils = null;
     private PurgeInsetPanelController purgePanelController = null;
+    
+    private MyMiniFactoryLoaderController miniFactoryController = null;
+    private Stage myMiniFactoryLoaderStage = null;
 
     @FXML
     private ResourceBundle resources;
@@ -235,30 +238,8 @@ public class LayoutStatusMenuStripController
     @FXML
     void addMyMiniFactoryModel(ActionEvent event)
     {
-        URL dialogFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "myMiniFactoryLoader.fxml");
-        FXMLLoader dialogLoader = new FXMLLoader(dialogFXMLURL);
-
-        try
-        {
-            Stage dialogStage = new Stage(StageStyle.UTILITY);
-//            dialogStage.setResizable(false);
-
-            Parent dialogBoxScreen = (Parent) dialogLoader.load();
-            MyMiniFactoryLoaderController miniFactoryController = dialogLoader.getController();
-            Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
-            dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
-            dialogStage.setScene(dialogScene);
-            dialogStage.initOwner(DisplayManager.getMainStage());
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-            miniFactoryController.setStage(dialogStage);
             miniFactoryController.loadWebData();
-            dialogStage.showAndWait();
-        } catch (IOException ex)
-        {
-            steno.error("Couldn't load dialog box FXML");
-            ex.printStackTrace();
-        }
-
+            myMiniFactoryLoaderStage.showAndWait();
 //        applicationStatus.setMode(ApplicationMode.ADD_MODEL);
 //        Platform.runLater(() ->
 //        {
@@ -406,6 +387,27 @@ public class LayoutStatusMenuStripController
                                             ApplicationConfiguration.getSupportedFileExtensionWildcards(
                                                 ProjectMode.NONE)));
 
+        URL dialogFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "myMiniFactoryLoader.fxml");
+        FXMLLoader dialogLoader = new FXMLLoader(dialogFXMLURL);
+
+        try
+        {
+            myMiniFactoryLoaderStage = new Stage(StageStyle.UTILITY);
+//            dialogStage.setResizable(false);
+
+            Parent dialogBoxScreen = (Parent) dialogLoader.load();
+            miniFactoryController = dialogLoader.getController();
+            Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
+            dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
+            myMiniFactoryLoaderStage.setScene(dialogScene);
+            myMiniFactoryLoaderStage.initOwner(DisplayManager.getMainStage());
+            myMiniFactoryLoaderStage.initModality(Modality.WINDOW_MODAL);
+            miniFactoryController.setStage(myMiniFactoryLoaderStage);
+        } catch (IOException ex)
+        {
+            steno.error("Couldn't load dialog box FXML");
+            ex.printStackTrace();
+        }
     }
 
     /**
