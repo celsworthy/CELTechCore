@@ -288,6 +288,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
                 {
                     steno.error("Error in nozzle offset calibration - mode=" + state.name());
                 }
+                setState(NozzleOffsetCalibrationState.REPLACE_PEI_BED);
             case FINISHED:
                 try
                 {

@@ -85,7 +85,6 @@ public class CalibrationNozzleOffsetGUIStateHandler
                 break;
             case LIFT_HEAD:
                 controller.hideAllInputControlsExceptStepNumber();
-                controller.nextButton.setVisible(true);
                 break;
             case REPLACE_PEI_BED:
                 controller.hideAllInputControlsExceptStepNumber();
