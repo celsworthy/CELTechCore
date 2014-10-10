@@ -14,14 +14,15 @@
         </HBox>
         <BorderPane styleClass="menubar">
             <right>
-                <StackPane>
-                    <children>
-                        <AddToProjectButton fx:id="addToProjectButton" onAction="#addToProjectPressed" />
-                    </children>
-                </StackPane>
+                <AddToProjectButton fx:id="addToProjectButton" onAction="#addToProjectPressed" />
             </right>
             <left>
-                <CancelButton fx:id="backwardButton" onAction="#cancelPressed" />
+                <HBox spacing="5" >
+                    <children>
+                        <CancelButton fx:id="cancelButton" onAction="#cancelPressed" />
+                        <BackwardButton fx:id="backwardButton" onAction="#backwardPressed" />
+                    </children>
+                </HBox>
             </left>
             <center>
             </center>

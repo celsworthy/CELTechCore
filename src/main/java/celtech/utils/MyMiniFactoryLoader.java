@@ -21,6 +21,7 @@ import java.util.zip.ZipFile;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 /**
@@ -82,13 +83,18 @@ public class MyMiniFactoryLoader extends Task<MyMiniFactoryLoadResult>
                     while (entries.hasMoreElements())
                     {
                         final ZipEntry entry = entries.nextElement();
-                        final String tempTargetname = ApplicationConfiguration.getUserStorageDirectory() + File.separator + entry.getName();
+                        final String tempTargetname = ApplicationConfiguration.getUserStorageDirectory() + entry.getName();
                         writeStreamToFile(zipFile.getInputStream(entry), tempTargetname);
                         filesToLoad.add(new File(tempTargetname));
                     }
                     result.setFilesToLoad(filesToLoad);
                     result.setSuccess(true);
-                } finally
+                }
+                catch(IOException ex)
+                {
+                    steno.error("Error unwrapping zip - " + ex.getMessage());
+                }   
+                finally
                 {
                     zipFile.close();
                 }
@@ -170,9 +176,11 @@ public class MyMiniFactoryLoader extends Task<MyMiniFactoryLoadResult>
     {
         FileOutputStream fos = null;
         
+        File localFile = new File(localFilename);
+        fos = FileUtils.openOutputStream(localFile);
+        
         try
         {
-            fos = new FileOutputStream(localFilename);   //open outputstream to local file
 
             byte[] buffer = new byte[4096];              //declare 4KB buffer
             int len;

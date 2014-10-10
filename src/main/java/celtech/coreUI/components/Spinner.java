@@ -10,6 +10,7 @@ import java.util.ResourceBundle;
 import javafx.animation.AnimationTimer;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -23,6 +24,8 @@ import javafx.scene.shape.SVGPath;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -31,6 +34,7 @@ import javafx.stage.StageStyle;
 public class Spinner extends StackPane implements Initializable
 {
 
+    private Stenographer steno = StenographerFactory.getStenographer(Spinner.class.getName());
     @FXML
     private SVGPath outerArcs;
 
@@ -106,43 +110,15 @@ public class Spinner extends StackPane implements Initializable
         };
     }
 
-    private Stage stageToCentreOn = null;
-
-    private void relocateWaitTimer()
+    public void recentre(Stage stageToCentreOn)
     {
-        System.out.println("Stage x " + stageToCentreOn.xProperty().get());
-        System.out.println("Stage y " + stageToCentreOn.yProperty().get());
-        System.out.println("Stage w " + stageToCentreOn.widthProperty().get());
-        System.out.println("Stage h " + stageToCentreOn.heightProperty().get());
-    }
-
-    public void centreOnStage(Stage stageToCentreOn)
-    {
-        this.stageToCentreOn = stageToCentreOn;
-
-        stageToCentreOn.xProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                relocateWaitTimer();
-            });
-
-        stageToCentreOn.yProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                relocateWaitTimer();
-            });
-        stageToCentreOn.widthProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                relocateWaitTimer();
-            });
-        stageToCentreOn.heightProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                relocateWaitTimer();
-            });
-
-        relocateWaitTimer();
+//        steno.info("Stage x " + stageToCentreOn.xProperty().get());
+//        steno.info("Stage y " + stageToCentreOn.yProperty().get());
+//        steno.info("Stage w " + stageToCentreOn.widthProperty().get());
+//        steno.info("Stage h " + stageToCentreOn.heightProperty().get());
+        
+        stage.setX(stageToCentreOn.getX() + stageToCentreOn.getWidth() / 2 - stage.getWidth() / 2);
+        stage.setY(stageToCentreOn.getY() + stageToCentreOn.getHeight() / 2 - stage.getHeight() / 2);
     }
 
 }

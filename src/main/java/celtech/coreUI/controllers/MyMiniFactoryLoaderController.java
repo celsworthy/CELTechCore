@@ -5,6 +5,9 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.Spinner;
+import celtech.coreUI.components.buttons.AddToProjectButton;
+import celtech.coreUI.components.buttons.BackwardButton;
+import celtech.coreUI.components.buttons.CancelButton;
 import celtech.utils.MyMiniFactoryLoadResult;
 import celtech.utils.MyMiniFactoryLoader;
 import java.io.File;
@@ -14,6 +17,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
 import javafx.concurrent.WorkerStateEvent;
@@ -44,6 +48,8 @@ public class MyMiniFactoryLoaderController implements Initializable
     private static final Stenographer steno = StenographerFactory.getStenographer(MyMiniFactoryLoaderController.class.getName());
     private Stage stage = null;
 
+    private WebEngine webEngine = null;
+
     private Spinner spinner = null;
 
     @FXML
@@ -53,9 +59,23 @@ public class MyMiniFactoryLoaderController implements Initializable
     private VBox webContentContainer;
 
     @FXML
+    private AddToProjectButton addToProjectButton;
+    @FXML
+    private CancelButton cancelButton;
+    @FXML
+    private BackwardButton backwardButton;
+
+    @FXML
     void cancelPressed(ActionEvent event)
     {
         stage.close();
+    }
+
+    @FXML
+    void backwardPressed(ActionEvent event)
+    {
+        JSObject history = (JSObject) webEngine.executeScript("history");
+        history.call("back");
     }
 
     @FXML
@@ -138,6 +158,8 @@ public class MyMiniFactoryLoaderController implements Initializable
 
         spinner = new Spinner();
 
+        addToProjectButton.setDisable(true);
+
     }
 
     public void loadWebData()
@@ -149,7 +171,7 @@ public class MyMiniFactoryLoaderController implements Initializable
 
         spinner.startSpinning();
 
-        final WebEngine webEngine = webView.getEngine();
+        webEngine = webView.getEngine();
 
         webEngine.getLoadWorker().stateProperty().addListener(
             (ObservableValue<? extends Worker.State> ov, Worker.State oldState, Worker.State newState) ->
@@ -183,7 +205,33 @@ public class MyMiniFactoryLoaderController implements Initializable
     public void setStage(Stage stage)
     {
         this.stage = stage;
-        spinner.centreOnStage(stage);
+        stage.getScene().windowProperty().get().xProperty().addListener(new ChangeListener<Number>()
+        {
+
+            @Override
+            public void changed(
+                ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            {
+                spinner.recentre(stage);
+            }
+        });
+
+        stage.getScene().windowProperty().get().yProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                spinner.recentre(stage);
+            });
+        stage.getScene().windowProperty().get().widthProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                spinner.recentre(stage);
+            });
+        stage.getScene().windowProperty().get().heightProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                spinner.recentre(stage);
+            });
+
     }
 
     private boolean alreadyDownloading = false;
@@ -197,6 +245,7 @@ public class MyMiniFactoryLoaderController implements Initializable
             {
                 alreadyDownloading = true;
                 spinner.startSpinning();
+                backwardButton.setDisable(true);
 
                 MyMiniFactoryLoader loader = new MyMiniFactoryLoader(fileURL);
 
@@ -208,26 +257,30 @@ public class MyMiniFactoryLoaderController implements Initializable
                         displayManager.loadExternalModels(result.getFilesToLoad());
                     }
                     stage.close();
-                    alreadyDownloading = false;
-                    spinner.stopSpinning();
+                    finishedWithEngines();
                 });
 
                 loader.setOnFailed((WorkerStateEvent event) ->
                 {
-                    alreadyDownloading = false;
-                    spinner.stopSpinning();
+                    finishedWithEngines();
                 });
 
                 loader.setOnCancelled((WorkerStateEvent event) ->
                 {
-                    alreadyDownloading = false;
-                    spinner.stopSpinning();
+                    finishedWithEngines();
                 });
 
                 Thread loaderThread = new Thread(loader);
                 loaderThread.start();
             }
         }
+    }
+
+    private void finishedWithEngines()
+    {
+        alreadyDownloading = false;
+        spinner.stopSpinning();
+        backwardButton.setDisable(false);
     }
 
 }
