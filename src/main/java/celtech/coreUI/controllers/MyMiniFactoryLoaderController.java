@@ -137,6 +137,7 @@ public class MyMiniFactoryLoaderController implements Initializable
             new FileChooser.ExtensionFilter(i18nBundle.getString("dialogs.modelFileChooserDescription"), ApplicationConfiguration.getSupportedFileExtensionWildcards(ProjectMode.NONE)));
 
         spinner = new Spinner();
+
     }
 
     public void loadWebData()
@@ -182,6 +183,7 @@ public class MyMiniFactoryLoaderController implements Initializable
     public void setStage(Stage stage)
     {
         this.stage = stage;
+        spinner.centreOnStage(stage);
     }
 
     private boolean alreadyDownloading = false;

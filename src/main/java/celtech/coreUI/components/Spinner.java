@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.animation.AnimationTimer;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -56,7 +58,7 @@ public class Spinner extends StackPane implements Initializable
             StackPane fxmlParent = fxmlLoader.load();
             scaleXProperty().set(0.5);
             scaleYProperty().set(0.5);
-            
+
             Scene dialogScene = new Scene(fxmlParent, Color.TRANSPARENT);
             dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
             stage.setScene(dialogScene);
@@ -66,32 +68,8 @@ public class Spinner extends StackPane implements Initializable
         {
             throw new RuntimeException(exception);
         }
-        
-        this.getStyleClass().add("spinner");
-    }
 
-//    public void setParent(Pane parent)
-//    {
-//        parent.getChildren().add(this);
-//
-//        parent.widthProperty().addListener(
-//            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-//            {
-//                relocateWaitTimer(parent);
-//            });
-//
-//        parent.heightProperty().addListener(
-//            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-//            {
-//                relocateWaitTimer(parent);
-//            });
-//
-//        relocateWaitTimer(parent);
-//    }
-    private void relocateWaitTimer(Pane parent)
-    {
-        setTranslateX(parent.getWidth() / 2.0);
-        setTranslateY(parent.getHeight() / 2.0);
+        this.getStyleClass().add("spinner");
     }
 
     public void startSpinning()
@@ -126,6 +104,45 @@ public class Spinner extends StackPane implements Initializable
                 }
             }
         };
+    }
+
+    private Stage stageToCentreOn = null;
+
+    private void relocateWaitTimer()
+    {
+        System.out.println("Stage x " + stageToCentreOn.xProperty().get());
+        System.out.println("Stage y " + stageToCentreOn.yProperty().get());
+        System.out.println("Stage w " + stageToCentreOn.widthProperty().get());
+        System.out.println("Stage h " + stageToCentreOn.heightProperty().get());
+    }
+
+    public void centreOnStage(Stage stageToCentreOn)
+    {
+        this.stageToCentreOn = stageToCentreOn;
+
+        stageToCentreOn.xProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                relocateWaitTimer();
+            });
+
+        stageToCentreOn.yProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                relocateWaitTimer();
+            });
+        stageToCentreOn.widthProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                relocateWaitTimer();
+            });
+        stageToCentreOn.heightProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                relocateWaitTimer();
+            });
+
+        relocateWaitTimer();
     }
 
 }
