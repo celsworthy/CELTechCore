@@ -312,6 +312,7 @@ public class CalibrationNozzleBHelper
 
                 Thread primingTaskThread = new Thread(calibrationTask);
                 primingTaskThread.setName("Calibration - priming");
+                primingTaskThread.start();
                 break;
             case NO_MATERIAL_CHECK:
                 break;
