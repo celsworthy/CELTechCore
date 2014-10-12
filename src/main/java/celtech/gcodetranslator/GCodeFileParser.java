@@ -1,5 +1,7 @@
 package celtech.gcodetranslator;
 
+import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.SlicerType;
 import celtech.gcodetranslator.events.BlankLineEvent;
 import celtech.gcodetranslator.events.CommentEvent;
 import celtech.gcodetranslator.events.EndOfFileEvent;
@@ -31,7 +33,8 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class GCodeFileParser {
+public class GCodeFileParser
+{
 
     private final Stenographer steno = StenographerFactory.getStenographer(GCodeFileParser.class.getName());
     private final ArrayList<GCodeTranslationEventHandler> listeners = new ArrayList<>();
@@ -40,7 +43,8 @@ public class GCodeFileParser {
      *
      * @param eventHandler
      */
-    public void addListener(GCodeTranslationEventHandler eventHandler) {
+    public void addListener(GCodeTranslationEventHandler eventHandler)
+    {
         listeners.add(eventHandler);
     }
 
@@ -48,7 +52,8 @@ public class GCodeFileParser {
      *
      * @param eventHandler
      */
-    public void removeListener(GCodeTranslationEventHandler eventHandler) {
+    public void removeListener(GCodeTranslationEventHandler eventHandler)
+    {
         listeners.remove(eventHandler);
     }
 
@@ -57,7 +62,8 @@ public class GCodeFileParser {
      * @param inputfilename
      * @param percentProgress
      */
-    public void parse(String inputfilename, DoubleProperty percentProgress) {
+    public void parse(String inputfilename, DoubleProperty percentProgress)
+    {
         File inputFile = new File(inputfilename);
 
         int linesInFile = SystemUtils.countLinesInFile(inputFile);
@@ -65,15 +71,21 @@ public class GCodeFileParser {
         double lastPercentSoFar = 0;
 
         ArrayList<String> lineRepository = new ArrayList<>();
+        SlicerType slicerType = ApplicationConfiguration.getSlicerChoice();
 
-        try {
+        ExtrusionTask currentExtrusionTask = null;
+
+        try
+        {
             BufferedReader fileReader = new BufferedReader(new FileReader(inputFile));
 
             String line;
-            while ((line = fileReader.readLine()) != null) {
+            while ((line = fileReader.readLine()) != null)
+            {
                 linesSoFar++;
                 double percentSoFar = ((double) linesSoFar / (double) linesInFile) * 100;
-                if (percentSoFar - lastPercentSoFar >= 1) {
+                if (percentSoFar - lastPercentSoFar >= 1)
+                {
                     percentProgress.set(percentSoFar);
                     lastPercentSoFar = percentSoFar;
                 }
@@ -114,20 +126,25 @@ public class GCodeFileParser {
 
                 String[] commentSplit = line.trim().split(";");
 
-                if (commentSplit.length == 2) {
+                if (commentSplit.length == 2)
+                {
                     //There was a comment
                     comment = commentSplit[1];
                 }
 
                 String[] lineParts = commentSplit[0].split(" ");
 
-                for (String partToConsider : lineParts) {
-                    if (partToConsider != null) {
-                        if (partToConsider.length() > 0) {
+                for (String partToConsider : lineParts)
+                {
+                    if (partToConsider != null)
+                    {
+                        if (partToConsider.length() > 0)
+                        {
                             char command = partToConsider.charAt(0);
                             String value = partToConsider.substring(1);
 
-                            switch (command) {
+                            switch (command)
+                            {
                                 case 'G':
                                     gValue = Integer.valueOf(value);
                                     gPresent = true;
@@ -138,7 +155,7 @@ public class GCodeFileParser {
                                     break;
                                 case 'S':
                                     sPresent = true;
-                                    sValue = Integer.valueOf(value);
+                                    sValue = Integer.valueOf(value.replaceFirst("\\..*", ""));
                                     break;
                                 case 'T':
                                     tPresent = true;
@@ -165,181 +182,318 @@ public class GCodeFileParser {
                                     fValue = Double.valueOf(value);
                                     break;
                             }
-                        } else {
+                        } else
+                        {
                             invalidLine = true;
                         }
-                    } else {
+                    } else
+                    {
                         invalidLine = true;
                         steno.debug("Discarded null");
                     }
                 }
 
-                if (mPresent) {
+                if (mPresent)
+                {
                     MCodeEvent event = new MCodeEvent();
 
                     event.setMNumber(mValue);
 
-                    if (sPresent) {
+                    if (sPresent)
+                    {
                         event.setSNumber(sValue);
                     }
 
-                    if (comment != null) {
+                    if (comment != null)
+                    {
                         event.setComment(comment);
                     }
 
                     eventToOutput = event;
-                } else if (tPresent) {
+                } else if (tPresent)
+                {
                     NozzleChangeEvent event = new NozzleChangeEvent();
                     event.setNozzleNumber(tValue);
 
-                    if (comment != null) {
+                    if (comment != null)
+                    {
                         event.setComment(comment);
                     }
 
                     eventToOutput = event;
-                } else if (gPresent && !xPresent && !yPresent && !zPresent && !ePresent) {
+                } else if (gPresent && !xPresent && !yPresent && !zPresent && !ePresent)
+                {
                     GCodeEvent event = new GCodeEvent();
 
                     event.setGNumber(gValue);
 
-                    if (comment != null) {
+                    if (comment != null)
+                    {
                         event.setComment(comment);
                     }
 
                     eventToOutput = event;
-                } else if (gPresent && zPresent && !xPresent && !yPresent && !ePresent) {
+                } else if (gPresent && zPresent && !xPresent && !yPresent && !ePresent)
+                {
                     LayerChangeEvent event = new LayerChangeEvent();
 
                     event.setZ(zValue);
 
-                    if (fPresent) {
+                    if (fPresent)
+                    {
                         event.setFeedRate(fValue);
                     }
 
-                    if (comment != null) {
+                    if (comment != null)
+                    {
                         event.setComment(comment);
                     }
 
                     eventToOutput = event;
-                } else if (gPresent && ePresent && !xPresent && !yPresent && !zPresent) {
-                    if (eValue < 0) {
+                } else if (gPresent && ePresent && !xPresent && !yPresent && !zPresent)
+                {
+                    if (eValue < 0)
+                    {
                         //Must be a retract
                         RetractEvent event = new RetractEvent();
 
                         event.setE(eValue);
 
-                        if (fPresent) {
+                        if (fPresent)
+                        {
                             event.setFeedRate(fValue);
                         }
 
-                        if (comment != null) {
+                        if (comment != null)
+                        {
                             event.setComment(comment);
                         }
 
                         eventToOutput = event;
-                    } else {
+                    } else
+                    {
                         UnretractEvent event = new UnretractEvent();
                         event.setE(eValue);
 
-                        if (fPresent) {
+                        if (fPresent)
+                        {
                             event.setFeedRate(fValue);
                         }
 
-                        if (comment != null) {
+                        if (comment != null)
+                        {
                             event.setComment(comment);
                         }
 
                         eventToOutput = event;
                     }
-                } else if (gPresent && xPresent && yPresent && !ePresent && !zPresent) {
+                } else if (gPresent && xPresent && yPresent && !ePresent && !zPresent)
+                {
                     TravelEvent event = new TravelEvent();
                     event.setX(xValue);
                     event.setY(yValue);
 
-                    if (fPresent) {
+                    if (fPresent)
+                    {
                         event.setFeedRate(fValue);
                     }
 
-                    if (comment != null) {
+                    if (comment != null)
+                    {
                         event.setComment(comment);
                     }
 
                     eventToOutput = event;
-                } else if (gPresent && xPresent && yPresent && ePresent && !zPresent) {
-                    if (eValue > 0) {
+                } else if (gPresent && xPresent && yPresent && ePresent && !zPresent)
+                {
+                    if (eValue > 0)
+                    {
                         ExtrusionEvent event = new ExtrusionEvent();
 
                         event.setX(xValue);
                         event.setY(yValue);
                         event.setE(eValue);
 
-                        if (fPresent) {
+                        if (fPresent)
+                        {
                             event.setFeedRate(fValue);
                         }
 
-                        if (comment != null) {
+                        if (comment != null)
+                        {
                             event.setComment(comment);
                         }
 
+                        switch (slicerType)
+
+                        {
+
+                            case Slic3r:
+
+                                if (comment != null)
+
+                                {
+
+                                    // Look for the extrusion type in the comment
+                                    ExtrusionTask foundExtrusionTask = ExtrusionTask.lookupExtrusionTaskFromComment(slicerType, comment);
+
+                                    event.setExtrusionTask(foundExtrusionTask);
+
+                                    if (foundExtrusionTask != null)
+
+                                    {
+
+                                        currentExtrusionTask = foundExtrusionTask;
+
+                                    }
+
+                                } else if (currentExtrusionTask != null)
+
+                                {
+
+                                    event.setExtrusionTask(currentExtrusionTask);
+
+                                }
+
+                                break;
+
+                            case Cura:
+
+                                if (currentExtrusionTask != null)
+
+                                {
+
+                                    event.setExtrusionTask(currentExtrusionTask);
+
+                                }
+
+                                break;
+
+                        }
+
                         eventToOutput = event;
-                    } else {
-                        RetractDuringExtrusionEvent event = new RetractDuringExtrusionEvent();
+                    } else if (gPresent && xPresent && yPresent && zPresent && !ePresent)
+                    {
+
+                    // This is how cura performs a combined move and layer change
+                    // For now split this into a Layer Change then a Travel
+                        LayerChangeWithTravelEvent event = new LayerChangeWithTravelEvent();
 
                         event.setX(xValue);
-                        event.setY(yValue);
-                        event.setE(eValue);
 
-                        if (fPresent) {
+                        event.setY(yValue);
+
+                        event.setZ(zValue);
+
+                        if (fPresent)
+
+                        {
+
                             event.setFeedRate(fValue);
+
                         }
 
-                        if (comment != null) {
+                        if (comment != null)
+
+                        {
+
                             event.setComment(comment);
+
                         }
 
                         eventToOutput = event;
-                    }
-                } else if (comment != null && !passthroughLine) {
-                    CommentEvent event = new CommentEvent();
-                    event.setComment(comment);
 
-                    eventToOutput = event;
-                } else if (line.equals("")) {
-                    BlankLineEvent event = new BlankLineEvent();
+                    } else if (comment != null && !passthroughLine)
 
-                    eventToOutput = event;
-                } else {
-                    for (GCodeTranslationEventHandler listener : listeners) {
-                        listener.unableToParse(line);
-                    }
-                }
+                    {
 
-                if (eventToOutput != null) {
-                    eventToOutput.setLinesSoFar(linesSoFar);
-                    try {
-                        for (GCodeTranslationEventHandler listener : listeners) {
-                            listener.processEvent(eventToOutput);
+                        if (slicerType == SlicerType.Cura)
+
+                        {
+
+                        // Pre-post processing enrichment for Cura - extrusion type is in the comments...
+                            ExtrusionTask foundExtrusionTask = ExtrusionTask.lookupExtrusionTaskFromComment(slicerType, comment);
+
+                            if (foundExtrusionTask != null)
+
+                            {
+
+                                currentExtrusionTask = foundExtrusionTask;
+
+                            }
+
+                        } else
+                        {
+                            RetractDuringExtrusionEvent event = new RetractDuringExtrusionEvent();
+
+                            event.setX(xValue);
+                            event.setY(yValue);
+                            event.setE(eValue);
+
+                            if (fPresent)
+                            {
+                                event.setFeedRate(fValue);
+                            }
+
+                            if (comment != null)
+                            {
+                                event.setComment(comment);
+                            }
+
+                            eventToOutput = event;
                         }
-                    } catch (PostProcessingError ex) {
-                        steno.error("Error processing event - aborting - " + eventToOutput);
+                    } else if (comment != null && !passthroughLine)
+                    {
+                        CommentEvent event = new CommentEvent();
+                        event.setComment(comment);
+
+                        eventToOutput = event;
+                    } else if (line.equals(""))
+                    {
+                        BlankLineEvent event = new BlankLineEvent();
+
+                        eventToOutput = event;
+                    } else
+                    {
+                        for (GCodeTranslationEventHandler listener : listeners)
+                        {
+                            listener.unableToParse(line);
+                        }
+                    }
+
+                    if (eventToOutput != null)
+                    {
+                        eventToOutput.setLinesSoFar(linesSoFar);
+                        try
+                        {
+                            for (GCodeTranslationEventHandler listener : listeners)
+                            {
+                                listener.processEvent(eventToOutput);
+                            }
+                        } catch (PostProcessingError ex)
+                        {
+                            steno.error("Error processing event - aborting - " + eventToOutput);
+                        }
                     }
                 }
-            }
 
-            //End of file - poke the processor
-            try {
-                for (GCodeTranslationEventHandler listener : listeners) {
-                    listener.processEvent(new EndOfFileEvent());
+                //End of file - poke the processor
+                try
+                {
+                    for (GCodeTranslationEventHandler listener : listeners)
+                    {
+                        listener.processEvent(new EndOfFileEvent());
+                    }
+                } catch (PostProcessingError ex)
+                {
+                    steno.error("Error processing end of file event");
                 }
-            } catch (PostProcessingError ex) {
-                steno.error("Error processing end of file event");
-            }
-        } catch (FileNotFoundException ex) {
+            }catch (FileNotFoundException ex) {
             System.out.println("File not found");
-        } catch (IOException ex) {
+        }catch (IOException ex) {
             System.out.println("IO Exception");
         }
 
-    }
+        }
 
-}
+    }
