@@ -91,11 +91,36 @@
         <children>
           <SVGPath content="M837.33,299.969c0-7.366-5.974-13.34-13.343-13.34h-90.198v6.89h90.198c3.56,0,6.454,2.892,6.454,6.45   c0,3.563-2.895,6.462-6.454,6.462h-90.198v6.888h90.198C831.356,313.318,837.33,307.345,837.33,299.969z" fill="#009EE3" />
           <SVGPath content="M733.789,322.269h90.198c10.919,0,19.802-8.886,19.802-19.809c0-10.915-8.883-19.796-19.802-19.796h-90.198   v2.583h90.198c9.509,0,17.22,7.706,17.22,17.213c0,9.515-7.711,17.227-17.22,17.227h-90.198V322.269z" fill="#FFFFFF" />
-            <TextField fx:id="alignmentTitleC" alignment="BASELINE_CENTER" layoutX="518.0" layoutY="252.0" prefHeight="20.0" prefWidth="300.0" style="-: ;" styleClass="mediumCalibrationText" text="Incorrect Alignment" />
-            <TextField fx:id="yOffsetB" alignment="CENTER" layoutX="731.0" layoutY="179.0" prefHeight="16.0" prefWidth="110.0" styleClass="smallCalibrationText" text="Y Offset" />
-            <TextField alignment="CENTER" layoutX="487.0" layoutY="179.0" prefHeight="16.0" prefWidth="110.0" styleClass="smallCalibrationText" text="X Offset" fx:id="xOffsetB" />
-            <TextField alignment="CENTER_RIGHT" layoutX="12.0" layoutY="320.0" prefHeight="16.0" prefWidth="98.0" styleClass="smallLightGreyCalibrationText" text="X Offset:" fx:id="xOffsetA" />
-            <ComboBox fx:id="cmbXOffset" layoutX="120.0" layoutY="315.0" prefHeight="31.0" prefWidth="61.0" />
+            <HBox alignment="CENTER" layoutX="500.0" layoutY="180.0" prefWidth="100.0" fx:id="xOffsetContainerB">
+               <children>
+                  <TextField alignment="CENTER" prefHeight="16.0" styleClass="smallCalibrationText" text="X OffsetXXXXXX" fx:id="xOffsetB" />
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_RIGHT" layoutX="15.0" layoutY="320.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="160.0" fx:id="xOffsetComboContainer">
+               <children>
+                  <TextField alignment="CENTER_RIGHT" styleClass="smallLightGreyCalibrationText" text="X Offset:XXXXX" fx:id="xOffsetA">
+                     <HBox.margin>
+                        <Insets right="10.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <ComboBox fx:id="cmbXOffset" prefHeight="31.0" prefWidth="61.0" styleClass="calibrationOffsetCombo" />
+               </children>
+            </HBox>
+            <HBox fx:id="yOffsetContainerB" alignment="CENTER" layoutX="738.0" layoutY="180.0" prefWidth="100.0">
+               <children>
+                  <TextField alignment="CENTER" prefHeight="16.0" styleClass="smallCalibrationText" text="Y OffsetXXXXXX" fx:id="xOffsetB1" />
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" layoutX="500.0" layoutY="408.0" prefWidth="100.0" fx:id="xOffsetContainerC">
+               <children>
+                  <TextField alignment="CENTER" prefHeight="16.0" styleClass="smallCalibrationText" text="X OffsetXXXXXX" fx:id="xOffsetB2" />
+               </children>
+            </HBox>
+            <HBox fx:id="yOffsetContainerC" alignment="CENTER" layoutX="738.0" layoutY="408.0" prefWidth="100.0">
+               <children>
+                  <TextField alignment="CENTER" prefHeight="16.0" styleClass="smallCalibrationText" text="Y OffsetXXXXXX" fx:id="xOffsetB21" />
+               </children>
+            </HBox>
         </children>
      </Pane>
      <SVGPath content="M638.293,109.77l-2.301-2.482c-0.262-0.335-0.395-0.692-0.395-1.075c0-0.46,0.18-0.862,0.541-1.225  l6.609-6.214c0.311-0.264,0.682-0.393,1.119-0.393c0.211,0,0.428,0.042,0.643,0.124c0.213,0.083,0.395,0.212,0.541,0.377  l18.211,19.648l31.363-40.377c0.365-0.408,0.793-0.61,1.297-0.61c0.383,0,0.719,0.12,1.008,0.356l7.219,5.567  c0.145,0.125,0.281,0.296,0.414,0.523c0.131,0.227,0.195,0.434,0.195,0.63c0,0.408-0.117,0.791-0.355,1.147l-40.307,51.775  L638.293,109.77z" fill="#00D646" />
@@ -121,18 +146,33 @@
           <SVGPath content="M843.547,125.713H757.61c-7.119,0-12.891,5.771-12.891,12.891s5.771,12.891,12.891,12.891h85.937v-2.578   H757.61c-5.686,0-10.312-4.623-10.312-10.313c0-5.686,4.626-10.312,10.312-10.312h85.937V125.713z" fill="#FFFFFF" />
             <TextField alignment="CENTER" layoutX="529.0" layoutY="101.0" prefHeight="16.0" prefWidth="26.0" styleClass="smallCalibrationText" text="or" />
             <TextField alignment="CENTER" layoutX="770.0" layoutY="96.0" prefHeight="16.0" prefWidth="26.0" styleClass="smallCalibrationText" text="or" />
-            <ComboBox fx:id="cmbYOffset" layoutX="314.0" layoutY="112.0" prefHeight="31.0" prefWidth="59.0" />
         </children>
      </Pane>
      <Pane>
         <children>
           <SVGPath content="M837.329,72.461c0-7.366-5.974-13.34-13.342-13.34h-90.198v6.888h90.198c3.56,0,6.454,2.895,6.454,6.452   c0,3.563-2.895,6.463-6.454,6.463h-90.198v6.887h90.198C831.355,85.811,837.329,79.837,837.329,72.461z" fill="#009EE3" />
           <SVGPath content="M733.789,92.269h90.198c10.919,0,19.802-8.885,19.802-19.808c0-10.915-8.883-19.797-19.802-19.797h-90.198   v2.584h90.198c9.509,0,17.22,7.706,17.22,17.213c0,9.514-7.711,17.226-17.22,17.226h-90.198V92.269z" fill="#FFFFFF" />
-            <TextField fx:id="alignmentTitleB" alignment="BASELINE_CENTER" layoutX="515.0" layoutY="22.0" prefHeight="20.0" prefWidth="300.0" styleClass="mediumCalibrationText" text="Perfect Alignment" />
-            <TextField fx:id="yOffsetA" layoutX="319.0" layoutY="85.0" prefHeight="16.0" prefWidth="55.0" styleClass="smallLightGreyCalibrationText" text="Y Offset:" />
+            <VBox fx:id="yOffsetComboContainer" alignment="BOTTOM_CENTER" layoutX="330.0" prefHeight="130.0">
+               <children>
+                  <TextField fx:id="yOffsetA" prefHeight="16.0" prefWidth="55.0" styleClass="smallLightGreyCalibrationText" text="Y Offset:">
+                     <VBox.margin>
+                        <Insets bottom="10.0" />
+                     </VBox.margin>
+                  </TextField>
+                  <ComboBox fx:id="cmbYOffset" prefHeight="31.0" prefWidth="59.0" styleClass="calibrationOffsetCombo" />
+               </children>
+            </VBox>
+            <HBox fx:id="perfectAlignmentContainer" layoutX="570.0" layoutY="21.0" prefWidth="200.0">
+               <children>
+                  <TextField fx:id="alignmentTitleB" alignment="BASELINE_CENTER" styleClass="mediumCalibrationText" text="Perfect AlignmentXXXX" />
+               </children>
+            </HBox>
+            <HBox fx:id="incorrectAlignmentContainer" layoutX="570.0" layoutY="250.0" prefWidth="200.0">
+               <children>
+                  <TextField fx:id="alignmentTitleB1" alignment="BASELINE_CENTER" prefHeight="20.0" styleClass="mediumCalibrationText" text="Incorrect Alignment" />
+               </children>
+            </HBox>
         </children>
      </Pane>
-      <TextField alignment="CENTER" layoutX="490.0" layoutY="404.0" prefHeight="16.0" prefWidth="110.0" styleClass="smallCalibrationText" text="X Offset" fx:id="xOffsetC" />
-      <TextField fx:id="yOffsetC" alignment="CENTER" layoutX="734.0" layoutY="404.0" prefHeight="16.0" prefWidth="110.0" styleClass="smallCalibrationText" text="Y Offset" />
    </children>
 </Pane>

@@ -294,6 +294,7 @@ public class CalibrationInsetPanelController implements Initializable,
         double requiredScaleWidth = availableWidth / diagramWidth * 0.95;
         double requiredScale = Math.min(requiredScaleHeight, requiredScaleWidth);
         requiredScale = Math.min(requiredScale, 1.3d);
+        steno.info("Setting scale to " + requiredScale);
 
         diagramController.setScale(requiredScale, diagramNode);
 
@@ -306,6 +307,8 @@ public class CalibrationInsetPanelController implements Initializable,
         xTranslate += ancestorStatusBounds.getMinX() + (ancestorStatusBounds.getWidth() / 2.0d);
         yTranslate += upperBoundaryInAncestorCoords + availableHeight / 2.0;
 
+        xTranslate += 10; // Fudge factor
+        
         diagramNode.setTranslateX(xTranslate);
         diagramNode.setTranslateY(yTranslate);
 
@@ -333,6 +336,7 @@ public class CalibrationInsetPanelController implements Initializable,
                 nameToNodeCache.put(diagramName, diagramNode);
             } catch (IOException ex)
             {
+                ex.printStackTrace();
                 steno.error("Could not load diagram: " + diagramName);
             }
         }

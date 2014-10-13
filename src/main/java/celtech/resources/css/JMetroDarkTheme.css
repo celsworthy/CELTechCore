@@ -1802,6 +1802,12 @@ table-view .column-header-background {
     -fx-text-fill: white;
 }
 
+.calibrationOffsetCombo {
+    /*-fx-background-color: white;*/
+    -fx-font-size:16px;
+    /*-fx-text-fill: black;*/
+}
+
 /**
 * Calibration diagram dashed lines
 */

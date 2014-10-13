@@ -12,6 +12,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 /**
  *
@@ -39,31 +41,37 @@ class DiagramController implements Initializable
 
     @FXML
     private TextField calibrationTextField;
-    
+
     @FXML
     private TextField fineNozzleLbl;
+
+    @FXML
+    private TextField fillNozzleLbl;
+
+    @FXML
+    private HBox xOffsetComboContainer;
     
     @FXML
-    private TextField fillNozzleLbl;    
-    
-   @FXML
-    private TextField xOffsetA;      
-   
-   @FXML
-    private TextField xOffsetB; 
-   
-   @FXML
-    private TextField xOffsetC;    
-   
-   @FXML
-    private TextField yOffsetA;      
-   
-   @FXML
-    private TextField yOffsetB; 
-   
-   @FXML
-    private TextField yOffsetC;       
+    private VBox yOffsetComboContainer;    
 
+    @FXML
+    private HBox yOffsetContainerB;
+
+    @FXML
+    private HBox yOffsetContainerC;
+
+    @FXML
+    private HBox xOffsetContainerB;
+
+    @FXML
+    private HBox xOffsetContainerC;
+
+    @FXML
+    private HBox perfectAlignmentContainer;
+    
+    @FXML
+    private HBox incorrectAlignmentContainer;    
+    
     @FXML
     void buttonAAction(ActionEvent event)
     {
@@ -135,33 +143,37 @@ class DiagramController implements Initializable
     {
         rootNode.setScaleX(requiredScale);
         rootNode.setScaleY(requiredScale);
-        
+
         double invertedScale = 1 / requiredScale;
-        
-        if (cmbXOffset != null) {
-            cmbXOffset.setScaleX(invertedScale);
-            cmbXOffset.setScaleY(invertedScale);
-            cmbYOffset.setScaleX(invertedScale);
-            cmbYOffset.setScaleY(invertedScale);            
+
+        if (cmbXOffset != null)
+        {
+            xOffsetComboContainer.setScaleX(invertedScale);
+            xOffsetComboContainer.setScaleY(invertedScale);
+            yOffsetComboContainer.setScaleX(invertedScale);
+            yOffsetComboContainer.setScaleY(invertedScale);            
+            xOffsetContainerB.setScaleX(invertedScale);
+            xOffsetContainerB.setScaleY(invertedScale);
+            xOffsetContainerC.setScaleX(invertedScale);
+            xOffsetContainerC.setScaleY(invertedScale);
+            yOffsetContainerB.setScaleX(invertedScale);
+            yOffsetContainerB.setScaleY(invertedScale);
+            yOffsetContainerC.setScaleX(invertedScale);
+            yOffsetContainerC.setScaleY(invertedScale);            
+
+            incorrectAlignmentContainer.setScaleX(invertedScale);
+            incorrectAlignmentContainer.setScaleY(invertedScale);
+            perfectAlignmentContainer.setScaleX(invertedScale);
+            perfectAlignmentContainer.setScaleY(invertedScale);            
         }
-        
-        if (xOffsetA != null) {
-            xOffsetA.setScaleX(invertedScale);
-            xOffsetA.setScaleY(invertedScale);
-            xOffsetB.setScaleX(invertedScale);
-            xOffsetB.setScaleY(invertedScale);
-            xOffsetC.setScaleX(invertedScale);
-            xOffsetC.setScaleY(invertedScale);
-            yOffsetA.setScaleX(invertedScale);
-            yOffsetA.setScaleY(invertedScale);
-            yOffsetB.setScaleX(invertedScale);
-            yOffsetB.setScaleY(invertedScale);
-            yOffsetC.setScaleX(invertedScale);
-            yOffsetC.setScaleY(invertedScale);            
+
+        if (fineNozzleLbl != null)
+        {
+
             fineNozzleLbl.setScaleX(invertedScale);
             fineNozzleLbl.setScaleY(invertedScale);
             fillNozzleLbl.setScaleX(invertedScale);
-            fillNozzleLbl.setScaleY(invertedScale);                  
+            fillNozzleLbl.setScaleY(invertedScale);
         }
     }
 
