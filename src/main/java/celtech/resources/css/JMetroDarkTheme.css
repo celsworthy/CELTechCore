@@ -1769,6 +1769,67 @@ table-view .column-header-background {
     -fx-font-size: 12px; 
 }
 
+.lightGreyBackground {
+    -fx-background-color: light_grey;
+}
+
+.midGreyBackground {
+    -fx-background-color: mid_grey;
+}
+
+.darkGreyBackground {
+    -fx-background-color: dark_grey;
+}
+
+/**
+* Calibration diagram text
+*/
+.mediumCalibrationText {
+    -fx-background-color: mid_grey;
+    -fx-font-size:16px;
+    -fx-text-fill: white;
+}
+
+.smallCalibrationText {
+    -fx-background-color: mid_grey;
+    -fx-font-size:12px;
+    -fx-text-fill: white;
+}
+
+.smallLightGreyCalibrationText {
+    -fx-background-color: light_grey;
+    -fx-font-size:12px;
+    -fx-text-fill: white;
+}
+
+/**
+* Calibration diagram dashed lines
+*/
+
 .strokeDashArray2_9878-2_9878 {
+    -fx-stroke-dash-array: 2.98 2.98;
+}
+.strokeDashArray17_0768-8_5384-2_5615-8_5384{
+    -fx-stroke-dash-array: 2.98 2.98;
+}
+.strokeDashArray23_3157-11_6578-3_4973-11_6578{
+    -fx-stroke-dash-array: 23.3157 11.6578 3.4973 11.6578;
+}
+.strokeDashArray17_0766-8_5383-2_5615-8_5383{
+    -fx-stroke-dash-array: 17.0766 8.5383 2.5615 8.5383;
+}
+.strokeDashArray3_4974-11_6579{
+    -fx-stroke-dash-array: 3.4974 11.6579;
+}
+.strokeDashArray3_4973-11_6578{
+    -fx-stroke-dash-array: 3.4973 11.6578;
+}
+.strokeDashArray2_5615-8_5384{
+    -fx-stroke-dash-array: 2.98 2.98;
+}
+.strokeDashArray2_5615-8_5383{
+    -fx-stroke-dash-array: 2.98 2.98;
+}
+.strokeDashArray23_3158-11_6579-3_4974-11_6579{
     -fx-stroke-dash-array: 2.98 2.98;
 }

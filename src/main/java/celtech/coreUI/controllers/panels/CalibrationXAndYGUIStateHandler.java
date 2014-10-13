@@ -32,6 +32,7 @@ public class CalibrationXAndYGUIStateHandler
                 controller.startCalibrationButton.setVisible(true);
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
+                controller.showDiagram("nozzlealignment", "Nozzle Alignment Illustrations_Step 1.fxml");
                 controller.stepNumber.setText(String.format("Step %s of 10", 1));
                 break;
 //            case HEATING:
@@ -58,11 +59,11 @@ public class CalibrationXAndYGUIStateHandler
                 controller.hideAllInputControlsExceptStepNumber();
                 controller.setCalibrationProgressVisible(
                     CalibrationInsetPanelController.ProgressVisibility.NONE);
-                controller.offsetCombosContainer.setVisible(true);
                 controller.retryPrintButton.setVisible(true);
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.nextButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
+                controller.showDiagram("nozzlealignment", "Nozzle Alignment Illustrations_Step 4.fxml");
                 controller.stepNumber.setText(String.format("Step %s of 10", 3));
                 break;
             case PRINT_CIRCLE:    
@@ -78,12 +79,15 @@ public class CalibrationXAndYGUIStateHandler
                 controller.hideAllInputControlsExceptStepNumber();
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.nextButton.setVisible(true);
+                controller.showDiagram("nozzlealignment", "Nozzle Alignment Illustrations_Step 5.fxml");
+                controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText(String.format("Step %s of 10", 5));
                 break;
             case FINISHED:
                 controller.hideAllInputControlsExceptStepNumber();
                 controller.backToStatus.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
+                controller.showDiagram("nozzlealignment", "Nozzle Alignment Illustrations_Step 6.fxml");
                 controller.stepNumber.setText(String.format("Step %s of 10", 6));
                 break;
             case FAILED:

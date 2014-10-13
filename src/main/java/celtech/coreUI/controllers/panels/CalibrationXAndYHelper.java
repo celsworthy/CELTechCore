@@ -13,8 +13,6 @@ import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.services.calibration.CalibrateXAndYTask;
 import celtech.services.calibration.CalibrationXAndYState;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.WorkerStateEvent;

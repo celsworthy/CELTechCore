@@ -27,9 +27,7 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -83,9 +81,6 @@ public class CalibrationInsetPanelController implements Initializable,
     protected Pane calibrationBottomArea;
     
     @FXML
-    protected Pane offsetCombosContainer;
-    
-    @FXML
     protected Pane altButtonContainer;
     
     @FXML
@@ -117,12 +112,6 @@ public class CalibrationInsetPanelController implements Initializable,
     
     @FXML
     protected Button cancelCalibrationButton;
-    
-    @FXML
-    protected ComboBox cmbYOffset;
-    
-    @FXML
-    protected ComboBox cmbXOffset;
     
     @FXML
     protected Label calibrationStatus;
@@ -203,7 +192,6 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         backToStatus.setVisible(false);
         setCalibrationProgressVisible(CalibrationInsetPanelController.ProgressVisibility.NONE);
-        offsetCombosContainer.setVisible(false);
         retryPrintButton.setVisible(false);
         startCalibrationButton.setVisible(false);
         cancelCalibrationButton.setVisible(false);
@@ -222,7 +210,6 @@ public class CalibrationInsetPanelController implements Initializable,
     public void initialize(URL location, ResourceBundle resources)
     {
         setupProgressBars();
-        setupOffsetCombos();
         setupWaitTimer(informationCentre);
         
         setCalibrationMode(CalibrationMode.CHOICE);
@@ -288,8 +275,8 @@ public class CalibrationInsetPanelController implements Initializable,
             return;
         }
         
-        diagramNode.setScaleX(0.7);
-        diagramNode.setScaleY(0.7);
+//        diagramNode.setScaleX(0.7);
+//        diagramNode.setScaleY(0.7);
         
         double diagramWidth = diagramNode.getBoundsInLocal().getWidth();
         double diagramHeight = diagramNode.getBoundsInLocal().getHeight();
@@ -303,14 +290,19 @@ public class CalibrationInsetPanelController implements Initializable,
             calibrationBottomArea.getBoundsInLocal());
         Bounds ancestorBottomBounds = topPane.sceneToLocal(bottomAreaBounds);
         double lowerBoundaryInAncestorCoords = ancestorBottomBounds.getMinY();
-        double availableHeight = lowerBoundaryInAncestorCoords - upperBoundaryInAncestorCoords - 120;
+        double availableHeight = lowerBoundaryInAncestorCoords - upperBoundaryInAncestorCoords;
 //        steno.info("AVAIL HEIGHT " + availableHeight);
-
-        double xTranslate = 0;
-        double yTranslate = 0;
         
-        xTranslate = -diagramWidth / 2;
-        yTranslate = -diagramHeight / 2;
+        double requiredScale = availableHeight / diagramHeight * 0.95;
+        steno.info("requiredScale " + requiredScale);        
+        diagramNode.setScaleX(requiredScale);
+        diagramNode.setScaleY(requiredScale);     
+        
+        double scaledDiagramWidth = diagramNode.getBoundsInLocal().getWidth();
+        double scaledDiagramHeight = diagramNode.getBoundsInLocal().getHeight();        
+
+        double xTranslate = -scaledDiagramWidth / 2;
+        double yTranslate = -scaledDiagramHeight / 2;
         
         xTranslate += ancestorStatusBounds.getMinX() + (ancestorStatusBounds.getWidth() / 2.0d);
         yTranslate += upperBoundaryInAncestorCoords + availableHeight / 2.0;
@@ -318,8 +310,7 @@ public class CalibrationInsetPanelController implements Initializable,
         diagramNode.setTranslateX(xTranslate);
         diagramNode.setTranslateY(yTranslate); //
 
-        double requiredScale = availableHeight / diagramHeight * 0.8;
-        steno.info("requiredScale " + requiredScale);
+
         
     }
 
@@ -559,6 +550,14 @@ public class CalibrationInsetPanelController implements Initializable,
         }
     }
     
+    protected void setXOffset(String xOffset) {
+        calibrationHelper.setXOffset(xOffset);
+    }
+    
+    protected void setYOffset(Integer yOffset) {
+        calibrationHelper.setYOffset(yOffset);
+    }    
+    
     private void setupChoice()
     {
         calibrationStatus.setText(Lookup.i18n("calibrationPanel.chooseCalibration"));
@@ -574,44 +573,6 @@ public class CalibrationInsetPanelController implements Initializable,
         calibrationProgressPrint.setTargetLegend("Approximate Build Time Remaining:");
         calibrationProgressPrint.setProgressDescription("PRINTING...");
         calibrationProgressPrint.setTargetValue("0");
-    }
-    
-    private void setupOffsetCombos()
-    {
-        cmbXOffset.getItems().add("A");
-        cmbXOffset.getItems().add("B");
-        cmbXOffset.getItems().add("C");
-        cmbXOffset.getItems().add("D");
-        cmbXOffset.getItems().add("E");
-        cmbXOffset.getItems().add("F");
-        cmbXOffset.getItems().add("G");
-        cmbXOffset.getItems().add("H");
-        cmbXOffset.getItems().add("I");
-        cmbXOffset.getItems().add("J");
-        cmbXOffset.getItems().add("K");
-        cmbYOffset.getItems().add("1");
-        cmbYOffset.getItems().add("2");
-        cmbYOffset.getItems().add("3");
-        cmbYOffset.getItems().add("4");
-        cmbYOffset.getItems().add("5");
-        cmbYOffset.getItems().add("6");
-        cmbYOffset.getItems().add("7");
-        cmbYOffset.getItems().add("8");
-        cmbYOffset.getItems().add("9");
-        cmbYOffset.getItems().add("10");
-        cmbYOffset.getItems().add("11");
-        
-        cmbXOffset.valueProperty().addListener(
-            (ObservableValue observable, Object oldValue, Object newValue) ->
-            {
-                calibrationHelper.setXOffset(newValue.toString());
-            });
-        
-        cmbYOffset.valueProperty().addListener(
-            (ObservableValue observable, Object oldValue, Object newValue) ->
-            {
-                calibrationHelper.setYOffset(Integer.parseInt(newValue.toString()));
-            });
     }
     
     protected void showWaitTimer(boolean show)
