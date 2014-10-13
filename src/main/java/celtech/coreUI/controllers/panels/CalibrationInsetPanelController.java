@@ -43,7 +43,7 @@ public class CalibrationInsetPanelController implements Initializable,
     CalibrationBStateListener, CalibrationNozzleOffsetStateListener,
     CalibrationXAndYStateListener
 {
-    
+
     private void resizeTopBorderPane()
     {
         topBorderPane.setPrefWidth(topPane.getWidth());
@@ -52,79 +52,80 @@ public class CalibrationInsetPanelController implements Initializable,
 
     void whenZCoChanged(double zco)
     {
-        if (diagramController != null) {
+        if (diagramController != null)
+        {
             diagramController.setCalibrationTextField(String.format("%1.2f", zco));
         }
     }
-    
+
     protected static enum ProgressVisibility
     {
-        
+
         TEMP, PRINT, NONE;
     };
-    
+
     private final Stenographer steno = StenographerFactory.getStenographer(
         CalibrationInsetPanelController.class.getName());
-    
+
     private CalibrationHelper calibrationHelper;
     private CalibrationNozzleOffsetGUIStateHandler calibrationNozzleOffsetGUIStateHandler;
     private CalibrationNozzleBGUIStateHandler calibrationNozzleBGUIStateHandler;
     private CalibrationXAndYGUIStateHandler calibrationXAndYGUIStateHandler;
-    
+
     @FXML
     protected VerticalMenu calibrationMenu;
-    
+
     @FXML
     protected StackPane calibrateBottomMenu;
-    
+
     @FXML
     protected Pane calibrationBottomArea;
-    
+
     @FXML
     protected Pane altButtonContainer;
-    
+
     @FXML
     protected LargeProgress calibrationProgressTemp;
-    
+
     @FXML
     protected LargeProgress calibrationProgressPrint;
-    
+
     @FXML
     protected Text stepNumber;
-    
+
     @FXML
     protected Button buttonA;
-    
+
     @FXML
     protected Button buttonB;
-    
+
     @FXML
     protected Button nextButton;
-    
+
     @FXML
     protected Button retryPrintButton;
-    
+
     @FXML
     protected Button backToStatus;
-    
+
     @FXML
     protected Button startCalibrationButton;
-    
+
     @FXML
     protected Button cancelCalibrationButton;
-    
+
     @FXML
     protected Label calibrationStatus;
-    
+
     @FXML
     private BorderPane informationCentre;
-    
+
     @FXML
     private BorderPane topBorderPane;
-    
+
     @FXML
     private Pane topPane;
-    
+
     private Printer currentPrinter;
     private int targetTemperature;
     private double currentExtruderTemperature;
@@ -134,44 +135,44 @@ public class CalibrationInsetPanelController implements Initializable,
     private Node diagramNode;
     DiagramController diagramController;
     private final Map<String, Node> nameToNodeCache = new HashMap<>();
-    
+
     @FXML
     void buttonAAction()
     {
         calibrationHelper.buttonAAction();
     }
-    
+
     @FXML
     void buttonBAction()
     {
         calibrationHelper.buttonBAction();
     }
-    
+
     @FXML
     void nextButtonAction(ActionEvent event)
     {
         calibrationHelper.nextButtonAction();
     }
-    
+
     @FXML
     void backToStatusAction(ActionEvent event)
     {
         ApplicationStatus.getInstance().returnToLastMode();
         setCalibrationMode(CalibrationMode.CHOICE);
     }
-    
+
     @FXML
     void startCalibration(ActionEvent event)
     {
         calibrationHelper.nextButtonAction();
     }
-    
+
     @FXML
     void cancelCalibration(ActionEvent event)
     {
         cancelCalibrationAction();
     }
-    
+
     @FXML
     void retryCalibration(ActionEvent event)
     {
@@ -187,7 +188,7 @@ public class CalibrationInsetPanelController implements Initializable,
         calibrationHelper.cancelCalibrationAction();
         setCalibrationMode(CalibrationMode.CHOICE);
     }
-    
+
     protected void hideAllInputControlsExceptStepNumber()
     {
         backToStatus.setVisible(false);
@@ -205,32 +206,32 @@ public class CalibrationInsetPanelController implements Initializable,
             diagramNode.setVisible(false);
         }
     }
-    
+
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
         setupProgressBars();
         setupWaitTimer(informationCentre);
-        
+
         setCalibrationMode(CalibrationMode.CHOICE);
-        
+
         StatusScreenState statusScreenState = StatusScreenState.getInstance();
-        
+
         Printer printerToUse = statusScreenState.currentlySelectedPrinterProperty().get();
         setupChildComponents(printerToUse);
-        
+
         statusScreenState.currentlySelectedPrinterProperty().addListener(
             (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
             {
                 setupChildComponents(newValue);
             });
-        
+
         configureCalibrationMenu(calibrationMenu, this);
-        
+
         addDiagramMoveScaleListeners();
-        
+
     }
-    
+
     private void addDiagramMoveScaleListeners()
     {
         topPane.widthProperty().addListener(
@@ -239,79 +240,75 @@ public class CalibrationInsetPanelController implements Initializable,
                 resizeDiagram();
                 resizeTopBorderPane();
             });
-        
+
         topPane.heightProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
                 resizeDiagram();
                 resizeTopBorderPane();
             });
-        
+
         calibrationStatus.widthProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
                 steno.info("STATUS WIDTH CHANGED");
                 resizeDiagram();
             });
-        
+
         calibrationStatus.heightProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
                 steno.info("STATUS HEIGHT CHANGED");
                 resizeDiagram();
-            });        
-        
+            });
+
     }
-    
+
     private void resizeDiagram()
     {
         Platform.runLater(this::resizeDiagramLater);
     }
-    
+
     private void resizeDiagramLater()
     {
         if (diagramNode == null)
         {
             return;
         }
-        
-//        diagramNode.setScaleX(0.7);
-//        diagramNode.setScaleY(0.7);
-        
+
         double diagramWidth = diagramNode.getBoundsInLocal().getWidth();
         double diagramHeight = diagramNode.getBoundsInLocal().getHeight();
-//        steno.info("DIAG HEIGHT " + diagramHeight);
 
         Bounds statusBounds = calibrationStatus.localToScene(calibrationStatus.getBoundsInLocal());
         Bounds ancestorStatusBounds = topPane.sceneToLocal(statusBounds);
         double upperBoundaryInAncestorCoords = ancestorStatusBounds.getMaxY();
-//        steno.info("STATUS MAX Y IS " + upperBoundaryInAncestorCoords);
+
         Bounds bottomAreaBounds = calibrationBottomArea.localToScene(
             calibrationBottomArea.getBoundsInLocal());
         Bounds ancestorBottomBounds = topPane.sceneToLocal(bottomAreaBounds);
         double lowerBoundaryInAncestorCoords = ancestorBottomBounds.getMinY();
         double availableHeight = lowerBoundaryInAncestorCoords - upperBoundaryInAncestorCoords;
-//        steno.info("AVAIL HEIGHT " + availableHeight);
-        
-        double requiredScale = availableHeight / diagramHeight * 0.95;
-        steno.info("requiredScale " + requiredScale);        
+        double availableWidth = ancestorStatusBounds.getWidth();
+
+        double requiredScaleHeight = availableHeight / diagramHeight * 0.95;
+        double requiredScaleWidth = availableWidth / diagramWidth * 0.95;
+        double requiredScale = Math.min(requiredScaleHeight, requiredScaleWidth);
+
         diagramNode.setScaleX(requiredScale);
-        diagramNode.setScaleY(requiredScale);     
-        
+        diagramNode.setScaleY(requiredScale);
+
         double scaledDiagramWidth = diagramNode.getBoundsInLocal().getWidth();
-        double scaledDiagramHeight = diagramNode.getBoundsInLocal().getHeight();        
+        double scaledDiagramHeight = diagramNode.getBoundsInLocal().getHeight();
 
         double xTranslate = -scaledDiagramWidth / 2;
         double yTranslate = -scaledDiagramHeight / 2;
-        
+
         xTranslate += ancestorStatusBounds.getMinX() + (ancestorStatusBounds.getWidth() / 2.0d);
         yTranslate += upperBoundaryInAncestorCoords + availableHeight / 2.0;
-        
+
         diagramNode.setTranslateX(xTranslate);
-        diagramNode.setTranslateY(yTranslate); //
+        diagramNode.setTranslateY(yTranslate);
 
-
-        
     }
 
     /**
@@ -342,7 +339,7 @@ public class CalibrationInsetPanelController implements Initializable,
         return nameToNodeCache.get(diagramName);
 //        return new TextField("ABC");
     }
-    
+
     protected void showDiagram(String section, String diagramName)
     {
         diagramNode = getDiagramNode(section, diagramName);
@@ -359,11 +356,11 @@ public class CalibrationInsetPanelController implements Initializable,
             topPane.getChildren().clear();
             topPane.getChildren().addAll(firstChild, diagramNode);
         }
-        
+
         resizeDiagram();
         diagramNode.setVisible(true);
     }
-    
+
     private void setupChildComponents(Printer printerToUse)
     {
         if (calibrationHelper != null)
@@ -374,51 +371,51 @@ public class CalibrationInsetPanelController implements Initializable,
         setupPrintProgressListeners(printerToUse);
         currentPrinter = printerToUse;
     }
-    
+
     @Override
     public void setNozzleOpeningState(NozzleOpeningCalibrationState state)
     {
         calibrationNozzleBGUIStateHandler.setNozzleOpeningState(state);
     }
-    
+
     @Override
     public void setNozzleHeightState(NozzleOffsetCalibrationState state)
     {
         calibrationNozzleOffsetGUIStateHandler.setNozzleHeightState(state);
     }
-    
+
     @Override
     public void setXAndYState(CalibrationXAndYState state)
     {
         calibrationXAndYGUIStateHandler.setXAndYState(state);
     }
-    
+
     private final ChangeListener<Number> targetTemperatureListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
         targetTemperature = newValue.intValue();
         updateCalibrationProgressTemp();
     };
-    
+
     private final ChangeListener<Number> extruderTemperatureListener
         = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
             currentExtruderTemperature = newValue.doubleValue();
             updateCalibrationProgressTemp();
         };
-    
+
     private void removeTemperatureProgressListeners(Printer printer)
     {
         printer.nozzleTargetTemperatureProperty().removeListener(targetTemperatureListener);
         printer.extruderTemperatureProperty().removeListener(extruderTemperatureListener);
     }
-    
+
     private void setupTemperatureProgressListeners(Printer printer)
     {
         if (currentPrinter != null)
         {
             removeTemperatureProgressListeners(currentPrinter);
         }
-        
+
         if (printer == null)
         {
             calibrationProgressTemp.setProgress(0);
@@ -428,7 +425,7 @@ public class CalibrationInsetPanelController implements Initializable,
             printer.extruderTemperatureProperty().addListener(extruderTemperatureListener);
         }
     }
-    
+
     private void updateCalibrationProgressTemp()
     {
         if (targetTemperature != 0 && calibrationProgressTemp.isVisible())
@@ -441,33 +438,33 @@ public class CalibrationInsetPanelController implements Initializable,
             calibrationProgressTemp.setProgress(currentExtruderTemperature / targetTemperature);
         }
     }
-    
+
     private final ChangeListener<Number> targetETCListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
         targetETC = newValue.intValue();
         updateCalibrationProgressPrint();
     };
-    
+
     private final ChangeListener<Number> printPercentListener
         = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
             printPercent = newValue.doubleValue();
             updateCalibrationProgressPrint();
         };
-    
+
     private void removePrintProgressListeners(Printer printer)
     {
         printer.getPrintQueue().progressETCProperty().removeListener(targetETCListener);
         printer.getPrintQueue().progressProperty().removeListener(printPercentListener);
     }
-    
+
     private void setupPrintProgressListeners(Printer printer)
     {
         if (currentPrinter != null)
         {
             removePrintProgressListeners(currentPrinter);
         }
-        
+
         if (printer == null)
         {
             calibrationProgressTemp.setProgress(0);
@@ -478,7 +475,7 @@ public class CalibrationInsetPanelController implements Initializable,
             printer.getPrintQueue().progressETCProperty().addListener(targetETCListener);
         }
     }
-    
+
     private void updateCalibrationProgressPrint()
     {
         targetETC = currentPrinter.getPrintQueue().progressETCProperty().get();
@@ -491,7 +488,7 @@ public class CalibrationInsetPanelController implements Initializable,
             calibrationProgressPrint.setProgress(printPercent);
         }
     }
-    
+
     protected void setCalibrationProgressVisible(ProgressVisibility visibility)
     {
         calibrationProgressTemp.setVisible(false);
@@ -512,7 +509,7 @@ public class CalibrationInsetPanelController implements Initializable,
         }
         calibrationBottomArea.getChildren().add(calibrateBottomMenu);
     }
-    
+
     public void setCalibrationMode(CalibrationMode calibrationMode)
     {
         switch (calibrationMode)
@@ -549,15 +546,17 @@ public class CalibrationInsetPanelController implements Initializable,
                 setupChoice();
         }
     }
-    
-    protected void setXOffset(String xOffset) {
+
+    protected void setXOffset(String xOffset)
+    {
         calibrationHelper.setXOffset(xOffset);
     }
-    
-    protected void setYOffset(Integer yOffset) {
+
+    protected void setYOffset(Integer yOffset)
+    {
         calibrationHelper.setYOffset(yOffset);
-    }    
-    
+    }
+
     private void setupChoice()
     {
         calibrationStatus.setText(Lookup.i18n("calibrationPanel.chooseCalibration"));
@@ -567,14 +566,14 @@ public class CalibrationInsetPanelController implements Initializable,
         backToStatus.setVisible(false);
         cancelCalibrationButton.setVisible(true);
     }
-    
+
     private void setupProgressBars()
     {
         calibrationProgressPrint.setTargetLegend("Approximate Build Time Remaining:");
         calibrationProgressPrint.setProgressDescription("PRINTING...");
         calibrationProgressPrint.setTargetValue("0");
     }
-    
+
     protected void showWaitTimer(boolean show)
     {
         waitTimer.setVisible(show);
@@ -593,35 +592,35 @@ public class CalibrationInsetPanelController implements Initializable,
             waitTimer = waitTimerLoader.load();
             waitTimer.scaleXProperty().set(0.5);
             waitTimer.scaleYProperty().set(0.5);
-            
+
             parent.getChildren().add(waitTimer);
-            
+
             parent.widthProperty().addListener(
                 (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
                 {
                     relocateWaitTimer(parent);
                 });
-            
+
             parent.heightProperty().addListener(
                 (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
                 {
                     relocateWaitTimer(parent);
                 });
-            
+
             relocateWaitTimer(parent);
             waitTimer.setVisible(false);
-            
+
         } catch (IOException ex)
         {
             ex.printStackTrace();
             steno.error("Cannot load wait timer " + ex);
         }
     }
-    
+
     private void relocateWaitTimer(Pane parent)
     {
         waitTimer.setTranslateX(parent.getWidth() / 2.0);
         waitTimer.setTranslateY(parent.getHeight() / 2.0);
     }
-    
+
 }
