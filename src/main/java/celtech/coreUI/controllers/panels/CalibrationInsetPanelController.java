@@ -43,6 +43,7 @@ public class CalibrationInsetPanelController implements Initializable,
     CalibrationBStateListener, CalibrationNozzleOffsetStateListener,
     CalibrationXAndYStateListener
 {
+    private ResourceBundle resources;
 
     private void resizeTopBorderPane()
     {
@@ -210,6 +211,8 @@ public class CalibrationInsetPanelController implements Initializable,
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
+        this.resources = resources;
+        
         setupProgressBars();
         setupWaitTimer(informationCentre);
 
@@ -329,7 +332,7 @@ public class CalibrationInsetPanelController implements Initializable,
                 + "diagrams/" + section + "/" + diagramName);
             try
             {
-                FXMLLoader loader = new FXMLLoader(fxmlFileName);
+                FXMLLoader loader = new FXMLLoader(fxmlFileName, resources);
                 diagramController = new DiagramController(this);
                 loader.setController(diagramController);
                 diagramNode = loader.load();

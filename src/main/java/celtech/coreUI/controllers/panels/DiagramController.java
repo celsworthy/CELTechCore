@@ -32,6 +32,12 @@ class DiagramController implements Initializable
             calibrationTextField.setText("0.00");
         }
     }
+    
+    @FXML
+    private TextField xOffsetA;
+    
+    @FXML
+    private TextField yOffsetA;    
 
     @FXML
     protected ComboBox cmbYOffset;
@@ -136,6 +142,12 @@ class DiagramController implements Initializable
                 {
                     parentController.setYOffset(Integer.parseInt(newValue.toString()));
                 });
+            
+            cmbXOffset.setValue("F");
+            cmbYOffset.setValue("6");
+            
+            xOffsetA.setText(xOffsetA.getText() + ":");
+            yOffsetA.setText(yOffsetA.getText() + ":");
         }
     }
 

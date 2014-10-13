@@ -1786,19 +1786,19 @@ table-view .column-header-background {
 */
 .mediumCalibrationText {
     -fx-background-color: mid_grey;
-    -fx-font-size:16px;
+    -fx-font-size:20px;
     -fx-text-fill: white;
 }
 
 .smallCalibrationText {
     -fx-background-color: mid_grey;
-    -fx-font-size:12px;
+    -fx-font-size:14px;
     -fx-text-fill: white;
 }
 
 .smallLightGreyCalibrationText {
     -fx-background-color: light_grey;
-    -fx-font-size:12px;
+    -fx-font-size:14px;
     -fx-text-fill: white;
 }
 
@@ -1806,6 +1806,16 @@ table-view .column-header-background {
     /*-fx-background-color: white;*/
     -fx-font-size:16px;
     /*-fx-text-fill: black;*/
+}
+
+.combo-box .list-cell {
+    -fx-background-color: white;
+    -fx-text-fill: black;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: white;
+    -fx-text-fill: black;
 }
 
 /**
