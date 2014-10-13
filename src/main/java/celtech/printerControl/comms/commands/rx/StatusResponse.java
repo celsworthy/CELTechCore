@@ -454,6 +454,251 @@ public class StatusResponse extends RoboxRxPacket
         return whyAreWeWaitingState;
     }
 
+    public void setRunningPrintJobID(String runningPrintJobID)
+    {
+        this.runningPrintJobID = runningPrintJobID;
+    }
+
+    public void setPrintJobLineNumberString(String printJobLineNumberString)
+    {
+        this.printJobLineNumberString = printJobLineNumberString;
+    }
+
+    public void setPrintJobLineNumber(int printJobLineNumber)
+    {
+        this.printJobLineNumber = printJobLineNumber;
+    }
+
+    public void setxSwitchStatus(boolean xSwitchStatus)
+    {
+        this.xSwitchStatus = xSwitchStatus;
+    }
+
+    public void setySwitchStatus(boolean ySwitchStatus)
+    {
+        this.ySwitchStatus = ySwitchStatus;
+    }
+
+    public void setzSwitchStatus(boolean zSwitchStatus)
+    {
+        this.zSwitchStatus = zSwitchStatus;
+    }
+
+    public void setPauseStatus(PauseStatus pauseStatus)
+    {
+        this.pauseStatus = pauseStatus;
+    }
+
+    public void setBusyStatus(boolean busyStatus)
+    {
+        this.busyStatus = busyStatus;
+    }
+
+    public void setFilament1SwitchStatus(boolean filament1SwitchStatus)
+    {
+        this.filament1SwitchStatus = filament1SwitchStatus;
+    }
+
+    public void setFilament2SwitchStatus(boolean filament2SwitchStatus)
+    {
+        this.filament2SwitchStatus = filament2SwitchStatus;
+    }
+
+    public void setNozzleSwitchStatus(boolean nozzleSwitchStatus)
+    {
+        this.nozzleSwitchStatus = nozzleSwitchStatus;
+    }
+
+    public void setLidSwitchStatus(boolean lidSwitchStatus)
+    {
+        this.lidSwitchStatus = lidSwitchStatus;
+    }
+
+    public void setReelButtonStatus(boolean reelButtonStatus)
+    {
+        this.reelButtonStatus = reelButtonStatus;
+    }
+
+    public void setEIndexStatus(boolean EIndexStatus)
+    {
+        this.EIndexStatus = EIndexStatus;
+    }
+
+    public void setDIndexStatus(boolean DIndexStatus)
+    {
+        this.DIndexStatus = DIndexStatus;
+    }
+
+    public void setTopZSwitchStatus(boolean topZSwitchStatus)
+    {
+        this.topZSwitchStatus = topZSwitchStatus;
+    }
+
+    public void setNozzleHeaterMode(HeaterMode nozzleHeaterMode)
+    {
+        this.nozzleHeaterMode = nozzleHeaterMode;
+    }
+
+    public void setNozzleHeaterModeString(String nozzleHeaterModeString)
+    {
+        this.nozzleHeaterModeString = nozzleHeaterModeString;
+    }
+
+    public void setNozzleTemperatureString(String nozzleTemperatureString)
+    {
+        this.nozzleTemperatureString = nozzleTemperatureString;
+    }
+
+    public void setNozzleTemperature(int nozzleTemperature)
+    {
+        this.nozzleTemperature = nozzleTemperature;
+    }
+
+    public void setNozzleTargetTemperatureString(String nozzleTargetTemperatureString)
+    {
+        this.nozzleTargetTemperatureString = nozzleTargetTemperatureString;
+    }
+
+    public void setNozzleTargetTemperature(int nozzleTargetTemperature)
+    {
+        this.nozzleTargetTemperature = nozzleTargetTemperature;
+    }
+
+    public void setNozzleFirstLayerTargetTemperatureString(String nozzleFirstLayerTargetTemperatureString)
+    {
+        this.nozzleFirstLayerTargetTemperatureString = nozzleFirstLayerTargetTemperatureString;
+    }
+
+    public void setNozzleFirstLayerTargetTemperature(int nozzleFirstLayerTargetTemperature)
+    {
+        this.nozzleFirstLayerTargetTemperature = nozzleFirstLayerTargetTemperature;
+    }
+
+    public void setBedHeaterMode(HeaterMode bedHeaterMode)
+    {
+        this.bedHeaterMode = bedHeaterMode;
+    }
+
+    public void setBedHeaterModeString(String bedHeaterModeString)
+    {
+        this.bedHeaterModeString = bedHeaterModeString;
+    }
+
+    public void setBedTemperatureString(String bedTemperatureString)
+    {
+        this.bedTemperatureString = bedTemperatureString;
+    }
+
+    public void setBedTemperature(int bedTemperature)
+    {
+        this.bedTemperature = bedTemperature;
+    }
+
+    public void setBedTargetTemperatureString(String bedTargetTemperatureString)
+    {
+        this.bedTargetTemperatureString = bedTargetTemperatureString;
+    }
+
+    public void setBedTargetTemperature(int bedTargetTemperature)
+    {
+        this.bedTargetTemperature = bedTargetTemperature;
+    }
+
+    public void setBedFirstLayerTargetTemperatureString(String bedFirstLayerTargetTemperatureString)
+    {
+        this.bedFirstLayerTargetTemperatureString = bedFirstLayerTargetTemperatureString;
+    }
+
+    public void setBedFirstLayerTargetTemperature(int bedFirstLayerTargetTemperature)
+    {
+        this.bedFirstLayerTargetTemperature = bedFirstLayerTargetTemperature;
+    }
+
+    public void setAmbientFanOn(boolean ambientFanOn)
+    {
+        this.ambientFanOn = ambientFanOn;
+    }
+
+    public void setAmbientTemperature(int ambientTemperature)
+    {
+        this.ambientTemperature = ambientTemperature;
+    }
+
+    public void setAmbientTemperatureString(String ambientTemperatureString)
+    {
+        this.ambientTemperatureString = ambientTemperatureString;
+    }
+
+    public void setAmbientTargetTemperatureString(String ambientTargetTemperatureString)
+    {
+        this.ambientTargetTemperatureString = ambientTargetTemperatureString;
+    }
+
+    public void setAmbientTargetTemperature(int ambientTargetTemperature)
+    {
+        this.ambientTargetTemperature = ambientTargetTemperature;
+    }
+
+    public void setHeadFanOn(boolean headFanOn)
+    {
+        this.headFanOn = headFanOn;
+    }
+
+    public void setHeadEEPROMState(EEPROMState headEEPROMState)
+    {
+        this.headEEPROMState = headEEPROMState;
+    }
+
+    public void setReelEEPROMState(EEPROMState reelEEPROMState)
+    {
+        this.reelEEPROMState = reelEEPROMState;
+    }
+
+    public void setSdCardPresent(boolean sdCardPresent)
+    {
+        this.sdCardPresent = sdCardPresent;
+    }
+
+    public void setHeadXPosition(float headXPosition)
+    {
+        this.headXPosition = headXPosition;
+    }
+
+    public void setHeadYPosition(float headYPosition)
+    {
+        this.headYPosition = headYPosition;
+    }
+
+    public void setHeadZPosition(float headZPosition)
+    {
+        this.headZPosition = headZPosition;
+    }
+
+    public void setBPosition(float BPosition)
+    {
+        this.BPosition = BPosition;
+    }
+
+    public void setFilamentDiameter(float filamentDiameter)
+    {
+        this.filamentDiameter = filamentDiameter;
+    }
+
+    public void setFilamentMultiplier(float filamentMultiplier)
+    {
+        this.filamentMultiplier = filamentMultiplier;
+    }
+
+    public void setFeedRateMultiplier(float feedRateMultiplier)
+    {
+        this.feedRateMultiplier = feedRateMultiplier;
+    }
+
+    public void setWhyAreWeWaitingState(WhyAreWeWaitingState whyAreWeWaitingState)
+    {
+        this.whyAreWeWaitingState = whyAreWeWaitingState;
+    }
+
     /*
      * Errors...
      */

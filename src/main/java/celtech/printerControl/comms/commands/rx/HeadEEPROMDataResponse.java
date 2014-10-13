@@ -4,6 +4,8 @@
  */
 package celtech.printerControl.comms.commands.rx;
 
+import celtech.printerControl.model.Head;
+import celtech.printerControl.model.NozzleHeater;
 import celtech.utils.FixedDecimalFloatFormat;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
@@ -57,7 +59,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
     public boolean populatePacket(byte[] byteData)
     {
         boolean success = false;
-        
+
         FixedDecimalFloatFormat decimalFloatFormatter = new FixedDecimalFloatFormat();
 
         try
@@ -368,7 +370,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
     {
         return thermistorTCal;
     }
-    
+
     /**
      *
      * @return
@@ -376,5 +378,35 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
     public float getLastFilamentTemperature()
     {
         return lastFilamentTemperature;
+    }
+
+    public void updateContents(Head attachedHead)
+    {
+        //TODO modify for multiple heaters
+        headTypeCode = attachedHead.typeCodeProperty().get();
+        uniqueID = attachedHead.uniqueIDProperty().get();
+
+        NozzleHeater heater = attachedHead.getNozzleHeaters().get(0);
+        maximumTemperature = heater.maximumTemperatureProperty().get();
+        thermistorBeta = heater.betaProperty().get();
+        thermistorTCal = heater.tCalProperty().get();
+        lastFilamentTemperature = heater.lastFilamentTemperatureProperty().get();        
+        hoursUsed = attachedHead.headHoursProperty().get();
+
+        if (attachedHead.getNozzles().size() > 0)
+        {
+            nozzle1XOffset = attachedHead.getNozzles().get(0).xOffsetProperty().get();
+            nozzle1YOffset = attachedHead.getNozzles().get(0).yOffsetProperty().get();
+            nozzle1ZOffset = attachedHead.getNozzles().get(0).zOffsetProperty().get();
+            nozzle1BOffset = attachedHead.getNozzles().get(0).bOffsetProperty().get();
+        }
+
+        if (attachedHead.getNozzles().size() > 1)
+        {
+            nozzle2XOffset = attachedHead.getNozzles().get(1).xOffsetProperty().get();
+            nozzle2YOffset = attachedHead.getNozzles().get(1).yOffsetProperty().get();
+            nozzle2ZOffset = attachedHead.getNozzles().get(1).zOffsetProperty().get();
+            nozzle2BOffset = attachedHead.getNozzles().get(1).bOffsetProperty().get();
+        }
     }
 }

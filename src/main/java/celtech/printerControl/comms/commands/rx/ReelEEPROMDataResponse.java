@@ -7,6 +7,8 @@ import celtech.printerControl.comms.commands.StringToBase64Encoder;
 import static celtech.printerControl.comms.commands.tx.WriteReelEEPROM.FRIENDLY_NAME_LENGTH;
 import static celtech.printerControl.comms.commands.tx.WriteReelEEPROM.MATERIAL_TYPE_LENGTH;
 import static celtech.printerControl.comms.commands.tx.WriteReelEEPROM.REEL_EEPROM_PADDING_LENGTH;
+import celtech.printerControl.model.Head;
+import celtech.printerControl.model.Reel;
 import celtech.utils.FixedDecimalFloatFormat;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
@@ -59,17 +61,17 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
         boolean success = false;
 
         FixedDecimalFloatFormat decimalFloatFormatter = new FixedDecimalFloatFormat();
-        
+
         try
         {
             int byteOffset = 1;
 
             reelFilamentID = (new String(byteData, byteOffset, materialTypeCodeBytes, charsetToUse)).trim();
             byteOffset += materialTypeCodeBytes;
-            
+
             String displayColourString = new String(byteData, byteOffset, colourBytes, charsetToUse);
             reelDisplayColour = stringToColor(displayColourString);
-            
+
             byteOffset += uniqueIDBytes;
 
             String firstLayerNozzleTempString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
@@ -159,26 +161,29 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
             {
                 steno.error("Couldn't parse extrusion multiplier - " + feedRateMultiplierString);
             }
-            
+
             String encodedFriendlyName = new String(byteData, byteOffset, FRIENDLY_NAME_LENGTH, charsetToUse);
             reelFriendlyName = StringToBase64Encoder.decode(encodedFriendlyName);
             byteOffset += FRIENDLY_NAME_LENGTH;
-            
+
             //Handle case where reelFriendlyName has not yet been set on EEPROM
-            if (reelFriendlyName.length() == 0) {
+            if (reelFriendlyName.length() == 0)
+            {
                 reelFriendlyName = reelFilamentID;
             }
-            
+
             String intMaterialTypeString = new String(byteData, byteOffset, MATERIAL_TYPE_LENGTH, charsetToUse);
             int intMaterialType = EnumStringConverter.stringToInt(intMaterialTypeString);
-            try {
-                reelMaterialType = MaterialType.values()[intMaterialType]; 
-            } catch (ArrayIndexOutOfBoundsException ex) {
+            try
+            {
+                reelMaterialType = MaterialType.values()[intMaterialType];
+            } catch (ArrayIndexOutOfBoundsException ex)
+            {
                 steno.error("Couldn't parse material type from reel");
                 reelMaterialType = MaterialType.values()[0];
-            }    
+            }
             byteOffset += MATERIAL_TYPE_LENGTH;
-            
+
             byteOffset += REEL_EEPROM_PADDING_LENGTH;
 
             String remainingLengthString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
@@ -229,8 +234,9 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
     {
         return reelFilamentID;
     }
-    
-    public String getReelFriendlyName() {
+
+    public String getReelFriendlyName()
+    {
         return reelFriendlyName;
     }
 
@@ -322,9 +328,27 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
     {
         return reelMaterialType;
     }
-    
-    public Color getReelDisplayColour() {
+
+    public Color getReelDisplayColour()
+    {
         return reelDisplayColour;
+    }
+
+    public void updateContents(Reel attachedReel)
+    {
+        reelFilamentID = attachedReel.filamentIDProperty().get();
+        reelFirstLayerNozzleTemperature = attachedReel.firstLayerNozzleTemperatureProperty().get();
+        reelNozzleTemperature = attachedReel.nozzleTemperatureProperty().get();
+        reelFirstLayerBedTemperature = attachedReel.firstLayerBedTemperatureProperty().get();
+        reelBedTemperature = attachedReel.bedTemperatureProperty().get();
+        reelAmbientTemperature = attachedReel.ambientTemperatureProperty().get();
+        reelFilamentDiameter = attachedReel.diameterProperty().get();
+        reelFilamentMultiplier = attachedReel.filamentMultiplierProperty().get();
+        reelFeedRateMultiplier = attachedReel.feedRateMultiplierProperty().get();
+        reelRemainingFilament = attachedReel.remainingFilamentProperty().get();
+        reelMaterialType = attachedReel.materialProperty().get();
+        reelDisplayColour = attachedReel.displayColourProperty().get();
+        reelFriendlyName = attachedReel.friendlyFilamentNameProperty().get();
     }
 
 }

@@ -989,9 +989,12 @@ public class PrinterStatusPageController implements Initializable
         {
             lastSelectedPrinter.getPrinterIdentity().printerColourProperty().removeListener(
                 printerColourChangeListener);
-            //TODO modify to support multiple reels
-            lastSelectedPrinter.reelsProperty().get(0).dataChangedToggleProperty().removeListener(
-                reelDataChangeListener);
+
+            for (Reel reel : lastSelectedPrinter.reelsProperty())
+            {
+                //TODO modify to support multiple reels
+                reel.dataChangedToggleProperty().removeListener(reelDataChangeListener);
+            }
             //TODO modify to support multiple reels
             lastSelectedPrinter.reelsProperty().removeListener(reelChangeListener);
             lastSelectedPrinter.printerStatusProperty().removeListener(printerStatusChangeListener);

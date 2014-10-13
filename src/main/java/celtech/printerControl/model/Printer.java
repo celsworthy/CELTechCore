@@ -159,6 +159,8 @@ public class Printer implements RoboxResponseConsumer
         this.commandInterface = commandInterface;
 
         printEngine = new PrintEngine(this);
+        
+        canPrintProperty.bind(head.isNotNull().and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
 
         threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
         threeDPformatter.setMaximumFractionDigits(3);
@@ -194,7 +196,6 @@ public class Printer implements RoboxResponseConsumer
                 lastStateBeforePause = null;
                 canRemoveHeadProperty.set(true);
                 canPurgeHeadProperty.set(true);
-                canPrintProperty.set(true);
                 canPauseProperty.set(false);
                 canResumeProperty.set(false);
                 canRunMacroProperty.set(true);
@@ -204,7 +205,6 @@ public class Printer implements RoboxResponseConsumer
             case REMOVING_HEAD:
                 canRemoveHeadProperty.set(false);
                 canPurgeHeadProperty.set(false);
-                canPrintProperty.set(false);
                 canPauseProperty.set(false);
                 canResumeProperty.set(false);
                 canRunMacroProperty.set(false);
@@ -213,7 +213,6 @@ public class Printer implements RoboxResponseConsumer
             case PURGING_HEAD:
                 canRemoveHeadProperty.set(false);
                 canPurgeHeadProperty.set(false);
-                canPrintProperty.set(false);
                 canPauseProperty.set(false);
                 canResumeProperty.set(false);
                 canRunMacroProperty.set(false);
@@ -222,7 +221,6 @@ public class Printer implements RoboxResponseConsumer
             case SLICING:
                 canRemoveHeadProperty.set(false);
                 canPurgeHeadProperty.set(false);
-                canPrintProperty.set(false);
                 canPauseProperty.set(false);
                 canResumeProperty.set(false);
                 canRunMacroProperty.set(false);
@@ -232,7 +230,6 @@ public class Printer implements RoboxResponseConsumer
             case POST_PROCESSING:
                 canRemoveHeadProperty.set(false);
                 canPurgeHeadProperty.set(false);
-                canPrintProperty.set(false);
                 canPauseProperty.set(false);
                 canResumeProperty.set(false);
                 canRunMacroProperty.set(false);
@@ -242,7 +239,6 @@ public class Printer implements RoboxResponseConsumer
             case SENDING_TO_PRINTER:
                 canRemoveHeadProperty.set(false);
                 canPurgeHeadProperty.set(false);
-                canPrintProperty.set(false);
                 canPauseProperty.set(false);
                 canResumeProperty.set(false);
                 canRunMacroProperty.set(false);
@@ -252,7 +248,6 @@ public class Printer implements RoboxResponseConsumer
             case PAUSED:
                 canRemoveHeadProperty.set(false);
                 canPurgeHeadProperty.set(false);
-                canPrintProperty.set(false);
                 canPauseProperty.set(false);
                 canResumeProperty.set(true);
                 canRunMacroProperty.set(false);
@@ -262,7 +257,6 @@ public class Printer implements RoboxResponseConsumer
             case PRINTING:
                 canRemoveHeadProperty.set(false);
                 canPurgeHeadProperty.set(false);
-                canPrintProperty.set(false);
                 canPauseProperty.set(false);
                 canResumeProperty.set(false);
                 canRunMacroProperty.set(false);

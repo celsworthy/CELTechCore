@@ -32,6 +32,7 @@ import javafx.scene.paint.Color;
  */
 public class Reel
 {
+
     protected final StringProperty friendlyFilamentName = new SimpleStringProperty("");
     protected final ObjectProperty<MaterialType> material = new SimpleObjectProperty();
     protected final StringProperty filamentID = new SimpleStringProperty();
@@ -237,5 +238,22 @@ public class Reel
     public boolean isUserFilament()
     {
         return filamentID.get().startsWith("U");
+    }
+
+    public void updateContents(Filament filament)
+    {
+        ambientTemperature.set(filament.getAmbientTemperature());
+        bedTemperature.set(filament.getBedTemperature());
+        feedRateMultiplier.set(filament.getFeedRateMultiplier());
+        diameter.set(filament.getDiameter());
+        filamentMultiplier.set(filament.getFilamentMultiplier());
+        firstLayerBedTemperature.set(filament.getFirstLayerBedTemperature());
+        firstLayerNozzleTemperature.set(filament.getFirstLayerNozzleTemperature());
+        nozzleTemperature.set(filament.getNozzleTemperature());
+        displayColour.set(filament.getDisplayColour());
+        filamentID.set(filament.getFilamentID());
+        friendlyFilamentName.set(filament.getFriendlyFilamentName());
+        material.set(filament.getMaterial());
+        remainingFilament.set(filament.getRemainingFilament());
     }
 }
