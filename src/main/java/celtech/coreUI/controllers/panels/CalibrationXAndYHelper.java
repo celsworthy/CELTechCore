@@ -13,6 +13,8 @@ import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.services.calibration.CalibrateXAndYTask;
 import celtech.services.calibration.CalibrationXAndYState;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.WorkerStateEvent;
@@ -27,14 +29,14 @@ import libertysystems.stenographer.StenographerFactory;
 public class CalibrationXAndYHelper implements CalibrationHelper
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(
+    private final Stenographer steno = StenographerFactory.getStenographer(
         CalibrationXAndYHelper.class.getName());
 
     private Printer printerToUse = null;
     private HeadEEPROMDataResponse savedHeadData = null;
 
     private CalibrationXAndYState state = CalibrationXAndYState.IDLE;
-    private ArrayList<CalibrationXAndYStateListener> stateListeners = new ArrayList<>();
+    private final ArrayList<CalibrationXAndYStateListener> stateListeners = new ArrayList<>();
     private CalibrateXAndYTask calibrationTask;
 
     private int xOffset = 0;
@@ -96,7 +98,9 @@ public class CalibrationXAndYHelper implements CalibrationHelper
                 calibrationTask.cancel();
             }
         }
-        if (state == CalibrationXAndYState.PRINT_CIRCLE || state == CalibrationXAndYState.PRINT_PATTERN) {
+        if (state == CalibrationXAndYState.PRINT_CIRCLE || state
+            == CalibrationXAndYState.PRINT_PATTERN)
+        {
             printerToUse.abortPrint();
         }
         if (state != CalibrationXAndYState.IDLE)
@@ -154,6 +158,14 @@ public class CalibrationXAndYHelper implements CalibrationHelper
 //            }
 //            break;
             case PRINT_PATTERN:
+                try
+                {
+                    savedHeadData = printerToUse.transmitReadHeadEEPROM();
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error in nozzle alignment - mode=" + state.name());
+                    setState(CalibrationXAndYState.FAILED);
+                }
                 calibrationTask = new CalibrateXAndYTask(state, printerToUse);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
@@ -166,6 +178,7 @@ public class CalibrationXAndYHelper implements CalibrationHelper
             case GET_Y_OFFSET:
                 break;
             case PRINT_CIRCLE:
+                saveSettings();
                 calibrationTask = new CalibrateXAndYTask(state, printerToUse);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
@@ -177,7 +190,6 @@ public class CalibrationXAndYHelper implements CalibrationHelper
             case FINISHED:
                 try
                 {
-                    saveSettings();
                     switchHeaterOffAndRaiseHead();
                 } catch (RoboxCommsException ex)
                 {
@@ -246,6 +258,17 @@ public class CalibrationXAndYHelper implements CalibrationHelper
 
     private void saveSettings()
     {
+
+        // F and 6 are zero values
+        float nozzle1XCorrection = -xOffset * 0.05f;
+        float nozzle2XCorrection = xOffset * 0.05f;
+
+        float nozzle1YCorrection = (yOffset - 6) * 0.05f;
+        float nozzle2YCorrection = -(yOffset - 6) * 0.05f;
+
+        steno.info(String.format("Saving XY with correction %1.2f %1.2f %1.2f %1.2f ", nozzle1XCorrection,
+                                 nozzle2XCorrection, nozzle1YCorrection, nozzle2YCorrection));
+
         try
         {
             printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
@@ -253,12 +276,16 @@ public class CalibrationXAndYHelper implements CalibrationHelper
                                                  savedHeadData.getMaximumTemperature(),
                                                  savedHeadData.getBeta(),
                                                  savedHeadData.getTCal(),
-                                                 savedHeadData.getNozzle1XOffset(),
-                                                 savedHeadData.getNozzle1YOffset(),
+                                                 savedHeadData.getNozzle1XOffset()
+                                                 + nozzle1XCorrection,
+                                                 savedHeadData.getNozzle1YOffset()
+                                                 + nozzle1YCorrection,
                                                  savedHeadData.getNozzle1ZOffset(),
                                                  savedHeadData.getNozzle1BOffset(),
-                                                 savedHeadData.getNozzle2XOffset(),
-                                                 savedHeadData.getNozzle2YOffset(),
+                                                 savedHeadData.getNozzle2XOffset()
+                                                 + nozzle2XCorrection,
+                                                 savedHeadData.getNozzle2YOffset()
+                                                 + nozzle2YCorrection,
                                                  savedHeadData.getNozzle2ZOffset(),
                                                  savedHeadData.getNozzle2BOffset(),
                                                  savedHeadData.getLastFilamentTemperature(),
@@ -276,44 +303,46 @@ public class CalibrationXAndYHelper implements CalibrationHelper
         switch (xStr)
         {
             case "A":
-                xOffset = 0;
+                xOffset = -5;
                 break;
             case "B":
-                xOffset = 1;
+                xOffset = -4;
                 break;
             case "C":
-                xOffset = 2;
+                xOffset = -3;
                 break;
             case "D":
-                xOffset = 3;
+                xOffset = -2;
                 break;
             case "E":
-                xOffset = 4;
+                xOffset = -1;
                 break;
             case "F":
-                xOffset = 5;
+                xOffset = 0;
                 break;
             case "G":
-                xOffset = 6;
+                xOffset = 1;
                 break;
             case "H":
-                xOffset = 6;
+                xOffset = 2;
                 break;
             case "I":
-                xOffset = 6;
+                xOffset = 3;
                 break;
             case "J":
-                xOffset = 6;
+                xOffset = 4;
                 break;
             case "K":
-                xOffset = 6;
-                break;                
+                xOffset = 5;
+                break;
         }
+        steno.info("x offset to " + xOffset);
     }
 
     @Override
     public void setYOffset(Integer yOffset)
     {
+        steno.info("set y offset to " + yOffset);
         this.yOffset = yOffset;
     }
 
