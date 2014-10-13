@@ -36,11 +36,6 @@ public class CalibrationMenuConfiguration
                                     CalibrationMode.X_AND_Y_OFFSET);
                                 return null;
         });
-        calibrationMenu.addItem(Lookup.i18n("calibrationMenu.gantryLevel"), (Callable) () ->
-                            {
-                                System.out.println("Called GL");
-                                return null;
-        });
     }
     
 }

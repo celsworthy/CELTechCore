@@ -15,9 +15,9 @@
             <center>
                 <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
                     <children>
-                        <BorderPane prefHeight="200.0" prefWidth="200.0">
+                        <BorderPane>
                             <top>
-                                <VerticalMenu fx:id="calibrationMenu" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="410.0" />
+                                <VerticalMenu fx:id="calibrationMenu" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="360.0" />
                             </top>
                             <bottom>
                                 <GridPane BorderPane.alignment="CENTER">
@@ -43,7 +43,7 @@
                         </BorderPane>
                         <Separator id="calibrationMenuSeparator" maxWidth="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefWidth="5.0">
                             <HBox.margin>
-                                <Insets bottom="30.0" top="30.0" />
+                                <Insets bottom="30.0" top="95.0" />
                             </HBox.margin>
                         </Separator>
                         <BorderPane fx:id="informationCentre" pickOnBounds="false">

@@ -293,9 +293,9 @@ public class CalibrationInsetPanelController implements Initializable,
         double requiredScaleHeight = availableHeight / diagramHeight * 0.95;
         double requiredScaleWidth = availableWidth / diagramWidth * 0.95;
         double requiredScale = Math.min(requiredScaleHeight, requiredScaleWidth);
+        requiredScale = Math.min(requiredScale, 1.3d);
 
-        diagramNode.setScaleX(requiredScale);
-        diagramNode.setScaleY(requiredScale);
+        diagramController.setScale(requiredScale, diagramNode);
 
         double scaledDiagramWidth = diagramNode.getBoundsInLocal().getWidth();
         double scaledDiagramHeight = diagramNode.getBoundsInLocal().getHeight();
@@ -612,7 +612,6 @@ public class CalibrationInsetPanelController implements Initializable,
 
         } catch (IOException ex)
         {
-            ex.printStackTrace();
             steno.error("Cannot load wait timer " + ex);
         }
     }
