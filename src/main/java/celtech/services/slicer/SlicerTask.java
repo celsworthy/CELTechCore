@@ -8,6 +8,7 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.FilamentContainer;
 import celtech.configuration.MachineType;
+import celtech.configuration.SlicerType;
 import celtech.coreUI.visualisation.exporters.STLOutputConverter;
 import celtech.printerControl.model.Printer;
 import java.io.File;
@@ -72,13 +73,42 @@ public class SlicerTask extends Task<SliceResult>
         MachineType machineType = ApplicationConfiguration.getMachineType();
         ArrayList<String> commands = new ArrayList<>();
 
+        SlicerType slicerType = ApplicationConfiguration.getSlicerChoice();
+        String windowsSlicerCommand = null;
+        String macSlicerCommand = null;
+        String linuxSlicerCommand = null;
+        String configLoadCommand = null;
+        String combinedConfigSection = null;
+
+        switch (slicerType)
+        {
+            case Slic3r:
+                windowsSlicerCommand = "\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\"";
+                macSlicerCommand = "Slic3r.app/Contents/MacOS/slic3r";
+                linuxSlicerCommand = "Slic3r/bin/slic3r";
+                configLoadCommand = "--load";
+                combinedConfigSection = configLoadCommand + " " + configFile;
+                break;
+            case Cura:
+                windowsSlicerCommand = "\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Cura\\CuraEngine.exe\"";
+                macSlicerCommand = "?";
+                linuxSlicerCommand = "Cura/bin/CuraEngine";
+                configLoadCommand = "-c";
+                configFile = "\"" + ApplicationConfiguration.getUserPrintProfileDirectory() + "curaProfile.ini\"";
+                combinedConfigSection = configLoadCommand + " " + configFile;
+                break;
+        }
+
+        steno.info("Selected slicer is " + slicerType);
+
         switch (machineType)
         {
             case WINDOWS_95:
                 commands.add("command.com");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"pushd \"" + workingDirectory + "\" && \"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\" --load " + configFile + " -o "
+                commands.add("\"pushd \"" + workingDirectory + "\" && "
+                    + windowsSlicerCommand + " " + combinedConfigSection + " -o "
                     + tempGcodeFilename + " " + tempModelFilename
                     + " && popd\"");
                 break;
@@ -86,13 +116,14 @@ public class SlicerTask extends Task<SliceResult>
                 commands.add("cmd.exe");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"pushd \"" + workingDirectory + "\" && \"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\" --load " + configFile + " -o "
+                commands.add("\"pushd \"" + workingDirectory + "\" && "
+                    + windowsSlicerCommand + " " + combinedConfigSection + " -o "
                     + tempGcodeFilename + " " + tempModelFilename
                     + " && popd\"");
                 break;
             case MAC:
-                commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r.app/Contents/MacOS/slic3r");
-                commands.add("--load");
+                commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + macSlicerCommand);
+                commands.add(configLoadCommand);
                 commands.add(configFile);
                 commands.add("-o");
                 commands.add(tempGcodeFilename);
@@ -100,8 +131,8 @@ public class SlicerTask extends Task<SliceResult>
                 break;
             case LINUX_X86:
             case LINUX_X64:
-                commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r/bin/slic3r");
-                commands.add("--load");
+                commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + linuxSlicerCommand);
+                commands.add(configLoadCommand);
                 commands.add(configFile);
                 commands.add("-o");
                 commands.add(tempGcodeFilename);
@@ -118,7 +149,7 @@ public class SlicerTask extends Task<SliceResult>
             {
                 slicerProcessBuilder.directory(new File(workingDirectory));
             }
-            
+
             Process slicerProcess = null;
 
             try

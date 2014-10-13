@@ -9,11 +9,11 @@ import celtech.gcodetranslator.events.ExtrusionEvent;
 import celtech.gcodetranslator.events.GCodeEvent;
 import celtech.gcodetranslator.events.GCodeParseEvent;
 import celtech.gcodetranslator.events.LayerChangeEvent;
+import celtech.gcodetranslator.events.LayerChangeWithTravelEvent;
 import celtech.gcodetranslator.events.MCodeEvent;
 import celtech.gcodetranslator.events.NozzleChangeEvent;
 import celtech.gcodetranslator.events.RetractDuringExtrusionEvent;
 import celtech.gcodetranslator.events.RetractEvent;
-import celtech.gcodetranslator.events.SpiralExtrusionEvent;
 import celtech.gcodetranslator.events.TravelEvent;
 import celtech.gcodetranslator.events.UnretractEvent;
 import celtech.utils.SystemUtils;
@@ -23,8 +23,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javafx.beans.property.DoubleProperty;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -71,8 +69,8 @@ public class GCodeFileParser
         double lastPercentSoFar = 0;
 
         ArrayList<String> lineRepository = new ArrayList<>();
-        SlicerType slicerType = ApplicationConfiguration.getSlicerChoice();
 
+        SlicerType slicerType = ApplicationConfiguration.getSlicerChoice();
         ExtrusionTask currentExtrusionTask = null;
 
         try
@@ -325,175 +323,136 @@ public class GCodeFileParser
                         }
 
                         switch (slicerType)
-
                         {
-
                             case Slic3r:
-
                                 if (comment != null)
-
                                 {
-
                                     // Look for the extrusion type in the comment
                                     ExtrusionTask foundExtrusionTask = ExtrusionTask.lookupExtrusionTaskFromComment(slicerType, comment);
-
                                     event.setExtrusionTask(foundExtrusionTask);
-
                                     if (foundExtrusionTask != null)
-
                                     {
-
                                         currentExtrusionTask = foundExtrusionTask;
-
                                     }
-
                                 } else if (currentExtrusionTask != null)
-
                                 {
-
                                     event.setExtrusionTask(currentExtrusionTask);
-
                                 }
-
                                 break;
-
                             case Cura:
-
                                 if (currentExtrusionTask != null)
-
                                 {
-
                                     event.setExtrusionTask(currentExtrusionTask);
-
                                 }
-
                                 break;
-
                         }
-
-                        eventToOutput = event;
-                    } else if (gPresent && xPresent && yPresent && zPresent && !ePresent)
-                    {
-
-                    // This is how cura performs a combined move and layer change
-                    // For now split this into a Layer Change then a Travel
-                        LayerChangeWithTravelEvent event = new LayerChangeWithTravelEvent();
-
-                        event.setX(xValue);
-
-                        event.setY(yValue);
-
-                        event.setZ(zValue);
-
-                        if (fPresent)
-
-                        {
-
-                            event.setFeedRate(fValue);
-
-                        }
-
-                        if (comment != null)
-
-                        {
-
-                            event.setComment(comment);
-
-                        }
-
-                        eventToOutput = event;
-
-                    } else if (comment != null && !passthroughLine)
-
-                    {
-
-                        if (slicerType == SlicerType.Cura)
-
-                        {
-
-                        // Pre-post processing enrichment for Cura - extrusion type is in the comments...
-                            ExtrusionTask foundExtrusionTask = ExtrusionTask.lookupExtrusionTaskFromComment(slicerType, comment);
-
-                            if (foundExtrusionTask != null)
-
-                            {
-
-                                currentExtrusionTask = foundExtrusionTask;
-
-                            }
-
-                        } else
-                        {
-                            RetractDuringExtrusionEvent event = new RetractDuringExtrusionEvent();
-
-                            event.setX(xValue);
-                            event.setY(yValue);
-                            event.setE(eValue);
-
-                            if (fPresent)
-                            {
-                                event.setFeedRate(fValue);
-                            }
-
-                            if (comment != null)
-                            {
-                                event.setComment(comment);
-                            }
-
-                            eventToOutput = event;
-                        }
-                    } else if (comment != null && !passthroughLine)
-                    {
-                        CommentEvent event = new CommentEvent();
-                        event.setComment(comment);
-
-                        eventToOutput = event;
-                    } else if (line.equals(""))
-                    {
-                        BlankLineEvent event = new BlankLineEvent();
 
                         eventToOutput = event;
                     } else
                     {
-                        for (GCodeTranslationEventHandler listener : listeners)
-                        {
-                            listener.unableToParse(line);
-                        }
-                    }
+                        RetractDuringExtrusionEvent event = new RetractDuringExtrusionEvent();
 
-                    if (eventToOutput != null)
+                        event.setX(xValue);
+                        event.setY(yValue);
+                        event.setE(eValue);
+
+                        if (fPresent)
+                        {
+                            event.setFeedRate(fValue);
+                        }
+
+                        if (comment != null)
+                        {
+                            event.setComment(comment);
+                        }
+
+                        eventToOutput = event;
+                    }
+                } else if (gPresent && xPresent && yPresent && zPresent && !ePresent)
+                {
+                    // This is how cura performs a combined move and layer change
+                    // For now split this into a Layer Change then a Travel
+
+                    LayerChangeWithTravelEvent event = new LayerChangeWithTravelEvent();
+
+                    event.setX(xValue);
+                    event.setY(yValue);
+                    event.setZ(zValue);
+
+                    if (fPresent)
                     {
-                        eventToOutput.setLinesSoFar(linesSoFar);
-                        try
+                        event.setFeedRate(fValue);
+                    }
+
+                    if (comment != null)
+                    {
+                        event.setComment(comment);
+                    }
+
+                    eventToOutput = event;
+                } else if (comment != null && !passthroughLine)
+                {
+                    if (slicerType == SlicerType.Cura)
+                    {
+                        // Pre-post processing enrichment for Cura - extrusion type is in the comments...
+                        ExtrusionTask foundExtrusionTask = ExtrusionTask.lookupExtrusionTaskFromComment(slicerType, comment);
+
+                        if (foundExtrusionTask != null)
                         {
-                            for (GCodeTranslationEventHandler listener : listeners)
-                            {
-                                listener.processEvent(eventToOutput);
-                            }
-                        } catch (PostProcessingError ex)
-                        {
-                            steno.error("Error processing event - aborting - " + eventToOutput);
+                            currentExtrusionTask = foundExtrusionTask;
                         }
                     }
-                }
 
-                //End of file - poke the processor
-                try
+                    CommentEvent event = new CommentEvent();
+                    event.setComment(comment);
+
+                    eventToOutput = event;
+                } else if (line.equals(""))
+                {
+                    BlankLineEvent event = new BlankLineEvent();
+
+                    eventToOutput = event;
+                } else
                 {
                     for (GCodeTranslationEventHandler listener : listeners)
                     {
-                        listener.processEvent(new EndOfFileEvent());
+                        listener.unableToParse(line);
                     }
-                } catch (PostProcessingError ex)
-                {
-                    steno.error("Error processing end of file event");
                 }
-            }catch (FileNotFoundException ex) {
+
+                if (eventToOutput != null)
+                {
+                    eventToOutput.setLinesSoFar(linesSoFar);
+                    try
+                    {
+                        for (GCodeTranslationEventHandler listener : listeners)
+                        {
+                            listener.processEvent(eventToOutput);
+                        }
+                    } catch (PostProcessingError ex)
+                    {
+                        steno.error("Error processing event - aborting - " + eventToOutput);
+                    }
+                }
+            }
+
+            //End of file - poke the processor
+            try
+            {
+                for (GCodeTranslationEventHandler listener : listeners)
+                {
+                    listener.processEvent(new EndOfFileEvent());
+                }
+            } catch (PostProcessingError ex)
+            {
+                steno.error("Error processing end of file event");
+            }
+        } catch (FileNotFoundException ex)
+        {
             System.out.println("File not found");
-        }catch (IOException ex) {
+        } catch (IOException ex)
+        {
             System.out.println("IO Exception");
         }
-
-        }
-
     }
+}

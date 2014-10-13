@@ -7,6 +7,8 @@ import celtech.gcodetranslator.events.ExtrusionEvent;
 import celtech.gcodetranslator.events.GCodeEvent;
 import celtech.gcodetranslator.events.GCodeParseEvent;
 import celtech.gcodetranslator.events.LayerChangeEvent;
+import celtech.gcodetranslator.events.LayerChangeWithTravelEvent;
+import celtech.gcodetranslator.events.LayerChangeWithoutTravelEvent;
 import celtech.gcodetranslator.events.MCodeEvent;
 import celtech.gcodetranslator.events.MovementEvent;
 import celtech.gcodetranslator.events.NozzleChangeBValueEvent;
@@ -632,68 +634,30 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 }
                 lastPoint = currentPoint;
 
-            } else if (event instanceof LayerChangeEvent)
+            } else if (event instanceof LayerChangeWithoutTravelEvent)
             {
-                LayerChangeEvent layerChangeEvent = (LayerChangeEvent) event;
+                LayerChangeWithoutTravelEvent layerChangeEvent = (LayerChangeWithoutTravelEvent) event;
 
                 currentZHeight = layerChangeEvent.getZ();
 
-                if (layer == 0 && forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenForced == false)
-                {
-                    nozzleHasBeenForced = true;
-                    NozzleChangeEvent nozzleChangeEvent = new NozzleChangeEvent();
-                    //Force to required nozzle
-                    nozzleChangeEvent.setNozzleNumber(forcedNozzleOnFirstLayer);
-                    if (nozzleChangeEvent.getComment() != null)
-                    {
-                        nozzleChangeEvent.setComment(
-                            nozzleChangeEvent.getComment()
-                            + " - force to nozzle " + forcedNozzleOnFirstLayer + " on first layer");
-                    } else
-                    {
-                        nozzleChangeEvent.setComment(" - force to nozzle " + forcedNozzleOnFirstLayer + " on first layer");
-                    }
-                    tempNozzleMemory = 0;
-                    extrusionBuffer.add(nozzleChangeEvent);
-                    nozzleInUse = forcedNozzleOnFirstLayer;
-                    currentNozzle = nozzles.get(nozzleInUse);
-                }
-
-                if (layer == 1 && forcedNozzleOnFirstLayer >= 0)
-                {
-                    writeEventsWithNozzleClose(
-                        "closing nozzle after forced nozzle select on layer 0");
-                    insertSubsequentLayerTemperatures();
-                }
+                handleForcedNozzleAtLayerChange();
 
                 layer++;
 
-                if (movieMakerEnabled && lastPoint != null)
-                {
-                    GCodeEvent moveBackIntoPlace = new GCodeEvent();
-                    moveBackIntoPlace.setComment("Return to last position");
-                    moveBackIntoPlace.setGNumber(0);
-                    moveBackIntoPlace.setGString("X" + lastPoint.getX() + " Y" + lastPoint.getY());
+                handleMovieMakerAtLayerChange(relativeMoveEvent, moveUpEvent, absoluteMoveEvent, moveToMiddleYEvent, homeEvent, dwellEvent);
 
-                    if (currentNozzle.getState() != NozzleState.CLOSED)
-                    {
-                        extrusionBuffer.add(new NozzleCloseFullyEvent());
-                    }
+                extrusionBuffer.add(event);
+            } else if (event instanceof LayerChangeWithTravelEvent)
+            {
+                LayerChangeWithTravelEvent layerChangeEvent = (LayerChangeWithTravelEvent) event;
 
-                    extrusionBuffer.add(relativeMoveEvent);
-                    extrusionBuffer.add(moveUpEvent);
-                    extrusionBuffer.add(absoluteMoveEvent);
-                    extrusionBuffer.add(moveToMiddleYEvent);
-                    extrusionBuffer.add(homeEvent);
-                    extrusionBuffer.add(dwellEvent);
-                    extrusionBuffer.add(moveBackIntoPlace);
+                currentZHeight = layerChangeEvent.getZ();
 
-                    if (currentNozzle.getState() != NozzleState.CLOSED)
-                    {
-                        extrusionBuffer.add(new NozzleOpenFullyEvent());
-                    }
+                handleForcedNozzleAtLayerChange();
 
-                }
+                layer++;
+
+                handleMovieMakerAtLayerChange(relativeMoveEvent, moveUpEvent, absoluteMoveEvent, moveToMiddleYEvent, homeEvent, dwellEvent);
 
                 extrusionBuffer.add(event);
             } else if (event instanceof NozzleChangeEvent && !autoGenerateNozzleChangeEvents)
@@ -769,7 +733,9 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             {
                 MCodeEvent mCodeEvent = (MCodeEvent) event;
                 if (mCodeEvent.getMNumber() != 104
-                    && mCodeEvent.getMNumber() != 109)
+                    && mCodeEvent.getMNumber() != 109
+                    && mCodeEvent.getMNumber() != 140
+                    && mCodeEvent.getMNumber() != 190)
                 {
                     extrusionBuffer.add(event);
                 }
@@ -809,15 +775,78 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         }
     }
 
+    private void handleMovieMakerAtLayerChange(GCodeEvent relativeMoveEvent, GCodeEvent moveUpEvent, GCodeEvent absoluteMoveEvent, GCodeEvent moveToMiddleYEvent, GCodeEvent homeEvent,
+        GCodeEvent dwellEvent)
+    {
+        if (movieMakerEnabled && lastPoint != null)
+        {
+            GCodeEvent moveBackIntoPlace = new GCodeEvent();
+            moveBackIntoPlace.setComment("Return to last position");
+            moveBackIntoPlace.setGNumber(0);
+            moveBackIntoPlace.setGString("X" + lastPoint.getX() + " Y" + lastPoint.getY());
+
+            if (currentNozzle.getState() != NozzleState.CLOSED)
+            {
+                extrusionBuffer.add(new NozzleCloseFullyEvent());
+            }
+
+            extrusionBuffer.add(relativeMoveEvent);
+            extrusionBuffer.add(moveUpEvent);
+            extrusionBuffer.add(absoluteMoveEvent);
+            extrusionBuffer.add(moveToMiddleYEvent);
+            extrusionBuffer.add(homeEvent);
+            extrusionBuffer.add(dwellEvent);
+            extrusionBuffer.add(moveBackIntoPlace);
+
+            if (currentNozzle.getState() != NozzleState.CLOSED)
+            {
+                extrusionBuffer.add(new NozzleOpenFullyEvent());
+            }
+
+        }
+    }
+
+    private void handleForcedNozzleAtLayerChange() throws PostProcessingError
+    {
+        if (layer == 0 && forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenForced == false)
+        {
+            nozzleHasBeenForced = true;
+            NozzleChangeEvent nozzleChangeEvent = new NozzleChangeEvent();
+            //Force to required nozzle
+            nozzleChangeEvent.setNozzleNumber(forcedNozzleOnFirstLayer);
+            if (nozzleChangeEvent.getComment() != null)
+            {
+                nozzleChangeEvent.setComment(
+                    nozzleChangeEvent.getComment()
+                    + " - force to nozzle " + forcedNozzleOnFirstLayer + " on first layer");
+            } else
+            {
+                nozzleChangeEvent.setComment(" - force to nozzle " + forcedNozzleOnFirstLayer + " on first layer");
+            }
+            tempNozzleMemory = 0;
+            extrusionBuffer.add(nozzleChangeEvent);
+            nozzleInUse = forcedNozzleOnFirstLayer;
+            currentNozzle = nozzles.get(nozzleInUse);
+        }
+
+        if (layer == 1 && forcedNozzleOnFirstLayer >= 0)
+        {
+            writeEventsWithNozzleClose(
+                "closing nozzle after forced nozzle select on layer 0");
+            insertSubsequentLayerTemperatures();
+        }
+    }
+
     private int chooseNozzleByTask(GCodeParseEvent event)
     {
         int nozzleToUse = -1;
-        switch (getExtrusionType((ExtrusionEvent) event))
+        switch (((ExtrusionEvent) event).getExtrusionTask())
         {
             case Perimeter:
+            case ExternalPerimeter:
                 nozzleToUse = currentSettings.getPerimeterNozzleProperty().get();
                 break;
-            case Infill:
+            case Fill:
                 nozzleToUse = currentSettings.getFillNozzleProperty().get();
                 break;
             case Support:
@@ -827,38 +856,10 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 nozzleToUse = currentSettings.getSupportInterfaceNozzleProperty().get();
                 break;
             default:
+                nozzleToUse = currentSettings.getFillNozzleProperty().get();
                 break;
         }
         return nozzleToUse;
-    }
-
-    private ExtrusionTask getExtrusionType(ExtrusionEvent eventToAssess)
-    {
-        ExtrusionTask determinedTask = ExtrusionTask.Perimeter;
-
-        String comment = eventToAssess.getComment();
-
-        if (comment != null)
-        {
-            if (comment.contains("perimeter"))
-            {
-                determinedTask = ExtrusionTask.Perimeter;
-            } else if (comment.contains("fill"))
-            {
-                determinedTask = ExtrusionTask.Infill;
-            } else if (comment.contains("support"))
-            {
-                determinedTask = ExtrusionTask.Support;
-            } else
-            {
-                steno.warning("Couldn't determine type of extrusion event using comment: " + comment);
-            }
-        } else
-        {
-            steno.warning("Couldn't determine type of extrusion event using comment because comment was null");
-        }
-
-        return determinedTask;
     }
 
     private void writeEventToFile(GCodeParseEvent event)
@@ -987,9 +988,9 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
             if (finalExtrusionEventIndex >= 0)
             {
-                ExtrusionTask extrusionTask = getExtrusionType((ExtrusionEvent) extrusionBuffer.get(finalExtrusionEventIndex));
+                ExtrusionTask extrusionTask = ((ExtrusionEvent) extrusionBuffer.get(finalExtrusionEventIndex)).getExtrusionTask();
 
-                if (extrusionTask != ExtrusionTask.Infill)
+                if (extrusionTask != ExtrusionTask.Fill)
                 {
 
                     if ((totalExtrusionForPath >= currentNozzle.getOpenOverVolume()
@@ -1095,7 +1096,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                     closeNozzle.setComment("Single element path - closing at end");
                                     closeNozzle.setLength(0);
 
-                                    if (extrusionBuffer.get(extrusionBuffer.size() - 1) instanceof LayerChangeEvent)
+                                    GCodeParseEvent lastEvent = extrusionBuffer.get(extrusionBuffer.size() - 1);
+                                    if (lastEvent instanceof LayerChangeEvent)
                                     {
                                         extrusionBuffer.add(extrusionBuffer.size() - 1, closeNozzle);
                                     } else
@@ -1783,8 +1785,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                     finalExtrusionWasPerimeter = true;
 
                     // We can't go back over a layer boundary to wipe...
-                    int lastLayerChangeIndex = getPreviousEventIndex(finalExtrusionEventIndex, LayerChangeEvent.class
-                    );
+                    int lastLayerChangeIndex = getPreviousEventIndex(finalExtrusionEventIndex, LayerChangeEvent.class);
 
                     if (lastLayerChangeIndex
                         <= 0)
@@ -2141,14 +2142,15 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
         if (startingIndex > 0)
         {
-            ExtrusionTask currentTask = getExtrusionType((ExtrusionEvent) extrusionBuffer.get(startingIndex));
+            ExtrusionTask currentTask = ((ExtrusionEvent) extrusionBuffer.get(startingIndex)).getExtrusionTask();
 
             for (int index = startingIndex; index >= 0; index--)
             {
                 if (extrusionBuffer.get(index).getClass() == ExtrusionEvent.class)
                 {
                     ExtrusionEvent extrusionEvent = (ExtrusionEvent) extrusionBuffer.get(index);
-                    if (getExtrusionType(extrusionEvent) == currentTask)
+                    if ((extrusionEvent.getExtrusionTask() == ExtrusionTask.ExternalPerimeter && currentTask == ExtrusionTask.Perimeter)
+                        || extrusionEvent.getExtrusionTask() == currentTask)
                     {
                         lastValidExtrusionIndex = index;
                     } else

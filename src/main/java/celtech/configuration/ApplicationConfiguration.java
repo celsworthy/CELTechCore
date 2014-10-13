@@ -114,7 +114,7 @@ public class ApplicationConfiguration
      *
      */
     public static final double DESIRED_ASPECT_RATIO = DEFAULT_WIDTH / DEFAULT_HEIGHT;
-    
+
     public static final int NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP = 180;
 
     private static final Stenographer steno = StenographerFactory.getStenographer(ApplicationConfiguration.class.getName());
@@ -326,13 +326,14 @@ public class ApplicationConfiguration
      * The extension for statistics files in print spool directories
      */
     public static String statisticsFileExtension = ".statistics";
-    
+
     /**
      * Used in testing only
      */
     public static void setInstallationProperties(Properties testingProperties,
-            String applicationInstallDirectory, String commonApplicationDirectory,
-            String userStorageDirectory) {
+        String applicationInstallDirectory, String commonApplicationDirectory,
+        String userStorageDirectory)
+    {
         installationProperties = testingProperties;
         ApplicationConfiguration.applicationInstallDirectory = applicationInstallDirectory;
         ApplicationConfiguration.commonApplicationDirectory = commonApplicationDirectory;
@@ -350,9 +351,8 @@ public class ApplicationConfiguration
     private static boolean autoRepairReels = true;
 
     /**
-     * These variables are used to position the head correctly over the bed The
-     * actual travel of the mechanical system is not the same as the theoretical
-     * travel (to allow for door opening positions etc)
+     * These variables are used to position the head correctly over the bed The actual travel of the mechanical system is not the same as the theoretical travel (to allow for door opening positions
+     * etc)
      */
     public static final int xPrintOffset = 6;
     public static final int yPrintOffset = 6;
@@ -806,58 +806,36 @@ public class ApplicationConfiguration
 
         return applicationVersion;
     }
-    
-        public static SlicerType getSlicerChoice()
 
+    /**
+     *
+     * @return
+     */
+    public static SlicerType getSlicerChoice()
     {
-
         if (installationProperties == null)
-
         {
-
             loadProjectProperties();
-
         }
-
         if (slicerType == null)
-
         {
-
             String slicerString = installationProperties.getProperty("slicer");
-
             if (slicerString != null)
-
             {
-
                 if (slicerString.equalsIgnoreCase("cura"))
-
                 {
-
                     slicerType = SlicerType.Cura;
-
                 } else if (slicerString.equalsIgnoreCase("slic3r"))
-
                 {
-
                     slicerType = SlicerType.Slic3r;
-
                 }
-
-            }
-
-            else
-
+            } else
             {
-
                 slicerType = SlicerType.Slic3r;
-
             }
-
         }
-
 
         return slicerType;
-
     }
 
     /**
@@ -1071,16 +1049,15 @@ public class ApplicationConfiguration
         }
 
         Locale localeToReturn = null;
-        
+
         if (applicationMemoryProperties.getProperty(userLocaleItem) != null)
         {
             localeToReturn = Locale.forLanguageTag(applicationMemoryProperties.getProperty(userLocaleItem));
-        }
-        else
+        } else
         {
             localeToReturn = Locale.forLanguageTag(getApplicationInstallationLanguage());
-        }                   
-        
+        }
+
         return localeToReturn;
     }
 
@@ -1130,8 +1107,7 @@ public class ApplicationConfiguration
     }
 
     /**
-     * This method supplies the application-specific download directory
-     * component for updates It is a hack and should be removed...
+     * This method supplies the application-specific download directory component for updates It is a hack and should be removed...
      *
      * @param applicationName
      * @return
