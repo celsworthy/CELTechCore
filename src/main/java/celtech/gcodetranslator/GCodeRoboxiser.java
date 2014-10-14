@@ -287,6 +287,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         nozzles.add(point3mmNozzle);
 
         nozzles.add(point8mmNozzle);
+        
+        currentNozzle = point3mmNozzle;
 
         wipeFeedRate_mmPerMin = currentSettings.perimeter_speedProperty().get() * 60;
 
