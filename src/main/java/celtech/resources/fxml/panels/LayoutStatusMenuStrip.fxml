@@ -22,7 +22,30 @@
         <GraphicButton fx:id="backwardButton" fxmlFileName="backwardButton" onAction="#backwardPressed"/>
     </left>
     <center>
-        <HBox fx:id="layoutButtonHBox" alignment="CENTER">
+        <VBox alignment="CENTER">
+            <children>
+                <StackPane prefHeight="80.0" prefWidth="200.0">
+                    <children>
+                        <HBox fx:id="statusButtonHBox" alignment="CENTER">
+                            <children>
+                                <GraphicButton fx:id="calibrateButton" fxmlFileName="addToProjectButton" onAction="#calibrate" />
+                            </children>
+                        </HBox>
+                        <HBox fx:id="layoutButtonHBox" alignment="CENTER">
+                            <children>
+                                <GraphicButton fx:id="addModelButton" fxmlFileName="addToProjectButton" onAction="#addModel" />
+                                <GraphicButton fx:id="addmyMiniFactoryButton" fxmlFileName="loadMyMiniFactoryButton" onAction="#addMyMiniFactoryModel" />
+                                <GraphicButton fx:id="deleteModelButton" fxmlFileName="deleteModelButton" onAction="#deleteModel" />
+                                <GraphicButton fx:id="duplicateModelButton" fxmlFileName="copyModelButton" onAction="#copyModel" />
+                                <GraphicToggleButton fx:id="snapToGroundButton" fxmlFileName="snapToGroundButton" onAction="#snapToGround" />
+                                <GraphicButton fx:id="distributeModelsButton" fxmlFileName="layoutModelButton" onAction="#autoLayoutModels" />
+                            </children>
+                        </HBox>
+                    </children>
+                </StackPane>
+            </children>
+        </VBox>
+        <!--        <HBox fx:id="layoutButtonHBox" alignment="CENTER">
             <children>
                 <GraphicButton fx:id="addModelButton" fxmlFileName="addToProjectButton" onAction="#addModel" />
                 <GraphicButton fx:id="addmyMiniFactoryButton" fxmlFileName="loadMyMiniFactoryButton" onAction="#addMyMiniFactoryModel" />
@@ -31,6 +54,6 @@
                 <GraphicToggleButton fx:id="snapToGroundButton" fxmlFileName="snapToGroundButton" onAction="#snapToGround" />
                 <GraphicButton fx:id="distributeModelsButton" fxmlFileName="layoutModelButton" onAction="#autoLayoutModels" />
             </children>
-        </HBox>
+        </HBox>-->
     </center>
 </BorderPane>

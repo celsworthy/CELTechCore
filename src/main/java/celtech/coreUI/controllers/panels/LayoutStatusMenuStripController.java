@@ -18,6 +18,7 @@ import celtech.coreUI.controllers.MyMiniFactoryLoaderController;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
+import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Printer;
 import celtech.utils.PrinterUtils;
 import java.io.File;
@@ -39,7 +40,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
@@ -74,6 +74,9 @@ public class LayoutStatusMenuStripController
 
     @FXML
     private Button backwardButton;
+    
+    @FXML
+    private Button calibrateButton;    
 
     @FXML
     private Button forwardButton;
@@ -83,6 +86,9 @@ public class LayoutStatusMenuStripController
 
     @FXML
     private HBox layoutButtonHBox;
+    
+    @FXML
+    private HBox statusButtonHBox;      
 
     @FXML
     private Button addModelButton;
@@ -153,6 +159,11 @@ public class LayoutStatusMenuStripController
                 break;
         }
     }
+    
+   @FXML
+    void calibrate(ActionEvent event) {
+        ApplicationStatus.getInstance().setMode(ApplicationMode.CALIBRATION_CHOICE);
+    }    
 
     @FXML
     void addModel(ActionEvent event)
@@ -283,7 +294,11 @@ public class LayoutStatusMenuStripController
                     if (currentPrinter != null)
                     {
                         printButton.visibleProperty().unbind();
+                        calibrateButton.disableProperty().unbind();
+                        
                     }
+                    calibrateButton.disableProperty().bind(newValue.printerStatusProperty().isNotEqualTo(
+                        PrinterStatus.IDLE));
                     printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
                         ApplicationMode.SETTINGS).and(newValue.canPrintProperty()));
 
@@ -292,6 +307,7 @@ public class LayoutStatusMenuStripController
             }
         });
 
+        statusButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.STATUS));
         layoutButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LAYOUT));
         modelFileChooser.setTitle(DisplayManager.getLanguageBundle().getString("dialogs.modelFileChooser"));
         modelFileChooser.getExtensionFilters().addAll(

@@ -433,10 +433,9 @@ public class CalibrationInsetPanelController implements Initializable,
             calibrationProgressTemp.setProgress(0);
         } else
         {
-            NozzleHeater nozzleHeater = printer.headProperty().get()
-                .getNozzleHeaters().get(0);
-            nozzleHeater.nozzleTargetTemperatureProperty().addListener(targetTemperatureListener);
-            nozzleHeater.nozzleTemperatureProperty().addListener(extruderTemperatureListener);
+//            NozzleHeater nozzleHeater = printer.headProperty().get().getNozzleHeaters().get(0);
+//            nozzleHeater.nozzleTargetTemperatureProperty().addListener(targetTemperatureListener);
+//            nozzleHeater.nozzleTemperatureProperty().addListener(extruderTemperatureListener);
         }
     }
 
