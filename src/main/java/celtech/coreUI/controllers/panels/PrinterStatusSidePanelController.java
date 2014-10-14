@@ -390,6 +390,27 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             bindPrinter(printer);
         }
     }
+    
+    private void unbindPrinter(Printer printer)
+    {
+        if (printer.headProperty().get() != null)
+        {
+            unbindHeadProperties(printer.headProperty().get());
+            printer.headProperty().removeListener(headChangeListener);
+        }
+        
+        printer.reelsProperty().removeListener(reelsChangeListener);
+
+        PrinterAncillarySystems ancillarySystems = printer.getPrinterAncillarySystems();
+
+        temperatureChart.getData().remove(ancillarySystems.getAmbientTemperatureHistory());
+        currentAmbientTemperatureHistory = null;
+        temperatureChart.getData().remove(ancillarySystems.getBedTemperatureHistory());
+
+//        temperatureChart.getData().remove(printer.ambientTargetTemperatureHistory());
+//        temperatureChart.getData().remove(printer.bedTargetTemperatureHistory());
+//        temperatureChart.getData().remove(printer.nozzleTargetTemperatureHistory());
+    }    
 
     private void bindPrinter(Printer printer)
     {
@@ -400,9 +421,11 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         if (printer.reelsProperty().isEmpty() == false)
         {
-            //TODO modify for multiple reels
-            bindReelProperties(printer.reelsProperty().get(0));
-            updateReelMaterial(printer.reelsProperty().get(0));
+            printer.reelsProperty().addListener(reelsChangeListener);
+            if (! printer.reelsProperty().isEmpty()) {
+                bindReelProperties(printer.reelsProperty().get(0));
+                updateReelMaterial(printer.reelsProperty().get(0));
+            }
         }
 
         PrinterAncillarySystems ancillarySystems = printer.getPrinterAncillarySystems();
@@ -443,7 +466,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                 {
                     for (Reel changedReel : change.getRemoved())
                     {
-                        unbindReelProperties();
+                        unbindReelProperties(changedReel);
                     }
                 } else if (change.wasReplaced())
                 {
@@ -454,13 +477,20 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         }
     };
 
-    private void unbindReelProperties()
+    private ChangeListener<Object> reelListener;
+
+    private void unbindReelProperties(Reel reel)
     {
+        reel.friendlyFilamentNameProperty().removeListener(reelListener);
+        reel.displayColourProperty().removeListener(reelListener);
+        reel.remainingFilamentProperty().removeListener(reelListener);
+        reel.diameterProperty().removeListener(reelListener);
+        reel.materialProperty().removeListener(reelListener);
     }
 
     private void bindReelProperties(Reel reel)
     {
-        reel.friendlyFilamentNameProperty().addListener(new ChangeListener<Object>()
+        reelListener = new ChangeListener<Object>()
         {
             @Override
             public void changed(
@@ -468,7 +498,12 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             {
                 updateReelMaterial(reel);
             }
-        });
+        };
+        reel.friendlyFilamentNameProperty().addListener(reelListener);
+        reel.displayColourProperty().addListener(reelListener);
+        reel.remainingFilamentProperty().addListener(reelListener);
+        reel.diameterProperty().addListener(reelListener);
+        reel.materialProperty().addListener(reelListener);
     }
 
     private void unbindHeadProperties(Head head)
@@ -540,25 +575,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                               reel.diameterProperty().get());
 //            material1.showReelNotFormatted();
 //            material1.showFilamentNotLoaded();
-    }
-
-    private void unbindPrinter(Printer printer)
-    {
-        if (printer.headProperty().get() != null)
-        {
-            unbindHeadProperties(printer.headProperty().get());
-            printer.headProperty().removeListener(headChangeListener);
-        }
-
-        PrinterAncillarySystems ancillarySystems = printer.getPrinterAncillarySystems();
-
-        temperatureChart.getData().remove(ancillarySystems.getAmbientTemperatureHistory());
-        currentAmbientTemperatureHistory = null;
-        temperatureChart.getData().remove(ancillarySystems.getBedTemperatureHistory());
-
-//        temperatureChart.getData().remove(printer.ambientTargetTemperatureHistory());
-//        temperatureChart.getData().remove(printer.bedTargetTemperatureHistory());
-//        temperatureChart.getData().remove(printer.nozzleTargetTemperatureHistory());
     }
 
     private void controlDetailsVisibility()

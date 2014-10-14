@@ -12,7 +12,7 @@
     <children>
         <GridPane id="verticalMenuGrid" fx:id="verticalMenuGrid">
             <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="10.0" prefWidth="25.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="25.0" prefWidth="25.0" />
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
             </columnConstraints>
             <rowConstraints>
@@ -20,7 +20,7 @@
                 <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <children>
-                <Text fx:id="verticalMenuTitle" id="verticalMenuTitle" strokeType="OUTSIDE" strokeWidth="0.0" text="Title" GridPane.columnIndex="1" />
+                <Text id="verticalMenuTitle" fx:id="verticalMenuTitle" strokeType="OUTSIDE" strokeWidth="0.0" text="Title" GridPane.columnIndex="1" />
             </children>
         </GridPane>
     </children>
