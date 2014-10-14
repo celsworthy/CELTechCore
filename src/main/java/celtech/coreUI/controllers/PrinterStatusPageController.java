@@ -832,28 +832,32 @@ public class PrinterStatusPageController implements Initializable
             switch (printerStatus)
             {
                 case IDLE:
-                    resumePrintButton.setVisible(true);
+                    resumePrintButton.setVisible(false);
                     resumePrintButton.setDisable(false);
                     pausePrintButton.setVisible(false);
                     pausePrintButton.setDisable(false);
-                    cancelPrintButton.setVisible(true);
+                    cancelPrintButton.setVisible(false);
+                    printControlButtons.setVisible(false);
                     showProgressGroup.set(false);
                     setAdvancedControlsVisibility(true);
+                    break;
                 case PAUSING:
                     resumePrintButton.setVisible(true);
                     resumePrintButton.setDisable(false);
                     pausePrintButton.setVisible(false);
                     pausePrintButton.setDisable(false);
-                    cancelPrintButton.setVisible(true);
+                    cancelPrintButton.setVisible(false);
+                    printControlButtons.setVisible(true);
                     showProgressGroup.set(false);
                     setAdvancedControlsVisibility(false);
                     break;
                 case RESUMING:
-                    resumePrintButton.setVisible(true);
-                    resumePrintButton.setDisable(true);
-                    pausePrintButton.setVisible(false);
+                    resumePrintButton.setVisible(false);
+                    resumePrintButton.setDisable(false);
+                    pausePrintButton.setVisible(true);
                     pausePrintButton.setDisable(false);
                     cancelPrintButton.setVisible(false);
+                    printControlButtons.setVisible(true);
                     showProgressGroup.set(false);
                     setAdvancedControlsVisibility(false);
                     break;
@@ -861,8 +865,9 @@ public class PrinterStatusPageController implements Initializable
                     resumePrintButton.setVisible(true);
                     resumePrintButton.setDisable(false);
                     pausePrintButton.setVisible(false);
-                    pausePrintButton.setDisable(true);
+                    pausePrintButton.setDisable(false);
                     cancelPrintButton.setVisible(true);
+                    printControlButtons.setVisible(true);
                     showProgressGroup.set(false);
                     setAdvancedControlsVisibility(true);
                     break;
@@ -880,13 +885,11 @@ public class PrinterStatusPageController implements Initializable
                 case SLICING:
                 case POST_PROCESSING:
                     resumePrintButton.setVisible(false);
-                    resumePrintButton.setDisable(true);
-                    pausePrintButton.setVisible(true);
-                    pausePrintButton.setDisable(false);
-                    cancelPrintButton.setVisible(false);
-                    printControlButtons.setVisible(true);
-                    cancelPrintButton.setVisible(true);
+                    resumePrintButton.setDisable(false);
                     pausePrintButton.setVisible(false);
+                    pausePrintButton.setDisable(false);
+                    cancelPrintButton.setVisible(true);
+                    printControlButtons.setVisible(true);
                     showProgressGroup.set(true);
                     setAdvancedControlsVisibility(false);
                     break;

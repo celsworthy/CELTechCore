@@ -128,130 +128,141 @@ public class HardwareCommandInterface extends CommandInterface
             {
                 byte[] outputBuffer = messageToWrite.toByteArray();
 
-                serialPort.writeBytes(outputBuffer);
+                boolean wroteOK = serialPort.writeBytes(outputBuffer);
 
-                int len = -1;
-
-                int waitCounter = 0;
-                while (serialPort.getInputBufferBytesCount() <= 0)
+                if (wroteOK)
                 {
+                    int len = -1;
+
+                    int waitCounter = 0;
+                    while (serialPort.getInputBufferBytesCount() <= 0)
+                    {
 //                    steno.trace("Avail is " + dataInputStream.available());
-                    try
-                    {
-                        this.sleep(50);
-                    } catch (InterruptedException ex)
-                    {
+                        try
+                        {
+                            this.sleep(50);
+                        } catch (InterruptedException ex)
+                        {
+                        }
+
+                        if (waitCounter >= 10)
+                        {
+                            steno.error("No response from printer - disconnecting");
+                            throw new SerialPortException(serialPort.getPortName(), "Check availability",
+                                                          "Printer did not respond");
+                        }
+                        waitCounter++;
+
                     }
 
-                    if (waitCounter >= 10)
-                    {
-                        steno.error("No response from printer - disconnecting");
-                        throw new SerialPortException(serialPort.getPortName(), "Check availability",
-                                                      "Printer did not respond");
-                    }
-                    waitCounter++;
-
-                }
-
-                byte[] respCommand = serialPort.readBytes(1);
+                    byte[] respCommand = serialPort.readBytes(1);
 
 //                steno.info("Got response:" + String.format("0x%02X", respCommand) + " for message: " + messageToWrite);
-                RxPacketTypeEnum packetType = RxPacketTypeEnum.getEnumForCommand(respCommand[0]);
-                if (packetType != null)
-                {
-                    if (packetType != messageToWrite.getPacketType().getExpectedResponse())
+                    RxPacketTypeEnum packetType = RxPacketTypeEnum.getEnumForCommand(respCommand[0]);
+                    if (packetType != null)
                     {
-                        throw new InvalidResponseFromPrinterException("Expected response of type "
-                            + messageToWrite.getPacketType().getExpectedResponse().name());
-                    }
+                        if (packetType != messageToWrite.getPacketType().getExpectedResponse())
+                        {
+                            throw new InvalidResponseFromPrinterException("Expected response of type "
+                                + messageToWrite.getPacketType().getExpectedResponse().name());
+                        }
 //                    steno.info("Got a response packet back of type: " + packetType.toString());
-                    byte[] inputBuffer = null;
-                    if (packetType.containsLengthField())
-                    {
-                        byte[] lengthData = serialPort.readBytes(packetType.getLengthFieldSize());
-
-                        int payloadSize = Integer.valueOf(new String(lengthData), 16);
-                        if (packetType == RxPacketTypeEnum.LIST_FILES_RESPONSE)
+                        byte[] inputBuffer = null;
+                        if (packetType.containsLengthField())
                         {
-                            payloadSize = payloadSize * 16;
+                            byte[] lengthData = serialPort.readBytes(packetType.getLengthFieldSize());
+
+                            int payloadSize = Integer.valueOf(new String(lengthData), 16);
+                            if (packetType == RxPacketTypeEnum.LIST_FILES_RESPONSE)
+                            {
+                                payloadSize = payloadSize * 16;
+                            }
+
+                            inputBuffer = new byte[1 + packetType.getLengthFieldSize() + payloadSize];
+                            for (int i = 0; i < packetType.getLengthFieldSize(); i++)
+                            {
+                                inputBuffer[1 + i] = lengthData[i];
+                            }
+
+                            byte[] payloadData = serialPort.readBytes(payloadSize);
+                            for (int i = 0; i < payloadSize; i++)
+                            {
+                                inputBuffer[1 + packetType.getLengthFieldSize() + i] = payloadData[i];
+                            }
+                        } else
+                        {
+                            inputBuffer = new byte[packetType.getPacketSize()];
+                            int bytesToRead = packetType.getPacketSize() - 1;
+                            byte[] payloadData = serialPort.readBytes(bytesToRead);
+                            for (int i = 0; i < bytesToRead; i++)
+                            {
+                                inputBuffer[1 + i] = payloadData[i];
+                            }
                         }
 
-                        inputBuffer = new byte[1 + packetType.getLengthFieldSize() + payloadSize];
-                        for (int i = 0; i < packetType.getLengthFieldSize(); i++)
-                        {
-                            inputBuffer[1 + i] = lengthData[i];
-                        }
+                        inputBuffer[0] = respCommand[0];
 
-                        byte[] payloadData = serialPort.readBytes(payloadSize);
-                        for (int i = 0; i < payloadSize; i++)
+                        try
                         {
-                            inputBuffer[1 + packetType.getLengthFieldSize() + i] = payloadData[i];
+                            receivedPacket = RoboxRxPacketFactory.createPacket(inputBuffer);
+//                        steno.info("Got packet of type " + receivedPacket.getPacketType().name());
+
+                            printerToUse.processRoboxResponse(receivedPacket);
+                        } catch (InvalidCommandByteException ex)
+                        {
+                            steno.error("Command byte of " + String.format("0x%02X", inputBuffer[0])
+                                + " is invalid.");
+                        } catch (UnknownPacketTypeException ex)
+                        {
+                            steno.error("Packet type unknown for command byte "
+                                + String.format("0x%02X", inputBuffer[0]) + " is invalid.");
+                        } catch (UnableToGenerateRoboxPacketException ex)
+                        {
+                            steno.error("A packet that appeared to be of type " + packetType.name()
+                                + " could not be unpacked.");
                         }
                     } else
                     {
-                        inputBuffer = new byte[packetType.getPacketSize()];
-                        int bytesToRead = packetType.getPacketSize() - 1;
-                        byte[] payloadData = serialPort.readBytes(bytesToRead);
-                        for (int i = 0; i < bytesToRead; i++)
+                        // Attempt to drain the crud from the input
+                        // There shouldn't be anything here but just in case...                    
+                        byte[] storage = serialPort.readBytes();
+
+                        try
                         {
-                            inputBuffer[1 + i] = payloadData[i];
+                            String received = new String(storage);
+
+                            steno.warning("Invalid packet received from firmware: " + received);
+                        } catch (Exception e)
+                        {
+                            steno.warning(
+                                "Invalid packet received from firmware - couldn't print contents");
                         }
-                    }
 
-                    inputBuffer[0] = respCommand[0];
-
-                    try
-                    {
-                        receivedPacket = RoboxRxPacketFactory.createPacket(inputBuffer);
-//                        steno.info("Got packet of type " + receivedPacket.getPacketType().name());
-
-                        printerToUse.processRoboxResponse(receivedPacket);
-                    } catch (InvalidCommandByteException ex)
-                    {
-                        steno.error("Command byte of " + String.format("0x%02X", inputBuffer[0])
-                            + " is invalid.");
-                    } catch (UnknownPacketTypeException ex)
-                    {
-                        steno.error("Packet type unknown for command byte "
-                            + String.format("0x%02X", inputBuffer[0]) + " is invalid.");
-                    } catch (UnableToGenerateRoboxPacketException ex)
-                    {
-                        steno.error("A packet that appeared to be of type " + packetType.name()
-                            + " could not be unpacked.");
-                    }
-                } else
-                {
-                    // Attempt to drain the crud from the input
-                    // There shouldn't be anything here but just in case...                    
-                    byte[] storage = serialPort.readBytes();
-
-                    try
-                    {
-                        String received = new String(storage);
-
-                        steno.warning("Invalid packet received from firmware: " + received);
-                    } catch (Exception e)
-                    {
-                        steno.warning(
-                            "Invalid packet received from firmware - couldn't print contents");
-                    }
-
-                    //TODO Reinstate exception inhibited as a result of issue 23 (firmware fault on M190 command)
+                        //TODO Reinstate exception inhibited as a result of issue 23 (firmware fault on M190 command)
 //                    InvalidResponseFromPrinterException exception = new InvalidResponseFromPrinterException("Invalid response - got: " + received);
 //                    throw exception;
+                    }
                 }
-
+                else
+                {
+                    actionOnCommsFailure();
+                }
             } catch (SerialPortException ex)
             {
-                //If we get an exception then abort and treat
-                steno.debug("Error during write to printer");
-                disconnectSerialPort();
-                keepRunning = false;
-                throw new ConnectionLostException();
+                actionOnCommsFailure();
             }
         }
 
         return receivedPacket;
+    }
+
+    private void actionOnCommsFailure() throws ConnectionLostException
+    {
+        //If we get an exception then abort and treat
+        steno.debug("Error during write to printer");
+        disconnectSerialPort();
+        keepRunning = false;
+        throw new ConnectionLostException();
     }
 
     void shutdown()

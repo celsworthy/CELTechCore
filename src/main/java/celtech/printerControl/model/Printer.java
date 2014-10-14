@@ -161,8 +161,13 @@ public class Printer implements RoboxResponseConsumer
         this.commandInterface = commandInterface;
 
         printEngine = new PrintEngine(this);
-        
+
         canPrintProperty.bind(head.isNotNull().and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
+        canCancelProperty.bind(printerStatus.isEqualTo(PrinterStatus.PAUSED)
+            .or(printerStatus.isEqualTo(PrinterStatus.POST_PROCESSING))
+                .or(printerStatus.isEqualTo(PrinterStatus.SLICING)));
+        canPauseProperty.bind(printerStatus.isEqualTo(PrinterStatus.PRINTING)
+                .or(printerStatus.isEqualTo(PrinterStatus.RESUMING)));
 
         threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
         threeDPformatter.setMaximumFractionDigits(3);
@@ -198,71 +203,55 @@ public class Printer implements RoboxResponseConsumer
                 lastStateBeforePause = null;
                 canRemoveHeadProperty.set(true);
                 canPurgeHeadProperty.set(true);
-                canPauseProperty.set(false);
                 canResumeProperty.set(false);
                 canRunMacroProperty.set(true);
-                canCancelProperty.set(false);
                 printEngine.goToIdle();
                 break;
             case REMOVING_HEAD:
                 canRemoveHeadProperty.set(false);
                 canPurgeHeadProperty.set(false);
-                canPauseProperty.set(false);
                 canResumeProperty.set(false);
                 canRunMacroProperty.set(false);
-                canCancelProperty.set(false);
                 break;
             case PURGING_HEAD:
                 canRemoveHeadProperty.set(false);
                 canPurgeHeadProperty.set(false);
-                canPauseProperty.set(false);
                 canResumeProperty.set(false);
                 canRunMacroProperty.set(false);
-                canCancelProperty.set(false);
                 break;
             case SLICING:
                 canRemoveHeadProperty.set(false);
                 canPurgeHeadProperty.set(false);
-                canPauseProperty.set(false);
                 canResumeProperty.set(false);
                 canRunMacroProperty.set(false);
-                canCancelProperty.set(false);
                 printEngine.goToSlicing();
                 break;
             case POST_PROCESSING:
                 canRemoveHeadProperty.set(false);
                 canPurgeHeadProperty.set(false);
-                canPauseProperty.set(false);
                 canResumeProperty.set(false);
                 canRunMacroProperty.set(false);
-                canCancelProperty.set(false);
                 printEngine.goToPostProcessing();
                 break;
             case SENDING_TO_PRINTER:
                 canRemoveHeadProperty.set(false);
                 canPurgeHeadProperty.set(false);
-                canPauseProperty.set(false);
                 canResumeProperty.set(false);
                 canRunMacroProperty.set(false);
-                canCancelProperty.set(false);
                 printEngine.goToSendingToPrinter();
                 break;
             case PAUSED:
                 canRemoveHeadProperty.set(false);
                 canPurgeHeadProperty.set(false);
-                canPauseProperty.set(false);
                 canResumeProperty.set(true);
                 canRunMacroProperty.set(false);
-                canCancelProperty.set(false);
                 printEngine.goToPause();
                 break;
             case PRINTING:
                 canRemoveHeadProperty.set(false);
                 canPurgeHeadProperty.set(false);
-                canPauseProperty.set(false);
                 canResumeProperty.set(false);
                 canRunMacroProperty.set(false);
-                canCancelProperty.set(true);
                 printEngine.goToPrinting();
                 break;
             case EXECUTING_MACRO:
@@ -717,7 +706,10 @@ public class Printer implements RoboxResponseConsumer
     private String transmitDirectGCode(final String gcodeToSend, boolean addToTranscript) throws RoboxCommsException
     {
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.EXECUTE_GCODE);
-        gcodePacket.setMessagePayload(gcodeToSend);
+
+        String gcodeToSendWithLF = SystemUtils.cleanGCodeForTransmission(gcodeToSend) + "\n";
+
+        gcodePacket.setMessagePayload(gcodeToSendWithLF);
 
         GCodeDataResponse response = (GCodeDataResponse) commandInterface.writeToPrinter(gcodePacket);
 
@@ -728,6 +720,7 @@ public class Printer implements RoboxResponseConsumer
 
                 public void run()
                 {
+                    addToGCodeTranscript(gcodeToSendWithLF);
                     if (response == null)
                     {
                         addToGCodeTranscript(Lookup.i18n("gcodeEntry.errorMessage"));
@@ -1160,7 +1153,6 @@ public class Printer implements RoboxResponseConsumer
                     steno.error("Error sending data file chunk - seq " + dataFileSequenceNumber);
                 }
                 outputBuffer.delete(0, bufferSize);
-                dataFileSequenceNumber++;
             }
         }
     }
