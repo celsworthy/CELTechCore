@@ -1164,16 +1164,16 @@ table-view .column-header-background {
  * Sliders
  */
 .slider .axis {
-    -fx-tick-label-font: 'CrazyZoo'; 
+    -fx-tick-label-font: 13px 'Source Sans Pro Regular'; 
 }
 
 .slider .axis:bottom {
     -fx-tick-label-fill: white;
 }
 
-.slider {
+/*.slider {
     -fx-font-size: 12pt;
-}
+}*/
 
 /*
  * 3D gizmo
