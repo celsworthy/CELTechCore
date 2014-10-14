@@ -2,10 +2,8 @@ package celtech.coreUI.controllers;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.EEPROMState;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterColourMap;
-import celtech.configuration.WhyAreWeWaitingState;
 import celtech.coreUI.AmbientLEDState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.JogButton;
@@ -252,7 +250,6 @@ public class PrinterStatusPageController implements Initializable
     private HBox printControlButtons;
 
     private Node[] advancedControls = null;
-    private final BooleanProperty advancedControlsVisible = new SimpleBooleanProperty(false);
 
     private Printer lastSelectedPrinter = null;
 
@@ -630,6 +627,18 @@ public class PrinterStatusPageController implements Initializable
 
         printControlButtons.setVisible(false);
 
+        advancedControls = new Node[]
+        {
+            extruder_minus100, extruder_minus20, extruder_minus5, extruder_plus100, extruder_plus20, extruder_plus5,
+            homeButton, x_minus1, x_minus10, x_minus100, x_plus1, x_plus10, x_plus100,
+            y_minus1, y_minus10, y_minus100, y_plus1, y_plus10, y_plus100,
+            z_minus0_1, z_minus1, z_minus10, z_plus0_1, z_plus1, z_plus10,
+            openNozzleButton, closeNozzleButton, selectNozzle1, selectNozzle2,
+            ambientLEDButton,
+            headFanButton, headLEDButton, removeHeadButton
+        };
+        setAdvancedControlsVisibility(false);
+
         if (statusScreenState.getCurrentlySelectedPrinter() != null)
         {
             Printer printer = statusScreenState.getCurrentlySelectedPrinter();
@@ -797,54 +806,19 @@ public class PrinterStatusPageController implements Initializable
                         printerOpenImage.visibleProperty().bind(selectedPrinter.getPrinterAncillarySystems().lidOpenProperty());
                         printerClosedImage.visibleProperty().bind(selectedPrinter.getPrinterAncillarySystems().lidOpenProperty().not());
 
-                        advancedControlsVisible.unbind();
-                        advancedControlsVisible.bind(
-                            (selectedPrinter.printerStatusProperty().isEqualTo(
-                                PrinterStatus.IDLE).and(
-                                selectedPrinter.getPrinterAncillarySystems().whyAreWeWaitingProperty()
-                                .isEqualTo(WhyAreWeWaitingState.NOT_WAITING))).
-                            or(selectedPrinter.printerStatusProperty().
-                                isEqualTo(PrinterStatus.PAUSED)));
                     }
 
                     lastSelectedPrinter = selectedPrinter;
                 }
             });
+    }
 
-        advancedControls = new Node[]
-        {
-            extruder_minus100, extruder_minus20, extruder_minus5, extruder_plus100, extruder_plus20, extruder_plus5,
-            homeButton, x_minus1, x_minus10, x_minus100, x_plus1, x_plus10, x_plus100,
-            y_minus1, y_minus10, y_minus100, y_plus1, y_plus10, y_plus100,
-            z_minus0_1, z_minus1, z_minus10, z_plus0_1, z_plus1, z_plus10,
-            openNozzleButton, closeNozzleButton, selectNozzle1, selectNozzle2,
-            ambientLEDButton,
-            headFanButton, headLEDButton, removeHeadButton
-        };
-
+    private void setAdvancedControlsVisibility(boolean visible)
+    {
         for (Node node : advancedControls)
         {
-            node.setVisible(false);
+            node.setVisible(visible);
         }
-
-        if (statusScreenState.getCurrentlySelectedPrinter() != null)
-        {
-            boolean visible = (statusScreenState.getCurrentlySelectedPrinter().printerStatusProperty().get() == PrinterStatus.IDLE
-                || statusScreenState.getCurrentlySelectedPrinter().printerStatusProperty().get() == PrinterStatus.PAUSED);
-            for (Node node : advancedControls)
-            {
-                node.setVisible(visible);
-            }
-        }
-
-        advancedControlsVisible.addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                for (Node node : advancedControls)
-                {
-                    node.setVisible(newValue);
-                }
-            });
     }
 
     private void processPrinterStatusChange(PrinterStatus printerStatus)
@@ -852,10 +826,19 @@ public class PrinterStatusPageController implements Initializable
         if (printerStatus == null)
         {
             printControlButtons.setVisible(false);
+            setAdvancedControlsVisibility(false);
         } else
         {
             switch (printerStatus)
             {
+                case IDLE:
+                    resumePrintButton.setVisible(true);
+                    resumePrintButton.setDisable(false);
+                    pausePrintButton.setVisible(false);
+                    pausePrintButton.setDisable(false);
+                    cancelPrintButton.setVisible(true);
+                    showProgressGroup.set(false);
+                    setAdvancedControlsVisibility(true);
                 case PAUSING:
                     resumePrintButton.setVisible(true);
                     resumePrintButton.setDisable(false);
@@ -863,6 +846,7 @@ public class PrinterStatusPageController implements Initializable
                     pausePrintButton.setDisable(false);
                     cancelPrintButton.setVisible(true);
                     showProgressGroup.set(false);
+                    setAdvancedControlsVisibility(false);
                     break;
                 case RESUMING:
                     resumePrintButton.setVisible(true);
@@ -871,6 +855,7 @@ public class PrinterStatusPageController implements Initializable
                     pausePrintButton.setDisable(false);
                     cancelPrintButton.setVisible(false);
                     showProgressGroup.set(false);
+                    setAdvancedControlsVisibility(false);
                     break;
                 case PAUSED:
                     resumePrintButton.setVisible(true);
@@ -879,6 +864,7 @@ public class PrinterStatusPageController implements Initializable
                     pausePrintButton.setDisable(true);
                     cancelPrintButton.setVisible(true);
                     showProgressGroup.set(false);
+                    setAdvancedControlsVisibility(true);
                     break;
                 case SENDING_TO_PRINTER:
                 case PRINTING:
@@ -889,6 +875,7 @@ public class PrinterStatusPageController implements Initializable
                     cancelPrintButton.setVisible(false);
                     printControlButtons.setVisible(true);
                     showProgressGroup.set(true);
+                    setAdvancedControlsVisibility(false);
                     break;
                 case SLICING:
                 case POST_PROCESSING:
@@ -901,6 +888,7 @@ public class PrinterStatusPageController implements Initializable
                     cancelPrintButton.setVisible(true);
                     pausePrintButton.setVisible(false);
                     showProgressGroup.set(true);
+                    setAdvancedControlsVisibility(false);
                     break;
                 default:
                     printControlButtons.setVisible(false);

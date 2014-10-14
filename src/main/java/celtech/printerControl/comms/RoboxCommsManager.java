@@ -264,7 +264,18 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     public void disconnected(String portName)
     {
         pendingPrinters.remove(portName);
+        
+        final Printer printerToRemove = activePrinters.get(portName);
         activePrinters.remove(portName);
+
+        Platform.runLater(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                printerStatus.remove(printerToRemove);
+            }
+        });
     }
 
     /**

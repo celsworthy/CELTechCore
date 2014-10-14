@@ -59,7 +59,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private final Stenographer steno = StenographerFactory.getStenographer(PrinterStatusSidePanelController.class.getName());
     private ApplicationStatus applicationStatus = null;
     private PrinterUtils printerUtils = null;
-    private PurgeInsetPanelController purgePanelController = null;
 
     @FXML
     private HBox myContainer;
@@ -343,8 +342,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         statusScreenState = StatusScreenState.getInstance();
         printerUtils = PrinterUtils.getInstance();
 
-        purgePanelController = displayManager.getPurgeInsetPanelController();
-
         timeAxis = new NumberAxis(0, MAX_DATA_POINTS, 30);
         timeAxis.setForceZeroInRange(false);
         timeAxis.setAutoRanging(true);
@@ -622,7 +619,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                             boolean purgeConsent = printerUtils.offerPurgeIfNecessary(lastSelectedPrinter);
                             if (purgeConsent)
                             {
-                                purgePanelController.purge(lastSelectedPrinter);
+                                displayManager.getPurgeInsetPanelController().purge(lastSelectedPrinter);
                             }
                             lastSelectedPrinter.goToTargetNozzleTemperature();
                         }

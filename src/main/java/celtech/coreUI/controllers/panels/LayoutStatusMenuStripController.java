@@ -62,7 +62,6 @@ public class LayoutStatusMenuStripController
     private final FileChooser modelFileChooser = new FileChooser();
     private Project boundProject = null;
     private PrinterUtils printerUtils = null;
-    private PurgeInsetPanelController purgePanelController = null;
     
     private MyMiniFactoryLoaderController miniFactoryController = null;
     private Stage myMiniFactoryLoaderStage = null;
@@ -128,7 +127,7 @@ public class LayoutStatusMenuStripController
 
         if (purgeConsent)
         {
-            purgePanelController.purgeAndPrint(currentProject, settingsScreenState.getFilament(),
+            displayManager.getPurgeInsetPanelController().purgeAndPrint(currentProject, settingsScreenState.getFilament(),
                                                settingsScreenState.getPrintQuality(),
                                                settingsScreenState.getSettings(), printer);
         } else
@@ -267,8 +266,6 @@ public class LayoutStatusMenuStripController
         applicationStatus = ApplicationStatus.getInstance();
         settingsScreenState = SettingsScreenState.getInstance();
         printerUtils = PrinterUtils.getInstance();
-
-        purgePanelController = displayManager.getPurgeInsetPanelController();
 
         backwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(
             ApplicationMode.STATUS));
