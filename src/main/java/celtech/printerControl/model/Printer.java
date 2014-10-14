@@ -163,9 +163,9 @@ public class Printer implements RoboxResponseConsumer
         canPrintProperty.bind(head.isNotNull().and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
         canCancelProperty.bind(printerStatus.isEqualTo(PrinterStatus.PAUSED)
             .or(printerStatus.isEqualTo(PrinterStatus.POST_PROCESSING))
-                .or(printerStatus.isEqualTo(PrinterStatus.SLICING)));
+            .or(printerStatus.isEqualTo(PrinterStatus.SLICING)));
         canPauseProperty.bind(printerStatus.isEqualTo(PrinterStatus.PRINTING)
-                .or(printerStatus.isEqualTo(PrinterStatus.RESUMING)));
+            .or(printerStatus.isEqualTo(PrinterStatus.RESUMING)));
 
         threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
         threeDPformatter.setMaximumFractionDigits(3);
@@ -1417,14 +1417,9 @@ public class Printer implements RoboxResponseConsumer
                 case HEAD_EEPROM_DATA:
                     HeadEEPROMDataResponse headResponse = (HeadEEPROMDataResponse) rxPacket;
 
-                    if (head.isNull().get())
-                    {
-                        Head newHead = new Head(headResponse);
-                        head.set(newHead);
-                    } else
-                    {
-                        head.get().updateFromEEPROMData(headResponse);
-                    }
+                    Head newHead = new Head(headResponse);
+                    head.set(newHead);
+
                     break;
 
                 default:

@@ -89,13 +89,14 @@ public class Head implements Cloneable
     public Head(HeadEEPROMDataResponse response)
     {
         this.typeCode.set(response.getTypeCode());
-        this.name.set("?");
         this.uniqueID.set(response.getUniqueID());
         this.headHours.set(response.getHeadHours());
 
         HeadFile headData = HeadContainer.getHeadByID(typeCode.get());
         if (headData != null)
         {
+            this.name.set(headData.getName());
+
             headData.getNozzleHeaters()
                 .stream()
                 .forEach(heater -> this.nozzleHeaters.add(new NozzleHeater()));
@@ -103,6 +104,8 @@ public class Head implements Cloneable
                 .stream()
                 .forEach(nozzle -> this.nozzles.add(new Nozzle()));
         }
+
+        updateFromEEPROMData(response);
     }
 
     /**
@@ -195,7 +198,7 @@ public class Head implements Cloneable
         return clone;
     }
 
-    public void updateFromEEPROMData(HeadEEPROMDataResponse eepromData)
+    public final void updateFromEEPROMData(HeadEEPROMDataResponse eepromData)
     {
         //TODO update for multiple nozzles/heater
         // This only supports the initial RBX01-SM head since this is the only data from the printer at the moment...
