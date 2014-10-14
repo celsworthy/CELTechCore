@@ -2046,4 +2046,25 @@ public class Printer implements RoboxResponseConsumer
             throw new PrinterException("Error whilst sending nozzle select command");
         }
     }
+
+    public void shutdown()
+    {
+        switch (printerStatus.get())
+        {
+            case PRINTING:
+            case EXECUTING_MACRO:
+                try
+                {
+                    cancel(null);
+                } catch (PrinterException ex)
+                {
+                    steno.error("Error shutting down printer");
+                }
+                break;
+        }
+
+        printEngine.shutdown();
+
+        commandInterface.shutdown();
+    }
 }

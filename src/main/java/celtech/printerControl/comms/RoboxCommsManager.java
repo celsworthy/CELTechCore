@@ -157,22 +157,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     {
         for (Printer printer : printerStatus)
         {
-
-            switch (printer.printerStatusProperty().get())
-            {
-                case SENDING_TO_PRINTER:
-                case POST_PROCESSING:
-                case SLICING:
-                case ERROR:
-                    try
-                    {
-                        printer.cancel(null);
-                    } catch (PrinterException ex)
-                    {
-                        steno.error("Error attempting to cancel print");
-                    }
-                    break;
-            }
+            printer.shutdown();
         }
 
         keepRunning = false;
@@ -264,7 +249,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     public void disconnected(String portName)
     {
         pendingPrinters.remove(portName);
-        
+
         final Printer printerToRemove = activePrinters.get(portName);
         activePrinters.remove(portName);
 
