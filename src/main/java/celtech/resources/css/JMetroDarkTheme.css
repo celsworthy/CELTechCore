@@ -1163,6 +1163,10 @@ table-view .column-header-background {
 /*
  * Sliders
  */
+.slider .axis {
+    -fx-tick-label-font: 'CrazyZoo'; 
+}
+
 .slider .axis:bottom {
     -fx-tick-label-fill: white;
 }
