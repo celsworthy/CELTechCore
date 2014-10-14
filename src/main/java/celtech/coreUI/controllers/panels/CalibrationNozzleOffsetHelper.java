@@ -7,9 +7,14 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.TaskController;
 import celtech.configuration.HeadContainer;
+import celtech.configuration.fileRepresentation.HeadFile;
+import celtech.configuration.fileRepresentation.NozzleData;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
+import celtech.printerControl.model.GCodeConstants;
+import celtech.printerControl.model.Head;
+import celtech.printerControl.model.PrinterException;
 import celtech.services.calibration.CalibrateNozzleOffsetTask;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOffsetCalibrationStepResult;
@@ -61,7 +66,8 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
     CalibrationNozzleOffsetHelper(CalibrationInsetPanelController parentController)
     {
         this.parentController = parentController;
-        zco.addListener(new ChangeListener<Number>() {
+        zco.addListener(new ChangeListener<Number>()
+        {
 
             @Override
             public void changed(
@@ -122,13 +128,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
             zco.set(0);
         }
 
-        try
-        {
-            printerToUse.transmitDirectGCode("G0 Z" + zco.get(), false);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error changing Z height");
-        }
+        printerToUse.goToZPosition(zco.get());
     }
 
     @Override
@@ -137,13 +137,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
     {
         zco.set(zco.get() - 0.05);
 
-        try
-        {
-            printerToUse.transmitDirectGCode("G0 Z" + zco.get(), false);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error changing Z height");
-        }
+        printerToUse.goToZPosition(zco.get());
 
         if (zco.get() <= 0.0001)
         {
@@ -176,6 +170,9 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
                 }
 
                 switchHeaterOffAndRaiseHead();
+            } catch (PrinterException ex)
+            {
+                steno.error("Error in nozzle offset calibration - mode=" + state.name());
             } catch (RoboxCommsException ex)
             {
                 steno.error("Error in nozzle offset calibration - mode=" + state.name());
@@ -222,26 +219,30 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
             case HEATING:
                 try
                 {
-                    savedHeadData = printerToUse.transmitReadHeadEEPROM();
+                    savedHeadData = printerToUse.readHeadEEPROM();
 
                     zco.set(0.5 * (savedHeadData.getNozzle1ZOffset()
                         + savedHeadData.getNozzle2ZOffset()));
                     zDifference = savedHeadData.getNozzle2ZOffset()
                         - savedHeadData.getNozzle1ZOffset();
 
-                    Head defaultHead = HeadContainer.getCompleteHeadList().get(0);
+                    HeadFile headDataFile = HeadContainer.getHeadByID(savedHeadData.getTypeCode());
+                    //TODO modify to support multiple nozzles
+                    NozzleData nozzle1Data = headDataFile.getNozzles().get(0);
+                    NozzleData nozzle2Data = headDataFile.getNozzles().get(1);
+
                     steno.info("Initialising head data prior to calibration");
                     printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                                                          savedHeadData.getUniqueID(),
                                                          savedHeadData.getMaximumTemperature(),
                                                          savedHeadData.getBeta(),
                                                          savedHeadData.getTCal(),
-                                                         defaultHead.getNozzle1XOffset(),
-                                                         defaultHead.getNozzle1YOffset(),
+                                                         nozzle1Data.getDefaultXOffset(),
+                                                         nozzle1Data.getDefaultYOffset(),
                                                          0,
                                                          savedHeadData.getNozzle1BOffset(),
-                                                         defaultHead.getNozzle2XOffset(),
-                                                         defaultHead.getNozzle2YOffset(),
+                                                         nozzle2Data.getDefaultXOffset(),
+                                                         nozzle2Data.getDefaultYOffset(),
                                                          0,
                                                          savedHeadData.getNozzle2BOffset(),
                                                          savedHeadData.getLastFilamentTemperature(),
@@ -279,10 +280,10 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
             case LIFT_HEAD:
                 try
                 {
-                    printerToUse.transmitDirectGCode("G90", false);
-                    printerToUse.transmitDirectGCode("G0 Z30", false);
-                    printerToUse.transmitDirectGCode("G37 S", false);
-                } catch (RoboxCommsException ex)
+                    printerToUse.switchToAbsoluteMoveMode();
+                    printerToUse.goToZPosition(30);
+                    printerToUse.goToOpenDoorPosition(null);
+                } catch (PrinterException ex)
                 {
                     steno.error("Error in nozzle offset calibration - mode=" + state.name());
                 }
@@ -311,21 +312,25 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in nozzle offset calibration - mode=" + state.name());
+                } catch (PrinterException ex)
+                {
+                    steno.error("Error in nozzle offset calibration - mode=" + state.name());
                 }
                 break;
             case FAILED:
                 try
                 {
                     switchHeaterOffAndRaiseHead();
-                } catch (RoboxCommsException ex)
+                } catch (PrinterException ex)
                 {
                     steno.error("Error clearing up after failed calibration");
                 }
+
                 break;
             case NUDGE_MODE:
                 try
                 {
-                    savedHeadData = printerToUse.transmitReadHeadEEPROM();
+                    savedHeadData = printerToUse.readHeadEEPROM();
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error retrieving current settings from the head");
@@ -334,12 +339,12 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
         }
     }
 
-    private void switchHeaterOffAndRaiseHead() throws RoboxCommsException
+    private void switchHeaterOffAndRaiseHead() throws PrinterException
     {
-        printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-        printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
-        printerToUse.transmitDirectGCode("G90", false);
-        printerToUse.transmitDirectGCode("G0 Z25", false);
+        printerToUse.switchAllNozzleHeatersOff();
+        printerToUse.switchOffHeadLEDs();
+        printerToUse.switchToRelativeMoveMode();
+        printerToUse.goToZPosition(25);
     }
 
     public HeadEEPROMDataResponse getSavedHeadData()
@@ -378,13 +383,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
     {
         if (state == NozzleOffsetCalibrationState.INSERT_PAPER)
         {
-            try
-            {
-                printerToUse.transmitDirectGCode("G28 Z", false);
-            } catch (RoboxCommsException ex)
-            {
-                steno.error("Error in nozzle offset calibration - mode=" + state.name());
-            }
+            printerToUse.homeZ();
         }
         setState(state.getNextState());
     }

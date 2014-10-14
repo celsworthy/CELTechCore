@@ -8,7 +8,9 @@ import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.LargeProgress;
 import celtech.coreUI.controllers.StatusScreenState;
 import static celtech.coreUI.controllers.panels.CalibrationMenuConfiguration.configureCalibrationMenu;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Extruder;
+import celtech.printerControl.model.NozzleHeater;
+import celtech.printerControl.model.Printer;
 import celtech.services.calibration.CalibrationXAndYState;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOpeningCalibrationState;
@@ -43,6 +45,7 @@ public class CalibrationInsetPanelController implements Initializable,
     CalibrationBStateListener, CalibrationNozzleOffsetStateListener,
     CalibrationXAndYStateListener
 {
+
     private ResourceBundle resources;
 
     private void resizeTopBorderPane()
@@ -212,7 +215,7 @@ public class CalibrationInsetPanelController implements Initializable,
     public void initialize(URL location, ResourceBundle resources)
     {
         this.resources = resources;
-        
+
         setupProgressBars();
         setupWaitTimer(informationCentre);
 
@@ -311,7 +314,7 @@ public class CalibrationInsetPanelController implements Initializable,
         yTranslate += upperBoundaryInAncestorCoords + availableHeight / 2.0;
 
         xTranslate += 10; // Fudge factor
-        
+
         diagramNode.setTranslateX(xTranslate);
         diagramNode.setTranslateY(yTranslate);
 
@@ -412,8 +415,10 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private void removeTemperatureProgressListeners(Printer printer)
     {
-        printer.nozzleTargetTemperatureProperty().removeListener(targetTemperatureListener);
-        printer.extruderTemperatureProperty().removeListener(extruderTemperatureListener);
+        NozzleHeater nozzleHeater = printer.headProperty().get()
+            .getNozzleHeaters().get(0);
+        nozzleHeater.nozzleTargetTemperatureProperty().removeListener(targetTemperatureListener);
+        nozzleHeater.nozzleTemperatureProperty().removeListener(extruderTemperatureListener);
     }
 
     private void setupTemperatureProgressListeners(Printer printer)
@@ -428,8 +433,10 @@ public class CalibrationInsetPanelController implements Initializable,
             calibrationProgressTemp.setProgress(0);
         } else
         {
-            printer.nozzleTargetTemperatureProperty().addListener(targetTemperatureListener);
-            printer.extruderTemperatureProperty().addListener(extruderTemperatureListener);
+            NozzleHeater nozzleHeater = printer.headProperty().get()
+                .getNozzleHeaters().get(0);
+            nozzleHeater.nozzleTargetTemperatureProperty().addListener(targetTemperatureListener);
+            nozzleHeater.nozzleTemperatureProperty().addListener(extruderTemperatureListener);
         }
     }
 
@@ -461,8 +468,8 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private void removePrintProgressListeners(Printer printer)
     {
-        printer.getPrintQueue().progressETCProperty().removeListener(targetETCListener);
-        printer.getPrintQueue().progressProperty().removeListener(printPercentListener);
+        printer.getPrintEngine().progressETCProperty().removeListener(targetETCListener);
+        printer.getPrintEngine().progressProperty().removeListener(printPercentListener);
     }
 
     private void setupPrintProgressListeners(Printer printer)
@@ -478,14 +485,14 @@ public class CalibrationInsetPanelController implements Initializable,
             calibrationProgressPrint.setProgress(0);
         } else
         {
-            printer.getPrintQueue().progressProperty().addListener(printPercentListener);
-            printer.getPrintQueue().progressETCProperty().addListener(targetETCListener);
+            printer.getPrintEngine().progressProperty().addListener(printPercentListener);
+            printer.getPrintEngine().progressETCProperty().addListener(targetETCListener);
         }
     }
 
     private void updateCalibrationProgressPrint()
     {
-        targetETC = currentPrinter.getPrintQueue().progressETCProperty().get();
+        targetETC = currentPrinter.getPrintEngine().progressETCProperty().get();
         if (calibrationProgressPrint.isVisible())
         {
             String targetETCStr = targetETC + "s";

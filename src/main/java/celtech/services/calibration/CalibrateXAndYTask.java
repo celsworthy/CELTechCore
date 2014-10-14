@@ -5,9 +5,8 @@
  */
 package celtech.services.calibration;
 
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.services.ControllableService;
-import celtech.utils.PrinterUtils;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;

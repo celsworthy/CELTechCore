@@ -6,10 +6,10 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.TaskController;
-import celtech.printerControl.Printer;
-import celtech.printerControl.comms.commands.GCodeConstants;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
+import celtech.printerControl.model.PrinterException;
 import celtech.services.calibration.CalibrateXAndYTask;
 import celtech.services.calibration.CalibrationXAndYState;
 import java.util.ArrayList;
@@ -99,7 +99,7 @@ public class CalibrationXAndYHelper implements CalibrationHelper
         if (state == CalibrationXAndYState.PRINT_CIRCLE || state
             == CalibrationXAndYState.PRINT_PATTERN)
         {
-            printerToUse.abortPrint();
+            printerToUse.doAbortActivity(null);
         }
         if (state != CalibrationXAndYState.IDLE)
         {
@@ -112,7 +112,11 @@ public class CalibrationXAndYHelper implements CalibrationHelper
                 }
 
                 switchHeaterOffAndRaiseHead();
-            } catch (RoboxCommsException ex)
+            } catch (PrinterException ex)
+            {
+                steno.error("Error in nozzle offset calibration - mode=" + state.name());
+            }
+            catch (RoboxCommsException ex)
             {
                 steno.error("Error in nozzle offset calibration - mode=" + state.name());
             }
@@ -158,7 +162,7 @@ public class CalibrationXAndYHelper implements CalibrationHelper
             case PRINT_PATTERN:
                 try
                 {
-                    savedHeadData = printerToUse.transmitReadHeadEEPROM();
+                    savedHeadData = printerToUse.readHeadEEPROM();
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in nozzle alignment - mode=" + state.name());
@@ -189,7 +193,7 @@ public class CalibrationXAndYHelper implements CalibrationHelper
                 try
                 {
                     switchHeaterOffAndRaiseHead();
-                } catch (RoboxCommsException ex)
+                } catch (PrinterException ex)
                 {
                     steno.error("Error in x and y calibration - mode=" + state.name());
                 }
@@ -204,17 +208,21 @@ public class CalibrationXAndYHelper implements CalibrationHelper
                 {
                     steno.error("Error in x and y calibration - mode=" + state.name());
                 }
+                catch (PrinterException ex)
+                {
+                    steno.error("Error in x and y calibration - mode=" + state.name());
+                }
             }
             break;
         }
     }
 
-    private void switchHeaterOffAndRaiseHead() throws RoboxCommsException
+    private void switchHeaterOffAndRaiseHead() throws PrinterException
     {
-        printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-        printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
-        printerToUse.transmitDirectGCode("G90", false);
-        printerToUse.transmitDirectGCode("G0 Z25", false);
+        printerToUse.switchAllNozzleHeatersOff();
+        printerToUse.switchOffHeadLEDs();
+        printerToUse.switchToAbsoluteMoveMode();
+        printerToUse.goToZPosition(25);
     }
 
     @Override

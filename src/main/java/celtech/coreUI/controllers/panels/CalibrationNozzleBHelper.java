@@ -9,6 +9,7 @@ import celtech.appManager.TaskController;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
+import celtech.printerControl.model.PrinterException;
 import celtech.services.calibration.CalibrateBTask;
 import celtech.services.calibration.NozzleOpeningCalibrationState;
 import java.util.ArrayList;
@@ -71,8 +72,8 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
                 try
                 {
                     // close nozzle
-                    printerToUse.transmitDirectGCode("G0 B0", false);
-                } catch (RoboxCommsException ex)
+                    printerToUse.closeNozzleFully();
+                } catch (PrinterException ex)
                 {
                     steno.error("Error in needle valve calibration - mode=" + state.name());
                 }
@@ -86,8 +87,8 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
             case CALIBRATE_FILL_NOZZLE:
                 try
                 {
-                    printerToUse.transmitDirectGCode("G0 B0", false);
-                } catch (RoboxCommsException ex)
+                    printerToUse.closeNozzleFully();
+                } catch (PrinterException ex)
                 {
                     steno.error("Error in needle valve calibration - mode=" + state.name());
                 }
@@ -254,7 +255,7 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
             case HEATING:
                 try
                 {
-                    savedHeadData = printerToUse.transmitReadHeadEEPROM();
+                    savedHeadData = printerToUse.readHeadEEPROM();
                     printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                                                          savedHeadData.getUniqueID(),
                                                          savedHeadData.getMaximumTemperature(),
@@ -332,14 +333,8 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
                 preCalibrationPrimingTaskThread.start();
                 break;
             case CALIBRATE_FINE_NOZZLE:
-                try
-                {
-                    // open / close nozzle with specific B value
-                    printerToUse.transmitDirectGCode("G0 B" + nozzlePosition, false);
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in needle valve calibration - mode=" + state.name());
-                }
+                // open / close nozzle with specific B value
+                printerToUse.gotoNozzlePosition(nozzlePosition);
                 break;
             case PRE_CALIBRATION_PRIMING_FILL:
                 nozzlePosition = 0;
@@ -353,13 +348,7 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
                 preCalibrationPrimingFillTaskThread.start();
                 break;
             case CALIBRATE_FILL_NOZZLE:
-                try
-                {
-                    printerToUse.transmitDirectGCode("G0 B" + nozzlePosition, false);
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in needle valve calibration - mode=" + state.name());
-                }
+                printerToUse.gotoNozzlePosition(nozzlePosition);
                 break;
             case HEAD_CLEAN_CHECK_FINE_NOZZLE:
                 break;
@@ -401,9 +390,13 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
 
     private void turnHeaterAndLEDSOff() throws RoboxCommsException
     {
-        printerToUse.transmitDirectGCode("G0 B0", false);
-        printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-        printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
+        try {
+            printerToUse.closeNozzleFully();
+            printerToUse.switchAllNozzleHeatersOff();
+            printerToUse.switchOffHeadLEDs();
+        } catch (PrinterException ex) {
+            steno.error("Error turning off heater and LEDs: " + ex);
+        }
     }
 
     private void saveSettings()

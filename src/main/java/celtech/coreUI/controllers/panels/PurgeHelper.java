@@ -70,7 +70,7 @@ public class PurgeHelper
         {
             try
             {
-                printerToUse.changeNozzlePosition(0);
+                printerToUse.gotoNozzlePosition(0);
                 printerToUse.switchBedHeaterOff();
                 //TODO modify for multiple nozzle heater support
                 printerToUse.switchNozzleHeaterOff(0);
@@ -195,7 +195,7 @@ public class PurgeHelper
             case FAILED:
                 try
                 {
-                    printerToUse.changeNozzlePosition(0);
+                    printerToUse.gotoNozzlePosition(0);
                     printerToUse.switchBedHeaterOff();
                     //TODO modify for multiple nozzle heater support
                     printerToUse.switchNozzleHeaterOff(0);

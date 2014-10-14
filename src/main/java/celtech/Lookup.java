@@ -59,11 +59,6 @@ public class Lookup
         instance = new Lookup();
     }
 
-    public static String i18n(String stringid)
-    {
-        return instance.applicationEnvironment.getLanguageBundle().getString(stringid);
-    }
-
     public static TaskExecutor getTaskExecutor()
     {
         return instance.taskExecutor;

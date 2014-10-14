@@ -3,7 +3,7 @@
  */
 package celtech.coreUI.controllers.panels;
 
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 
 /**
  *

@@ -6,9 +6,10 @@
 package celtech.services.calibration;
 
 import celtech.configuration.HeaterMode;
-import celtech.printerControl.Printer;
-import celtech.printerControl.comms.commands.GCodeConstants;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.model.NozzleHeater;
+import celtech.printerControl.model.PrinterException;
 import celtech.services.ControllableService;
 import celtech.utils.PrinterUtils;
 import javafx.concurrent.Task;
@@ -61,36 +62,46 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
             case HEATING:
                 try
                 {
-                    printer.transmitDirectGCode("M104", false);
+                    printer.goToTargetNozzleTemperature();
                     if (PrinterUtils.waitOnBusy(printer, this) == false)
                     {
-                        printer.transmitStoredGCode("Home_all");
+                        printer.runMacroWithoutPurgeCheck("Home_all");
                         if (PrinterUtils.waitOnMacroFinished(printer, this) == false
                             && isCancelled() == false)
                         {
-                            printer.transmitDirectGCode("G0 Z50", false);
+                            printer.goToZPosition(50);
                             if (PrinterUtils.waitOnBusy(printer, this) == false
                                 && isCancelled() == false)
                             {
-                                printer.transmitDirectGCode("M104", false);
-                                if (printer.getNozzleHeaterMode() == HeaterMode.FIRST_LAYER)
+                                printer.goToTargetNozzleTemperature();
+//                                if (printer.headProperty().get().getNozzleHeaters().size() < 1) {
+//                                    
+//                                }
+                                if (printer.headProperty().get()
+                                    .getNozzleHeaters().get(0)
+                                    .heaterModeProperty().get() == HeaterMode.FIRST_LAYER)
                                 {
+                                    NozzleHeater nozzleHeater = printer.headProperty().get()
+                                        .getNozzleHeaters().get(0);
                                     PrinterUtils.waitUntilTemperatureIsReached(
-                                        printer.extruderTemperatureProperty(), this,
-                                        printer.getNozzleFirstLayerTargetTemperature(), 5, 300);
+                                        nozzleHeater.nozzleTemperatureProperty(), this,
+                                        nozzleHeater
+                                        .nozzleFirstLayerTargetTemperatureProperty().get(), 5, 300);
                                 } else
                                 {
+                                    NozzleHeater nozzleHeater = printer.headProperty().get()
+                                        .getNozzleHeaters().get(0);
                                     PrinterUtils.waitUntilTemperatureIsReached(
-                                        printer.extruderTemperatureProperty(), this,
-                                        printer.getNozzleTargetTemperature(), 5, 300);
+                                        nozzleHeater.nozzleTemperatureProperty(), this,
+                                        nozzleHeater
+                                        .nozzleTargetTemperatureProperty().get(), 5, 300);
                                 }
-                                printer.transmitDirectGCode(GCodeConstants.switchOnHeadLEDs,
-                                                            false);
+                                printer.switchOnHeadLEDs();
                             }
                         }
                     }
 
-                } catch (RoboxCommsException ex)
+                } catch (PrinterException ex)
                 {
                     steno.error("Error in needle valve calibration - mode=" + desiredState.name());
                 } catch (InterruptedException ex)
@@ -112,21 +123,21 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
             case CONFIRM_MATERIAL_EXTRUDING:
                 try
                 {
-                    printer.transmitDirectGCode("T0", false);
-                    printer.transmitDirectGCode("G0 B1", false);
-                    printer.transmitDirectGCode("G1 E10 F75", false);
+                    printer.selectNozzle(0);
+                    printer.openNozzleFully();
+                    printer.sendRawGCode("G1 E10 F75", false);
                     PrinterUtils.waitOnBusy(printer, this);
-                    printer.transmitDirectGCode("T1", false);
-                    printer.transmitDirectGCode("G0 B1", false);
-                    printer.transmitDirectGCode("G1 E10 F100", false);
+                    printer.selectNozzle(1);
+                    printer.openNozzleFully();
+                    printer.sendRawGCode("G1 E10 F100", false);
                     PrinterUtils.waitOnBusy(printer, this);
-                } catch (RoboxCommsException ex)
+                } catch (PrinterException ex)
                 {
                     steno.error("Error in needle valve calibration - mode=" + desiredState.name());
                 }
-                break;                
+                break;
             case CONFIRM_NO_MATERIAL:
-                printer.transmitDirectGCode("B0", false);
+                printer.closeNozzleFully();
                 success = extrudeUntilStall(0);
                 break;
         }
@@ -153,14 +164,14 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
         try
         {
             // select nozzle
-            printer.transmitDirectGCode("T" + nozzleNumber, false);
+            printer.selectNozzle(nozzleNumber);
             // G36 = extrude until stall E700 = top extruder F2000 = feed rate mm/min (?)
             // extrude either requested volume or until filament slips
-            printer.transmitDirectGCode("G36 E700 F2000", false);
+            printer.sendRawGCode("G36 E700 F2000", false);
             PrinterUtils.waitOnBusy(printer, this);
 
             success = true;
-        } catch (RoboxCommsException ex)
+        } catch (PrinterException ex)
         {
             steno.error("Error in needle valve priming - mode=" + desiredState.name());
         }

@@ -7,10 +7,11 @@ package celtech.services.calibration;
 
 import celtech.configuration.HeaterMode;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.Printer;
-import celtech.printerControl.comms.commands.GCodeConstants;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
+import celtech.printerControl.model.NozzleHeater;
+import celtech.printerControl.model.PrinterException;
 import celtech.services.ControllableService;
 import celtech.utils.PrinterUtils;
 import java.util.ResourceBundle;
@@ -71,26 +72,36 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
             case HEATING:
                 try
                 {
-                    printerToUse.transmitStoredGCode("Home_all");
+                    printerToUse.runMacroWithoutPurgeCheck("Home_all");
                     if (PrinterUtils.waitOnMacroFinished(printerToUse, this) == false)
                     {
-                        StatusResponse response = printerToUse.transmitStatusRequest();
-                        printerToUse.transmitDirectGCode("M104", false);
-                        if (response.getNozzleHeaterMode() == HeaterMode.FIRST_LAYER)
+                        if (printerToUse.headProperty().get()
+                                    .getNozzleHeaters().get(0)
+                                    .heaterModeProperty().get() == HeaterMode.FIRST_LAYER)
                         {
-                            waitUntilNozzleReaches(printerToUse.getNozzleFirstLayerTargetTemperature(), 5);
+                            NozzleHeater nozzleHeater = printerToUse.headProperty().get()
+                                        .getNozzleHeaters().get(0);
+                            PrinterUtils.waitUntilTemperatureIsReached(
+                                        nozzleHeater.nozzleTemperatureProperty(), this,
+                                        nozzleHeater
+                                        .nozzleFirstLayerTargetTemperatureProperty().get(), 5, 300);
                         } else
                         {
-                            waitUntilNozzleReaches(printerToUse.getNozzleTargetTemperature(), 5);
+                            NozzleHeater nozzleHeater = printerToUse.headProperty().get()
+                                        .getNozzleHeaters().get(0);
+                                    PrinterUtils.waitUntilTemperatureIsReached(
+                                        nozzleHeater.nozzleTemperatureProperty(), this,
+                                        nozzleHeater
+                                        .nozzleTargetTemperatureProperty().get(), 5, 300);
                         }
 
                         if (PrinterUtils.waitOnBusy(printerToUse, this) == false)
                         {
-                            printerToUse.transmitDirectGCode(GCodeConstants.switchOnHeadLEDs, false);
+                            printerToUse.switchOnHeadLEDs();
                             success = true;
                         }
                     }
-                } catch (RoboxCommsException ex)
+                } catch (PrinterException ex)
                 {
                     steno.error("Error in nozzle offset calibration - mode=" + desiredState.name());
                 } catch (InterruptedException ex)
@@ -114,19 +125,19 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
                     {
                         for (int i = 0; i < 3; i++)
                         {
-                            printerToUse.transmitDirectGCode("T0", false);
+                            printerToUse.selectNozzle(0);
                             PrinterUtils.waitOnBusy(printerToUse, this);
-                            printerToUse.transmitDirectGCode("G28 Z", false);
+                            printerToUse.homeZ();
                             PrinterUtils.waitOnBusy(printerToUse, this);
-                            printerToUse.transmitDirectGCode("G0 Z5", false);
+                            printerToUse.goToZPosition(5);
                             PrinterUtils.waitOnBusy(printerToUse, this);
-                            printerToUse.transmitDirectGCode("T1", false);
+                            printerToUse.selectNozzle(1);
                             PrinterUtils.waitOnBusy(printerToUse, this);
-                            printerToUse.transmitDirectGCode("G28 Z?", false);
+                            printerToUse.probeBed();
                             PrinterUtils.waitOnBusy(printerToUse, this);
-                            printerToUse.transmitDirectGCode("G0 Z5", false);
+                            printerToUse.goToZPosition(5);
                             PrinterUtils.waitOnBusy(printerToUse, this);
-                            String measurementString = printerToUse.transmitDirectGCode("M113", false);
+                            String measurementString = printerToUse.getZDelta();
                             measurementString = measurementString.replaceFirst("Zdelta:", "").replaceFirst("\nok", "");
                             try
                             {
@@ -168,10 +179,10 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
                         testCounter++;
                     }
 
-                    printerToUse.transmitDirectGCode("T0", false);
+                    printerToUse.selectNozzle(0);
                     PrinterUtils.waitOnBusy(printerToUse, this);
 
-                } catch (RoboxCommsException ex)
+                } catch (PrinterException ex)
                 {
                     steno.error("Error in nozzle offset calibration - mode=" + desiredState.name());
                 }
@@ -219,16 +230,16 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
 //        return success;
 //    }
 
-    private void waitUntilNozzleReaches(int temperature, int tolerance) throws InterruptedException
-    {
-        int minTemp = temperature - tolerance;
-        int maxTemp = temperature + tolerance;
-
-        while ((printerToUse.extruderTemperatureProperty().get() < minTemp || printerToUse.extruderTemperatureProperty().get() > maxTemp) && isCancelled() == false)
-        {
-            Thread.sleep(250);
-        }
-    }
+//    private void waitUntilNozzleReaches(int temperature, int tolerance) throws InterruptedException
+//    {
+//        int minTemp = temperature - tolerance;
+//        int maxTemp = temperature + tolerance;
+//
+//        while ((printerToUse.extruderTemperatureProperty().get() < minTemp || printerToUse.extruderTemperatureProperty().get() > maxTemp) && isCancelled() == false)
+//        {
+//            Thread.sleep(250);
+//        }
+//    }
 
     /**
      *

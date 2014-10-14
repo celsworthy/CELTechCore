@@ -63,7 +63,7 @@ public class MaintenancePanelController implements Initializable
     private FileChooser firmwareFileChooser = new FileChooser();
 
     private static Stage needleValvecalibrationStage = null;
-    private static CalibrationNozzleBInsetPanelController needleValveCalibrationController = null;
+//    private static CalibrationNozzleBInsetPanelController needleValveCalibrationController = null;
     private static Stage offsetCalibrationStage = null;
 
     private ProgressDialog gcodeUpdateProgress = null;
@@ -222,35 +222,35 @@ public class MaintenancePanelController implements Initializable
 
     public static void calibrateBAction()
     {
-        if (needleValvecalibrationStage == null)
-        {
-            needleValvecalibrationStage = new Stage(StageStyle.UNDECORATED);
-            URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "CalibrationNozzleBPage.fxml");
-            FXMLLoader needleValveCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, DisplayManager.getLanguageBundle());
-            try
-            {
-                Parent dialogBoxScreen = (Parent) needleValveCalibrationLoader.load();
-                needleValveCalibrationController = (CalibrationNozzleBInsetPanelController) needleValveCalibrationLoader.getController();
-                Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
-                dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
-                needleValvecalibrationStage.setScene(dialogScene);
-                needleValvecalibrationStage.initOwner(DisplayManager.getMainStage());
-                needleValvecalibrationStage.initModality(Modality.WINDOW_MODAL);
-                needleValvecalibrationStage.setOnCloseRequest(new EventHandler<WindowEvent>()
-                {
-                    @Override
-                    public void handle(WindowEvent event)
-                    {
-                        needleValveCalibrationController.cancelCalibrationAction();
-                    }
-                });
-            } catch (IOException ex)
-            {
-                steno.error("Couldn't load needle valve calibration FXML");
-            }
-        }
-
-        needleValvecalibrationStage.showAndWait();
+//        if (needleValvecalibrationStage == null)
+//        {
+//            needleValvecalibrationStage = new Stage(StageStyle.UNDECORATED);
+//            URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "CalibrationNozzleBPage.fxml");
+//            FXMLLoader needleValveCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, DisplayManager.getLanguageBundle());
+//            try
+//            {
+//                Parent dialogBoxScreen = (Parent) needleValveCalibrationLoader.load();
+//                needleValveCalibrationController = (CalibrationNozzleBInsetPanelController) needleValveCalibrationLoader.getController();
+//                Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
+//                dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
+//                needleValvecalibrationStage.setScene(dialogScene);
+//                needleValvecalibrationStage.initOwner(DisplayManager.getMainStage());
+//                needleValvecalibrationStage.initModality(Modality.WINDOW_MODAL);
+//                needleValvecalibrationStage.setOnCloseRequest(new EventHandler<WindowEvent>()
+//                {
+//                    @Override
+//                    public void handle(WindowEvent event)
+//                    {
+//                        needleValveCalibrationController.cancelCalibrationAction();
+//                    }
+//                });
+//            } catch (IOException ex)
+//            {
+//                steno.error("Couldn't load needle valve calibration FXML");
+//            }
+//        }
+//
+//        needleValvecalibrationStage.showAndWait();
     }
 
     @FXML

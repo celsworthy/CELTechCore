@@ -66,6 +66,8 @@ import celtech.utils.tasks.TaskResponder;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
@@ -1705,7 +1707,7 @@ public class Printer implements RoboxResponseConsumer
         }
     }
 
-    public void changeNozzlePosition(float position)
+    public void gotoNozzlePosition(float position)
     {
         try
         {
@@ -1772,7 +1774,7 @@ public class Printer implements RoboxResponseConsumer
             steno.error("Error when sending z home command");
         }
     }
-
+    
     public void goToZPosition(double position)
     {
         try
@@ -2057,6 +2059,29 @@ public class Printer implements RoboxResponseConsumer
         {
             steno.error("Error sending nozzle select command");
             throw new PrinterException("Error whilst sending nozzle select command");
+        }
+    }
+
+    public void probeBed()
+    {
+        try
+        {
+            transmitDirectGCode("G28 Z?", false);
+        } catch (RoboxCommsException ex)
+        {
+           steno.error("Error sending probe bed command");
+        }
+    }
+
+    public String getZDelta() throws PrinterException
+    {
+        try
+        {
+            return transmitDirectGCode("M113", false);
+        } catch (RoboxCommsException ex)
+        {
+           steno.error("Error sending get Z delta");
+           throw new PrinterException("Error sending get Z delta");
         }
     }
 }

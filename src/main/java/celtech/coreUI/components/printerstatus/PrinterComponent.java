@@ -4,8 +4,8 @@
 package celtech.coreUI.components.printerstatus;
 
 import celtech.configuration.PrinterColourMap;
-import celtech.printerControl.Printer;
-import celtech.printerControl.PrinterStatusEnumeration;
+import celtech.printerControl.model.Printer;
+import celtech.printerControl.PrinterStatus;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
 import static celtech.utils.StringMetrics.getWidthOfString;
 import com.sun.javafx.tk.FontMetrics;
@@ -29,7 +29,7 @@ import javafx.scene.text.Text;
  *
  * @author tony
  */
-public class PrinterComponent extends Pane implements PropertyChangeListener
+public class PrinterComponent extends Pane
 {
 
     private boolean selected;
@@ -109,10 +109,10 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
         setStyle("-fx-background-color: white;");
 
         name.setFill(Color.WHITE);
-        String nameText = printer.getPrinterFriendlyName();
+        String nameText = printer.getPrinterIdentity().printerFriendlyNameProperty().get();
         nameText = fitNameToWidth(nameText);
         name.setText(nameText);
-        setColour(printer.getPrinterColour());
+        setColour(printer.getPrinterIdentity().printerColourProperty().get());
 
         progressListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
@@ -129,13 +129,17 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
             setColour(newValue);
         };
 
-        printer.printerFriendlyNameProperty().addListener(nameListener);
-        printer.printerColourProperty().addListener(colorListener);
-        printer.getPrintQueue().progressProperty().addListener(progressListener);
-        printer.getPrintQueue().addPropertyChangeListener(this);
+        printer.getPrinterIdentity().printerFriendlyNameProperty().addListener(nameListener);
+        printer.getPrinterIdentity().printerColourProperty().addListener(colorListener);
+        printer.getPrintEngine().progressProperty().addListener(progressListener);
+        printer.printerStatusProperty().addListener(
+            (ObservableValue<? extends PrinterStatus> observable, PrinterStatus oldValue, PrinterStatus newValue) ->
+            {
+                updateStatus(newValue);
+            });
 
         setSize(Size.SIZE_LARGE);
-        updateStatus(printer.getPrintQueue().getPrintStatus());
+        updateStatus(printer.printerStatusProperty().get());
     }
 
     public void setProgress(double progress)
@@ -170,17 +174,7 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
         }
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt)
-    {
-        if (evt.getPropertyName().equals("printStatus"))
-        {
-            PrinterStatusEnumeration newStatus = (PrinterStatusEnumeration) evt.getNewValue();
-            updateStatus(newStatus);
-        }
-    }
-
-    private void updateStatus(PrinterStatusEnumeration newStatus)
+    private void updateStatus(PrinterStatus newStatus)
     {
         Status status;
         switch (newStatus)
@@ -277,7 +271,8 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
             child.setTranslateY(-borderWidth);
         }
 
-        name.setStyle("-fx-font-size: " + fontSize + "px !important; -fx-font-family: 'Source Sans Pro Regular';");
+        name.setStyle("-fx-font-size: " + fontSize
+            + "px !important; -fx-font-family: 'Source Sans Pro Regular';");
         name.setLayoutX(progressBarX);
 
         Font font = name.getFont();
@@ -288,7 +283,7 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
         name.setLayoutY(nameLayoutY);
 
         updateBounds();
-        
+
         setPrefSize(sizePixels, sizePixels);
 
     }
@@ -334,15 +329,17 @@ public class PrinterComponent extends Pane implements PropertyChangeListener
      */
     public String fitNameToWidth(String name)
     {
-        
+
         int FONT_SIZE = 14;
         int AVAILABLE_WIDTH = 115;
         double stringWidth = getWidthOfString(name, FONT_SIZE);
         int i = 0;
-        while (stringWidth > AVAILABLE_WIDTH) {
+        while (stringWidth > AVAILABLE_WIDTH)
+        {
             name = name.substring(0, name.length() - 1);
             stringWidth = getWidthOfString(name, FONT_SIZE);
-            if (i > 100) {
+            if (i > 100)
+            {
                 break;
             }
             i++;
