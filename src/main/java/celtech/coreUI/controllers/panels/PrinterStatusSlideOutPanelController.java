@@ -189,6 +189,7 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
     {
         if (statusScreenState.getCurrentlySelectedPrinter() != null)
         {
+            gcodeTranscript.setText("");
             for (String gcodeLine : statusScreenState.getCurrentlySelectedPrinter().gcodeTranscriptProperty())
             {
                 gcodeTranscript.appendText(gcodeLine);

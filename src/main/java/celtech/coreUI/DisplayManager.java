@@ -53,10 +53,10 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -84,7 +84,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
     private HBox mainHolder = null;
     private StackPane sidePanelContainer = null;
     private AnchorPane modeSelectionControl = null;
-    private final HashMap<ApplicationMode, VBox> insetPanels = new HashMap<>();
+    private final HashMap<ApplicationMode, Pane> insetPanels = new HashMap<>();
     private final HashMap<ApplicationMode, HBox> sidePanels = new HashMap<>();
     private final HashMap<ApplicationMode, HBox> slideOutPanels = new HashMap<>();
     private final StackPane rhPanel = new StackPane();
@@ -127,20 +127,11 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
 
-    /**
-     * The primary font used throughout the GUI, at various font sizes
-     */
-    private final Font primaryFont;
-
     private Locale usersLocale = null;
 
     private DisplayManager()
     {
         usersLocale = Locale.getDefault();
-
-        String primaryFontLocation = DisplayManager.class.getResource(
-            ApplicationConfiguration.fontResourcePath + "SourceSansPro-Light.ttf").toExternalForm();
-        primaryFont = Font.loadFont(primaryFontLocation, 10);
 
         modelLoadDialog = new ProgressDialog(modelLoaderService);
 
@@ -215,17 +206,15 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
-    private void switchPagesForMode(ApplicationMode oldMode,
-        ApplicationMode newMode)
+    private void switchPagesForMode(ApplicationMode oldMode, ApplicationMode newMode)
     {
-        infoScreenIndicatorController.setSelected(newMode
-            == ApplicationMode.STATUS);
+        infoScreenIndicatorController.setSelected(newMode == ApplicationMode.STATUS);
 
         // Remove the existing side panel
         if (oldMode != null)
         {
             sidePanelContainer.getChildren().remove(sidePanels.get(oldMode));
-            VBox lastInsetPanel = insetPanels.get(oldMode);
+            Pane lastInsetPanel = insetPanels.get(oldMode);
             if (lastInsetPanel != null)
             {
                 rhPanel.getChildren().remove(lastInsetPanel);
@@ -243,7 +232,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         slideoutAndProjectHolder.switchInSlideout(slideOutPanels.get(newMode));
 
-        VBox newInsetPanel = insetPanels.get(newMode);
+        Pane newInsetPanel = insetPanels.get(newMode);
         if (newInsetPanel != null)
         {
             rhPanel.getChildren().add(0, newInsetPanel);
@@ -346,7 +335,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 {
                     steno.debug("About to load inset panel fxml: " + fxmlFileName);
                     FXMLLoader insetPanelLoader = new FXMLLoader(fxmlFileName, getLanguageBundle());
-                    VBox insetPanel = (VBox) insetPanelLoader.load();
+                    Pane insetPanel = (Pane) insetPanelLoader.load();
                     Initializable insetPanelController = insetPanelLoader.getController();
                     insetPanel.setId(mode.name());
                     insetPanels.put(mode, insetPanel);
@@ -455,7 +444,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, getLanguageBundle());
             VBox topMenuStripControls = (VBox) menuStripLoader.load();
             VBox.setVgrow(topMenuStripControls, Priority.NEVER);
-//            rhPanel.getChildren().add(topMenuStripControls);
+            rhPanel.getChildren().add(topMenuStripControls);
         } catch (IOException ex)
         {
             steno.error("Failed to load top menu strip controls:" + ex);
@@ -578,9 +567,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
                           ApplicationConfiguration.DEFAULT_HEIGHT);
 
         scene.getStylesheets().add("/celtech/resources/css/JMetroDarkTheme.css");
-//        root.setStyle("-fx-font-family: FreeMono;");
-        String primaryFontFamily = primaryFont.getFamily();
-        root.setStyle("-fx-font-family: " + primaryFontFamily + ";");
 
         // Camera required to allow 2D shapes to be rotated in 3D in the '2D' UI
         PerspectiveCamera controlOverlaycamera = new PerspectiveCamera(false);
@@ -963,18 +949,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
         return usersLocale;
     }
 
-    /**
-     * Return the font family name of the primary font used in the GUI
-     *
-     * @return
-     */
-    public String getPrimaryFontFamily()
-    {
-        return primaryFont.getFamily();
-    }
-
     public PurgeInsetPanelController getPurgeInsetPanelController()
     {
         return (PurgeInsetPanelController) insetPanelControllers.get(ApplicationMode.PURGE);
     }
+
 }

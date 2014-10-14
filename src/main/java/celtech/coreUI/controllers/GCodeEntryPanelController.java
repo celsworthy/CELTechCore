@@ -7,7 +7,6 @@ package celtech.coreUI.controllers;
 
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.printerControl.model.Printer;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ObservableValue;

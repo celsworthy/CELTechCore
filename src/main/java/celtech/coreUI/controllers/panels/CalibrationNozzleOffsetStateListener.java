@@ -14,5 +14,5 @@ import celtech.services.calibration.NozzleOffsetCalibrationState;
  */
 public interface CalibrationNozzleOffsetStateListener
 {
-    public void setState(NozzleOffsetCalibrationState state);
+    public void setNozzleHeightState(NozzleOffsetCalibrationState state);
 }

@@ -8,55 +8,60 @@ import celtech.coreUI.DisplayManager;
  */
 public enum NozzleOffsetCalibrationState
 {
-
     /**
      *
      */
-    CHOOSE_MODE(null, null),
+    IDLE("calibrationPanel.readyToBeginNozzleOffsetCalibration"),
     /**
      *
      */
-    IDLE("calibrationPanel.readyToBeginNozzleOffsetCalibration", null),
+    INITIALISING("calibrationPanel.initialisingOffset"),    
     /**
      *
      */
-    INITIALISING("calibrationPanel.heating", null),
+    HEATING("calibrationPanel.heating"),
     /**
      *
      */
-    HEAD_CLEAN_CHECK("calibrationPanel.ensureHeadIsCleanOffsetMessage", null),
+    HEAD_CLEAN_CHECK("calibrationPanel.headCleanCheck"),
     /**
      *
      */
-    MEASURE_Z_DIFFERENCE("calibrationPanel.measuringZOffset", null),
+    MEASURE_Z_DIFFERENCE("calibrationPanel.measuringZOffset"),
     /**
      *
      */
-    INSERT_PAPER("calibrationPanel.insertPieceOfPaper", "calibrationPanel.isThePaperInPlace"),
+    INSERT_PAPER("calibrationPanel.insertPieceOfPaper"),
     /**
      *
      */
-    PROBING("calibrationPanel.moveThePaperMessage", null),
+    PROBING("calibrationPanel.moveThePaperMessage"),
     /**
      *
      */
-    FINISHED("calibrationPanel.calibrationSucceededOffsetMessage", null),
+    LIFT_HEAD(""),
+    /**
+     *
+     */    
+    REPLACE_PEI_BED("calibrationPanel.replacePEIBed"),
+    /**
+     *
+     */    
+    FINISHED("calibrationPanel.calibrationSucceededMessage"),
     /**
      *
      */
-    FAILED("calibrationPanel.nozzleCalibrationFailed", null),
+    FAILED("calibrationPanel.nozzleCalibrationFailed"),
     /**
      *
      */
-    NUDGE_MODE(null, null);
+    NUDGE_MODE(null);
 
     private String stepTitleResource = null;
-    private String stepInstructionResource = null;
 
-    private NozzleOffsetCalibrationState(String stepTitleResource, String stepInstructionResource)
+    private NozzleOffsetCalibrationState(String stepTitleResource)
     {
         this.stepTitleResource = stepTitleResource;
-        this.stepInstructionResource = stepInstructionResource;
     }
 
     /**
@@ -114,35 +119,6 @@ public enum NozzleOffsetCalibrationState
         }
     }
 
-    /**
-     *
-     * @return
-     */
-    public String getStepInstruction()
-    {
-        if (stepInstructionResource == null)
-        {
-            return "";
-        } else
-        {
-            return DisplayManager.getLanguageBundle().getString(stepInstructionResource);
-        }
-    }
-
-    /**
-     *
-     * @param suffix
-     * @return
-     */
-    public String getStepInstruction(String suffix)
-    {
-        if (stepInstructionResource == null)
-        {
-            return "";
-        } else
-        {
-            return DisplayManager.getLanguageBundle().getString(stepInstructionResource + suffix);
-        }
-    }
+ 
 
 }

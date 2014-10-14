@@ -11,10 +11,8 @@ import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.coreUI.controllers.panels.CalibrationNozzleBInsetPanelController;
-import celtech.coreUI.controllers.panels.CalibrationNozzleOffsetInsetPanelController;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.PrinterStatus;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.firmware.FirmwareLoadService;
@@ -67,7 +65,6 @@ public class MaintenancePanelController implements Initializable
     private static Stage needleValvecalibrationStage = null;
     private static CalibrationNozzleBInsetPanelController needleValveCalibrationController = null;
     private static Stage offsetCalibrationStage = null;
-    private static CalibrationNozzleOffsetInsetPanelController nozzleOffsetCalibrationController = null;
 
     private ProgressDialog gcodeUpdateProgress = null;
     private FileChooser gcodeFileChooser = new FileChooser();
@@ -220,7 +217,7 @@ public class MaintenancePanelController implements Initializable
     @FXML
     void calibrateB(ActionEvent event)
     {
-        ApplicationStatus.getInstance().setMode(ApplicationMode.NOZZLE_OPEN_CALIBRATION);
+//        ApplicationStatus.getInstance().setMode(ApplicationMode.NOZZLE_OPEN_CALIBRATION);
     }
 
     public static void calibrateBAction()
@@ -260,32 +257,32 @@ public class MaintenancePanelController implements Initializable
     void calibrateZOffset(ActionEvent event)
     {
 
-        ApplicationStatus.getInstance().setMode(ApplicationMode.NOZZLE_OFFSET_CALIBRATION);
+//        ApplicationStatus.getInstance().setMode(ApplicationMode.NOZZLE_OFFSET_CALIBRATION);
     }
 
     public static void calibrateZOffsetAction()
     {
-        if (offsetCalibrationStage == null)
-        {
-            offsetCalibrationStage = new Stage(StageStyle.UNDECORATED);
-            URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlPanelResourcePath + "CalibrationNozzleOffsetInsetPanel.fxml");
-            FXMLLoader nozzleOffsetCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, DisplayManager.getLanguageBundle());
-            try
-            {
-                Parent dialogBoxScreen = (Parent) nozzleOffsetCalibrationLoader.load();
-                nozzleOffsetCalibrationController = (CalibrationNozzleOffsetInsetPanelController) nozzleOffsetCalibrationLoader.getController();
-                Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
-                dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
-                offsetCalibrationStage.setScene(dialogScene);
-                offsetCalibrationStage.initOwner(DisplayManager.getMainStage());
-                offsetCalibrationStage.initModality(Modality.WINDOW_MODAL);
-            } catch (IOException ex)
-            {
-                steno.error("Couldn't load nozzle offset calibration FXML");
-            }
-        }
-
-        offsetCalibrationStage.showAndWait();
+//        if (offsetCalibrationStage == null)
+//        {
+//            offsetCalibrationStage = new Stage(StageStyle.UNDECORATED);
+//            URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlPanelResourcePath + "CalibrationNozzleOffsetInsetPanel.fxml");
+//            FXMLLoader nozzleOffsetCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, DisplayManager.getLanguageBundle());
+//            try
+//            {
+//                Parent dialogBoxScreen = (Parent) nozzleOffsetCalibrationLoader.load();
+//                nozzleOffsetCalibrationController = (CalibrationNozzleOffsetInsetPanelController) nozzleOffsetCalibrationLoader.getController();
+//                Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
+//                dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
+//                offsetCalibrationStage.setScene(dialogScene);
+//                offsetCalibrationStage.initOwner(DisplayManager.getMainStage());
+//                offsetCalibrationStage.initModality(Modality.WINDOW_MODAL);
+//            } catch (IOException ex)
+//            {
+//                steno.error("Couldn't load nozzle offset calibration FXML");
+//            }
+//        }
+//
+//        offsetCalibrationStage.showAndWait();
     }
 
     @FXML

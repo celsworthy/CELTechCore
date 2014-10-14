@@ -1,10 +1,43 @@
+
+@font-face {
+    font-family: Source Sans Pro Regular;
+    src: url('/celtech/resources/fonts/SourceSansPro-Regular.ttf') format(ttf);
+}
+
+@font-face {
+    font-family: Source Sans Pro Light;
+    font-weight: 300;
+    src: url('/celtech/resources/fonts/SourceSansPro-Light.ttf') format(ttf);
+}
+
+@font-face {
+    font-family: Source Sans Pro ExtraLight;
+    font-weight: 200;
+    src: url('/celtech/resources/fonts/SourceSansPro-ExtraLight.ttf') format(ttf);
+}
+
+@font-face {
+    font-family: Source Sans Pro Semibold;
+    src: url('/celtech/resources/fonts/SourceSansPro-Semibold.ttf') format(ttf);
+}
+
+@font-face {
+    font-family: Source Sans Pro Bold;
+    src: url('/celtech/resources/fonts/SourceSansPro-Bold.ttf') format(ttf);
+}
+
+@font-face {
+    font-family: Source Code Pro;
+    src: url('/celtech/resources/fonts/SourceCodePro-Regular.ttf') format(ttf);
+}
+
 *{
     black: rgb(0,0,0);
     dark_grey: rgb(48,48,48);
     mid_grey: rgb(64,64,64);
     light_grey: rgb(99,99,99);
-    entrybox_background_grey: rgb(180,180,180);
-    blue_colour: rgb(0, 157, 226);
+    robox_blue: #0096e1;
+    highlight_colour: rgb(0, 157, 226);
     background_colour: rgb(0,0,0);
     unselected_colour: #1d1d1d;
     selected_colour: #ffffff;
@@ -21,6 +54,19 @@
     gizmoZHandle_pressed: #a74c30;
     gizmoXZHandle_pressed: #554dc9;
     gizmoRotationHandle_pressed: #53919d;
+    graph_line_red: #ff0000;
+    graph_line_green: #1eb43c;
+    graph_line_yellow: #ffc800;
+    graph_line_blue: #0096e1;
+    graph_setpoint_red: #8c0000;
+    graph_setpoint_green: #145019;
+    graph_setpoint_yellow: #a07800;    
+    /*-fx-font-family: 'CrazyZoo';*/
+
+}
+
+.root {
+    -fx-font-family: 'Source Sans Pro Light';
 }
 
 .standardPanel{
@@ -48,13 +94,6 @@
 
 .SlideOutPanel .circle {
     -fx-fill-color: grey;
-}
-
-/*
- * Text area
- */
-.text{
-    -fx-font-size: 10pt;
 }
 
 .text-field {
@@ -747,7 +786,7 @@
 }
 
 .combo-box-popup .list-view .list-cell:filled:selected{
-    -fx-background-color: blue_colour;
+    -fx-background-color: highlight_colour;
 }
 
 .combo-box-popup .list-view .list-cell:filled:selected:hover {
@@ -854,40 +893,131 @@
 
 }
 
+/**
+* Reel and Material
+*/
+
+.reelLabel {
+    -fx-font-size: 32;
+}
+.reelMaterialName {
+    -fx-font-size: 21;
+}
+.reelMaterialRemaining {
+    -fx-font-size: 18;
+}
+
+#reelNumberMaterial {
+    -fx-font-family: 'Source Sans Pro Bold';
+}
+
 /*
  * Temperature graph
  */
-.default-color0.chart-series-line { -fx-stroke: green; }
-.default-color1.chart-series-line { -fx-stroke: yellow; }
-.default-color2.chart-series-line { -fx-stroke: darkviolet; }
+
+.default-color0.chart-series-line { 
+    -fx-stroke: graph_line_green;
+    -fx-stroke-width: 3;
+}
+.default-color1.chart-series-line { -fx-stroke: graph_line_yellow; -fx-stroke-width: 3;}
+.default-color2.chart-series-line { -fx-stroke: graph_line_red; -fx-stroke-width: 3;}
 .default-color0.chart-line-symbol {visibility: hidden;}
 .default-color1.chart-line-symbol {visibility: hidden;}
 .default-color2.chart-line-symbol {visibility: hidden;}
-.default-color3.chart-line-symbol { /* solid diamond */
-    -fx-background-color: green;
+.default-color3.chart-line-symbol { /* solid triangle */
+    -fx-background-color: graph_setpoint_green;
     -fx-background-radius: 0;
     /*-fx-padding: 7px 5px 7px 5px;*/
-    -fx-shape: "M0,3 L5,0 L5,6 L0,3 Z";
+    -fx-shape: "M0,6 L12,0 L12,12 L0,6 Z";
+    -fx-scale-x: 2;
+    -fx-scale-y: 2;
 }
-.default-color4.chart-line-symbol { /* solid diamond */
-    -fx-background-color: yellow;
+.default-color4.chart-line-symbol { /* solid triangle */
+    -fx-background-color: graph_setpoint_yellow;
     -fx-background-radius: 0;
     /*-fx-padding: 7px 5px 7px 5px;*/
-    -fx-shape: "M0,3 L5,0 L5,6 L0,3 Z";
+    -fx-shape: "M0,6 L12,0 L12,12 L0,6 Z";
+    -fx-scale-x: 2;
+    -fx-scale-y: 2;
 }
-.default-color5.chart-line-symbol { /* solid diamond */
-    -fx-background-color: darkviolet;
+.default-color5.chart-line-symbol { /* solid triangle */
+    -fx-background-color: graph_setpoint_red;
     -fx-background-radius: 0;
     /*-fx-padding: 7px 5px 7px 5px;*/
-    -fx-shape: "M0,3 L5,0 L5,6 L0,3 Z";
+    -fx-shape: "M0,6 L12,0 L12,12 L0,6 Z";
+    -fx-scale-x: 2;
+    -fx-scale-y: 2;
 }
 
-#ambientTempLegend { -fx-fill: green; }
-#bedTempLegend { -fx-fill: yellow; }
-#nozzleTempLegend { -fx-fill: darkviolet; }
+.temperatureXLabel {
+    -fx-font-size: 9pt;
+}
+
+#temperatureChart .axis:top {
+    -fx-border-color: transparent transparent transparent transparent;
+    -fx-border-width: 0;
+}
+#temperatureChart .axis:right {
+    -fx-border-color: transparent transparent transparent #000000;
+    -fx-border-width: 2;
+}
+#temperatureChart .axis:bottom {
+    -fx-border-color: #000000 transparent transparent transparent;
+    -fx-border-width: 2;
+}
+#temperatureChart .axis:left {
+    -fx-border-color: transparent transparent transparent transparent;
+    -fx-border-width: 0;
+}
+
+#temperatureChart .axis .text {
+    -fx-font-size: 10pt;
+}
+
+#temperatureChart .axis-tick-mark {
+    -fx-stroke: black;
+    -fx-stroke-width: 2;
+}
+
+#temperatureChart .axis-minor-tick-mark {
+    -fx-stroke: black;
+    -fx-stroke-width: 2;
+}
+
+.graph-red {
+    -fx-fill: graph_line_red;
+    -fx-font-size: 9;
+}
+.graph-blue {
+    -fx-fill: graph_line_blue;
+    -fx-font-size: 9;
+}
+.graph-green {
+    -fx-fill: graph_line_green;
+    -fx-font-size: 9;
+}
+.graph-yellow {
+    -fx-fill: graph_line_yellow;
+    -fx-font-size: 9;
+}
+
+.temperatureChartLegend {
+    -fx-font-size: 11px;
+    -fx-font-family: 'Source Sans Pro Semibold';
+}
 
 #temperatureGraphTempAxis {
     -fx-tick-label-fill: white;
+}
+
+#temperatureChart {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-background-color: dark_grey;
+}
+
+#temperatureChartXLabels {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-background-color: dark_grey;
 }
 
 .invisible-graph-node{
@@ -910,8 +1040,8 @@
 }
 
 .tab:selected, .tab:selected .tab-label{
-    -fx-background-color: blue_colour;
-    -fx-border-color: blue_colour;
+    -fx-background-color: highlight_colour;
+    -fx-border-color: highlight_colour;
 }
 
 .tab .tab-label{
@@ -1056,6 +1186,14 @@ table-view .column-header-background {
     -fx-padding: 5px;
 }
 
+.statusPanel{
+    -fx-background-color: mid_grey;
+}
+
+.statusPanelChild{
+    -fx-background-color: dark_grey;
+}
+
 .sidePanel{
     -fx-background-color: mid_grey;
 }
@@ -1070,10 +1208,11 @@ table-view .column-header-background {
 }
 
 .sidePanelTitle{
-    -fx-text-fill: blue_colour;
-    -fx-pref-height: 82;
-    -fx-scale-x: 2;
-    -fx-scale-y: 2;
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-text-fill: highlight_colour;
+    -fx-pref-height: 60;
+    -fx-scale-x: 1.7;
+    -fx-scale-y: 1.7;
 }
 
 .slideOutPanel, .slideOutPanel .tab-pane{
@@ -1340,9 +1479,9 @@ table-view .column-header-background {
     -fx-border-style: solid;
     -fx-border-radius: 2;
 }    
-    
+
 .blue-inset-panel{
-    -fx-background-color: blue_colour;
+    -fx-background-color: highlight_colour;
 }
 
 .blue-inset-panel-text{
@@ -1514,7 +1653,249 @@ table-view .column-header-background {
     -fx-opacity: 0.4;
 }
 
+/**
+* Calibration
+*/
+#calibrationMenuSeparator *.line {
+    -fx-border-style: solid;
+    -fx-border-width: 2px;
+    -fx-fill: dark_grey;
+    -fx-background-color: dark_grey;
+    -fx-border-color: dark_grey dark_grey dark_grey dark_grey;
+}
+
+#calibrationTopMenu {
+    -fx-background-color: black;
+}
+
+#stepNumber {
+    -fx-fill: white;
+}
+
+#calibrationStatus {
+    -fx-font-size: 24px;
+}
+
+#calibrateBottomMenu {
+    -fx-background-color: black;
+}
+
+#calibrationLeftBorder {
+    -fx-background-color: black;
+}
+
+#calibrationBottomArea {
+    -fx-background-color: black;
+}
+
+.calibrationButtonsAB {
+    -fx-background-color: light_grey;
+    -fx-border-color: white;
+    -fx-border-width: 3px;
+}
+
+.calibrationAltABButton {
+    -fx-background-color: light_grey;
+    -fx-border-color: light_grey;
+    -fx-border-width: 0px;
+}
+
+/**
+* About Panel
+*/
+
+.aboutVersionText {
+    -fx-font-size: 32px;
+}
+
+.aboutBodyTextRegular {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 21px;
+}
+
+.aboutBodyText {
+    -fx-font-size: 21px;
+}
+
+.aboutSerialTextHeader {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 24px;
+}
+
+.aboutSerialText {
+    -fx-font-family: 'Source Code Pro';
+    -fx-font-size: 24px;
+}
+
+/**
+* Spinner
+*/
+
 .spinner
 {
     -fx-background-color: transparent;
+}
+
+/**
+* Vertical Menu
+*/
+
+#verticalMenuTitle {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size:60px;
+    -fx-fill: white;
+}
+
+.verticalMenuSquare {
+    -fx-fill: blue_colour;
+    -fx-border-width: 0;
+}
+
+.verticalMenuOption {
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-size: 36px;
+}
+
+.verticalMenuOption:selected {
+    -fx-fill: white;
+}
+
+.verticalMenuOption:disabled {
+    -fx-fill: dark_grey;
+}
+
+.verticalMenuSquare {
+    -fx-fill: robox_blue;
+}
+
+#verticalMenuGrid {
+    -fx-background-color: light_grey;
+}
+
+/**
+* Large Progress
+*/
+
+#largeProgressContainer {
+    -fx-background-color: robox_blue;
+}
+
+#largeProgressLabel {
+    -fx-font-size: 42px;
+}
+
+#largeProgressBarBack {
+    -fx-border-color: white;
+    -fx-border-width: 3px;
+}
+
+#largeProgressBarInner {
+    -fx-fill: white;
+    -fx-stroke-width: 0px;
+}
+
+#largeProgressCurrentValue {
+    -fx-text-fill: robox_blue;
+    -fx-font-size: 36px;
+}
+
+#largeProgressTargetLegend {
+    -fx-font-size: 19px;
+}
+
+#largeProgressTargetValue {
+    -fx-font-size: 36px;
+}
+
+/**
+*
+*/
+
+#printerStatusTitle {
+    -fx-font-size: 22px;
+}
+
+.table-view .column-header .label { 
+    -fx-font-size: 12px; 
+}
+
+.lightGreyBackground {
+    -fx-background-color: light_grey;
+}
+
+.midGreyBackground {
+    -fx-background-color: mid_grey;
+}
+
+.darkGreyBackground {
+    -fx-background-color: dark_grey;
+}
+
+/**
+* Calibration diagram text
+*/
+.mediumCalibrationText {
+    -fx-background-color: mid_grey;
+    -fx-font-size:20px;
+    -fx-text-fill: white;
+}
+
+.smallCalibrationText {
+    -fx-background-color: mid_grey;
+    -fx-font-size:14px;
+    -fx-text-fill: white;
+}
+
+.smallLightGreyCalibrationText {
+    -fx-background-color: light_grey;
+    -fx-font-size:14px;
+    -fx-text-fill: white;
+}
+
+.calibrationOffsetCombo {
+    /*-fx-background-color: white;*/
+    -fx-font-size:16px;
+    /*-fx-text-fill: black;*/
+}
+
+.combo-box .list-cell {
+    -fx-background-color: white;
+    -fx-text-fill: black;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: white;
+    -fx-text-fill: black;
+}
+
+/**
+* Calibration diagram dashed lines
+*/
+
+.strokeDashArray2_9878-2_9878 {
+    -fx-stroke-dash-array: 2.98 2.98;
+}
+.strokeDashArray17_0768-8_5384-2_5615-8_5384{
+    -fx-stroke-dash-array: 2.98 2.98;
+}
+.strokeDashArray23_3157-11_6578-3_4973-11_6578{
+    -fx-stroke-dash-array: 23.3157 11.6578 3.4973 11.6578;
+}
+.strokeDashArray17_0766-8_5383-2_5615-8_5383{
+    -fx-stroke-dash-array: 17.0766 8.5383 2.5615 8.5383;
+}
+.strokeDashArray3_4974-11_6579{
+    -fx-stroke-dash-array: 3.4974 11.6579;
+}
+.strokeDashArray3_4973-11_6578{
+    -fx-stroke-dash-array: 3.4973 11.6578;
+}
+.strokeDashArray2_5615-8_5384{
+    -fx-stroke-dash-array: 2.98 2.98;
+}
+.strokeDashArray2_5615-8_5383{
+    -fx-stroke-dash-array: 2.98 2.98;
+}
+.strokeDashArray23_3158-11_6579-3_4974-11_6579{
+    -fx-stroke-dash-array: 2.98 2.98;
 }
