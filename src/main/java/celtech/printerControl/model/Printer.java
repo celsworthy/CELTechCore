@@ -159,7 +159,7 @@ public class Printer implements RoboxResponseConsumer
         this.commandInterface = commandInterface;
 
         printEngine = new PrintEngine(this);
-        
+
         canPrintProperty.bind(head.isNotNull().and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
 
         threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
@@ -715,7 +715,10 @@ public class Printer implements RoboxResponseConsumer
     private String transmitDirectGCode(final String gcodeToSend, boolean addToTranscript) throws RoboxCommsException
     {
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.EXECUTE_GCODE);
-        gcodePacket.setMessagePayload(gcodeToSend);
+
+        String gcodeToSendWithLF = SystemUtils.cleanGCodeForTransmission(gcodeToSend) + "\n";
+
+        gcodePacket.setMessagePayload(gcodeToSendWithLF);
 
         GCodeDataResponse response = (GCodeDataResponse) commandInterface.writeToPrinter(gcodePacket);
 
@@ -726,6 +729,7 @@ public class Printer implements RoboxResponseConsumer
 
                 public void run()
                 {
+                    addToGCodeTranscript(gcodeToSendWithLF);
                     if (response == null)
                     {
                         addToGCodeTranscript(Lookup.i18n("gcodeEntry.errorMessage"));
@@ -1158,7 +1162,6 @@ public class Printer implements RoboxResponseConsumer
                     steno.error("Error sending data file chunk - seq " + dataFileSequenceNumber);
                 }
                 outputBuffer.delete(0, bufferSize);
-                dataFileSequenceNumber++;
             }
         }
     }

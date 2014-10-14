@@ -223,7 +223,7 @@ public class HardwareCommandInterface extends CommandInterface
                         }
                     } else
                     {
-                    // Attempt to drain the crud from the input
+                        // Attempt to drain the crud from the input
                         // There shouldn't be anything here but just in case...                    
                         byte[] storage = serialPort.readBytes();
 
@@ -243,17 +243,26 @@ public class HardwareCommandInterface extends CommandInterface
 //                    throw exception;
                     }
                 }
+                else
+                {
+                    actionOnCommsFailure();
+                }
             } catch (SerialPortException ex)
             {
-                //If we get an exception then abort and treat
-                steno.debug("Error during write to printer");
-                disconnectSerialPort();
-                keepRunning = false;
-                throw new ConnectionLostException();
+                actionOnCommsFailure();
             }
         }
 
         return receivedPacket;
+    }
+
+    private void actionOnCommsFailure() throws ConnectionLostException
+    {
+        //If we get an exception then abort and treat
+        steno.debug("Error during write to printer");
+        disconnectSerialPort();
+        keepRunning = false;
+        throw new ConnectionLostException();
     }
 
     void shutdown()
