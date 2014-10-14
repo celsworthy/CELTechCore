@@ -8,7 +8,7 @@ import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.LargeProgress;
 import celtech.coreUI.controllers.StatusScreenState;
 import static celtech.coreUI.controllers.panels.CalibrationMenuConfiguration.configureCalibrationMenu;
-import celtech.printerControl.model.Extruder;
+import celtech.printerControl.model.Head;
 import celtech.printerControl.model.NozzleHeater;
 import celtech.printerControl.model.Printer;
 import celtech.services.calibration.CalibrationXAndYState;
@@ -415,17 +415,29 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private void removeTemperatureProgressListeners(Printer printer)
     {
-        NozzleHeater nozzleHeater = printer.headProperty().get()
-            .getNozzleHeaters().get(0);
-        nozzleHeater.nozzleTargetTemperatureProperty().removeListener(targetTemperatureListener);
-        nozzleHeater.nozzleTemperatureProperty().removeListener(extruderTemperatureListener);
+        printer.headProperty().removeListener(headListener);
+        if (printer.headProperty() != null)
+        {
+            NozzleHeater nozzleHeater = printer.headProperty().get().getNozzleHeaters().get(0);
+            nozzleHeater.nozzleTargetTemperatureProperty().removeListener(
+                targetTemperatureListener);
+            nozzleHeater.nozzleTemperatureProperty().removeListener(extruderTemperatureListener);
+        }
     }
+
+    private final ChangeListener<Head> headListener = (ObservableValue<? extends Head> observable, Head oldValue, Head newHead) ->
+    {
+        NozzleHeater nozzleHeater = newHead.getNozzleHeaters().get(0);
+        nozzleHeater.nozzleTargetTemperatureProperty().addListener(
+            targetTemperatureListener);
+        nozzleHeater.nozzleTemperatureProperty().addListener(extruderTemperatureListener);
+    };
 
     private void setupTemperatureProgressListeners(Printer printer)
     {
         if (currentPrinter != null)
         {
-            removeTemperatureProgressListeners(currentPrinter);
+            removeTemperatureProgressListeners(printer);
         }
 
         if (printer == null)
@@ -433,9 +445,8 @@ public class CalibrationInsetPanelController implements Initializable,
             calibrationProgressTemp.setProgress(0);
         } else
         {
-//            NozzleHeater nozzleHeater = printer.headProperty().get().getNozzleHeaters().get(0);
-//            nozzleHeater.nozzleTargetTemperatureProperty().addListener(targetTemperatureListener);
-//            nozzleHeater.nozzleTemperatureProperty().addListener(extruderTemperatureListener);
+            printer.headProperty().addListener(headListener);
+
         }
     }
 
