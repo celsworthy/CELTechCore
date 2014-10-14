@@ -403,6 +403,15 @@ public abstract class CommandInterface extends Thread
         steno.info(
             "Handler for " + portName + " exiting");
     }
+    
+    public void shutdown()
+    {
+        if (firmwareLoadService.isRunning())
+        {
+            firmwareLoadService.cancel();
+        }
+        keepRunning = false;
+    }
 
     /**
      *

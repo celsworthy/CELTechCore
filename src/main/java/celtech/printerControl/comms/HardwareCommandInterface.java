@@ -265,15 +265,6 @@ public class HardwareCommandInterface extends CommandInterface
         throw new ConnectionLostException();
     }
 
-    void shutdown()
-    {
-        if (firmwareLoadService.isRunning())
-        {
-            firmwareLoadService.cancel();
-        }
-        keepRunning = false;
-    }
-
     void setPrinterToUse(Printer newPrinter)
     {
         this.printerToUse = newPrinter;

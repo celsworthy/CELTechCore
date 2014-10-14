@@ -50,15 +50,15 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
                 int desiredBedTemperature = 90;
                 printerToUse.setBedTargetTemperature(desiredBedTemperature);
                 printerToUse.goToTargetBedTemperature();
-                boolean bedHeatedOK = PrinterUtils.waitUntilTemperatureIsReached(printerToUse.getPrinterAncillarySystems().bedTemperatureProperty(), this, desiredBedTemperature, 5, 600);
+                boolean bedHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(printerToUse.getPrinterAncillarySystems().bedTemperatureProperty(), this, desiredBedTemperature, 5, 600);
 
                 printerToUse.setNozzleTargetTemperature(purgeTemperature);
                 printerToUse.goToTargetNozzleTemperature();
                 //TODO modify to support multiple heaters
-                boolean extruderHeatedOK = PrinterUtils.
+                boolean extruderHeatFailed = PrinterUtils.
                     waitUntilTemperatureIsReached(printerToUse.headProperty().get().getNozzleHeaters().get(0).nozzleTemperatureProperty(), this, purgeTemperature, 5, 300);
 
-                if (bedHeatedOK && extruderHeatedOK)
+                if (!bedHeatFailed && !extruderHeatFailed)
                 {
                     success = true;
                 }

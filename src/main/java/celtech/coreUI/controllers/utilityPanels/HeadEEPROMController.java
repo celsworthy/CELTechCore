@@ -194,14 +194,12 @@ public class HeadEEPROMController implements Initializable
                     if (oldValue != null)
                     {
                         oldValue.headProperty().removeListener(headDataChangeListener);
-                        headFullContainer.disableProperty().unbind();
                     }
 
                     connectedPrinter = newValue;
                     if (connectedPrinter != null)
                     {
                         connectedPrinter.headProperty().addListener(headDataChangeListener);
-                        headFullContainer.disableProperty().bind(Bindings.not(connectedPrinter.headProperty().isNull()));
                     } else
                     {
                         noHeadAction();
