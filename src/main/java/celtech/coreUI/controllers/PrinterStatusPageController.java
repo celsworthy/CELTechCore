@@ -839,6 +839,7 @@ public class PrinterStatusPageController implements Initializable
                     cancelPrintButton.setVisible(true);
                     showProgressGroup.set(false);
                     setAdvancedControlsVisibility(true);
+                    break;
                 case PAUSING:
                     resumePrintButton.setVisible(true);
                     resumePrintButton.setDisable(false);
