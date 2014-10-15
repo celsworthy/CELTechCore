@@ -37,94 +37,94 @@ public interface Printer extends RoboxResponseConsumer
      *
      * @param gcodeToSend
      */
-    void addToGCodeTranscript(String gcodeToSend);
+    public void addToGCodeTranscript(String gcodeToSend);
 
     /*
      * Cancel
      */
-    ReadOnlyBooleanProperty canCancelProperty();
+    public ReadOnlyBooleanProperty canCancelProperty();
 
     /*
      * Print
      */
-    ReadOnlyBooleanProperty canPrintProperty();
+    public ReadOnlyBooleanProperty canPrintProperty();
 
-    ReadOnlyBooleanProperty canPurgeHeadProperty();
+    public ReadOnlyBooleanProperty canPurgeHeadProperty();
 
     /*
      * Remove head
      */
-    ReadOnlyBooleanProperty canRemoveHeadProperty();
+    public ReadOnlyBooleanProperty canRemoveHeadProperty();
 
-    void cancel(TaskResponder responder) throws PrinterException;
+    public void cancel(TaskResponder responder) throws PrinterException;
 
-    void changeNozzlePosition(float position);
+    public void changeNozzlePosition(float position);
 
-    void closeNozzleFully() throws PrinterException;
+    public void closeNozzleFully() throws PrinterException;
 
-    boolean doAbortActivity(Cancellable cancellable);
+    public boolean doAbortActivity(Cancellable cancellable);
 
-    void ejectFilament(int extruderNumber, TaskResponder responder) throws PrinterException;
+    public void ejectFilament(int extruderNumber, TaskResponder responder) throws PrinterException;
 
-    ObservableList<Extruder> extrudersProperty();
+    public ObservableList<Extruder> extrudersProperty();
 
-    void forceHeadReset();
-
-    /**
-     *
-     * @return @throws celtech.printerControl.model.PrinterException
-     */
-    AckResponse formatHeadEEPROM() throws PrinterException;
+    public void forceHeadReset();
 
     /**
      *
      * @return @throws celtech.printerControl.model.PrinterException
      */
-    AckResponse formatReelEEPROM() throws PrinterException;
+    public AckResponse formatHeadEEPROM() throws PrinterException;
+
+    /**
+     *
+     * @return @throws celtech.printerControl.model.PrinterException
+     */
+    public AckResponse formatReelEEPROM() throws PrinterException;
 
     /**
      *
      * @return
      */
-    ObservableList<String> gcodeTranscriptProperty();
+    public ObservableList<String> gcodeTranscriptProperty();
 
     /**
      *
      * @return
      */
-    ReadOnlyBooleanProperty getCanPauseProperty();
+    public ReadOnlyBooleanProperty getCanPauseProperty();
 
     /**
      *
      * @return
      */
-    ReadOnlyBooleanProperty getCanResumeProperty();
+    public ReadOnlyBooleanProperty getCanResumeProperty();
 
     /**
      *
      * @return
      */
-    int getDataFileSequenceNumber();
+    public int getDataFileSequenceNumber();
 
-    PrintEngine getPrintEngine();
+    public PrintEngine getPrintEngine();
 
-    PrinterAncillarySystems getPrinterAncillarySystems();
+    public PrinterAncillarySystems getPrinterAncillarySystems();
 
-    PrinterIdentity getPrinterIdentity();
+    public PrinterIdentity getPrinterIdentity();
 
-    void goToOpenDoorPosition(TaskResponder responder) throws PrinterException;
+    public void goToOpenDoorPosition(TaskResponder responder) throws PrinterException;
 
-    void goToTargetBedTemperature();
+    public void goToTargetBedTemperature();
 
-    void goToTargetNozzleTemperature();
+    public void goToTargetNozzleTemperature();
 
-    void goToZPosition(double position);
+    public void goToZPosition(double position);
 
-    void hardResetHead();
+    public void hardResetHead();
 
-    ReadOnlyObjectProperty<Head> headProperty();
+    public ReadOnlyObjectProperty<Head> headProperty();
 
-    void homeZ();
+    public void homeZ();
 
     /**
      *
@@ -133,28 +133,28 @@ public interface Printer extends RoboxResponseConsumer
      * @throws DatafileSendAlreadyInProgress
      * @throws RoboxCommsException
      */
-    boolean initialiseDataFileSend(String fileID) throws DatafileSendAlreadyInProgress, RoboxCommsException;
+    public boolean initialiseDataFileSend(String fileID) throws DatafileSendAlreadyInProgress, RoboxCommsException;
 
     /**
      *
      * @param jobUUID
      * @throws RoboxCommsException
      */
-    void initiatePrint(String jobUUID) throws RoboxCommsException;
+    public void initiatePrint(String jobUUID) throws RoboxCommsException;
 
     /**
      *
      * @return
      */
-    boolean isPrintInitiated();
+    public boolean isPrintInitiated();
 
-    void jogAxis(AxisSpecifier axis, float distance, float feedrate, boolean use_G1) throws PrinterException;
+    public void jogAxis(AxisSpecifier axis, float distance, float feedrate, boolean use_G1) throws PrinterException;
 
-    void openNozzleFully() throws PrinterException;
+    public void openNozzleFully() throws PrinterException;
 
-    void pause() throws PrinterException;
+    public void pause() throws PrinterException;
 
-    void prepareToPurgeHead(TaskResponder responder) throws PrinterException;
+    public void prepareToPurgeHead(TaskResponder responder) throws PrinterException;
 
     /**
      *
@@ -163,54 +163,54 @@ public interface Printer extends RoboxResponseConsumer
      * @param printQuality
      * @param settings
      */
-    void printProject(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings);
+    public void printProject(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings);
 
-    ReadOnlyObjectProperty<PrinterStatus> printerStatusProperty();
+    public ReadOnlyObjectProperty<PrinterStatus> printerStatusProperty();
 
-    void processRoboxResponse(RoboxRxPacket rxPacket);
+    public void processRoboxResponse(RoboxRxPacket rxPacket);
 
-    void purgeHead(TaskResponder responder) throws PrinterException;
-
-    /**
-     *
-     * @return @throws celtech.printerControl.model.PrinterException
-     */
-    FirmwareResponse readFirmwareVersion() throws PrinterException;
-
-    /**
-     *
-     * @return @throws RoboxCommsException
-     */
-    HeadEEPROMDataResponse readHeadEEPROM() throws RoboxCommsException;
+    public void purgeHead(TaskResponder responder) throws PrinterException;
 
     /**
      *
      * @return @throws celtech.printerControl.model.PrinterException
      */
-    PrinterIDResponse readPrinterID() throws PrinterException;
+    public FirmwareResponse readFirmwareVersion() throws PrinterException;
 
     /**
      *
      * @return @throws RoboxCommsException
      */
-    ReelEEPROMDataResponse readReelEEPROM() throws RoboxCommsException;
+    public HeadEEPROMDataResponse readHeadEEPROM() throws RoboxCommsException;
 
-    ObservableList<Reel> reelsProperty();
+    /**
+     *
+     * @return @throws celtech.printerControl.model.PrinterException
+     */
+    public PrinterIDResponse readPrinterID() throws PrinterException;
 
-    void removeHead(TaskResponder responder) throws PrinterException;
+    /**
+     *
+     * @return @throws RoboxCommsException
+     */
+    public ReelEEPROMDataResponse readReelEEPROM() throws RoboxCommsException;
 
-    void repairHeadIfNecessary();
+    public ObservableList<Reel> reelsProperty();
+
+    public void removeHead(TaskResponder responder) throws PrinterException;
+
+    public void repairHeadIfNecessary();
 
     /**
      *
      * @throws PrinterException
      */
-    void resume() throws PrinterException;
+    public void resume() throws PrinterException;
 
     /*
      * Macros
      */
-    void runMacro(String macroName) throws PrinterException;
+    public void runMacro(String macroName) throws PrinterException;
 
     //    /**
     //     *
@@ -240,14 +240,14 @@ public interface Printer extends RoboxResponseConsumer
     //            printEngine.printGCodeFile(GCodeMacros.getFilename(macroName), true);
     //        }
     //    }
-    void runMacroWithoutPurgeCheck(String macroName) throws PrinterException;
+    public void runMacroWithoutPurgeCheck(String macroName) throws PrinterException;
 
     /**
      *
      * @param nozzleNumber
      * @throws PrinterException
      */
-    void selectNozzle(int nozzleNumber) throws PrinterException;
+    public void selectNozzle(int nozzleNumber) throws PrinterException;
 
     /**
      *
@@ -257,83 +257,83 @@ public interface Printer extends RoboxResponseConsumer
      * @throws DatafileSendNotInitialised
      * @throws RoboxCommsException
      */
-    void sendDataFileChunk(String hexDigits, boolean lastPacket, boolean appendCRLF) throws DatafileSendNotInitialised, RoboxCommsException;
+    public void sendDataFileChunk(String hexDigits, boolean lastPacket, boolean appendCRLF) throws DatafileSendNotInitialised, RoboxCommsException;
 
-    void sendRawGCode(String gCode, boolean addToTranscript);
-
-    /**
-     *
-     * @param colour
-     * @throws celtech.printerControl.model.PrinterException
-     */
-    void setAmbientLEDColour(Color colour) throws PrinterException;
-
-    void setAmbientTemperature(int targetTemperature);
-
-    void setBedFirstLayerTargetTemperature(int targetTemperature);
-
-    void setBedTargetTemperature(int targetTemperature);
-
-    void setNozzleFirstLayerTargetTemperature(int targetTemperature);
-
-    void setNozzleTargetTemperature(int targetTemperature);
-
-    void setPurgeTemperature(float purgeTemperature);
+    public void sendRawGCode(String gCode, boolean addToTranscript);
 
     /**
      *
      * @param colour
      * @throws celtech.printerControl.model.PrinterException
      */
-    void setReelLEDColour(Color colour) throws PrinterException;
+    public void setAmbientLEDColour(Color colour) throws PrinterException;
 
-    void shutdown();
+    public void setAmbientTemperature(int targetTemperature);
 
-    void switchAllNozzleHeatersOff();
+    public void setBedFirstLayerTargetTemperature(int targetTemperature);
 
-    void switchBedHeaterOff();
+    public void setBedTargetTemperature(int targetTemperature);
 
-    void switchNozzleHeaterOff(int heaterNumber);
+    public void setNozzleFirstLayerTargetTemperature(int targetTemperature);
 
-    void switchOffHeadFan() throws PrinterException;
+    public void setNozzleTargetTemperature(int targetTemperature);
 
-    void switchOffHeadLEDs() throws PrinterException;
+    public void setPurgeTemperature(float purgeTemperature);
 
-    void switchOnHeadFan() throws PrinterException;
+    /**
+     *
+     * @param colour
+     * @throws celtech.printerControl.model.PrinterException
+     */
+    public void setReelLEDColour(Color colour) throws PrinterException;
+
+    public void shutdown();
+
+    public void switchAllNozzleHeatersOff();
+
+    public void switchBedHeaterOff();
+
+    public void switchNozzleHeaterOff(int heaterNumber);
+
+    public void switchOffHeadFan() throws PrinterException;
+
+    public void switchOffHeadLEDs() throws PrinterException;
+
+    public void switchOnHeadFan() throws PrinterException;
 
     /**
      *
      * @throws celtech.printerControl.model.PrinterException
      */
-    void switchOnHeadLEDs() throws PrinterException;
+    public void switchOnHeadLEDs() throws PrinterException;
 
-    void switchToAbsoluteMoveMode();
+    public void switchToAbsoluteMoveMode();
 
-    void switchToRelativeMoveMode();
-
-    /**
-     *
-     * @return @throws RoboxCommsException
-     */
-    ListFilesResponse transmitListFiles() throws RoboxCommsException;
-
-    /**
-     *
-     * @throws RoboxCommsException
-     */
-    void transmitPausePrint() throws RoboxCommsException;
+    public void switchToRelativeMoveMode();
 
     /**
      *
      * @return @throws RoboxCommsException
      */
-    AckResponse transmitReportErrors() throws RoboxCommsException;
+    public ListFilesResponse transmitListFiles() throws RoboxCommsException;
 
     /**
      *
      * @throws RoboxCommsException
      */
-    void transmitResetErrors() throws RoboxCommsException;
+    public void transmitPausePrint() throws RoboxCommsException;
+
+    /**
+     *
+     * @return @throws RoboxCommsException
+     */
+    public AckResponse transmitReportErrors() throws RoboxCommsException;
+
+    /**
+     *
+     * @throws RoboxCommsException
+     */
+    public void transmitResetErrors() throws RoboxCommsException;
 
     /**
      *
@@ -342,7 +342,7 @@ public interface Printer extends RoboxResponseConsumer
      * @param feedRateMultiplier
      * @throws RoboxCommsException
      */
-    void transmitSetFilamentInfo(double filamentDiameter, double filamentMultiplier, double feedRateMultiplier) throws RoboxCommsException;
+    public void transmitSetFilamentInfo(double filamentDiameter, double filamentMultiplier, double feedRateMultiplier) throws RoboxCommsException;
 
     /*
      * Higher level controls
@@ -356,13 +356,13 @@ public interface Printer extends RoboxResponseConsumer
      * @param ambientTarget
      * @throws RoboxCommsException
      */
-    void transmitSetTemperatures(double nozzleFirstLayerTarget, double nozzleTarget, double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException;
+    public void transmitSetTemperatures(double nozzleFirstLayerTarget, double nozzleTarget, double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException;
 
     /**
      *
      * @return @throws RoboxCommsException
      */
-    StatusResponse transmitStatusRequest() throws RoboxCommsException;
+    public StatusResponse transmitStatusRequest() throws RoboxCommsException;
 
     /**
      *
@@ -370,7 +370,7 @@ public interface Printer extends RoboxResponseConsumer
      * @return
      * @throws RoboxCommsException
      */
-    boolean transmitUpdateFirmware(final String firmwareID) throws RoboxCommsException;
+    public boolean transmitUpdateFirmware(final String firmwareID) throws RoboxCommsException;
 
     /**
      *
@@ -392,7 +392,7 @@ public interface Printer extends RoboxResponseConsumer
      * @return
      * @throws RoboxCommsException
      */
-    AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature, float thermistorBeta, float thermistorTCal, float nozzle1XOffset, float nozzle1YOffset,
+    public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature, float thermistorBeta, float thermistorTCal, float nozzle1XOffset, float nozzle1YOffset,
         float nozzle1ZOffset, float nozzle1BOffset, float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset, float lastFilamentTemperature, float hourCounter) throws RoboxCommsException;
 
     /**
@@ -401,7 +401,7 @@ public interface Printer extends RoboxResponseConsumer
      * @return
      * @throws RoboxCommsException
      */
-    AckResponse transmitWriteReelEEPROM(Filament filament) throws RoboxCommsException;
+    public AckResponse transmitWriteReelEEPROM(Filament filament) throws RoboxCommsException;
 
     /**
      *
@@ -417,19 +417,19 @@ public interface Printer extends RoboxResponseConsumer
      * @param reelRemainingFilament
      * @throws RoboxCommsException
      */
-    void transmitWriteReelEEPROM(String filamentID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature, float reelFirstLayerBedTemperature, float reelBedTemperature,
+    public void transmitWriteReelEEPROM(String filamentID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature, float reelFirstLayerBedTemperature, float reelBedTemperature,
         float reelAmbientTemperature, float reelFilamentDiameter, float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament, String friendlyName,
         MaterialType materialType, Color displayColour) throws RoboxCommsException;
 
-    void updatePrinterDisplayColour(Color displayColour) throws PrinterException;
+    public void updatePrinterDisplayColour(Color displayColour) throws PrinterException;
 
-    void updatePrinterName(String chosenPrinterName) throws PrinterException;
+    public void updatePrinterName(String chosenPrinterName) throws PrinterException;
 
     /**
      *
      * @param headToWrite
      * @throws RoboxCommsException
      */
-    void writeHeadEEPROM(Head headToWrite) throws RoboxCommsException;
+    public void writeHeadEEPROM(Head headToWrite) throws RoboxCommsException;
     
 }

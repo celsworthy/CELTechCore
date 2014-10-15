@@ -296,7 +296,7 @@
                                 <Label minWidth="95.0" text="%support.patternSpacing" GridPane.rowIndex="4" />
                                 <HBox GridPane.columnIndex="1" GridPane.rowIndex="4">
                                     <children>
-                                        <RestrictedNumberField id="retractLength" fx:id="supportPatternSpacing" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                        <RestrictedNumberField id="retractLength" fx:id="supportPatternSpacing" allowedDecimalPlaces="1" maxLength="4" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                                         <Label text="%misc.mm" />
                                     </children>
                                 </HBox>

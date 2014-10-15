@@ -3,7 +3,6 @@ package celtech.printerControl.model;
 import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.appManager.SystemNotificationManager;
-import celtech.appManager.SystemNotificationManagerJavaFX;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
@@ -54,7 +53,6 @@ import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
 import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.WritePrinterID;
 import celtech.printerControl.comms.commands.tx.WriteReelEEPROM;
-import celtech.printerControl.comms.events.RoboxResponseConsumer;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.slicer.PrintQualityEnumeration;
@@ -1608,8 +1606,8 @@ public class HardwarePrinter implements Printer
     @Override
     public void updatePrinterName(String chosenPrinterName) throws PrinterException
     {
-        WritePrinterID writeIDCmd = (WritePrinterID) RoboxTxPacketFactory.createPacket(
-            TxPacketTypeEnum.WRITE_PRINTER_ID);
+        WritePrinterID writeIDCmd =
+            (WritePrinterID) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_PRINTER_ID);
 
         PrinterIdentity newIdentity = printerIdentity.clone();
         newIdentity.printerFriendlyName.set(chosenPrinterName);
