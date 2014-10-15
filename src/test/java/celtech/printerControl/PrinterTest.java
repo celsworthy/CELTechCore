@@ -1,49 +1,53 @@
 package celtech.printerControl;
 
+import celtech.AutoMakerTestConfigurator;
 import celtech.JavaFXConfiguredTest;
-import celtech.Lookup;
-import celtech.appManager.TestSystemNotificationManager;
+import celtech.printerControl.comms.PrinterStatusConsumer;
 import celtech.printerControl.comms.TestCommandInterface;
 import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.model.PrinterException;
-import celtech.utils.tasks.TestTaskExecutor;
 import javafx.scene.paint.Color;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  *
  * @author Ian
  */
-public class PrinterTest extends JavaFXConfiguredTest
+public class PrinterTest
 {
 
-    private static TestCommandInterface testCommandInterface = null;
-    private static HardwarePrinter printer = null;
+    @ClassRule
+    public static TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
+
+    private TestCommandInterface testCommandInterface = null;
+    private HardwarePrinter printer = null;
+    private final int statusTimer = 500;
+    private StatusConsumer statusConsumer = null;
 
     public PrinterTest()
     {
     }
 
-    @Before
-    @Override
-    public void setUp()
-    {
-        super.setUp();
-        Lookup.setTaskExecutor(new TestTaskExecutor());
-        Lookup.setSystemNotificationHandler(new TestSystemNotificationManager());
-        testCommandInterface = new TestCommandInterface(null, "Test Printer", false, 500);
-        printer = new HardwarePrinter(null, testCommandInterface);
-        testCommandInterface.preTestInitialisation();
-    }
-
     @BeforeClass
     public static void setUpClass()
     {
+        AutoMakerTestConfigurator.setUp(temporaryUserStorageFolder);
+    }
+
+    @Before
+    public void setUp()
+    {
+        statusConsumer = new StatusConsumer();
+        testCommandInterface = new TestCommandInterface(statusConsumer, "Test Printer", false, statusTimer);
+        printer = new HardwarePrinter(null, testCommandInterface);
     }
 
     @AfterClass
@@ -74,20 +78,63 @@ public class PrinterTest extends JavaFXConfiguredTest
     @Test
     public void testDefaultPrinterColour()
     {
-        assertTrue(printer.getPrinterIdentity().printerColourProperty().get() == null);
+        assertNull(printer.getPrinterIdentity().printerColourProperty().get());
     }
 
     @Test
     public void testUpdatePrinterColour()
     {
+        Color colourToWrite = Color.CHARTREUSE;
+
         try
         {
-            printer.updatePrinterDisplayColour(Color.ALICEBLUE);
+            printer.updatePrinterDisplayColour(colourToWrite);
         } catch (PrinterException ex)
         {
             fail("Exception during update printer colour test - " + ex.getMessage());
         }
 
-        assertTrue(printer.getPrinterIdentity().printerColourProperty().get() == Color.ALICEBLUE);
+        assertEquals(colourToWrite, printer.getPrinterIdentity().printerColourProperty().get());
+    }
+
+    @Test
+    public void testDefaultPrinterName()
+    {
+        assertEquals("", printer.getPrinterIdentity().printerFriendlyNameProperty().get());
+    }
+
+    @Test
+    public void testUpdatePrinterName()
+    {
+        String testName = "Fred";
+        
+        try
+        {
+            printer.updatePrinterName(testName);
+        } catch (PrinterException ex)
+        {
+            fail("Exception during update printer name test - " + ex.getMessage());
+        }
+
+        assertEquals(testName, printer.getPrinterIdentity().printerFriendlyNameProperty().get());
+    }
+
+    class StatusConsumer implements PrinterStatusConsumer
+    {
+
+        @Override
+        public void printerConnected(String portName)
+        {
+        }
+
+        @Override
+        public void failedToConnect(String portName)
+        {
+        }
+
+        @Override
+        public void disconnected(String portName)
+        {
+        }
     }
 }

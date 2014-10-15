@@ -28,7 +28,6 @@ public class TestTaskExecutor implements TaskExecutor
     @Override
     public void runOnGUIThread(Runnable runnable)
     {
-        Thread newThread = new Thread(runnable);
-        newThread.start();
+        runnable.run();
     }
 }

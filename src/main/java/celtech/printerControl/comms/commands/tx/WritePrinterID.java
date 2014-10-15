@@ -44,6 +44,16 @@ public class WritePrinterID extends RoboxTxPacket
         return false;
     }
 
+    private String model;
+    private String edition;
+    private String weekOfManufacture;
+    private String yearOfManufacture;
+    private String poNumber;
+    private String serialNumber;
+    private String checkByte;
+    private String printerFriendlyName;
+    private Color colour;
+
     /**
      *
      * @param model
@@ -61,11 +71,20 @@ public class WritePrinterID extends RoboxTxPacket
         String serialNumber, String checkByte, String printerFriendlyName,
         Color colour)
     {
-
+        this.model = model;
+        this.edition = edition;
+        this.weekOfManufacture = weekOfManufacture;
+        this.yearOfManufacture = yearOfManufacture;
+        this.poNumber = poNumber;
+        this.serialNumber = serialNumber;
+        this.checkByte = checkByte;
+        this.printerFriendlyName = printerFriendlyName;
+        this.colour = colour;
+        
         try
         {
             printerFriendlyName = StringToBase64Encoder.encode(printerFriendlyName,
-                                                     BYTES_FOR_NAME);
+                                                               BYTES_FOR_NAME);
         } catch (UnsupportedEncodingException ex)
         {
             steno.error("Couldn't encode printer name: " + printerFriendlyName);
@@ -93,17 +112,64 @@ public class WritePrinterID extends RoboxTxPacket
         steno.info("Outputting string of length " + payload.length());
         this.setMessagePayload(payload.toString());
     }
+
+    public void populatePacket(PrinterIdentity printerIdentity)
+    {
+        setIDAndColour(printerIdentity.printermodelProperty().get(),
+                       printerIdentity.printereditionProperty().get(),
+                       printerIdentity.printerweekOfManufactureProperty().get(),
+                       printerIdentity.printeryearOfManufactureProperty().get(),
+                       printerIdentity.printerpoNumberProperty().get(),
+                       printerIdentity.printerserialNumberProperty().get(),
+                       printerIdentity.printercheckByteProperty().get(),
+                       printerIdentity.printerFriendlyNameProperty().get(),
+                       printerIdentity.printerColourProperty().get());
+    }
+
+    public String getModel()
+    {
+        return model;
+    }
+
+    public String getEdition()
+    {
+        return edition;
+    }
+
+    public String getWeekOfManufacture()
+    {
+        return weekOfManufacture;
+    }
+
+    public String getYearOfManufacture()
+    {
+        return yearOfManufacture;
+    }
+
+    public String getPoNumber()
+    {
+        return poNumber;
+    }
+
+    public String getSerialNumber()
+    {
+        return serialNumber;
+    }
+
+    public String getCheckByte()
+    {
+        return checkByte;
+    }
+
+    public String getPrinterFriendlyName()
+    {
+        return printerFriendlyName;
+    }
+
+    public Color getColour()
+    {
+        return colour;
+    }
     
-     public void populatePacket(PrinterIdentity printerIdentity)
-     {
-         setIDAndColour(printerIdentity.printermodelProperty().get(),
-                        printerIdentity.printereditionProperty().get(),
-                        printerIdentity.printerweekOfManufactureProperty().get(),
-                        printerIdentity.printeryearOfManufactureProperty().get(),
-                        printerIdentity.printerpoNumberProperty().get(),
-                        printerIdentity.printerserialNumberProperty().get(),
-                        printerIdentity.printercheckByteProperty().get(),
-                        printerIdentity.printerFriendlyNameProperty().get(),
-                        printerIdentity.printerColourProperty().get());
-     }
+    
 }

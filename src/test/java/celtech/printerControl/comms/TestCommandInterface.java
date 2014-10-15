@@ -23,6 +23,7 @@ import celtech.printerControl.comms.commands.tx.ReportErrors;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.commands.tx.SendGCodeRequest;
 import celtech.printerControl.comms.commands.tx.StatusRequest;
+import celtech.printerControl.comms.commands.tx.WritePrinterID;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Reel;
 import javafx.scene.paint.Color;
@@ -33,21 +34,25 @@ import javafx.scene.paint.Color;
  */
 public class TestCommandInterface extends CommandInterface
 {
+    public static final Color defaultPrinterColour = Color.CRIMSON;
 
     private final String attachHeadCommand = "ATTACH HEAD ";
     private final String detachHeadCommand = "DETACH HEAD";
     private final String attachReelCommand = "ATTACH REEL ";
     private final String detachReelCommand = "DETACH REEL";
 
-    private final StatusResponse currentStatus = (StatusResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.STATUS_RESPONSE);
+    private StatusResponse currentStatus = null;
     private Head attachedHead = null;
     private Reel attachedReel = null;
+    private PrinterIDResponse printerID = null;
 
     public TestCommandInterface(PrinterStatusConsumer controlInterface, String portName,
         boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
         super(controlInterface, portName, suppressPrinterIDChecks, sleepBetweenStatusChecks);
         this.setName("Dummy Printer");
+
+        preTestInitialisation();
     }
 
     @Override
@@ -68,13 +73,6 @@ public class TestCommandInterface extends CommandInterface
             firmwareResponse.setFirmwareRevision("123");
             firmwareResponse.setFirmwareRevisionInt(123);
             response = (RoboxRxPacket) firmwareResponse;
-        } else if (messageToWrite instanceof ReadPrinterID)
-        {
-            PrinterIDResponse idResponse = (PrinterIDResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.PRINTER_ID_RESPONSE);
-            idResponse.setEdition("KS");
-            idResponse.setPrinterFriendlyName("Dummy");
-            idResponse.setPrinterColour(Color.web("#FF0082"));
-            response = (RoboxRxPacket) idResponse;
         } else if (messageToWrite instanceof StatusRequest)
         {
             currentStatus.setAmbientTemperature((int) (Math.random() * 100));
@@ -135,6 +133,22 @@ public class TestCommandInterface extends CommandInterface
 
             reelResponse.updateContents(attachedReel);
             response = (RoboxRxPacket) reelResponse;
+        } else if (messageToWrite instanceof WritePrinterID)
+        {
+            response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().getExpectedResponse());
+
+            WritePrinterID writeID = (WritePrinterID) messageToWrite;
+            printerID.setEdition(writeID.getEdition());
+            printerID.setModel(writeID.getModel());
+            printerID.setPoNumber(writeID.getPoNumber());
+            printerID.setPrinterColour(writeID.getColour());
+            printerID.setPrinterFriendlyName(writeID.getPrinterFriendlyName());
+            printerID.setSerialNumber(writeID.getSerialNumber());
+            printerID.setWeekOfManufacture(writeID.getWeekOfManufacture());
+            printerID.setYearOfManufacture(writeID.getYearOfManufacture());
+        } else if (messageToWrite instanceof ReadPrinterID)
+        {
+            response = (RoboxRxPacket) printerID;
         } else
         {
             response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().getExpectedResponse());
@@ -170,7 +184,13 @@ public class TestCommandInterface extends CommandInterface
 
     public void preTestInitialisation()
     {
+        currentStatus = (StatusResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.STATUS_RESPONSE);
         noHead();
         noReels();
+
+        printerID = (PrinterIDResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.PRINTER_ID_RESPONSE);
+        printerID.setEdition("KS");
+        printerID.setPrinterFriendlyName("Dummy");
+        printerID.setPrinterColour(defaultPrinterColour);
     }
 }

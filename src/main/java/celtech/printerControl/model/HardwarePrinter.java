@@ -154,7 +154,7 @@ public final class HardwarePrinter implements Printer
     protected final StringProperty printJobID = new SimpleStringProperty("");
 
     private PrintEngine printEngine;
-    
+
     private RoboxEventProcessor roboxEventProcessor;
 
     public HardwarePrinter(PrinterStatusConsumer printerStatusConsumer, CommandInterface commandInterface)
@@ -179,7 +179,7 @@ public final class HardwarePrinter implements Printer
 
         extruders.add(new Extruder("E"));
         extruders.add(new Extruder("D"));
-        
+
         roboxEventProcessor = new RoboxEventProcessor(this);
 
         setPrinterStatus(PrinterStatus.IDLE);
@@ -1434,7 +1434,7 @@ public final class HardwarePrinter implements Printer
         try
         {
             AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeIDCmd);
-//            PrinterIDResponse idResponse = (PrinterIDResponse) commandInterface.writeToPrinter(RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_PRINTER_ID));
+            PrinterIDResponse idResponse = (PrinterIDResponse) commandInterface.writeToPrinter(RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_PRINTER_ID));
         } catch (RoboxCommsException ex)
         {
             steno.error("Comms exception whilst writing printer name " + ex.getMessage());
@@ -1455,7 +1455,7 @@ public final class HardwarePrinter implements Printer
         try
         {
             AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeIDCmd);
-//            PrinterIDResponse idResponse = (PrinterIDResponse) commandInterface.writeToPrinter(RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_PRINTER_ID));
+            PrinterIDResponse idResponse = (PrinterIDResponse) commandInterface.writeToPrinter(RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_PRINTER_ID));
         } catch (RoboxCommsException ex)
         {
             steno.error("Comms exception whilst writing printer colour " + ex.getMessage());
@@ -2002,6 +2002,7 @@ public final class HardwarePrinter implements Printer
 
     class RoboxEventProcessor implements Runnable
     {
+
         private Printer printer;
         private RoboxRxPacket rxPacket;
 
@@ -2186,13 +2187,17 @@ public final class HardwarePrinter implements Printer
                     printerIdentity.printercheckByte.set(idResponse.getCheckByte());
                     printerIdentity.printerFriendlyName.set(idResponse.getPrinterFriendlyName());
                     printerIdentity.printerColour.set(idResponse.getPrinterColour());
-                    try
-                    {
-                        setAmbientLEDColour(idResponse.getPrinterColour());
 
-                    } catch (PrinterException ex)
+                    if (idResponse.getPrinterColour() != null)
                     {
-                        steno.warning("Couldn't set printer LED colour");
+                        try
+                        {
+                            setAmbientLEDColour(idResponse.getPrinterColour());
+
+                        } catch (PrinterException ex)
+                        {
+                            steno.warning("Couldn't set printer LED colour");
+                        }
                     }
                     break;
 
