@@ -424,6 +424,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         
         chartManager.setAmbientData(ancillarySystems.getAmbientTemperatureHistory());
         chartManager.setBedData(ancillarySystems.getBedTemperatureHistory());
+        
+        chartManager.setTargetAmbientTemperatureProperty(ancillarySystems.ambientTargetTemperatureProperty());
+        chartManager.setTargetBedTemperatureProperty(ancillarySystems.bedTargetTemperatureProperty());
 
 //        temperatureChart.getData().add(printer.ambientTargetTemperatureProperty());
 //        temperatureChart.getData().add(printer.bedTargetTemperatureHistory());
@@ -543,6 +546,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 //            "printerStatus.temperatureGraphNozzleLabel"));
         //TODO modify to support multiple heaters
         chartManager.setNozzleData(head.getNozzleHeaters().get(0).getNozzleTemperatureHistory());
+        chartManager.setTargetNozzleTemperatureProperty(head.getNozzleHeaters().get(0).nozzleTargetTemperatureProperty());
 
         //TODO modify to work with multiple heaters
 //        head.getNozzleHeaters().get(0).heaterModeProperty().addListener(nozzleHeaterStatusListener);
