@@ -5,10 +5,6 @@
  */
 package celtech.coreUI.controllers.panels;
 
-import celtech.Lookup;
-import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.EEPROMState;
-import celtech.configuration.HeaterMode;
 import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.material.MaterialComponent;
@@ -16,7 +12,6 @@ import celtech.coreUI.components.printerstatus.PrinterComponent;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.RoboxCommsManager;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.PrinterAncillarySystems;
 import celtech.printerControl.model.PrinterException;
@@ -28,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -390,7 +384,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             bindPrinter(printer);
         }
     }
-    
+
     private void unbindPrinter(Printer printer)
     {
         if (printer.headProperty().get() != null)
@@ -399,7 +393,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             printer.headProperty().removeListener(headChangeListener);
         }
         
-        printer.reelsProperty().removeListener(reelsChangeListener);
+        printer.reelsProperty().removeListener(reelsChangedListener);
 
         PrinterAncillarySystems ancillarySystems = printer.getPrinterAncillarySystems();
 
@@ -410,7 +404,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 //        temperatureChart.getData().remove(printer.ambientTargetTemperatureHistory());
 //        temperatureChart.getData().remove(printer.bedTargetTemperatureHistory());
 //        temperatureChart.getData().remove(printer.nozzleTargetTemperatureHistory());
-    }    
+    }
 
     private void bindPrinter(Printer printer)
     {
@@ -418,14 +412,13 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         {
             bindHeadProperties(printer.headProperty().get());
         }
+        printer.headProperty().addListener(headChangeListener);
 
-        if (printer.reelsProperty().isEmpty() == false)
+        printer.reelsProperty().addListener(reelsChangedListener);
+        if (!printer.reelsProperty().isEmpty())
         {
-            printer.reelsProperty().addListener(reelsChangeListener);
-            if (! printer.reelsProperty().isEmpty()) {
-                bindReelProperties(printer.reelsProperty().get(0));
-                updateReelMaterial(printer.reelsProperty().get(0));
-            }
+            bindReelProperties(printer.reelsProperty().get(0));
+            updateReelMaterial(printer.reelsProperty().get(0));
         }
 
         PrinterAncillarySystems ancillarySystems = printer.getPrinterAncillarySystems();
@@ -449,7 +442,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         }
     };
 
-    private final ListChangeListener<Reel> reelsChangeListener = new ListChangeListener<Reel>()
+    private final ListChangeListener<Reel> reelsChangedListener = new ListChangeListener<Reel>()
     {
         @Override
         public void onChanged(ListChangeListener.Change<? extends Reel> change)
@@ -461,6 +454,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                     for (Reel changedReel : change.getAddedSubList())
                     {
                         bindReelProperties(changedReel);
+                        updateReelMaterial(changedReel);
                     }
                 } else if (change.wasRemoved())
                 {

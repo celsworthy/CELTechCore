@@ -10,8 +10,6 @@ import static celtech.printerControl.comms.commands.ColourStringConverter.colour
 import static celtech.utils.StringMetrics.getWidthOfString;
 import com.sun.javafx.tk.FontMetrics;
 import com.sun.javafx.tk.Toolkit;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import javafx.beans.property.StringProperty;
