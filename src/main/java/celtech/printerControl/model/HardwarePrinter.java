@@ -3,7 +3,6 @@ package celtech.printerControl.model;
 import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.appManager.SystemNotificationManager;
-import celtech.appManager.SystemNotificationManagerJavaFX;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
@@ -54,7 +53,6 @@ import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
 import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.WritePrinterID;
 import celtech.printerControl.comms.commands.tx.WriteReelEEPROM;
-import celtech.printerControl.comms.events.RoboxResponseConsumer;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.slicer.PrintQualityEnumeration;
@@ -1755,7 +1753,7 @@ public class HardwarePrinter implements Printer
     }
 
     @Override
-    public void changeNozzlePosition(float position)
+    public void gotoNozzlePosition(float position)
     {
         try
         {
@@ -2135,6 +2133,32 @@ public class HardwarePrinter implements Printer
             throw new PrinterException("Error whilst sending nozzle select command");
         }
     }
+    
+    @Override
+    public void probeBed()
+    {
+        try
+        {
+            transmitDirectGCode("G28 Z?", false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error sending probe bed command");
+        }
+    }
+
+    @Override
+    public String getZDelta() throws PrinterException
+    {
+        try
+        {
+            return transmitDirectGCode("M113", false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error sending get Z delta");
+            throw new PrinterException("Error sending get Z delta");
+        }
+    }
+    
 
     @Override
     public void shutdown()

@@ -18,6 +18,7 @@ import celtech.coreUI.controllers.utilityPanels.MaterialDetailsController;
 import celtech.coreUI.controllers.utilityPanels.ProfileDetailsController;
 import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.comms.RoboxCommsManager;
+import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
 import static celtech.utils.DeDuplicator.suggestNonDuplicateName;
@@ -58,7 +59,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 {
 
     private Stenographer steno = StenographerFactory.getStenographer(SettingsSidePanelController.class.getName());
-    private ObservableList<HardwarePrinter> printerStatusList = null;
+    private ObservableList<Printer> printerStatusList = null;
     private SettingsScreenState settingsScreenState = null;
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
@@ -93,7 +94,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private VBox customProfileVBox;
 
     @FXML
-    private ComboBox<HardwarePrinter> printerChooser;
+    private ComboBox<Printer> printerChooser;
 
     @FXML
     private Slider fillDensitySlider;
@@ -121,7 +122,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private ObservableList<Filament> availableFilaments = FXCollections.observableArrayList();
     private ObservableList<RoboxProfile> availableProfiles = FXCollections.observableArrayList();
 
-    private HardwarePrinter currentPrinter = null;
+    private Printer currentPrinter = null;
     private Filament currentlyLoadedFilament = null;
     private Filament lastFilamentSelected = null;
 
@@ -303,17 +304,17 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         printerChooser.getSelectionModel()
             .clearSelection();
 
-        printerChooser.getItems().addListener(new ListChangeListener<HardwarePrinter>()
+        printerChooser.getItems().addListener(new ListChangeListener<Printer>()
         {
             @Override
-            public void onChanged(ListChangeListener.Change<? extends HardwarePrinter> change
+            public void onChanged(ListChangeListener.Change<? extends Printer> change
             )
             {
                 while (change.next())
                 {
                     if (change.wasAdded())
                     {
-                        for (HardwarePrinter addedPrinter : change.getAddedSubList())
+                        for (Printer addedPrinter : change.getAddedSubList())
                         {
                             Platform.runLater(new Runnable()
                             {
@@ -327,7 +328,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         }
                     } else if (change.wasRemoved())
                     {
-                        for (HardwarePrinter removedPrinter : change.getRemoved())
+                        for (Printer removedPrinter : change.getRemoved())
                         {
                             if (printerChooser.getItems().isEmpty())
                             {
@@ -365,10 +366,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         );
 
         printerChooser.getSelectionModel()
-            .selectedItemProperty().addListener(new ChangeListener<HardwarePrinter>()
+            .selectedItemProperty().addListener(new ChangeListener<Printer>()
                 {
                     @Override
-                    public void changed(ObservableValue<? extends HardwarePrinter> ov, HardwarePrinter lastSelectedPrinter, HardwarePrinter selectedPrinter
+                    public void changed(ObservableValue<? extends Printer> ov, Printer lastSelectedPrinter, Printer selectedPrinter
                     )
                     {
                         if (lastSelectedPrinter != null)
@@ -591,7 +592,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     private void populatePrinterChooser()
     {
-        for (HardwarePrinter printer : printerStatusList)
+        for (Printer printer : printerStatusList)
         {
             printerChooser.getItems().add(printer);
         }

@@ -14,6 +14,7 @@ import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
+import celtech.printerControl.model.Printer;
 import celtech.utils.tasks.Cancellable;
 import java.util.ResourceBundle;
 import javafx.beans.property.ReadOnlyIntegerProperty;
@@ -67,7 +68,7 @@ public class PrinterUtils
      * @param task
      * @return interrupted
      */
-    public static boolean waitOnMacroFinished(HardwarePrinter printerToCheck, Task task)
+    public static boolean waitOnMacroFinished(Printer printerToCheck, Task task)
     {
         boolean interrupted = false;
 
@@ -141,7 +142,7 @@ public class PrinterUtils
      * @param task
      * @return failed
      */
-    public static boolean waitOnBusy(HardwarePrinter printerToCheck, Task task)
+    public static boolean waitOnBusy(Printer printerToCheck, Task task)
     {
         boolean failed = false;
 
@@ -239,7 +240,7 @@ public class PrinterUtils
      * @param printer
      * @return
      */
-    public boolean isPurgeNecessary(HardwarePrinter printer)
+    public boolean isPurgeNecessary(Printer printer)
     {
         boolean purgeIsNecessary = false;
         float targetNozzleTemperature = 0;
@@ -270,7 +271,7 @@ public class PrinterUtils
      * @param printer
      * @return
      */
-    public boolean offerPurgeIfNecessary(HardwarePrinter printer)
+    public boolean offerPurgeIfNecessary(Printer printer)
     {
         boolean purgeConsent = false;
         if (isPurgeNecessary(printer) && purgeDialogVisible == false)

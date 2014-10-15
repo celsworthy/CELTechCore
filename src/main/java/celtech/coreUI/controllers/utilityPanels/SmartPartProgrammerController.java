@@ -5,13 +5,13 @@
  */
 package celtech.coreUI.controllers.utilityPanels;
 
-import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
@@ -34,7 +34,7 @@ public class SmartPartProgrammerController implements Initializable
 
     private Stenographer steno = StenographerFactory.getStenographer(SmartPartProgrammerController.class.getName());
     private StatusScreenState statusScreenState = null;
-    private HardwarePrinter connectedPrinter = null;
+    private Printer connectedPrinter = null;
     private ChangeListener<Boolean> reelDataChangeListener = new ChangeListener<Boolean>()
     {
 
@@ -136,10 +136,10 @@ public class SmartPartProgrammerController implements Initializable
 
         materialSelector.setItems(FilamentContainer.getCompleteFilamentList());
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<HardwarePrinter>()
+        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
             @Override
-            public void changed(ObservableValue<? extends HardwarePrinter> observable, HardwarePrinter oldValue, HardwarePrinter newPrinter)
+            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newPrinter)
             {
                 if (connectedPrinter != null)
                 {

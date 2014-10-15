@@ -39,7 +39,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
     private Stenographer steno = StenographerFactory.getStenographer(
         CalibrationNozzleOffsetHelper.class.getName());
 
-    private HardwarePrinter printerToUse = null;
+    private Printer printerToUse = null;
 
     private DoubleProperty zco = new SimpleDoubleProperty(0);
     private double zDifference = 0;

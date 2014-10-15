@@ -10,6 +10,7 @@ import celtech.appManager.ProjectMode;
 import celtech.coreUI.components.SlidingComponentDirection;
 import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.model.HardwarePrinter;
+import celtech.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.IntegerProperty;
@@ -63,10 +64,10 @@ public class GCodeEditorPanelController extends SlidingElementController impleme
             gcodeListView.setItems(statusScreenState.getCurrentlySelectedPrinter().gcodeTranscriptProperty());
         }
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<HardwarePrinter>()
+        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
             @Override
-            public void changed(ObservableValue<? extends HardwarePrinter> ov, HardwarePrinter t, HardwarePrinter t1)
+            public void changed(ObservableValue<? extends Printer> ov, Printer t, Printer t1)
             {
                 if (t1 != null)
                 {

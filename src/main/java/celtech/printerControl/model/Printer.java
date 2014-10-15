@@ -424,6 +424,10 @@ public interface Printer extends RoboxResponseConsumer
     void updatePrinterDisplayColour(Color displayColour) throws PrinterException;
 
     void updatePrinterName(String chosenPrinterName) throws PrinterException;
+    
+    public void probeBed();
+    
+    public String getZDelta() throws PrinterException;
 
     /**
      *

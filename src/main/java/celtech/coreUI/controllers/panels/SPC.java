@@ -388,7 +388,7 @@ public class SPC implements Initializable, SidePanelManager
             @Override
             public ListCell<Printer> call(ListView<Printer> list)
             {
-                return new PrinterStatusListCell();
+                return new ListCell<Printer>();
             }
         }
         );

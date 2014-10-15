@@ -7,7 +7,6 @@ package celtech.services.calibration;
 
 import celtech.configuration.HeaterMode;
 import celtech.printerControl.model.Printer;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.model.NozzleHeater;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.ControllableService;

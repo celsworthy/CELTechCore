@@ -1,7 +1,7 @@
 package celtech.services.printing;
 
-import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.utils.SystemUtils;
 import java.io.File;
@@ -20,7 +20,7 @@ import libertysystems.stenographer.StenographerFactory;
 public class GCodePrinterTask extends Task<GCodePrintResult>
 {
 
-    private HardwarePrinter printerToUse = null;
+    private Printer printerToUse = null;
     private String gcodeFileToPrint = null;
     private String printJobID = null;
     private final Stenographer steno = StenographerFactory.getStenographer(this.getClass().getName());
@@ -37,7 +37,7 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
      * @param printUsingSDCard
      * @param isMacro
      */
-    public GCodePrinterTask(HardwarePrinter printerToUse, String modelFileToPrint, String printJobID, IntegerProperty linesInFile, boolean printUsingSDCard, boolean isMacro)
+    public GCodePrinterTask(Printer printerToUse, String modelFileToPrint, String printJobID, IntegerProperty linesInFile, boolean printUsingSDCard, boolean isMacro)
     {
         this.printerToUse = printerToUse;
         this.gcodeFileToPrint = modelFileToPrint;
