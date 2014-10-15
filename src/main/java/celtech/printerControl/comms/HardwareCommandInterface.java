@@ -14,8 +14,7 @@ import celtech.printerControl.comms.commands.tx.FormatHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacketFactory;
 import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
-import celtech.printerControl.model.HardwarePrinter;
-import javafx.application.Platform;
+import celtech.printerControl.model.Printer;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 
@@ -236,7 +235,7 @@ public class HardwareCommandInterface extends CommandInterface
         throw new ConnectionLostException();
     }
 
-    void setPrinterToUse(HardwarePrinter newPrinter)
+    void setPrinterToUse(Printer newPrinter)
     {
         this.printerToUse = newPrinter;
     }

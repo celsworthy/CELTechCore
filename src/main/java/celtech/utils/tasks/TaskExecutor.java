@@ -6,6 +6,7 @@ package celtech.utils.tasks;
  */
 public interface TaskExecutor
 {
-    public void runOnGUIThread(TaskResponder responder, boolean success, String message);
-    public void runOnCurrentThread(TaskResponder responder, boolean success, String message);
+    public void respondOnGUIThread(TaskResponder responder, boolean success, String message);
+    public void respondOnCurrentThread(TaskResponder responder, boolean success, String message);
+    public void runOnGUIThread(Runnable runnable);
 }

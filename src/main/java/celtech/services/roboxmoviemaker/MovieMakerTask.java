@@ -5,7 +5,7 @@
 package celtech.services.roboxmoviemaker;
 
 import celtech.configuration.ApplicationConfiguration;
-import celtech.printerControl.model.HardwarePrinter;
+import celtech.printerControl.model.Printer;
 import java.io.File;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -29,7 +29,7 @@ public class MovieMakerTask extends Task<MovieMakerResult>
 
     private final Stenographer steno = StenographerFactory.getStenographer(MovieMakerTask.class.getName());
     private String printJobUUID = null;
-    private HardwarePrinter printerToUse = null;
+    private Printer printerToUse = null;
 
     private final ChangeListener<Boolean> triggerListener = new ChangeListener<Boolean>()
     {
@@ -53,7 +53,7 @@ public class MovieMakerTask extends Task<MovieMakerResult>
      * @param printJobUUID
      * @param printerToUse
      */
-    public MovieMakerTask(String printJobUUID, HardwarePrinter printerToUse)
+    public MovieMakerTask(String printJobUUID, Printer printerToUse)
     {
         this.printJobUUID = printJobUUID;
         this.printerToUse = printerToUse;

@@ -1,14 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.components;
 
 import celtech.configuration.PrinterColourMap;
-import celtech.configuration.WhyAreWeWaitingState;
-import celtech.printerControl.model.HardwarePrinter;
-import javafx.beans.binding.Bindings;
+import celtech.printerControl.model.Printer;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Label;
@@ -21,7 +14,7 @@ import javafx.scene.shape.Rectangle;
  *
  * @author Ian
  */
-public class PrinterStatusListCell extends ListCell<HardwarePrinter>
+public class PrinterStatusListCell extends ListCell<Printer>
 {
     
     private final static String PRINTER_STATUS_LIST_CELL_STYLE_CLASS = "printer-status-list-cell";
@@ -58,7 +51,7 @@ public class PrinterStatusListCell extends ListCell<HardwarePrinter>
     }
     
     @Override
-    protected void updateItem(HardwarePrinter printer, boolean empty)
+    protected void updateItem(Printer printer, boolean empty)
     {
         super.updateItem(printer, empty);
         if (empty)
@@ -76,7 +69,7 @@ public class PrinterStatusListCell extends ListCell<HardwarePrinter>
         setGraphic(null);
     }
     
-    private void addContent(HardwarePrinter printer)
+    private void addContent(Printer printer)
     {
         setText(null);
         printerColour.setFill(colourMap.printerToDisplayColour(printer.getPrinterIdentity().printerColourProperty().get()));

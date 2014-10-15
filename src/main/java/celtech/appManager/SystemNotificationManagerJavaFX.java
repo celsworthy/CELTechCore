@@ -9,7 +9,6 @@ import celtech.coreUI.controllers.utilityPanels.MaintenancePanelController;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
-import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.firmware.FirmwareLoadResult;
@@ -61,7 +60,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     protected ProgressDialog firmwareUpdateProgress = null;
 
     /*
-     * HardwarePrinter ID Dialog
+     * Printer ID Dialog
      */
     protected PrinterIDDialog printerIDDialog = null;
 
@@ -95,7 +94,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     }
 
     @Override
-    public void processErrorPacketFromPrinter(AckResponse response, HardwarePrinter printer)
+    public void processErrorPacketFromPrinter(AckResponse response, Printer printer)
     {
         if (clearOnly == null)
         {

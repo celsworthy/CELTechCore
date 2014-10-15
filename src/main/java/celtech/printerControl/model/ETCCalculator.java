@@ -35,9 +35,9 @@ public class ETCCalculator
      * The estimated number of seconds it takes to heat the bed up by one degree
      */
     protected static int PREDICTED_BED_HEAT_RATE = 2;
-    private final HardwarePrinter printer;
+    private final Printer printer;
 
-    public ETCCalculator(HardwarePrinter printer,
+    public ETCCalculator(Printer printer,
         List<Double> layerNumberToPredictedDuration,
         List<Integer> layerNumberToLineNumber)
     {

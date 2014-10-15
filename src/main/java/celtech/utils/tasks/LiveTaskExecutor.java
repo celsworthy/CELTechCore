@@ -8,9 +8,14 @@ import javafx.application.Platform;
  */
 public class LiveTaskExecutor implements TaskExecutor
 {
+    @Override
+    public void runOnGUIThread(Runnable runnable)
+    {
+        Platform.runLater(runnable);
+    }
 
     @Override
-    public void runOnGUIThread(TaskResponder responder, boolean success, String message)
+    public void respondOnGUIThread(TaskResponder responder, boolean success, String message)
     {
         if (responder != null)
         {
@@ -25,7 +30,7 @@ public class LiveTaskExecutor implements TaskExecutor
     }
 
     @Override
-    public void runOnCurrentThread(TaskResponder responder, boolean success, String message)
+    public void respondOnCurrentThread(TaskResponder responder, boolean success, String message)
     {
         if (responder != null)
         {

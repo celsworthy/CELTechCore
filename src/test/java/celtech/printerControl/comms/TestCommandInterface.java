@@ -168,7 +168,7 @@ public class TestCommandInterface extends CommandInterface
         currentStatus.setReelEEPROMState(EEPROMState.NOT_PRESENT);
     }
 
-    void preTestInitialisation()
+    public void preTestInitialisation()
     {
         noHead();
         noReels();

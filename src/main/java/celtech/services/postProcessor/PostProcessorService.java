@@ -1,15 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.services.postProcessor;
 
-import celtech.printerControl.model.HardwarePrinter;
+import celtech.printerControl.model.Printer;
 import celtech.services.ControllableService;
 import celtech.services.slicer.RoboxProfile;
 import javafx.concurrent.Service;
@@ -23,7 +14,7 @@ public class PostProcessorService extends Service<GCodePostProcessingResult> imp
 {
     private String printJobUUID = null;
     private RoboxProfile settings = null;
-    private HardwarePrinter printerToUse = null;
+    private Printer printerToUse = null;
 
     /**
      *
@@ -47,7 +38,7 @@ public class PostProcessorService extends Service<GCodePostProcessingResult> imp
      *
      * @param printerToUse
      */
-    public void setPrinterToUse(HardwarePrinter printerToUse)
+    public void setPrinterToUse(Printer printerToUse)
     {
         this.printerToUse = printerToUse;
     }

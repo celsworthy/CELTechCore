@@ -5,7 +5,7 @@
 package celtech.services.slicer;
 
 import celtech.appManager.Project;
-import celtech.printerControl.model.HardwarePrinter;
+import celtech.printerControl.model.Printer;
 import javafx.concurrent.Task;
 
 /**
@@ -19,7 +19,7 @@ public class SlicerService extends AbstractSlicerService
     private Project project = null;
     private PrintQualityEnumeration printQuality = null;
     private RoboxProfile settings = null;
-    private HardwarePrinter printerToUse = null;
+    private Printer printerToUse = null;
 
     /**
      *
@@ -61,7 +61,7 @@ public class SlicerService extends AbstractSlicerService
      *
      * @param printerToUse
      */
-    public void setPrinterToUse(HardwarePrinter printerToUse)
+    public void setPrinterToUse(Printer printerToUse)
     {
         this.printerToUse = printerToUse;
     }

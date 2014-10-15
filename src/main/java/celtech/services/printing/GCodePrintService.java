@@ -1,10 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.services.printing;
 
-import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.model.Printer;
 import celtech.services.ControllableService;
 import javafx.beans.property.IntegerProperty;

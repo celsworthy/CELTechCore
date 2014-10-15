@@ -1,7 +1,6 @@
 package celtech.appManager;
 
 import celtech.printerControl.comms.commands.rx.AckResponse;
-import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.model.Printer;
 import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
@@ -30,7 +29,7 @@ public interface SystemNotificationManager
      */
     boolean askUserToUpgradeFirmware(int requiredFirmwareVersion, int actualFirmwareVersion);
 
-    void processErrorPacketFromPrinter(AckResponse response, HardwarePrinter printer);
+    void processErrorPacketFromPrinter(AckResponse response, Printer printer);
 
     void showCalibrationDialogue();
 

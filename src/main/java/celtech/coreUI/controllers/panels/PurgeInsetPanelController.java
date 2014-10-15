@@ -7,7 +7,6 @@ import celtech.configuration.Filament;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;

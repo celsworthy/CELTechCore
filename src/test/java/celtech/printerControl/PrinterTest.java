@@ -1,17 +1,19 @@
 package celtech.printerControl;
 
-import celtech.printerControl.model.HardwarePrinter;
 import celtech.JavaFXConfiguredTest;
 import celtech.Lookup;
 import celtech.appManager.TestSystemNotificationManager;
 import celtech.printerControl.comms.TestCommandInterface;
+import celtech.printerControl.model.HardwarePrinter;
+import celtech.printerControl.model.PrinterException;
 import celtech.utils.tasks.TestTaskExecutor;
+import javafx.scene.paint.Color;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -20,15 +22,23 @@ import org.junit.Before;
 public class PrinterTest extends JavaFXConfiguredTest
 {
 
+    private static TestCommandInterface testCommandInterface = null;
+    private static HardwarePrinter printer = null;
+
     public PrinterTest()
     {
     }
 
     @Before
+    @Override
     public void setUp()
     {
+        super.setUp();
         Lookup.setTaskExecutor(new TestTaskExecutor());
         Lookup.setSystemNotificationHandler(new TestSystemNotificationManager());
+        testCommandInterface = new TestCommandInterface(null, "Test Printer", false, 500);
+        printer = new HardwarePrinter(null, testCommandInterface);
+        testCommandInterface.preTestInitialisation();
     }
 
     @BeforeClass
@@ -44,24 +54,40 @@ public class PrinterTest extends JavaFXConfiguredTest
     @After
     public void tearDown()
     {
+        testCommandInterface.shutdown();
     }
 
     @Test
     public void testCanRemoveHead()
     {
-        HardwarePrinter printer = new HardwarePrinter(null, new TestCommandInterface(null, "Test Printer", false, 500));
-        
         assertTrue(printer.canRemoveHeadProperty().get());
     }
 
     @Test
     public void testCannotPrintWhenHeadIsRemoved()
     {
-        TestCommandInterface testCommandInterface = new TestCommandInterface(null, "Test Printer", false, 500);
         testCommandInterface.noHead();
-        
-        HardwarePrinter printer = new HardwarePrinter(null, testCommandInterface);
-        
+
         assertFalse(printer.canPrintProperty().get());
+    }
+
+    @Test
+    public void testDefaultPrinterColour()
+    {
+        assertTrue(printer.getPrinterIdentity().printerColourProperty().get() == null);
+    }
+
+    @Test
+    public void testUpdatePrinterColour()
+    {
+        try
+        {
+            printer.updatePrinterDisplayColour(Color.ALICEBLUE);
+        } catch (PrinterException ex)
+        {
+            fail("Exception during update printer colour test - " + ex.getMessage());
+        }
+
+        assertTrue(printer.getPrinterIdentity().printerColourProperty().get() == Color.ALICEBLUE);
     }
 }

@@ -8,7 +8,7 @@ public class TestTaskExecutor implements TaskExecutor
 {
 
     @Override
-    public void runOnGUIThread(TaskResponder responder, boolean success, String message)
+    public void respondOnGUIThread(TaskResponder responder, boolean success, String message)
     {
         TaskResponse taskResponse = new TaskResponse(message);
         taskResponse.setSucceeded(success);
@@ -17,11 +17,18 @@ public class TestTaskExecutor implements TaskExecutor
     }
 
     @Override
-    public void runOnCurrentThread(TaskResponder responder, boolean success, String message)
+    public void respondOnCurrentThread(TaskResponder responder, boolean success, String message)
     {
         TaskResponse taskResponse = new TaskResponse(message);
         taskResponse.setSucceeded(success);
 
         responder.taskEnded(taskResponse);
+    }
+
+    @Override
+    public void runOnGUIThread(Runnable runnable)
+    {
+        Thread newThread = new Thread(runnable);
+        newThread.start();
     }
 }

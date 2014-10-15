@@ -3,7 +3,6 @@ package celtech.coreUI.controllers.panels;
 import celtech.appManager.TaskController;
 import celtech.configuration.Filament;
 import celtech.coreUI.controllers.SettingsScreenState;
-import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;

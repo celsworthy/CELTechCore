@@ -4,6 +4,7 @@
 package celtech;
 
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.PrintProfileContainer;
 import java.io.File;
 import java.net.URL;
 import java.util.Properties;
@@ -18,12 +19,13 @@ import org.junit.rules.TemporaryFolder;
  */
 public class JavaFXConfiguredTest
 {
-    @Rule
-    public static TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
 
-     @BeforeClass
-    public static void setUpClass()
-    {        
+    @Rule
+    public TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
+
+    @Before
+    public void setUp()
+    {
         Properties testProperties = new Properties();
 
         testProperties.setProperty("language", "UK");
@@ -42,12 +44,12 @@ public class JavaFXConfiguredTest
             + ApplicationConfiguration.printSpoolStorageDirectoryPath
             + File.separator).mkdir();
 
-//        // force initialisation
-//        URL configURL = this.getClass().getResource("/AutoMaker.configFile.xml");
-//        System.setProperty("libertySystems.configFile", configURL.getFile());
-//        String installDir = ApplicationConfiguration.getApplicationInstallDirectory(
-//                Lookup.class);
-//        PrintProfileContainer.getInstance();
+        // force initialisation
+        URL configURL = JavaFXConfiguredTest.class.getResource("/AutoMaker.configFile.xml");
+        System.setProperty("libertySystems.configFile", configURL.getFile());
+        String installDir = ApplicationConfiguration.getApplicationInstallDirectory(
+            Lookup.class);
+        PrintProfileContainer.getInstance();
     }
 
 }

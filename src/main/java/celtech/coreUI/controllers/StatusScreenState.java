@@ -5,7 +5,6 @@
  */
 package celtech.coreUI.controllers;
 
-import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.model.Printer;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -18,7 +17,7 @@ public class StatusScreenState
 {
 
     private static StatusScreenState instance = null;
-    private static ObjectProperty<Printer> currentlySelectedPrinter = new SimpleObjectProperty<>();
+    private static final ObjectProperty<Printer> currentlySelectedPrinter = new SimpleObjectProperty<>();
     private static ObjectProperty<StatusScreenMode> currentMode = new SimpleObjectProperty<>();
 
     private StatusScreenState()
