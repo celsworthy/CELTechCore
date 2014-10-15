@@ -5,7 +5,9 @@ import celtech.Lookup;
 import celtech.appManager.TestSystemNotificationManager;
 import celtech.printerControl.comms.TestCommandInterface;
 import celtech.printerControl.model.HardwarePrinter;
+import celtech.printerControl.model.PrinterException;
 import celtech.utils.tasks.TestTaskExecutor;
+import javafx.scene.paint.Color;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
@@ -68,24 +70,24 @@ public class PrinterTest extends JavaFXConfiguredTest
 
         assertFalse(printer.canPrintProperty().get());
     }
-//
-//    @Test
-//    public void testDefaultPrinterColour()
-//    {
-//        assertTrue(printer.getPrinterIdentity().printerColourProperty().get() == null);
-//    }
 
-//    @Test
-//    public void testUpdatePrinterColour()
-//    {
-//        try
-//        {
-//            printer.updatePrinterDisplayColour(Color.ALICEBLUE);
-//        } catch (PrinterException ex)
-//        {
-//            fail("Exception during update printer colour test - " + ex.getMessage());
-//        }
-//
-//        assert ()
-//    }
+    @Test
+    public void testDefaultPrinterColour()
+    {
+        assertTrue(printer.getPrinterIdentity().printerColourProperty().get() == null);
+    }
+
+    @Test
+    public void testUpdatePrinterColour()
+    {
+        try
+        {
+            printer.updatePrinterDisplayColour(Color.ALICEBLUE);
+        } catch (PrinterException ex)
+        {
+            fail("Exception during update printer colour test - " + ex.getMessage());
+        }
+
+        assertTrue(printer.getPrinterIdentity().printerColourProperty().get() == Color.ALICEBLUE);
+    }
 }

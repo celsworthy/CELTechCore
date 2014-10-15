@@ -9,7 +9,6 @@ import celtech.coreUI.components.GCodeMacroButton;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.coreUI.controllers.panels.CalibrationNozzleBInsetPanelController;
-import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.printerControl.model.Printer;

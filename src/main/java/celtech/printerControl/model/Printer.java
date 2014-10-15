@@ -22,7 +22,9 @@ import celtech.utils.AxisSpecifier;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponder;
 import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
 
@@ -58,7 +60,7 @@ public interface Printer extends RoboxResponseConsumer
 
     public void cancel(TaskResponder responder) throws PrinterException;
 
-    void gotoNozzlePosition(float position);
+    public void gotoNozzlePosition(float position);
 
     public void closeNozzleFully() throws PrinterException;
 
@@ -392,7 +394,8 @@ public interface Printer extends RoboxResponseConsumer
      * @return
      * @throws RoboxCommsException
      */
-    public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature, float thermistorBeta, float thermistorTCal, float nozzle1XOffset, float nozzle1YOffset,
+    public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature, float thermistorBeta, float thermistorTCal, float nozzle1XOffset,
+        float nozzle1YOffset,
         float nozzle1ZOffset, float nozzle1BOffset, float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset, float lastFilamentTemperature, float hourCounter) throws RoboxCommsException;
 
     /**
@@ -423,10 +426,10 @@ public interface Printer extends RoboxResponseConsumer
 
     public void updatePrinterDisplayColour(Color displayColour) throws PrinterException;
 
-    void updatePrinterName(String chosenPrinterName) throws PrinterException;
-    
+    public void updatePrinterName(String chosenPrinterName) throws PrinterException;
+
     public void probeBed();
-    
+
     public String getZDelta() throws PrinterException;
 
     /**
@@ -435,5 +438,12 @@ public interface Printer extends RoboxResponseConsumer
      * @throws RoboxCommsException
      */
     public void writeHeadEEPROM(Head headToWrite) throws RoboxCommsException;
+
+    void setPrinterStatus(PrinterStatus printerStatus);
+
+    public ReadOnlyIntegerProperty printJobLineNumberProperty();
+
+    public ReadOnlyStringProperty printJobIDProperty();
     
+    public ReadOnlyObjectProperty pauseStatusProperty();
 }

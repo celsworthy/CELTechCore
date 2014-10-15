@@ -10,7 +10,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.SettingsScreenState;
-import celtech.printerControl.model.HardwarePrinter;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
@@ -110,7 +110,7 @@ public class PrinterUtils
      * @param cancellable
      * @return failed
      */
-    public static boolean waitOnMacroFinished(HardwarePrinter printerToCheck, Cancellable cancellable)
+    public static boolean waitOnMacroFinished(Printer printerToCheck, Cancellable cancellable)
     {
         boolean failed = false;
 
@@ -203,7 +203,7 @@ public class PrinterUtils
      * @param cancellable
      * @return failed
      */
-    public static boolean waitOnBusy(HardwarePrinter printerToCheck, Cancellable cancellable)
+    public static boolean waitOnBusy(Printer printerToCheck, Cancellable cancellable)
     {
         boolean failed = false;
 

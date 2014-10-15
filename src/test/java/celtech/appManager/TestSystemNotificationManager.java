@@ -1,7 +1,6 @@
 package celtech.appManager;
 
 import celtech.printerControl.comms.commands.rx.AckResponse;
-import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.model.Printer;
 import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
@@ -26,7 +25,7 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     }
 
     @Override
-    public void processErrorPacketFromPrinter(AckResponse response, HardwarePrinter printer)
+    public void processErrorPacketFromPrinter(AckResponse response, Printer printer)
     {
     }
 

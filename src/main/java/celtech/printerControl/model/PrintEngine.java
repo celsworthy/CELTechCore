@@ -71,7 +71,7 @@ public class PrintEngine implements ControllableService
     private final Stenographer steno = StenographerFactory.getStenographer(
         PrintEngine.class.getName());
 
-    private HardwarePrinter associatedPrinter = null;
+    private Printer associatedPrinter = null;
     private AbstractSlicerService slicerService;
     private final PostProcessorService gcodePostProcessorService = new PostProcessorService();
     private final GCodePrintService gcodePrintService = new GCodePrintService();
@@ -135,12 +135,12 @@ public class PrintEngine implements ControllableService
      */
     private MovieMakerTask movieMakerTask = null;
 
-    public PrintEngine(HardwarePrinter associatedPrinter)
+    public PrintEngine(Printer associatedPrinter)
     {
         this(associatedPrinter, new SlicerService());
     }
 
-    public PrintEngine(HardwarePrinter associatedPrinter,
+    public PrintEngine(Printer associatedPrinter,
         AbstractSlicerService slicerService)
     {
         this.associatedPrinter = associatedPrinter;
@@ -348,7 +348,7 @@ public class PrintEngine implements ControllableService
             {
 //                steno.info("Line number is " + newValue.toString() + " and was " + oldValue.toString());
 //                System.out.println("Line number changed to " + newValue);
-                switch (associatedPrinter.printerStatus.get())
+                switch (associatedPrinter.printerStatusProperty().get())
                 {
                     case IDLE:
 //Ignore this state...
@@ -402,15 +402,15 @@ public class PrintEngine implements ControllableService
 
         gcodePrintService.setOnSucceeded(succeededPrintEventHandler);
 
-        associatedPrinter.printJobLineNumberProperty.addListener(printLineNumberListener);
-        associatedPrinter.printJobIDProperty.addListener(printJobIDListener);
+        associatedPrinter.printJobLineNumberProperty().addListener(printLineNumberListener);
+        associatedPrinter.printJobIDProperty().addListener(printJobIDListener);
     }
 
     /**
      * Create the ETCCalculator based on the given PrintJobStatistics.
      */
     private void makeETCCalculator(PrintJobStatistics printJobStatistics,
-        HardwarePrinter associatedPrinter)
+        Printer associatedPrinter)
     {
         int numberOfLines = printJobStatistics.getNumberOfLines();
         linesInPrintingFile.set(numberOfLines);
@@ -440,7 +440,7 @@ public class PrintEngine implements ControllableService
 
         if (associatedPrinter != null)
         {
-            String printJobID = associatedPrinter.printJobIDProperty.get();
+            String printJobID = associatedPrinter.printJobIDProperty().get();
             if (printJobID != null)
             {
                 if (printJobID.codePointAt(0) != 0)
@@ -450,7 +450,7 @@ public class PrintEngine implements ControllableService
                 }
             }
 
-            switch (associatedPrinter.printerStatus.get())
+            switch (associatedPrinter.printerStatusProperty().get())
             {
                 case IDLE:
                     if (roboxIsPrinting)
@@ -458,7 +458,7 @@ public class PrintEngine implements ControllableService
                         makeETCCalculatorForJobOfUUID(printJobID);
                         Lookup.getSystemNotificationHandler().showDetectedPrintInProgressNotification();
 
-                        if (associatedPrinter.pauseStatusProperty.get() == PauseStatus.PAUSED)
+                        if (associatedPrinter.pauseStatusProperty().get() == PauseStatus.PAUSED)
                         {
                             associatedPrinter.setPrinterStatus(PrinterStatus.PAUSED);
                         } else
@@ -515,7 +515,7 @@ public class PrintEngine implements ControllableService
         boolean acceptedPrintRequest = false;
         etcAvailable.set(false);
 
-        if (associatedPrinter.printerStatus.get() == PrinterStatus.IDLE)
+        if (associatedPrinter.printerStatusProperty().get() == PrinterStatus.IDLE)
         {
             boolean printFromScratchRequired = false;
 
@@ -862,7 +862,7 @@ public class PrintEngine implements ControllableService
         boolean acceptedPrintRequest = false;
         consideringPrintRequest = true;
 
-        if (associatedPrinter.printerStatus.get() == PrinterStatus.IDLE)
+        if (associatedPrinter.printerStatusProperty().get() == PrinterStatus.IDLE)
         {
             if (Platform.isFxApplicationThread() == false)
             {
@@ -1001,8 +1001,8 @@ public class PrintEngine implements ControllableService
         setPrintInProgress(false);
         if (associatedPrinter != null)
         {
-            associatedPrinter.printJobIDProperty.unbind();
-            associatedPrinter.printJobLineNumberProperty.unbind();
+            associatedPrinter.printJobIDProperty().removeListener(printJobIDListener);
+            associatedPrinter.printJobLineNumberProperty().removeListener(printLineNumberListener);
         }
         setPrintProgressTitle(Lookup.i18n("PrintQueue.Idle"));
     }
@@ -1062,7 +1062,7 @@ public class PrintEngine implements ControllableService
     {
         printProgressMessage.unbind();
         primaryProgressPercent.unbind();
-        if (associatedPrinter.printerStatus.get() != PrinterStatus.PAUSED)
+        if (associatedPrinter.printerStatusProperty().get() != PrinterStatus.PAUSED)
         {
             setPrimaryProgressPercent(0);
         }

@@ -7,7 +7,7 @@ package celtech.services.diagnostics;
 
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
-import celtech.printerControl.model.HardwarePrinter;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.ControllableService;
 import celtech.services.slicer.PrintQualityEnumeration;
@@ -28,14 +28,14 @@ public class BedLevelCheckTask extends Task<BedLevelCheckResult> implements Cont
     private Filament filament = null;
     private PrintQualityEnumeration printQuality = null;
     private RoboxProfile settings = null;
-    private HardwarePrinter printerToUse = null;
+    private Printer printerToUse = null;
     private String macroName = null;
 
     /**
      *
      * @param printerToUse
      */
-    public BedLevelCheckTask(HardwarePrinter printerToUse)
+    public BedLevelCheckTask(Printer printerToUse)
     {
         this.printerToUse = printerToUse;
     }
