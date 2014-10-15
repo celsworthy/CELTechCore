@@ -156,38 +156,33 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         activePrinters.addAll(printerStatusList);
         clearAndAddAllPrintersToGrid();
 
-        printerStatusList.addListener(new ListChangeListener<Printer>()
+        printerStatusList.addListener((ListChangeListener.Change<? extends Printer> change) ->
         {
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends Printer> change)
+            while (change.next())
             {
-                while (change.next())
+                if (change.wasAdded())
                 {
-                    if (change.wasAdded())
+                    for (Printer printer : change.getAddedSubList())
                     {
-                        for (Printer printer : change.getAddedSubList())
-                        {
-                            activePrinters.add(printer);
-                            clearAndAddAllPrintersToGrid();
-                            selectPrinter(printer);
-                        }
-                    } else if (change.wasRemoved())
-                    {
-                        for (Printer printer : change.getRemoved())
-                        {
-                            removePrinter(printer);
-                            activePrinters.remove(printer);
-                            clearAndAddAllPrintersToGrid();
-                            selectOnePrinter();
-                        }
-                    } else if (change.wasReplaced())
-                    {
-                    } else if (change.wasUpdated())
-                    {
+                        activePrinters.add(printer);
+                        clearAndAddAllPrintersToGrid();
+                        selectPrinter(printer);
                     }
+                } else if (change.wasRemoved())
+                {
+                    for (Printer printer : change.getRemoved())
+                    {
+                        removePrinter(printer);
+                        activePrinters.remove(printer);
+                        clearAndAddAllPrintersToGrid();
+                        selectOnePrinter();
+                    }
+                } else if (change.wasReplaced())
+                {
+                } else if (change.wasUpdated())
+                {
                 }
             }
-
         });
 
     }
