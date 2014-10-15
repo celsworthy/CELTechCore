@@ -31,7 +31,6 @@ public abstract class CommandInterface extends Thread
 {
 
     protected boolean keepRunning = true;
-    protected boolean initialised = false;
 
     protected Stenographer steno = StenographerFactory.getStenographer(HardwareCommandInterface.class.getName());
     protected PrinterStatusConsumer controlInterface = null;
@@ -95,17 +94,6 @@ public abstract class CommandInterface extends Thread
 
     public void run()
     {
-        while (!initialised)
-        {
-            try
-            {
-                sleep(100);
-            } catch (InterruptedException ex)
-            {
-
-            }
-        }
-
         while (keepRunning)
         {
             switch (commsState)
