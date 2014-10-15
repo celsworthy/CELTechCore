@@ -32,7 +32,9 @@ import celtech.services.slicer.RoboxProfile;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponder;
 import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -44,8 +46,8 @@ import javafx.scene.paint.Color;
  */
 class TestPrinter implements Printer
 {
-    private SimpleObjectProperty<Head> headProperty = new SimpleObjectProperty<>();
-    private ObservableList<Reel> reelsProperty = FXCollections.observableArrayList();
+    private final SimpleObjectProperty<Head> headProperty = new SimpleObjectProperty<>();
+    private final ObservableList<Reel> reelsProperty = FXCollections.observableArrayList();
     
     void addHead()
     {
@@ -594,6 +596,30 @@ class TestPrinter implements Printer
 
     @Override
     public void writeHeadEEPROM(Head headToWrite) throws RoboxCommsException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setPrinterStatus(PrinterStatus printerStatus)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ReadOnlyIntegerProperty printJobLineNumberProperty()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ReadOnlyStringProperty printJobIDProperty()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ReadOnlyObjectProperty pauseStatusProperty()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

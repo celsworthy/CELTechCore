@@ -93,11 +93,13 @@ public class PrinterListChangesNotifier
             @Override
             public void whenReelAdded(int reelIndex)
             {
+                fireWhenReelAdded(printer, reelIndex);
             }
             
             @Override
             public void whenReelRemoved(int reelIndex)
             {
+                fireWhenReelRemoved(printer, reelIndex);
             }
             
             @Override
@@ -137,6 +139,22 @@ public class PrinterListChangesNotifier
             listener.whenHeadRemoved(printer);
         }
     }    
+    
+    private void fireWhenReelAdded(Printer printer, int reelIndex)
+    {
+        for (PrinterListChangesListener listener : listeners)
+        {
+            listener.whenReelAdded(printer, reelIndex);
+        }
+    }
+    
+    private void fireWhenReelRemoved(Printer printer, int reelIndex)
+    {
+        for (PrinterListChangesListener listener : listeners)
+        {
+            listener.whenReelRemoved(printer, reelIndex);
+        }
+    }       
 
     private void removePrinterChangesNotifier(Printer printer)
     {
