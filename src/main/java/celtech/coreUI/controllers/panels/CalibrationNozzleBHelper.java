@@ -1,7 +1,7 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.TaskController;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.model.PrinterException;
@@ -22,7 +22,7 @@ public class CalibrationNozzleBHelper
 
     private Stenographer steno = StenographerFactory.getStenographer(CalibrationNozzleBHelper.class.getName());
 
-    private Printer printerToUse = null;
+    private HardwarePrinter printerToUse = null;
 
     private final float bOffsetStartingValue = 0.8f;
     private int currentNozzleNumber = 0;
@@ -46,7 +46,7 @@ public class CalibrationNozzleBHelper
         setState(state.getNextState());
     };
 
-    public void setPrinterToUse(Printer printer)
+    public void setPrinterToUse(HardwarePrinter printer)
     {
         this.printerToUse = printer;
     }

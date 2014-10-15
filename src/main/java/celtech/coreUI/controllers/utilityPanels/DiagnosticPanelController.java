@@ -7,7 +7,7 @@ package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
@@ -24,7 +24,7 @@ import javafx.scene.control.Label;
 public class DiagnosticPanelController implements Initializable
 {
 
-    private Printer connectedPrinter = null;
+    private HardwarePrinter connectedPrinter = null;
     private StatusScreenState statusScreenState = null;
 
     @FXML
@@ -85,11 +85,11 @@ public class DiagnosticPanelController implements Initializable
     {
         statusScreenState = StatusScreenState.getInstance();
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<HardwarePrinter>()
         {
 
             @Override
-            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
+            public void changed(ObservableValue<? extends HardwarePrinter> observable, HardwarePrinter oldValue, HardwarePrinter newValue)
             {
                 if (connectedPrinter != null)
                 {
@@ -104,7 +104,7 @@ public class DiagnosticPanelController implements Initializable
         });
     }
 
-    private void unbindFromPrinter(Printer printer)
+    private void unbindFromPrinter(HardwarePrinter printer)
     {
         if (connectedPrinter != null)
         {
@@ -139,7 +139,7 @@ public class DiagnosticPanelController implements Initializable
         }
     }
 
-    private void bindToPrinter(Printer printer)
+    private void bindToPrinter(HardwarePrinter printer)
     {
         if (connectedPrinter == null)
         {

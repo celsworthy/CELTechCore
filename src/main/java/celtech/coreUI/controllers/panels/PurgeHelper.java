@@ -3,7 +3,7 @@ package celtech.coreUI.controllers.panels;
 import celtech.appManager.TaskController;
 import celtech.configuration.Filament;
 import celtech.coreUI.controllers.SettingsScreenState;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
@@ -25,7 +25,7 @@ public class PurgeHelper
 
     private Stenographer steno = StenographerFactory.getStenographer(CalibrationNozzleBHelper.class.getName());
 
-    private Printer printerToUse = null;
+    private HardwarePrinter printerToUse = null;
 
     private HeadEEPROMDataResponse savedHeadData = null;
 
@@ -49,7 +49,7 @@ public class PurgeHelper
         setState(state.getNextState());
     };
 
-    public void setPrinterToUse(Printer printer)
+    public void setPrinterToUse(HardwarePrinter printer)
     {
         this.printerToUse = printer;
     }

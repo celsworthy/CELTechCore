@@ -18,7 +18,7 @@ import celtech.coreUI.controllers.MyMiniFactoryLoaderController;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.utils.PrinterUtils;
 import java.io.File;
 import java.io.IOException;
@@ -118,7 +118,7 @@ public class LayoutStatusMenuStripController
     @FXML
     void printPressed(ActionEvent event)
     {
-        Printer printer = settingsScreenState.getSelectedPrinter();
+        HardwarePrinter printer = settingsScreenState.getSelectedPrinter();
 
         Project currentProject = DisplayManager.getInstance().getCurrentlyVisibleProject();
 
@@ -254,7 +254,7 @@ public class LayoutStatusMenuStripController
         displayManager.activateSnapToGround();
     }
 
-    private Printer currentPrinter = null;
+    private HardwarePrinter currentPrinter = null;
 
     /*
      * JavaFX initialisation method
@@ -272,11 +272,11 @@ public class LayoutStatusMenuStripController
 //        forwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS).and(printerOKToPrint));
         printButton.setVisible(false);
 
-        settingsScreenState.selectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        settingsScreenState.selectedPrinterProperty().addListener(new ChangeListener<HardwarePrinter>()
         {
             @Override
-            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue,
-                Printer newValue)
+            public void changed(ObservableValue<? extends HardwarePrinter> observable, HardwarePrinter oldValue,
+                HardwarePrinter newValue)
             {
                 if (newValue != null)
                 {

@@ -5,7 +5,7 @@
 package celtech.services.postProcessor;
 
 import celtech.gcodetranslator.RoboxiserResult;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 
 /**
  *
@@ -15,7 +15,7 @@ public class GCodePostProcessingResult
 {
     private String printJobUUID = null;
     private String outputFilename = null;
-    private Printer printerToUse = null;
+    private HardwarePrinter printerToUse = null;
     private RoboxiserResult result = null;
 
     /**
@@ -25,7 +25,7 @@ public class GCodePostProcessingResult
      * @param printerToUse
      * @param result
      */
-    public GCodePostProcessingResult(String printJobUUID, String outputFilename, Printer printerToUse, RoboxiserResult result)
+    public GCodePostProcessingResult(String printJobUUID, String outputFilename, HardwarePrinter printerToUse, RoboxiserResult result)
     {
         this.printJobUUID = printJobUUID;
         this.outputFilename = outputFilename;
@@ -55,7 +55,7 @@ public class GCodePostProcessingResult
      *
      * @return
      */
-    public Printer getPrinterToUse()
+    public HardwarePrinter getPrinterToUse()
     {
         return printerToUse;
     }

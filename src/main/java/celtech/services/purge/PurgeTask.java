@@ -1,7 +1,7 @@
 package celtech.services.purge;
 
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.ControllableService;
 import celtech.utils.PrinterUtils;
@@ -20,7 +20,7 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
     private PurgeState desiredState = null;
     private int nozzleNumber = -1;
 
-    private Printer printerToUse = null;
+    private HardwarePrinter printerToUse = null;
     private boolean keyPressed = false;
 
     private int purgeTemperature = 0;

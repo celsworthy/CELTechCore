@@ -11,7 +11,7 @@ import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.PrinterStatusListCell;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.PrinterException;
@@ -150,7 +150,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private TableColumn printerNameColumn = new TableColumn();
     private SelectionModel printerStatusTableSelectionModel = null;
 
-    private ObservableList<Printer> printerStatusList = null;
+    private ObservableList<HardwarePrinter> printerStatusList = null;
     private StatusScreenState statusScreenState = null;
 
     private String offString;
@@ -241,7 +241,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         }
     };
 
-    private Printer lastSelectedPrinter = null;
+    private HardwarePrinter lastSelectedPrinter = null;
 
     private DisplayManager displayManager = null;
 
@@ -374,7 +374,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         printerNameColumn.setText(languageBundle.getString("sidePanel_printerStatus.printerNameColumn"));
         printerNameColumn.setPrefWidth(300);
-        printerNameColumn.setCellValueFactory(new PropertyValueFactory<Printer, String>("printerFriendlyName"));
+        printerNameColumn.setCellValueFactory(new PropertyValueFactory<HardwarePrinter, String>("printerFriendlyName"));
 
 //        printerStatusTable.getColumns().addAll(printerNameColumn);
 //        printerStatusTable.setEditable(false);
@@ -382,10 +382,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         printerStatusTableSelectionModel = printerStatusTable.getSelectionModel();
         printerStatusTable.setItems(printerStatusList);
         printerStatusTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        printerStatusTable.setCellFactory(new Callback<ListView<Printer>, ListCell<Printer>>()
+        printerStatusTable.setCellFactory(new Callback<ListView<HardwarePrinter>, ListCell<HardwarePrinter>>()
         {
             @Override
-            public ListCell<Printer> call(ListView<Printer> list)
+            public ListCell<HardwarePrinter> call(ListView<HardwarePrinter> list)
             {
                 return new PrinterStatusListCell();
             }
@@ -399,7 +399,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             {
                 if (event.getClickCount() > 1)
                 {
-                    Printer printerToEdit = (Printer) printerStatusTableSelectionModel.getSelectedItem();
+                    HardwarePrinter printerToEdit = (HardwarePrinter) printerStatusTableSelectionModel.getSelectedItem();
                     if (printerToEdit != null)
                     {
                         printerIDDialog.setPrinterToUse(printerToEdit);
@@ -432,22 +432,22 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         printerStatusTable.setPlaceholder(noPrinterLabel);
 
-        printerStatusList.addListener(new ListChangeListener<Printer>()
+        printerStatusList.addListener(new ListChangeListener<HardwarePrinter>()
         {
             @Override
-            public void onChanged(ListChangeListener.Change<? extends Printer> change)
+            public void onChanged(ListChangeListener.Change<? extends HardwarePrinter> change)
             {
                 while (change.next())
                 {
                     if (change.wasAdded())
                     {
-                        for (Printer additem : change.getAddedSubList())
+                        for (HardwarePrinter additem : change.getAddedSubList())
                         {
                             printerStatusTableSelectionModel.select(additem);
                         }
                     } else if (change.wasRemoved())
                     {
-                        for (Printer additem : change.getRemoved())
+                        for (HardwarePrinter additem : change.getRemoved())
                         {
                         }
                     } else if (change.wasReplaced())
@@ -461,11 +461,11 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         controlDetailsVisibility();
 
-        printerStatusTableSelectionModel.selectedItemProperty().addListener(new ChangeListener<Printer>()
+        printerStatusTableSelectionModel.selectedItemProperty().addListener(new ChangeListener<HardwarePrinter>()
         {
 
             @Override
-            public void changed(ObservableValue<? extends Printer> ov, Printer t, Printer latestSelection)
+            public void changed(ObservableValue<? extends HardwarePrinter> ov, HardwarePrinter t, HardwarePrinter latestSelection)
             {
                 if (latestSelection != null
                     || printerStatusList.size() > 0)
@@ -674,7 +674,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     }
 
-    private void bindDetails(Printer selectedPrinter)
+    private void bindDetails(HardwarePrinter selectedPrinter)
     {
         nozzleTemperatureLabel.textProperty().unbind();
         bedTemperatureLabel.textProperty().unbind();

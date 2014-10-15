@@ -10,7 +10,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.SettingsScreenState;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
@@ -67,7 +67,7 @@ public class PrinterUtils
      * @param task
      * @return interrupted
      */
-    public static boolean waitOnMacroFinished(Printer printerToCheck, Task task)
+    public static boolean waitOnMacroFinished(HardwarePrinter printerToCheck, Task task)
     {
         boolean interrupted = false;
 
@@ -109,7 +109,7 @@ public class PrinterUtils
      * @param cancellable
      * @return failed
      */
-    public static boolean waitOnMacroFinished(Printer printerToCheck, Cancellable cancellable)
+    public static boolean waitOnMacroFinished(HardwarePrinter printerToCheck, Cancellable cancellable)
     {
         boolean failed = false;
 
@@ -141,7 +141,7 @@ public class PrinterUtils
      * @param task
      * @return failed
      */
-    public static boolean waitOnBusy(Printer printerToCheck, Task task)
+    public static boolean waitOnBusy(HardwarePrinter printerToCheck, Task task)
     {
         boolean failed = false;
 
@@ -202,7 +202,7 @@ public class PrinterUtils
      * @param cancellable
      * @return failed
      */
-    public static boolean waitOnBusy(Printer printerToCheck, Cancellable cancellable)
+    public static boolean waitOnBusy(HardwarePrinter printerToCheck, Cancellable cancellable)
     {
         boolean failed = false;
 
@@ -239,7 +239,7 @@ public class PrinterUtils
      * @param printer
      * @return
      */
-    public boolean isPurgeNecessary(Printer printer)
+    public boolean isPurgeNecessary(HardwarePrinter printer)
     {
         boolean purgeIsNecessary = false;
         float targetNozzleTemperature = 0;
@@ -270,7 +270,7 @@ public class PrinterUtils
      * @param printer
      * @return
      */
-    public boolean offerPurgeIfNecessary(Printer printer)
+    public boolean offerPurgeIfNecessary(HardwarePrinter printer)
     {
         boolean purgeConsent = false;
         if (isPurgeNecessary(printer) && purgeDialogVisible == false)

@@ -1,16 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl;
 
-import celtech.printerControl.model.PrinterException;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.JavaFXConfiguredTest;
 import celtech.Lookup;
+import celtech.appManager.TestSystemNotificationManager;
 import celtech.printerControl.comms.TestCommandInterface;
-import celtech.utils.tasks.TaskResponse;
 import celtech.utils.tasks.TestTaskExecutor;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -31,11 +25,10 @@ public class PrinterTest extends JavaFXConfiguredTest
     }
 
     @Before
-    @Override
     public void setUp()
     {
-        super.setUp();
         Lookup.setTaskExecutor(new TestTaskExecutor());
+        Lookup.setSystemNotificationHandler(new TestSystemNotificationManager());
     }
 
     @BeforeClass
@@ -56,33 +49,19 @@ public class PrinterTest extends JavaFXConfiguredTest
     @Test
     public void testCanRemoveHead()
     {
-        Printer printer = new PrinterImpl(null, null, null);
-
-        assertTrue(printer.canRemoveHead());
-    }
-
-    @Test
-    public void testCannotPrintDuringRemoveHead() throws PrinterException
-    {
-        TestCommandInterface commandInterface = new TestCommandInterface();
-        Printer printer = new PrinterImpl(null, null, commandInterface);
-
-        printer.removeHead((TaskResponse taskResponse) ->
-        {
-        });
-
-        commandInterface.tick(2);
-        assertFalse(printer.canPrint());
+        HardwarePrinter printer = new HardwarePrinter(null, new TestCommandInterface(null, "Test Printer", false, 500));
+        
+        assertTrue(printer.canRemoveHeadProperty().get());
     }
 
     @Test
     public void testCannotPrintWhenHeadIsRemoved()
     {
-        TestCommandInterface commandInterface = new TestCommandInterface();
-        Printer printer = new PrinterImpl(null, null, commandInterface);
-
-//        assertTrue(printer.removeHead());
-        commandInterface.tick(4);
-        assertFalse(printer.canPrint());
+        TestCommandInterface testCommandInterface = new TestCommandInterface(null, "Test Printer", false, 500);
+        testCommandInterface.noHead();
+        
+        HardwarePrinter printer = new HardwarePrinter(null, testCommandInterface);
+        
+        assertFalse(printer.canPrintProperty().get());
     }
 }

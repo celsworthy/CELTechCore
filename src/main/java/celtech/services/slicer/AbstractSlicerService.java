@@ -4,7 +4,7 @@
 package celtech.services.slicer;
 
 import celtech.appManager.Project;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.services.ControllableService;
 import javafx.concurrent.Service;
 
@@ -22,6 +22,6 @@ public abstract class AbstractSlicerService extends Service<SliceResult> impleme
     
     public abstract void setPrintJobUUID(String printJobUUID);
     
-    public abstract void setPrinterToUse(Printer printerToUse);
+    public abstract void setPrinterToUse(HardwarePrinter printerToUse);
 
 }

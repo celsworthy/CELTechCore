@@ -5,7 +5,7 @@ import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.NudgeControlVertical;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -193,7 +193,7 @@ public class CalibrationNozzleOffsetInsetPanelController implements Initializabl
         i18nBundle = DisplayManager.getLanguageBundle();
 
         StatusScreenState statusScreenState = StatusScreenState.getInstance();
-        statusScreenState.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> observable, Printer oldValue, Printer state) ->
+        statusScreenState.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends HardwarePrinter> observable, HardwarePrinter oldValue, HardwarePrinter state) ->
         {
             calibrationHelper.setPrinterToUse(state);
         });

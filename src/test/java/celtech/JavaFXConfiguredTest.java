@@ -8,6 +8,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.Properties;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
@@ -17,18 +18,17 @@ import org.junit.rules.TemporaryFolder;
  */
 public class JavaFXConfiguredTest
 {
-
     @Rule
-    public TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
+    public static TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
 
-    @Before
-    public void setUp()
-    {
+     @BeforeClass
+    public static void setUpClass()
+    {        
         Properties testProperties = new Properties();
 
         testProperties.setProperty("language", "UK");
-        URL applicationInstallURL = this.getClass().getResource("/");
-        URL applicationCommonURL = this.getClass().getResource("/Common/");
+        URL applicationInstallURL = JavaFXConfiguredTest.class.getResource("/");
+        URL applicationCommonURL = JavaFXConfiguredTest.class.getResource("/Common/");
         String userStorageFolder = temporaryUserStorageFolder.getRoot().getAbsolutePath()
             + File.separator;
         ApplicationConfiguration.setInstallationProperties(

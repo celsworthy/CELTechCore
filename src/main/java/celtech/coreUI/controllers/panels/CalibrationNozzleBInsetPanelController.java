@@ -3,7 +3,7 @@ package celtech.coreUI.controllers.panels;
 import celtech.appManager.ApplicationStatus;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.services.calibration.NozzleBCalibrationState;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -106,10 +106,10 @@ public class CalibrationNozzleBInsetPanelController implements Initializable, Ca
 
         calibrationHelper.setPrinterToUse(statusScreenState.currentlySelectedPrinterProperty().get());
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<HardwarePrinter>()
         {
             @Override
-            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
+            public void changed(ObservableValue<? extends HardwarePrinter> observable, HardwarePrinter oldValue, HardwarePrinter newValue)
             {
                 calibrationHelper.setPrinterToUse(newValue);
             }

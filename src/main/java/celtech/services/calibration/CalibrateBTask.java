@@ -2,7 +2,7 @@ package celtech.services.calibration;
 
 import celtech.configuration.HeaterMode;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.model.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.services.ControllableService;
@@ -23,7 +23,7 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
     private NozzleBCalibrationState desiredState = null;
     private int nozzleNumber = -1;
 
-    private Printer printerToUse = null;
+    private HardwarePrinter printerToUse = null;
     private String progressTitle = null;
     private String initialisingMessage = null;
     private String heatingMessage = null;

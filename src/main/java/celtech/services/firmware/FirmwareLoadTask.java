@@ -1,13 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.services.firmware;
 
 import celtech.coreUI.DisplayManager;
-import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.exceptions.SDCardErrorException;
+import celtech.printerControl.comms.commands.rx.FirmwareResponse;
+import celtech.printerControl.model.Printer;
 import celtech.utils.SystemUtils;
 import java.io.DataInputStream;
 import java.io.File;
@@ -22,28 +19,8 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author ianhudson
  */
-public class FirmwareLoadTask extends Task<Integer>
+public class FirmwareLoadTask extends Task<FirmwareLoadResult>
 {
-
-    /**
-     *
-     */
-    public static final int SDCARD_ERROR = -1;
-
-    /**
-     *
-     */
-    public static final int SUCCESS = 0;
-
-    /**
-     *
-     */
-    public static final int FILE_ERROR = -2;
-
-    /**
-     *
-     */
-    public static final int OTHER_ERROR = -3;
 
     private String firmwareFileToLoad = null;
     private final Stenographer steno = StenographerFactory.getStenographer(this.getClass().getName());
@@ -61,11 +38,12 @@ public class FirmwareLoadTask extends Task<Integer>
     }
 
     @Override
-    protected Integer call() throws Exception
+    protected FirmwareLoadResult call() throws Exception
     {
         ResourceBundle languageBundle = DisplayManager.getLanguageBundle();
 
-        int returnValue = OTHER_ERROR;
+        FirmwareLoadResult returnValue = new FirmwareLoadResult();
+
         try
         {
             File file = new File(firmwareFileToLoad);
@@ -99,22 +77,23 @@ public class FirmwareLoadTask extends Task<Integer>
                 if (!isCancelled())
                 {
                     printerToUpdate.transmitUpdateFirmware(firmwareID);
-                    // 
-                    returnValue = SUCCESS;
+                    FirmwareResponse firmwareResponse = printerToUpdate.readFirmwareVersion();
+                    returnValue.setStatus(FirmwareLoadResult.SUCCESS);
+                    returnValue.setResponse(firmwareResponse);
                 }
             }
-        }catch (SDCardErrorException ex)
+        } catch (SDCardErrorException ex)
         {
             steno.error("SD card exception whilst updating firmware");
-            returnValue = SDCARD_ERROR;
-        }catch (RoboxCommsException ex)
+            returnValue.setStatus(FirmwareLoadResult.SDCARD_ERROR);
+        } catch (RoboxCommsException ex)
         {
             steno.error("Other comms exception whilst updating firmware " + ex);
-            returnValue = OTHER_ERROR;
+            returnValue.setStatus(FirmwareLoadResult.OTHER_ERROR);
         } catch (IOException ex)
         {
             steno.error("Couldn't load firmware file " + ex.toString());
-            returnValue = FILE_ERROR;
+            returnValue.setStatus(FirmwareLoadResult.FILE_ERROR);
         }
 
         return returnValue;

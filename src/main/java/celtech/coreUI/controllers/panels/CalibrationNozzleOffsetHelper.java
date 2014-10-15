@@ -5,7 +5,7 @@ import celtech.configuration.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.calibration.CalibrateNozzleOffsetTask;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
@@ -25,7 +25,7 @@ public class CalibrationNozzleOffsetHelper
 
     private Stenographer steno = StenographerFactory.getStenographer(CalibrationNozzleOffsetHelper.class.getName());
 
-    private Printer printerToUse = null;
+    private HardwarePrinter printerToUse = null;
 
     private double zco = 0;
     private double zDifference = 0;
@@ -69,7 +69,7 @@ public class CalibrationNozzleOffsetHelper
         }
     };
 
-    public void setPrinterToUse(Printer printer)
+    public void setPrinterToUse(HardwarePrinter printer)
     {
         this.printerToUse = printer;
     }

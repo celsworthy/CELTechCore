@@ -6,7 +6,7 @@ package celtech.services.slicer;
 
 import celtech.appManager.Project;
 import celtech.configuration.FilamentContainer;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 
 /**
  *
@@ -19,7 +19,7 @@ public class SliceResult
     private FilamentContainer filament = null;
     private PrintQualityEnumeration printQuality = null;
     private RoboxProfile settings = null;  
-    private Printer printerToUse = null;
+    private HardwarePrinter printerToUse = null;
     private boolean success = false;
 
     /**
@@ -32,7 +32,7 @@ public class SliceResult
      * @param printerToUse
      * @param success
      */
-    public SliceResult(String printJobUUID, Project project, FilamentContainer filament, PrintQualityEnumeration printQuality, RoboxProfile settings, Printer printerToUse, boolean success)
+    public SliceResult(String printJobUUID, Project project, FilamentContainer filament, PrintQualityEnumeration printQuality, RoboxProfile settings, HardwarePrinter printerToUse, boolean success)
     {
         this.printJobUUID = printJobUUID;
         this.project = project;
@@ -92,7 +92,7 @@ public class SliceResult
      *
      * @return
      */
-    public Printer getPrinterToUse()
+    public HardwarePrinter getPrinterToUse()
     {
         return printerToUse;
     }

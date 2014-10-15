@@ -4,7 +4,7 @@
  */
 package celtech.services.printing;
 
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.services.ControllableService;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -22,7 +22,7 @@ import libertysystems.stenographer.StenographerFactory;
 public class GCodePrintService extends Service<GCodePrintResult> implements ControllableService
 {
 
-    private Printer printerToUse = null;
+    private HardwarePrinter printerToUse = null;
     private final StringProperty modelFileToPrint = new SimpleStringProperty();
     private final StringProperty currentPrintJobID = new SimpleStringProperty();
     private final IntegerProperty linesInGCodeFile = new SimpleIntegerProperty(1);
@@ -34,12 +34,12 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
      *
      * @param printerToUse
      */
-    public void setPrinterToUse(Printer printerToUse)
+    public void setPrinterToUse(HardwarePrinter printerToUse)
     {
         this.printerToUse = printerToUse;
     }
     
-    private final Printer getPrinterToUse()
+    private final HardwarePrinter getPrinterToUse()
     {
         return printerToUse;
     }

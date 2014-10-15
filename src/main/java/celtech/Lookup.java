@@ -4,6 +4,7 @@
 package celtech;
 
 import celtech.appManager.SystemNotificationManager;
+import celtech.appManager.SystemNotificationManagerJavaFX;
 import celtech.configuration.ApplicationEnvironment;
 import celtech.utils.tasks.LiveTaskExecutor;
 import celtech.utils.tasks.TaskExecutor;
@@ -46,7 +47,7 @@ public class Lookup
         ResourceBundle i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData", appLocale, new UTF8Control());
         applicationEnvironment = new ApplicationEnvironment(i18nBundle, appLocale);
         taskExecutor = new LiveTaskExecutor();
-        systemNotificationHandler = new SystemNotificationManager();
+        systemNotificationHandler = new SystemNotificationManagerJavaFX();
         steno.info("Detected locale - " + appLocale.toLanguageTag());
     }
 
