@@ -32,7 +32,7 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
     private NozzleOffsetCalibrationState desiredState = null;
     private int nozzleNumber = -1;
 
-    private Printer printerToUse = null;
+    private HardwarePrinter printerToUse = null;
     private ResourceBundle i18nBundle = null;
 
     private Pattern zDeltaPattern = Pattern.compile(".*(?<offset>[\\-0-9.]+).*");

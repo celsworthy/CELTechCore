@@ -4,7 +4,7 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.controllers.SettingsScreenState;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
@@ -21,7 +21,7 @@ import javafx.scene.control.Label;
 public class AboutPanelController implements Initializable
 {
     private SettingsScreenState settingsScreenState = null;
-    private Printer currentPrinter = null;
+    private HardwarePrinter currentPrinter = null;
 
     @FXML
     private Label roboxSerialNumber;
@@ -49,10 +49,10 @@ public class AboutPanelController implements Initializable
     {
         settingsScreenState = SettingsScreenState.getInstance();
         
-        settingsScreenState.selectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        settingsScreenState.selectedPrinterProperty().addListener(new ChangeListener<HardwarePrinter>()
         {
             @Override
-            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
+            public void changed(ObservableValue<? extends HardwarePrinter> observable, HardwarePrinter oldValue, HardwarePrinter newValue)
             {
                 if (currentPrinter != null)
                 {

@@ -7,7 +7,7 @@ import celtech.configuration.Filament;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.purge.PurgeState;
@@ -46,7 +46,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     private Filament filament = null;
     private PrintQualityEnumeration printQuality = null;
     private RoboxProfile settings = null;
-    private Printer printerToUse = null;
+    private HardwarePrinter printerToUse = null;
     private String macroToExecuteAfterPurge = null;
 
     private ChangeListener<Number> purgeTempEntryListener = new ChangeListener<Number>()
@@ -262,7 +262,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         }
     }
 
-    public void purgeAndPrint(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings, Printer printerToUse)
+    public void purgeAndPrint(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings, HardwarePrinter printerToUse)
     {
         this.project = project;
         this.filament = filament;
@@ -275,7 +275,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         ApplicationStatus.getInstance().setMode(ApplicationMode.PURGE);
     }
 
-    public void purgeAndRunMacro(String macroName, Printer printerToUse)
+    public void purgeAndRunMacro(String macroName, HardwarePrinter printerToUse)
     {
         this.macroToExecuteAfterPurge = macroName;
         this.printerToUse = printerToUse;
@@ -285,7 +285,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         ApplicationStatus.getInstance().setMode(ApplicationMode.PURGE);
     }
 
-    public void purge(Printer printerToUse)
+    public void purge(HardwarePrinter printerToUse)
     {
         this.printerToUse = printerToUse;
 

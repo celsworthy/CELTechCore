@@ -9,7 +9,7 @@
  */
 package celtech.services.postProcessor;
 
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.services.ControllableService;
 import celtech.services.slicer.RoboxProfile;
 import javafx.concurrent.Service;
@@ -23,7 +23,7 @@ public class PostProcessorService extends Service<GCodePostProcessingResult> imp
 {
     private String printJobUUID = null;
     private RoboxProfile settings = null;
-    private Printer printerToUse = null;
+    private HardwarePrinter printerToUse = null;
 
     /**
      *
@@ -47,7 +47,7 @@ public class PostProcessorService extends Service<GCodePostProcessingResult> imp
      *
      * @param printerToUse
      */
-    public void setPrinterToUse(Printer printerToUse)
+    public void setPrinterToUse(HardwarePrinter printerToUse)
     {
         this.printerToUse = printerToUse;
     }

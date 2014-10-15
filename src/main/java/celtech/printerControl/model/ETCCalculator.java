@@ -3,7 +3,6 @@
  */
 package celtech.printerControl.model;
 
-import celtech.printerControl.model.Printer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +12,7 @@ import java.util.List;
  *
  * @author tony
  */
-class ETCCalculator
+public class ETCCalculator
 {
 
     /**
@@ -36,9 +35,9 @@ class ETCCalculator
      * The estimated number of seconds it takes to heat the bed up by one degree
      */
     protected static int PREDICTED_BED_HEAT_RATE = 2;
-    private final Printer printer;
+    private final HardwarePrinter printer;
 
-    ETCCalculator(Printer printer,
+    public ETCCalculator(HardwarePrinter printer,
         List<Double> layerNumberToPredictedDuration,
         List<Integer> layerNumberToLineNumber)
     {
@@ -63,7 +62,7 @@ class ETCCalculator
      *
      * @return the number of seconds
      */
-    int getETCPredicted(int lineNumber)
+    public int getETCPredicted(int lineNumber)
     {
         int remainingTimeSeconds = getPredictedRemainingPrintTime(lineNumber);
         remainingTimeSeconds += getBedHeatingTime();
@@ -155,7 +154,7 @@ class ETCCalculator
     /**
      * Return the percentage complete based on the line number reached.
      */
-    double getPercentCompleteAtLine(int lineNumber)
+    public double getPercentCompleteAtLine(int lineNumber)
     {
         return (totalPredictedDurationAllLayers
             - getPredictedRemainingPrintTime(lineNumber))

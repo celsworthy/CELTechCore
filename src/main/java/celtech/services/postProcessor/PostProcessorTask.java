@@ -8,7 +8,7 @@ package celtech.services.postProcessor;
 import celtech.gcodetranslator.GCodeRoboxiser;
 import celtech.gcodetranslator.RoboxiserResult;
 import celtech.printerControl.PrintJob;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.services.slicer.RoboxProfile;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -25,7 +25,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
 
     private String printJobUUID = null;
     private RoboxProfile settings = null;
-    private Printer printerToUse = null;
+    private HardwarePrinter printerToUse = null;
     private DoubleProperty taskProgress = new SimpleDoubleProperty(0);
 
     /**
@@ -35,7 +35,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
      * @param printerToUse
      */
     public PostProcessorTask(String printJobUUID, RoboxProfile settings,
-        Printer printerToUse)
+        HardwarePrinter printerToUse)
     {
         this.printJobUUID = printJobUUID;
         this.settings = settings;

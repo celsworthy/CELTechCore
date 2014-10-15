@@ -1,26 +1,24 @@
 package celtech.coreUI.controllers.utilityPanels;
 
-import celtech.appManager.ApplicationMode;
-import celtech.appManager.ApplicationStatus;
+import celtech.Lookup;
 import celtech.appManager.Notifier;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.GCodeMacroButton;
-import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.coreUI.controllers.panels.CalibrationNozzleBInsetPanelController;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
+import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
-import celtech.services.firmware.FirmwareLoadTask;
 import celtech.services.printing.GCodePrintResult;
 import celtech.services.printing.GCodePrintService;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
@@ -30,19 +28,12 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -63,7 +54,7 @@ public class MaintenancePanelController implements Initializable
     private FileChooser firmwareFileChooser = new FileChooser();
 
     private static Stage needleValvecalibrationStage = null;
-//    private static CalibrationNozzleBInsetPanelController needleValveCalibrationController = null;
+    private static CalibrationNozzleBInsetPanelController needleValveCalibrationController = null;
     private static Stage offsetCalibrationStage = null;
 
     private ProgressDialog gcodeUpdateProgress = null;
@@ -322,9 +313,8 @@ public class MaintenancePanelController implements Initializable
             {
                 try
                 {
-                connectedPrinter.runMacro(file.getAbsolutePath());
-                }
-                catch (PrinterException ex)
+                    connectedPrinter.runMacro(file.getAbsolutePath());
+                } catch (PrinterException ex)
                 {
                     steno.error("Error sending SD job");
                 }
@@ -402,68 +392,36 @@ public class MaintenancePanelController implements Initializable
             .addAll(
                 new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString("maintenancePanel.firmwareFileDescription"), "*.bin"));
 
-        firmwareLoadService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
+        firmwareLoadService.setOnSucceeded((WorkerStateEvent t) ->
         {
-            @Override
-            public void handle(WorkerStateEvent t)
-            {
-                int firmwareUpgradeState = (int) t.getSource().getValue();
-
-                switch (firmwareUpgradeState)
-                {
-                    case FirmwareLoadTask.SDCARD_ERROR:
-                        Notifier.showErrorNotification(DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedTitle"),
-                                                       DisplayManager.getLanguageBundle().getString("dialogs.sdCardError"));
-                        break;
-                    case FirmwareLoadTask.FILE_ERROR:
-                        Notifier.showErrorNotification(DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedTitle"),
-                                                       DisplayManager.getLanguageBundle().getString("dialogs.firmwareFileError"));
-                        break;
-                    case FirmwareLoadTask.OTHER_ERROR:
-                        Notifier.showErrorNotification(DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedTitle"),
-                                                       DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedMessage"));
-                        break;
-                    case FirmwareLoadTask.SUCCESS:
-                        Notifier.showInformationNotification(DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeSuccessTitle"),
-                                                             DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeSuccessMessage"));
-                        break;
-                }
-            }
+            FirmwareLoadResult result = (FirmwareLoadResult) t.getSource().getValue();
+            Lookup.getSystemNotificationHandler().showFirmwareUpgradeStatusNotification(result);
         });
 
-        firmwareLoadService.setOnFailed(new EventHandler<WorkerStateEvent>()
+        firmwareLoadService.setOnFailed((WorkerStateEvent t) ->
         {
-            @Override
-            public void handle(WorkerStateEvent t)
-            {
-
-                Notifier.showErrorNotification(DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedTitle"),
-                                               DisplayManager.getLanguageBundle().getString("dialogs.firmwareUpgradeFailedMessage"));
-            }
+            FirmwareLoadResult result = (FirmwareLoadResult) t.getSource().getValue();
+            Lookup.getSystemNotificationHandler().showFirmwareUpgradeStatusNotification(result);
         });
 
         StatusScreenState statusScreenState = StatusScreenState.getInstance();
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        statusScreenState.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
+            if (connectedPrinter != null)
             {
-                if (connectedPrinter != null)
-                {
-                    connectedPrinter.printerStatusProperty().removeListener(printerStatusListener);
-                }
-
-                connectedPrinter = newValue;
-
-                if (connectedPrinter != null)
-                {
-                    readFirmwareVersion();
-                    connectedPrinter.printerStatusProperty().addListener(printerStatusListener);
-                    //TODO modify for multiple extruders
-                    connectedPrinter.extrudersProperty().get(0).filamentLoadedProperty().addListener(filamentLoadedListener);
-                    connectedPrinter.extrudersProperty().get(1).filamentLoadedProperty().addListener(filamentLoadedListener);
-                    setButtonVisibility();
-                }
+                connectedPrinter.printerStatusProperty().removeListener(printerStatusListener);
+            }
+            
+            connectedPrinter = newValue;
+            
+            if (connectedPrinter != null)
+            {
+                readFirmwareVersion();
+                connectedPrinter.printerStatusProperty().addListener(printerStatusListener);
+                //TODO modify for multiple extruders
+                connectedPrinter.extrudersProperty().get(0).filamentLoadedProperty().addListener(filamentLoadedListener);
+                connectedPrinter.extrudersProperty().get(1).filamentLoadedProperty().addListener(filamentLoadedListener);
+                setButtonVisibility();
             }
         });
     }

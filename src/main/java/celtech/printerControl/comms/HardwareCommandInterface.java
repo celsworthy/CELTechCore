@@ -14,7 +14,7 @@ import celtech.printerControl.comms.commands.tx.FormatHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacketFactory;
 import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import javafx.application.Platform;
 import jssc.SerialPort;
 import jssc.SerialPortException;
@@ -74,35 +74,6 @@ public class HardwareCommandInterface extends CommandInterface
             }
         }
         serialPort = null;
-
-        if (noSDDialog.isShowing())
-        {
-            Platform.runLater(new Runnable()
-            {
-
-                @Override
-                public void run()
-                {
-                    noSDDialog.close();
-                }
-            });
-        }
-
-        if (printerIDDialog != null)
-        {
-            if (printerIDDialog.isShowing())
-            {
-                Platform.runLater(new Runnable()
-                {
-
-                    @Override
-                    public void run()
-                    {
-                        printerIDDialog.close();
-                    }
-                });
-            }
-        }
 
         controlInterface.disconnected(portName);
     }
@@ -265,7 +236,7 @@ public class HardwareCommandInterface extends CommandInterface
         throw new ConnectionLostException();
     }
 
-    void setPrinterToUse(Printer newPrinter)
+    void setPrinterToUse(HardwarePrinter newPrinter)
     {
         this.printerToUse = newPrinter;
     }

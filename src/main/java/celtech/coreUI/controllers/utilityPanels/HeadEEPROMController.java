@@ -9,7 +9,7 @@ import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.model.PrinterException;
 import celtech.utils.PrinterUtils;
 import java.net.URL;
@@ -95,9 +95,9 @@ public class HeadEEPROMController implements Initializable
 
 //    private BooleanProperty fastUpdates = new SimpleBooleanProperty(false);
 //    private Head temporaryHead = null;
-    private ObservableList<Printer> printerStatusList = null;
+    private ObservableList<HardwarePrinter> printerStatusList = null;
     //We'll only deal with the first printer we find.
-    private Printer connectedPrinter = null;
+    private HardwarePrinter connectedPrinter = null;
 
     private ChangeListener<Head> headDataChangeListener = null;
 
@@ -187,7 +187,7 @@ public class HeadEEPROMController implements Initializable
 
             printerStatusList = RoboxCommsManager.getInstance().getPrintStatusList();
 
-            StatusScreenState.getInstance().currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
+            StatusScreenState.getInstance().currentlySelectedPrinterProperty().addListener((ObservableValue<? extends HardwarePrinter> observable, HardwarePrinter oldValue, HardwarePrinter newValue) ->
             {
                 if (newValue != oldValue)
                 {

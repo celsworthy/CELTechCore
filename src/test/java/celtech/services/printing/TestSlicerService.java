@@ -6,7 +6,7 @@ package celtech.services.printing;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.FilamentContainer;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.services.slicer.AbstractSlicerService;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
@@ -31,7 +31,7 @@ public class TestSlicerService extends AbstractSlicerService
     private Project project = null;
     private PrintQualityEnumeration printQuality = null;
     private RoboxProfile settings = null;
-    private Printer printerToUse = null;
+    private HardwarePrinter printerToUse = null;
 
     /**
      *
@@ -73,7 +73,7 @@ public class TestSlicerService extends AbstractSlicerService
      *
      * @param printerToUse
      */
-    public void setPrinterToUse(Printer printerToUse)
+    public void setPrinterToUse(HardwarePrinter printerToUse)
     {
         this.printerToUse = printerToUse;
     }
@@ -102,7 +102,7 @@ public class TestSlicerService extends AbstractSlicerService
 
         public TestSlicerTask(String printJobUUID, Project project,
                 PrintQualityEnumeration printQuality, RoboxProfile settings,
-                Printer printerToUse)
+                HardwarePrinter printerToUse)
         {
             super(printJobUUID, project, printQuality, settings, printerToUse);
         }

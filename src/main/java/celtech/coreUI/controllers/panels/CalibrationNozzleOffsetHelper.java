@@ -12,8 +12,7 @@ import celtech.configuration.fileRepresentation.NozzleData;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
-import celtech.printerControl.model.GCodeConstants;
-import celtech.printerControl.model.Head;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.calibration.CalibrateNozzleOffsetTask;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
@@ -40,7 +39,7 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
     private Stenographer steno = StenographerFactory.getStenographer(
         CalibrationNozzleOffsetHelper.class.getName());
 
-    private Printer printerToUse = null;
+    private HardwarePrinter printerToUse = null;
 
     private DoubleProperty zco = new SimpleDoubleProperty(0);
     private double zDifference = 0;

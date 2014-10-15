@@ -8,7 +8,7 @@ import celtech.coreUI.AmbientLEDState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.JogButton;
 import celtech.printerControl.PrinterStatus;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.Reel;
 import celtech.utils.tasks.TaskResponse;
@@ -56,7 +56,7 @@ public class PrinterStatusPageController implements Initializable
     private final Stenographer steno = StenographerFactory.getStenographer(
         PrinterStatusPageController.class.getName());
     private StatusScreenState statusScreenState = null;
-    private Printer printerToUse = null;
+    private HardwarePrinter printerToUse = null;
     private ChangeListener<Boolean> reelDataChangeListener = null;
     private ListChangeListener<Reel> reelChangeListener = null;
     private ChangeListener<Color> printerColourChangeListener = null;
@@ -251,7 +251,7 @@ public class PrinterStatusPageController implements Initializable
 
     private Node[] advancedControls = null;
 
-    private Printer lastSelectedPrinter = null;
+    private HardwarePrinter lastSelectedPrinter = null;
 
     private final BooleanProperty showProgressGroup = new SimpleBooleanProperty(false);
 
@@ -641,16 +641,16 @@ public class PrinterStatusPageController implements Initializable
 
         if (statusScreenState.getCurrentlySelectedPrinter() != null)
         {
-            Printer printer = statusScreenState.getCurrentlySelectedPrinter();
+            HardwarePrinter printer = statusScreenState.getCurrentlySelectedPrinter();
             processPrinterStatusChange(printer.printerStatusProperty().get());
         }
 
         statusScreenState.currentlySelectedPrinterProperty().addListener(
-            new ChangeListener<Printer>()
+            new ChangeListener<HardwarePrinter>()
             {
                 @Override
-                public void changed(ObservableValue<? extends Printer> ov,
-                    Printer t, Printer selectedPrinter)
+                public void changed(ObservableValue<? extends HardwarePrinter> ov,
+                    HardwarePrinter t, HardwarePrinter selectedPrinter)
                 {
                     printerToUse = selectedPrinter;
 

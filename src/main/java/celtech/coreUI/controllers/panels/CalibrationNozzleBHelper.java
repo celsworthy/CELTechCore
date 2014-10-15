@@ -6,7 +6,7 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.TaskController;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.model.PrinterException;

@@ -2,7 +2,7 @@ package celtech.configuration;
 
 import celtech.appManager.Notifier;
 import celtech.coreUI.DisplayManager;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
 import celtech.printerControl.model.Reel;
@@ -581,7 +581,7 @@ public class Filament implements Serializable, Cloneable
         return clone;
     }
 
-    public static void repairFilamentIfNecessary(Printer printer)
+    public static void repairFilamentIfNecessary(HardwarePrinter printer)
     {
         try
         {

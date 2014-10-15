@@ -1,11 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.components;
 
-import celtech.coreUI.DisplayManager;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.PrinterIDDialogController;
 import celtech.printerControl.model.Printer;
 import java.io.IOException;

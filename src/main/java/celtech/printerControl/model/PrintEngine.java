@@ -71,7 +71,7 @@ public class PrintEngine implements ControllableService
     private final Stenographer steno = StenographerFactory.getStenographer(
         PrintEngine.class.getName());
 
-    private Printer associatedPrinter = null;
+    private HardwarePrinter associatedPrinter = null;
     private AbstractSlicerService slicerService;
     private final PostProcessorService gcodePostProcessorService = new PostProcessorService();
     private final GCodePrintService gcodePrintService = new GCodePrintService();
@@ -135,12 +135,12 @@ public class PrintEngine implements ControllableService
      */
     private MovieMakerTask movieMakerTask = null;
 
-    public PrintEngine(Printer associatedPrinter)
+    public PrintEngine(HardwarePrinter associatedPrinter)
     {
         this(associatedPrinter, new SlicerService());
     }
 
-    public PrintEngine(Printer associatedPrinter,
+    public PrintEngine(HardwarePrinter associatedPrinter,
         AbstractSlicerService slicerService)
     {
         this.associatedPrinter = associatedPrinter;
@@ -410,7 +410,7 @@ public class PrintEngine implements ControllableService
      * Create the ETCCalculator based on the given PrintJobStatistics.
      */
     private void makeETCCalculator(PrintJobStatistics printJobStatistics,
-        Printer associatedPrinter)
+        HardwarePrinter associatedPrinter)
     {
         int numberOfLines = printJobStatistics.getNumberOfLines();
         linesInPrintingFile.set(numberOfLines);

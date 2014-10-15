@@ -5,7 +5,7 @@
  */
 package celtech.coreUI.controllers.utilityPanels;
 
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import javafx.fxml.FXML;
 import javafx.scene.layout.AnchorPane;
 import libertysystems.stenographer.Stenographer;
@@ -20,7 +20,7 @@ public class GCodeMacroPanelController
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(GCodeMacroPanelController.class.getName());
-    private Printer connectedPrinter = null;
+    private HardwarePrinter connectedPrinter = null;
 
     @FXML
     private AnchorPane container;
@@ -277,7 +277,7 @@ public class GCodeMacroPanelController
 //        {
 //
 //            @Override
-//            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
+//            public void changed(ObservableValue<? extends HardwarePrinter> observable, HardwarePrinter oldValue, HardwarePrinter newValue)
 //            {
 //                connectedPrinter = newValue;
 //            }

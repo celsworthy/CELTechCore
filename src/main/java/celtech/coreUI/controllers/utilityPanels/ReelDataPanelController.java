@@ -11,7 +11,7 @@ import celtech.configuration.FilamentContainer;
 import celtech.configuration.MaterialType;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.Reel;
@@ -44,7 +44,7 @@ public class ReelDataPanelController implements Initializable
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         ReelDataPanelController.class.getName());
-    private Printer connectedPrinter = null;
+    private HardwarePrinter connectedPrinter = null;
     private StatusScreenState statusScreenState = null;
 
     @FXML
@@ -249,12 +249,12 @@ public class ReelDataPanelController implements Initializable
         statusScreenState = StatusScreenState.getInstance();
 
         statusScreenState.currentlySelectedPrinterProperty().addListener(
-            new ChangeListener<Printer>()
+            new ChangeListener<HardwarePrinter>()
             {
 
                 @Override
-                public void changed(ObservableValue<? extends Printer> observable, Printer oldValue,
-                    Printer newValue)
+                public void changed(ObservableValue<? extends HardwarePrinter> observable, HardwarePrinter oldValue,
+                    HardwarePrinter newValue)
                 {
                     if (connectedPrinter != null)
                     {
@@ -269,7 +269,7 @@ public class ReelDataPanelController implements Initializable
             });
     }
 
-    private void unbindFromPrinter(Printer printer)
+    private void unbindFromPrinter(HardwarePrinter printer)
     {
         if (connectedPrinter != null)
         {
@@ -281,7 +281,7 @@ public class ReelDataPanelController implements Initializable
         }
     }
 
-    private void bindToPrinter(Printer printer)
+    private void bindToPrinter(HardwarePrinter printer)
     {
         if (connectedPrinter == null)
         {
