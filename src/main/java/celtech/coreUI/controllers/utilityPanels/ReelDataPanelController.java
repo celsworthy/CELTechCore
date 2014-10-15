@@ -1,3 +1,4 @@
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -5,24 +6,20 @@
  */
 package celtech.coreUI.controllers.utilityPanels;
 
-import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
 import celtech.configuration.MaterialType;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
-import celtech.printerControl.model.Reel;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -44,7 +41,7 @@ public class ReelDataPanelController implements Initializable
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         ReelDataPanelController.class.getName());
-    private HardwarePrinter connectedPrinter = null;
+    private Printer connectedPrinter = null;
     private StatusScreenState statusScreenState = null;
 
     @FXML
@@ -249,12 +246,12 @@ public class ReelDataPanelController implements Initializable
         statusScreenState = StatusScreenState.getInstance();
 
         statusScreenState.currentlySelectedPrinterProperty().addListener(
-            new ChangeListener<HardwarePrinter>()
+            new ChangeListener<Printer>()
             {
 
                 @Override
-                public void changed(ObservableValue<? extends HardwarePrinter> observable, HardwarePrinter oldValue,
-                    HardwarePrinter newValue)
+                public void changed(ObservableValue<? extends Printer> observable, Printer oldValue,
+                    Printer newValue)
                 {
                     if (connectedPrinter != null)
                     {
@@ -269,7 +266,7 @@ public class ReelDataPanelController implements Initializable
             });
     }
 
-    private void unbindFromPrinter(HardwarePrinter printer)
+    private void unbindFromPrinter(Printer printer)
     {
         if (connectedPrinter != null)
         {
@@ -281,7 +278,7 @@ public class ReelDataPanelController implements Initializable
         }
     }
 
-    private void bindToPrinter(HardwarePrinter printer)
+    private void bindToPrinter(Printer printer)
     {
         if (connectedPrinter == null)
         {

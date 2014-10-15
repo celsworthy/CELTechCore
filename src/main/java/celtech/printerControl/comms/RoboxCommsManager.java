@@ -3,6 +3,7 @@ package celtech.printerControl.comms;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.MachineType;
 import celtech.printerControl.model.HardwarePrinter;
+import celtech.printerControl.model.Printer;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,9 +38,9 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
 
     private final String notConnectedString = "NOT_CONNECTED";
     private Stenographer steno = null;
-    private final HashMap<String, HardwarePrinter> pendingPrinters = new HashMap<>();
-    private final HashMap<String, HardwarePrinter> activePrinters = new HashMap<>();
-    private final ObservableList<HardwarePrinter> printerStatus = FXCollections.observableArrayList();
+    private final HashMap<String, Printer> pendingPrinters = new HashMap<>();
+    private final HashMap<String, Printer> activePrinters = new HashMap<>();
+    private final ObservableList<Printer> printerStatus = FXCollections.observableArrayList();
     private boolean suppressPrinterIDChecks = false;
     private int sleepBetweenStatusChecks = 1000;
 
@@ -107,7 +108,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     @Override
     public void run()
     {
-//        HardwarePrinter nullPrinter = new HardwarePrinter(this, new DummyPrinterCommandInterface(this, nullPrinterString, suppressPrinterIDChecks, sleepBetweenStatusChecks));
+//        Printer nullPrinter = new HardwarePrinter(this, new DummyPrinterCommandInterface(this, nullPrinterString, suppressPrinterIDChecks, sleepBetweenStatusChecks));
 //        pendingPrinters.put(nullPrinterString, nullPrinter);
 
         while (keepRunning)
@@ -133,7 +134,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
                         // We need to connect!
                         steno.info("Adding new printer on " + port);
 
-                        HardwarePrinter newPrinter = new HardwarePrinter(this, new HardwareCommandInterface(this, port, suppressPrinterIDChecks, sleepBetweenStatusChecks));
+                        Printer newPrinter = new HardwarePrinter(this, new HardwareCommandInterface(this, port, suppressPrinterIDChecks, sleepBetweenStatusChecks));
                         pendingPrinters.put(port, newPrinter);
                     }
                 }
@@ -154,7 +155,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
      */
     public void shutdown()
     {
-        for (HardwarePrinter printer : printerStatus)
+        for (Printer printer : printerStatus)
         {
             printer.shutdown();
         }
@@ -217,7 +218,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     @Override
     public void printerConnected(String portName)
     {
-        HardwarePrinter printer = pendingPrinters.get(portName);
+        Printer printer = pendingPrinters.get(portName);
         activePrinters.put(portName, printer);
 
         Platform.runLater(new Runnable()
@@ -249,7 +250,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     {
         pendingPrinters.remove(portName);
 
-        final HardwarePrinter printerToRemove = activePrinters.get(portName);
+        final Printer printerToRemove = activePrinters.get(portName);
         activePrinters.remove(portName);
 
         Platform.runLater(new Runnable()
@@ -266,7 +267,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
      *
      * @return
      */
-    public ObservableList<HardwarePrinter> getPrintStatusList()
+    public ObservableList<Printer> getPrintStatusList()
     {
         return printerStatus;
     }

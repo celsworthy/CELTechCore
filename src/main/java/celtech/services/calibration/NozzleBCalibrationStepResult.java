@@ -16,7 +16,7 @@ package celtech.services.calibration;
  */
 public class NozzleBCalibrationStepResult
 {
-    private NozzleBCalibrationState completedState = null;
+    private NozzleOpeningCalibrationState completedState = null;
     private boolean success = false;
 
     /**
@@ -24,7 +24,7 @@ public class NozzleBCalibrationStepResult
      * @param completedState
      * @param success
      */
-    public NozzleBCalibrationStepResult(NozzleBCalibrationState completedState, boolean success)
+    public NozzleBCalibrationStepResult(NozzleOpeningCalibrationState completedState, boolean success)
     {
         this.completedState = completedState;
         this.success = success;
@@ -34,7 +34,7 @@ public class NozzleBCalibrationStepResult
      *
      * @return
      */
-    public NozzleBCalibrationState getCompletedState()
+    public NozzleOpeningCalibrationState getCompletedState()
     {
         return completedState;
     }

@@ -1,6 +1,5 @@
 package celtech.coreUI.controllers.utilityPanels;
 
-import celtech.configuration.EEPROMState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.RestrictedTextField;
@@ -10,6 +9,7 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.HardwarePrinter;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.utils.PrinterUtils;
 import java.net.URL;
@@ -20,7 +20,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -95,9 +94,9 @@ public class HeadEEPROMController implements Initializable
 
 //    private BooleanProperty fastUpdates = new SimpleBooleanProperty(false);
 //    private Head temporaryHead = null;
-    private ObservableList<HardwarePrinter> printerStatusList = null;
+    private ObservableList<Printer> printerStatusList = null;
     //We'll only deal with the first printer we find.
-    private HardwarePrinter connectedPrinter = null;
+    private Printer connectedPrinter = null;
 
     private ChangeListener<Head> headDataChangeListener = null;
 
@@ -187,7 +186,7 @@ public class HeadEEPROMController implements Initializable
 
             printerStatusList = RoboxCommsManager.getInstance().getPrintStatusList();
 
-            StatusScreenState.getInstance().currentlySelectedPrinterProperty().addListener((ObservableValue<? extends HardwarePrinter> observable, HardwarePrinter oldValue, HardwarePrinter newValue) ->
+            StatusScreenState.getInstance().currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
             {
                 if (newValue != oldValue)
                 {

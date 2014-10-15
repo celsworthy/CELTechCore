@@ -19,8 +19,8 @@ public class ColourStringConverter
                                                 ColourStringConverter.class.getName());
 
     /**
-     * Convert the RGB elements of a colour to a UTF8 string. If null is passed then return
-     * the value for Color.WHITE.
+     * Convert the RGB elements of a colour to a UTF8 string eg "102030".
+     * If null is passed then return the value for Color.WHITE.
      */
     public static String colourToString(Color colour)
     {

@@ -6,8 +6,7 @@
 package celtech.coreUI.controllers;
 
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.printerControl.model.HardwarePrinter;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ObservableValue;
@@ -105,7 +104,7 @@ public class GCodeEntryPanelController implements Initializable
 
         populateGCodeArea();
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends HardwarePrinter> ov, HardwarePrinter t, HardwarePrinter t1) ->
+        statusScreenState.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
         {
             if (t1 != null)
             {

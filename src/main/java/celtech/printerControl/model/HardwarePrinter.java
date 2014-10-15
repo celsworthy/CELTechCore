@@ -1753,7 +1753,7 @@ public class HardwarePrinter implements Printer
     }
 
     @Override
-    public void changeNozzlePosition(float position)
+    public void gotoNozzlePosition(float position)
     {
         try
         {
@@ -2133,6 +2133,32 @@ public class HardwarePrinter implements Printer
             throw new PrinterException("Error whilst sending nozzle select command");
         }
     }
+    
+    @Override
+    public void probeBed()
+    {
+        try
+        {
+            transmitDirectGCode("G28 Z?", false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error sending probe bed command");
+        }
+    }
+
+    @Override
+    public String getZDelta() throws PrinterException
+    {
+        try
+        {
+            return transmitDirectGCode("M113", false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error sending get Z delta");
+            throw new PrinterException("Error sending get Z delta");
+        }
+    }
+    
 
     @Override
     public void shutdown()

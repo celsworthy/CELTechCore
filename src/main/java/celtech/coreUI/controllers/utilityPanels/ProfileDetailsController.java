@@ -1131,3 +1131,4 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         nameEditable.set(editable);
     }
 }
+

@@ -9,8 +9,7 @@ import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.SlidablePanel;
 import celtech.coreUI.controllers.SlideOutHandleController;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.model.HardwarePrinter;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ObservableValue;
@@ -110,7 +109,7 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
 
         populateGCodeArea();
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends HardwarePrinter> ov, HardwarePrinter t, HardwarePrinter t1) ->
+        statusScreenState.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
         {
             if (t1 != null)
             {
@@ -189,6 +188,7 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
     {
         if (statusScreenState.getCurrentlySelectedPrinter() != null)
         {
+            gcodeTranscript.setText("");
             for (String gcodeLine : statusScreenState.getCurrentlySelectedPrinter().gcodeTranscriptProperty())
             {
                 gcodeTranscript.appendText(gcodeLine);

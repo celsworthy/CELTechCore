@@ -58,7 +58,7 @@ public interface Printer extends RoboxResponseConsumer
 
     public void cancel(TaskResponder responder) throws PrinterException;
 
-    public void changeNozzlePosition(float position);
+    void gotoNozzlePosition(float position);
 
     public void closeNozzleFully() throws PrinterException;
 
@@ -423,7 +423,11 @@ public interface Printer extends RoboxResponseConsumer
 
     public void updatePrinterDisplayColour(Color displayColour) throws PrinterException;
 
-    public void updatePrinterName(String chosenPrinterName) throws PrinterException;
+    void updatePrinterName(String chosenPrinterName) throws PrinterException;
+    
+    public void probeBed();
+    
+    public String getZDelta() throws PrinterException;
 
     /**
      *

@@ -6,7 +6,7 @@
 
 package celtech.coreUI.controllers.panels;
 
-import celtech.services.calibration.NozzleBCalibrationState;
+import celtech.services.calibration.NozzleOpeningCalibrationState;
 
 /**
  *
@@ -14,5 +14,5 @@ import celtech.services.calibration.NozzleBCalibrationState;
  */
 public interface CalibrationBStateListener
 {
-    public void setState(NozzleBCalibrationState state);
+    public void setNozzleOpeningState(NozzleOpeningCalibrationState state);
 }

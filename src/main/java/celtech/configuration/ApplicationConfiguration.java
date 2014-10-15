@@ -115,7 +115,7 @@ public class ApplicationConfiguration
      */
     public static final double DESIRED_ASPECT_RATIO = DEFAULT_WIDTH / DEFAULT_HEIGHT;
 
-    public static final int NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP = 180;
+    public static final int NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP = 210;
 
     private static final Stenographer steno = StenographerFactory.getStenographer(ApplicationConfiguration.class.getName());
     private static Configuration configuration = null;

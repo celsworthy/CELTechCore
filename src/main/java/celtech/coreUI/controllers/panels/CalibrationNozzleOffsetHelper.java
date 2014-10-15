@@ -1,8 +1,15 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.TaskController;
 import celtech.configuration.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
+import celtech.configuration.fileRepresentation.NozzleData;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.model.HardwarePrinter;
@@ -11,6 +18,12 @@ import celtech.services.calibration.CalibrateNozzleOffsetTask;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOffsetCalibrationStepResult;
 import java.util.ArrayList;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import libertysystems.stenographer.Stenographer;
@@ -20,14 +33,15 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class CalibrationNozzleOffsetHelper
+public class CalibrationNozzleOffsetHelper implements CalibrationHelper
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(CalibrationNozzleOffsetHelper.class.getName());
+    private Stenographer steno = StenographerFactory.getStenographer(
+        CalibrationNozzleOffsetHelper.class.getName());
 
-    private HardwarePrinter printerToUse = null;
+    private Printer printerToUse = null;
 
-    private double zco = 0;
+    private DoubleProperty zco = new SimpleDoubleProperty(0);
     private double zDifference = 0;
 
     private HeadEEPROMDataResponse savedHeadData = null;
@@ -37,7 +51,7 @@ public class CalibrationNozzleOffsetHelper
     private NozzleOffsetCalibrationState state = NozzleOffsetCalibrationState.IDLE;
     private ArrayList<CalibrationNozzleOffsetStateListener> stateListeners = new ArrayList<>();
 
-    private EventHandler<WorkerStateEvent> failedTaskHandler = new EventHandler<WorkerStateEvent>()
+    private final EventHandler<WorkerStateEvent> failedTaskHandler = new EventHandler<WorkerStateEvent>()
     {
         @Override
         public void handle(WorkerStateEvent event)
@@ -45,8 +59,35 @@ public class CalibrationNozzleOffsetHelper
             cancelCalibrationAction();
         }
     };
+    public BooleanProperty showDownButton = new SimpleBooleanProperty(true);
+    private final CalibrationInsetPanelController parentController;
 
-    private EventHandler<WorkerStateEvent> succeededTaskHandler = new EventHandler<WorkerStateEvent>()
+    CalibrationNozzleOffsetHelper(CalibrationInsetPanelController parentController)
+    {
+        this.parentController = parentController;
+        zco.addListener(new ChangeListener<Number>()
+        {
+
+            @Override
+            public void changed(
+                ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            {
+                parentController.whenZCoChanged(zco.get());
+            }
+        });
+    }
+
+    public void addStateListener(CalibrationNozzleOffsetStateListener stateListener)
+    {
+        stateListeners.add(stateListener);
+    }
+
+    public void removeStateListener(CalibrationNozzleOffsetStateListener stateListener)
+    {
+        stateListeners.remove(stateListener);
+    }
+
+    private final EventHandler<WorkerStateEvent> succeededTaskHandler = new EventHandler<WorkerStateEvent>()
     {
         @Override
         public void handle(WorkerStateEvent event)
@@ -69,49 +110,44 @@ public class CalibrationNozzleOffsetHelper
         }
     };
 
-    public void setPrinterToUse(HardwarePrinter printer)
+    @Override
+    public void setPrinterToUse(Printer printer)
     {
         this.printerToUse = printer;
     }
 
-    public void yesButtonAction()
+    @Override
+    public void buttonBAction() // Alt = UP button = too tight
     {
-        switch (state)
+
+        zco.set(zco.get() + 0.05);
+
+        if (zco.get() <= 0)
         {
-            case INSERT_PAPER:
-                printerToUse.homeZ();
-                setState(NozzleOffsetCalibrationState.PROBING);
-                break;
-            case HEAD_CLEAN_CHECK:
-                setState(NozzleOffsetCalibrationState.MEASURE_Z_DIFFERENCE);
-                break;
+            zco.set(0);
+        }
+
+        printerToUse.goToZPosition(zco.get());
+    }
+
+    @Override
+    public void buttonAAction() // ALT = down button = too loose
+
+    {
+        zco.set(zco.get() - 0.05);
+
+        printerToUse.goToZPosition(zco.get());
+
+        if (zco.get() <= 0.0001)
+        {
+            showDownButton.set(false);
+        } else
+        {
+            showDownButton.set(true);
         }
     }
 
-    public void tooLooseAction()
-    {
-        zco -= 0.05;
-
-        printerToUse.goToZPosition(zco);
-    }
-
-    public void tooTightAction()
-    {
-        zco += 0.05;
-
-        if (zco <= 0)
-        {
-            zco = 0;
-        }
-
-        printerToUse.goToZPosition(zco);
-    }
-
-    public double getZCo()
-    {
-        return zco;
-    }
-
+    @Override
     public void cancelCalibrationAction()
     {
         if (calibrationTask != null)
@@ -122,42 +158,20 @@ public class CalibrationNozzleOffsetHelper
             }
         }
 
-        if (state != NozzleOffsetCalibrationState.IDLE && state != NozzleOffsetCalibrationState.CHOOSE_MODE)
+        if (state != NozzleOffsetCalibrationState.IDLE)
         {
             try
             {
                 if (savedHeadData != null && state != NozzleOffsetCalibrationState.FINISHED)
                 {
                     steno.info("Calibration cancelled - restoring head data");
-                    printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                                         savedHeadData.getUniqueID(),
-                                                         savedHeadData.getMaximumTemperature(),
-                                                         savedHeadData.getBeta(),
-                                                         savedHeadData.getTCal(),
-                                                         savedHeadData.getNozzle1XOffset(),
-                                                         savedHeadData.getNozzle1YOffset(),
-                                                         savedHeadData.getNozzle1ZOffset(),
-                                                         savedHeadData.getNozzle1BOffset(),
-                                                         savedHeadData.getNozzle2XOffset(),
-                                                         savedHeadData.getNozzle2YOffset(),
-                                                         savedHeadData.getNozzle2ZOffset(),
-                                                         savedHeadData.getNozzle2BOffset(),
-                                                         savedHeadData.getLastFilamentTemperature(),
-                                                         savedHeadData.getHeadHours());
+                    restoreHeadData();
                 }
 
-                try
-                {
-                    printerToUse.changeNozzlePosition(0f);
-                    //TODO modify to use multiple heaters
-                    printerToUse.switchNozzleHeaterOff(0);
-                    printerToUse.switchOffHeadLEDs();
-                    printerToUse.switchToAbsoluteMoveMode();
-                    printerToUse.goToZPosition(25);
-                } catch (PrinterException ex)
-                {
-                    steno.error("Error resetting printer");
-                }
+                switchHeaterOffAndRaiseHead();
+            } catch (PrinterException ex)
+            {
+                steno.error("Error in nozzle offset calibration - mode=" + state.name());
             } catch (RoboxCommsException ex)
             {
                 steno.error("Error in nozzle offset calibration - mode=" + state.name());
@@ -168,14 +182,23 @@ public class CalibrationNozzleOffsetHelper
         }
     }
 
-    public void addStateListener(CalibrationNozzleOffsetStateListener stateListener)
+    private void restoreHeadData() throws RoboxCommsException
     {
-        stateListeners.add(stateListener);
-    }
-
-    public void removeStateListener(CalibrationNozzleOffsetStateListener stateListener)
-    {
-        stateListeners.remove(stateListener);
+        printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+                                             savedHeadData.getUniqueID(),
+                                             savedHeadData.getMaximumTemperature(),
+                                             savedHeadData.getBeta(),
+                                             savedHeadData.getTCal(),
+                                             savedHeadData.getNozzle1XOffset(),
+                                             savedHeadData.getNozzle1YOffset(),
+                                             savedHeadData.getNozzle1ZOffset(),
+                                             savedHeadData.getNozzle1BOffset(),
+                                             savedHeadData.getNozzle2XOffset(),
+                                             savedHeadData.getNozzle2YOffset(),
+                                             savedHeadData.getNozzle2ZOffset(),
+                                             savedHeadData.getNozzle2BOffset(),
+                                             savedHeadData.getLastFilamentTemperature(),
+                                             savedHeadData.getHeadHours());
     }
 
     public void setState(NozzleOffsetCalibrationState newState)
@@ -183,7 +206,7 @@ public class CalibrationNozzleOffsetHelper
         this.state = newState;
         for (CalibrationNozzleOffsetStateListener listener : stateListeners)
         {
-            listener.setState(state);
+            listener.setNozzleHeightState(state);
         }
 
         switch (newState)
@@ -191,14 +214,21 @@ public class CalibrationNozzleOffsetHelper
             case IDLE:
                 break;
             case INITIALISING:
+                break;
+            case HEATING:
                 try
                 {
                     savedHeadData = printerToUse.readHeadEEPROM();
 
-                    zco = 0.5 * (savedHeadData.getNozzle1ZOffset() + savedHeadData.getNozzle2ZOffset());
-                    zDifference = savedHeadData.getNozzle2ZOffset() - savedHeadData.getNozzle1ZOffset();
+                    zco.set(0.5 * (savedHeadData.getNozzle1ZOffset()
+                        + savedHeadData.getNozzle2ZOffset()));
+                    zDifference = savedHeadData.getNozzle2ZOffset()
+                        - savedHeadData.getNozzle1ZOffset();
 
-                    HeadFile defaultHead = HeadContainer.getHeadByID(HeadContainer.defaultHeadID);
+                    HeadFile headDataFile = HeadContainer.getHeadByID(savedHeadData.getTypeCode());
+                    //TODO modify to support multiple nozzles
+                    NozzleData nozzle1Data = headDataFile.getNozzles().get(0);
+                    NozzleData nozzle2Data = headDataFile.getNozzles().get(1);
 
                     steno.info("Initialising head data prior to calibration");
                     printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
@@ -206,12 +236,12 @@ public class CalibrationNozzleOffsetHelper
                                                          savedHeadData.getMaximumTemperature(),
                                                          savedHeadData.getBeta(),
                                                          savedHeadData.getTCal(),
-                                                         defaultHead.getNozzles().get(0).getDefaultXOffset(),
-                                                         defaultHead.getNozzles().get(0).getDefaultYOffset(),
+                                                         nozzle1Data.getDefaultXOffset(),
+                                                         nozzle1Data.getDefaultYOffset(),
                                                          0,
                                                          savedHeadData.getNozzle1BOffset(),
-                                                         defaultHead.getNozzles().get(1).getDefaultXOffset(),
-                                                         defaultHead.getNozzles().get(1).getDefaultYOffset(),
+                                                         nozzle2Data.getDefaultXOffset(),
+                                                         nozzle2Data.getDefaultYOffset(),
                                                          0,
                                                          savedHeadData.getNozzle2BOffset(),
                                                          savedHeadData.getLastFilamentTemperature(),
@@ -246,6 +276,17 @@ public class CalibrationNozzleOffsetHelper
                 break;
             case PROBING:
                 break;
+            case LIFT_HEAD:
+                try
+                {
+                    printerToUse.switchToAbsoluteMoveMode();
+                    printerToUse.goToZPosition(30);
+                    printerToUse.goToOpenDoorPosition(null);
+                } catch (PrinterException ex)
+                {
+                    steno.error("Error in nozzle offset calibration - mode=" + state.name());
+                }
+                setState(NozzleOffsetCalibrationState.REPLACE_PEI_BED);
             case FINISHED:
                 try
                 {
@@ -257,28 +298,20 @@ public class CalibrationNozzleOffsetHelper
                                                          savedHeadData.getTCal(),
                                                          savedHeadData.getNozzle1XOffset(),
                                                          savedHeadData.getNozzle1YOffset(),
-                                                         (float) (-zco - (0.5 * zDifference)),
+                                                         (float) (-zco.get() - (0.5 * zDifference)),
                                                          savedHeadData.getNozzle1BOffset(),
                                                          savedHeadData.getNozzle2XOffset(),
                                                          savedHeadData.getNozzle2YOffset(),
-                                                         (float) (-zco + (0.5 * zDifference)),
+                                                         (float) (-zco.get() + (0.5 * zDifference)),
                                                          savedHeadData.getNozzle2BOffset(),
                                                          savedHeadData.getLastFilamentTemperature(),
                                                          savedHeadData.getHeadHours());
 
-                    try
-                    {
-                        printerToUse.changeNozzlePosition(0f);
-                        //TODO modify to use multiple heaters
-                        printerToUse.switchNozzleHeaterOff(0);
-                        printerToUse.switchOffHeadLEDs();
-                        printerToUse.switchToAbsoluteMoveMode();
-                        printerToUse.goToZPosition(25);
-                    } catch (PrinterException ex)
-                    {
-                        steno.error("Error resetting printer");
-                    }
+                    switchHeaterOffAndRaiseHead();
                 } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error in nozzle offset calibration - mode=" + state.name());
+                } catch (PrinterException ex)
                 {
                     steno.error("Error in nozzle offset calibration - mode=" + state.name());
                 }
@@ -286,16 +319,12 @@ public class CalibrationNozzleOffsetHelper
             case FAILED:
                 try
                 {
-                    printerToUse.changeNozzlePosition(0f);
-                    //TODO modify to use multiple heaters
-                    printerToUse.switchNozzleHeaterOff(0);
-                    printerToUse.switchOffHeadLEDs();
-                    printerToUse.switchToAbsoluteMoveMode();
-                    printerToUse.goToZPosition(25);
+                    switchHeaterOffAndRaiseHead();
                 } catch (PrinterException ex)
                 {
-                    steno.error("Error resetting printer");
+                    steno.error("Error clearing up after failed calibration");
                 }
+
                 break;
             case NUDGE_MODE:
                 try
@@ -309,9 +338,12 @@ public class CalibrationNozzleOffsetHelper
         }
     }
 
-    public NozzleOffsetCalibrationState getState()
+    private void switchHeaterOffAndRaiseHead() throws PrinterException
     {
-        return state;
+        printerToUse.switchAllNozzleHeatersOff();
+        printerToUse.switchOffHeadLEDs();
+        printerToUse.switchToRelativeMoveMode();
+        printerToUse.goToZPosition(25);
     }
 
     public HeadEEPROMDataResponse getSavedHeadData()
@@ -344,4 +376,37 @@ public class CalibrationNozzleOffsetHelper
             steno.error("Unable to write new nozzle offsets to head");
         }
     }
+
+    @Override
+    public void nextButtonAction()
+    {
+        if (state == NozzleOffsetCalibrationState.INSERT_PAPER)
+        {
+            printerToUse.homeZ();
+        }
+        setState(state.getNextState());
+    }
+
+    @Override
+    public void goToIdleState()
+    {
+        setState(NozzleOffsetCalibrationState.IDLE);
+    }
+
+    @Override
+    public void retryAction()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setXOffset(String toString)
+    {
+    }
+
+    @Override
+    public void setYOffset(Integer integer)
+    {
+    }
+
 }

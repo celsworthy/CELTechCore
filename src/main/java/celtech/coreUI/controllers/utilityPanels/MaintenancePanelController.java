@@ -1,30 +1,24 @@
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.Lookup;
-import celtech.appManager.ApplicationMode;
-import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Notifier;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.GCodeMacroButton;
-import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.coreUI.controllers.panels.CalibrationNozzleBInsetPanelController;
-import celtech.coreUI.controllers.panels.CalibrationNozzleOffsetInsetPanelController;
 import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.PrinterStatus;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
+import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
-import celtech.services.firmware.FirmwareLoadTask;
 import celtech.services.printing.GCodePrintResult;
 import celtech.services.printing.GCodePrintService;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
@@ -34,19 +28,12 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -59,7 +46,7 @@ public class MaintenancePanelController implements Initializable
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(MaintenancePanelController.class.getName());
-    private HardwarePrinter connectedPrinter = null;
+    private Printer connectedPrinter = null;
     private ResourceBundle i18nBundle = null;
 
     private ProgressDialog firmwareUpdateProgress = null;
@@ -69,7 +56,6 @@ public class MaintenancePanelController implements Initializable
     private static Stage needleValvecalibrationStage = null;
     private static CalibrationNozzleBInsetPanelController needleValveCalibrationController = null;
     private static Stage offsetCalibrationStage = null;
-    private static CalibrationNozzleOffsetInsetPanelController nozzleOffsetCalibrationController = null;
 
     private ProgressDialog gcodeUpdateProgress = null;
     private FileChooser gcodeFileChooser = new FileChooser();
@@ -222,72 +208,72 @@ public class MaintenancePanelController implements Initializable
     @FXML
     void calibrateB(ActionEvent event)
     {
-        ApplicationStatus.getInstance().setMode(ApplicationMode.NOZZLE_OPEN_CALIBRATION);
+//        ApplicationStatus.getInstance().setMode(ApplicationMode.NOZZLE_OPEN_CALIBRATION);
     }
 
     public static void calibrateBAction()
     {
-        if (needleValvecalibrationStage == null)
-        {
-            needleValvecalibrationStage = new Stage(StageStyle.UNDECORATED);
-            URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "CalibrationNozzleBPage.fxml");
-            FXMLLoader needleValveCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, DisplayManager.getLanguageBundle());
-            try
-            {
-                Parent dialogBoxScreen = (Parent) needleValveCalibrationLoader.load();
-                needleValveCalibrationController = (CalibrationNozzleBInsetPanelController) needleValveCalibrationLoader.getController();
-                Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
-                dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
-                needleValvecalibrationStage.setScene(dialogScene);
-                needleValvecalibrationStage.initOwner(DisplayManager.getMainStage());
-                needleValvecalibrationStage.initModality(Modality.WINDOW_MODAL);
-                needleValvecalibrationStage.setOnCloseRequest(new EventHandler<WindowEvent>()
-                {
-                    @Override
-                    public void handle(WindowEvent event)
-                    {
-                        needleValveCalibrationController.cancelCalibrationAction();
-                    }
-                });
-            } catch (IOException ex)
-            {
-                steno.error("Couldn't load needle valve calibration FXML");
-            }
-        }
-
-        needleValvecalibrationStage.showAndWait();
+//        if (needleValvecalibrationStage == null)
+//        {
+//            needleValvecalibrationStage = new Stage(StageStyle.UNDECORATED);
+//            URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "CalibrationNozzleBPage.fxml");
+//            FXMLLoader needleValveCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, DisplayManager.getLanguageBundle());
+//            try
+//            {
+//                Parent dialogBoxScreen = (Parent) needleValveCalibrationLoader.load();
+//                needleValveCalibrationController = (CalibrationNozzleBInsetPanelController) needleValveCalibrationLoader.getController();
+//                Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
+//                dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
+//                needleValvecalibrationStage.setScene(dialogScene);
+//                needleValvecalibrationStage.initOwner(DisplayManager.getMainStage());
+//                needleValvecalibrationStage.initModality(Modality.WINDOW_MODAL);
+//                needleValvecalibrationStage.setOnCloseRequest(new EventHandler<WindowEvent>()
+//                {
+//                    @Override
+//                    public void handle(WindowEvent event)
+//                    {
+//                        needleValveCalibrationController.cancelCalibrationAction();
+//                    }
+//                });
+//            } catch (IOException ex)
+//            {
+//                steno.error("Couldn't load needle valve calibration FXML");
+//            }
+//        }
+//
+//        needleValvecalibrationStage.showAndWait();
     }
 
     @FXML
     void calibrateZOffset(ActionEvent event)
     {
 
-        ApplicationStatus.getInstance().setMode(ApplicationMode.NOZZLE_OFFSET_CALIBRATION);
+//        ApplicationStatus.getInstance().setMode(ApplicationMode.NOZZLE_OFFSET_CALIBRATION);
     }
 
     public static void calibrateZOffsetAction()
     {
-        if (offsetCalibrationStage == null)
-        {
-            offsetCalibrationStage = new Stage(StageStyle.UNDECORATED);
-            URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlPanelResourcePath + "CalibrationNozzleOffsetInsetPanel.fxml");
-            FXMLLoader nozzleOffsetCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, DisplayManager.getLanguageBundle());
-            try
-            {
-                Parent dialogBoxScreen = (Parent) nozzleOffsetCalibrationLoader.load();
-                nozzleOffsetCalibrationController = (CalibrationNozzleOffsetInsetPanelController) nozzleOffsetCalibrationLoader.getController();
-                Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
-                dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
-                offsetCalibrationStage.setScene(dialogScene);
-                offsetCalibrationStage.initOwner(DisplayManager.getMainStage());
-                offsetCalibrationStage.initModality(Modality.WINDOW_MODAL);
-            } catch (IOException ex)
-            {
-                steno.error("Couldn't load nozzle offset calibration FXML");
-            }
-        }
-
-        offsetCalibrationStage.showAndWait();
+//        if (offsetCalibrationStage == null)
+//        {
+//            offsetCalibrationStage = new Stage(StageStyle.UNDECORATED);
+//            URL needleValveCalibrationFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlPanelResourcePath + "CalibrationNozzleOffsetInsetPanel.fxml");
+//            FXMLLoader nozzleOffsetCalibrationLoader = new FXMLLoader(needleValveCalibrationFXMLURL, DisplayManager.getLanguageBundle());
+//            try
+//            {
+//                Parent dialogBoxScreen = (Parent) nozzleOffsetCalibrationLoader.load();
+//                nozzleOffsetCalibrationController = (CalibrationNozzleOffsetInsetPanelController) nozzleOffsetCalibrationLoader.getController();
+//                Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
+//                dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
+//                offsetCalibrationStage.setScene(dialogScene);
+//                offsetCalibrationStage.initOwner(DisplayManager.getMainStage());
+//                offsetCalibrationStage.initModality(Modality.WINDOW_MODAL);
+//            } catch (IOException ex)
+//            {
+//                steno.error("Couldn't load nozzle offset calibration FXML");
+//            }
+//        }
+//
+//        offsetCalibrationStage.showAndWait();
     }
 
     @FXML
@@ -419,7 +405,7 @@ public class MaintenancePanelController implements Initializable
         });
 
         StatusScreenState statusScreenState = StatusScreenState.getInstance();
-        statusScreenState.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends HardwarePrinter> observable, HardwarePrinter oldValue, HardwarePrinter newValue) ->
+        statusScreenState.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
         {
             if (connectedPrinter != null)
             {

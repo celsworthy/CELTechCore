@@ -21,7 +21,7 @@ public class JavaFXConfiguredTest
 {
 
     @Rule
-    public static TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
+    public TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
 
     @Before
     public void setUp()

@@ -32,6 +32,10 @@ public class Lookup
     {
         return instance.applicationEnvironment;
     }
+    
+    public static String i18n(String stringId) {
+        return instance.applicationEnvironment.getLanguageBundle().getString(stringId);
+    }
 
     /**
      * @param applicationEnvironment the applicationEnvironment to set
@@ -54,11 +58,6 @@ public class Lookup
     public static void initialise()
     {
         instance = new Lookup();
-    }
-
-    public static String i18n(String stringid)
-    {
-        return instance.applicationEnvironment.getLanguageBundle().getString(stringid);
     }
 
     public static TaskExecutor getTaskExecutor()

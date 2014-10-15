@@ -76,7 +76,7 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void changeNozzlePosition(float position)
+    public void gotoNozzlePosition(float position)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -543,6 +543,18 @@ public class CommandInterfaceTestPrinter implements Printer
 
     @Override
     public void writeHeadEEPROM(Head headToWrite) throws RoboxCommsException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void probeBed()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public String getZDelta() throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
