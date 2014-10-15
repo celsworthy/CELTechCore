@@ -67,7 +67,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private VBox temperatureVBox;
 
     @FXML
-    private LineChart<Number, Number> temperatureChart;
+    protected LineChart<Number, Number> temperatureChart;
 
     @FXML
     private GridPane printerStatusGrid;
@@ -90,6 +90,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private final List<Printer> activePrinters = new ArrayList<>();
 
     private LineChart.Series<Number, Number> currentAmbientTemperatureHistory = null;
+    
+    private ChartManager chartManager;
 
     private final ListChangeListener<XYChart.Data<Number, Number>> graphDataPointChangeListener = new ListChangeListener<XYChart.Data<Number, Number>>()
     {
@@ -124,6 +126,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        chartManager = new ChartManager(temperatureChart);
         RoboxCommsManager commsManager = RoboxCommsManager.getInstance();
         printerStatusList = commsManager.getPrintStatusList();
         statusScreenState = StatusScreenState.getInstance();
@@ -133,6 +136,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         initialiseTemperatureChart();
         initialisePrinterStatusGrid();
         controlDetailsVisibility();
+        
+        
     }
 
     private void initialiseTemperatureChart()
@@ -390,11 +395,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         
         printer.reelsProperty().removeListener(reelsChangedListener);
 
-        PrinterAncillarySystems ancillarySystems = printer.getPrinterAncillarySystems();
-
-        temperatureChart.getData().remove(ancillarySystems.getAmbientTemperatureHistory());
+        chartManager.clearAmbientData();
+        chartManager.clearBedData();
         currentAmbientTemperatureHistory = null;
-        temperatureChart.getData().remove(ancillarySystems.getBedTemperatureHistory());
 
 //        temperatureChart.getData().remove(printer.ambientTargetTemperatureHistory());
 //        temperatureChart.getData().remove(printer.bedTargetTemperatureHistory());
@@ -418,8 +421,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         PrinterAncillarySystems ancillarySystems = printer.getPrinterAncillarySystems();
         currentAmbientTemperatureHistory = ancillarySystems.getAmbientTemperatureHistory();
-        temperatureChart.getData().add(ancillarySystems.getAmbientTemperatureHistory());
-        temperatureChart.getData().add(ancillarySystems.getBedTemperatureHistory());
+        
+        chartManager.setAmbientData(ancillarySystems.getAmbientTemperatureHistory());
+        chartManager.setBedData(ancillarySystems.getBedTemperatureHistory());
 
 //        temperatureChart.getData().add(printer.ambientTargetTemperatureProperty());
 //        temperatureChart.getData().add(printer.bedTargetTemperatureHistory());
@@ -479,14 +483,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private void bindReelProperties(Reel reel)
     {
-        reelListener = new ChangeListener<Object>()
+        reelListener = (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
         {
-            @Override
-            public void changed(
-                ObservableValue<? extends Object> observable, Object oldValue, Object newValue)
-            {
-                updateReelMaterial(reel);
-            }
+            updateReelMaterial(reel);
         };
         reel.friendlyFilamentNameProperty().addListener(reelListener);
         reel.displayColourProperty().addListener(reelListener);
@@ -501,8 +500,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 //        printHeadLabel.setText(headNotAttachedString);
 
         //TODO modify for multiple heaters
-        temperatureChart.getData().remove(
-            head.getNozzleHeaters().get(0).getNozzleTemperatureHistory());
+        chartManager.clearNozzleData();
 
         //TODO modify to support multiple heaters
 //        head.getNozzleHeaters().get(0).heaterModeProperty().removeListener(nozzleHeaterStatusListener);
@@ -544,7 +542,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 //        head.getNozzleHeaters().get(0).getNozzleTemperatureHistory().setName(Lookup.i18n(
 //            "printerStatus.temperatureGraphNozzleLabel"));
         //TODO modify to support multiple heaters
-        temperatureChart.getData().add(head.getNozzleHeaters().get(0).getNozzleTemperatureHistory());
+        chartManager.setNozzleData(head.getNozzleHeaters().get(0).getNozzleTemperatureHistory());
 
         //TODO modify to work with multiple heaters
 //        head.getNozzleHeaters().get(0).heaterModeProperty().addListener(nozzleHeaterStatusListener);
