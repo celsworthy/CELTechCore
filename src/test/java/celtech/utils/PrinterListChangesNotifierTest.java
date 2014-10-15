@@ -4,10 +4,10 @@
 package celtech.utils;
 
 import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.TestPrinterForListeners;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.property.SimpleListProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
@@ -22,16 +22,30 @@ public class PrinterListChangesNotifierTest
     @Test
     public void testWhenPrinterAdded()
     {
-        ObservableList<Printer> printers = new SimpleListProperty<>();
+        ObservableList<Printer> printers = FXCollections.observableArrayList();
         PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
         TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
         notifier.addListener(plcListener);
         
         assertEquals(0, plcListener.addedPrinters.size());
-        Printer printer = new TestPrinterForListeners();
+        TestPrinter printer = new TestPrinter();
         printers.add(printer);
         assertEquals(1, plcListener.addedPrinters.size());
     }
+    
+    @Test
+    public void testWhenPrinterAddedAndRemoved()
+    {
+        ObservableList<Printer> printers = FXCollections.observableArrayList();
+        PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
+        TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
+        notifier.addListener(plcListener);
+        
+        TestPrinter printer = new TestPrinter();
+        printers.add(printer);
+        printers.remove(printer);
+        assertEquals(0, plcListener.addedPrinters.size());
+    }    
 
     private static class TestPrinterListChangesListener implements PrinterListChangesListener
     {
@@ -47,7 +61,7 @@ public class PrinterListChangesNotifierTest
         @Override
         public void whenPrinterRemoved(Printer printer)
         {
-
+            addedPrinters.remove(printer);
         }
 
         @Override
@@ -80,5 +94,6 @@ public class PrinterListChangesNotifierTest
 
         }
     }
+
 
 }

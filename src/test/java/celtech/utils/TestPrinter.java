@@ -1,8 +1,12 @@
-package celtech.printerControl.comms;
+/*
+ * Copyright 2014 CEL UK
+ */
+package celtech.utils;
 
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
+import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
@@ -25,20 +29,48 @@ import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
-import celtech.utils.AxisSpecifier;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponder;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
 
 /**
  *
- * @author Ian
+ * @author tony
  */
-public class CommandInterfaceTestPrinter implements Printer
+class TestPrinter implements Printer
 {
+    private SimpleObjectProperty<Head> headProperty = new SimpleObjectProperty<>();
+    private ObservableList<Reel> reelsProperty = FXCollections.observableArrayList();
+    
+    void addHead()
+    {
+        HeadFile headFile = new HeadFile();
+        Head head = new Head(headFile);
+        headProperty.setValue(head);
+    }
+    
+    void removeHead() {
+        headProperty.setValue(null);
+    }
+    
+    void addReel(int i)
+    {
+        Reel reel = new Reel();
+        reelsProperty.add(reel);
+    }    
+    
+    void removeReel(int i)
+    {
+        reelsProperty.remove(reelsProperty.get(0));
+    }
+    
+    
+
     @Override
     public void addToGCodeTranscript(String gcodeToSend)
     {
@@ -198,7 +230,7 @@ public class CommandInterfaceTestPrinter implements Printer
     @Override
     public ReadOnlyObjectProperty<Head> headProperty()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return headProperty;
     }
 
     @Override
@@ -250,7 +282,8 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void printProject(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings)
+    public void printProject(Project project, Filament filament,
+        PrintQualityEnumeration printQuality, RoboxProfile settings)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -300,7 +333,7 @@ public class CommandInterfaceTestPrinter implements Printer
     @Override
     public ObservableList<Reel> reelsProperty()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return reelsProperty;
     }
 
     @Override
@@ -484,13 +517,15 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void transmitSetFilamentInfo(double filamentDiameter, double filamentMultiplier, double feedRateMultiplier) throws RoboxCommsException
+    public void transmitSetFilamentInfo(double filamentDiameter, double filamentMultiplier,
+        double feedRateMultiplier) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void transmitSetTemperatures(double nozzleFirstLayerTarget, double nozzleTarget, double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException
+    public void transmitSetTemperatures(double nozzleFirstLayerTarget, double nozzleTarget,
+        double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -508,9 +543,11 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature, float thermistorBeta, float thermistorTCal, float nozzle1XOffset,
-        float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset, float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset, float lastFilamentTemperature,
-        float hourCounter) throws RoboxCommsException
+    public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID,
+        float maximumTemperature, float thermistorBeta, float thermistorTCal, float nozzle1XOffset,
+        float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset, float nozzle2XOffset,
+        float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
+        float lastFilamentTemperature, float hourCounter) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -522,8 +559,10 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void transmitWriteReelEEPROM(String filamentID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature, float reelFirstLayerBedTemperature, float reelBedTemperature,
-        float reelAmbientTemperature, float reelFilamentDiameter, float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament, String friendlyName,
+    public void transmitWriteReelEEPROM(String filamentID, float reelFirstLayerNozzleTemperature,
+        float reelNozzleTemperature, float reelFirstLayerBedTemperature, float reelBedTemperature,
+        float reelAmbientTemperature, float reelFilamentDiameter, float reelFilamentMultiplier,
+        float reelFeedRateMultiplier, float reelRemainingFilament, String friendlyName,
         MaterialType materialType, Color displayColour) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -542,12 +581,6 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void writeHeadEEPROM(Head headToWrite) throws RoboxCommsException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void probeBed()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -555,6 +588,12 @@ public class CommandInterfaceTestPrinter implements Printer
 
     @Override
     public String getZDelta() throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void writeHeadEEPROM(Head headToWrite) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
