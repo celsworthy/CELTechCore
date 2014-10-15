@@ -1230,7 +1230,6 @@ public class Printer implements RoboxResponseConsumer
     {
         Platform.runLater(() ->
         {
-            steno.info("Packet type " + rxPacket.getPacketType());
             switch (rxPacket.getPacketType())
             {
                 case ACK_WITH_ERRORS:

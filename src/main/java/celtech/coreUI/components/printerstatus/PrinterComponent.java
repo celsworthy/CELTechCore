@@ -30,7 +30,7 @@ import javafx.scene.text.Text;
 public class PrinterComponent extends Pane
 {
 
-    private boolean selected;
+    private boolean selected = false;
     private Size currentSize;
     private double sizePixels = 80;
     private int fontSize;

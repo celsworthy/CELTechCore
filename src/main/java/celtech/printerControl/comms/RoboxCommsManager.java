@@ -108,8 +108,10 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     @Override
     public void run()
     {
-//        Printer nullPrinter = new Printer(this, new DummyPrinterCommandInterface(this, nullPrinterString, suppressPrinterIDChecks, sleepBetweenStatusChecks));
-//        pendingPrinters.put(nullPrinterString, nullPrinter);
+        Printer nullPrinter = new Printer(this, new DummyPrinterCommandInterface(this, nullPrinterString, suppressPrinterIDChecks, sleepBetweenStatusChecks));
+        pendingPrinters.put(nullPrinterString, nullPrinter);
+//        Printer nullPrinter2 = new Printer(this, new DummyPrinterCommandInterface(this, nullPrinterString + "2", suppressPrinterIDChecks, sleepBetweenStatusChecks));
+//        pendingPrinters.put(nullPrinterString + "2", nullPrinter2);        
 
         while (keepRunning)
         {

@@ -115,7 +115,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         }
     };
 
-    private PrinterColourMap colourMap = PrinterColourMap.getInstance();
+    private final PrinterColourMap colourMap = PrinterColourMap.getInstance();
 
     /**
      * Initializes the controller class.
@@ -399,9 +399,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         chartManager.clearBedData();
         currentAmbientTemperatureHistory = null;
 
-//        temperatureChart.getData().remove(printer.ambientTargetTemperatureHistory());
-//        temperatureChart.getData().remove(printer.bedTargetTemperatureHistory());
-//        temperatureChart.getData().remove(printer.nozzleTargetTemperatureHistory());
     }
 
     private void bindPrinter(Printer printer)
@@ -428,9 +425,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         chartManager.setTargetAmbientTemperatureProperty(ancillarySystems.ambientTargetTemperatureProperty());
         chartManager.setTargetBedTemperatureProperty(ancillarySystems.bedTargetTemperatureProperty());
 
-//        temperatureChart.getData().add(printer.ambientTargetTemperatureProperty());
-//        temperatureChart.getData().add(printer.bedTargetTemperatureHistory());
-//        temperatureChart.getData().add(printer.nozzleTargetTemperatureHistory());
     }
 
     private final ChangeListener<Head> headChangeListener = (ObservableValue<? extends Head> observable, Head oldHead, Head newHead) ->
@@ -542,9 +536,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             graphDataPointChangeListener);
 
         //TODO modify for multiple heaters
-//        head.getNozzleHeaters().get(0).getNozzleTemperatureHistory().setName(Lookup.i18n(
-//            "printerStatus.temperatureGraphNozzleLabel"));
-        //TODO modify to support multiple heaters
         chartManager.setNozzleData(head.getNozzleHeaters().get(0).getNozzleTemperatureHistory());
         chartManager.setTargetNozzleTemperatureProperty(head.getNozzleHeaters().get(0).nozzleTargetTemperatureProperty());
 
