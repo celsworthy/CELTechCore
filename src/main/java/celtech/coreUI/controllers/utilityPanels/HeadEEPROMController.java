@@ -1,5 +1,6 @@
 package celtech.coreUI.controllers.utilityPanels;
 
+import celtech.Lookup;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.RestrictedTextField;
@@ -9,6 +10,8 @@ import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
+import celtech.printerControl.model.Reel;
+import celtech.utils.PrinterListChangesListener;
 import celtech.utils.PrinterUtils;
 import java.net.URL;
 import java.text.ParseException;
@@ -30,7 +33,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class HeadEEPROMController implements Initializable
+public class HeadEEPROMController implements Initializable, PrinterListChangesListener
 {
 
     Stenographer steno = StenographerFactory.getStenographer(HeadEEPROMController.class.getName());
@@ -89,11 +92,6 @@ public class HeadEEPROMController implements Initializable
     @FXML
     private Button writeOffsetsButton;
 
-//    private BooleanProperty fastUpdates = new SimpleBooleanProperty(false);
-//    private Head temporaryHead = null;
-    //We'll only deal with the first printer we find.
-    private Printer connectedPrinter = null;
-
     private ChangeListener<Head> headDataChangeListener = null;
 
     private ModalDialog eepromCommsError = null;
@@ -103,22 +101,25 @@ public class HeadEEPROMController implements Initializable
 
     private final BooleanProperty offsetFieldsDirty = new SimpleBooleanProperty();
 
+    private Printer selectedPrinter;
+
     @FXML
     void resetToDefaults(ActionEvent event)
     {
         String headId = headTypeCode.getText();
-        connectedPrinter.headProperty().get().repair(headId);
+        selectedPrinter.headProperty().get().repair(headId);
     }
 
     @FXML
     /**
-     * Write the values from the text fields onto the actual head. If the unique id is already stored on the head then do not overwrite it.
+     * Write the values from the text fields onto the actual head. If the unique id is already
+     * stored on the head then do not overwrite it.
      */
     void writeHeadConfig(ActionEvent event)
     {
         try
         {
-            HeadEEPROMDataResponse headDataResponse = connectedPrinter.readHeadEEPROM();
+            HeadEEPROMDataResponse headDataResponse = selectedPrinter.readHeadEEPROM();
             String uniqueId = headDataResponse.getUniqueID();
             if (uniqueId.length() == 0)
             {
@@ -136,7 +137,7 @@ public class HeadEEPROMController implements Initializable
             Float nozzle2BOffsetVal = nozzle2BOffset.getFloatValue();
             Float lastFilamentTemperatureVal = lastFilamentTemperature.getFloatValue();
             Float headHourCounterVal = headHourCounter.getFloatValue();
-            connectedPrinter.transmitWriteHeadEEPROM(
+            selectedPrinter.transmitWriteHeadEEPROM(
                 headTypeCodeText, uniqueId, headMaxTemperatureVal, headThermistorBetaVal,
                 headThermistorTCalVal, nozzle1XOffsetVal, nozzle1YOffsetVal,
                 nozzle1ZOffsetCalculated, nozzle1BOffsetVal,
@@ -144,7 +145,7 @@ public class HeadEEPROMController implements Initializable
                 nozzle2ZOffsetCalculated, nozzle2BOffsetVal,
                 lastFilamentTemperatureVal, headHourCounterVal);
             offsetFieldsDirty.set(false);
-            connectedPrinter.readHeadEEPROM();
+            selectedPrinter.readHeadEEPROM();
         } catch (RoboxCommsException ex)
         {
             steno.error("Error writing head EEPROM");
@@ -161,7 +162,7 @@ public class HeadEEPROMController implements Initializable
     {
         try
         {
-            connectedPrinter.readPrinterID();
+            selectedPrinter.readPrinterID();
         } catch (PrinterException ex)
         {
             steno.error("Error reading printer ID");
@@ -180,123 +181,82 @@ public class HeadEEPROMController implements Initializable
             eepromCommsError.setTitle(DisplayManager.getLanguageBundle().getString("eeprom.error"));
             eepromCommsError.addButton(DisplayManager.getLanguageBundle().getString("dialogs.OK"));
 
-            StatusScreenState.getInstance().currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
-            {
-                if (newValue != oldValue)
+            StatusScreenState.getInstance().currentlySelectedPrinterProperty().addListener(
+                (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                 {
-                    if (oldValue != null)
+                    if (newValue != oldValue)
                     {
-                        oldValue.headProperty().removeListener(headDataChangeListener);
+                        setSelectedPrinter(newValue);
+                        
                     }
+                });
 
-                    connectedPrinter = newValue;
-                    if (connectedPrinter != null)
-                    {
-                        connectedPrinter.headProperty().addListener(headDataChangeListener);
-                    } else
-                    {
-                        noHeadAction();
-                    }
-                }
-            });
-
-            headDataChangeListener = new ChangeListener<Head>()
-            {
-                @Override
-                public void changed(ObservableValue<? extends Head> ov, Head t, Head t1)
-                {
-                    if (t1 != null)
-                    {
-                        updateFieldsFromAttachedHead(t1);
-                    } else
-                    {
-                        noHeadAction();
-                    }
-                    
-                    if (headUniqueID.getText().length() == 0)
-                    {
-                        headUniqueID.setDisable(false);
-                    } else
-                    {
-                        headUniqueID.setDisable(true);
-                    }
-                }
-            };
-
-//        //TODO - make this switch off again - need to hook into slider code?
-//        fastUpdates.bind(inputsTab.selectedProperty());
-//
-//        fastUpdates.addListener(new ChangeListener<Boolean>()
-//        {
-//
-//            @Override
-//            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
-//            {
-//                if (t1.booleanValue() == true)
-//                {
-//                    commsManager.setSleepBetweenStatusChecks(connectedPrinter, 100);
-//                } else
-//                {
-//                    commsManager.setSleepBetweenStatusChecks(connectedPrinter, 1000);
-//                }
-//            }
-//        });
-            nozzle1ZOverrun.textProperty().addListener(new ChangeListener<String>()
-            {
-                @Override
-                public void changed(ObservableValue<? extends String> ov, String t, String t1)
-                {
-                    try
-                    {
-                        if (nozzle2ZOverrun.getText().isEmpty())
-                        {
-                            return;
-                        }
-                        float nozzle1OverrunValue = Float.valueOf(t1);
-                        float nozzle2OverrunValue = Float.valueOf(nozzle2ZOverrun.getText());
-
-                        nozzle1ZOffsetCalculated = PrinterUtils.deriveNozzle1ZOffsetsFromOverrun(nozzle1OverrunValue, nozzle2OverrunValue);
-                        nozzle2ZOffsetCalculated = PrinterUtils.deriveNozzle2ZOffsetsFromOverrun(nozzle1OverrunValue, nozzle2OverrunValue);
-//                    nozzle1ZOffset.setText(String.format("%.2f", temporaryHead.getNozzle1ZOffset()));
-//                    nozzle2ZOffset.setText(String.format("%.2f", temporaryHead.getNozzle2ZOffset()));
-                    } catch (NumberFormatException ex)
-                    {
-                        steno.error("Error parsing nozzle overrun string value");
-                    }
-                }
-            });
-
-            nozzle2ZOverrun.textProperty().addListener(new ChangeListener<String>()
-            {
-                @Override
-                public void changed(ObservableValue<? extends String> ov, String t, String t1)
-                {
-                    try
-                    {
-                        if (nozzle1ZOverrun.getText().isEmpty())
-                        {
-                            return;
-                        }
-                        float nozzle1OverrunValue = Float.valueOf(nozzle1ZOverrun.getText());
-                        float nozzle2OverrunValue = Float.valueOf(t1);
-                        nozzle1ZOffsetCalculated = PrinterUtils.deriveNozzle1ZOffsetsFromOverrun(nozzle1OverrunValue, nozzle2OverrunValue);
-                        nozzle2ZOffsetCalculated = PrinterUtils.deriveNozzle2ZOffsetsFromOverrun(nozzle1OverrunValue, nozzle2OverrunValue);
-//                    nozzle1ZOffset.setText(String.format("%.2f", temporaryHead.getNozzle1ZOffset()));
-//                    nozzle2ZOffset.setText(String.format("%.2f", temporaryHead.getNozzle2ZOffset()));
-                    } catch (NumberFormatException ex)
-                    {
-                        steno.error("Error parsing nozzle overrun string value");
-                    }
-                }
-            });
-
+            setupNozzleOverrunListeners();
             setUpWriteEnabledAfterEdits();
+
+            Lookup.getPrinterListChangesNotifier().addListener(this);
 
         } catch (Exception ex)
         {
             ex.printStackTrace();
         }
 
+    }
+
+    private void setupNozzleOverrunListeners()
+    {
+        nozzle1ZOverrun.textProperty().addListener(new ChangeListener<String>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends String> ov, String t, String t1)
+            {
+                try
+                {
+                    if (nozzle2ZOverrun.getText().isEmpty())
+                    {
+                        return;
+                    }
+                    float nozzle1OverrunValue = Float.valueOf(t1);
+                    float nozzle2OverrunValue = Float.valueOf(nozzle2ZOverrun.getText());
+
+                    nozzle1ZOffsetCalculated = PrinterUtils.deriveNozzle1ZOffsetsFromOverrun(
+                        nozzle1OverrunValue, nozzle2OverrunValue);
+                    nozzle2ZOffsetCalculated = PrinterUtils.deriveNozzle2ZOffsetsFromOverrun(
+                        nozzle1OverrunValue, nozzle2OverrunValue);
+//                    nozzle1ZOffset.setText(String.format("%.2f", temporaryHead.getNozzle1ZOffset()));
+//                    nozzle2ZOffset.setText(String.format("%.2f", temporaryHead.getNozzle2ZOffset()));
+                } catch (NumberFormatException ex)
+                {
+                    steno.error("Error parsing nozzle overrun string value");
+                }
+            }
+        });
+
+        nozzle2ZOverrun.textProperty().addListener(new ChangeListener<String>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends String> ov, String t, String t1)
+            {
+                try
+                {
+                    if (nozzle1ZOverrun.getText().isEmpty())
+                    {
+                        return;
+                    }
+                    float nozzle1OverrunValue = Float.valueOf(nozzle1ZOverrun.getText());
+                    float nozzle2OverrunValue = Float.valueOf(t1);
+                    nozzle1ZOffsetCalculated = PrinterUtils.deriveNozzle1ZOffsetsFromOverrun(
+                        nozzle1OverrunValue, nozzle2OverrunValue);
+                    nozzle2ZOffsetCalculated = PrinterUtils.deriveNozzle2ZOffsetsFromOverrun(
+                        nozzle1OverrunValue, nozzle2OverrunValue);
+//                    nozzle1ZOffset.setText(String.format("%.2f", temporaryHead.getNozzle1ZOffset()));
+//                    nozzle2ZOffset.setText(String.format("%.2f", temporaryHead.getNozzle2ZOffset()));
+                } catch (NumberFormatException ex)
+                {
+                    steno.error("Error parsing nozzle overrun string value");
+                }
+            }
+        });
     }
 
     private void setUpWriteEnabledAfterEdits()
@@ -344,27 +304,35 @@ public class HeadEEPROMController implements Initializable
         //TODO modify to work with multiple heaters
         headThermistorTCal.setText(String.format("%.2f",
                                                  head.getNozzleHeaters().get(0).tCalProperty().get()));
-        nozzle1BOffset.setText(String.format("%.2f", head.getNozzles().get(0).bOffsetProperty().get()));
-        nozzle1XOffset.setText(String.format("%.2f", head.getNozzles().get(0).xOffsetProperty().get()));
-        nozzle1YOffset.setText(String.format("%.2f", head.getNozzles().get(0).yOffsetProperty().get()));
+        nozzle1BOffset.setText(String.format("%.2f",
+                                             head.getNozzles().get(0).bOffsetProperty().get()));
+        nozzle1XOffset.setText(String.format("%.2f",
+                                             head.getNozzles().get(0).xOffsetProperty().get()));
+        nozzle1YOffset.setText(String.format("%.2f",
+                                             head.getNozzles().get(0).yOffsetProperty().get()));
         nozzle1ZOffsetCalculated = head.getNozzles().get(0).zOffsetProperty().get();
-        nozzle2BOffset.setText(String.format("%.2f", head.getNozzles().get(1).bOffsetProperty().get()));
-        nozzle2XOffset.setText(String.format("%.2f", head.getNozzles().get(1).xOffsetProperty().get()));
-        nozzle2YOffset.setText(String.format("%.2f", head.getNozzles().get(1).yOffsetProperty().get()));
+        nozzle2BOffset.setText(String.format("%.2f",
+                                             head.getNozzles().get(1).bOffsetProperty().get()));
+        nozzle2XOffset.setText(String.format("%.2f",
+                                             head.getNozzles().get(1).xOffsetProperty().get()));
+        nozzle2YOffset.setText(String.format("%.2f",
+                                             head.getNozzles().get(1).yOffsetProperty().get()));
         nozzle2ZOffsetCalculated = head.getNozzles().get(1).zOffsetProperty().get();
 
         //TODO modify to deal with variable numbers of nozzle
         float nozzle1Offset = head.getNozzles().get(0).bOffsetProperty().get();
         float nozzle2Offset = head.getNozzles().get(1).bOffsetProperty().get();
-        float nozzle1ZOverrunValue = PrinterUtils.deriveNozzle1OverrunFromOffsets(nozzle1Offset, nozzle2Offset);
-        float nozzle2ZOverrunValue = PrinterUtils.deriveNozzle1OverrunFromOffsets(nozzle1Offset, nozzle2Offset);
+        float nozzle1ZOverrunValue = PrinterUtils.deriveNozzle1OverrunFromOffsets(nozzle1Offset,
+                                                                                  nozzle2Offset);
+        float nozzle2ZOverrunValue = PrinterUtils.deriveNozzle1OverrunFromOffsets(nozzle1Offset,
+                                                                                  nozzle2Offset);
 
         nozzle1ZOverrun.setText(String.format("%.2f", nozzle1ZOverrunValue));
         nozzle2ZOverrun.setText(String.format("%.2f", nozzle2ZOverrunValue));
         offsetFieldsDirty.set(false);
     }
 
-    private void noHeadAction()
+    private void updateFieldsForNoHead()
     {
         headTypeCode.setText("");
         headType.setText("");
@@ -389,4 +357,70 @@ public class HeadEEPROMController implements Initializable
         nozzle2ZOverrun.setText("");
         offsetFieldsDirty.set(false);
     }
+    
+    private void setSelectedPrinter(Printer printer)
+    {
+        selectedPrinter = printer;
+        Head head = printer.headProperty().get();
+        if (head != null) {
+            updateFieldsFromAttachedHead(head);
+        } else {
+            updateFieldsForNoHead();
+        }
+            updateHeadUniqueId();
+    }    
+    
+    private void updateHeadUniqueId()
+    {
+        if (headUniqueID.getText().length() == 0)
+        {
+            headUniqueID.setDisable(false);
+        } else
+        {
+            headUniqueID.setDisable(true);
+        }
+    }    
+
+    @Override
+    public void whenPrinterAdded(Printer printer)
+    {
+    }
+
+    @Override
+    public void whenPrinterRemoved(Printer printer)
+    {
+    }
+
+    @Override
+    public void whenHeadAdded(Printer printer)
+    {
+        if (printer == selectedPrinter)
+        {
+            Head head = printer.headProperty().get();
+            updateFieldsFromAttachedHead(head);
+            updateHeadUniqueId();
+        }
+    }
+
+    @Override
+    public void whenHeadRemoved(Printer printer, Head head)
+    {
+        if (printer == selectedPrinter)
+        {
+            updateFieldsForNoHead();
+            updateHeadUniqueId();
+        }
+    }
+
+    @Override
+    public void whenReelAdded(Printer printer, int reelIndex)
+    {
+    }
+
+    @Override
+    public void whenReelRemoved(Printer printer, Reel reel)
+    {
+    }
+
+
 }
