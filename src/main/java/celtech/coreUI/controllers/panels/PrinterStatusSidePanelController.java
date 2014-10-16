@@ -232,7 +232,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     }
 
     /**
-     * Select any one of the active printers.
+     * Select any one of the active printers. If there are no printers left then select 'null'
      */
     private void selectOnePrinter()
     {

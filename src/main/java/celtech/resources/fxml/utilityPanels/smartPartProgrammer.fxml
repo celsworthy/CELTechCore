@@ -10,7 +10,7 @@
         <VBox alignment="TOP_CENTER" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="5.0">
             <children>
             <Separator prefWidth="200.0" />
-            <Label text="Write A Known Filament To The Reel" />
+            <Label text="%reelPanel.writeKnownFilament" />
                 <ComboBox fx:id="materialSelector" prefWidth="250.0" />
                 <Button fx:id="programReelButton" mnemonicParsing="false" onAction="#programReel" text="%smartreelProgrammer.programReel" />
                 <HBox alignment="CENTER" layoutX="10.0" layoutY="10.0" spacing="5.0">
