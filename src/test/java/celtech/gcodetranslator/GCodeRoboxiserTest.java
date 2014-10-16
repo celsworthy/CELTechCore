@@ -94,7 +94,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
         String producedFileContents = getFileContentsAsString(Paths.get(outputFilePath));
         String expectedFileContents = getFileContentsAsString(
             Paths.get(expectedDataURL.toURI()));
-//        assertEquals(expectedFileContents, producedFileContents);
+        assertEquals(expectedFileContents, producedFileContents);
 
     }
 

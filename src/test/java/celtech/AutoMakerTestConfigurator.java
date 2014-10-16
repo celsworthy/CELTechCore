@@ -10,30 +10,21 @@ import celtech.utils.tasks.TestTaskExecutor;
 import java.io.File;
 import java.net.URL;
 import java.util.Properties;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
 /**
  *
  * @author tony
  */
-public class JavaFXConfiguredTest
+public class AutoMakerTestConfigurator
 {
-
-    @ClassRule
-    public static TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
-
-    @BeforeClass
-    public static void setUpClass()
+    public static void setUp(TemporaryFolder temporaryUserStorageFolder)
     {
         Properties testProperties = new Properties();
 
         testProperties.setProperty("language", "UK");
-        URL applicationInstallURL = JavaFXConfiguredTest.class.getResource("/");
-        URL applicationCommonURL = JavaFXConfiguredTest.class.getResource("/Common/");
+        URL applicationInstallURL = AutoMakerTestConfigurator.class.getResource("/");
+        URL applicationCommonURL = AutoMakerTestConfigurator.class.getResource("/Common/");
         String userStorageFolder = temporaryUserStorageFolder.getRoot().getAbsolutePath()
             + File.separator;
         ApplicationConfiguration.setInstallationProperties(
@@ -48,7 +39,7 @@ public class JavaFXConfiguredTest
             + File.separator).mkdir();
 
         // force initialisation
-        URL configURL = JavaFXConfiguredTest.class.getResource("/AutoMaker.configFile.xml");
+        URL configURL = AutoMakerTestConfigurator.class.getResource("/AutoMaker.configFile.xml");
         System.setProperty("libertySystems.configFile", configURL.getFile());
         String installDir = ApplicationConfiguration.getApplicationInstallDirectory(
             Lookup.class);
