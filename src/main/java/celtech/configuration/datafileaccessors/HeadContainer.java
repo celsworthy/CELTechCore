@@ -1,5 +1,7 @@
-package celtech.configuration;
+package celtech.configuration.datafileaccessors;
 
+import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.HeadFileFilter;
 import celtech.configuration.fileRepresentation.HeadFile;
 import java.io.File;
 import java.io.IOException;

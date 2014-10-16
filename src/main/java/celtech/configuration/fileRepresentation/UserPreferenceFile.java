@@ -1,22 +1,15 @@
-package celtech.configuration;
+package celtech.configuration.fileRepresentation;
 
-import celtech.configuration.fileRepresentation.UserPreferenceFile;
+import celtech.configuration.SlicerType;
 
 /**
  *
  * @author Ian
  */
-public class UserPreferences
+public class UserPreferenceFile
 {
-
     private SlicerType slicerType = SlicerType.Cura;
     private boolean overrideSafeties = false;
-
-    public UserPreferences(UserPreferenceFile userPreferenceFile)
-    {
-        this.slicerType = userPreferenceFile.getSlicerType();
-        this.overrideSafeties = userPreferenceFile.isOverrideSafeties();
-    }
 
     public SlicerType getSlicerType()
     {

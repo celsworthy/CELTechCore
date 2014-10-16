@@ -2,7 +2,7 @@ package celtech.coreUI.components;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
-import celtech.configuration.FilamentContainer;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.DisplayManager;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;

@@ -1,7 +1,7 @@
 package celtech.printerControl.model;
 
 import celtech.configuration.EEPROMState;
-import celtech.configuration.HeadContainer;
+import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.NozzleData;
 import celtech.configuration.fileRepresentation.NozzleHeaterData;

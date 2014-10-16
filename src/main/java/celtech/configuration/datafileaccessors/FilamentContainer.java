@@ -3,8 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package celtech.configuration;
+package celtech.configuration.datafileaccessors;
 
+import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.Filament;
+import celtech.configuration.FilamentFileFilter;
+import celtech.configuration.MaterialType;
 import celtech.utils.DeDuplicator;
 import celtech.utils.FXUtils;
 import java.io.File;

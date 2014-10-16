@@ -2,7 +2,7 @@ package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
-import celtech.configuration.FilamentContainer;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.model.Printer;

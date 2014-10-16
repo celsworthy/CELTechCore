@@ -6,7 +6,7 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.TaskController;
-import celtech.configuration.HeadContainer;
+import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.NozzleData;
 import celtech.printerControl.model.Printer;

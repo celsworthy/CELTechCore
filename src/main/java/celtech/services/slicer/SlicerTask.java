@@ -6,7 +6,7 @@ package celtech.services.slicer;
 
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.FilamentContainer;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.MachineType;
 import celtech.configuration.SlicerType;
 import celtech.coreUI.visualisation.exporters.STLOutputConverter;

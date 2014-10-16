@@ -7,7 +7,7 @@
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.configuration.Filament;
-import celtech.configuration.FilamentContainer;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.MaterialType;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.StatusScreenState;

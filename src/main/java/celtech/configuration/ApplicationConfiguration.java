@@ -204,10 +204,6 @@ public class ApplicationConfiguration
     private static final String commonFileDirectoryPath = "CEL Robox" + File.separator;
 
     private static String headFileDirectory = null;
-
-    /**
-     *
-     */
     public static final String headDirectoryPath = "Heads";
 
     /**

@@ -1,5 +1,6 @@
 package celtech.configuration;
 
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.appManager.Notifier;
 import celtech.coreUI.DisplayManager;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;

@@ -2,8 +2,8 @@ package celtech.printerControl.comms;
 
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
-import celtech.configuration.FilamentContainer;
-import celtech.configuration.HeadContainer;
+import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;

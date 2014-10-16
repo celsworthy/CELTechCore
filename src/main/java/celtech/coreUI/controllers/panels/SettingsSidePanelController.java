@@ -6,7 +6,7 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
-import celtech.configuration.FilamentContainer;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.MaterialType;
 import celtech.configuration.PrintProfileContainer;
 import celtech.coreUI.DisplayManager;

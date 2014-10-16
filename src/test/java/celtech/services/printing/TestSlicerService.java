@@ -5,7 +5,7 @@ package celtech.services.printing;
 
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.FilamentContainer;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.AbstractSlicerService;
 import celtech.services.slicer.PrintQualityEnumeration;

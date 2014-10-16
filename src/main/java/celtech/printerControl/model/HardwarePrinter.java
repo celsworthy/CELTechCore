@@ -6,7 +6,7 @@ import celtech.appManager.SystemNotificationManager;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
-import celtech.configuration.HeadContainer;
+import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.MaterialType;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.fileRepresentation.HeadFile;

@@ -3,7 +3,7 @@ package celtech.coreUI.controllers.utilityPanels;
 import celtech.CoreTest;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
-import celtech.configuration.FilamentContainer;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.MaterialType;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.controllers.popups.PopupCommandReceiver;

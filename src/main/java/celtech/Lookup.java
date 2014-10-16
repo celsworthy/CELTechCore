@@ -6,6 +6,8 @@ package celtech;
 import celtech.appManager.SystemNotificationManager;
 import celtech.appManager.SystemNotificationManagerJavaFX;
 import celtech.configuration.ApplicationEnvironment;
+import celtech.configuration.UserPreferences;
+import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.printerControl.model.Printer;
 import celtech.utils.PrinterListChangesNotifier;
 import celtech.utils.tasks.LiveTaskExecutor;
@@ -23,6 +25,7 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class Lookup
 {
+
     private static Lookup instance;
     private ApplicationEnvironment applicationEnvironment;
     private TaskExecutor taskExecutor;
@@ -30,6 +33,7 @@ public class Lookup
     private final Stenographer steno = StenographerFactory.getStenographer(Lookup.class.getName());
     private static PrinterListChangesNotifier printerListChangesNotifier;
     private static ObservableList<Printer> connectedPrinters = FXCollections.observableArrayList();
+    private static UserPreferences userPreferences;
 
     /**
      * @return the applicationEnvironment
@@ -38,8 +42,9 @@ public class Lookup
     {
         return instance.applicationEnvironment;
     }
-    
-    public static String i18n(String stringId) {
+
+    public static String i18n(String stringId)
+    {
         return instance.applicationEnvironment.getLanguageBundle().getString(stringId);
     }
 
@@ -60,6 +65,7 @@ public class Lookup
         systemNotificationHandler = new SystemNotificationManagerJavaFX();
         steno.info("Detected locale - " + appLocale.toLanguageTag());
         printerListChangesNotifier = new PrinterListChangesNotifier(connectedPrinters);
+        userPreferences = new UserPreferences(UserPreferenceContainer.getUserPreferenceFile());
     }
 
     public static void initialise()
@@ -86,12 +92,19 @@ public class Lookup
     {
         instance.systemNotificationHandler = systemNotificationHandler;
     }
-    
-    public static PrinterListChangesNotifier getPrinterListChangesNotifier() {
+
+    public static PrinterListChangesNotifier getPrinterListChangesNotifier()
+    {
         return printerListChangesNotifier;
     }
-    
-    public static ObservableList<Printer> getConnectedPrinters() {
+
+    public static ObservableList<Printer> getConnectedPrinters()
+    {
         return connectedPrinters;
+    }
+
+    public static UserPreferences getUserPreferences()
+    {
+        return userPreferences;
     }
 }
