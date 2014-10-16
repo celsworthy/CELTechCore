@@ -4,7 +4,6 @@ import celtech.Lookup;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.model.Head;
@@ -184,7 +183,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             setupNozzleOverrunListeners();
             setUpWriteEnabledAfterEdits();
 
-            StatusScreenState.getInstance().currentlySelectedPrinterProperty().addListener(
+            Lookup.currentlySelectedPrinterProperty().addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                 {
                     if (newValue != oldValue)
@@ -196,10 +195,10 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
             Lookup.getPrinterListChangesNotifier().addListener(this);
 
-            if (StatusScreenState.getInstance().currentlySelectedPrinterProperty().get() != null)
+            if (Lookup.currentlySelectedPrinterProperty().get() != null)
             {
                 setSelectedPrinter(
-                    StatusScreenState.getInstance().currentlySelectedPrinterProperty().get());
+                    Lookup.currentlySelectedPrinterProperty().get());
             }
 
         } catch (Exception ex)

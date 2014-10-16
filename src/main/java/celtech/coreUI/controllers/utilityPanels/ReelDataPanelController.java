@@ -11,7 +11,6 @@ import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
 import celtech.configuration.MaterialType;
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
@@ -238,7 +237,7 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
             reelMaterialType.getItems().add(materialType);
         }
 
-        StatusScreenState.getInstance().currentlySelectedPrinterProperty().addListener(
+        Lookup.currentlySelectedPrinterProperty().addListener(
             (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
             {
                 if (newValue != oldValue)
@@ -249,10 +248,10 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
 
         Lookup.getPrinterListChangesNotifier().addListener(this);
 
-        if (StatusScreenState.getInstance().currentlySelectedPrinterProperty().get() != null)
+        if (Lookup.currentlySelectedPrinterProperty().get() != null)
         {
             setSelectedPrinter(
-                StatusScreenState.getInstance().currentlySelectedPrinterProperty().get());
+                Lookup.currentlySelectedPrinterProperty().get());
         }
     }
 

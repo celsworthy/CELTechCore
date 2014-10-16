@@ -5,7 +5,7 @@
  */
 package celtech.coreUI.controllers.utilityPanels;
 
-import celtech.coreUI.controllers.StatusScreenState;
+import celtech.Lookup;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import java.net.URL;
@@ -25,7 +25,6 @@ public class DiagnosticPanelController implements Initializable
 {
 
     private Printer connectedPrinter = null;
-    private StatusScreenState statusScreenState = null;
 
     @FXML
     private Label extruder1Loaded;
@@ -83,9 +82,7 @@ public class DiagnosticPanelController implements Initializable
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        statusScreenState = StatusScreenState.getInstance();
-
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        Lookup.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
 
             @Override

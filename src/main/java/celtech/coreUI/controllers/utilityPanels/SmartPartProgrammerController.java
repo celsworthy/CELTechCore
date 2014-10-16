@@ -1,9 +1,9 @@
 package celtech.coreUI.controllers.utilityPanels;
 
+import celtech.Lookup;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentContainer;
-import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.model.Printer;
 import java.net.URL;
@@ -27,7 +27,6 @@ public class SmartPartProgrammerController implements Initializable
 {
 
     private Stenographer steno = StenographerFactory.getStenographer(SmartPartProgrammerController.class.getName());
-    private StatusScreenState statusScreenState = null;
     private Printer connectedPrinter = null;
     private ChangeListener<Boolean> reelDataChangeListener = new ChangeListener<Boolean>()
     {
@@ -126,11 +125,9 @@ public class SmartPartProgrammerController implements Initializable
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        statusScreenState = StatusScreenState.getInstance();
-
         materialSelector.setItems(FilamentContainer.getCompleteFilamentList());
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        Lookup.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
             @Override
             public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newPrinter)

@@ -1,6 +1,6 @@
 package celtech.services.purge;
 
-import celtech.coreUI.controllers.StatusScreenState;
+import celtech.Lookup;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.ControllableService;
@@ -39,8 +39,7 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
     {
         boolean success = false;
 
-        StatusScreenState statusScreenState = StatusScreenState.getInstance();
-        printerToUse = statusScreenState.getCurrentlySelectedPrinter();
+        printerToUse = Lookup.getCurrentlySelectedPrinter();
 
         switch (desiredState)
         {

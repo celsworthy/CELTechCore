@@ -5,10 +5,10 @@
  */
 package celtech.coreUI.controllers.panels;
 
+import celtech.Lookup;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.SlidablePanel;
 import celtech.coreUI.controllers.SlideOutHandleController;
-import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -34,7 +34,6 @@ import libertysystems.stenographer.StenographerFactory;
 public class PrinterStatusSlideOutPanelController implements Initializable, SlidablePanel
 {
 
-    private StatusScreenState statusScreenState = null;
     private final Stenographer steno = StenographerFactory.getStenographer(PrinterStatusSlideOutPanelController.class.getName());
     private ListChangeListener<String> gcodeTranscriptListener = null;
 
@@ -68,14 +67,12 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
     private void fireGCodeAtPrinter()
     {
         gcodeEntryField.selectAll();
-        statusScreenState.getCurrentlySelectedPrinter().sendRawGCode(gcodeEntryField.getText(), true);
+        Lookup.getCurrentlySelectedPrinter().sendRawGCode(gcodeEntryField.getText(), true);
     }
 
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        statusScreenState = StatusScreenState.getInstance();
-
         gcodeTranscript.setEditable(false);
         gcodeTranscript.setScrollTop(Double.MAX_VALUE);
 
@@ -109,7 +106,7 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
 
         populateGCodeArea();
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
+        Lookup.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
         {
             if (t1 != null)
             {
@@ -135,7 +132,7 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
 //                }
 //            }
 //        });
-        gcodeEditParent.visibleProperty().bind(statusScreenState.currentlySelectedPrinterProperty().isNotNull());
+        gcodeEditParent.visibleProperty().bind(Lookup.currentlySelectedPrinterProperty().isNotNull());
 
 //        sendGCodeButton.setDefaultButton(true);
         gcodeEntryField.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>()
@@ -186,10 +183,10 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
 
     private void populateGCodeArea()
     {
-        if (statusScreenState.getCurrentlySelectedPrinter() != null)
+        if (Lookup.getCurrentlySelectedPrinter() != null)
         {
             gcodeTranscript.setText("");
-            for (String gcodeLine : statusScreenState.getCurrentlySelectedPrinter().gcodeTranscriptProperty())
+            for (String gcodeLine : Lookup.getCurrentlySelectedPrinter().gcodeTranscriptProperty())
             {
                 gcodeTranscript.appendText(gcodeLine);
             }

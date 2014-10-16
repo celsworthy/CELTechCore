@@ -10,7 +10,6 @@ import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.components.printerstatus.PrinterComponent;
-import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.PrinterAncillarySystems;
@@ -77,8 +76,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @FXML
     private NumberAxis timeAxis;
 
-    private StatusScreenState statusScreenState = null;
-
     private PrinterIDDialog printerIDDialog = null;
 
     private Printer selectedPrinter = null;
@@ -126,7 +123,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     public void initialize(URL url, ResourceBundle rb)
     {
         chartManager = new ChartManager(temperatureChart);
-        statusScreenState = StatusScreenState.getInstance();
 
         printerIDDialog = new PrinterIDDialog();
 
@@ -246,6 +242,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         } else
         {
             selectPrinter(null);
+            Lookup.setCurrentlySelectedPrinter(null);
         }
     }
 
@@ -273,7 +270,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         {
             PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
             printerComponent.setSelected(true);
-            statusScreenState.setCurrentlySelectedPrinter(printer);
+            Lookup.setCurrentlySelectedPrinter(printer);
             bindDetails(printer);
             if (printer.headProperty().get() != null) {
                 bindHeadProperties(printer.headProperty().get());

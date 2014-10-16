@@ -55,7 +55,6 @@ public class PrinterStatusPageController implements Initializable
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         PrinterStatusPageController.class.getName());
-    private StatusScreenState statusScreenState = null;
     private Printer printerToUse = null;
     private ChangeListener<Boolean> reelDataChangeListener = null;
     private ListChangeListener<Reel> reelChangeListener = null;
@@ -539,8 +538,6 @@ public class PrinterStatusPageController implements Initializable
         fiveDPformatter.setMaximumFractionDigits(5);
         fiveDPformatter.setGroupingUsed(false);
 
-        statusScreenState = StatusScreenState.getInstance();
-
         ResourceBundle i18nBundle = DisplayManager.getLanguageBundle();
 
         transferringDataString = i18nBundle.getString(
@@ -639,13 +636,13 @@ public class PrinterStatusPageController implements Initializable
         };
         setAdvancedControlsVisibility(false);
 
-        if (statusScreenState.getCurrentlySelectedPrinter() != null)
+        if (Lookup.getCurrentlySelectedPrinter() != null)
         {
-            Printer printer = statusScreenState.getCurrentlySelectedPrinter();
+            Printer printer = Lookup.getCurrentlySelectedPrinter();
             processPrinterStatusChange(printer.printerStatusProperty().get());
         }
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener(
+        Lookup.currentlySelectedPrinterProperty().addListener(
             new ChangeListener<Printer>()
             {
                 @Override
