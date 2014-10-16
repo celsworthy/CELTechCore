@@ -17,7 +17,7 @@ import javafx.collections.ListChangeListener;
  * - Head added to printer 
  * - Head removed from printer 
  * - Reel added to printer (with reel index) 
- * - Reel removed from printer (with reel index) 
+ * - Reel removed from printer (with reel) 
  * - Printer Identity changed
  * To be done: 
  * - Filament detected on extruder (with extruder index) 
@@ -47,7 +47,7 @@ public class PrinterChangesNotifier
                 } else {
                     for (PrinterChangesListener printerChangesListener : listeners)
                     {
-                        printerChangesListener.whenHeadRemoved();
+                        printerChangesListener.whenHeadRemoved(oldValue);
                     }
                 }
             });
@@ -71,7 +71,7 @@ public class PrinterChangesNotifier
                     {
                         for (PrinterChangesListener listener : listeners)
                         {
-                            listener.whenReelRemoved(0);
+                            listener.whenReelRemoved(reel);
                         }
                     }
                 } else if (change.wasReplaced())

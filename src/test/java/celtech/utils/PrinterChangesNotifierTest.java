@@ -3,6 +3,8 @@
  */
 package celtech.utils;
 
+import celtech.printerControl.model.Head;
+import celtech.printerControl.model.Reel;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
@@ -82,7 +84,7 @@ public class PrinterChangesNotifierTest
         }
 
         @Override
-        public void whenHeadRemoved()
+        public void whenHeadRemoved(Head head)
         {
             headRemoved = true;
         }
@@ -94,14 +96,9 @@ public class PrinterChangesNotifierTest
         }
 
         @Override
-        public void whenReelRemoved(int reelIndex)
+        public void whenReelRemoved(Reel reel)
         {
             reel0Removed = true;
-        }
-
-        @Override
-        public void whenPrinterIdentityChanged()
-        {
         }
     }
 

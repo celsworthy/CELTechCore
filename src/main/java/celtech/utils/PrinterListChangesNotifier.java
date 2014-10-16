@@ -3,7 +3,9 @@
  */
 package celtech.utils;
 
+import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.Reel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -86,9 +88,9 @@ public class PrinterListChangesNotifier
             }
             
             @Override
-            public void whenHeadRemoved()
+            public void whenHeadRemoved(Head head)
             {
-                fireWhenHeadRemoved(printer);
+                fireWhenHeadRemoved(printer, head);
             }
             
             @Override
@@ -98,15 +100,11 @@ public class PrinterListChangesNotifier
             }
             
             @Override
-            public void whenReelRemoved(int reelIndex)
+            public void whenReelRemoved(Reel reel)
             {
-                fireWhenReelRemoved(printer, reelIndex);
+                fireWhenReelRemoved(printer, reel);
             }
             
-            @Override
-            public void whenPrinterIdentityChanged()
-            {
-            }
         };
         printerListeners.put(printer, printerChangesListener);
         printerNotifiers.put(printer, printerChangesNotifier);
@@ -123,6 +121,13 @@ public class PrinterListChangesNotifier
         for (PrinterListChangesListener listener : listeners)
         {
             listener.whenPrinterAdded(printer);
+            if (printer.headProperty().get() != null) {
+                 listener.whenHeadAdded(printer);
+            }
+            for (int i = 0; i < printer.reelsProperty().size(); i++)
+            {
+                listener.whenReelAdded(printer, i);
+            }
         }
     }
 
@@ -139,11 +144,11 @@ public class PrinterListChangesNotifier
         }
     }
     
-    private void fireWhenHeadRemoved(Printer printer)
+    private void fireWhenHeadRemoved(Printer printer, Head head)
     {
         for (PrinterListChangesListener listener : listeners)
         {
-            listener.whenHeadRemoved(printer);
+            listener.whenHeadRemoved(printer, head);
         }
     }    
     
@@ -155,11 +160,11 @@ public class PrinterListChangesNotifier
         }
     }
     
-    private void fireWhenReelRemoved(Printer printer, int reelIndex)
+    private void fireWhenReelRemoved(Printer printer, Reel reel)
     {
         for (PrinterListChangesListener listener : listeners)
         {
-            listener.whenReelRemoved(printer, reelIndex);
+            listener.whenReelRemoved(printer, reel);
         }
     }       
 

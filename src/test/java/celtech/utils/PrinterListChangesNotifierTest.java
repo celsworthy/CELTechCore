@@ -3,7 +3,9 @@
  */
 package celtech.utils;
 
+import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.Reel;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.collections.FXCollections;
@@ -179,7 +181,7 @@ public class PrinterListChangesNotifierTest
         }
 
         @Override
-        public void whenHeadRemoved(Printer printer)
+        public void whenHeadRemoved(Printer printer, Head head)
         {
             printersWithHeadRemoved.add(printer);
         }
@@ -191,15 +193,9 @@ public class PrinterListChangesNotifierTest
         }
 
         @Override
-        public void whenReelRemoved(Printer printer, int reelIndex)
+        public void whenReelRemoved(Printer printer, Reel reel)
         {
             printersWithReelRemoved.add(printer);
-        }
-
-        @Override
-        public void whenPrinterIdentityChanged(Printer printer)
-        {
-
         }
     }
 
