@@ -106,7 +106,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     @Override
     public void run()
     {
-        int NUM_DUMMY_PRINTERS = 0;
+        int NUM_DUMMY_PRINTERS = 1;
         for (int i = 0; i < NUM_DUMMY_PRINTERS; i++)
         {
             String portName = "NullPrinter" + i;
