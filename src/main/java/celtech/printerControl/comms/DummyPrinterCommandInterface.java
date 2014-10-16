@@ -99,9 +99,10 @@ public class DummyPrinterCommandInterface extends CommandInterface
             SendGCodeRequest request = (SendGCodeRequest) messageToWrite;
             GCodeDataResponse gcodeResponse = (GCodeDataResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.GCODE_RESPONSE);
 
-            if (request.getMessageData().startsWith(attachHeadCommand))
+            String messageData = request.getMessageData().trim();
+            if (messageData.startsWith(attachHeadCommand))
             {
-                String headName = request.getMessageData().replaceAll(attachHeadCommand, "");
+                String headName = messageData.replaceAll(attachHeadCommand, "");
                 HeadFile headData = HeadContainer.getHeadByID(headName);
                 if (headData != null)
                 {
@@ -112,13 +113,13 @@ public class DummyPrinterCommandInterface extends CommandInterface
                 {
                     gcodeResponse.setMessagePayload("Didn't recognise head name - " + headName);
                 }
-            } else if (request.getMessageData().startsWith(detachHeadCommand))
+            } else if (messageData.startsWith(detachHeadCommand))
             {
                 currentStatus.setHeadEEPROMState(EEPROMState.NOT_PRESENT);
             }
-            else if (request.getMessageData().startsWith(attachReelCommand))
+            else if (messageData.startsWith(attachReelCommand))
             {
-                String filamentName = request.getMessageData().replaceAll(attachReelCommand, "");
+                String filamentName = messageData.replaceAll(attachReelCommand, "");
                 Filament filament = FilamentContainer.getFilamentByID(filamentName);
                 if (filament != null)
                 {
@@ -130,7 +131,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
                 {
                     gcodeResponse.setMessagePayload("Didn't recognise filament name - " + filamentName);
                 }
-            } else if (request.getMessageData().startsWith(detachReelCommand))
+            } else if (messageData.startsWith(detachReelCommand))
             {
                 currentStatus.setReelEEPROMState(EEPROMState.NOT_PRESENT);
             }
