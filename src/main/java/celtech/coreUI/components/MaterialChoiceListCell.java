@@ -20,7 +20,7 @@ import javafx.scene.shape.Rectangle;
 public class MaterialChoiceListCell extends ListCell<Filament>
 {
 
-    private final static String LIST_CELL_STYLE_CLASS = "material-choice-list-cell";
+    private final static String LIST_CELL_STYLE_CLASS = "material-choice-list-cell-grid";
     private final GridPane grid = new GridPane();
     private final GridPane alternateGrid = new GridPane();
     private final Rectangle colourRectangle = new Rectangle(15, 15);
@@ -51,7 +51,6 @@ public class MaterialChoiceListCell extends ListCell<Filament>
         grid.add(padlock, 2, 1);
         grid.add(name, 3, 1);
         grid.add(remainingFilament, 4, 1);
-
         grid.getStyleClass().add(LIST_CELL_STYLE_CLASS);
     }
 

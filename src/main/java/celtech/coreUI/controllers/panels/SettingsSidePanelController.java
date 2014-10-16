@@ -19,11 +19,13 @@ import celtech.coreUI.controllers.utilityPanels.MaterialDetailsController;
 import celtech.coreUI.controllers.utilityPanels.ProfileDetailsController;
 import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.comms.RoboxCommsManager;
+import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Reel;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
 import static celtech.utils.DeDuplicator.suggestNonDuplicateName;
+import celtech.utils.PrinterListChangesListener;
 import celtech.utils.SystemUtils;
 import java.net.URL;
 import java.util.Collection;
@@ -57,7 +59,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class SettingsSidePanelController implements Initializable, SidePanelManager, PopupCommandReceiver
+public class SettingsSidePanelController implements Initializable, SidePanelManager, PopupCommandReceiver, PrinterListChangesListener
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(SettingsSidePanelController.class.getName());
@@ -119,7 +121,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private RoboxProfile lastSettings = null;
 
     private ChangeListener<Toggle> nozzleSelectionListener = null;
-    private ListChangeListener<Reel> reelChangeListener = null;
 
     private ObservableList<Filament> availableFilaments = FXCollections.observableArrayList();
     private ObservableList<RoboxProfile> availableProfiles = FXCollections.observableArrayList();
@@ -343,7 +344,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     {
                         Platform.runLater(new Runnable()
                         {
-                            
+
                             @Override
                             public void run()
                             {
@@ -383,7 +384,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 } else if (change.wasUpdated())
                 {
                     steno.info("Update");
-                    
+
                 }
             }
         });
@@ -397,12 +398,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     {
                         if (lastSelectedPrinter != null)
                         {
-                            lastSelectedPrinter.reelsProperty().removeListener(reelChangeListener);
                         }
                         if (selectedPrinter != null && selectedPrinter != lastSelectedPrinter)
                         {
                             currentPrinter = selectedPrinter;
-                            currentPrinter.reelsProperty().addListener(reelChangeListener);
                         }
 
                         if (selectedPrinter == null)
@@ -461,37 +460,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             }
         }
         );
-
-        reelChangeListener
-            = (ListChangeListener.Change<? extends Reel> change) ->
-            {
-                if (currentPrinter != null && currentPrinter.reelsProperty().size() > 0)
-                {
-                    //TODO modify for multiple reels
-                    currentlyLoadedFilament = new Filament(currentPrinter.reelsProperty().get(0));
-                    updateFilamentList();
-                    materialChooser.getSelectionModel().select(currentlyLoadedFilament);
-                }
-                else
-                {
-                    currentlyLoadedFilament = null;
-                    updateFilamentList();
-                }
-
-                while (change.next())
-                {
-                    if (change.wasAdded())
-                    {
-
-                    } else if (change.wasRemoved())
-                    {
-                    } else if (change.wasReplaced())
-                    {
-                    } else if (change.wasUpdated())
-                    {
-                    }
-                }
-            };
 
         nonCustomProfileVBox.visibleProperty()
             .bind(qualityChooser.valueProperty().isNotEqualTo(PrintQualityEnumeration.CUSTOM.getEnumPosition()));
@@ -567,6 +535,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 //        });
 //
 //        updateFilamentList();
+        Lookup.getPrinterListChangesNotifier().addListener(this);
     }
 
     private void setupQualityOverrideControls(RoboxProfile settings)
@@ -876,6 +845,42 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         }
 
         settingsScreenState.setSettings(settings);
+    }
+
+    @Override
+    public void whenPrinterAdded(Printer printer)
+    {
+    }
+
+    @Override
+    public void whenPrinterRemoved(Printer printer)
+    {
+    }
+
+    @Override
+    public void whenHeadAdded(Printer printer)
+    {
+    }
+
+    @Override
+    public void whenHeadRemoved(Printer printer, Head head)
+    {
+    }
+
+    @Override
+    public void whenReelAdded(Printer printer, int reelIndex)
+    {
+        //TODO modify for multiple reels
+        currentlyLoadedFilament = new Filament(currentPrinter.reelsProperty().get(0));
+        updateFilamentList();
+        materialChooser.getSelectionModel().select(currentlyLoadedFilament);
+    }
+
+    @Override
+    public void whenReelRemoved(Printer printer, Reel reel)
+    {
+        currentlyLoadedFilament = null;
+        updateFilamentList();
     }
 
 }

@@ -1350,9 +1350,9 @@ table-view .column-header-background {
     -fx-alignment: CENTER_RIGHT;
 }
 
-.material-choice-list-cell{
-    -fx-padding: 0;
-    -fx-hgap:10;
+.material-choice-list-cell-grid .label {
+    -fx-background-color: white;
+    -fx-text-fill: black;
 }
 
 .profile-choice-list-cell{
