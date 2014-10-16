@@ -270,7 +270,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                 bindHeadProperties(printer.headProperty().get());
             }
             if (! printer.reelsProperty().isEmpty()) {
-                bindReelProperties(printer.reelsProperty().get(0));
+                Reel reel = printer.reelsProperty().get(0);
+                bindReelProperties(reel);
+                updateReelMaterial(reel);
             }
             
         }
