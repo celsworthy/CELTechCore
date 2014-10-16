@@ -86,4 +86,9 @@ public class PrinterChangesNotifier
     public void addListener(PrinterChangesListener listener) {
         this.listeners.add(listener);
     }
+
+    void removeListener(PrinterChangesListener listener)
+    {
+        this.listeners.remove(listener);
+    }
 }

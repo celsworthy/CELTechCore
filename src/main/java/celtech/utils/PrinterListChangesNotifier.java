@@ -32,6 +32,7 @@ public class PrinterListChangesNotifier
 
     private final List<PrinterListChangesListener> listeners = new ArrayList<>();
     private final Map<Printer, PrinterChangesListener> printerListeners = new HashMap<>();
+    private final Map<Printer, PrinterChangesNotifier> printerNotifiers = new HashMap<>();
 
     public PrinterListChangesNotifier(ObservableList<Printer> printers)
     {
@@ -108,8 +109,14 @@ public class PrinterListChangesNotifier
             }
         };
         printerListeners.put(printer, printerChangesListener);
+        printerNotifiers.put(printer, printerChangesNotifier);
         printerChangesNotifier.addListener(printerChangesListener);
     }
+    
+    private void removePrinterChangesNotifier(Printer printer)
+    {
+        printerNotifiers.get(printer).removeListener(printerListeners.get(printer));
+    }    
 
     private void fireWhenPrinterAdded(Printer printer)
     {
@@ -155,10 +162,5 @@ public class PrinterListChangesNotifier
             listener.whenReelRemoved(printer, reelIndex);
         }
     }       
-
-    private void removePrinterChangesNotifier(Printer printer)
-    {
-        
-    }
 
 }

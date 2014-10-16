@@ -116,8 +116,41 @@ public class PrinterListChangesNotifierTest
         printers.add(printer);
         printer.addReel(0);
         assertEquals(1, plcListener.printersWithReelAdded.size());
-    }       
-
+    }   
+    
+    @Test
+    public void testWhenPrinterAddedThenReelRemoved()
+    {
+        ObservableList<Printer> printers = FXCollections.observableArrayList();
+        PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
+        TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
+        notifier.addListener(plcListener);
+        
+        assertEquals(0, plcListener.printersWithHeadAdded.size());
+        TestPrinter printer = new TestPrinter();
+        printers.add(printer);
+        printer.addReel(0);
+        assertEquals(1, plcListener.printersWithReelAdded.size());
+    }    
+    
+    @Test
+    public void testListenerRemovedWhenPrinterAddedThenRemoved()
+    {
+        ObservableList<Printer> printers = FXCollections.observableArrayList();
+        PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
+        TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
+        notifier.addListener(plcListener);
+        
+        assertEquals(0, plcListener.addedPrinters.size());
+        TestPrinter printer = new TestPrinter();
+        printers.add(printer);
+        printers.remove(printer);
+        assertEquals(0, plcListener.addedPrinters.size());
+        
+        printer.addHead();
+        assertEquals(0, plcListener.printersWithHeadAdded.size());
+    }    
+    
     private static class TestPrinterListChangesListener implements PrinterListChangesListener
     {
         

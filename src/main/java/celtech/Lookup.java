@@ -6,6 +6,7 @@ package celtech;
 import celtech.appManager.SystemNotificationManager;
 import celtech.appManager.SystemNotificationManagerJavaFX;
 import celtech.configuration.ApplicationEnvironment;
+import celtech.utils.PrinterListChangesNotifier;
 import celtech.utils.tasks.LiveTaskExecutor;
 import celtech.utils.tasks.TaskExecutor;
 import java.util.Locale;
@@ -24,6 +25,7 @@ public class Lookup
     private TaskExecutor taskExecutor;
     private SystemNotificationManager systemNotificationHandler;
     private final Stenographer steno = StenographerFactory.getStenographer(Lookup.class.getName());
+    private PrinterListChangesNotifier printerListChangeNotifier;
 
     /**
      * @return the applicationEnvironment
@@ -53,6 +55,7 @@ public class Lookup
         taskExecutor = new LiveTaskExecutor();
         systemNotificationHandler = new SystemNotificationManagerJavaFX();
         steno.info("Detected locale - " + appLocale.toLanguageTag());
+//        printerListChangeNotifier = new PrinterListChangesNotifier(null);
     }
 
     public static void initialise()
