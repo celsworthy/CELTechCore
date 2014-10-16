@@ -181,20 +181,26 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             eepromCommsError.setTitle(DisplayManager.getLanguageBundle().getString("eeprom.error"));
             eepromCommsError.addButton(DisplayManager.getLanguageBundle().getString("dialogs.OK"));
 
+            setupNozzleOverrunListeners();
+            setUpWriteEnabledAfterEdits();
+
             StatusScreenState.getInstance().currentlySelectedPrinterProperty().addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                 {
                     if (newValue != oldValue)
                     {
                         setSelectedPrinter(newValue);
-                        
+
                     }
                 });
 
-            setupNozzleOverrunListeners();
-            setUpWriteEnabledAfterEdits();
-
             Lookup.getPrinterListChangesNotifier().addListener(this);
+
+            if (StatusScreenState.getInstance().currentlySelectedPrinterProperty().get() != null)
+            {
+                setSelectedPrinter(
+                    StatusScreenState.getInstance().currentlySelectedPrinterProperty().get());
+            }
 
         } catch (Exception ex)
         {
@@ -357,19 +363,21 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         nozzle2ZOverrun.setText("");
         offsetFieldsDirty.set(false);
     }
-    
+
     private void setSelectedPrinter(Printer printer)
     {
         selectedPrinter = printer;
         Head head = printer.headProperty().get();
-        if (head != null) {
+        if (head != null)
+        {
             updateFieldsFromAttachedHead(head);
-        } else {
+        } else
+        {
             updateFieldsForNoHead();
         }
-            updateHeadUniqueId();
-    }    
-    
+        updateHeadUniqueId();
+    }
+
     private void updateHeadUniqueId()
     {
         if (headUniqueID.getText().length() == 0)
@@ -379,7 +387,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         {
             headUniqueID.setDisable(true);
         }
-    }    
+    }
 
     @Override
     public void whenPrinterAdded(Printer printer)
@@ -421,6 +429,5 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     public void whenReelRemoved(Printer printer, Reel reel)
     {
     }
-
 
 }
