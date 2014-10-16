@@ -19,7 +19,7 @@ public enum ExtrusionTask
     ExternalPerimeter("externalPerimeter", "N/A-not-included-in-slic3r", "TYPE:WALL-OUTER"),
     Support("support", "support", "TYPE:SUPPORT"),
     Support_Interface("supportInterface", "N/A-not-included-in-slic3r", "N/A-not-included-in-cura"),
-    Fill("fill", "infill", "TYPE:FILL");
+    Fill("fill", "fill", "TYPE:FILL");
 
     private String genericLabelInGCode;
     private String slic3rLabelInGCode;

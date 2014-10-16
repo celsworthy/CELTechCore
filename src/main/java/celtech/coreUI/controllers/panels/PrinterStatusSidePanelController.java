@@ -252,11 +252,11 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             PrinterComponent printerComponent = printerComponentsByPrinter.get(selectedPrinter);
             printerComponent.setSelected(false);
             unbindPrinter(selectedPrinter);
-            if (printer.headProperty().get() != null) {
-                unbindHeadProperties(printer.headProperty().get());
+            if (selectedPrinter.headProperty().get() != null) {
+                unbindHeadProperties(selectedPrinter.headProperty().get());
             }
-            if (! printer.reelsProperty().isEmpty()) {
-                unbindReelProperties(printer.reelsProperty().get(0));
+            if (! selectedPrinter.reelsProperty().isEmpty()) {
+                unbindReelProperties(selectedPrinter.reelsProperty().get(0));
             }
         }
 
@@ -270,8 +270,11 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                 bindHeadProperties(printer.headProperty().get());
             }
             if (! printer.reelsProperty().isEmpty()) {
-                bindReelProperties(printer.reelsProperty().get(0));
+                Reel reel = printer.reelsProperty().get(0);
+                bindReelProperties(reel);
+                updateReelMaterial(reel);
             }
+            
         }
         controlDetailsVisibility();
 
@@ -473,6 +476,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     {
         clearAndAddAllPrintersToGrid();
         selectPrinter(printer);
+        controlDetailsVisibility();
     }
 
     @Override
@@ -481,6 +485,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         removePrinter(printer);
         clearAndAddAllPrintersToGrid();
         selectOnePrinter();
+        controlDetailsVisibility();
     }
 
     @Override

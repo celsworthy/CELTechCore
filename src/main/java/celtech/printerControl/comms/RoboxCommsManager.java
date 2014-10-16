@@ -43,6 +43,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     private int sleepBetweenStatusChecks = 1000;
 
     private final String nullPrinterString = "NullPrinter";
+    private final String nullPrinterString1 = "NullPrinter1";
 
     private RoboxCommsManager(String pathToBinaries, boolean suppressPrinterIDChecks)
     {
@@ -106,8 +107,12 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     @Override
     public void run()
     {
-//        Printer nullPrinter = new HardwarePrinter(this, new DummyPrinterCommandInterface(this, nullPrinterString, suppressPrinterIDChecks, sleepBetweenStatusChecks));
+//        Printer nullPrinter = new HardwarePrinter(this, 
+//            new DummyPrinterCommandInterface(this, nullPrinterString, suppressPrinterIDChecks, sleepBetweenStatusChecks));
 //        pendingPrinters.put(nullPrinterString, nullPrinter);
+//        Printer nullPrinter1 = new HardwarePrinter(this, 
+//            new DummyPrinterCommandInterface(this, nullPrinterString1, suppressPrinterIDChecks, sleepBetweenStatusChecks, "D2"));
+//        pendingPrinters.put(nullPrinterString1, nullPrinter1);        
 
         while (keepRunning)
         {

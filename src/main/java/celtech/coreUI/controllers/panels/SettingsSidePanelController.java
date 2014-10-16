@@ -17,8 +17,6 @@ import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.controllers.popups.PopupCommandReceiver;
 import celtech.coreUI.controllers.utilityPanels.MaterialDetailsController;
 import celtech.coreUI.controllers.utilityPanels.ProfileDetailsController;
-import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Reel;
@@ -882,5 +880,4 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         currentlyLoadedFilament = null;
         updateFilamentList();
     }
-
 }

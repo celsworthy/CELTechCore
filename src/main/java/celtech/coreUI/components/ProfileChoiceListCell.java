@@ -26,7 +26,7 @@ import javafx.scene.layout.GridPane;
  */
 public class ProfileChoiceListCell extends ListCell<RoboxProfile>
 {   
-    private final static String LIST_CELL_STYLE_CLASS = "profile-choice-list-cell";
+    private final static String LIST_CELL_STYLE_CLASS = "profile-choice-list-cell-grid";
     private final GridPane grid = new GridPane();
     private final Label name = new Label();
     private static Image padlockImage = null;

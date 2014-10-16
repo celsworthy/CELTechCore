@@ -174,7 +174,7 @@ public class PrintEngine implements ControllableService
         succeededSliceEventHandler = (WorkerStateEvent t) ->
         {
             SliceResult result = (SliceResult) (t.getSource().getValue());
-            
+
             if (result.isSuccess())
             {
                 steno.info(t.getSource().getTitle() + " has succeeded");
@@ -185,9 +185,9 @@ public class PrintEngine implements ControllableService
                 gcodePostProcessorService.setPrinterToUse(
                     result.getPrinterToUse());
                 gcodePostProcessorService.start();
-                
+
                 Lookup.getSystemNotificationHandler().showSliceSuccessfulNotification();
-                
+
                 associatedPrinter.setPrinterStatus(PrinterStatus.POST_PROCESSING);
             } else
             {
@@ -1073,17 +1073,20 @@ public class PrintEngine implements ControllableService
 
     protected void stopAllServices()
     {
-        if (slicerService.isRunning())
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
-            slicerService.cancelRun();
-        }
-        if (gcodePostProcessorService.isRunning())
-        {
-            gcodePostProcessorService.cancelRun();
-        }
-        if (gcodePrintService.isRunning())
-        {
-            gcodePrintService.cancelRun();
-        }
+            if (slicerService.isRunning())
+            {
+                slicerService.cancelRun();
+            }
+            if (gcodePostProcessorService.isRunning())
+            {
+                gcodePostProcessorService.cancelRun();
+            }
+            if (gcodePrintService.isRunning())
+            {
+                gcodePrintService.cancelRun();
+            }
+        });
     }
 }

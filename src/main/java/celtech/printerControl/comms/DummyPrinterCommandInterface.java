@@ -46,13 +46,21 @@ public class DummyPrinterCommandInterface extends CommandInterface
     private final StatusResponse currentStatus = (StatusResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.STATUS_RESPONSE);
     private Head attachedHead = null;
     private Reel attachedReel = null;
+    private String printerName;
 
+    public DummyPrinterCommandInterface(PrinterStatusConsumer controlInterface, String portName,
+        boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks, String printerName)
+    {
+        super(controlInterface, portName, suppressPrinterIDChecks, sleepBetweenStatusChecks);
+        this.setName(printerName);
+        this.printerName = printerName;
+    }
+    
     public DummyPrinterCommandInterface(PrinterStatusConsumer controlInterface, String portName,
         boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
-        super(controlInterface, portName, suppressPrinterIDChecks, sleepBetweenStatusChecks);
-        this.setName("Dummy Printer");
-    }
+        this(controlInterface, portName, suppressPrinterIDChecks, sleepBetweenStatusChecks, "Dummy Printer");
+    }    
 
     @Override
     protected void setSleepBetweenStatusChecks(int sleepMillis)
@@ -76,7 +84,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
         {
             PrinterIDResponse idResponse = (PrinterIDResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.PRINTER_ID_RESPONSE);
             idResponse.setEdition("KS");
-            idResponse.setPrinterFriendlyName("Dummy");
+            idResponse.setPrinterFriendlyName(printerName);
             idResponse.setPrinterColour(Color.web("#FF0082"));
             response = (RoboxRxPacket) idResponse;
         } else if (messageToWrite instanceof StatusRequest)
