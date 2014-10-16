@@ -5,6 +5,7 @@
  */
 package celtech.coreUI.controllers.panels;
 
+import celtech.Lookup;
 import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.material.MaterialComponent;
@@ -17,6 +18,7 @@ import celtech.printerControl.model.PrinterAncillarySystems;
 import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.PrinterIdentity;
 import celtech.printerControl.model.Reel;
+import celtech.utils.PrinterListChangesListener;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,7 +47,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class PrinterStatusSidePanelController implements Initializable, SidePanelManager
+public class PrinterStatusSidePanelController implements Initializable, SidePanelManager, PrinterListChangesListener
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -128,7 +130,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     {
         chartManager = new ChartManager(temperatureChart);
         RoboxCommsManager commsManager = RoboxCommsManager.getInstance();
-        printerStatusList = commsManager.getPrintStatusList();
+        printerStatusList = Lookup.getConnectedPrinters();
         statusScreenState = StatusScreenState.getInstance();
 
         printerIDDialog = new PrinterIDDialog();
@@ -403,6 +405,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private void bindPrinter(Printer printer)
     {
+        
+//        Lookup.getPrinterListChangesNotifier().addListener(this);
+        
         if (printer.headProperty().get() != null)
         {
             bindHeadProperties(printer.headProperty().get());
@@ -578,6 +583,48 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @Override
     public void configure(Initializable slideOutController)
     {
+    }
+
+    @Override
+    public void whenPrinterAdded(Printer printer)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void whenPrinterRemoved(Printer printer)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void whenHeadAdded(Printer printer)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void whenHeadRemoved(Printer printer)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void whenReelAdded(Printer printer, int reelIndex)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void whenReelRemoved(Printer printer, int reelIndex)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void whenPrinterIdentityChanged(Printer printer)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

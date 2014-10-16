@@ -6,11 +6,14 @@ package celtech;
 import celtech.appManager.SystemNotificationManager;
 import celtech.appManager.SystemNotificationManagerJavaFX;
 import celtech.configuration.ApplicationEnvironment;
+import celtech.printerControl.model.Printer;
 import celtech.utils.PrinterListChangesNotifier;
 import celtech.utils.tasks.LiveTaskExecutor;
 import celtech.utils.tasks.TaskExecutor;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -25,7 +28,8 @@ public class Lookup
     private TaskExecutor taskExecutor;
     private SystemNotificationManager systemNotificationHandler;
     private final Stenographer steno = StenographerFactory.getStenographer(Lookup.class.getName());
-    private PrinterListChangesNotifier printerListChangeNotifier;
+    private static PrinterListChangesNotifier printerListChangesNotifier;
+    private static ObservableList<Printer> connectedPrinters = FXCollections.observableArrayList();
 
     /**
      * @return the applicationEnvironment
@@ -55,7 +59,7 @@ public class Lookup
         taskExecutor = new LiveTaskExecutor();
         systemNotificationHandler = new SystemNotificationManagerJavaFX();
         steno.info("Detected locale - " + appLocale.toLanguageTag());
-//        printerListChangeNotifier = new PrinterListChangesNotifier(null);
+        printerListChangesNotifier = new PrinterListChangesNotifier(connectedPrinters);
     }
 
     public static void initialise()
@@ -81,5 +85,13 @@ public class Lookup
     public static void setSystemNotificationHandler(SystemNotificationManager systemNotificationHandler)
     {
         instance.systemNotificationHandler = systemNotificationHandler;
+    }
+    
+    public static PrinterListChangesNotifier getPrinterListChangesNotifier() {
+        return printerListChangesNotifier;
+    }
+    
+    public static ObservableList<Printer> getConnectedPrinters() {
+        return connectedPrinters;
     }
 }

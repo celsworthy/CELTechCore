@@ -339,7 +339,7 @@ public class SPC implements Initializable, SidePanelManager
         applicationStatus = ApplicationStatus.getInstance();
         displayManager = DisplayManager.getInstance();
         RoboxCommsManager commsManager = RoboxCommsManager.getInstance();
-        printerStatusList = commsManager.getPrintStatusList();
+        printerStatusList = Lookup.getConnectedPrinters();
         statusScreenState = StatusScreenState.getInstance();
         printerUtils = PrinterUtils.getInstance();
 
