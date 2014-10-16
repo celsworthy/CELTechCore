@@ -1,5 +1,6 @@
 package celtech.coreUI.controllers.panels;
 
+import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
@@ -156,7 +157,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         applicationStatus = ApplicationStatus.getInstance();
         displayManager = DisplayManager.getInstance();
         settingsScreenState = SettingsScreenState.getInstance();
-        printerStatusList = RoboxCommsManager.getInstance().getPrintStatusList();
+        printerStatusList = Lookup.getConnectedPrinters();
 
         try
         {

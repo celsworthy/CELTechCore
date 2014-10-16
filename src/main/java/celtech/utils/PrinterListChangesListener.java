@@ -3,7 +3,9 @@
  */
 package celtech.utils;
 
+import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.Reel;
 
 /**
  *
@@ -18,12 +20,10 @@ public interface PrinterListChangesListener
 
     public void whenHeadAdded(Printer printer);
 
-    public void whenHeadRemoved(Printer printer);
+    public void whenHeadRemoved(Printer printer, Head head);
 
     public void whenReelAdded(Printer printer, int reelIndex);
 
-    public void whenReelRemoved(Printer printer, int reelIndex);
-
-    public void whenPrinterIdentityChanged(Printer printer);
+    public void whenReelRemoved(Printer printer, Reel reel);
     
 }

@@ -1,5 +1,6 @@
 package celtech.printerControl.comms;
 
+import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.MachineType;
 import celtech.printerControl.model.HardwarePrinter;
@@ -13,8 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -40,7 +39,6 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     private Stenographer steno = null;
     private final HashMap<String, Printer> pendingPrinters = new HashMap<>();
     private final HashMap<String, Printer> activePrinters = new HashMap<>();
-    private final ObservableList<Printer> printerStatus = FXCollections.observableArrayList();
     private boolean suppressPrinterIDChecks = false;
     private int sleepBetweenStatusChecks = 1000;
 
@@ -155,7 +153,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
      */
     public void shutdown()
     {
-        for (Printer printer : printerStatus)
+        for (Printer printer : Lookup.getConnectedPrinters())
         {
             printer.shutdown();
         }
@@ -226,7 +224,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
             @Override
             public void run()
             {
-                printerStatus.add(printer);
+                Lookup.getConnectedPrinters().add(printer);
             }
         });
     }
@@ -258,17 +256,8 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
             @Override
             public void run()
             {
-                printerStatus.remove(printerToRemove);
+                Lookup.getConnectedPrinters().remove(printerToRemove);
             }
         });
-    }
-
-    /**
-     *
-     * @return
-     */
-    public ObservableList<Printer> getPrintStatusList()
-    {
-        return printerStatus;
     }
 }

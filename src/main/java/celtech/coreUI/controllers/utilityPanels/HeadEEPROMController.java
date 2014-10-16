@@ -1,5 +1,6 @@
 package celtech.coreUI.controllers.utilityPanels;
 
+import celtech.Lookup;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.RestrictedTextField;
@@ -93,7 +94,6 @@ public class HeadEEPROMController implements Initializable
 
 //    private BooleanProperty fastUpdates = new SimpleBooleanProperty(false);
 //    private Head temporaryHead = null;
-    private ObservableList<Printer> printerStatusList = null;
     //We'll only deal with the first printer we find.
     private Printer connectedPrinter = null;
 
@@ -182,8 +182,6 @@ public class HeadEEPROMController implements Initializable
             eepromCommsError = new ModalDialog();
             eepromCommsError.setTitle(DisplayManager.getLanguageBundle().getString("eeprom.error"));
             eepromCommsError.addButton(DisplayManager.getLanguageBundle().getString("dialogs.OK"));
-
-            printerStatusList = RoboxCommsManager.getInstance().getPrintStatusList();
 
             StatusScreenState.getInstance().currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
             {
