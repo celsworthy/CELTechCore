@@ -434,7 +434,7 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         if (currentPrinter != null)
         {
-            removeTemperatureProgressListeners(printer);
+            removeTemperatureProgressListeners(currentPrinter);
         }
 
         if (printer == null)

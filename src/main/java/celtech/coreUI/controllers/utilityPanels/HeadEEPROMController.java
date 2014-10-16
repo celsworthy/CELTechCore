@@ -24,7 +24,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
-import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -86,12 +85,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     private RestrictedTextField headType;
 
     @FXML
-    private VBox headFullContainer;
-
-    @FXML
     private Button writeOffsetsButton;
-
-    private ChangeListener<Head> headDataChangeListener = null;
 
     private ModalDialog eepromCommsError = null;
 
@@ -266,16 +260,9 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
     private void setUpWriteEnabledAfterEdits()
     {
-        ChangeListener offsetsChangedListener = new ChangeListener<String>()
+        ChangeListener offsetsChangedListener = (ChangeListener<String>) (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
         {
-
-            @Override
-            public void changed(
-                ObservableValue<? extends String> observable, String oldValue, String newValue)
-            {
-                offsetFieldsDirty.set(true);
-            }
-
+            offsetFieldsDirty.set(true);
         };
 
         nozzle1BOffset.textProperty().addListener(offsetsChangedListener);
@@ -365,16 +352,14 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
     private void setSelectedPrinter(Printer printer)
     {
+        updateFieldsForNoHead();
         selectedPrinter = printer;
-        Head head = printer.headProperty().get();
-        if (head != null)
+        if (printer != null && printer.headProperty().get() != null)
         {
+            Head head = printer.headProperty().get();
             updateFieldsFromAttachedHead(head);
-        } else
-        {
-            updateFieldsForNoHead();
+            updateHeadUniqueId();
         }
-        updateHeadUniqueId();
     }
 
     private void updateHeadUniqueId()
