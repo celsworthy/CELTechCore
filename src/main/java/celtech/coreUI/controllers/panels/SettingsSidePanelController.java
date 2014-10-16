@@ -17,7 +17,6 @@ import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.controllers.popups.PopupCommandReceiver;
 import celtech.coreUI.controllers.utilityPanels.MaterialDetailsController;
 import celtech.coreUI.controllers.utilityPanels.ProfileDetailsController;
-import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;

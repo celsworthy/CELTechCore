@@ -1,11 +1,9 @@
 package celtech.coreUI.controllers.utilityPanels;
 
-import celtech.Lookup;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.model.Head;
@@ -20,7 +18,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;

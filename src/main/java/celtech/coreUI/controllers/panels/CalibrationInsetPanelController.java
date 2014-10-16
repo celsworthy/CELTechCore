@@ -416,7 +416,7 @@ public class CalibrationInsetPanelController implements Initializable,
     private void removeTemperatureProgressListeners(Printer printer)
     {
         printer.headProperty().removeListener(headListener);
-        if (printer.headProperty() != null)
+        if (printer.headProperty().get() != null)
         {
             NozzleHeater nozzleHeater = printer.headProperty().get().getNozzleHeaters().get(0);
             nozzleHeater.nozzleTargetTemperatureProperty().removeListener(
