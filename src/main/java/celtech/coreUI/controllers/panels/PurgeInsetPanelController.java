@@ -6,7 +6,6 @@ import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.RestrictedNumberField;
-import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
@@ -183,9 +182,6 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     public void initialize(URL location, ResourceBundle resources)
     {
         i18nBundle = DisplayManager.getLanguageBundle();
-
-        StatusScreenState statusScreenState = StatusScreenState.getInstance();
-
         purgeHelper.addStateListener(this);
         purgeHelper.setState(PurgeState.IDLE);
     }

@@ -5,6 +5,7 @@
  */
 package celtech.coreUI.controllers;
 
+import celtech.Lookup;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.printerControl.model.Printer;
 import java.net.URL;
@@ -31,7 +32,6 @@ import libertysystems.stenographer.StenographerFactory;
 public class GCodeEntryPanelController implements Initializable
 {
 
-    private StatusScreenState statusScreenState = null;
     private final Stenographer steno = StenographerFactory.getStenographer(GCodeEntryPanelController.class.getName());
     private ListChangeListener<String> gcodeTranscriptListener = null;
 
@@ -63,14 +63,12 @@ public class GCodeEntryPanelController implements Initializable
     {
         gcodeEntryField.selectAll();
 
-        statusScreenState.getCurrentlySelectedPrinter().sendRawGCode(gcodeEntryField.getText(), true);
+        Lookup.getCurrentlySelectedPrinter().sendRawGCode(gcodeEntryField.getText(), true);
     }
 
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        statusScreenState = StatusScreenState.getInstance();
-
         gcodeListView.setEditable(false);
         gcodeListView.setScrollTop(Double.MAX_VALUE);
 
@@ -104,7 +102,7 @@ public class GCodeEntryPanelController implements Initializable
 
         populateGCodeArea();
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
+        Lookup.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
         {
             if (t1 != null)
             {
@@ -130,7 +128,7 @@ public class GCodeEntryPanelController implements Initializable
 //                }
 //            }
 //        });
-        gcodeEditParent.visibleProperty().bind(statusScreenState.currentlySelectedPrinterProperty().isNotNull().and(statusScreenState.modeProperty().isEqualTo(StatusScreenMode.ADVANCED)));
+//        gcodeEditParent.visibleProperty().bind(statusScreenState.currentlySelectedPrinterProperty().isNotNull().and(statusScreenState.modeProperty().isEqualTo(StatusScreenMode.ADVANCED)));
 
         sendGCodeButton.setDefaultButton(true);
 
@@ -182,9 +180,9 @@ public class GCodeEntryPanelController implements Initializable
 
     private void populateGCodeArea()
     {
-        if (statusScreenState.getCurrentlySelectedPrinter() != null)
+        if (Lookup.getCurrentlySelectedPrinter() != null)
         {
-            for (String gcodeLine : statusScreenState.getCurrentlySelectedPrinter().gcodeTranscriptProperty())
+            for (String gcodeLine : Lookup.getCurrentlySelectedPrinter().gcodeTranscriptProperty())
             {
                 gcodeListView.appendText(gcodeLine);
             }

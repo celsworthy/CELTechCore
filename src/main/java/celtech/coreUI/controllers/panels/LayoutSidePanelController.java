@@ -10,7 +10,6 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.RestrictedNumberField;
-import celtech.coreUI.controllers.StatusScreenState;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.SelectedModelContainers.SelectedModelContainersListener;
 import celtech.coreUI.visualisation.ThreeDViewManager;
@@ -52,7 +51,6 @@ public class LayoutSidePanelController implements Initializable,
         LayoutSidePanelController.class.getName());
     private Project boundProject = null;
     private ModelContainer boundModel = null;
-    private StatusScreenState statusScreenState = null;
 
     @FXML
     private RestrictedNumberField widthTextField;
@@ -120,8 +118,6 @@ public class LayoutSidePanelController implements Initializable,
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        statusScreenState = StatusScreenState.getInstance();
-
         ResourceBundle languageBundle = DisplayManager.getLanguageBundle();
         String modelNameLabelString = languageBundle.getString(
             "sidePanel_layout.ModelNameLabel");

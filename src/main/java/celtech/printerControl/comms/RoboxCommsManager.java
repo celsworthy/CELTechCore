@@ -42,9 +42,6 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     private boolean suppressPrinterIDChecks = false;
     private int sleepBetweenStatusChecks = 1000;
 
-    private final String nullPrinterString = "NullPrinter";
-    private final String nullPrinterString1 = "NullPrinter1";
-
     private RoboxCommsManager(String pathToBinaries, boolean suppressPrinterIDChecks)
     {
         this.suppressPrinterIDChecks = suppressPrinterIDChecks;
@@ -61,14 +58,16 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
         switch (machineType)
         {
             case WINDOWS:
-                roboxDetectorCommand = roboxDetectorWindows + " " + roboxVendorID + " " + roboxProductID;
+                roboxDetectorCommand = roboxDetectorWindows + " " + roboxVendorID + " "
+                    + roboxProductID;
                 break;
             case MAC:
                 roboxDetectorCommand = roboxDetectorMac + " " + printerToSearchFor;
                 break;
             case LINUX_X86:
             case LINUX_X64:
-                roboxDetectorCommand = roboxDetectorLinux + " " + printerToSearchFor + " " + roboxVendorID;
+                roboxDetectorCommand = roboxDetectorLinux + " " + printerToSearchFor + " "
+                    + roboxVendorID;
                 break;
             default:
                 steno.error("Unsupported OS - cannot establish comms.");
@@ -107,12 +106,16 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     @Override
     public void run()
     {
-//        Printer nullPrinter = new HardwarePrinter(this, 
-//            new DummyPrinterCommandInterface(this, nullPrinterString, suppressPrinterIDChecks, sleepBetweenStatusChecks));
-//        pendingPrinters.put(nullPrinterString, nullPrinter);
-//        Printer nullPrinter1 = new HardwarePrinter(this, 
-//            new DummyPrinterCommandInterface(this, nullPrinterString1, suppressPrinterIDChecks, sleepBetweenStatusChecks, "D2"));
-//        pendingPrinters.put(nullPrinterString1, nullPrinter1);        
+        int NUM_DUMMY_PRINTERS = 0;
+        for (int i = 0; i < NUM_DUMMY_PRINTERS; i++)
+        {
+            String portName = "NullPrinter" + i;
+            Printer nullPrinter = new HardwarePrinter(this,
+                   new DummyPrinterCommandInterface(this, portName, suppressPrinterIDChecks,
+                               sleepBetweenStatusChecks, "D" + i));
+            pendingPrinters.put(portName, nullPrinter);
+
+        }
 
         while (keepRunning)
         {
@@ -137,7 +140,9 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
                         // We need to connect!
                         steno.info("Adding new printer on " + port);
 
-                        Printer newPrinter = new HardwarePrinter(this, new HardwareCommandInterface(this, port, suppressPrinterIDChecks, sleepBetweenStatusChecks));
+                        Printer newPrinter = new HardwarePrinter(this, new HardwareCommandInterface(
+                                                                 this, port, suppressPrinterIDChecks,
+                                                                 sleepBetweenStatusChecks));
                         pendingPrinters.put(port, newPrinter);
                     }
                 }

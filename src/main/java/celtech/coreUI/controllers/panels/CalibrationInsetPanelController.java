@@ -6,7 +6,6 @@ import celtech.configuration.ApplicationConfiguration;
 import static celtech.coreUI.DisplayManager.getLanguageBundle;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.LargeProgress;
-import celtech.coreUI.controllers.StatusScreenState;
 import static celtech.coreUI.controllers.panels.CalibrationMenuConfiguration.configureCalibrationMenu;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.NozzleHeater;
@@ -221,12 +220,10 @@ public class CalibrationInsetPanelController implements Initializable,
 
         setCalibrationMode(CalibrationMode.CHOICE);
 
-        StatusScreenState statusScreenState = StatusScreenState.getInstance();
-
-        Printer printerToUse = statusScreenState.currentlySelectedPrinterProperty().get();
+        Printer printerToUse = Lookup.currentlySelectedPrinterProperty().get();
         setupChildComponents(printerToUse);
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener(
+        Lookup.currentlySelectedPrinterProperty().addListener(
             (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
             {
                 setupChildComponents(newValue);

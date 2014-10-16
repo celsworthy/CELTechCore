@@ -10,7 +10,6 @@ import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.components.printerstatus.PrinterComponent;
-import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.PrinterAncillarySystems;
@@ -77,8 +76,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @FXML
     private NumberAxis timeAxis;
 
-    private StatusScreenState statusScreenState = null;
-
     private PrinterIDDialog printerIDDialog = null;
 
     private Printer selectedPrinter = null;
@@ -126,7 +123,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     public void initialize(URL url, ResourceBundle rb)
     {
         chartManager = new ChartManager(temperatureChart);
-        statusScreenState = StatusScreenState.getInstance();
 
         printerIDDialog = new PrinterIDDialog();
 
@@ -164,25 +160,31 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         removeAllPrintersFromGrid();
         int row = 0;
         int column = 0;
+        int columnsPerRow = 2;
+        if (connectedPrinters.size() > 4) {
+            columnsPerRow = 3;
+        }
         for (Printer printer : connectedPrinters)
         {
             PrinterComponent printerComponent = createPrinterComponentForPrinter(printer);
             addPrinterComponentToGrid(printerComponent, row, column);
             column += 1;
-            if (column == 2)
+            if (column == columnsPerRow)
             {
                 column = 0;
                 row += 1;
             }
         }
         // UGH shouldnt need this here but can't get PrinterComponent / Grid to negotiate size
-        if (connectedPrinters.size() == 1)
-        {
-            printerStatusGrid.setPrefSize(260, 260);
-
-        } else if (connectedPrinters.size() == 2)
+        if (connectedPrinters.size() > 1 && connectedPrinters.size() <= 2)
         {
             printerStatusGrid.setPrefSize(260, 120);
+        } else if (connectedPrinters.size() > 2 && connectedPrinters.size() <= 4)
+        {
+            printerStatusGrid.setPrefSize(260, 260);
+        }  else if (connectedPrinters.size() > 4 && connectedPrinters.size() < 7)
+        {
+            printerStatusGrid.setPrefSize(260, 180);
         } else
         {
             printerStatusGrid.setPrefSize(260, 260);
@@ -196,7 +198,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         int column)
     {
         PrinterComponent.Size size;
-        if (connectedPrinters.size() > 1)
+        if (connectedPrinters.size() > 6)
+        {
+            size = PrinterComponent.Size.SIZE_SMALL;
+        } else if (connectedPrinters.size() > 1)
         {
             size = PrinterComponent.Size.SIZE_MEDIUM;
         } else
@@ -237,6 +242,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         } else
         {
             selectPrinter(null);
+            Lookup.setCurrentlySelectedPrinter(null);
         }
     }
 
@@ -264,7 +270,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         {
             PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
             printerComponent.setSelected(true);
-            statusScreenState.setCurrentlySelectedPrinter(printer);
+            Lookup.setCurrentlySelectedPrinter(printer);
             bindDetails(printer);
             if (printer.headProperty().get() != null) {
                 bindHeadProperties(printer.headProperty().get());
@@ -477,6 +483,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         clearAndAddAllPrintersToGrid();
         selectPrinter(printer);
         controlDetailsVisibility();
+        updateReelMaterial(null);
     }
 
     @Override

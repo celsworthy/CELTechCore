@@ -869,9 +869,11 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     public void whenReelAdded(Printer printer, int reelIndex)
     {
         //TODO modify for multiple reels
+        if (printer == currentPrinter) {
         currentlyLoadedFilament = new Filament(currentPrinter.reelsProperty().get(0));
         updateFilamentList();
         materialChooser.getSelectionModel().select(currentlyLoadedFilament);
+        }
     }
 
     @Override

@@ -5,11 +5,9 @@
  */
 package celtech.services.calibration;
 
+import celtech.Lookup;
 import celtech.configuration.HeaterMode;
-import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.model.Printer;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.model.NozzleHeater;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.ControllableService;
@@ -64,8 +62,7 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
         boolean success = false;
         float returnFloat = 0;
 
-        StatusScreenState statusScreenState = StatusScreenState.getInstance();
-        printerToUse = statusScreenState.getCurrentlySelectedPrinter();
+        printerToUse = Lookup.getCurrentlySelectedPrinter();
 
         switch (desiredState)
         {

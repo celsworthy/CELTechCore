@@ -1,24 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers.panels;
 
+import celtech.Lookup;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.SlidablePanel;
 import celtech.coreUI.controllers.SlideOutHandleController;
-import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -38,7 +30,6 @@ import libertysystems.stenographer.StenographerFactory;
 public class PrinterStatusSlideOutPanelController implements Initializable, SlidablePanel
 {
 
-    private StatusScreenState statusScreenState = null;
     private final Stenographer steno = StenographerFactory.getStenographer(PrinterStatusSlideOutPanelController.class.getName());
     private ListChangeListener<String> gcodeTranscriptListener = null;
 
@@ -62,6 +53,8 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
             }
         }
     };
+    
+    private boolean captureKeys = false;
 
     @FXML
     private SlideOutHandleController SlideOutHandleController;
@@ -96,14 +89,12 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
     private void fireGCodeAtPrinter()
     {
         gcodeEntryField.selectAll();
-        statusScreenState.getCurrentlySelectedPrinter().sendRawGCode(gcodeEntryField.getText(), true);
+        Lookup.getCurrentlySelectedPrinter().sendRawGCode(gcodeEntryField.getText(), true);
     }
 
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        statusScreenState = StatusScreenState.getInstance();
-
         gcodeTranscript.setEditable(false);
         gcodeTranscript.setScrollTop(Double.MAX_VALUE);
 
@@ -137,16 +128,24 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
 
         populateGCodeArea();
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
+        Lookup.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
         {
             if (t1 != null)
             {
                 t1.gcodeTranscriptProperty().addListener(gcodeTranscriptListener);
-                slideout.removeEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
-                hiddenCommandKeyBuffer = "";
+                if (captureKeys)
+                {
+                    slideout.getScene().removeEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
+                    hiddenCommandKeyBuffer = "";
+                    captureKeys = false;
+                }
             } else
             {
-                slideout.addEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
+                if (!captureKeys)
+                {
+                    slideout.getScene().addEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
+                    captureKeys = true;
+                }
             }
 
             if (t != null)
@@ -157,10 +156,11 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
             populateGCodeArea();
         });
 
-        if (statusScreenState.currentlySelectedPrinterProperty().get() == null)
-        {
-            slideout.addEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
-        }
+//        if (Lookup.currentlySelectedPrinterProperty().get() == null)
+//        {
+//            slideout.getScene().addEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
+//            captureKeys = true;
+//        }
 
 //        gcodeEntryField.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>()
 //        {
@@ -174,57 +174,57 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
 //                }
 //            }
 //        });
-        gcodeEditParent.visibleProperty().bind(statusScreenState.currentlySelectedPrinterProperty().isNotNull());
+        gcodeEditParent.visibleProperty().bind(Lookup.currentlySelectedPrinterProperty().isNotNull());
 
 //        sendGCodeButton.setDefaultButton(true);
         gcodeEntryField.addEventHandler(KeyEvent.KEY_PRESSED, (KeyEvent t) ->
-        {
-            if (t.getCode() == KeyCode.UP)
-            {
-                String allText = gcodeTranscript.getText();
-                
-                if (gcodeTranscript.getSelectedText().length() > 0)
-                {
-                    int selectionStart = gcodeTranscript.getSelection().getStart();
-                    int selectionEnd = gcodeTranscript.getSelection().getEnd();
-                    
-                    int lastposition = allText.lastIndexOf('\n', selectionStart);
-                    
-                    if (lastposition > 0)
-                    {
-                        int penultimatePosition = allText.lastIndexOf("\n", lastposition - 1);
-                        if (penultimatePosition > 0)
-                        {
-                            gcodeTranscript.selectRange(penultimatePosition, lastposition);
-                        }
-                    }
-                } else
-                {
-                    int lastposition = allText.lastIndexOf('\n');
-                    
-                    if (lastposition > 0)
-                    {
-                        int penultimatePosition = allText.lastIndexOf("\n", lastposition - 1);
-                        if (penultimatePosition > 0)
-                        {
-                            gcodeTranscript.selectRange(penultimatePosition, lastposition);
-                        }
-                    }
-                }
-            } else if (t.getCode() == KeyCode.DOWN)
-            {
-                gcodeTranscript.selectNextWord();
-            }
+                                    {
+                                        if (t.getCode() == KeyCode.UP)
+                                        {
+                                            String allText = gcodeTranscript.getText();
+
+                                            if (gcodeTranscript.getSelectedText().length() > 0)
+                                            {
+                                                int selectionStart = gcodeTranscript.getSelection().getStart();
+                                                int selectionEnd = gcodeTranscript.getSelection().getEnd();
+
+                                                int lastposition = allText.lastIndexOf('\n', selectionStart);
+
+                                                if (lastposition > 0)
+                                                {
+                                                    int penultimatePosition = allText.lastIndexOf("\n", lastposition - 1);
+                                                    if (penultimatePosition > 0)
+                                                    {
+                                                        gcodeTranscript.selectRange(penultimatePosition, lastposition);
+                                                    }
+                                                }
+                                            } else
+                                            {
+                                                int lastposition = allText.lastIndexOf('\n');
+
+                                                if (lastposition > 0)
+                                                {
+                                                    int penultimatePosition = allText.lastIndexOf("\n", lastposition - 1);
+                                                    if (penultimatePosition > 0)
+                                                    {
+                                                        gcodeTranscript.selectRange(penultimatePosition, lastposition);
+                                                    }
+                                                }
+                                            }
+                                        } else if (t.getCode() == KeyCode.DOWN)
+                                        {
+                                            gcodeTranscript.selectNextWord();
+                                        }
         });
 
     }
 
     private void populateGCodeArea()
     {
-        if (statusScreenState.getCurrentlySelectedPrinter() != null)
+        if (Lookup.getCurrentlySelectedPrinter() != null)
         {
             gcodeTranscript.setText("");
-            for (String gcodeLine : statusScreenState.getCurrentlySelectedPrinter().gcodeTranscriptProperty())
+            for (String gcodeLine : Lookup.getCurrentlySelectedPrinter().gcodeTranscriptProperty())
             {
                 gcodeTranscript.appendText(gcodeLine);
             }

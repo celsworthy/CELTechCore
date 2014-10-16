@@ -180,6 +180,7 @@ public class PrinterComponent extends Pane
             case ERROR:
                 status = Status.ERROR;
                 break;
+            case OPENING_DOOR:
             case EXECUTING_MACRO:
             case POST_PROCESSING:
             case PRINTING:
@@ -187,6 +188,7 @@ public class PrinterComponent extends Pane
             case SLICING:
                 status = Status.PRINTING;
                 break;
+            case PAUSING:
             case PAUSED:
                 status = Status.PAUSED;
                 break;

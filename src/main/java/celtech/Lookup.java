@@ -14,6 +14,8 @@ import celtech.utils.tasks.LiveTaskExecutor;
 import celtech.utils.tasks.TaskExecutor;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import libertysystems.stenographer.Stenographer;
@@ -34,6 +36,7 @@ public class Lookup
     private static PrinterListChangesNotifier printerListChangesNotifier;
     private static ObservableList<Printer> connectedPrinters = FXCollections.observableArrayList();
     private static UserPreferences userPreferences;
+    private static final ObjectProperty<Printer> currentlySelectedPrinterProperty = new SimpleObjectProperty<>();
 
     /**
      * @return the applicationEnvironment
@@ -103,6 +106,32 @@ public class Lookup
         return connectedPrinters;
     }
 
+    /**
+     *
+     * @return
+     */
+    public static Printer getCurrentlySelectedPrinter()
+    {
+        return currentlySelectedPrinterProperty.get();
+    }
+
+    /**
+     *
+     * @param currentlySelectedPrinter
+     */
+    public static void setCurrentlySelectedPrinter(Printer currentlySelectedPrinter)
+    {
+        currentlySelectedPrinterProperty.set(currentlySelectedPrinter);
+    }
+
+    /**
+     *
+     * @return
+     */
+    public static ObjectProperty<Printer> currentlySelectedPrinterProperty()
+    {
+        return currentlySelectedPrinterProperty;
+    }    
     public static UserPreferences getUserPreferences()
     {
         return userPreferences;

@@ -4,7 +4,6 @@ import celtech.Lookup;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.coreUI.controllers.StatusScreenState;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.model.Head;
@@ -181,20 +180,26 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             eepromCommsError.setTitle(DisplayManager.getLanguageBundle().getString("eeprom.error"));
             eepromCommsError.addButton(DisplayManager.getLanguageBundle().getString("dialogs.OK"));
 
-            StatusScreenState.getInstance().currentlySelectedPrinterProperty().addListener(
+            setupNozzleOverrunListeners();
+            setUpWriteEnabledAfterEdits();
+
+            Lookup.currentlySelectedPrinterProperty().addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                 {
                     if (newValue != oldValue)
                     {
                         setSelectedPrinter(newValue);
-                        
+
                     }
                 });
 
-            setupNozzleOverrunListeners();
-            setUpWriteEnabledAfterEdits();
-
             Lookup.getPrinterListChangesNotifier().addListener(this);
+
+            if (Lookup.currentlySelectedPrinterProperty().get() != null)
+            {
+                setSelectedPrinter(
+                    Lookup.currentlySelectedPrinterProperty().get());
+            }
 
         } catch (Exception ex)
         {
@@ -357,19 +362,21 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         nozzle2ZOverrun.setText("");
         offsetFieldsDirty.set(false);
     }
-    
+
     private void setSelectedPrinter(Printer printer)
     {
         selectedPrinter = printer;
         Head head = printer.headProperty().get();
-        if (head != null) {
+        if (head != null)
+        {
             updateFieldsFromAttachedHead(head);
-        } else {
+        } else
+        {
             updateFieldsForNoHead();
         }
-            updateHeadUniqueId();
-    }    
-    
+        updateHeadUniqueId();
+    }
+
     private void updateHeadUniqueId()
     {
         if (headUniqueID.getText().length() == 0)
@@ -379,7 +386,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         {
             headUniqueID.setDisable(true);
         }
-    }    
+    }
 
     @Override
     public void whenPrinterAdded(Printer printer)
@@ -421,6 +428,5 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     public void whenReelRemoved(Printer printer, Reel reel)
     {
     }
-
 
 }
