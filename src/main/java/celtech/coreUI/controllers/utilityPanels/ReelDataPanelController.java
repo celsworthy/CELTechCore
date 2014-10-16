@@ -257,16 +257,14 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
 
     private void setSelectedPrinter(Printer printer)
     {
+        setFieldsVisible(false);
         selectedPrinter = printer;
 
-        if (!printer.reelsProperty().isEmpty())
+        if (printer != null && !printer.reelsProperty().isEmpty())
         {
             populateSelectedPrinter();
             setFieldsVisible(true);
-        } else
-        {
-            setFieldsVisible(false);
-        }
+        } 
     }
 
     private void setFieldsVisible(boolean visible)
