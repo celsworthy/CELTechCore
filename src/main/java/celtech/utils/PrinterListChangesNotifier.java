@@ -71,6 +71,14 @@ public class PrinterListChangesNotifier
     {
         for (PrinterListChangesListener listener : listeners)
         {
+            for (Reel reel: printer.reelsProperty())
+            {
+                listener.whenReelRemoved(printer, reel);
+            }
+            if (printer.headProperty().get() != null) {
+                 listener.whenHeadRemoved(printer, printer.headProperty().get());
+            }
+            
             listener.whenPrinterRemoved(printer);
         }
     }

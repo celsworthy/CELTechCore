@@ -37,16 +37,16 @@
                         <RestrictedTextField fx:id="headThermistorBeta" disable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="6" />
                         <RestrictedTextField fx:id="headThermistorTCal" disable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="7" />
                                         
-                        <Label text="Head Type" GridPane.halignment="RIGHT" />
-                        <Label text="Unique Id" GridPane.halignment="RIGHT" GridPane.rowIndex="2" />
-                        <Label text="Hour Counter" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
-                        <Label text="Max Temp" GridPane.halignment="RIGHT" GridPane.rowIndex="4" />
-                        <Label text="Last Fil Temp" GridPane.halignment="RIGHT" GridPane.rowIndex="5" />
-                        <Label text="Therm Beta" GridPane.halignment="RIGHT" GridPane.rowIndex="6" />
-                        <Label text="Therm Tcal" GridPane.halignment="RIGHT" GridPane.rowIndex="7" />
+                        <Label text="%headPanel.headType" GridPane.halignment="RIGHT" />
+                        <Label text="%headPanel.uniqueId" GridPane.halignment="RIGHT" GridPane.rowIndex="2" />
+                        <Label text="%headPanel.hourCounter" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
+                        <Label text="%headPanel.maxTemp" GridPane.halignment="RIGHT" GridPane.rowIndex="4" />
+                        <Label text="%headPanel.lastFilamentTemperature" GridPane.halignment="RIGHT" GridPane.rowIndex="5" />
+                        <Label text="%headPanel.thermBeta" GridPane.halignment="RIGHT" GridPane.rowIndex="6" />
+                        <Label text="%headPanel.thermTCal" GridPane.halignment="RIGHT" GridPane.rowIndex="7" />
                     </children>
                 </GridPane>
-                <GridPane fx:id="headEEPROMOffsets" styleClass="borderFrame" >
+                <GridPane fx:id="headEEPROMOffsets" styleClass="borderFrame">
                     <columnConstraints>
                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -79,8 +79,8 @@
                         <Label text=" B" GridPane.halignment="RIGHT" GridPane.rowIndex="4" />
                         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnSpan="3" GridPane.rowIndex="5">
                             <children>
-                                <Button fx:id="writeOffsetsButton" disable="true" maxWidth="1000" minWidth="120.0" mnemonicParsing="false" onAction="#writeHeadConfig" text="Write" />
-                                <Button minWidth="120.0" mnemonicParsing="false" onAction="#resetToDefaults" text="Reset To Defaults" />
+                                <Button fx:id="writeOffsetsButton" disable="true" maxWidth="1000" minWidth="120.0" mnemonicParsing="false" onAction="#writeHeadConfig" text="%headPanel.write" />
+                                <Button minWidth="120.0" mnemonicParsing="false" onAction="#resetToDefaults" text="%headPanel.resetToDefaults" />
                             </children>
                         </HBox>
                     </children>
