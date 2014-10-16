@@ -42,6 +42,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
     private final String detachHeadCommand = "DETACH HEAD";
     private final String attachReelCommand = "ATTACH REEL ";
     private final String detachReelCommand = "DETACH REEL";
+    private final String detachPrinterCommand = "DETACH PRINTER";
 
     private final StatusResponse currentStatus = (StatusResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.STATUS_RESPONSE);
     private Head attachedHead = null;
@@ -55,12 +56,12 @@ public class DummyPrinterCommandInterface extends CommandInterface
         this.setName(printerName);
         this.printerName = printerName;
     }
-    
+
     public DummyPrinterCommandInterface(PrinterStatusConsumer controlInterface, String portName,
         boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
         this(controlInterface, portName, suppressPrinterIDChecks, sleepBetweenStatusChecks, "Dummy Printer");
-    }    
+    }
 
     @Override
     protected void setSleepBetweenStatusChecks(int sleepMillis)
@@ -116,8 +117,10 @@ public class DummyPrinterCommandInterface extends CommandInterface
             } else if (messageData.startsWith(detachHeadCommand))
             {
                 currentStatus.setHeadEEPROMState(EEPROMState.NOT_PRESENT);
-            }
-            else if (messageData.startsWith(attachReelCommand))
+            } else if (messageData.equalsIgnoreCase(detachPrinterCommand))
+            {
+                RoboxCommsManager.getInstance().removeDummyPrinter(portName);
+            } else if (messageData.startsWith(attachReelCommand))
             {
                 String filamentName = messageData.replaceAll(attachReelCommand, "");
                 Filament filament = FilamentContainer.getFilamentByID(filamentName);
@@ -143,15 +146,13 @@ public class DummyPrinterCommandInterface extends CommandInterface
 
             headResponse.updateContents(attachedHead);
             response = (RoboxRxPacket) headResponse;
-        } 
-         else if (messageToWrite instanceof ReadReelEEPROM)
+        } else if (messageToWrite instanceof ReadReelEEPROM)
         {
             ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.REEL_EEPROM_DATA);
 
             reelResponse.updateContents(attachedReel);
             response = (RoboxRxPacket) reelResponse;
-        }
-        else
+        } else
         {
             response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().getExpectedResponse());
         }

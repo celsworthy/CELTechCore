@@ -42,6 +42,10 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     private boolean suppressPrinterIDChecks = false;
     private int sleepBetweenStatusChecks = 1000;
 
+    private String dummyPrinterPort = "DummyPrinterPort";
+
+    private int dummyPrinterCounter = 0;
+
     private RoboxCommsManager(String pathToBinaries, boolean suppressPrinterIDChecks)
     {
         this.suppressPrinterIDChecks = suppressPrinterIDChecks;
@@ -106,17 +110,6 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     @Override
     public void run()
     {
-        int NUM_DUMMY_PRINTERS = 0;
-        for (int i = 0; i < NUM_DUMMY_PRINTERS; i++)
-        {
-            String portName = "NullPrinter" + i;
-            Printer nullPrinter = new HardwarePrinter(this,
-                   new DummyPrinterCommandInterface(this, portName, suppressPrinterIDChecks,
-                               sleepBetweenStatusChecks, "D" + i));
-            pendingPrinters.put(portName, nullPrinter);
-
-        }
-
         while (keepRunning)
         {
 //            steno.info("Looking for printers");
@@ -269,5 +262,20 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
                 Lookup.getConnectedPrinters().remove(printerToRemove);
             }
         });
+    }
+
+    public void addDummyPrinter()
+    {
+        dummyPrinterCounter++;
+        String actualPrinterPort = dummyPrinterPort + " " + dummyPrinterCounter;
+        Printer nullPrinter = new HardwarePrinter(this,
+                                                  new DummyPrinterCommandInterface(this, actualPrinterPort, suppressPrinterIDChecks,
+                                                                                   sleepBetweenStatusChecks, "DummyPrinter " + dummyPrinterCounter));
+        pendingPrinters.put(actualPrinterPort, nullPrinter);
+    }
+
+    public void removeDummyPrinter(String portName)
+    {
+        disconnected(portName);
     }
 }

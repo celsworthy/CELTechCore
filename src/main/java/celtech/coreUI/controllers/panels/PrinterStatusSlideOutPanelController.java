@@ -10,7 +10,6 @@ import java.util.ResourceBundle;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -32,29 +31,6 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
 
     private final Stenographer steno = StenographerFactory.getStenographer(PrinterStatusSlideOutPanelController.class.getName());
     private ListChangeListener<String> gcodeTranscriptListener = null;
-
-    private static final String addDummyPrinterCommand = "AddDummy";
-    private static final String removeDummyPrinterCommand = "RemoveDummy";
-
-    private String hiddenCommandKeyBuffer = "";
-    private EventHandler<KeyEvent> hiddenCommandEventHandler = new EventHandler<KeyEvent>()
-    {
-        @Override
-        public void handle(KeyEvent event)
-        {
-            if (addDummyPrinterCommand.startsWith(hiddenCommandKeyBuffer + event.getCharacter())
-                || removeDummyPrinterCommand.startsWith(hiddenCommandKeyBuffer + event.getCharacter()))
-            {
-                hiddenCommandKeyBuffer += event.getCharacter();
-                steno.info("Key: " + hiddenCommandKeyBuffer);
-            } else
-            {
-                hiddenCommandKeyBuffer = "";
-            }
-        }
-    };
-    
-    private boolean captureKeys = false;
 
     @FXML
     private SlideOutHandleController SlideOutHandleController;
@@ -98,30 +74,25 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
         gcodeTranscript.setEditable(false);
         gcodeTranscript.setScrollTop(Double.MAX_VALUE);
 
-        gcodeTranscriptListener = new ListChangeListener<String>()
+        gcodeTranscriptListener = (ListChangeListener.Change<? extends String> change) ->
         {
-
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends String> change)
+            while (change.next())
             {
-                while (change.next())
+                if (change.wasAdded())
                 {
-                    if (change.wasAdded())
+                    for (String additem : change.getAddedSubList())
                     {
-                        for (String additem : change.getAddedSubList())
-                        {
-                            gcodeTranscript.appendText(additem);
-                        }
-                    } else if (change.wasRemoved())
-                    {
-                        for (String additem : change.getRemoved())
-                        {
-                        }
-                    } else if (change.wasReplaced())
-                    {
-                    } else if (change.wasUpdated())
+                        gcodeTranscript.appendText(additem);
+                    }
+                } else if (change.wasRemoved())
+                {
+                    for (String additem : change.getRemoved())
                     {
                     }
+                } else if (change.wasReplaced())
+                {
+                } else if (change.wasUpdated())
+                {
                 }
             }
         };
@@ -133,19 +104,7 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
             if (t1 != null)
             {
                 t1.gcodeTranscriptProperty().addListener(gcodeTranscriptListener);
-                if (captureKeys)
-                {
-                    slideout.getScene().removeEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
-                    hiddenCommandKeyBuffer = "";
-                    captureKeys = false;
-                }
-            } else
-            {
-                if (!captureKeys)
-                {
-                    slideout.getScene().addEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
-                    captureKeys = true;
-                }
+                
             }
 
             if (t != null)
@@ -155,12 +114,6 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
 
             populateGCodeArea();
         });
-
-//        if (Lookup.currentlySelectedPrinterProperty().get() == null)
-//        {
-//            slideout.getScene().addEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
-//            captureKeys = true;
-//        }
 
 //        gcodeEntryField.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>()
 //        {
@@ -218,6 +171,8 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
         });
 
     }
+
+    
 
     private void populateGCodeArea()
     {

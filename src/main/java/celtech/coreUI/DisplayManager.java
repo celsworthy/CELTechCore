@@ -21,6 +21,7 @@ import celtech.coreUI.controllers.panels.SidePanelManager;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
+import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.services.modelLoader.ModelLoadResults;
 import celtech.services.modelLoader.ModelLoaderService;
 import java.io.File;
@@ -128,6 +129,33 @@ public class DisplayManager implements EventHandler<KeyEvent>
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
 
     private Locale usersLocale = null;
+
+    private static final String addDummyPrinterCommand = "AddDummy";
+
+    private String hiddenCommandKeyBuffer = "";
+    private final EventHandler<KeyEvent> hiddenCommandEventHandler = (KeyEvent event) ->
+    {
+        if (addDummyPrinterCommand.startsWith(hiddenCommandKeyBuffer + event.getCharacter()))
+        {
+            hiddenCommandKeyBuffer += event.getCharacter();
+            steno.info("Key: " + hiddenCommandKeyBuffer);
+            if (hiddenCommandKeyBuffer != null)
+            {
+                switch (hiddenCommandKeyBuffer)
+                {
+                    case addDummyPrinterCommand:
+                        RoboxCommsManager.getInstance().addDummyPrinter();
+                        hiddenCommandKeyBuffer = "";
+                        break;
+                }
+            }
+        } else
+        {
+            hiddenCommandKeyBuffer = "";
+        }
+    };
+
+    private boolean captureKeys = false;
 
     private DisplayManager()
     {
@@ -567,6 +595,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
                           ApplicationConfiguration.DEFAULT_HEIGHT);
 
         scene.getStylesheets().add("/celtech/resources/css/JMetroDarkTheme.css");
+        
+        captureHiddenKeys();
 
         // Camera required to allow 2D shapes to be rotated in 3D in the '2D' UI
         PerspectiveCamera controlOverlaycamera = new PerspectiveCamera(false);
@@ -954,4 +984,22 @@ public class DisplayManager implements EventHandler<KeyEvent>
         return (PurgeInsetPanelController) insetPanelControllers.get(ApplicationMode.PURGE);
     }
 
+    private void stopCapturingHiddenKeys()
+    {
+        if (captureKeys)
+        {
+            scene.removeEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
+            hiddenCommandKeyBuffer = "";
+            captureKeys = false;
+        }
+    }
+
+    private void captureHiddenKeys()
+    {
+        if (!captureKeys)
+        {
+            scene.addEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
+            captureKeys = true;
+        }
+    }
 }
