@@ -8,8 +8,8 @@ import celtech.gcodetranslator.events.EndOfFileEvent;
 import celtech.gcodetranslator.events.ExtrusionEvent;
 import celtech.gcodetranslator.events.GCodeEvent;
 import celtech.gcodetranslator.events.GCodeParseEvent;
-import celtech.gcodetranslator.events.LayerChangeEvent;
 import celtech.gcodetranslator.events.LayerChangeWithTravelEvent;
+import celtech.gcodetranslator.events.LayerChangeWithoutTravelEvent;
 import celtech.gcodetranslator.events.MCodeEvent;
 import celtech.gcodetranslator.events.NozzleChangeEvent;
 import celtech.gcodetranslator.events.RetractDuringExtrusionEvent;
@@ -233,7 +233,7 @@ public class GCodeFileParser
                     eventToOutput = event;
                 } else if (gPresent && zPresent && !xPresent && !yPresent && !ePresent)
                 {
-                    LayerChangeEvent event = new LayerChangeEvent();
+                    LayerChangeWithoutTravelEvent event = new LayerChangeWithoutTravelEvent();
 
                     event.setZ(zValue);
 

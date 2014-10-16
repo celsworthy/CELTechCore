@@ -65,7 +65,6 @@ import celtech.utils.tasks.TaskResponder;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
-import java.util.concurrent.Callable;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
@@ -2231,4 +2230,10 @@ public final class HardwarePrinter implements Printer
             }
         }
     };
+    
+    @Override
+    public String toString()
+    {
+        return printerIdentity.printerFriendlyName.get();
+    }
 }

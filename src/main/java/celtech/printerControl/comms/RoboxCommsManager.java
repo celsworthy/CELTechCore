@@ -5,7 +5,6 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.MachineType;
 import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,10 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Platform;
-import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
