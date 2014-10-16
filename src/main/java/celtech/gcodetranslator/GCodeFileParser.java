@@ -1,5 +1,6 @@
 package celtech.gcodetranslator;
 
+import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.SlicerType;
 import celtech.gcodetranslator.events.BlankLineEvent;
@@ -70,7 +71,7 @@ public class GCodeFileParser
 
         ArrayList<String> lineRepository = new ArrayList<>();
 
-        SlicerType slicerType = ApplicationConfiguration.getSlicerChoice();
+        SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
         ExtrusionTask currentExtrusionTask = null;
 
         try

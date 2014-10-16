@@ -4,11 +4,12 @@
  */
 package celtech.services.slicer;
 
+import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.MachineType;
 import celtech.configuration.SlicerType;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.visualisation.exporters.STLOutputConverter;
 import celtech.printerControl.model.Printer;
 import java.io.File;
@@ -73,7 +74,7 @@ public class SlicerTask extends Task<SliceResult>
         MachineType machineType = ApplicationConfiguration.getMachineType();
         ArrayList<String> commands = new ArrayList<>();
 
-        SlicerType slicerType = ApplicationConfiguration.getSlicerChoice();
+        SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
         String windowsSlicerCommand = null;
         String macSlicerCommand = null;
         String linuxSlicerCommand = null;

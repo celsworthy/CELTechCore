@@ -282,7 +282,6 @@ public class ApplicationConfiguration
     private static final String userLocaleItem = "Locale";
 
     private static String applicationVersion = null;
-    private static SlicerType slicerType = null;
     private static String applicationLanguageRaw = null;
 
     /**
@@ -801,37 +800,6 @@ public class ApplicationConfiguration
         }
 
         return applicationVersion;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public static SlicerType getSlicerChoice()
-    {
-        if (installationProperties == null)
-        {
-            loadProjectProperties();
-        }
-        if (slicerType == null)
-        {
-            String slicerString = installationProperties.getProperty("slicer");
-            if (slicerString != null)
-            {
-                if (slicerString.equalsIgnoreCase("cura"))
-                {
-                    slicerType = SlicerType.Cura;
-                } else if (slicerString.equalsIgnoreCase("slic3r"))
-                {
-                    slicerType = SlicerType.Slic3r;
-                }
-            } else
-            {
-                slicerType = SlicerType.Slic3r;
-            }
-        }
-
-        return slicerType;
     }
 
     /**

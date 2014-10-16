@@ -2,7 +2,9 @@ package celtech.configuration.datafileaccessors;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.fileRepresentation.UserPreferenceFile;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -24,15 +26,29 @@ public class UserPreferenceContainer
 
     private UserPreferenceContainer()
     {
-        File userPreferenceInputFile = new File(ApplicationConfiguration.getUserStorageDirectory() + defaultUserPreferenceFilename);
         mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
-        try
-        {
-            userPreferenceFile = mapper.readValue(userPreferenceInputFile, UserPreferenceFile.class);
 
-        } catch (IOException ex)
+        File userPreferenceInputFile = new File(ApplicationConfiguration.getUserStorageDirectory() + defaultUserPreferenceFilename);
+        if (!userPreferenceInputFile.exists())
         {
-            steno.error("Error loading user preferences " + userPreferenceInputFile.getAbsolutePath());
+            userPreferenceFile = new UserPreferenceFile();
+            try
+            {
+                mapper.writeValue(userPreferenceInputFile, userPreferenceFile);
+            } catch (IOException ex)
+            {
+                steno.error("Error trying to create user preferences file");
+            }
+        } else
+        {
+            try
+            {
+                userPreferenceFile = mapper.readValue(userPreferenceInputFile, UserPreferenceFile.class);
+
+            } catch (IOException ex)
+            {
+                steno.error("Error loading user preferences " + userPreferenceInputFile.getAbsolutePath());
+            }
         }
     }
 

@@ -14,7 +14,22 @@ public class UserPreferences
 
     public UserPreferences(UserPreferenceFile userPreferenceFile)
     {
-        this.slicerType = userPreferenceFile.getSlicerType();
+        String slicerString = userPreferenceFile.getSlicerType();
+
+        if (slicerString != null)
+        {
+            if (slicerString.equalsIgnoreCase("cura"))
+            {
+                slicerType = SlicerType.Cura;
+            } else if (slicerString.equalsIgnoreCase("slic3r"))
+            {
+                slicerType = SlicerType.Slic3r;
+            }
+        } else
+        {
+            slicerType = SlicerType.Cura;
+        }
+
         this.overrideSafeties = userPreferenceFile.isOverrideSafeties();
     }
 

@@ -1,22 +1,20 @@
 package celtech.configuration.fileRepresentation;
 
-import celtech.configuration.SlicerType;
-
 /**
  *
  * @author Ian
  */
 public class UserPreferenceFile
 {
-    private SlicerType slicerType = SlicerType.Cura;
+    private String slicerType = null;
     private boolean overrideSafeties = false;
 
-    public SlicerType getSlicerType()
+    public String getSlicerType()
     {
         return slicerType;
     }
 
-    public void setSlicerType(SlicerType slicerType)
+    public void setSlicerType(String slicerType)
     {
         this.slicerType = slicerType;
     }
