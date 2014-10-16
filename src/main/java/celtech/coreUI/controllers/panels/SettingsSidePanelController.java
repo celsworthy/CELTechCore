@@ -16,8 +16,10 @@ import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.controllers.popups.PopupCommandReceiver;
 import celtech.coreUI.controllers.utilityPanels.MaterialDetailsController;
 import celtech.coreUI.controllers.utilityPanels.ProfileDetailsController;
+import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.Reel;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
 import static celtech.utils.DeDuplicator.suggestNonDuplicateName;
@@ -57,7 +59,7 @@ import libertysystems.stenographer.StenographerFactory;
 public class SettingsSidePanelController implements Initializable, SidePanelManager, PopupCommandReceiver
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(SettingsSidePanelController.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(SettingsSidePanelController.class.getName());
     private ObservableList<Printer> printerStatusList = null;
     private SettingsScreenState settingsScreenState = null;
     private ApplicationStatus applicationStatus = null;
@@ -116,7 +118,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private RoboxProfile lastSettings = null;
 
     private ChangeListener<Toggle> nozzleSelectionListener = null;
-    private ChangeListener<Boolean> reelDataChangedListener = null;
+    private ListChangeListener<Reel> reelChangeListener = null;
 
     private ObservableList<Filament> availableFilaments = FXCollections.observableArrayList();
     private ObservableList<RoboxProfile> availableProfiles = FXCollections.observableArrayList();
@@ -290,79 +292,100 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             }
         });
 
-        PrintProfileContainer.getUserProfileList().addListener(new ListChangeListener<RoboxProfile>()
+        PrintProfileContainer.getUserProfileList().addListener((ListChangeListener.Change<? extends RoboxProfile> c) ->
         {
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends RoboxProfile> c)
-            {
-                updateProfileList();
-            }
+            updateProfileList();
         });
+
+        printerChooser.setCellFactory(
+            new Callback<ListView<Printer>, ListCell<Printer>>()
+            {
+                @Override
+                public ListCell<Printer> call(ListView<Printer> param)
+                {
+                    final ListCell<Printer> cell = new ListCell<Printer>()
+                    {
+                        {
+                            super.setPrefWidth(100);
+                        }
+
+                        @Override
+                        public void updateItem(Printer item,
+                            boolean empty)
+                        {
+                            super.updateItem(item, empty);
+                            if (item != null)
+                            {
+                                setText(item.getPrinterIdentity().printerFriendlyNameProperty().get());
+                            } else
+                            {
+                                setText(null);
+                            }
+                        }
+                    };
+                    return cell;
+                }
+            });
+
         printerChooser.setItems(printerStatusList);
 
         printerChooser.getSelectionModel()
             .clearSelection();
 
-        printerChooser.getItems().addListener(new ListChangeListener<Printer>()
+        printerChooser.getItems().addListener((ListChangeListener.Change<? extends Printer> change) ->
         {
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends Printer> change
-            )
+            while (change.next())
             {
-                while (change.next())
+                if (change.wasAdded())
                 {
-                    if (change.wasAdded())
+                    for (Printer addedPrinter : change.getAddedSubList())
                     {
-                        for (Printer addedPrinter : change.getAddedSubList())
+                        Platform.runLater(new Runnable()
+                        {
+                            
+                            @Override
+                            public void run()
+                            {
+                                printerChooser.setValue(addedPrinter);
+                            }
+                        });
+                    }
+                } else if (change.wasRemoved())
+                {
+                    for (Printer removedPrinter : change.getRemoved())
+                    {
+                        if (printerChooser.getItems().isEmpty())
                         {
                             Platform.runLater(new Runnable()
                             {
-
                                 @Override
                                 public void run()
                                 {
-                                    printerChooser.setValue(addedPrinter);
+                                    printerChooser.getSelectionModel().select(null);
+                                }
+                            });
+                        } else
+                        {
+                            Platform.runLater(new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    printerChooser.getSelectionModel().selectFirst();
                                 }
                             });
                         }
-                    } else if (change.wasRemoved())
-                    {
-                        for (Printer removedPrinter : change.getRemoved())
-                        {
-                            if (printerChooser.getItems().isEmpty())
-                            {
-                                Platform.runLater(new Runnable()
-                                {
-                                    @Override
-                                    public void run()
-                                    {
-                                        printerChooser.getSelectionModel().select(null);
-                                    }
-                                });
-                            } else
-                            {
-                                Platform.runLater(new Runnable()
-                                {
-                                    @Override
-                                    public void run()
-                                    {
-                                        printerChooser.getSelectionModel().selectFirst();
-                                    }
-                                });
-                            }
-                        }
-                    } else if (change.wasReplaced())
-                    {
-                        steno.info("Replace");
-                    } else if (change.wasUpdated())
-                    {
-                        steno.info("Update");
-
                     }
+                } else if (change.wasReplaced())
+                {
+                    steno.info("Replace");
+                } else if (change.wasUpdated())
+                {
+                    steno.info("Update");
+                    
                 }
             }
-        }
-        );
+        });
 
         printerChooser.getSelectionModel()
             .selectedItemProperty().addListener(new ChangeListener<Printer>()
@@ -373,10 +396,12 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     {
                         if (lastSelectedPrinter != null)
                         {
+                            lastSelectedPrinter.reelsProperty().removeListener(reelChangeListener);
                         }
                         if (selectedPrinter != null && selectedPrinter != lastSelectedPrinter)
                         {
-                            currentPrinter = selectedPrinter;       
+                            currentPrinter = selectedPrinter;
+                            currentPrinter.reelsProperty().addListener(reelChangeListener);
                         }
 
                         if (selectedPrinter == null)
@@ -391,14 +416,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             );
 
         Callback<ListView<Filament>, ListCell<Filament>> materialChooserCellFactory
-            = new Callback<ListView<Filament>, ListCell<Filament>>()
-            {
-                @Override
-                public ListCell<Filament> call(ListView<Filament> list)
-                {
-                    return new MaterialChoiceListCell();
-                }
-            };
+            = (ListView<Filament> list) -> new MaterialChoiceListCell();
 
         materialChooser.setCellFactory(materialChooserCellFactory);
         materialChooser.setButtonCell(new MaterialChoiceListCell());
@@ -443,17 +461,36 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         }
         );
 
-        reelDataChangedListener = new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+        reelChangeListener
+            = (ListChangeListener.Change<? extends Reel> change) ->
             {
-                //TODO modify for multiple reels
-                currentlyLoadedFilament = new Filament(currentPrinter.reelsProperty().get(0));
-                updateFilamentList();
-                materialChooser.getSelectionModel().select(currentlyLoadedFilament);
-            }
-        };
+                if (currentPrinter != null && currentPrinter.reelsProperty().size() > 0)
+                {
+                    //TODO modify for multiple reels
+                    currentlyLoadedFilament = new Filament(currentPrinter.reelsProperty().get(0));
+                    updateFilamentList();
+                    materialChooser.getSelectionModel().select(currentlyLoadedFilament);
+                }
+                else
+                {
+                    currentlyLoadedFilament = null;
+                    updateFilamentList();
+                }
+
+                while (change.next())
+                {
+                    if (change.wasAdded())
+                    {
+
+                    } else if (change.wasRemoved())
+                    {
+                    } else if (change.wasReplaced())
+                    {
+                    } else if (change.wasUpdated())
+                    {
+                    }
+                }
+            };
 
         nonCustomProfileVBox.visibleProperty()
             .bind(qualityChooser.valueProperty().isNotEqualTo(PrintQualityEnumeration.CUSTOM.getEnumPosition()));
