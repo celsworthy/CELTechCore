@@ -137,6 +137,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
             } else if (messageData.startsWith(detachReelCommand))
             {
                 currentStatus.setReelEEPROMState(EEPROMState.NOT_PRESENT);
+                attachedReel = null;
             }
 
             response = (RoboxRxPacket) gcodeResponse;
