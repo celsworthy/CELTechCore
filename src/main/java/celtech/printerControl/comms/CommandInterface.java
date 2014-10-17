@@ -119,7 +119,6 @@ public abstract class CommandInterface extends Thread
                     {
                         StatusResponse response = (StatusResponse) writeToPrinter(
                             RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.STATUS_REQUEST));
-                        printerToUse.processRoboxResponse(response);
                         commsState = RoboxCommsState.CHECKING_FIRMWARE;
                     } catch (RoboxCommsException ex)
                     {
@@ -197,7 +196,6 @@ public abstract class CommandInterface extends Thread
                     }
 
                     controlInterface.printerConnected(portName);
-                    printerToUse.processRoboxResponse(lastPrinterIDResponse);
                     commsState = RoboxCommsState.CONNECTED;
                     break;
 
@@ -208,22 +206,9 @@ public abstract class CommandInterface extends Thread
 
                         RoboxRxPacket response = writeToPrinter(RoboxTxPacketFactory.createPacket(
                             TxPacketTypeEnum.STATUS_REQUEST));
-                        if (response != null && response instanceof StatusResponse)
-                        {
-                            steno.trace("Got " + response.toString() + " from printer.");
-                            printerToUse.processRoboxResponse(response);
-                        } else
-                        {
-                            steno.warning("No valid response from printer");
-                        }
 
                         AckResponse errors = (AckResponse) writeToPrinter(
                             RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.REPORT_ERRORS));
-                        if (errors != null)
-                        {
-                            steno.trace(errors.toString());
-                            printerToUse.processRoboxResponse(errors);
-                        }
                     } catch (RoboxCommsException ex)
                     {
                         steno.error("Failure during printer status request. " + ex.toString());
@@ -240,7 +225,6 @@ public abstract class CommandInterface extends Thread
 
     private void moveOnFromFirmwareCheck(FirmwareResponse firmwareResponse)
     {
-        printerToUse.processRoboxResponse(firmwareResponse);
         if (suppressPrinterIDChecks == false)
         {
             commsState = RoboxCommsState.CHECKING_ID;

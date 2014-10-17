@@ -157,7 +157,15 @@ public class DummyPrinterCommandInterface extends CommandInterface
         {
             response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().getExpectedResponse());
         }
-
+        
+        try
+        {
+        Thread.sleep(100);
+        }
+        catch (InterruptedException ex)
+        {
+            steno.error("Dummy Command Interface interrupted");
+        }
         printerToUse.processRoboxResponse(response);
 
         return response;
