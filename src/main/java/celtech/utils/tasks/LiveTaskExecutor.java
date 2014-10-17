@@ -8,10 +8,17 @@ import javafx.application.Platform;
  */
 public class LiveTaskExecutor implements TaskExecutor
 {
+
     @Override
     public void runOnGUIThread(Runnable runnable)
     {
-        Platform.runLater(runnable);
+        if (Platform.isFxApplicationThread())
+        {
+            runnable.run();
+        } else
+        {
+            Platform.runLater(runnable);
+        }
     }
 
     @Override

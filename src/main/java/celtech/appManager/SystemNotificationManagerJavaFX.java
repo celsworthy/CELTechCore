@@ -31,7 +31,6 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
     private final Stenographer steno = StenographerFactory.getStenographer(SystemNotificationManagerJavaFX.class.getName());
     private boolean errorDialogOnDisplay = false;
-    private static boolean sdDialogOnDisplay = false;
 
     /*
      * Error dialog
@@ -67,11 +66,11 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     /*
      * SD card dialog
      */
-    protected ModalDialog noSDDialog = null;
+    protected boolean sdDialogOnDisplay = false;
 
     private void showErrorNotification(String title, String message)
     {
-        Platform.runLater(() ->
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             Notifier.showErrorNotification(title, message);
         });
@@ -79,7 +78,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
     private void showWarningNotification(String title, String message)
     {
-        Platform.runLater(() ->
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             Notifier.showWarningNotification(title, message);
         });
@@ -87,7 +86,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
     private void showInformationNotification(String title, String message)
     {
-        Platform.runLater(() ->
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             Notifier.showInformationNotification(title, message);
         });
@@ -103,7 +102,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             abortJob = new Dialogs.CommandLink(Lookup.i18n("dialogs.error.abortJob"), null);
         }
 
-        Platform.runLater(() ->
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             if (response.isError()
                 && !errorDialogOnDisplay)
@@ -168,7 +167,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             dontCalibrate = new Dialogs.CommandLink(Lookup.i18n("dialogs.headUpdateCalibrationNo"), null);
         }
 
-        Platform.runLater(() ->
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             Action calibrationResponse = Dialogs.create().title(Lookup.i18n("dialogs.headUpdateCalibrationRequiredTitle"))
                 .message(Lookup.i18n("dialogs.headUpdateCalibrationRequiredInstruction"))
@@ -186,14 +185,10 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     @Override
     public void showHeadUpdatedNotification()
     {
-        Platform.runLater(new Runnable()
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
-            @Override
-            public void run()
-            {
-                Notifier.showInformationNotification(Lookup.i18n("notification.headSettingsUpdatedTitle"),
-                                                     Lookup.i18n("notification.noActionRequired"));
-            }
+            Notifier.showInformationNotification(Lookup.i18n("notification.headSettingsUpdatedTitle"),
+                                                 Lookup.i18n("notification.noActionRequired"));
         });
     }
 
@@ -202,7 +197,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (!sdDialogOnDisplay)
         {
-            Platform.runLater(() ->
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 sdDialogOnDisplay = true;
                 Notifier.showErrorNotification(Lookup.i18n("dialogs.noSDCardTitle"),
@@ -341,7 +336,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             }
         };
         FutureTask<Boolean> askUserToUpgradeTask = new FutureTask<>(askUserToDowngradeDialog);
-        Platform.runLater(askUserToUpgradeTask);
+        Lookup.getTaskExecutor().runOnGUIThread(askUserToUpgradeTask);
         try
         {
             return askUserToUpgradeTask.get();
@@ -391,7 +386,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             }
         };
         FutureTask<Boolean> askUserToUpgradeTask = new FutureTask<>(askUserToUpgradeDialog);
-        Platform.runLater(askUserToUpgradeTask);
+        Lookup.getTaskExecutor().runOnGUIThread(askUserToUpgradeTask);
         try
         {
             return askUserToUpgradeTask.get();
@@ -405,7 +400,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     @Override
     public void configureFirmwareProgressDialog(FirmwareLoadService firmwareLoadService)
     {
-        Platform.runLater(() ->
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             if (firmwareUpdateProgress == null)
             {
@@ -417,16 +412,18 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     @Override
     public void showNoSDCardDialog()
     {
-        Platform.runLater(() ->
+        if (!sdDialogOnDisplay)
         {
-            if (noSDDialog == null)
+            sdDialogOnDisplay = true;
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
             {
-                noSDDialog = new ModalDialog();
-                noSDDialog.setTitle(Lookup.i18n("dialogs.noSDCardTitle"));
-                noSDDialog.setMessage(Lookup.i18n("dialogs.noSDCardMessage"));
-                noSDDialog.addButton(Lookup.i18n("dialogs.noSDCardOK"));
-            }
-        });
+                Dialogs.create().title(
+                    Lookup.i18n("dialogs.noSDCardTitle"))
+                    .message(Lookup.i18n("dialogs.noSDCardMessage"))
+                    .masthead(null).showError();
+                sdDialogOnDisplay = false;
+            });
+        }
     }
 
     @Override
@@ -436,7 +433,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         {
             printerIDDialog.setPrinterToUse(printer);
 
-            Platform.runLater(() ->
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 if (printerIDDialog == null)
                 {

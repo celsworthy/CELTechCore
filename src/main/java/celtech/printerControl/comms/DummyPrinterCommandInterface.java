@@ -2,6 +2,7 @@ package celtech.printerControl.comms;
 
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
+import celtech.configuration.PauseStatus;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
@@ -15,12 +16,16 @@ import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
 import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
+import celtech.printerControl.comms.commands.tx.AbortPrint;
+import celtech.printerControl.comms.commands.tx.InitiatePrint;
+import celtech.printerControl.comms.commands.tx.PausePrint;
 import celtech.printerControl.comms.commands.tx.QueryFirmwareVersion;
 import celtech.printerControl.comms.commands.tx.ReadHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.ReadPrinterID;
 import celtech.printerControl.comms.commands.tx.ReadReelEEPROM;
 import celtech.printerControl.comms.commands.tx.ReportErrors;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
+import celtech.printerControl.comms.commands.tx.SendDataFileStart;
 import celtech.printerControl.comms.commands.tx.SendGCodeRequest;
 import celtech.printerControl.comms.commands.tx.StatusRequest;
 import celtech.printerControl.model.Head;
@@ -43,11 +48,19 @@ public class DummyPrinterCommandInterface extends CommandInterface
     private final String attachReelCommand = "ATTACH REEL ";
     private final String detachReelCommand = "DETACH REEL";
     private final String detachPrinterCommand = "DETACH PRINTER";
+    private final String goToPrintLineCommand = "GOTO LINE ";
+    private final String finishPrintCommand = "FINISH PRINT";
+    private final String loadFilamentCommand = "LOAD ";
+    private final String unloadFilamentCommand = "UNLOAD ";
+    private final String insertSDCardCommand = "INSERT SD";
+    private final String removeSDCardCommand = "REMOVE SD";
 
     private final StatusResponse currentStatus = (StatusResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.STATUS_RESPONSE);
     private Head attachedHead = null;
     private Reel attachedReel = null;
     private String printerName;
+
+    private String printJobID = null;
 
     public DummyPrinterCommandInterface(PrinterStatusConsumer controlInterface, String portName,
         boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks, String printerName)
@@ -55,6 +68,8 @@ public class DummyPrinterCommandInterface extends CommandInterface
         super(controlInterface, portName, suppressPrinterIDChecks, sleepBetweenStatusChecks);
         this.setName(printerName);
         this.printerName = printerName;
+        
+        currentStatus.setSdCardPresent(true);
     }
 
     public DummyPrinterCommandInterface(PrinterStatusConsumer controlInterface, String portName,
@@ -73,7 +88,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
     {
         RoboxRxPacket response = null;
 
-        steno.debug("Dummy printer received " + messageToWrite.getPacketType().name());
+//        steno.debug("Dummy printer received " + messageToWrite.getPacketType().name());
 
         if (messageToWrite instanceof QueryFirmwareVersion)
         {
@@ -134,11 +149,48 @@ public class DummyPrinterCommandInterface extends CommandInterface
                 {
                     gcodeResponse.setMessagePayload("Didn't recognise filament name - " + filamentName);
                 }
-            } else if (messageData.startsWith(detachReelCommand))
+            } else if (messageData.equalsIgnoreCase(detachReelCommand))
             {
                 currentStatus.setReelEEPROMState(EEPROMState.NOT_PRESENT);
                 attachedReel = null;
-            }
+            } else if (messageData.startsWith(goToPrintLineCommand))
+            {
+                String printJobLineNumberString = messageData.replaceAll(goToPrintLineCommand, "");
+                setPrintLine(Integer.valueOf(printJobLineNumberString));
+            } else if (messageData.equalsIgnoreCase(finishPrintCommand))
+            {
+                finishPrintJob();
+            } else if (messageData.startsWith(loadFilamentCommand))
+            {
+                String extruderNumberString = messageData.replaceAll(loadFilamentCommand, "");
+                switch (extruderNumberString)
+                {
+                    case "0":
+                        currentStatus.setFilament1SwitchStatus(true);
+                        break;
+                    case "1":
+                        currentStatus.setFilament2SwitchStatus(true);
+                        break;
+                }
+            } else if (messageData.startsWith(unloadFilamentCommand))
+            {
+                String extruderNumberString = messageData.replaceAll(unloadFilamentCommand, "");
+                switch (extruderNumberString)
+                {
+                    case "0":
+                        currentStatus.setFilament1SwitchStatus(false);
+                        break;
+                    case "1":
+                        currentStatus.setFilament2SwitchStatus(false);
+                        break;
+                }
+            } else if (messageData.equalsIgnoreCase(insertSDCardCommand))
+            {
+                currentStatus.setSdCardPresent(true);
+            }  else if (messageData.equalsIgnoreCase(removeSDCardCommand))
+            {
+                currentStatus.setSdCardPresent(false);
+            } 
 
             response = (RoboxRxPacket) gcodeResponse;
         } else if (messageToWrite instanceof ReadHeadEEPROM)
@@ -153,19 +205,35 @@ public class DummyPrinterCommandInterface extends CommandInterface
 
             reelResponse.updateContents(attachedReel);
             response = (RoboxRxPacket) reelResponse;
+        } else if (messageToWrite instanceof PausePrint)
+        {
+            switch (messageToWrite.getMessageData())
+            {
+                case "0":
+                    currentStatus.setPauseStatus(PauseStatus.NOT_PAUSED);
+                    break;
+                case "1":
+                    currentStatus.setPauseStatus(PauseStatus.PAUSED);
+                    break;
+            }
+            response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().getExpectedResponse());
+        } else if (messageToWrite instanceof SendDataFileStart)
+        {
+            printJobID = messageToWrite.getMessageData();
+            response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().getExpectedResponse());
+        } else if (messageToWrite instanceof InitiatePrint)
+        {
+            currentStatus.setRunningPrintJobID(printJobID);
+            response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().getExpectedResponse());
+        } else if (messageToWrite instanceof AbortPrint)
+        {
+            currentStatus.setRunningPrintJobID(null);
+            response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().getExpectedResponse());
         } else
         {
             response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().getExpectedResponse());
         }
-        
-        try
-        {
-        Thread.sleep(100);
-        }
-        catch (InterruptedException ex)
-        {
-            steno.error("Dummy Command Interface interrupted");
-        }
+
         printerToUse.processRoboxResponse(response);
 
         return response;
@@ -184,4 +252,14 @@ public class DummyPrinterCommandInterface extends CommandInterface
         steno.info("Dummy printer disconnected");
     }
 
+    private void setPrintLine(int printLineNumber)
+    {
+        currentStatus.setPrintJobLineNumber(printLineNumber);
+    }
+
+    private void finishPrintJob()
+    {
+        currentStatus.setPrintJobLineNumberString("");
+        currentStatus.setRunningPrintJobID("");
+    }
 }

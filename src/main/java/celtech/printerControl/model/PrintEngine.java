@@ -983,92 +983,105 @@ public class PrintEngine implements ControllableService
 
     protected void goToIdle()
     {
-        if (movieMakerTask != null)
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
-            if (movieMakerTask.isRunning())
+            if (movieMakerTask != null)
             {
-                movieMakerTask.shutdown();
+                if (movieMakerTask.isRunning())
+                {
+                    movieMakerTask.shutdown();
+                }
+                movieMakerTask = null;
             }
-            movieMakerTask = null;
-        }
-        printProgressMessage.unbind();
-        setPrintProgressMessage("");
-        primaryProgressPercent.unbind();
-        setPrimaryProgressPercent(0);
-        secondaryProgressPercent.unbind();
-        setSecondaryProgressPercent(0);
-        sendingDataToPrinter.set(false);
-        setPrintInProgress(false);
-        if (associatedPrinter != null)
-        {
-            associatedPrinter.printJobIDProperty().removeListener(printJobIDListener);
-            associatedPrinter.printJobLineNumberProperty().removeListener(printLineNumberListener);
-        }
-        setPrintProgressTitle(Lookup.i18n("PrintQueue.Idle"));
+            printProgressMessage.unbind();
+            setPrintProgressMessage("");
+            primaryProgressPercent.unbind();
+            setPrimaryProgressPercent(0);
+            secondaryProgressPercent.unbind();
+            setSecondaryProgressPercent(0);
+            sendingDataToPrinter.set(false);
+            setPrintInProgress(false);
+            setPrintProgressTitle(Lookup.i18n("PrintQueue.Idle"));
+        });
     }
 
     void goToSlicing()
     {
-        printProgressMessage.unbind();
-        printProgressMessage.bind(slicerService.messageProperty());
-        primaryProgressPercent.unbind();
-        setPrimaryProgressPercent(0);
-        primaryProgressPercent.bind(slicerService.progressProperty());
-        secondaryProgressPercent.unbind();
-        setSecondaryProgressPercent(0);
-        sendingDataToPrinter.set(false);
-        setPrintInProgress(true);
-        setPrintProgressTitle(Lookup.i18n("PrintQueue.Slicing"));
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            printProgressMessage.unbind();
+            printProgressMessage.bind(slicerService.messageProperty());
+            primaryProgressPercent.unbind();
+            setPrimaryProgressPercent(0);
+            primaryProgressPercent.bind(slicerService.progressProperty());
+            secondaryProgressPercent.unbind();
+            setSecondaryProgressPercent(0);
+            sendingDataToPrinter.set(false);
+            setPrintInProgress(true);
+            setPrintProgressTitle(Lookup.i18n("PrintQueue.Slicing"));
+        });
     }
 
     void goToPostProcessing()
     {
-        printProgressMessage.unbind();
-        printProgressMessage.bind(
-            gcodePostProcessorService.messageProperty());
-        primaryProgressPercent.unbind();
-        setPrimaryProgressPercent(0);
-        primaryProgressPercent.bind(
-            gcodePostProcessorService.progressProperty());
-        secondaryProgressPercent.unbind();
-        sendingDataToPrinter.set(false);
-        setSecondaryProgressPercent(0);
-        setPrintInProgress(true);
-        setPrintProgressTitle(Lookup.i18n("PrintQueue.PostProcessing"));
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            printProgressMessage.unbind();
+            printProgressMessage.bind(
+                gcodePostProcessorService.messageProperty());
+            primaryProgressPercent.unbind();
+            setPrimaryProgressPercent(0);
+            primaryProgressPercent.bind(
+                gcodePostProcessorService.progressProperty());
+            secondaryProgressPercent.unbind();
+            sendingDataToPrinter.set(false);
+            setSecondaryProgressPercent(0);
+            setPrintInProgress(true);
+            setPrintProgressTitle(Lookup.i18n("PrintQueue.PostProcessing"));
+        });
     }
 
     void goToSendingToPrinter()
     {
-        printProgressMessage.unbind();
-        printProgressMessage.bind(gcodePrintService.messageProperty());
-        primaryProgressPercent.unbind();
-        setPrimaryProgressPercent(0);
-        secondaryProgressPercent.unbind();
-        setSecondaryProgressPercent(0);
-        secondaryProgressPercent.bind(
-            gcodePrintService.progressProperty());
-        sendingDataToPrinter.set(true);
-        setPrintInProgress(true);
-        setPrintProgressTitle(Lookup.i18n("PrintQueue.SendingToPrinter"));
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            printProgressMessage.unbind();
+            printProgressMessage.bind(gcodePrintService.messageProperty());
+            primaryProgressPercent.unbind();
+            setPrimaryProgressPercent(0);
+            secondaryProgressPercent.unbind();
+            setSecondaryProgressPercent(0);
+            secondaryProgressPercent.bind(
+                gcodePrintService.progressProperty());
+            sendingDataToPrinter.set(true);
+            setPrintInProgress(true);
+            setPrintProgressTitle(Lookup.i18n("PrintQueue.SendingToPrinter"));
+        });
     }
 
     void goToPause()
     {
-        setPrintInProgress(true);
-        setPrintProgressTitle(Lookup.i18n("PrintQueue.Paused"));
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            setPrintInProgress(true);
+            setPrintProgressTitle(Lookup.i18n("PrintQueue.Paused"));
+        });
     }
 
     void goToPrinting()
     {
-        printProgressMessage.unbind();
-        primaryProgressPercent.unbind();
-        if (associatedPrinter.printerStatusProperty().get() != PrinterStatus.PAUSED)
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
-            setPrimaryProgressPercent(0);
-        }
-        printProgressMessage.set("");
-        setPrintInProgress(true);
-        setPrintProgressTitle(Lookup.i18n("PrintQueue.Printing"));
+            printProgressMessage.unbind();
+            primaryProgressPercent.unbind();
+            if (associatedPrinter.printerStatusProperty().get() != PrinterStatus.PAUSED)
+            {
+                setPrimaryProgressPercent(0);
+            }
+            printProgressMessage.set("");
+            setPrintInProgress(true);
+            setPrintProgressTitle(Lookup.i18n("PrintQueue.Printing"));
+        });
     }
 
     protected void stopAllServices()
