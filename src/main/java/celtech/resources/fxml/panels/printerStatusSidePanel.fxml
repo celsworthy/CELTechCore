@@ -164,27 +164,27 @@
                         </Text>
                         <Text fill="#ffffff" style="-fx-font-size: 9;" styleClass="temperatureXLabel" text="-2" translateX="-12.0" translateY="-4.0">
                         </Text>
-                        <Text fill="#ffffff" style="-fx-font-size: 12;" styleClass="temperatureXLabel" text="Mins" translateX="-5.0" translateY="-4.0" />
+                        <Text fill="#ffffff" style="-fx-font-size: 12;" styleClass="temperatureXLabel" text="%printerStatus.temperatureGraphMinutes" translateX="-5.0" translateY="-4.0" />
                         <Text fill="#ffffff" style="-fx-font-size: 9;" styleClass="temperatureXLabel" text="-1" translateX="3.0" translateY="-4.0">
                         </Text>
-                        <Text fill="#ffffff" style="-fx-font-size: 9;" styleClass="temperatureXLabel" text="Now" translateX="36.0" translateY="-4.0" HBox.hgrow="NEVER">
+                        <Text fill="#ffffff" style="-fx-font-size: 9;" styleClass="temperatureXLabel" text="%printerStatus.temperatureGraphNow" translateX="36.0" translateY="-4.0" HBox.hgrow="NEVER">
                         </Text>
                     </children>
                 </HBox>
                 <HBox fx:id="legendContainer" prefHeight="20.0" prefWidth="260.0" style="-fx-background-color: dark_grey;" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0">
                     <children>
-                        <Text fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="temperatureChartLegend" text="Key:" translateX="15.0" />
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="● Nozzle" translateX="30.0">
+                        <Text fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="temperatureChartLegend" text="%printerStatus.temperatureGraphKey" translateX="15.0" />
+                        <Text fx:id="legendNozzle" strokeType="OUTSIDE" strokeWidth="0.0" text="● Nozzle" translateX="30.0">
                      <styleClass>
                         <String fx:value="graph-red" />
                         <String fx:value="temperatureChartLegend" />
                      </styleClass></Text>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="● Bed" translateX="60.0">
+                        <Text fx:id="legendBed" strokeType="OUTSIDE" strokeWidth="0.0" text="● Bed" translateX="60.0">
                      <styleClass>
                         <String fx:value="graph-yellow" />
                         <String fx:value="temperatureChartLegend" />
                      </styleClass></Text>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="● Ambient" translateX="95.0">
+                        <Text fx:id="legendAmbient" strokeType="OUTSIDE" strokeWidth="0.0" text="● Ambient" translateX="95.0">
                      <styleClass>
                         <String fx:value="graph-green" />
                         <String fx:value="temperatureChartLegend" />

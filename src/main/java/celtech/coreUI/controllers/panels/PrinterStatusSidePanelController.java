@@ -35,6 +35,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -75,6 +76,15 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private NumberAxis temperatureAxis;
     @FXML
     private NumberAxis timeAxis;
+    
+    @FXML
+    private Text legendNozzle;
+    
+    @FXML
+    private Text legendBed;
+    
+    @FXML
+    private Text legendAmbient;    
 
     private PrinterIDDialog printerIDDialog = null;
 
@@ -148,6 +158,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         temperatureChart.setLegendSide(Side.RIGHT);
 
         temperatureChart.setVisible(false);
+        
+        legendNozzle.setText("● " + Lookup.i18n("printerStatus.temperatureGraphNozzleLabel"));
+        legendBed.setText("● " + Lookup.i18n("printerStatus.temperatureGraphBedLabel"));
+        legendAmbient.setText("● " + Lookup.i18n("printerStatus.temperatureGraphAmbientLabel"));
     }
 
     private void initialisePrinterStatusGrid()

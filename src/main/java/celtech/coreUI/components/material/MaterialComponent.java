@@ -3,12 +3,11 @@
  */
 package celtech.coreUI.components.material;
 
+import celtech.Lookup;
 import celtech.configuration.MaterialType;
-import celtech.coreUI.DisplayManager;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.AnchorPane;
@@ -97,18 +96,18 @@ public class MaterialComponent extends AnchorPane
      */
     public void showReelNotFormatted()
     {
-        ResourceBundle languageBundle = DisplayManager.getLanguageBundle();
-        String reelNotFormattedString = languageBundle.getString(
-            "smartReelProgrammer.reelNotFormatted");
-        showDetails("1:ERROR", "Not available", reelNotFormattedString, Color.BLACK);
+        String reelNotFormattedString = Lookup.i18n("smartReelProgrammer.reelNotFormatted");
+        String notAvailable = Lookup.i18n("smartReelProgrammer.notAvailable");
+        String error = Lookup.i18n("smartReelProgrammer.error");
+        showDetails("1:" + error, notAvailable, reelNotFormattedString, Color.BLACK);
 
     }
 
     public void showFilamentNotLoaded()
     {
-        ResourceBundle languageBundle = DisplayManager.getLanguageBundle();
-        String filamentNotLoadedString = languageBundle.getString("smartReelProgrammer.noReelLoaded");
-        showDetails("1:", "Please create a profile", filamentNotLoadedString, Color.BLACK);
+        String pleaseCreateAProfile = Lookup.i18n("smartReelProgrammer.pleaseCreateAProfile");
+        String filamentNotLoadedString = Lookup.i18n("smartReelProgrammer.noReelLoaded");
+        showDetails("1:", pleaseCreateAProfile, filamentNotLoadedString, Color.BLACK);
     }
 
 }
