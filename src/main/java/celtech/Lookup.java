@@ -61,6 +61,7 @@ public class Lookup
 
     private Lookup()
     {
+//        Locale.setDefault(new Locale("zh", "CN")); 
         Locale appLocale = Locale.getDefault();
         ResourceBundle i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData", appLocale, new UTF8Control());
         applicationEnvironment = new ApplicationEnvironment(i18nBundle, appLocale);
