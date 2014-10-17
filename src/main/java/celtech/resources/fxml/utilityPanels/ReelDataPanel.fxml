@@ -30,19 +30,19 @@
                         <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                     <children>
-                        <Label text="Filament ID" />
-                        <Label text="Colour" GridPane.rowIndex="3" />
-                        <Label text="Material" GridPane.rowIndex="2" />
-                        <Label text="Name" GridPane.rowIndex="1" />                        
-                        <Label text="Diameter" GridPane.columnIndex="2" GridPane.rowIndex="6" />
-                        <Label text="Multiplier" GridPane.columnIndex="2" GridPane.rowIndex="7" />
-                        <Label text="Feed rate" GridPane.columnIndex="2" GridPane.rowIndex="8" />
-                        <Label text="First layer bed" GridPane.rowIndex="5" />
-                        <Label text="Bed" GridPane.rowIndex="6" />
-                        <Label text="First lyr nozzle" GridPane.rowIndex="7" />
-                        <Label text="Nozzle" GridPane.rowIndex="8" />
-                        <Label text="Ambient" GridPane.rowIndex="9" />
-                        <Label text="Remaining" GridPane.columnIndex="2" GridPane.rowIndex="9" /> 
+                        <Label text="%reelPanel.filamentID" />
+                        <Label text="%genericFirstLetterCapitalised.Colour" GridPane.rowIndex="3" />
+                        <Label text="%genericFirstLetterCapitalised.Material" GridPane.rowIndex="2" />
+                        <Label text="%genericFirstLetterCapitalised.Name" GridPane.rowIndex="1" />                        
+                        <Label text="%reelPanel.diameter" GridPane.columnIndex="2" GridPane.rowIndex="6" />
+                        <Label text="%reelPanel.multiplier" GridPane.columnIndex="2" GridPane.rowIndex="7" />
+                        <Label text="%reelPanel.feedRate" GridPane.columnIndex="2" GridPane.rowIndex="8" />
+                        <Label text="%reelPanel.firstLayerBed" GridPane.rowIndex="5" />
+                        <Label text="%reelPanel.bed" GridPane.rowIndex="6" />
+                        <Label text="%reelPanel.firstLayerNozzle" GridPane.rowIndex="7" />
+                        <Label text="%reelPanel.nozzle" GridPane.rowIndex="8" />
+                        <Label text="%reelPanel.ambient" GridPane.rowIndex="9" />
+                        <Label text="%reelPanel.remaining" GridPane.columnIndex="2" GridPane.rowIndex="9" /> 
                         <TextField fx:id="filamentID" disable="true" editable="false" prefWidth="140.0" styleClass="RestrictedTextField" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" />
                         <RestrictedTextField fx:id="reelFilamentName" forceUpperCase="false" maxLength="20" prefWidth="140.0" restrict="-_' 0-9\p{L}\p{M}*+" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="1" />
                         <RestrictedTextField fx:id="reelFilamentDiameter" alignment="CENTER_RIGHT" maxLength="4" prefWidth="70.0" restrict="0-9.," GridPane.columnIndex="3" GridPane.rowIndex="6" />
@@ -56,14 +56,14 @@
                         <RestrictedTextField fx:id="reelRemainingFilament" alignment="CENTER_RIGHT" maxLength="8" prefWidth="70.0" restrict="0-9." GridPane.columnIndex="3" GridPane.rowIndex="9" />
                   <ComboBox fx:id="reelMaterialType" maxHeight="25.0" prefWidth="150.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.halignment="LEFT" GridPane.rowIndex="2" />
                   <ColorPicker fx:id="reelDisplayColor" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="LEFT" GridPane.rowIndex="3" />
-                  <Label text="Temperature" GridPane.halignment="LEFT" GridPane.rowIndex="4" GridPane.valignment="BOTTOM" />
-                  <Label text="Filament " GridPane.columnIndex="2" GridPane.halignment="LEFT" GridPane.rowIndex="4" GridPane.valignment="BOTTOM" />
+                  <Label text="%reelPanel.temperature" GridPane.halignment="LEFT" GridPane.rowIndex="4" GridPane.valignment="BOTTOM" />
+                  <Label text="%genericFirstLetterCapitalised.Filament" GridPane.columnIndex="2" GridPane.halignment="LEFT" GridPane.rowIndex="4" GridPane.valignment="BOTTOM" />
                     </children>
                 </GridPane>
                 <HBox alignment="CENTER" prefHeight="-1.0" prefWidth="-1.0" spacing="10">
                     <children>
-                        <Button fx:id="reelWriteConfig" mnemonicParsing="false" onAction="#writeReelConfig" text="Write To Reel" />
-                        <Button fx:id="saveFilamentAs" mnemonicParsing="false" onAction="#filamentSaveAs" text="Save As New Filament" />
+                        <Button fx:id="reelWriteConfig" mnemonicParsing="false" onAction="#writeReelConfig" text="%reelPanel.writeToReel" />
+                        <Button fx:id="saveFilamentAs" mnemonicParsing="false" onAction="#filamentSaveAs" text="%reelPanel.saveAsNewFilament" />
                     </children>
                 </HBox>
                 <fx:include source="/celtech/resources/fxml/utilityPanels/smartPartProgrammer.fxml" />
