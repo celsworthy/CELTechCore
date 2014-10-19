@@ -1,6 +1,8 @@
 package celtech.gcodetranslator;
 
+import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.SlicerType;
 import celtech.gcodetranslator.events.CommentEvent;
 import celtech.gcodetranslator.events.EndOfFileEvent;
 import celtech.gcodetranslator.events.ExtrusionEvent;
@@ -137,6 +139,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     // Causes home and return events to be inserted, triggering the camera
     private boolean movieMakerEnabled = false;
 
+    private SlicerType slicerType;
+
     /**
      * OutputWriter is a wrapper to a file writer that allows us to count the number of non-comment and non-blank lines.
      */
@@ -208,6 +212,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         RoboxProfile settings, DoubleProperty percentProgress)
     {
         currentSettings = settings;
+
+        slicerType = Lookup.getUserPreferences().getSlicerType();
 
         layerNumberToLineNumber = new ArrayList<>();
         layerNumberToDistanceTravelled = new ArrayList<>();
@@ -287,7 +293,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         nozzles.add(point3mmNozzle);
 
         nozzles.add(point8mmNozzle);
-        
+
         currentNozzle = point3mmNozzle;
 
         wipeFeedRate_mmPerMin = currentSettings.perimeter_speedProperty().get() * 60;
@@ -484,7 +490,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                     lineNumberOfFirstExtrusion = event.getLinesSoFar();
                 }
 
-                if (layer == 2 && forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenReinstated == false)
+                if (((slicerType == SlicerType.Slic3r && layer == 2) || (slicerType == SlicerType.Cura && layer == 3)) && forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenReinstated == false)
                 {
                     nozzleHasBeenReinstated = true;
                     int nozzleToUse = chooseNozzleByTask(event);
@@ -810,7 +816,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
     private void handleForcedNozzleAtLayerChange() throws PostProcessingError
     {
-        if (layer == 0 && forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenForced == false)
+        if (((slicerType == SlicerType.Slic3r && layer == 0) || (slicerType == SlicerType.Cura && layer == 1)) && forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenForced == false)
         {
             nozzleHasBeenForced = true;
             NozzleChangeEvent nozzleChangeEvent = new NozzleChangeEvent();
@@ -831,7 +837,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             currentNozzle = nozzles.get(nozzleInUse);
         }
 
-        if (layer == 1 && forcedNozzleOnFirstLayer >= 0)
+        if (((slicerType == SlicerType.Slic3r && layer == 1) || (slicerType == SlicerType.Cura && layer == 2)) && forcedNozzleOnFirstLayer >= 0)
         {
             writeEventsWithNozzleClose(
                 "closing nozzle after forced nozzle select on layer 0");

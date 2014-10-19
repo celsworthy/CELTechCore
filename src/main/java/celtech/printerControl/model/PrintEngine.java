@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.model;
 
 import celtech.Lookup;
@@ -24,6 +20,8 @@ import celtech.services.slicer.AbstractSlicerService;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.RoboxProfile;
 import celtech.services.slicer.SliceResult;
+import celtech.services.slicer.SlicerConfigWriter;
+import celtech.services.slicer.SlicerConfigWriterFactory;
 import celtech.services.slicer.SlicerService;
 import celtech.utils.SystemUtils;
 import celtech.utils.threed.ThreeDUtils;
@@ -322,6 +320,7 @@ public class PrintEngine implements ControllableService
                 steno.error("Submission of job to printer failed");
                 try
                 {
+                    //TODO - can't submit in this case...?
                     associatedPrinter.cancel(null);
                 } catch (PrinterException ex)
                 {
@@ -648,6 +647,9 @@ public class PrintEngine implements ControllableService
             //We need to tell Slic3r where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
             Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
             settings.getPrint_center().set((centreOfPrintedObject.getX() + ApplicationConfiguration.xPrintOffset) + "," + (centreOfPrintedObject.getZ() + ApplicationConfiguration.yPrintOffset));
+            
+            SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getSlicerConfigWriter(Lookup.getUserPreferences().getSlicerType());
+            configWriter.generateConfigForSlicer(settings, printJobDirectoryName + File.separator + printUUID + ApplicationConfiguration.printProfileFileExtension);
             settings.writeToFile(printJobDirectoryName + File.separator + printUUID + ApplicationConfiguration.printProfileFileExtension);
 
             associatedPrinter.setPrinterStatus(PrinterStatus.SLICING);
@@ -660,7 +662,6 @@ public class PrintEngine implements ControllableService
 
             printJobsAgainstProjects.put(printUUID, project);
 
-//            fxToJMEInterface.clearGCodeDisplay();
             // Do we need to slice?
             acceptedPrintRequest = true;
         } else if (project.getProjectMode() == ProjectMode.GCODE)
