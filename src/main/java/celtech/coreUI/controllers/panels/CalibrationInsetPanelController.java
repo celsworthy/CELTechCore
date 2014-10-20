@@ -341,8 +341,12 @@ public class CalibrationInsetPanelController implements Initializable,
         return nameToNodeCache.get(diagramName);
 //        return new TextField("ABC");
     }
+    
+    protected void showDiagram(String section, String diagramName) {
+        showDiagram(section, diagramName,  true);
+    }
 
-    protected void showDiagram(String section, String diagramName)
+    protected void showDiagram(String section, String diagramName, boolean transparent)
     {
         diagramNode = getDiagramNode(section, diagramName);
         if (diagramNode == null)
@@ -357,6 +361,7 @@ public class CalibrationInsetPanelController implements Initializable,
             Node firstChild = topPane.getChildren().get(0);
             topPane.getChildren().clear();
             topPane.getChildren().addAll(firstChild, diagramNode);
+            diagramNode.setMouseTransparent(transparent);
         }
 
         resizeDiagram();

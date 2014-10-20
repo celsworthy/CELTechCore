@@ -43,66 +43,24 @@ public class CalibrateXAndYTask extends Task<CalibrationXAndYStepResult> impleme
 
         switch (desiredState)
         {
-//            case HEATING:
-//                try
-//                {
-//                    printer.transmitDirectGCode("M104", false);
-//                    if (PrinterUtils.waitOnBusy(printer, this) == false)
-//                    {
-//                        printer.transmitStoredGCode("Home_all");
-//                        if (PrinterUtils.waitOnMacroFinished(printer, this) == false
-//                            && isCancelled() == false)
-//                        {
-//                            printer.transmitDirectGCode("G0 Z50", false);
-//                            if (PrinterUtils.waitOnBusy(printer, this) == false
-//                                && isCancelled() == false)
-//                            {
-//                                printer.transmitDirectGCode("M104", false);
-//                                if (printer.getNozzleHeaterMode() == HeaterMode.FIRST_LAYER)
-//                                {
-//                                    PrinterUtils.waitUntilTemperatureIsReached(
-//                                        printer.extruderTemperatureProperty(), this,
-//                                        printer.getNozzleFirstLayerTargetTemperature(), 5, 300);
-//                                } else
-//                                {
-//                                    PrinterUtils.waitUntilTemperatureIsReached(
-//                                        printer.extruderTemperatureProperty(), this,
-//                                        printer.getNozzleTargetTemperature(), 5, 300);
-//                                }
-//                                printer.transmitDirectGCode(GCodeConstants.switchOnHeadLEDs,
-//                                                            false);
-//                            }
-//                        }
-//                    }
-//
-//                } catch (RoboxCommsException ex)
-//                {
-//                    steno.error("Error in x and y calibration - mode=" + desiredState.name());
-//                } catch (InterruptedException ex)
-//                {
-//                    steno.error("Interrrupted during x and y calibration - mode="
-//                        + desiredState.name());
-//                }
-//
-//                break;
             case PRINT_PATTERN:
 //                printer.transmitStoredGCode("rbx_XY_offset_roboxised");
-                printer.runMacro("tiny_robox");
-                if (PrinterUtils.waitOnMacroFinished(printer, this) == true
-                    || isCancelled())
-                {
-                      cancelRun();
-                }
+//                printer.runMacro("tiny_robox");
+//                if (PrinterUtils.waitOnMacroFinished(printer, this) == true
+//                    || isCancelled())
+//                {
+//                      cancelRun();
+//                }
                 success = true;
                 break;
             case PRINT_CIRCLE:
 //                printer.transmitStoredGCode("rbx_XY_offset_roboxised");
-                printer.runMacro("tiny_robox");
-                if (PrinterUtils.waitOnMacroFinished(printer, this) == true
-                    || isCancelled())
-                {
-                      cancelRun();
-                }
+//                printer.runMacro("tiny_robox");
+//                if (PrinterUtils.waitOnMacroFinished(printer, this) == true
+//                    || isCancelled())
+//                {
+//                      cancelRun();
+//                }
                 success = true;
                 break;                
 
