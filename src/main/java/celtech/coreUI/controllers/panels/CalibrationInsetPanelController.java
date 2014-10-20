@@ -249,14 +249,12 @@ public class CalibrationInsetPanelController implements Initializable,
         calibrationStatus.widthProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-                steno.info("STATUS WIDTH CHANGED");
                 resizeDiagram();
             });
 
         calibrationStatus.heightProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-                steno.info("STATUS HEIGHT CHANGED");
                 resizeDiagram();
             });
 

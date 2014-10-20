@@ -102,6 +102,7 @@ class DiagramController implements Initializable
     public void initialize(URL location, ResourceBundle resources)
     {
         setupOffsetCombos();
+        setCalibrationTextField("0.00");
     }
 
     private void setupOffsetCombos()

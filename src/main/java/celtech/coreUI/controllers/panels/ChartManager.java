@@ -70,12 +70,13 @@ class ChartManager
     private void updateChartDataSources()
     {
         chart.getData().clear();
+        chart.getData().add(ambientTargetTemperatureSeries);
+        chart.getData().add(bedTargetTemperatureSeries);
+        chart.getData().add(nozzleTargetTemperatureSeries);        
         chart.getData().add(ambientData);
         chart.getData().add(bedData);
         chart.getData().add(nozzleData);
-        chart.getData().add(ambientTargetTemperatureSeries);
-        chart.getData().add(bedTargetTemperatureSeries);
-        chart.getData().add(nozzleTargetTemperatureSeries);
+
     }
 
     void clearNozzleData()
