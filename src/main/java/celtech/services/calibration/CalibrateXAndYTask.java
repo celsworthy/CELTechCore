@@ -7,6 +7,7 @@ package celtech.services.calibration;
 
 import celtech.printerControl.model.Printer;
 import celtech.services.ControllableService;
+import celtech.utils.PrinterUtils;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -86,21 +87,23 @@ public class CalibrateXAndYTask extends Task<CalibrationXAndYStepResult> impleme
 //                break;
             case PRINT_PATTERN:
 //                printer.transmitStoredGCode("rbx_XY_offset_roboxised");
-//                printer.transmitStoredGCode("tiny_robox");
-//                if (PrinterUtils.waitOnMacroFinished(printer, this) == true
-//                    || isCancelled())
-//                {
-//                      cancelRun();
-//                }
+                printer.runMacro("tiny_robox");
+                if (PrinterUtils.waitOnMacroFinished(printer, this) == true
+                    || isCancelled())
+                {
+                      cancelRun();
+                }
+                success = true;
                 break;
             case PRINT_CIRCLE:
 //                printer.transmitStoredGCode("rbx_XY_offset_roboxised");
-//                printer.transmitStoredGCode("tiny_robox");
-//                if (PrinterUtils.waitOnMacroFinished(printer, this) == true
-//                    || isCancelled())
-//                {
-//                      cancelRun();
-//                }
+                printer.runMacro("tiny_robox");
+                if (PrinterUtils.waitOnMacroFinished(printer, this) == true
+                    || isCancelled())
+                {
+                      cancelRun();
+                }
+                success = true;
                 break;                
 
         }

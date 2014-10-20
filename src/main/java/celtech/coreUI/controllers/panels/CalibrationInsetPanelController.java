@@ -10,9 +10,11 @@ import static celtech.coreUI.controllers.panels.CalibrationMenuConfiguration.con
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.NozzleHeater;
 import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.Reel;
 import celtech.services.calibration.CalibrationXAndYState;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOpeningCalibrationState;
+import celtech.utils.PrinterListChangesListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
@@ -42,7 +44,7 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class CalibrationInsetPanelController implements Initializable,
     CalibrationBStateListener, CalibrationNozzleOffsetStateListener,
-    CalibrationXAndYStateListener
+    CalibrationXAndYStateListener, PrinterListChangesListener
 {
 
     private ResourceBundle resources;
@@ -220,14 +222,7 @@ public class CalibrationInsetPanelController implements Initializable,
 
         setCalibrationMode(CalibrationMode.CHOICE);
 
-        Printer printerToUse = Lookup.currentlySelectedPrinterProperty().get();
-        setupChildComponents(printerToUse);
-
-        Lookup.currentlySelectedPrinterProperty().addListener(
-            (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
-            {
-                setupChildComponents(newValue);
-            });
+        Lookup.getPrinterListChangesNotifier().addListener(this);
 
         configureCalibrationMenu(calibrationMenu, this);
 
@@ -368,17 +363,6 @@ public class CalibrationInsetPanelController implements Initializable,
         diagramNode.setVisible(true);
     }
 
-    private void setupChildComponents(Printer printerToUse)
-    {
-        if (calibrationHelper != null)
-        {
-            calibrationHelper.setPrinterToUse(printerToUse);
-        }
-        setupTemperatureProgressListeners(printerToUse);
-        setupPrintProgressListeners(printerToUse);
-        currentPrinter = printerToUse;
-    }
-
     @Override
     public void setNozzleOpeningState(NozzleOpeningCalibrationState state)
     {
@@ -410,43 +394,6 @@ public class CalibrationInsetPanelController implements Initializable,
             updateCalibrationProgressTemp();
         };
 
-    private void removeTemperatureProgressListeners(Printer printer)
-    {
-        printer.headProperty().removeListener(headListener);
-        if (printer.headProperty().get() != null)
-        {
-            NozzleHeater nozzleHeater = printer.headProperty().get().getNozzleHeaters().get(0);
-            nozzleHeater.nozzleTargetTemperatureProperty().removeListener(
-                targetTemperatureListener);
-            nozzleHeater.nozzleTemperatureProperty().removeListener(extruderTemperatureListener);
-        }
-    }
-
-    private final ChangeListener<Head> headListener = (ObservableValue<? extends Head> observable, Head oldValue, Head newHead) ->
-    {
-        NozzleHeater nozzleHeater = newHead.getNozzleHeaters().get(0);
-        nozzleHeater.nozzleTargetTemperatureProperty().addListener(
-            targetTemperatureListener);
-        nozzleHeater.nozzleTemperatureProperty().addListener(extruderTemperatureListener);
-    };
-
-    private void setupTemperatureProgressListeners(Printer printer)
-    {
-        if (currentPrinter != null)
-        {
-            removeTemperatureProgressListeners(currentPrinter);
-        }
-
-        if (printer == null)
-        {
-            calibrationProgressTemp.setProgress(0);
-        } else
-        {
-            printer.headProperty().addListener(headListener);
-
-        }
-    }
-
     private void updateCalibrationProgressTemp()
     {
         if (targetTemperature != 0 && calibrationProgressTemp.isVisible())
@@ -472,30 +419,6 @@ public class CalibrationInsetPanelController implements Initializable,
             printPercent = newValue.doubleValue();
             updateCalibrationProgressPrint();
         };
-
-    private void removePrintProgressListeners(Printer printer)
-    {
-        printer.getPrintEngine().progressETCProperty().removeListener(targetETCListener);
-        printer.getPrintEngine().progressProperty().removeListener(printPercentListener);
-    }
-
-    private void setupPrintProgressListeners(Printer printer)
-    {
-        if (currentPrinter != null)
-        {
-            removePrintProgressListeners(currentPrinter);
-        }
-
-        if (printer == null)
-        {
-            calibrationProgressTemp.setProgress(0);
-            calibrationProgressPrint.setProgress(0);
-        } else
-        {
-            printer.getPrintEngine().progressProperty().addListener(printPercentListener);
-            printer.getPrintEngine().progressETCProperty().addListener(targetETCListener);
-        }
-    }
 
     private void updateCalibrationProgressPrint()
     {
@@ -531,8 +454,64 @@ public class CalibrationInsetPanelController implements Initializable,
         calibrationBottomArea.getChildren().add(calibrateBottomMenu);
     }
 
+    private void switchToPrinter(Printer printer)
+    {
+        if (currentPrinter != null)
+        {
+            unbindPrinter(currentPrinter);
+        }
+        if (printer != null)
+        {
+            bindPrinter(printer);
+        }
+        currentPrinter = printer;
+    }
+
+    private void unbindPrinter(Printer printer)
+    {
+        removeHeadListeners(printer);
+        removePrintProgressListeners(printer);
+    }
+
+    private void bindPrinter(Printer printer)
+    {
+        calibrationProgressTemp.setProgress(0);
+        Head newHead = printer.headProperty().get();
+        if (newHead != null)
+        {
+            NozzleHeater nozzleHeater = newHead.getNozzleHeaters().get(0);
+            targetTemperature = nozzleHeater.nozzleTargetTemperatureProperty().get();
+            nozzleHeater.nozzleTargetTemperatureProperty().addListener(targetTemperatureListener);
+            nozzleHeater.nozzleTemperatureProperty().addListener(extruderTemperatureListener);
+        }
+        setupPrintProgressListeners(printer);
+    }
+
+    private void removePrintProgressListeners(Printer printer)
+    {
+        printer.getPrintEngine().progressETCProperty().removeListener(targetETCListener);
+        printer.getPrintEngine().progressProperty().removeListener(printPercentListener);
+    }
+
+    private void setupPrintProgressListeners(Printer printer)
+    {
+        printer.getPrintEngine().progressProperty().addListener(printPercentListener);
+        printer.getPrintEngine().progressETCProperty().addListener(targetETCListener);
+    }
+
+    private void removeHeadListeners(Printer printer)
+    {
+        if (printer.headProperty().get() != null)
+        {
+            NozzleHeater nozzleHeater = printer.headProperty().get().getNozzleHeaters().get(0);
+            nozzleHeater.nozzleTargetTemperatureProperty().removeListener(targetTemperatureListener);
+            nozzleHeater.nozzleTemperatureProperty().removeListener(extruderTemperatureListener);
+        }
+    }
+
     public void setCalibrationMode(CalibrationMode calibrationMode)
     {
+        switchToPrinter(Lookup.getCurrentlySelectedPrinter());
         switch (calibrationMode)
         {
             case NOZZLE_OPENING:
@@ -641,6 +620,48 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         waitTimer.setTranslateX(parent.getWidth() / 2.0);
         waitTimer.setTranslateY(parent.getHeight() / 2.0);
+    }
+
+    @Override
+    public void whenPrinterAdded(Printer printer)
+    {
+    }
+
+    @Override
+    public void whenPrinterRemoved(Printer printer)
+    {
+        if (printer == currentPrinter)
+        {
+            cancelCalibrationAction();
+        }
+    }
+
+    @Override
+    public void whenHeadAdded(Printer printer)
+    {
+        if (printer == currentPrinter)
+        {
+            bindPrinter(printer);
+        }
+    }
+
+    @Override
+    public void whenHeadRemoved(Printer printer, Head head)
+    {
+        if (printer == currentPrinter)
+        {
+            cancelCalibrationAction();
+        }
+    }
+
+    @Override
+    public void whenReelAdded(Printer printer, int reelIndex)
+    {
+    }
+
+    @Override
+    public void whenReelRemoved(Printer printer, Reel reel)
+    {
     }
 
 }

@@ -397,6 +397,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         chartManager.setTargetAmbientTemperatureProperty(
             ancillarySystems.ambientTargetTemperatureProperty());
+        chartManager.setBedHeaterModeProperty(ancillarySystems.bedHeaterModeProperty());
         chartManager.setTargetBedTemperatureProperty(ancillarySystems.bedTargetTemperatureProperty());
     }
 
@@ -453,6 +454,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         chartManager.setNozzleData(head.getNozzleHeaters().get(0).getNozzleTemperatureHistory());
         chartManager.setTargetNozzleTemperatureProperty(
             head.getNozzleHeaters().get(0).nozzleTargetTemperatureProperty());
+        chartManager.setNozzleHeaterModeProperty(head.getNozzleHeaters().get(0).heaterModeProperty());
     }
 
     /**
