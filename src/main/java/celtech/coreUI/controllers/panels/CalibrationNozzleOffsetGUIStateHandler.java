@@ -43,7 +43,7 @@ public class CalibrationNozzleOffsetGUIStateHandler
                 break;
             case HEATING:
                 controller.hideAllInputControlsExceptStepNumber();
-                controller.showWaitTimer(true);
+                controller.showSpinner();
                 controller.setCalibrationProgressVisible(CalibrationInsetPanelController.ProgressVisibility.TEMP);
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());

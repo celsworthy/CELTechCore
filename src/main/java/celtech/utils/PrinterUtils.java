@@ -14,11 +14,8 @@ import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
 import celtech.utils.tasks.Cancellable;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.concurrent.Task;
@@ -41,7 +38,6 @@ public class PrinterUtils
     private Dialogs.CommandLink goForPurge = null;
     private Dialogs.CommandLink dontGoForPurge = null;
     private boolean purgeDialogVisible = false;
-    private SettingsScreenState settingsScreenState = null;
 
     private PrinterUtils()
     {
@@ -52,7 +48,6 @@ public class PrinterUtils
                                                  i18nBundle.getString(
                                                      "dialogs.dontGoForPurgeInstruction"));
 
-        settingsScreenState = SettingsScreenState.getInstance();
     }
 
     /**
@@ -81,7 +76,7 @@ public class PrinterUtils
 
         if (Platform.isFxApplicationThread())
         {
-            throw new RuntimeException("Cannot call this from the GUI thread");
+            throw new RuntimeException("Cannot call this function from the GUI thread");
         }
         // we need to wait here because it takes a little while before status changes
         // away from IDLE
@@ -94,19 +89,11 @@ public class PrinterUtils
             steno.error("Interrupted whilst waiting on Macro");
         }
 
-        steno.info("task is " + task);
         if (task != null && ! interrupted)
         {
-            steno.info("WAITMACROX: printer status is "
-                + printerToCheck.printerStatusProperty().get());
-            steno.info("Task CancelledX: " + task.isCancelled());
-            steno.info("shutting down is " + TaskController.isShuttingDown());
             while (printerToCheck.printerStatusProperty().get() != PrinterStatus.IDLE
                 && task.isCancelled() == false && !TaskController.isShuttingDown())
             {
-                steno.info("WAITMACRO: printer status is "
-                    + printerToCheck.printerStatusProperty().get());
-                steno.info("Task Cancelled: " + task.isCancelled());
                 try
                 {
                     Thread.sleep(100);

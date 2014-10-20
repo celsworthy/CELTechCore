@@ -69,14 +69,10 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
             case HEATING:
                 try
                 {
-                    steno.info("start home all");
+                    printerToUse.goToTargetNozzleTemperature();
                     printerToUse.runMacroWithoutPurgeCheck("Home_all");
-                    steno.info("wait macro");
                     if (PrinterUtils.waitOnMacroFinished(printerToUse, this) == false)
                     {
-                        steno.info("wait macro finished");
-                        printerToUse.transmitStatusRequest();
-                        steno.info("go to target temp");
                         printerToUse.goToTargetNozzleTemperature();
                         if (printerToUse.headProperty().get()
                                     .getNozzleHeaters().get(0)
@@ -84,7 +80,6 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
                         {
                             NozzleHeater nozzleHeater = printerToUse.headProperty().get()
                                         .getNozzleHeaters().get(0);
-                            steno.info("wait temp");
                             PrinterUtils.waitUntilTemperatureIsReached(
                                         nozzleHeater.nozzleTemperatureProperty(), this,
                                         nozzleHeater
@@ -93,13 +88,11 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
                         {
                             NozzleHeater nozzleHeater = printerToUse.headProperty().get()
                                         .getNozzleHeaters().get(0);
-                            steno.info("wait temp");
                                     PrinterUtils.waitUntilTemperatureIsReached(
                                         nozzleHeater.nozzleTemperatureProperty(), this,
                                         nozzleHeater
                                         .nozzleTargetTemperatureProperty().get(), 5, 300);
                         }
-                        steno.info("wait temp done");
                         if (PrinterUtils.waitOnBusy(printerToUse, this) == false)
                         {
                             printerToUse.switchOnHeadLEDs();

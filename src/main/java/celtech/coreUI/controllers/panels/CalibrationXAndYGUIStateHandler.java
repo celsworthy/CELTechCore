@@ -47,7 +47,7 @@ public class CalibrationXAndYGUIStateHandler
             case PRINT_PATTERN:
                 controller.calibrationMenu.disableNonSelectedItems();
                 controller.hideAllInputControlsExceptStepNumber();
-                controller.showWaitTimer(true);
+                controller.showSpinner();
                 controller.setCalibrationProgressVisible(
                     CalibrationInsetPanelController.ProgressVisibility.PRINT);
                 controller.cancelCalibrationButton.setVisible(true);
@@ -68,7 +68,7 @@ public class CalibrationXAndYGUIStateHandler
                 break;
             case PRINT_CIRCLE:    
                 controller.hideAllInputControlsExceptStepNumber();
-                controller.showWaitTimer(true);
+                controller.showSpinner();
                 controller.setCalibrationProgressVisible(
                     CalibrationInsetPanelController.ProgressVisibility.PRINT);
                 controller.cancelCalibrationButton.setVisible(true);

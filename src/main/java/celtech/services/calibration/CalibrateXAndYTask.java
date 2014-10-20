@@ -45,22 +45,22 @@ public class CalibrateXAndYTask extends Task<CalibrationXAndYStepResult> impleme
         {
             case PRINT_PATTERN:
 //                printer.transmitStoredGCode("rbx_XY_offset_roboxised");
-//                printer.runMacro("tiny_robox");
-//                if (PrinterUtils.waitOnMacroFinished(printer, this) == true
-//                    || isCancelled())
-//                {
-//                      cancelRun();
-//                }
+                printer.runMacro("tiny_robox");
+                if (PrinterUtils.waitOnMacroFinished(printer, this) == true
+                    || isCancelled())
+                {
+                      cancelRun();
+                }
                 success = true;
                 break;
             case PRINT_CIRCLE:
 //                printer.transmitStoredGCode("rbx_XY_offset_roboxised");
-//                printer.runMacro("tiny_robox");
-//                if (PrinterUtils.waitOnMacroFinished(printer, this) == true
-//                    || isCancelled())
-//                {
-//                      cancelRun();
-//                }
+                printer.runMacro("tiny_robox");
+                if (PrinterUtils.waitOnMacroFinished(printer, this) == true
+                    || isCancelled())
+                {
+                      cancelRun();
+                }
                 success = true;
                 break;                
 

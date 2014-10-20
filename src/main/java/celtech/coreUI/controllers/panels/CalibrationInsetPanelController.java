@@ -6,6 +6,7 @@ import celtech.configuration.ApplicationConfiguration;
 import static celtech.coreUI.DisplayManager.getLanguageBundle;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.LargeProgress;
+import celtech.coreUI.components.Spinner;
 import static celtech.coreUI.controllers.panels.CalibrationMenuConfiguration.configureCalibrationMenu;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.NozzleHeater;
@@ -136,7 +137,7 @@ public class CalibrationInsetPanelController implements Initializable,
     private double currentExtruderTemperature;
     private int targetETC;
     private double printPercent;
-    private Node waitTimer;
+    private Spinner spinner;
     private Node diagramNode;
     DiagramController diagramController;
     private final Map<String, Node> nameToNodeCache = new HashMap<>();
@@ -205,7 +206,7 @@ public class CalibrationInsetPanelController implements Initializable,
         buttonB.setVisible(false);
         buttonA.setVisible(false);
         stepNumber.setVisible(true);
-        showWaitTimer(false);
+        hideSpinner();
         if (diagramNode != null)
         {
             diagramNode.setVisible(false);
@@ -218,7 +219,7 @@ public class CalibrationInsetPanelController implements Initializable,
         this.resources = resources;
 
         setupProgressBars();
-        setupWaitTimer(informationCentre);
+        setupSpinner(informationCentre);
 
         setCalibrationMode(CalibrationMode.CHOICE);
 
@@ -339,9 +340,10 @@ public class CalibrationInsetPanelController implements Initializable,
         return nameToNodeCache.get(diagramName);
 //        return new TextField("ABC");
     }
-    
-    protected void showDiagram(String section, String diagramName) {
-        showDiagram(section, diagramName,  true);
+
+    protected void showDiagram(String section, String diagramName)
+    {
+        showDiagram(section, diagramName, true);
     }
 
     protected void showDiagram(String section, String diagramName, boolean transparent)
@@ -577,52 +579,46 @@ public class CalibrationInsetPanelController implements Initializable,
         calibrationProgressPrint.setTargetValue("0");
     }
 
-    protected void showWaitTimer(boolean show)
+    protected void showSpinner()
     {
-        waitTimer.setVisible(show);
+        spinner.startSpinning();
     }
+    
+    protected void hideSpinner()
+    {
+        spinner.stopSpinning();
+    }    
 
     /**
-     * Initialise the waitTimer and make it remain centred on the given parent.
+     * Initialise the spinner and make it remain centred on the given parent.
      */
-    private void setupWaitTimer(Pane parent)
+    private void setupSpinner(Pane parent)
     {
-        try
-        {
-            URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlPanelResourcePath
-                + "spinner.fxml");
-            FXMLLoader waitTimerLoader = new FXMLLoader(fxmlFileName, getLanguageBundle());
-            waitTimer = waitTimerLoader.load();
-            waitTimer.scaleXProperty().set(0.5);
-            waitTimer.scaleYProperty().set(0.5);
+        spinner = new Spinner();
 
-            parent.getChildren().add(waitTimer);
+//        parent.getChildren().add(spinner);
 
-            parent.widthProperty().addListener(
-                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-                {
-                    relocateWaitTimer(parent);
-                });
+        parent.widthProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                recentreSpinner(parent);
+            });
 
-            parent.heightProperty().addListener(
-                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-                {
-                    relocateWaitTimer(parent);
-                });
+        parent.heightProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                recentreSpinner(parent);
+            });
 
-            relocateWaitTimer(parent);
-            waitTimer.setVisible(false);
+        recentreSpinner(parent);
+        spinner.stopSpinning();
 
-        } catch (IOException ex)
-        {
-            steno.error("Cannot load wait timer " + ex);
-        }
     }
 
-    private void relocateWaitTimer(Pane parent)
+    private void recentreSpinner(Pane parent)
     {
-        waitTimer.setTranslateX(parent.getWidth() / 2.0);
-        waitTimer.setTranslateY(parent.getHeight() / 2.0);
+        spinner.setTranslateX(parent.getWidth() / 2.0);
+        spinner.setTranslateY(parent.getHeight() / 2.0);
     }
 
     @Override
