@@ -5,6 +5,8 @@ import celtech.appManager.Project;
 import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PauseStatus;
+import celtech.configuration.SlicerType;
+import celtech.configuration.fileRepresentation.SlicerParameters;
 import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.printerControl.PrintJob;
 import celtech.printerControl.PrinterStatus;
@@ -18,10 +20,9 @@ import celtech.services.printing.GCodePrintService;
 import celtech.services.roboxmoviemaker.MovieMakerTask;
 import celtech.services.slicer.AbstractSlicerService;
 import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.services.slicer.RoboxProfile;
 import celtech.services.slicer.SliceResult;
-import celtech.services.slicer.SlicerConfigWriter;
-import celtech.services.slicer.SlicerConfigWriterFactory;
+import celtech.configuration.slicer.SlicerConfigWriter;
+import celtech.configuration.slicer.SlicerConfigWriterFactory;
 import celtech.services.slicer.SlicerService;
 import celtech.utils.SystemUtils;
 import celtech.utils.threed.ThreeDUtils;
@@ -509,7 +510,7 @@ public class PrintEngine implements ControllableService
      * @param settings
      * @return
      */
-    public synchronized boolean printProject(Project project, PrintQualityEnumeration printQuality, RoboxProfile settings)
+    public synchronized boolean printProject(Project project, PrintQualityEnumeration printQuality, SlicerParameters settings)
     {
         boolean acceptedPrintRequest = false;
         etcAvailable.set(false);
@@ -614,7 +615,7 @@ public class PrintEngine implements ControllableService
     }
 
     private boolean printFromScratch(PrintQualityEnumeration printQuality,
-        RoboxProfile settings, Project project, boolean acceptedPrintRequest)
+        SlicerParameters settings, Project project, boolean acceptedPrintRequest)
     {
         //Create the print job directory
         String printUUID = SystemUtils.generate16DigitID();
@@ -640,17 +641,23 @@ public class PrintEngine implements ControllableService
 
         if (project.getProjectMode() == ProjectMode.MESH)
         {
-
             //Write out the slicer config
-            settings.filament_diameterProperty().set(ApplicationConfiguration.filamentDiameterToYieldVolumetricExtrusion);
+            SlicerType slicerTypeToUse = null;
+            if (settings.getSlicerOverride() != null)
+            {
+                slicerTypeToUse = settings.getSlicerOverride();
+            } else
+            {
+                slicerTypeToUse = Lookup.getUserPreferences().getSlicerType();
+            }
 
-            //We need to tell Slic3r where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
+            SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(slicerTypeToUse);
+
+            //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
             Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
-            settings.getPrint_center().set((centreOfPrintedObject.getX() + ApplicationConfiguration.xPrintOffset) + "," + (centreOfPrintedObject.getZ() + ApplicationConfiguration.yPrintOffset));
-            
-            SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getSlicerConfigWriter(Lookup.getUserPreferences().getSlicerType());
+            configWriter.setPrintCentre(centreOfPrintedObject.getX() + ApplicationConfiguration.xPrintOffset, centreOfPrintedObject.getZ() + ApplicationConfiguration.yPrintOffset);
+
             configWriter.generateConfigForSlicer(settings, printJobDirectoryName + File.separator + printUUID + ApplicationConfiguration.printProfileFileExtension);
-            settings.writeToFile(printJobDirectoryName + File.separator + printUUID + ApplicationConfiguration.printProfileFileExtension);
 
             associatedPrinter.setPrinterStatus(PrinterStatus.SLICING);
             slicerService.reset();

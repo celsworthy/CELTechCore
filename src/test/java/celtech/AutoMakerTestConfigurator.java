@@ -5,7 +5,7 @@ package celtech;
 
 import celtech.appManager.TestSystemNotificationManager;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.PrintProfileContainer;
+import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.utils.tasks.TestTaskExecutor;
 import java.io.File;
 import java.net.URL;
@@ -43,7 +43,7 @@ public class AutoMakerTestConfigurator
         System.setProperty("libertySystems.configFile", configURL.getFile());
         String installDir = ApplicationConfiguration.getApplicationInstallDirectory(
             Lookup.class);
-        PrintProfileContainer.getInstance();
+        SlicerParametersContainer.getInstance();
 
         Lookup.setTaskExecutor(new TestTaskExecutor());
         Lookup.setSystemNotificationHandler(new TestSystemNotificationManager());

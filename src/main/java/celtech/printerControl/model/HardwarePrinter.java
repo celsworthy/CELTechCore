@@ -10,6 +10,7 @@ import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.MaterialType;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.fileRepresentation.HeadFile;
+import celtech.configuration.fileRepresentation.SlicerParameters;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.printerControl.PrintActionUnavailableException;
 import celtech.printerControl.PrintJobRejectedException;
@@ -56,7 +57,6 @@ import celtech.printerControl.comms.commands.tx.WriteReelEEPROM;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.services.slicer.RoboxProfile;
 import celtech.utils.AxisSpecifier;
 import celtech.utils.PrinterUtils;
 import celtech.utils.SystemUtils;
@@ -1222,7 +1222,7 @@ public final class HardwarePrinter implements Printer
      */
     @Override
     public void printProject(Project project, Filament filament,
-        PrintQualityEnumeration printQuality, RoboxProfile settings)
+        PrintQualityEnumeration printQuality, SlicerParameters settings)
     {
 
         //TODO modify for multiple reels

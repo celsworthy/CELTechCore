@@ -1,4 +1,4 @@
-package celtech.services.slicer;
+package celtech.configuration.slicer;
 
 import celtech.configuration.SlicerType;
 
@@ -9,7 +9,7 @@ import celtech.configuration.SlicerType;
 public class SlicerConfigWriterFactory
 {
 
-    public static SlicerConfigWriter getSlicerConfigWriter(SlicerType slicerType)
+    public static SlicerConfigWriter getConfigWriter(SlicerType slicerType)
     {
         SlicerConfigWriter writer = null;
         

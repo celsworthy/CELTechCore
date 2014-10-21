@@ -3,6 +3,7 @@ package celtech.printerControl.comms;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
+import celtech.configuration.fileRepresentation.SlicerParameters;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
@@ -24,7 +25,6 @@ import celtech.printerControl.model.Reel;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.services.slicer.RoboxProfile;
 import celtech.utils.AxisSpecifier;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponder;
@@ -252,7 +252,7 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void printProject(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings)
+    public void printProject(Project project, Filament filament, PrintQualityEnumeration printQuality, SlicerParameters settings)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

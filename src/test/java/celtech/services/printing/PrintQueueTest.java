@@ -8,7 +8,7 @@ import celtech.appManager.Project;
 import celtech.appManager.ProjectMode;
 import celtech.appManager.TestSystemNotificationManager;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.PrintProfileContainer;
+import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.coreUI.visualisation.importers.stl.STLImporter;
 import celtech.modelcontrol.ModelContainer;
@@ -17,7 +17,6 @@ import celtech.printerControl.comms.TestCommandInterface;
 import celtech.printerControl.model.PrintEngine;
 import celtech.printerControl.model.HardwarePrinter;
 import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.services.slicer.RoboxProfile;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -100,7 +99,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
 //    public void testETCCalculatorCreatedForReprint() throws
 //        InterruptedException, IOException, URISyntaxException
 //    {
-//        RoboxProfile roboxProfile = PrintProfileContainer.getSettingsByProfileName(
+//        SlicerParameters SlicerParameters = SlicerParametersContainer.getSettingsByProfileName(
 //            DRAFT_SETTINGS);
 //        String TEST_JOB_ID = "asdxyz";
 //        project.addPrintJobID(TEST_JOB_ID);
@@ -120,7 +119,7 @@ public class PrintQueueTest extends JavaFXConfiguredTest
 //        testPrinter.setListFilesResonse(listFilesResponse);
 //
 //        printQueue.printProject(project, PrintQualityEnumeration.DRAFT,
-//                                roboxProfile);
+//                                SlicerParameters);
 //
 //        int totalWaitTime = 0;
 //        while (true)
@@ -155,10 +154,10 @@ public class PrintQueueTest extends JavaFXConfiguredTest
 //    @Test
 //    public void testProgressPropertyIsOneAtEndOfPrint() throws IOException, InterruptedException
 //    {
-//        RoboxProfile roboxProfile = PrintProfileContainer.getSettingsByProfileName(
+//        SlicerParameters SlicerParameters = SlicerParametersContainer.getSettingsByProfileName(
 //            DRAFT_SETTINGS);
 //        printQueue.printProject(project, PrintQualityEnumeration.DRAFT,
-//                                roboxProfile);
+//                                SlicerParameters);
 //
 //        int totalWaitTime = 0;
 //        while (true)
@@ -193,10 +192,10 @@ public class PrintQueueTest extends JavaFXConfiguredTest
 //    @Test
 //    public void testCurrentLayerAtEndOfPrint() throws IOException, InterruptedException
 //    {
-//        RoboxProfile roboxProfile = PrintProfileContainer.getSettingsByProfileName(
+//        SlicerParameters SlicerParameters = SlicerParametersContainer.getSettingsByProfileName(
 //            DRAFT_SETTINGS);
 //        printQueue.printProject(project, PrintQualityEnumeration.DRAFT,
-//                                roboxProfile);
+//                                SlicerParameters);
 //
 //        int totalWaitTime = 0;
 //        while (true)
@@ -229,10 +228,10 @@ public class PrintQueueTest extends JavaFXConfiguredTest
 //    @Test
 //    public void testCurrentLayerAtStartOfPrint() throws IOException, InterruptedException
 //    {
-//        RoboxProfile roboxProfile = PrintProfileContainer.getSettingsByProfileName(
+//        SlicerParameters SlicerParameters = SlicerParametersContainer.getSettingsByProfileName(
 //            DRAFT_SETTINGS);
 //        printQueue.printProject(project, PrintQualityEnumeration.DRAFT,
-//                                roboxProfile);
+//                                SlicerParameters);
 //
 //        int totalWaitTime = 0;
 //        while (true)

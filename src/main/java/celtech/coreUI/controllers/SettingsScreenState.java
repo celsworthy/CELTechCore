@@ -2,10 +2,10 @@ package celtech.coreUI.controllers;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
-import celtech.configuration.PrintProfileContainer;
+import celtech.configuration.datafileaccessors.SlicerParametersContainer;
+import celtech.configuration.fileRepresentation.SlicerParameters;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.services.slicer.RoboxProfile;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
@@ -19,7 +19,7 @@ public class SettingsScreenState
     private static SettingsScreenState instance = null;
     private final ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
     private final ObjectProperty<Filament> selectedFilament = new SimpleObjectProperty<>(null);
-    private final ObjectProperty<RoboxProfile> settings = new SimpleObjectProperty<>(PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName));
+    private final ObjectProperty<SlicerParameters> settings = new SimpleObjectProperty<>(SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName));
     private final ObjectProperty<PrintQualityEnumeration> printQuality = new SimpleObjectProperty<>();
 
     private SettingsScreenState()
@@ -98,7 +98,7 @@ public class SettingsScreenState
      *
      * @param value
      */
-    public void setSettings(RoboxProfile value)
+    public void setSettings(SlicerParameters value)
     {
         settings.set(value);
     }
@@ -107,7 +107,7 @@ public class SettingsScreenState
      *
      * @return
      */
-    public RoboxProfile getSettings()
+    public SlicerParameters getSettings()
     {
         return settings.get();
     }
@@ -116,7 +116,7 @@ public class SettingsScreenState
      *
      * @return
      */
-    public ObjectProperty<RoboxProfile> getSettingsProperty()
+    public ObjectProperty<SlicerParameters> getSettingsProperty()
     {
         return settings;
     }

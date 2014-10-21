@@ -4,8 +4,8 @@
 package celtech.gcodetranslator;
 
 import celtech.JavaFXConfiguredTest;
-import celtech.configuration.PrintProfileContainer;
-import celtech.services.slicer.RoboxProfile;
+import celtech.configuration.datafileaccessors.SlicerParametersContainer;
+import celtech.configuration.fileRepresentation.SlicerParameters;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -39,11 +39,11 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
         String outputFilePath = temporaryFolder.newFile("pyramid.gcode").getCanonicalPath()
             + "out";
 
-        RoboxProfile roboxProfile = PrintProfileContainer.getSettingsByProfileName(DRAFT_SETTINGS);
+        SlicerParameters SlicerParameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
         DoubleProperty progressProperty = new SimpleDoubleProperty(0);
         RoboxiserResult roboxiserResult = gCodeRoboxiser.roboxiseFile(
             inputURL.getFile(), outputFilePath,
-            roboxProfile, progressProperty);
+            SlicerParameters, progressProperty);
         assertEquals(20, (long) roboxiserResult.getPrintJobStatistics().getLineNumberOfFirstExtrusion());
     }
     
@@ -55,12 +55,12 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
         String outputFilePath = temporaryFolder.newFile("pyramid.gcode").getCanonicalPath()
             + "out";
 
-        RoboxProfile roboxProfile = PrintProfileContainer.getSettingsByProfileName(DRAFT_SETTINGS);
+        SlicerParameters SlicerParameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
         DoubleProperty progressProperty = new SimpleDoubleProperty(0);
         RoboxiserResult roboxiserResult = gCodeRoboxiser.roboxiseFile(
             url.getFile(),
             outputFilePath,
-            roboxProfile,
+            SlicerParameters,
             progressProperty);
 
         List<Double> durationForLayers = roboxiserResult.getPrintJobStatistics().getLayerNumberToPredictedDuration();
@@ -84,11 +84,11 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
         URL expectedDataURL = this.getClass().getResource(
             "/pyramid.expectedroboxgcode");
 
-        RoboxProfile roboxProfile = PrintProfileContainer.getSettingsByProfileName(DRAFT_SETTINGS);
+        SlicerParameters SlicerParameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
         
         DoubleProperty progressProperty = new SimpleDoubleProperty(0);
         gCodeRoboxiser.roboxiseFile(inputURL.getFile(), outputFilePath,
-                                    roboxProfile,
+                                    SlicerParameters,
                                     progressProperty);
 
         String producedFileContents = getFileContentsAsString(Paths.get(outputFilePath));
