@@ -6,13 +6,16 @@ import celtech.configuration.ApplicationConfiguration;
 import static celtech.coreUI.DisplayManager.getLanguageBundle;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.LargeProgress;
+import celtech.coreUI.components.Spinner;
 import static celtech.coreUI.controllers.panels.CalibrationMenuConfiguration.configureCalibrationMenu;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.NozzleHeater;
 import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.Reel;
 import celtech.services.calibration.CalibrationXAndYState;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOpeningCalibrationState;
+import celtech.utils.PrinterListChangesListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
@@ -42,7 +45,7 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class CalibrationInsetPanelController implements Initializable,
     CalibrationBStateListener, CalibrationNozzleOffsetStateListener,
-    CalibrationXAndYStateListener
+    CalibrationXAndYStateListener, PrinterListChangesListener
 {
 
     private ResourceBundle resources;
@@ -134,7 +137,7 @@ public class CalibrationInsetPanelController implements Initializable,
     private double currentExtruderTemperature;
     private int targetETC;
     private double printPercent;
-    private Node waitTimer;
+    private Spinner spinner;
     private Node diagramNode;
     DiagramController diagramController;
     private final Map<String, Node> nameToNodeCache = new HashMap<>();
@@ -203,7 +206,7 @@ public class CalibrationInsetPanelController implements Initializable,
         buttonB.setVisible(false);
         buttonA.setVisible(false);
         stepNumber.setVisible(true);
-        showWaitTimer(false);
+        hideSpinner();
         if (diagramNode != null)
         {
             diagramNode.setVisible(false);
@@ -216,18 +219,11 @@ public class CalibrationInsetPanelController implements Initializable,
         this.resources = resources;
 
         setupProgressBars();
-        setupWaitTimer(informationCentre);
+        setupSpinner(informationCentre);
 
         setCalibrationMode(CalibrationMode.CHOICE);
 
-        Printer printerToUse = Lookup.currentlySelectedPrinterProperty().get();
-        setupChildComponents(printerToUse);
-
-        Lookup.currentlySelectedPrinterProperty().addListener(
-            (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
-            {
-                setupChildComponents(newValue);
-            });
+        Lookup.getPrinterListChangesNotifier().addListener(this);
 
         configureCalibrationMenu(calibrationMenu, this);
 
@@ -254,14 +250,12 @@ public class CalibrationInsetPanelController implements Initializable,
         calibrationStatus.widthProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-                steno.info("STATUS WIDTH CHANGED");
                 resizeDiagram();
             });
 
         calibrationStatus.heightProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-                steno.info("STATUS HEIGHT CHANGED");
                 resizeDiagram();
             });
 
@@ -349,6 +343,11 @@ public class CalibrationInsetPanelController implements Initializable,
 
     protected void showDiagram(String section, String diagramName)
     {
+        showDiagram(section, diagramName, true);
+    }
+
+    protected void showDiagram(String section, String diagramName, boolean transparent)
+    {
         diagramNode = getDiagramNode(section, diagramName);
         if (diagramNode == null)
         {
@@ -362,21 +361,11 @@ public class CalibrationInsetPanelController implements Initializable,
             Node firstChild = topPane.getChildren().get(0);
             topPane.getChildren().clear();
             topPane.getChildren().addAll(firstChild, diagramNode);
+            diagramNode.setMouseTransparent(transparent);
         }
 
         resizeDiagram();
         diagramNode.setVisible(true);
-    }
-
-    private void setupChildComponents(Printer printerToUse)
-    {
-        if (calibrationHelper != null)
-        {
-            calibrationHelper.setPrinterToUse(printerToUse);
-        }
-        setupTemperatureProgressListeners(printerToUse);
-        setupPrintProgressListeners(printerToUse);
-        currentPrinter = printerToUse;
     }
 
     @Override
@@ -410,43 +399,6 @@ public class CalibrationInsetPanelController implements Initializable,
             updateCalibrationProgressTemp();
         };
 
-    private void removeTemperatureProgressListeners(Printer printer)
-    {
-        printer.headProperty().removeListener(headListener);
-        if (printer.headProperty().get() != null)
-        {
-            NozzleHeater nozzleHeater = printer.headProperty().get().getNozzleHeaters().get(0);
-            nozzleHeater.nozzleTargetTemperatureProperty().removeListener(
-                targetTemperatureListener);
-            nozzleHeater.nozzleTemperatureProperty().removeListener(extruderTemperatureListener);
-        }
-    }
-
-    private final ChangeListener<Head> headListener = (ObservableValue<? extends Head> observable, Head oldValue, Head newHead) ->
-    {
-        NozzleHeater nozzleHeater = newHead.getNozzleHeaters().get(0);
-        nozzleHeater.nozzleTargetTemperatureProperty().addListener(
-            targetTemperatureListener);
-        nozzleHeater.nozzleTemperatureProperty().addListener(extruderTemperatureListener);
-    };
-
-    private void setupTemperatureProgressListeners(Printer printer)
-    {
-        if (currentPrinter != null)
-        {
-            removeTemperatureProgressListeners(currentPrinter);
-        }
-
-        if (printer == null)
-        {
-            calibrationProgressTemp.setProgress(0);
-        } else
-        {
-            printer.headProperty().addListener(headListener);
-
-        }
-    }
-
     private void updateCalibrationProgressTemp()
     {
         if (targetTemperature != 0 && calibrationProgressTemp.isVisible())
@@ -472,30 +424,6 @@ public class CalibrationInsetPanelController implements Initializable,
             printPercent = newValue.doubleValue();
             updateCalibrationProgressPrint();
         };
-
-    private void removePrintProgressListeners(Printer printer)
-    {
-        printer.getPrintEngine().progressETCProperty().removeListener(targetETCListener);
-        printer.getPrintEngine().progressProperty().removeListener(printPercentListener);
-    }
-
-    private void setupPrintProgressListeners(Printer printer)
-    {
-        if (currentPrinter != null)
-        {
-            removePrintProgressListeners(currentPrinter);
-        }
-
-        if (printer == null)
-        {
-            calibrationProgressTemp.setProgress(0);
-            calibrationProgressPrint.setProgress(0);
-        } else
-        {
-            printer.getPrintEngine().progressProperty().addListener(printPercentListener);
-            printer.getPrintEngine().progressETCProperty().addListener(targetETCListener);
-        }
-    }
 
     private void updateCalibrationProgressPrint()
     {
@@ -531,8 +459,64 @@ public class CalibrationInsetPanelController implements Initializable,
         calibrationBottomArea.getChildren().add(calibrateBottomMenu);
     }
 
+    private void switchToPrinter(Printer printer)
+    {
+        if (currentPrinter != null)
+        {
+            unbindPrinter(currentPrinter);
+        }
+        if (printer != null)
+        {
+            bindPrinter(printer);
+        }
+        currentPrinter = printer;
+    }
+
+    private void unbindPrinter(Printer printer)
+    {
+        removeHeadListeners(printer);
+        removePrintProgressListeners(printer);
+    }
+
+    private void bindPrinter(Printer printer)
+    {
+        calibrationProgressTemp.setProgress(0);
+        Head newHead = printer.headProperty().get();
+        if (newHead != null)
+        {
+            NozzleHeater nozzleHeater = newHead.getNozzleHeaters().get(0);
+            targetTemperature = nozzleHeater.nozzleTargetTemperatureProperty().get();
+            nozzleHeater.nozzleTargetTemperatureProperty().addListener(targetTemperatureListener);
+            nozzleHeater.nozzleTemperatureProperty().addListener(extruderTemperatureListener);
+        }
+        setupPrintProgressListeners(printer);
+    }
+
+    private void removePrintProgressListeners(Printer printer)
+    {
+        printer.getPrintEngine().progressETCProperty().removeListener(targetETCListener);
+        printer.getPrintEngine().progressProperty().removeListener(printPercentListener);
+    }
+
+    private void setupPrintProgressListeners(Printer printer)
+    {
+        printer.getPrintEngine().progressProperty().addListener(printPercentListener);
+        printer.getPrintEngine().progressETCProperty().addListener(targetETCListener);
+    }
+
+    private void removeHeadListeners(Printer printer)
+    {
+        if (printer.headProperty().get() != null)
+        {
+            NozzleHeater nozzleHeater = printer.headProperty().get().getNozzleHeaters().get(0);
+            nozzleHeater.nozzleTargetTemperatureProperty().removeListener(targetTemperatureListener);
+            nozzleHeater.nozzleTemperatureProperty().removeListener(extruderTemperatureListener);
+        }
+    }
+
     public void setCalibrationMode(CalibrationMode calibrationMode)
     {
+        switchToPrinter(Lookup.getCurrentlySelectedPrinter());
         switch (calibrationMode)
         {
             case NOZZLE_OPENING:
@@ -595,52 +579,88 @@ public class CalibrationInsetPanelController implements Initializable,
         calibrationProgressPrint.setTargetValue("0");
     }
 
-    protected void showWaitTimer(boolean show)
+    protected void showSpinner()
     {
-        waitTimer.setVisible(show);
+        spinner.startSpinning();
     }
+    
+    protected void hideSpinner()
+    {
+        spinner.stopSpinning();
+    }    
 
     /**
-     * Initialise the waitTimer and make it remain centred on the given parent.
+     * Initialise the spinner and make it remain centred on the given parent.
      */
-    private void setupWaitTimer(Pane parent)
+    private void setupSpinner(Pane parent)
     {
-        try
+        spinner = new Spinner();
+
+//        parent.getChildren().add(spinner);
+
+        parent.widthProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                recentreSpinner(parent);
+            });
+
+        parent.heightProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                recentreSpinner(parent);
+            });
+
+        recentreSpinner(parent);
+        spinner.stopSpinning();
+
+    }
+
+    private void recentreSpinner(Pane parent)
+    {
+        spinner.setTranslateX(parent.getWidth() / 2.0);
+        spinner.setTranslateY(parent.getHeight() / 2.0);
+    }
+
+    @Override
+    public void whenPrinterAdded(Printer printer)
+    {
+    }
+
+    @Override
+    public void whenPrinterRemoved(Printer printer)
+    {
+        if (printer == currentPrinter)
         {
-            URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlPanelResourcePath
-                + "spinner.fxml");
-            FXMLLoader waitTimerLoader = new FXMLLoader(fxmlFileName, getLanguageBundle());
-            waitTimer = waitTimerLoader.load();
-            waitTimer.scaleXProperty().set(0.5);
-            waitTimer.scaleYProperty().set(0.5);
-
-            parent.getChildren().add(waitTimer);
-
-            parent.widthProperty().addListener(
-                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-                {
-                    relocateWaitTimer(parent);
-                });
-
-            parent.heightProperty().addListener(
-                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-                {
-                    relocateWaitTimer(parent);
-                });
-
-            relocateWaitTimer(parent);
-            waitTimer.setVisible(false);
-
-        } catch (IOException ex)
-        {
-            steno.error("Cannot load wait timer " + ex);
+            cancelCalibrationAction();
         }
     }
 
-    private void relocateWaitTimer(Pane parent)
+    @Override
+    public void whenHeadAdded(Printer printer)
     {
-        waitTimer.setTranslateX(parent.getWidth() / 2.0);
-        waitTimer.setTranslateY(parent.getHeight() / 2.0);
+        if (printer == currentPrinter)
+        {
+            bindPrinter(printer);
+        }
+    }
+
+    @Override
+    public void whenHeadRemoved(Printer printer, Head head)
+    {
+        if (printer == currentPrinter)
+        {
+            cancelCalibrationAction();
+        }
+    }
+
+    @Override
+    public void whenReelAdded(Printer printer, int reelIndex)
+    {
+    }
+
+    @Override
+    public void whenReelRemoved(Printer printer, Reel reel)
+    {
     }
 
 }

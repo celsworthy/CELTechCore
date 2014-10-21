@@ -67,7 +67,7 @@ public class Spinner extends StackPane implements Initializable
             dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
             stage.setScene(dialogScene);
             stage.initOwner(DisplayManager.getMainStage());
-            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initModality(Modality.NONE);
         } catch (IOException exception)
         {
             throw new RuntimeException(exception);
@@ -119,6 +119,10 @@ public class Spinner extends StackPane implements Initializable
         
         stage.setX(stageToCentreOn.getX() + stageToCentreOn.getWidth() / 2 - stage.getWidth() / 2);
         stage.setY(stageToCentreOn.getY() + stageToCentreOn.getHeight() / 2 - stage.getHeight() / 2);
+    }
+    
+    public void recentre(Node nodeToCentreOn)
+    {
     }
 
 }

@@ -64,15 +64,9 @@ public class CalibrationNozzleOffsetHelper implements CalibrationHelper
     CalibrationNozzleOffsetHelper(CalibrationInsetPanelController parentController)
     {
         this.parentController = parentController;
-        zco.addListener(new ChangeListener<Number>()
+        zco.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
-
-            @Override
-            public void changed(
-                ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
-            {
-                parentController.whenZCoChanged(zco.get());
-            }
+            parentController.whenZCoChanged(zco.get());
         });
     }
 

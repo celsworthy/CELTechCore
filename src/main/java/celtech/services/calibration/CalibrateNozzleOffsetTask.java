@@ -69,9 +69,11 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
             case HEATING:
                 try
                 {
+                    printerToUse.goToTargetNozzleTemperature();
                     printerToUse.runMacroWithoutPurgeCheck("Home_all");
                     if (PrinterUtils.waitOnMacroFinished(printerToUse, this) == false)
                     {
+                        printerToUse.goToTargetNozzleTemperature();
                         if (printerToUse.headProperty().get()
                                     .getNozzleHeaters().get(0)
                                     .heaterModeProperty().get() == HeaterMode.FIRST_LAYER)
@@ -91,7 +93,6 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
                                         nozzleHeater
                                         .nozzleTargetTemperatureProperty().get(), 5, 300);
                         }
-
                         if (PrinterUtils.waitOnBusy(printerToUse, this) == false)
                         {
                             printerToUse.switchOnHeadLEDs();

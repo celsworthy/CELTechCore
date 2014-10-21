@@ -10,6 +10,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
@@ -79,6 +80,12 @@ class DiagramController implements Initializable
     private HBox incorrectAlignmentContainer;    
     
     @FXML
+    private Button buttonB;
+    
+    @FXML
+    private Button buttonA;    
+    
+    @FXML
     void buttonAAction(ActionEvent event)
     {
         parentController.buttonAAction();
@@ -95,6 +102,12 @@ class DiagramController implements Initializable
         if (calibrationTextField != null)
         {
             calibrationTextField.setText(textFieldData);
+            float value = Float.parseFloat(textFieldData);
+            if (value <= 0f) {
+                buttonA.setDisable(true);
+            } else {
+                buttonA.setDisable(false);
+            }
         }
     }
 
@@ -102,6 +115,7 @@ class DiagramController implements Initializable
     public void initialize(URL location, ResourceBundle resources)
     {
         setupOffsetCombos();
+        setCalibrationTextField("0.00");
     }
 
     private void setupOffsetCombos()

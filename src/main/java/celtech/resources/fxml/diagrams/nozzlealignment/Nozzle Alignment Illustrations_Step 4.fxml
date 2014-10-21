@@ -93,32 +93,32 @@
           <SVGPath content="M733.789,322.269h90.198c10.919,0,19.802-8.886,19.802-19.809c0-10.915-8.883-19.796-19.802-19.796h-90.198   v2.583h90.198c9.509,0,17.22,7.706,17.22,17.213c0,9.515-7.711,17.227-17.22,17.227h-90.198V322.269z" fill="#FFFFFF" />
             <HBox alignment="CENTER" layoutX="500.0" layoutY="180.0" prefWidth="100.0" fx:id="xOffsetContainerB">
                <children>
-                  <TextField alignment="CENTER" prefHeight="16.0" styleClass="smallCalibrationText" text="%calibrationDiagram.xOffset" />
+                  <TextField alignment="CENTER" prefHeight="16.0" style="-fx-background-color: transparent;" styleClass="smallCalibrationText" text="%calibrationDiagram.xOffset" />
                </children>
             </HBox>
-            <HBox alignment="CENTER_RIGHT" layoutX="20.0" layoutY="320.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="180.0" fx:id="xOffsetComboContainer">
+            <HBox alignment="CENTER_RIGHT" layoutX="20.0" layoutY="320.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="33.0" prefWidth="211.0" style="-fx-background-color: transparent;" fx:id="xOffsetComboContainer">
                <children>
-                  <TextField alignment="CENTER_RIGHT" styleClass="smallLightGreyCalibrationText" text="%calibrationDiagram.xOffset" fx:id="xOffsetA">
+                  <TextField alignment="CENTER_RIGHT" style="-fx-background-color: transparent;" styleClass="smallLightGreyCalibrationText" text="%calibrationDiagram.xOffset" fx:id="xOffsetA">
                      <HBox.margin>
                         <Insets right="10.0" />
                      </HBox.margin>
                   </TextField>
-                  <ComboBox fx:id="cmbXOffset" minWidth="70.0" prefHeight="31.0" styleClass="calibrationOffsetCombo" />
+                  <ComboBox fx:id="cmbXOffset" minWidth="80.0" prefHeight="31.0" styleClass="calibrationOffsetCombo" />
                </children>
             </HBox>
             <HBox fx:id="yOffsetContainerB" alignment="CENTER" layoutX="738.0" layoutY="180.0" prefWidth="100.0">
                <children>
-                  <TextField alignment="CENTER" prefHeight="16.0" styleClass="smallCalibrationText" text="%calibrationDiagram.yOffset" fx:id="xOffsetB1" />
+                  <TextField alignment="CENTER" prefHeight="16.0" style="-fx-background-color: transparent;" styleClass="smallCalibrationText" text="%calibrationDiagram.yOffset" fx:id="xOffsetB1" />
                </children>
             </HBox>
             <HBox alignment="CENTER" layoutX="500.0" layoutY="408.0" prefWidth="100.0" fx:id="xOffsetContainerC">
                <children>
-                  <TextField alignment="CENTER" prefHeight="16.0" styleClass="smallCalibrationText" text="%calibrationDiagram.xOffset" fx:id="xOffsetB2" />
+                  <TextField alignment="CENTER" prefHeight="16.0" style="-fx-background-color: transparent;" styleClass="smallCalibrationText" text="%calibrationDiagram.xOffset" fx:id="xOffsetB2" />
                </children>
             </HBox>
-            <HBox fx:id="yOffsetContainerC" alignment="CENTER" layoutX="738.0" layoutY="408.0" prefWidth="100.0">
+            <HBox fx:id="yOffsetContainerC" alignment="CENTER" layoutX="738.0" layoutY="408.0" prefWidth="100.0" style="-fx-background-color: transparent;">
                <children>
-                  <TextField alignment="CENTER" prefHeight="16.0" styleClass="smallCalibrationText" text="%calibrationDiagram.yOffset" fx:id="xOffsetB21" />
+                  <TextField alignment="CENTER" prefHeight="16.0" style="-fx-background-color: transparent;" styleClass="smallCalibrationText" text="%calibrationDiagram.yOffset" fx:id="xOffsetB21" />
                </children>
             </HBox>
         </children>

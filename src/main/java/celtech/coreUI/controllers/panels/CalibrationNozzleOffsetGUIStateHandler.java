@@ -30,7 +30,7 @@ public class CalibrationNozzleOffsetGUIStateHandler
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 1 and 5.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 10", 1));
+                controller.stepNumber.setText(String.format("Step %s of 9", 1));
                 break;
             case INITIALISING:
                 controller.hideAllInputControlsExceptStepNumber();
@@ -39,15 +39,15 @@ public class CalibrationNozzleOffsetGUIStateHandler
                 controller.nextButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 2.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 10", 2));
+                controller.stepNumber.setText(String.format("Step %s of 9", 2));
                 break;
             case HEATING:
                 controller.hideAllInputControlsExceptStepNumber();
-                controller.showWaitTimer(true);
+                controller.showSpinner();
                 controller.setCalibrationProgressVisible(CalibrationInsetPanelController.ProgressVisibility.TEMP);
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
-                controller.stepNumber.setText(String.format("Step %s of 10", 3));
+                controller.stepNumber.setText(String.format("Step %s of 9", 3));
                 break;
             case HEAD_CLEAN_CHECK:
                 controller.hideAllInputControlsExceptStepNumber();
@@ -56,14 +56,14 @@ public class CalibrationNozzleOffsetGUIStateHandler
                 controller.nextButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 4.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 10", 4));
+                controller.stepNumber.setText(String.format("Step %s of 9", 4));
                 break;
             case MEASURE_Z_DIFFERENCE:
                 controller.hideAllInputControlsExceptStepNumber();
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 1 and 5.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 10", 5));
+                controller.stepNumber.setText(String.format("Step %s of 9", 5));
                 break;
             case INSERT_PAPER:
                 controller.hideAllInputControlsExceptStepNumber();
@@ -71,7 +71,7 @@ public class CalibrationNozzleOffsetGUIStateHandler
                 controller.nextButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 6.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 10", 6));
+                controller.stepNumber.setText(String.format("Step %s of 9", 6));
                 break;
             case PROBING:
                 controller.hideAllInputControlsExceptStepNumber();
@@ -80,8 +80,8 @@ public class CalibrationNozzleOffsetGUIStateHandler
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.nextButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
-                controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 7.fxml"); 
-                controller.stepNumber.setText(String.format("Step %s of 10", 7));
+                controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 7.fxml", false); 
+                controller.stepNumber.setText(String.format("Step %s of 9", 7));
                 break;
             case LIFT_HEAD:
                 controller.hideAllInputControlsExceptStepNumber();
@@ -92,7 +92,7 @@ public class CalibrationNozzleOffsetGUIStateHandler
                 controller.nextButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 8.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 10", 8));
+                controller.stepNumber.setText(String.format("Step %s of 9", 8));
                 break;
             case FINISHED:
                 controller.hideAllInputControlsExceptStepNumber();
@@ -100,7 +100,7 @@ public class CalibrationNozzleOffsetGUIStateHandler
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 9.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 10", 9));
+                controller.stepNumber.setText(String.format("Step %s of 9", 9));
                 break;
             case FAILED:
                 controller.hideAllInputControlsExceptStepNumber();

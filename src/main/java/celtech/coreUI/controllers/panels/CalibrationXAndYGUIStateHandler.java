@@ -33,7 +33,7 @@ public class CalibrationXAndYGUIStateHandler
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzlealignment", "Nozzle Alignment Illustrations_Step 1.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 10", 1));
+                controller.stepNumber.setText(String.format("Step %s of 6", 1));
                 break;
 //            case HEATING:
 //                controller.hideAllInputControlsExceptStepNumber();
@@ -47,13 +47,13 @@ public class CalibrationXAndYGUIStateHandler
             case PRINT_PATTERN:
                 controller.calibrationMenu.disableNonSelectedItems();
                 controller.hideAllInputControlsExceptStepNumber();
-                controller.showWaitTimer(true);
+                controller.showSpinner();
                 controller.setCalibrationProgressVisible(
                     CalibrationInsetPanelController.ProgressVisibility.PRINT);
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
-                controller.stepNumber.setText(String.format("Step %s of 10", 2));
+                controller.stepNumber.setText(String.format("Step %s of 6", 2));
                 break;
             case GET_Y_OFFSET:
                 controller.hideAllInputControlsExceptStepNumber();
@@ -63,17 +63,17 @@ public class CalibrationXAndYGUIStateHandler
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.nextButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
-                controller.showDiagram("nozzlealignment", "Nozzle Alignment Illustrations_Step 4.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 10", 3));
+                controller.showDiagram("nozzlealignment", "Nozzle Alignment Illustrations_Step 4.fxml", false);
+                controller.stepNumber.setText(String.format("Step %s of 6", 3));
                 break;
             case PRINT_CIRCLE:    
                 controller.hideAllInputControlsExceptStepNumber();
-                controller.showWaitTimer(true);
+                controller.showSpinner();
                 controller.setCalibrationProgressVisible(
                     CalibrationInsetPanelController.ProgressVisibility.PRINT);
                 controller.cancelCalibrationButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
-                controller.stepNumber.setText(String.format("Step %s of 10", 4));
+                controller.stepNumber.setText(String.format("Step %s of 6", 4));
                 break;     
             case PRINT_CIRCLE_CHECK:
                 controller.hideAllInputControlsExceptStepNumber();
@@ -81,14 +81,14 @@ public class CalibrationXAndYGUIStateHandler
                 controller.nextButton.setVisible(true);
                 controller.showDiagram("nozzlealignment", "Nozzle Alignment Illustrations_Step 5.fxml");
                 controller.calibrationStatus.setText(state.getStepTitle());
-                controller.stepNumber.setText(String.format("Step %s of 10", 5));
+                controller.stepNumber.setText(String.format("Step %s of 6", 5));
                 break;
             case FINISHED:
                 controller.hideAllInputControlsExceptStepNumber();
                 controller.backToStatus.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzlealignment", "Nozzle Alignment Illustrations_Step 6.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 10", 6));
+                controller.stepNumber.setText(String.format("Step %s of 6", 6));
                 break;
             case FAILED:
                 controller.hideAllInputControlsExceptStepNumber();
