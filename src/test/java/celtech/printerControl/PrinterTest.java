@@ -113,7 +113,6 @@ public class PrinterTest
         response.setHeadTypeCode("RBX01-SM");
         response.setUniqueID("XYZ1");
         testCommandInterface.addHead(response);
-        printer.transmitStatusRequest();
 
         float nozzle1XOffset = 6f;
         printer.transmitWriteHeadEEPROM(
@@ -122,7 +121,6 @@ public class PrinterTest
             nozzle1XOffset, 7f, 0.2f, 1.1f,
             100f, 7f, 0.2f, 1f,
             210f, 45f);
-//        printer.transmitStatusRequest();
 
         assertEquals(nozzle1XOffset, printer.headProperty().get().getNozzles().get(0).xOffsetProperty().get(), 0.001);
     }

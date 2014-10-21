@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import celtech.coreUI.components.buttons.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.shape.*?>
 <?import java.lang.*?>
@@ -8,6 +9,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 <?import celtech.coreUI.components.*?>
+<?import celtech.coreUI.components.buttons.* ?>
 
 <Pane fx:id="topPane" minHeight="700.0" pickOnBounds="false" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationInsetPanelController">
     <children>
@@ -103,24 +105,23 @@
                             <children>
                                 <HBox alignment="CENTER_LEFT" pickOnBounds="false">
                                     <children>
-                                        <Button fx:id="cancelCalibrationButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#cancelCalibration" text="%calibrationPanel.cancelCalibration">
-                                            <StackPane.margin>
-                                                <Insets />
-                                            </StackPane.margin>
-                                        </Button>
-                                        <Button fx:id="retryPrintButton" mnemonicParsing="false" onAction="#retryCalibration" text="%calibrationPanel.retryCalibration">
-                                            <StackPane.margin>
-                                                <Insets />
-                                            </StackPane.margin>
-                                        </Button>
+                                        <GraphicButton fx:id="cancelCalibrationButton" fxmlFileName="cancelButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#cancelCalibration" text="%calibrationPanel.cancelCalibration">
+                                           
+                                        </GraphicButton>
+                                        <GraphicButton fx:id="retryPrintButton" fxmlFileName="retryButton" mnemonicParsing="false" onAction="#retryCalibration" text="%calibrationPanel.retryCalibration">
+                                            
+                                        </GraphicButton>
                                     </children>
                                 </HBox>
                                 <StackPane alignment="CENTER_RIGHT" maxHeight="-Infinity" pickOnBounds="false">
                                     <children>
-                                        <Button fx:id="startCalibrationButton" layoutX="5.0" mnemonicParsing="false" onAction="#startCalibration" text="%calibrationPanel.startCalibration" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
-                                        <Button fx:id="backToStatus" mnemonicParsing="false" onAction="#backToStatusAction" text="Back To Status" />
-                                        <Button id="nextButton" fx:id="nextButton" mnemonicParsing="false" onAction="#nextButtonAction" text="Next" />
+                                        <GraphicButton fx:id="startCalibrationButton" fxmlFileName="startButton" layoutX="5.0" mnemonicParsing="false" onAction="#startCalibration" text="%calibrationPanel.startCalibration" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
+                                        <GraphicButton fx:id="backToStatus" fxmlFileName="backwardButton" mnemonicParsing="false" onAction="#backToStatusAction" text="Back To Status" />
+                                        <GraphicButton id="nextButton" fx:id="nextButton" fxmlFileName="nextButton" mnemonicParsing="false" onAction="#nextButtonAction" text="Next" />
                                     </children>
+                           <StackPane.margin>
+                              <Insets right="30.0" />
+                           </StackPane.margin>
                                 </StackPane>
                             </children>
                             <BorderPane.margin>

@@ -617,8 +617,7 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private void recentreSpinner(Pane parent)
     {
-        spinner.setTranslateX(parent.getWidth() / 2.0);
-        spinner.setTranslateY(parent.getHeight() / 2.0);
+        spinner.recentre(parent);
     }
 
     @Override
