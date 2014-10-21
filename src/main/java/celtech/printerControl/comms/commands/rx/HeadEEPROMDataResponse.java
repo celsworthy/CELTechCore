@@ -72,7 +72,8 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             uniqueID = (new String(byteData, byteOffset, uniqueIDBytes, charsetToUse)).trim();
             byteOffset += uniqueIDBytes;
 
-            String maxTempString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
+            String maxTempString = new String(byteData, byteOffset, decimalFloatFormatBytes,
+                                              charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
@@ -82,7 +83,8 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
                 steno.error("Couldn't parse maximum temperature - " + maxTempString);
             }
 
-            String thermistorBetaString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
+            String thermistorBetaString = new String(byteData, byteOffset, decimalFloatFormatBytes,
+                                                     charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
@@ -92,7 +94,8 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
                 steno.error("Couldn't parse thermistor beta - " + thermistorBetaString);
             }
 
-            String thermistorTCalString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
+            String thermistorTCalString = new String(byteData, byteOffset, decimalFloatFormatBytes,
+                                                     charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
@@ -102,7 +105,8 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
                 steno.error("Couldn't parse thermistor tcal - " + thermistorTCalString);
             }
 
-            String nozzle1XOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
+            String nozzle1XOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes,
+                                                     charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
@@ -112,7 +116,8 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
                 steno.error("Couldn't parse nozzle 1 X offset - " + nozzle1XOffsetString);
             }
 
-            String nozzle1YOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
+            String nozzle1YOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes,
+                                                     charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
@@ -123,7 +128,8 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
                 steno.error("Couldn't parse nozzle 1 Y offset - " + nozzle1YOffsetString);
             }
 
-            String nozzle1ZOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
+            String nozzle1ZOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes,
+                                                     charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
@@ -134,7 +140,8 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
                 steno.error("Couldn't parse nozzle 1 Z offset - " + nozzle1ZOffsetString);
             }
 
-            String nozzle1BOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
+            String nozzle1BOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes,
+                                                     charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
@@ -148,7 +155,8 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             //Empty section
             byteOffset += 16;
 
-            String nozzle2XOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
+            String nozzle2XOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes,
+                                                     charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
@@ -158,7 +166,8 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
                 steno.error("Couldn't parse nozzle 2 X offset - " + nozzle2XOffsetString);
             }
 
-            String nozzle2YOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
+            String nozzle2YOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes,
+                                                     charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
@@ -169,7 +178,8 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
                 steno.error("Couldn't parse nozzle 2 Y offset - " + nozzle2YOffsetString);
             }
 
-            String nozzle2ZOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
+            String nozzle2ZOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes,
+                                                     charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
@@ -180,7 +190,8 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
                 steno.error("Couldn't parse nozzle 2 Z offset - " + nozzle2ZOffsetString);
             }
 
-            String nozzle2BOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
+            String nozzle2BOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes,
+                                                     charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
@@ -194,18 +205,22 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             //Empty section
             byteOffset += 32;
 
-            String lastFilamentTemperatureString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
+            String lastFilamentTemperatureString = new String(byteData, byteOffset,
+                                                              decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
             {
-                lastFilamentTemperature = decimalFloatFormatter.parse(lastFilamentTemperatureString.trim()).floatValue();
+                lastFilamentTemperature = decimalFloatFormatter.parse(
+                    lastFilamentTemperatureString.trim()).floatValue();
             } catch (ParseException ex)
             {
-                steno.error("Couldn't parse last filament temperature - " + lastFilamentTemperatureString);
+                steno.error("Couldn't parse last filament temperature - "
+                    + lastFilamentTemperatureString);
             }
 
-            String hoursUsedString = new String(byteData, byteOffset, decimalFloatFormatBytes, charsetToUse);
+            String hoursUsedString = new String(byteData, byteOffset, decimalFloatFormatBytes,
+                                                charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
@@ -390,7 +405,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
         maximumTemperature = heater.maximumTemperatureProperty().get();
         thermistorBeta = heater.betaProperty().get();
         thermistorTCal = heater.tCalProperty().get();
-        lastFilamentTemperature = heater.lastFilamentTemperatureProperty().get();        
+        lastFilamentTemperature = heater.lastFilamentTemperatureProperty().get();
         hoursUsed = attachedHead.headHoursProperty().get();
 
         if (attachedHead.getNozzles().size() > 0)
@@ -409,4 +424,80 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             nozzle2BOffset = attachedHead.getNozzles().get(1).bOffsetProperty().get();
         }
     }
+
+    public void setHeadTypeCode(String headTypeCode)
+    {
+        this.headTypeCode = headTypeCode;
+    }
+
+    public void setUniqueID(String uniqueID)
+    {
+        this.uniqueID = uniqueID;
+    }
+
+    public void setMaximumTemperature(float maximumTemperature)
+    {
+        this.maximumTemperature = maximumTemperature;
+    }
+
+    public void setThermistorBeta(float thermistorBeta)
+    {
+        this.thermistorBeta = thermistorBeta;
+    }
+
+    public void setThermistorTCal(float thermistorTCal)
+    {
+        this.thermistorTCal = thermistorTCal;
+    }
+
+    public void setNozzle1XOffset(float nozzle1XOffset)
+    {
+        this.nozzle1XOffset = nozzle1XOffset;
+    }
+
+    public void setNozzle1YOffset(float nozzle1YOffset)
+    {
+        this.nozzle1YOffset = nozzle1YOffset;
+    }
+
+    public void setNozzle1ZOffset(float nozzle1ZOffset)
+    {
+        this.nozzle1ZOffset = nozzle1ZOffset;
+    }
+
+    public void setNozzle1BOffset(float nozzle1BOffset)
+    {
+        this.nozzle1BOffset = nozzle1BOffset;
+    }
+
+    public void setNozzle2XOffset(float nozzle2XOffset)
+    {
+        this.nozzle2XOffset = nozzle2XOffset;
+    }
+
+    public void setNozzle2YOffset(float nozzle2YOffset)
+    {
+        this.nozzle2YOffset = nozzle2YOffset;
+    }
+
+    public void setNozzle2ZOffset(float nozzle2ZOffset)
+    {
+        this.nozzle2ZOffset = nozzle2ZOffset;
+    }
+
+    public void setNozzle2BOffset(float nozzle2BOffset)
+    {
+        this.nozzle2BOffset = nozzle2BOffset;
+    }
+
+    public void setLastFilamentTemperature(float lastFilamentTemperature)
+    {
+        this.lastFilamentTemperature = lastFilamentTemperature;
+    }
+
+    public void setHoursUsed(float hoursUsed)
+    {
+        this.hoursUsed = hoursUsed;
+    }
+
 }

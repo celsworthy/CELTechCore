@@ -93,9 +93,11 @@ import libertysystems.stenographer.StenographerFactory;
 public final class HardwarePrinter implements Printer
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(HardwarePrinter.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        HardwarePrinter.class.getName());
 
-    protected final ObjectProperty<PrinterStatus> printerStatus = new SimpleObjectProperty(PrinterStatus.IDLE);
+    protected final ObjectProperty<PrinterStatus> printerStatus = new SimpleObjectProperty(
+        PrinterStatus.IDLE);
     private PrinterStatus lastStateBeforePause = null;
 
     protected PrinterStatusConsumer printerStatusConsumer;
@@ -151,13 +153,15 @@ public final class HardwarePrinter implements Printer
     private static final StringBuffer outputBuffer = new StringBuffer(bufferSize);
     private boolean printInitiated = false;
 
-    protected final ObjectProperty<PauseStatus> pauseStatus = new SimpleObjectProperty<>(PauseStatus.NOT_PAUSED);
+    protected final ObjectProperty<PauseStatus> pauseStatus = new SimpleObjectProperty<>(
+        PauseStatus.NOT_PAUSED);
     protected final IntegerProperty printJobLineNumber = new SimpleIntegerProperty(0);
     protected final StringProperty printJobID = new SimpleStringProperty("");
 
     private PrintEngine printEngine;
 
-    public HardwarePrinter(PrinterStatusConsumer printerStatusConsumer, CommandInterface commandInterface)
+    public HardwarePrinter(PrinterStatusConsumer printerStatusConsumer,
+        CommandInterface commandInterface)
     {
         this.printerStatusConsumer = printerStatusConsumer;
         this.commandInterface = commandInterface;
@@ -406,7 +410,8 @@ public final class HardwarePrinter implements Printer
         {
             boolean success = doPurgeHeadActivity(cancellable);
 
-            Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Head Prepared for Purge");
+            Lookup.getTaskExecutor().respondOnGUIThread(responder, success,
+                                                        "Head Prepared for Purge");
 
         }, "Preparing for purge").start();
     }
@@ -440,7 +445,8 @@ public final class HardwarePrinter implements Printer
                 nozzleTemperature = reels.get(0).nozzleTemperature.floatValue();
             }
 
-            float temperatureDifference = nozzleTemperature - headDataPrePurge.getLastFilamentTemperature();
+            float temperatureDifference = nozzleTemperature
+                - headDataPrePurge.getLastFilamentTemperature();
             setPurgeTemperature(nozzleTemperature);
 
             success = true;
@@ -455,7 +461,8 @@ public final class HardwarePrinter implements Printer
     public void setPurgeTemperature(float purgeTemperature)
     {
         // Force the purge temperature to remain between 180 and max temp in head degrees
-        purgeTemperatureProperty.set((int) Math.min(headDataPrePurge.getMaximumTemperature(), Math.max(180.0, purgeTemperature)));
+        purgeTemperatureProperty.set((int) Math.min(headDataPrePurge.getMaximumTemperature(),
+                                                    Math.max(180.0, purgeTemperature)));
     }
 
     @Override
@@ -593,7 +600,8 @@ public final class HardwarePrinter implements Printer
 
         try
         {
-            PausePrint gcodePacket = (PausePrint) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.PAUSE_RESUME_PRINT);
+            PausePrint gcodePacket = (PausePrint) RoboxTxPacketFactory.createPacket(
+                TxPacketTypeEnum.PAUSE_RESUME_PRINT);
             gcodePacket.setPause();
 
             commandInterface.writeToPrinter(gcodePacket);
@@ -631,7 +639,8 @@ public final class HardwarePrinter implements Printer
 
         try
         {
-            PausePrint gcodePacket = (PausePrint) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.PAUSE_RESUME_PRINT);
+            PausePrint gcodePacket = (PausePrint) RoboxTxPacketFactory.createPacket(
+                TxPacketTypeEnum.PAUSE_RESUME_PRINT);
             gcodePacket.setResume();
 
             commandInterface.writeToPrinter(gcodePacket);
@@ -802,7 +811,8 @@ public final class HardwarePrinter implements Printer
 
     private AckResponse transmitDataFileEnd(final String payloadData, final int sequenceNumber) throws RoboxCommsException
     {
-        RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.END_OF_DATA_FILE);
+        RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.END_OF_DATA_FILE);
         gcodePacket.setMessagePayload(payloadData);
         gcodePacket.setSequenceNumber(sequenceNumber);
 
@@ -1039,7 +1049,10 @@ public final class HardwarePrinter implements Printer
                                        nozzle2BOffset,
                                        lastFilamentTemperature,
                                        hourCounter);
-        return (AckResponse) commandInterface.writeToPrinter(writeHeadEEPROM);
+        AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeHeadEEPROM);
+        commandInterface.writeToPrinter(RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.READ_HEAD_EEPROM));
+        return response;
     }
 
     /*
@@ -1192,10 +1205,12 @@ public final class HardwarePrinter implements Printer
             {
                 steno.debug("Final complete chunk:" + outputBuffer.toString() + " seq:"
                     + dataFileSequenceNumber);
-                AckResponse response = transmitDataFileEnd(outputBuffer.toString(), dataFileSequenceNumber);
+                AckResponse response = transmitDataFileEnd(outputBuffer.toString(),
+                                                           dataFileSequenceNumber);
                 if (response.isError())
                 {
-                    steno.error("Error sending final data file chunk - seq " + dataFileSequenceNumber);
+                    steno.error("Error sending final data file chunk - seq "
+                        + dataFileSequenceNumber);
                 }
             } else if ((outputBuffer.capacity() - outputBuffer.length()) == 0)
             {
@@ -1203,7 +1218,8 @@ public final class HardwarePrinter implements Printer
                  * Send when full
                  */
 //                steno.info("Sending chunk seq:" + dataFileSequenceNumber);
-                AckResponse response = transmitDataFileChunk(outputBuffer.toString(), dataFileSequenceNumber);
+                AckResponse response = transmitDataFileChunk(outputBuffer.toString(),
+                                                             dataFileSequenceNumber);
                 if (response.isError())
                 {
                     steno.error("Error sending data file chunk - seq " + dataFileSequenceNumber);
@@ -1308,7 +1324,8 @@ public final class HardwarePrinter implements Printer
                     headToWrite.headHours.set(response.getHeadHours());
 
                     // For now we only have one last filament temp from the printer...
-                    head.get().getNozzleHeaters().get(0).lastFilamentTemperature.set(response.getLastFilamentTemperature());
+                    head.get().getNozzleHeaters().get(0).lastFilamentTemperature.set(
+                        response.getLastFilamentTemperature());
                     writeHeadEEPROM(headToWrite);
                     readHeadEEPROM();
 
@@ -1316,14 +1333,17 @@ public final class HardwarePrinter implements Printer
                     Lookup.getSystemNotificationHandler().showCalibrationDialogue();
                 } else
                 {
-                    Head headToWrite = new Head(HeadContainer.getHeadByID(HeadContainer.defaultHeadID));
+                    Head headToWrite = new Head(HeadContainer.getHeadByID(
+                        HeadContainer.defaultHeadID));
                     String typeCode = headToWrite.typeCode.get();
-                    String idToCreate = typeCode + SystemUtils.generate16DigitID().substring(typeCode.length());
+                    String idToCreate = typeCode + SystemUtils.generate16DigitID().substring(
+                        typeCode.length());
                     headToWrite.uniqueID.set(idToCreate);
 
                     writeHeadEEPROM(headToWrite);
                     readHeadEEPROM();
-                    steno.info("Updated head data at user request - type code could not be determined");
+                    steno.info(
+                        "Updated head data at user request - type code could not be determined");
                     Lookup.getSystemNotificationHandler().showCalibrationDialogue();
                 }
             } else
@@ -1363,7 +1383,8 @@ public final class HardwarePrinter implements Printer
                         case REPAIRED_WRITE_AND_RECALIBRATE:
                             writeHeadEEPROM(head.get());
                             Lookup.getSystemNotificationHandler().showCalibrationDialogue();
-                            steno.info("Automatically updated head data for " + receivedTypeCode + " calibration suggested");
+                            steno.info("Automatically updated head data for " + receivedTypeCode
+                                + " calibration suggested");
                             break;
                     }
                 }
@@ -1425,7 +1446,8 @@ public final class HardwarePrinter implements Printer
         try
         {
             AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeIDCmd);
-            PrinterIDResponse idResponse = (PrinterIDResponse) commandInterface.writeToPrinter(RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_PRINTER_ID));
+            PrinterIDResponse idResponse = (PrinterIDResponse) commandInterface.writeToPrinter(
+                RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_PRINTER_ID));
         } catch (RoboxCommsException ex)
         {
             steno.error("Comms exception whilst writing printer name " + ex.getMessage());
@@ -1446,7 +1468,8 @@ public final class HardwarePrinter implements Printer
         try
         {
             AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeIDCmd);
-            PrinterIDResponse idResponse = (PrinterIDResponse) commandInterface.writeToPrinter(RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_PRINTER_ID));
+            PrinterIDResponse idResponse = (PrinterIDResponse) commandInterface.writeToPrinter(
+                RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_PRINTER_ID));
         } catch (RoboxCommsException ex)
         {
             steno.error("Comms exception whilst writing printer colour " + ex.getMessage());
@@ -1495,7 +1518,8 @@ public final class HardwarePrinter implements Printer
     {
         try
         {
-            transmitDirectGCode(GCodeConstants.setFirstLayerNozzleTemperatureTarget + targetTemperature, false);
+            transmitDirectGCode(GCodeConstants.setFirstLayerNozzleTemperatureTarget
+                + targetTemperature, false);
         } catch (RoboxCommsException ex)
         {
             steno.error("Error when sending set nozzle first layer temperature command");
@@ -1531,7 +1555,8 @@ public final class HardwarePrinter implements Printer
     {
         try
         {
-            transmitDirectGCode(GCodeConstants.setFirstLayerBedTemperatureTarget + targetTemperature, false);
+            transmitDirectGCode(GCodeConstants.setFirstLayerBedTemperatureTarget + targetTemperature,
+                                false);
         } catch (RoboxCommsException ex)
         {
             steno.error("Error when sending set bed first layer target temperature command");
@@ -1709,12 +1734,14 @@ public final class HardwarePrinter implements Printer
     {
         if (extruderNumber >= extruders.size())
         {
-            throw new PrintActionUnavailableException("Extruder " + extruderNumber + " is not present");
+            throw new PrintActionUnavailableException("Extruder " + extruderNumber
+                + " is not present");
         }
 
         if (!extruders.get(extruderNumber).canEject.get())
         {
-            throw new PrintActionUnavailableException("Eject is not available for extruder " + extruderNumber);
+            throw new PrintActionUnavailableException("Eject is not available for extruder "
+                + extruderNumber);
         }
 
         setPrinterStatus(PrinterStatus.EJECTING_FILAMENT);
@@ -1738,7 +1765,8 @@ public final class HardwarePrinter implements Printer
         boolean success = false;
         try
         {
-            transmitDirectGCode(GCodeConstants.ejectFilament + " " + extruders.get(extruderNumber).getExtruderAxisLetter(), false);
+            transmitDirectGCode(GCodeConstants.ejectFilament + " "
+                + extruders.get(extruderNumber).getExtruderAxisLetter(), false);
             PrinterUtils.waitOnBusy(this, cancellable);
             success = true;
         } catch (RoboxCommsException ex)
@@ -2009,7 +2037,8 @@ public final class HardwarePrinter implements Printer
             switch (rxPacket.getPacketType())
             {
                 case ACK_WITH_ERRORS:
-                    systemNotificationManager.processErrorPacketFromPrinter((AckResponse) rxPacket, printer);
+                    systemNotificationManager.processErrorPacketFromPrinter((AckResponse) rxPacket,
+                                                                            printer);
                     break;
 
                 case STATUS_RESPONSE:
@@ -2019,11 +2048,15 @@ public final class HardwarePrinter implements Printer
                     /*
                      * Ancillary systems
                      */
-                    printerAncillarySystems.ambientTemperature.set(statusResponse.getAmbientTemperature());
-                    printerAncillarySystems.ambientTargetTemperature.set(statusResponse.getAmbientTargetTemperature());
+                    printerAncillarySystems.ambientTemperature.set(
+                        statusResponse.getAmbientTemperature());
+                    printerAncillarySystems.ambientTargetTemperature.set(
+                        statusResponse.getAmbientTargetTemperature());
                     printerAncillarySystems.bedTemperature.set(statusResponse.getBedTemperature());
-                    printerAncillarySystems.bedTargetTemperature.set(statusResponse.getBedTargetTemperature());
-                    printerAncillarySystems.bedFirstLayerTargetTemperature.set(statusResponse.getBedFirstLayerTargetTemperature());
+                    printerAncillarySystems.bedTargetTemperature.set(
+                        statusResponse.getBedTargetTemperature());
+                    printerAncillarySystems.bedFirstLayerTargetTemperature.set(
+                        statusResponse.getBedFirstLayerTargetTemperature());
                     printerAncillarySystems.ambientFanOn.set(statusResponse.isAmbientFanOn());
                     printerAncillarySystems.bedHeaterMode.set(statusResponse.getBedHeaterMode());
                     printerAncillarySystems.headFanOn.set(statusResponse.isHeadFanOn());
@@ -2034,7 +2067,8 @@ public final class HardwarePrinter implements Printer
                     printerAncillarySystems.bAxisHome.set(statusResponse.isNozzleSwitchStatus());
                     printerAncillarySystems.lidOpen.set(statusResponse.isLidSwitchStatus());
                     printerAncillarySystems.reelButton.set(statusResponse.isReelButtonStatus());
-                    printerAncillarySystems.whyAreWeWaitingProperty.set(statusResponse.getWhyAreWeWaitingState());
+                    printerAncillarySystems.whyAreWeWaitingProperty.set(
+                        statusResponse.getWhyAreWeWaitingState());
                     printerAncillarySystems.updateGraphData();
 
                     if (!statusResponse.isSDCardPresent())
@@ -2080,14 +2114,18 @@ public final class HardwarePrinter implements Printer
                         if (head.get().nozzleHeaters.size() > 0)
                         {
                             //TODO modify for multiple heaters
-                            head.get().nozzleHeaters.get(0).nozzleTemperature.set(statusResponse.getNozzleTemperature());
-                            head.get().nozzleHeaters.get(0).nozzleFirstLayerTargetTemperature.set(statusResponse.getNozzleFirstLayerTargetTemperature());
-                            head.get().nozzleHeaters.get(0).nozzleTargetTemperature.set(statusResponse.getNozzleTargetTemperature());
+                            head.get().nozzleHeaters.get(0).nozzleTemperature.set(
+                                statusResponse.getNozzleTemperature());
+                            head.get().nozzleHeaters.get(0).nozzleFirstLayerTargetTemperature.set(
+                                statusResponse.getNozzleFirstLayerTargetTemperature());
+                            head.get().nozzleHeaters.get(0).nozzleTargetTemperature.set(
+                                statusResponse.getNozzleTargetTemperature());
 
                             //TODO modify for multiple heaters
                             if (head.get().getNozzleHeaters().size() > 0)
                             {
-                                head.get().getNozzleHeaters().get(0).heaterMode.set(statusResponse.getNozzleHeaterMode());
+                                head.get().getNozzleHeaters().get(0).heaterMode.set(
+                                    statusResponse.getNozzleHeaterMode());
                             }
                             head.get().nozzleHeaters
                                 .stream()
@@ -2103,7 +2141,8 @@ public final class HardwarePrinter implements Printer
                             //This is only true for the current cam-based heads that only really have one B axis
                             head.get().nozzles
                                 .stream()
-                                .forEach(nozzle -> nozzle.BPosition.set(statusResponse.getBPosition()));
+                                .forEach(nozzle -> nozzle.BPosition.set(
+                                        statusResponse.getBPosition()));
                         }
 
                         head.get().headXPosition.set(statusResponse.getHeadXPosition());
@@ -2168,8 +2207,14 @@ public final class HardwarePrinter implements Printer
 
                     HeadEEPROMDataResponse headResponse = (HeadEEPROMDataResponse) rxPacket;
 
-                    Head newHead = new Head(headResponse);
-                    head.set(newHead);
+                    if (head.get() != null)
+                    {
+                        head.get().updateFromEEPROMData(headResponse);
+                    } else
+                    {
+                        Head newHead = new Head(headResponse);
+                        head.set(newHead);
+                    }
 
                     break;
 

@@ -1,11 +1,19 @@
 package celtech.printerControl;
 
 import celtech.AutoMakerTestConfigurator;
-import celtech.JavaFXConfiguredTest;
 import celtech.printerControl.comms.PrinterStatusConsumer;
 import celtech.printerControl.comms.TestCommandInterface;
+import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
+import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
+import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
 import celtech.printerControl.model.HardwarePrinter;
+import celtech.printerControl.model.Head;
+import celtech.printerControl.model.Nozzle;
+import celtech.printerControl.model.NozzleHeater;
 import celtech.printerControl.model.PrinterException;
+import java.util.ArrayList;
+import java.util.List;
 import javafx.scene.paint.Color;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -13,7 +21,6 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -46,7 +53,8 @@ public class PrinterTest
     public void setUp()
     {
         statusConsumer = new StatusConsumer();
-        testCommandInterface = new TestCommandInterface(statusConsumer, "Test Printer", false, statusTimer);
+        testCommandInterface = new TestCommandInterface(statusConsumer, "Test Printer", false,
+                                                        statusTimer);
         printer = new HardwarePrinter(null, testCommandInterface);
     }
 
@@ -98,6 +106,28 @@ public class PrinterTest
     }
 
     @Test
+    public void testUpdateHead() throws RoboxCommsException
+    {
+        HeadEEPROMDataResponse response = (HeadEEPROMDataResponse) RoboxRxPacketFactory.createPacket(
+            RxPacketTypeEnum.HEAD_EEPROM_DATA);
+        response.setHeadTypeCode("RBX01-SM");
+        response.setUniqueID("XYZ1");
+        testCommandInterface.addHead(response);
+        printer.transmitStatusRequest();
+
+        float nozzle1XOffset = 6f;
+        printer.transmitWriteHeadEEPROM(
+            "RBX01-SM", "XZYA",
+            250f, 5f, 6f,
+            nozzle1XOffset, 7f, 0.2f, 1.1f,
+            100f, 7f, 0.2f, 1f,
+            210f, 45f);
+//        printer.transmitStatusRequest();
+
+        assertEquals(nozzle1XOffset, printer.headProperty().get().getNozzles().get(0).xOffsetProperty().get(), 0.001);
+    }
+
+    @Test
     public void testDefaultPrinterName()
     {
         assertEquals("", printer.getPrinterIdentity().printerFriendlyNameProperty().get());
@@ -107,7 +137,7 @@ public class PrinterTest
     public void testUpdatePrinterName()
     {
         String testName = "Fred";
-        
+
         try
         {
             printer.updatePrinterName(testName);
