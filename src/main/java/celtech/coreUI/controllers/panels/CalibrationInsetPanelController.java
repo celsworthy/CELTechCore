@@ -3,7 +3,6 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
-import static celtech.coreUI.DisplayManager.getLanguageBundle;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.LargeProgress;
 import celtech.coreUI.components.Spinner;
@@ -191,7 +190,9 @@ public class CalibrationInsetPanelController implements Initializable,
     public void cancelCalibrationAction()
     {
         ApplicationStatus.getInstance().returnToLastMode();
-        calibrationHelper.cancelCalibrationAction();
+        if (calibrationHelper != null) {
+            calibrationHelper.cancelCalibrationAction();
+        }
         setCalibrationMode(CalibrationMode.CHOICE);
     }
 
@@ -319,7 +320,7 @@ public class CalibrationInsetPanelController implements Initializable,
      */
     private Node getDiagramNode(String section, String diagramName)
     {
-        Pane diagramNode = null;
+        Pane loadedDiagramNode = null;
         if (!nameToNodeCache.containsKey(diagramName))
         {
             URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlResourcePath
@@ -329,8 +330,8 @@ public class CalibrationInsetPanelController implements Initializable,
                 FXMLLoader loader = new FXMLLoader(fxmlFileName, resources);
                 diagramController = new DiagramController(this);
                 loader.setController(diagramController);
-                diagramNode = loader.load();
-                nameToNodeCache.put(diagramName, diagramNode);
+                loadedDiagramNode = loader.load();
+                nameToNodeCache.put(diagramName, loadedDiagramNode);
             } catch (IOException ex)
             {
                 ex.printStackTrace();
@@ -338,7 +339,6 @@ public class CalibrationInsetPanelController implements Initializable,
             }
         }
         return nameToNodeCache.get(diagramName);
-//        return new TextField("ABC");
     }
 
     protected void showDiagram(String section, String diagramName)

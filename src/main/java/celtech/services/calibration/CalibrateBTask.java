@@ -39,18 +39,6 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
         this.printer = printer;
     }
 
-    /**
-     *
-     * @param desiredState
-     * @param nozzleNumber
-     */
-    public CalibrateBTask(NozzleOpeningCalibrationState desiredState, int nozzleNumber,
-        Printer printer)
-    {
-        this.desiredState = desiredState;
-        this.printer = printer;
-    }
-
     @Override
     protected NozzleBCalibrationStepResult call() throws Exception
     {
@@ -144,19 +132,6 @@ public class CalibrateBTask extends Task<NozzleBCalibrationStepResult> implement
         return new NozzleBCalibrationStepResult(desiredState, success);
     }
 
-//    private void extrudeForNozzle(int nozzleNumber) throws RoboxCommsException
-//    {
-//        printer.transmitDirectGCode("T" + nozzleNumber, false);
-//        printer.transmitDirectGCode("G0 B2", false);
-//        if (nozzleNumber == 0)
-//        {
-//            printer.transmitDirectGCode("G1 E10 F75", false);
-//        } else
-//        {
-//            printer.transmitDirectGCode("G1 E10 F100", false);
-//        }
-//        PrinterUtils.waitOnBusy(printer, this);
-//    }
     private boolean extrudeUntilStall(int nozzleNumber)
     {
         boolean success = false;
