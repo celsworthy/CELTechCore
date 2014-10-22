@@ -34,6 +34,8 @@ import javafx.scene.paint.Color;
  */
 public interface Printer extends RoboxResponseConsumer
 {
+    
+    public ReadOnlyObjectProperty<Head> headProperty();
 
     /**
      *
@@ -124,8 +126,6 @@ public interface Printer extends RoboxResponseConsumer
 
     public void hardResetHead();
 
-    public ReadOnlyObjectProperty<Head> headProperty();
-
     public void homeZ();
 
     /**
@@ -169,6 +169,7 @@ public interface Printer extends RoboxResponseConsumer
 
     public ReadOnlyObjectProperty<PrinterStatus> printerStatusProperty();
 
+    @Override
     public void processRoboxResponse(RoboxRxPacket rxPacket);
 
     public void purgeHead(TaskResponder responder) throws PrinterException;

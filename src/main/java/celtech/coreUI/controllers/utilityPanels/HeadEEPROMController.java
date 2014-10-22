@@ -298,12 +298,17 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     private void setSelectedPrinter(Printer printer)
     {
         updateFieldsForNoHead();
+        if (selectedPrinter != null)
+        {
+            removeHeadChangeListeners(printer.headProperty().get());
+        }
         selectedPrinter = printer;
         if (printer != null && printer.headProperty().get() != null)
         {
             Head head = printer.headProperty().get();
             updateFieldsFromAttachedHead(head);
             updateHeadUniqueId();
+            listenForHeadChanges(head);
         }
     }
 
@@ -347,6 +352,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         {
             updateFieldsForNoHead();
             updateHeadUniqueId();
+            removeHeadChangeListeners(head);
         }
     }
 
@@ -359,10 +365,11 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     public void whenReelRemoved(Printer printer, Reel reel)
     {
     }
+    private ChangeListener<Object> headChangeListener;
 
     private void listenForHeadChanges(Head head)
     {
-        ChangeListener<Object> headChangeListener = (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
+        headChangeListener = (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
         {
             updateFieldsFromAttachedHead(head);
         };
@@ -374,6 +381,21 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         head.getNozzles().get(1).yOffsetProperty().addListener(headChangeListener);
         head.getNozzles().get(1).zOffsetProperty().addListener(headChangeListener);
         head.getNozzles().get(1).bOffsetProperty().addListener(headChangeListener);
+    }
+
+    private void removeHeadChangeListeners(Head head)
+    {
+        if (headChangeListener != null)
+        {
+            head.getNozzles().get(0).xOffsetProperty().removeListener(headChangeListener);
+            head.getNozzles().get(0).yOffsetProperty().removeListener(headChangeListener);
+            head.getNozzles().get(0).zOffsetProperty().removeListener(headChangeListener);
+            head.getNozzles().get(0).bOffsetProperty().removeListener(headChangeListener);
+            head.getNozzles().get(1).xOffsetProperty().removeListener(headChangeListener);
+            head.getNozzles().get(1).yOffsetProperty().removeListener(headChangeListener);
+            head.getNozzles().get(1).zOffsetProperty().removeListener(headChangeListener);
+            head.getNozzles().get(1).bOffsetProperty().removeListener(headChangeListener);
+        }
     }
 
 }

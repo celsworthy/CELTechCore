@@ -106,8 +106,7 @@ public class PrinterUtils
         } else
         {
             while (printerToCheck.printerStatusProperty().get() != PrinterStatus.IDLE
-                && !TaskController.
-                isShuttingDown())
+                && !TaskController.isShuttingDown())
             {
                 try
                 {
