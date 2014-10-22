@@ -12,7 +12,10 @@ import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.calibration.CalibrateXAndYTask;
 import celtech.services.calibration.CalibrationXAndYState;
+import celtech.utils.tasks.Cancellable;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.WorkerStateEvent;
@@ -99,7 +102,14 @@ public class CalibrationXAndYHelper implements CalibrationHelper
         if (state == CalibrationXAndYState.PRINT_CIRCLE || state
             == CalibrationXAndYState.PRINT_PATTERN)
         {
-            printerToUse.doAbortActivity(null);
+            try
+            {
+                printerToUse.cancel(null);
+            } catch (PrinterException ex)
+            {
+                steno.error("Error cancelling X&Y macro");
+            }
+
         }
         if (state != CalibrationXAndYState.IDLE)
         {
@@ -115,8 +125,7 @@ public class CalibrationXAndYHelper implements CalibrationHelper
             } catch (PrinterException ex)
             {
                 steno.error("Error in nozzle offset calibration - mode=" + state.name());
-            }
-            catch (RoboxCommsException ex)
+            } catch (RoboxCommsException ex)
             {
                 steno.error("Error in nozzle offset calibration - mode=" + state.name());
             }
@@ -207,8 +216,7 @@ public class CalibrationXAndYHelper implements CalibrationHelper
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in x and y calibration - mode=" + state.name());
-                }
-                catch (PrinterException ex)
+                } catch (PrinterException ex)
                 {
                     steno.error("Error in x and y calibration - mode=" + state.name());
                 }
@@ -272,7 +280,8 @@ public class CalibrationXAndYHelper implements CalibrationHelper
         float nozzle1YCorrection = (yOffset - 6) * 0.05f;
         float nozzle2YCorrection = -(yOffset - 6) * 0.05f;
 
-        steno.info(String.format("Saving XY with correction %1.2f %1.2f %1.2f %1.2f ", nozzle1XCorrection,
+        steno.info(String.format("Saving XY with correction %1.2f %1.2f %1.2f %1.2f ",
+                                 nozzle1XCorrection,
                                  nozzle2XCorrection, nozzle1YCorrection, nozzle2YCorrection));
 
         try
