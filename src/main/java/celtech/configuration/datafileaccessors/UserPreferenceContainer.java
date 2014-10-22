@@ -2,9 +2,7 @@ package celtech.configuration.datafileaccessors;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.fileRepresentation.UserPreferenceFile;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;

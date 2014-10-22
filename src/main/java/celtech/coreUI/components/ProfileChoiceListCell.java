@@ -1,18 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.components;
 
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.PrintProfileContainer;
+import celtech.configuration.datafileaccessors.SlicerParametersContainer;
+import celtech.configuration.fileRepresentation.SlicerParameters;
 import celtech.coreUI.DisplayManager;
-import celtech.services.slicer.RoboxProfile;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -24,7 +15,7 @@ import javafx.scene.layout.GridPane;
  *
  * @author Ian
  */
-public class ProfileChoiceListCell extends ListCell<RoboxProfile>
+public class ProfileChoiceListCell extends ListCell<SlicerParameters>
 {   
     private final static String LIST_CELL_STYLE_CLASS = "profile-choice-list-cell-grid";
     private final GridPane grid = new GridPane();
@@ -56,7 +47,7 @@ public class ProfileChoiceListCell extends ListCell<RoboxProfile>
     }
     
     @Override
-    protected void updateItem(RoboxProfile settings, boolean empty)
+    protected void updateItem(SlicerParameters settings, boolean empty)
     {
         super.updateItem(settings, empty);
         if (empty)
@@ -74,16 +65,16 @@ public class ProfileChoiceListCell extends ListCell<RoboxProfile>
         setGraphic(null);
     }
     
-    private void addContent(RoboxProfile settings)
+    private void addContent(SlicerParameters settings)
     {
         setText(null);
-        if (settings == PrintProfileContainer.createNewProfile)
+        if (settings == SlicerParametersContainer.createNewProfile)
         {
             setGraphic(createNewProfileLabel);
         } else
         {
-            padlock.setVisible(!settings.isMutable());
-            name.textProperty().bind(settings.getProfileNameProperty());
+            padlock.setVisible(SlicerParametersContainer.getApplicationProfileList().contains(settings));
+            name.textProperty().set(settings.getProfileName());
             setGraphic(grid);
         }
     }

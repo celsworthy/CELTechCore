@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.services.slicer;
 
 import celtech.Lookup;
@@ -10,6 +6,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.MachineType;
 import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.configuration.fileRepresentation.SlicerParameters;
 import celtech.coreUI.visualisation.exporters.STLOutputConverter;
 import celtech.printerControl.model.Printer;
 import java.io.File;
@@ -31,7 +28,7 @@ public class SlicerTask extends Task<SliceResult>
     private Project project = null;
     private FilamentContainer filament = null;
     private PrintQualityEnumeration printQuality = null;
-    private RoboxProfile settings = null;
+    private SlicerParameters settings = null;
     private Printer printerToUse = null;
     private String tempModelFilename = null;
     private String tempGcodeFilename = null;
@@ -44,7 +41,7 @@ public class SlicerTask extends Task<SliceResult>
      * @param settings
      * @param printerToUse
      */
-    public SlicerTask(String printJobUUID, Project project, PrintQualityEnumeration printQuality, RoboxProfile settings, Printer printerToUse)
+    public SlicerTask(String printJobUUID, Project project, PrintQualityEnumeration printQuality, SlicerParameters settings, Printer printerToUse)
     {
         this.printJobUUID = printJobUUID;
         this.project = project;

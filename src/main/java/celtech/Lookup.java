@@ -7,7 +7,10 @@ import celtech.appManager.SystemNotificationManager;
 import celtech.appManager.SystemNotificationManagerJavaFX;
 import celtech.configuration.ApplicationEnvironment;
 import celtech.configuration.UserPreferences;
+import celtech.configuration.datafileaccessors.SlicerMappingsContainer;
 import celtech.configuration.datafileaccessors.UserPreferenceContainer;
+import celtech.configuration.fileRepresentation.SlicerMappings;
+import celtech.configuration.fileRepresentation.SlicerParameters;
 import celtech.printerControl.model.Printer;
 import celtech.utils.PrinterListChangesNotifier;
 import celtech.utils.tasks.LiveTaskExecutor;
@@ -36,6 +39,8 @@ public class Lookup
     private static PrinterListChangesNotifier printerListChangesNotifier;
     private static ObservableList<Printer> connectedPrinters = FXCollections.observableArrayList();
     private static UserPreferences userPreferences;
+    private static SlicerMappings slicerMappings;
+    private static SlicerParameters slicerParameters;
     private static final ObjectProperty<Printer> currentlySelectedPrinterProperty = new SimpleObjectProperty<>();
 
     /**
@@ -70,6 +75,7 @@ public class Lookup
         steno.info("Detected locale - " + appLocale.toLanguageTag());
         printerListChangesNotifier = new PrinterListChangesNotifier(connectedPrinters);
         userPreferences = new UserPreferences(UserPreferenceContainer.getUserPreferenceFile());
+        slicerMappings = SlicerMappingsContainer.getSlicerMappings();
     }
 
     public static void initialise()
@@ -133,8 +139,14 @@ public class Lookup
     {
         return currentlySelectedPrinterProperty;
     }    
+    
     public static UserPreferences getUserPreferences()
     {
         return userPreferences;
+    }
+    
+        public static SlicerMappings getSlicerMappings()
+    {
+        return slicerMappings;
     }
 }
