@@ -281,8 +281,7 @@ public class CalibrationInsetPanelController implements Initializable,
         Bounds ancestorStatusBounds = topPane.sceneToLocal(statusBounds);
         double upperBoundaryInAncestorCoords = ancestorStatusBounds.getMaxY();
 
-        Bounds bottomAreaBounds = calibrationBottomArea.localToScene(
-            calibrationBottomArea.getBoundsInLocal());
+        Bounds bottomAreaBounds = buttonA.localToScene(buttonA.getBoundsInLocal());
         Bounds ancestorBottomBounds = topPane.sceneToLocal(bottomAreaBounds);
         double lowerBoundaryInAncestorCoords = ancestorBottomBounds.getMinY();
         double availableHeight = lowerBoundaryInAncestorCoords - upperBoundaryInAncestorCoords;

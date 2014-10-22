@@ -12,10 +12,7 @@ import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.calibration.CalibrateXAndYTask;
 import celtech.services.calibration.CalibrationXAndYState;
-import celtech.utils.tasks.Cancellable;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.WorkerStateEvent;
@@ -274,11 +271,11 @@ public class CalibrationXAndYHelper implements CalibrationHelper
     {
 
         // F and 6 are zero values
-        float nozzle1XCorrection = -xOffset * 0.05f;
-        float nozzle2XCorrection = xOffset * 0.05f;
+        float nozzle1XCorrection = -xOffset * 0.025f;
+        float nozzle2XCorrection = xOffset * 0.025f;
 
-        float nozzle1YCorrection = (yOffset - 6) * 0.05f;
-        float nozzle2YCorrection = -(yOffset - 6) * 0.05f;
+        float nozzle1YCorrection = (yOffset - 6) * 0.025f;
+        float nozzle2YCorrection = -(yOffset - 6) * 0.025f;
 
         steno.info(String.format("Saving XY with correction %1.2f %1.2f %1.2f %1.2f ",
                                  nozzle1XCorrection,
