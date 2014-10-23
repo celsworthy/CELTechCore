@@ -84,6 +84,41 @@ public class CalibrationNozzleHeightTransitions
         transitions.add(makeCancelledStateTransition(NozzleOffsetCalibrationState.INSERT_PAPER));
 
         // PROBING
+        
+        transitions.add(new StateTransition(NozzleOffsetCalibrationState.PROBING,
+                                            StateTransitionManager.GUIName.NEXT,
+                                            NozzleOffsetCalibrationState.LIFT_HEAD,
+                                            (Callable) () ->
+                                            {
+                                                return actions.doLiftHeadAction();
+                                            },
+                                            NozzleOffsetCalibrationState.PREFAILED));
+
+        transitions.add(makeCancelledStateTransition(NozzleOffsetCalibrationState.PROBING));
+        
+        // LIFT_HEAD
+        
+        transitions.add(new StateTransition(NozzleOffsetCalibrationState.LIFT_HEAD,
+                                            StateTransitionManager.GUIName.NEXT,
+                                            NozzleOffsetCalibrationState.REPLACE_PEI_BED,
+                                            NozzleOffsetCalibrationState.PREFAILED));
+
+        transitions.add(makeCancelledStateTransition(NozzleOffsetCalibrationState.LIFT_HEAD));
+        
+        // REPLACE_PEI_BED
+        
+        transitions.add(new StateTransition(NozzleOffsetCalibrationState.REPLACE_PEI_BED,
+                                            StateTransitionManager.GUIName.NEXT,
+                                            NozzleOffsetCalibrationState.FINISHED,
+                                            (Callable) () ->
+                                            {
+                                                return actions.doFinishedAction();
+                                            },
+                                            NozzleOffsetCalibrationState.PREFAILED));
+
+        transitions.add(makeCancelledStateTransition(NozzleOffsetCalibrationState.REPLACE_PEI_BED));
+        
+        
         // FINISHED
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.FINISHED,
                                             StateTransitionManager.GUIName.BACK,
