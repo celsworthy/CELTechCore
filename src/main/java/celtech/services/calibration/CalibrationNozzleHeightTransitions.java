@@ -29,19 +29,15 @@ public class CalibrationNozzleHeightTransitions
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.IDLE,
                                             StateTransitionManager.GUIName.START,
                                             NozzleOffsetCalibrationState.INITIALISING,
-                                            NozzleOffsetCalibrationState.FAILED));
-        
+                                            NozzleOffsetCalibrationState.PREFAILED));
+
         // INITIALISING
-        
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.INITIALISING,
                                             StateTransitionManager.GUIName.NEXT,
                                             NozzleOffsetCalibrationState.HEATING,
-                                            NozzleOffsetCalibrationState.FAILED));  
-        
-        transitions.add(new StateTransition(NozzleOffsetCalibrationState.INITIALISING,
-                                            StateTransitionManager.GUIName.CANCEL,
-                                            NozzleOffsetCalibrationState.IDLE,
-                                            NozzleOffsetCalibrationState.FAILED));          
+                                            NozzleOffsetCalibrationState.PREFAILED));
+
+        transitions.add(makeCancelledStateTransition(NozzleOffsetCalibrationState.INITIALISING));
 
         // HEATING
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.HEATING,
@@ -51,27 +47,19 @@ public class CalibrationNozzleHeightTransitions
                                             {
                                                 return actions.doInitialiseAndHeatBedAction();
                                             },
-                                            NozzleOffsetCalibrationState.FAILED));
-        
-        transitions.add(new StateTransition(NozzleOffsetCalibrationState.HEATING,
-                                            StateTransitionManager.GUIName.CANCEL,
-                                            NozzleOffsetCalibrationState.IDLE,
-                                            NozzleOffsetCalibrationState.FAILED));         
+                                            NozzleOffsetCalibrationState.PREFAILED));
+
+        transitions.add(makeCancelledStateTransition(NozzleOffsetCalibrationState.HEATING));
 
         // HEAD_CLEAN_CHECK
-        
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.HEAD_CLEAN_CHECK,
                                             StateTransitionManager.GUIName.NEXT,
                                             NozzleOffsetCalibrationState.MEASURE_Z_DIFFERENCE,
-                                            NozzleOffsetCalibrationState.FAILED)); 
-        
-        transitions.add(new StateTransition(NozzleOffsetCalibrationState.HEAD_CLEAN_CHECK,
-                                            StateTransitionManager.GUIName.CANCEL,
-                                            NozzleOffsetCalibrationState.IDLE,
-                                            NozzleOffsetCalibrationState.FAILED));  
-        
+                                            NozzleOffsetCalibrationState.PREFAILED));
+
+        transitions.add(makeCancelledStateTransition(NozzleOffsetCalibrationState.HEAD_CLEAN_CHECK));
+
         // MEASURE_Z_DIFFERENCE
-        
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.MEASURE_Z_DIFFERENCE,
                                             StateTransitionManager.GUIName.AUTO,
                                             NozzleOffsetCalibrationState.INSERT_PAPER,
@@ -79,15 +67,11 @@ public class CalibrationNozzleHeightTransitions
                                             {
                                                 return actions.doMeasureZDifferenceAction();
                                             },
-                                            NozzleOffsetCalibrationState.FAILED));
-        
-        transitions.add(new StateTransition(NozzleOffsetCalibrationState.MEASURE_Z_DIFFERENCE,
-                                            StateTransitionManager.GUIName.CANCEL,
-                                            NozzleOffsetCalibrationState.IDLE,
-                                            NozzleOffsetCalibrationState.FAILED));    
-        
+                                            NozzleOffsetCalibrationState.PREFAILED));
+
+        transitions.add(makeCancelledStateTransition(NozzleOffsetCalibrationState.MEASURE_Z_DIFFERENCE));
+
         // INSERT_PAPER 
-        
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.INSERT_PAPER,
                                             StateTransitionManager.GUIName.NEXT,
                                             NozzleOffsetCalibrationState.PROBING,
@@ -95,21 +79,39 @@ public class CalibrationNozzleHeightTransitions
                                             {
                                                 return actions.doHomeZAction();
                                             },
-                                            NozzleOffsetCalibrationState.FAILED));
-        
-        transitions.add(new StateTransition(NozzleOffsetCalibrationState.INSERT_PAPER,
-                                            StateTransitionManager.GUIName.CANCEL,
-                                            NozzleOffsetCalibrationState.IDLE,
-                                            NozzleOffsetCalibrationState.FAILED));   
-        
+                                            NozzleOffsetCalibrationState.PREFAILED));
+
+        transitions.add(makeCancelledStateTransition(NozzleOffsetCalibrationState.INSERT_PAPER));
+
         // PROBING
-      
         // FINISHED
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.FINISHED,
                                             StateTransitionManager.GUIName.BACK,
                                             NozzleOffsetCalibrationState.IDLE,
+                                            NozzleOffsetCalibrationState.PREFAILED));
+
+        // PRE-FAILED
+        transitions.add(new StateTransition(NozzleOffsetCalibrationState.PREFAILED,
+                                            StateTransitionManager.GUIName.AUTO,
+                                            NozzleOffsetCalibrationState.FAILED,
+                                            (Callable) () ->
+                                            {
+                                                return actions.doFailedAction();
+                                            },
                                             NozzleOffsetCalibrationState.FAILED));
 
+    }
+
+    private StateTransition makeCancelledStateTransition(NozzleOffsetCalibrationState fromState)
+    {
+        return new StateTransition(fromState,
+                                   StateTransitionManager.GUIName.CANCEL,
+                                   NozzleOffsetCalibrationState.IDLE,
+                                   (Callable) () ->
+                                   {
+                                       return actions.doCancelledAction();
+                                   },
+                                   NozzleOffsetCalibrationState.PREFAILED);
     }
 
     public Set<StateTransition<NozzleOffsetCalibrationState>> getTransitions()

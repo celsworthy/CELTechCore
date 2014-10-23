@@ -303,8 +303,6 @@ public class CalibrationInsetPanelController implements Initializable,
         double requiredScaleWidth = availableWidth / diagramWidth * 0.95;
         double requiredScale = Math.min(requiredScaleHeight, requiredScaleWidth);
         requiredScale = Math.min(requiredScale, 1.3d);
-        steno.info("Setting scale to " + requiredScale);
-
         diagramController.setScale(requiredScale, diagramNode);
 
         double scaledDiagramWidth = diagramNode.getBoundsInLocal().getWidth();

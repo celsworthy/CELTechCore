@@ -22,6 +22,7 @@ import celtech.printerControl.model.PrinterAncillarySystems;
 import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.PrinterIdentity;
 import celtech.printerControl.model.Reel;
+import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
@@ -582,6 +583,12 @@ public class CommandInterfaceTestPrinter implements Printer
 
     @Override
     public XAndYStateTransitionManager startCalibrateXAndY()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public NozzleHeightStateTransitionManager startCalibrateNozzleHeight()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

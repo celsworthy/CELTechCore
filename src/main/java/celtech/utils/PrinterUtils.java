@@ -239,7 +239,7 @@ public class PrinterUtils
                 Thread.sleep(100);
                 response = printerToCheck.transmitStatusRequest();
 
-                if (cancellable.cancelled)
+                if (cancellable != null && cancellable.cancelled)
                 {
                     failed = true;
                     break;

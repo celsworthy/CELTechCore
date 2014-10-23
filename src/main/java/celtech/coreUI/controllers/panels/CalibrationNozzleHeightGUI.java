@@ -116,7 +116,6 @@ public class CalibrationNozzleHeightGUI
                 controller.stepNumber.setText(String.format("Step %s of 9", 9));
                 break;
             case FAILED:
-                controller.backToStatus.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Failure.fxml");
                 controller.stepNumber.setText("");

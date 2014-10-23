@@ -18,7 +18,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author tony
  */
-public class StateTransitionManager<T>
+public class StateTransitionManager<StateType>
 {
     public enum GUIName
     {
@@ -28,25 +28,25 @@ public class StateTransitionManager<T>
 
     private final Stenographer steno = StenographerFactory.getStenographer(StateTransitionManager.class.getName());
 
-    Set<StateTransition<T>> allowedTransitions;
+    Set<StateTransition<StateType>> allowedTransitions;
 
-    private final ObjectProperty<T> state;
+    private final ObjectProperty<StateType> state;
 
-    public ReadOnlyObjectProperty<T> stateProperty()
+    public ReadOnlyObjectProperty<StateType> stateProperty()
     {
         return state;
     }
 
-    public StateTransitionManager(Set<StateTransition<T>> allowedTransitions, T initialState)
+    public StateTransitionManager(Set<StateTransition<StateType>> allowedTransitions, StateType initialState)
     {
         this.allowedTransitions = allowedTransitions;
         state = new SimpleObjectProperty<>(initialState);
     }
 
-    public Set<StateTransition<T>> getTransitions()
+    public Set<StateTransition<StateType>> getTransitions()
     {
-        Set<StateTransition<T>> transitions = new HashSet<>();
-        for (StateTransition<T> allowedTransition : allowedTransitions)
+        Set<StateTransition<StateType>> transitions = new HashSet<>();
+        for (StateTransition<StateType> allowedTransition : allowedTransitions)
         {
             if (allowedTransition.fromState == state.get())
             {
@@ -56,7 +56,7 @@ public class StateTransitionManager<T>
         return transitions;
     }
 
-    private void setState(T state)
+    private void setState(StateType state)
     {
         this.state.set(state);
         checkForAutoFollowOnState();
@@ -79,7 +79,7 @@ public class StateTransitionManager<T>
     public void followTransition(GUIName guiName)
     {
 
-        StateTransition<T> stateTransition = getTransitionForGUIName(guiName);
+        StateTransition<StateType> stateTransition = getTransitionForGUIName(guiName);
 
         if (stateTransition.action == null)
         {

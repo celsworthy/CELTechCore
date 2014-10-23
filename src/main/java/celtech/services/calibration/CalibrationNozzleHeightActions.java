@@ -217,6 +217,12 @@ public class CalibrationNozzleHeightActions
         switchHeaterOffAndRaiseHead();
         return true;
     }
+    
+    public boolean doCancelledAction() throws PrinterException, RoboxCommsException
+    {
+        return doFailedAction();
+    }
+    
 
     private void switchHeaterOffAndRaiseHead() throws PrinterException
     {

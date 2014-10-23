@@ -51,6 +51,8 @@ public enum NozzleOffsetCalibrationState
     /**
      *
      */
+    PREFAILED(""),
+    
     FAILED("calibrationPanel.nozzleCalibrationFailed"),
     /**
      *

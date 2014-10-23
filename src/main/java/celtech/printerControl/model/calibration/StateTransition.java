@@ -7,7 +7,10 @@ import celtech.printerControl.model.calibration.StateTransitionManager.GUIName;
 import java.util.concurrent.Callable;
 
 /**
- *
+ * StateTransition represents a transition from the fromState to the toState. The toState is reached
+ * after the action is called, if it was set. If the action fails then the transition goes to
+ * the transitionFailedState. If the guiName is AUTO is then the transition is run automatically
+ * whenever the fromState is reached.
  * @author tony
  */
 public class StateTransition<T>
