@@ -48,9 +48,10 @@ public class CalibrationInsetPanelController implements Initializable,
     CalibrationBStateListener, CalibrationNozzleOffsetStateListener,
     CalibrationXAndYStateListener, PrinterListChangesListener
 {
-    
+
     CalibrationXAndYGUI calibrationXAndYGUI;
-    XAndYStateTransitionManager stateManager;
+    CalibrationNozzleHeightGUI calibrationNozzleHeightGUI;
+    StateTransitionManager stateManager;
 
     private ResourceBundle resources;
 
@@ -200,7 +201,8 @@ public class CalibrationInsetPanelController implements Initializable,
     public void cancelCalibrationAction()
     {
         ApplicationStatus.getInstance().returnToLastMode();
-        if (calibrationHelper != null) {
+        if (calibrationHelper != null)
+        {
             calibrationHelper.cancelCalibrationAction();
         }
         setCalibrationMode(CalibrationMode.CHOICE);
@@ -538,18 +540,19 @@ public class CalibrationInsetPanelController implements Initializable,
                 setNozzleOpeningState(NozzleOpeningCalibrationState.IDLE);
                 break;
             case NOZZLE_HEIGHT:
-                calibrationHelper = new CalibrationNozzleOffsetHelper(this);
-                calibrationNozzleOffsetGUIStateHandler
-                    = new CalibrationNozzleOffsetGUIStateHandler(this, calibrationHelper);
-                ((CalibrationNozzleOffsetHelper) calibrationHelper).addStateListener(this);
-                calibrationHelper.goToIdleState();
-                calibrationHelper.setPrinterToUse(currentPrinter);
-                setNozzleHeightState(NozzleOffsetCalibrationState.IDLE);
+
+                calibrationHelper = null;
+                calibrationXAndYGUIStateHandler = null;
+                
+                stateManager = currentPrinter.startCalibrateNozzleHeight();
+                calibrationNozzleHeightGUI = new CalibrationNozzleHeightGUI(this, stateManager);
+                calibrationNozzleHeightGUI.setState(NozzleOffsetCalibrationState.IDLE);
+
                 break;
             case X_AND_Y_OFFSET:
                 calibrationHelper = null;
                 calibrationXAndYGUIStateHandler = null;
-                
+
                 stateManager = currentPrinter.startCalibrateXAndY();
                 calibrationXAndYGUI = new CalibrationXAndYGUI(this, stateManager);
                 calibrationXAndYGUI.setState(CalibrationXAndYState.IDLE);
@@ -562,14 +565,18 @@ public class CalibrationInsetPanelController implements Initializable,
 
     protected void setXOffset(String xOffset)
     {
-//        calibrationHelper.setXOffset(xOffset);
-        stateManager.setXOffset(xOffset);
+        if (stateManager instanceof XAndYStateTransitionManager)
+        {
+            ((XAndYStateTransitionManager) stateManager).setXOffset(xOffset);
+        }
     }
 
     protected void setYOffset(Integer yOffset)
     {
-//        calibrationHelper.setYOffset(yOffset);
-        stateManager.setYOffset(yOffset);
+        if (stateManager instanceof XAndYStateTransitionManager)
+        {
+            ((XAndYStateTransitionManager) stateManager).setYOffset(yOffset);
+        }
     }
 
     private void setupChoice()
@@ -593,11 +600,11 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         spinner.startSpinning();
     }
-    
+
     protected void hideSpinner()
     {
         spinner.stopSpinning();
-    }    
+    }
 
     /**
      * Initialise the spinner and make it remain centred on the given parent.
@@ -607,7 +614,6 @@ public class CalibrationInsetPanelController implements Initializable,
         spinner = new Spinner();
 
 //        parent.getChildren().add(spinner);
-
         parent.widthProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {

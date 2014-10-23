@@ -54,8 +54,10 @@ import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
 import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.WritePrinterID;
 import celtech.printerControl.comms.commands.tx.WriteReelEEPROM;
-import celtech.printerControl.model.calibration.StateTransitionManager;
+import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
+import celtech.services.calibration.CalibrationNozzleHeightActions;
+import celtech.services.calibration.CalibrationNozzleHeightTransitions;
 import celtech.services.calibration.CalibrationXAndYActions;
 import celtech.services.calibration.CalibrationXAndYTransitions;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
@@ -2032,6 +2034,16 @@ public final class HardwarePrinter implements Printer
             new XAndYStateTransitionManager(calibrationXAndYTransitions.getTransitions(), actions);
         return calibrationAlignmentManager;
     }
+    
+    @Override
+    public NozzleHeightStateTransitionManager startCalibrateNozzleHeight()
+    {
+        CalibrationNozzleHeightActions actions = new CalibrationNozzleHeightActions(this);
+        CalibrationNozzleHeightTransitions calibrationNozzleHeightTransitions = new CalibrationNozzleHeightTransitions(actions);
+        NozzleHeightStateTransitionManager calibrationAlignmentManager = 
+            new NozzleHeightStateTransitionManager(calibrationNozzleHeightTransitions.getTransitions(), actions);
+        return calibrationAlignmentManager;
+    }    
 
     class RoboxEventProcessor implements Runnable
     {
