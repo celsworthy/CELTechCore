@@ -9,6 +9,7 @@ import celtech.printerControl.model.calibration.StateTransition;
 import celtech.services.calibration.CalibrationXAndYState;
 import java.util.HashMap;
 import java.util.Map;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Button;
 import libertysystems.stenographer.Stenographer;
@@ -25,7 +26,7 @@ public class CalibrationXAndYGUI
         CalibrationXAndYHelper.class.getName());
 
     private CalibrationInsetPanelController controller;
-    StateTransitionManager stateManager;
+    StateTransitionManager<CalibrationXAndYState> stateManager;
     Map<GUIName, Button> namesToButtons = new HashMap<>();
 
     public CalibrationXAndYGUI(CalibrationInsetPanelController controller,
@@ -33,18 +34,23 @@ public class CalibrationXAndYGUI
     {
         this.controller = controller;
         this.stateManager = stateManager;
-        stateManager.stateProperty().addListener(
-            (ObservableValue<? extends CalibrationXAndYState> observable, CalibrationXAndYState oldValue, CalibrationXAndYState newValue) ->
+        
+        stateManager.stateProperty().addListener(new ChangeListener()
+        {
+
+            @Override
+            public void changed(ObservableValue observable, Object oldValue, Object newValue)
             {
-                setState(newValue);
-            });
+                setState((CalibrationXAndYState) newValue);
+            }
+        });
         populateNamesToButtons(controller);
     }
 
     private void showAppropriateButtons(CalibrationXAndYState state)
     {
         controller.hideAllInputControlsExceptStepNumber();
-        for (StateTransition allowedTransition : this.stateManager.getTransitions())
+        for (StateTransition<CalibrationXAndYState> allowedTransition : this.stateManager.getTransitions())
         {
             if (namesToButtons.containsKey(allowedTransition.getGUIName()))
             {

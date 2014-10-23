@@ -4,8 +4,6 @@
 package celtech.printerControl.model.calibration;
 
 import celtech.Lookup;
-import celtech.services.calibration.CalibrationXAndYActions;
-import celtech.services.calibration.CalibrationXAndYState;
 import java.util.HashSet;
 import java.util.Set;
 import javafx.beans.property.ObjectProperty;
@@ -20,10 +18,8 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author tony
  */
-public class StateTransitionManager
+public class StateTransitionManager<T>
 {
-    
-
     public enum GUIName
     {
 
@@ -32,25 +28,25 @@ public class StateTransitionManager
 
     private final Stenographer steno = StenographerFactory.getStenographer(StateTransitionManager.class.getName());
 
-    Set<StateTransition> allowedTransitions;
+    Set<StateTransition<T>> allowedTransitions;
 
-    private final ObjectProperty<CalibrationXAndYState> state;
+    private final ObjectProperty<T> state;
 
-    public ReadOnlyObjectProperty<CalibrationXAndYState> stateProperty()
+    public ReadOnlyObjectProperty<T> stateProperty()
     {
         return state;
     }
 
-    public StateTransitionManager(Set<StateTransition> allowedTransitions)
+    public StateTransitionManager(Set<StateTransition<T>> allowedTransitions, T initialState)
     {
         this.allowedTransitions = allowedTransitions;
-        state = new SimpleObjectProperty<>(CalibrationXAndYState.IDLE);
+        state = new SimpleObjectProperty<>(initialState);
     }
 
-    public Set<StateTransition> getTransitions()
+    public Set<StateTransition<T>> getTransitions()
     {
-        Set<StateTransition> transitions = new HashSet<>();
-        for (StateTransition allowedTransition : allowedTransitions)
+        Set<StateTransition<T>> transitions = new HashSet<>();
+        for (StateTransition<T> allowedTransition : allowedTransitions)
         {
             if (allowedTransition.fromState == state.get())
             {
@@ -60,7 +56,7 @@ public class StateTransitionManager
         return transitions;
     }
 
-    private void setState(CalibrationXAndYState state)
+    private void setState(T state)
     {
         this.state.set(state);
         checkForAutoFollowOnState();
@@ -83,7 +79,7 @@ public class StateTransitionManager
     public void followTransition(GUIName guiName)
     {
 
-        StateTransition stateTransition = getTransitionForGUIName(guiName);
+        StateTransition<T> stateTransition = getTransitionForGUIName(guiName);
 
         if (stateTransition.action == null)
         {

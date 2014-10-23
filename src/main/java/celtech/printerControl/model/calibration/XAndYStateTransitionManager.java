@@ -4,21 +4,22 @@
 package celtech.printerControl.model.calibration;
 
 import celtech.services.calibration.CalibrationXAndYActions;
+import celtech.services.calibration.CalibrationXAndYState;
 import java.util.Set;
 
 /**
  *
  * @author tony
  */
-public class XAndYStateTransitionManager extends StateTransitionManager
+public class XAndYStateTransitionManager extends StateTransitionManager<CalibrationXAndYState>
 {
 
     private final CalibrationXAndYActions actions;
 
-    public XAndYStateTransitionManager(Set<StateTransition> allowedTransitions,
+    public XAndYStateTransitionManager(Set<StateTransition<CalibrationXAndYState>> allowedTransitions,
         CalibrationXAndYActions actions)
     {
-        super(allowedTransitions);
+        super(allowedTransitions, CalibrationXAndYState.IDLE);
         this.actions = actions;
     }
 

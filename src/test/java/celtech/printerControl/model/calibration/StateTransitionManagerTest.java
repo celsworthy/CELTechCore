@@ -5,12 +5,12 @@ package celtech.printerControl.model.calibration;
 
 import celtech.JavaFXConfiguredTest;
 import celtech.printerControl.model.calibration.StateTransitionManager.GUIName;
-import celtech.services.calibration.CalibrationXAndYState;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -23,8 +23,12 @@ import org.junit.Test;
  */
 public class StateTransitionManagerTest extends JavaFXConfiguredTest
 {
+    
+    enum TestState {
+        IDLE, PRINT_CIRCLE, GET_Y_OFFSET, FAILED;
+    }
 
-    Set<StateTransition> transitions;
+    Set<StateTransition<TestState>> transitions;
     TestStateTransitionManager manager;
 
     @Before
@@ -32,37 +36,41 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
     {
         TestActions actions = new TestActions();
         transitions = new HashSet<>();
-        transitions.add(new StateTransition(CalibrationXAndYState.IDLE,
+        transitions.add(new StateTransition(TestState.IDLE,
                                             StateTransitionManager.GUIName.NEXT,
-                                            CalibrationXAndYState.PRINT_CIRCLE,
+                                            TestState.PRINT_CIRCLE,
                                             (Callable) () ->
                                             {
                                                 return actions.doAction1();
-                                            }));
+                                            },
+                                            TestState.FAILED));
 
-        transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE,
+        transitions.add(new StateTransition(TestState.PRINT_CIRCLE,
                                             StateTransitionManager.GUIName.NEXT,
-                                            CalibrationXAndYState.GET_Y_OFFSET,
+                                            TestState.GET_Y_OFFSET,
                                             (Callable) () ->
                                             {
                                                 return actions.doAction2();
-                                            }));
+                                            },
+                                            TestState.FAILED));
 
-        transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE,
+        transitions.add(new StateTransition(TestState.PRINT_CIRCLE,
                                             StateTransitionManager.GUIName.COMPLETE,
-                                            CalibrationXAndYState.GET_Y_OFFSET,
+                                            TestState.GET_Y_OFFSET,
                                             (Callable) () ->
                                             {
                                                 return actions.doAction1ButFails();
-                                            }));
+                                            },
+                                            TestState.FAILED));
 
-        transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE,
+        transitions.add(new StateTransition(TestState.PRINT_CIRCLE,
                                             StateTransitionManager.GUIName.CANCEL,
-                                            CalibrationXAndYState.FAILED,
+                                            TestState.FAILED,
                                             (Callable) () ->
                                             {
                                                 return actions.doCancelled();
-                                            }));
+                                            },
+                                            TestState.FAILED));
 
         manager = new TestStateTransitionManager(transitions, actions);
 
@@ -71,7 +79,6 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
     @Test
     public void testSetAndGetTransitions()
     {
-
         Set<StateTransition> allowedTransitions = manager.getTransitions();
         assertEquals(1, allowedTransitions.size());
         assertEquals(GUIName.NEXT, allowedTransitions.iterator().next().guiName);
@@ -81,7 +88,7 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
     public void testFollowTransitionFromIdleByNext()
     {
         manager.followTransition(GUIName.NEXT);
-        assertEquals(CalibrationXAndYState.PRINT_CIRCLE, manager.stateProperty().get());
+        assertEquals(TestState.PRINT_CIRCLE, manager.stateProperty().get());
         assertEquals(10, manager.getX());
     }
 
@@ -90,7 +97,7 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
     {
         manager.followTransition(GUIName.NEXT);
         manager.followTransition(GUIName.NEXT);
-        assertEquals(CalibrationXAndYState.GET_Y_OFFSET, manager.stateProperty().get());
+        assertEquals(TestState.GET_Y_OFFSET, manager.stateProperty().get());
         assertEquals(11, manager.getX());
     }
 
@@ -99,7 +106,7 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
     {
         manager.followTransition(GUIName.NEXT);
         manager.followTransition(GUIName.CANCEL);
-        assertEquals(CalibrationXAndYState.FAILED, manager.stateProperty().get());
+        assertEquals(TestState.FAILED, manager.stateProperty().get());
         assertEquals(10, manager.getX());
         assertTrue(manager.isCancelled());
     }
@@ -109,24 +116,30 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
     {
         manager.followTransition(GUIName.NEXT);
         manager.followTransition(GUIName.COMPLETE);
-        assertEquals(CalibrationXAndYState.FAILED, manager.stateProperty().get());
+        assertEquals(TestState.FAILED, manager.stateProperty().get());
         assertEquals(22, manager.getX());
     }
 
     @Test
     public void testStateListenerCorrectlyUpdated()
     {
-        final List<CalibrationXAndYState> states = new ArrayList<>();
-        manager.stateProperty().addListener(
-            (ObservableValue<? extends CalibrationXAndYState> observable, CalibrationXAndYState oldValue, CalibrationXAndYState newValue) ->
+        final List<TestState> states = new ArrayList<>();
+
+        manager.stateProperty().addListener(new ChangeListener()
+        {
+
+            @Override
+            public void changed(ObservableValue observable, Object oldValue, Object newValue)
             {
-                states.add(newValue);
-            });
+                states.add((TestState) newValue);
+            }
+        });
+        
         manager.followTransition(GUIName.NEXT);
         manager.followTransition(GUIName.NEXT);
         assertEquals(2, states.size());
-        assertEquals(CalibrationXAndYState.PRINT_CIRCLE, states.get(0));
-        assertEquals(CalibrationXAndYState.GET_Y_OFFSET, states.get(1));
+        assertEquals(TestState.PRINT_CIRCLE, states.get(0));
+        assertEquals(TestState.GET_Y_OFFSET, states.get(1));
     }
 
     static class TestActions
@@ -165,18 +178,20 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
 
         private final TestActions actions;
 
-        public TestStateTransitionManager(Set<StateTransition> allowedTransitions,
-            TestActions actions)
+        public TestStateTransitionManager(
+            Set<StateTransition<TestState>> allowedTransitions, TestActions actions)
         {
-            super(allowedTransitions);
+            super(allowedTransitions, TestState.IDLE);
             this.actions = actions;
         }
-        
-        public int getX() {
+
+        public int getX()
+        {
             return actions.x;
         }
-        
-        public boolean isCancelled() {
+
+        public boolean isCancelled()
+        {
             return actions.cancelled;
         }
 

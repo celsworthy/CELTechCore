@@ -4,39 +4,38 @@
 package celtech.printerControl.model.calibration;
 
 import celtech.printerControl.model.calibration.StateTransitionManager.GUIName;
-import celtech.services.calibration.CalibrationXAndYState;
 import java.util.concurrent.Callable;
 
 /**
  *
  * @author tony
  */
-public class StateTransition
+public class StateTransition<T>
 {
-    final CalibrationXAndYState fromState;
-    final CalibrationXAndYState toState;
-    final CalibrationXAndYState transitionFailedState;
+    final T fromState;
+    final T toState;
+    final T transitionFailedState;
     final StateTransitionManager.GUIName guiName;
     final Callable<Boolean> action;
 
-    public StateTransition(CalibrationXAndYState fromState, StateTransitionManager.GUIName guiName, 
-        CalibrationXAndYState toState, Callable action)
+    public StateTransition(T fromState, StateTransitionManager.GUIName guiName, 
+        T toState, Callable action, T failedState)
     {
         this.fromState = fromState;
         this.toState = toState;
         this.guiName = guiName;
         this.action = action;
-        transitionFailedState = CalibrationXAndYState.FAILED;
+        transitionFailedState = failedState;
     }
     
-    public StateTransition(CalibrationXAndYState fromState, StateTransitionManager.GUIName guiName, 
-        CalibrationXAndYState toState)
+    public StateTransition(T fromState, StateTransitionManager.GUIName guiName, 
+        T toState, T failedState)
     {
         this.fromState = fromState;
         this.toState = toState;
         this.guiName = guiName;
         this.action = null;
-        transitionFailedState = CalibrationXAndYState.FAILED;
+        transitionFailedState = failedState;
     }    
     
     public GUIName getGUIName() {
