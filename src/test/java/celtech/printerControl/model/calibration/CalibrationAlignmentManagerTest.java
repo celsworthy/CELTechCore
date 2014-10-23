@@ -6,9 +6,13 @@ package celtech.printerControl.model.calibration;
 import celtech.JavaFXConfiguredTest;
 import celtech.printerControl.model.calibration.CalibrationAlignmentManager.GUIName;
 import celtech.services.calibration.CalibrationXAndYState;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
@@ -110,6 +114,21 @@ public class CalibrationAlignmentManagerTest extends JavaFXConfiguredTest
         assertEquals(CalibrationXAndYState.FAILED, manager.stateProperty().get());
         assertEquals(22, results.x);
     }      
+    
+    @Test
+    public void testStateListenerCorrectlyUpdated()
+    {
+        final List<CalibrationXAndYState> states = new ArrayList<>();
+        manager.stateProperty().addListener((ObservableValue<? extends CalibrationXAndYState> observable, CalibrationXAndYState oldValue, CalibrationXAndYState newValue) ->
+        {
+            states.add(newValue);
+        });
+        manager.followTransition(GUIName.NEXT);
+        manager.followTransition(GUIName.NEXT);
+        assertEquals(2, states.size());
+        assertEquals(CalibrationXAndYState.PRINT_CIRCLE, states.get(0));
+        assertEquals(CalibrationXAndYState.GET_Y_OFFSET, states.get(1));
+    }        
 
     static class TestResults
     {
