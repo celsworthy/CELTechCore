@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Button;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -18,6 +20,9 @@ import javafx.scene.control.Button;
  */
 public class CalibrationXAndYGUI
 {
+
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        CalibrationXAndYHelper.class.getName());
 
     private CalibrationInsetPanelController controller;
     CalibrationAlignmentManager stateManager;
@@ -44,12 +49,14 @@ public class CalibrationXAndYGUI
             if (namesToButtons.containsKey(allowedTransition.getGUIName()))
             {
                 namesToButtons.get(allowedTransition.getGUIName()).setVisible(true);
+                steno.info(("Show button " + allowedTransition.getGUIName()));
             }
         }
     }
 
     public void setState(CalibrationXAndYState state)
     {
+        steno.info("GUI going to state " + state);
         showAppropriateButtons(state);
         switch (state)
         {
@@ -90,21 +97,18 @@ public class CalibrationXAndYGUI
                 controller.stepNumber.setText(String.format("Step %s of 6", 4));
                 break;
             case PRINT_CIRCLE_CHECK:
-                controller.hideAllInputControlsExceptStepNumber();
                 controller.showDiagram("nozzlealignment",
                                        "Nozzle Alignment Illustrations_Step 5.fxml");
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText(String.format("Step %s of 6", 5));
                 break;
             case FINISHED:
-                controller.hideAllInputControlsExceptStepNumber();
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzlealignment",
                                        "Nozzle Alignment Illustrations_Step 6.fxml");
                 controller.stepNumber.setText(String.format("Step %s of 6", 6));
                 break;
             case FAILED:
-                controller.hideAllInputControlsExceptStepNumber();
                 controller.backToStatus.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText("");

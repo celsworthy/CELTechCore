@@ -33,18 +33,20 @@ public class CalibrationXAndYActions
         this.printer = printer;
     }
 
-    public boolean doSaveHeadAndPrintPattern() throws PrinterException, RoboxCommsException
+    public boolean doSaveHeadAndPrintPattern() throws PrinterException, RoboxCommsException, InterruptedException
     {
         savedHeadData = printer.readHeadEEPROM();
+        Thread.sleep(3000);
 //        printer.runMacro("rbx_XY_offset_roboxised");
 //        printer.runMacro("tiny_robox");
         boolean interrupted = PrinterUtils.waitOnMacroFinished(printer, (Cancellable) null);
         return !interrupted;
     }
 
-    public boolean doSaveSettingsAndPrintCircle() throws PrinterException
+    public boolean doSaveSettingsAndPrintCircle() throws PrinterException, InterruptedException
     {
         saveSettings();
+        Thread.sleep(3000);
 //        printer.runMacro("rbx_XY_offset_roboxised");
 //        printer.runMacro("tiny_robox");
         boolean interrupted = PrinterUtils.waitOnMacroFinished(printer, (Cancellable) null);
@@ -54,6 +56,7 @@ public class CalibrationXAndYActions
     public boolean doFinishedAction() throws PrinterException
     {
         saveSettings();
+        switchHeaterOffAndRaiseHead();
         return true;
     }
 
