@@ -12,6 +12,12 @@ import celtech.services.firmware.FirmwareLoadService;
 public interface SystemNotificationManager
 {
 
+    void showInformationNotification(String title, String message);
+
+    void showWarningNotification(String title, String message);
+
+    void showErrorNotification(String title, String message);
+
     /**
      *
      * @param requiredFirmwareVersion
@@ -62,10 +68,18 @@ public interface SystemNotificationManager
     void showSliceFailedNotification();
 
     void showSliceSuccessfulNotification();
-    
-     void configureFirmwareProgressDialog(FirmwareLoadService firmwareLoadService);
-     
+
+    void configureFirmwareProgressDialog(FirmwareLoadService firmwareLoadService);
+
     public void showNoSDCardDialog();
 
-    public void showNoPrinterIDDialog(Printer printer);
+    void showNoPrinterIDDialog(Printer printer);
+
+    boolean showOpenDoorDialog();
+
+    boolean showModelTooBigDialog(String modelFilename);
+    
+    boolean showApplicationUpgradeDialog(String applicationName);
+
+    public boolean showPurgeDialog();
 }

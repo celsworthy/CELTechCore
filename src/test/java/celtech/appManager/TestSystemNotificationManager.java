@@ -113,4 +113,43 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     public void showNoPrinterIDDialog(Printer printer)
     {
     }
+
+    @Override
+    public void showInformationNotification(String title, String message)
+    {
+    }
+
+    @Override
+    public void showWarningNotification(String title, String message)
+    {
+    }
+
+    @Override
+    public void showErrorNotification(String title, String message)
+    {
+    }
+
+    @Override
+    public boolean showOpenDoorDialog()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean showModelTooBigDialog(String modelFilename)
+    {
+        return false;
+    }
+
+    @Override
+    public boolean showApplicationUpgradeDialog(String applicationName)
+    {
+        return false;
+    }
+
+    @Override
+    public boolean showPurgeDialog()
+    {
+        return false;
+    }
 }

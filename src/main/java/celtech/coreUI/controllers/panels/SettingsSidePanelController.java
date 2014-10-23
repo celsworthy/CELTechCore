@@ -487,7 +487,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
                     }
 
-                    settingsScreenState.getSettings().setFillDensity(newValue.floatValue() / 100.0f);
+                    settingsScreenState.getSettings().setFillDensity_normalised(newValue.floatValue() / 100.0f);
                 }
             }
         });
@@ -533,8 +533,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     private void setupQualityOverrideControls(SlicerParameters settings)
     {
-        supportToggle.setSelected(settings.isGenerateSupportMaterial());
-        fillDensitySlider.setValue(settings.getFillDensity() * 100.0);
+        supportToggle.setSelected(settings.getGenerateSupportMaterial());
+        fillDensitySlider.setValue(settings.getFillDensity_normalised() * 100.0);
         if (settings.getFillPattern().equals(FillPattern.LINE))
         {
             fillDensitySlider.setMax(99);

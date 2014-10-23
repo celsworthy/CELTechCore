@@ -1,8 +1,6 @@
 package celtech.appManager;
 
 import celtech.Lookup;
-import celtech.coreUI.DisplayManager;
-import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.controllers.utilityPanels.MaintenancePanelController;
@@ -13,13 +11,14 @@ import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-import javafx.application.Platform;
+import javafx.scene.control.ButtonType;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.control.action.Action;
+import org.controlsfx.dialog.CommandLinksDialog;
 import org.controlsfx.dialog.Dialogs;
 
 /**
@@ -35,23 +34,24 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     /*
      * Error dialog
      */
-    private static Dialogs.CommandLink clearOnly = null;
-    private static Dialogs.CommandLink clearAndContinue = null;
-    private static Dialogs.CommandLink abortJob = null;
+    private static CommandLinksDialog.CommandLinksButtonType clearOnly = null;
+    private static CommandLinksDialog.CommandLinksButtonType clearOnlyDefault = null;
+    private static CommandLinksDialog.CommandLinksButtonType clearAndContinueDefault = null;
+    private static CommandLinksDialog.CommandLinksButtonType abortJob = null;
 
     /*
      * Calibration dialog
      */
-    private static Dialogs.CommandLink okCalibrate = null;
-    private static Dialogs.CommandLink dontCalibrate = null;
+    private static CommandLinksDialog.CommandLinksButtonType okCalibrate = null;
+    private static CommandLinksDialog.CommandLinksButtonType dontCalibrate = null;
 
     /*
      * Firmware upgrade dialog
      */
-    protected Dialogs.CommandLink firmwareUpgradeOK = null;
-    protected Dialogs.CommandLink firmwareUpgradeNotOK = null;
-    protected Dialogs.CommandLink firmwareDowngradeOK = null;
-    protected Dialogs.CommandLink firmwareDowngradeNotOK = null;
+    protected CommandLinksDialog.CommandLinksButtonType firmwareUpgradeOK = null;
+    protected CommandLinksDialog.CommandLinksButtonType firmwareUpgradeNotOK = null;
+    protected CommandLinksDialog.CommandLinksButtonType firmwareDowngradeOK = null;
+    protected CommandLinksDialog.CommandLinksButtonType firmwareDowngradeNotOK = null;
 
     /*
      * Firmware upgrade progress
@@ -68,7 +68,26 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
      */
     protected boolean sdDialogOnDisplay = false;
 
-    private void showErrorNotification(String title, String message)
+    /*
+     * Door open dialog
+     */
+    private CommandLinksDialog.CommandLinksButtonType goAheadAndOpenTheLid = null;
+    private CommandLinksDialog.CommandLinksButtonType dontOpenTheLid = null;
+
+    /*
+     * Model too big dialog
+     */
+    private CommandLinksDialog.CommandLinksButtonType shrinkTheModel = null;
+    private CommandLinksDialog.CommandLinksButtonType dontLoadTheModel = null;
+
+    /*
+     * Application upgrade dialog
+     */
+    private CommandLinksDialog.CommandLinksButtonType upgradeApplication = null;
+    private CommandLinksDialog.CommandLinksButtonType dontUpgradeApplication = null;
+
+    @Override
+    public void showErrorNotification(String title, String message)
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
@@ -76,7 +95,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         });
     }
 
-    private void showWarningNotification(String title, String message)
+    @Override
+    public void showWarningNotification(String title, String message)
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
@@ -84,7 +104,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         });
     }
 
-    private void showInformationNotification(String title, String message)
+    @Override
+    public void showInformationNotification(String title, String message)
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
@@ -97,9 +118,10 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (clearOnly == null)
         {
-            clearOnly = new Dialogs.CommandLink(Lookup.i18n("dialogs.error.clearOnly"), null);
-            clearAndContinue = new Dialogs.CommandLink(Lookup.i18n("dialogs.error.clearAndContinue"), null);
-            abortJob = new Dialogs.CommandLink(Lookup.i18n("dialogs.error.abortJob"), null);
+            clearOnly = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.error.clearOnly"), false);
+            clearOnlyDefault = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.error.clearOnly"), true);
+            clearAndContinueDefault = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.error.clearAndContinue"), true);
+            abortJob = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.error.abortJob"), false);
         }
 
         Lookup.getTaskExecutor().runOnGUIThread(() ->
@@ -109,25 +131,25 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             {
                 errorDialogOnDisplay = true;
 
-                Action errorHandlingResponse = null;
+                Optional<ButtonType> errorHandlingResponse = null;
 
                 if (printer.printerStatusProperty().get() != PrinterStatus.IDLE
                     && printer.printerStatusProperty().get() != PrinterStatus.ERROR)
                 {
-                    errorHandlingResponse = Dialogs.create().title(
-                        DisplayManager.getLanguageBundle().getString(
-                            "dialogs.error.errorEncountered"))
-                        .message(response.getErrorsAsString())
-                        .masthead(null)
-                        .showCommandLinks(clearAndContinue, clearAndContinue, abortJob);
+                    CommandLinksDialog printerErrorDialog = new CommandLinksDialog(
+                        clearAndContinueDefault,
+                        clearOnly,
+                        abortJob
+                    );
+                    printerErrorDialog.setTitle(Lookup.i18n("dialogs.error.errorEncountered"));
+                    printerErrorDialog.setContentText(response.getErrorsAsString());
+                    errorHandlingResponse = printerErrorDialog.showAndWait();
                 } else
                 {
-                    errorHandlingResponse = Dialogs.create().title(
-                        DisplayManager.getLanguageBundle().getString(
-                            "dialogs.error.errorEncountered"))
-                        .message(response.getErrorsAsString())
-                        .masthead(null)
-                        .showCommandLinks(clearOnly, clearOnly);
+                    CommandLinksDialog printerErrorDialog = new CommandLinksDialog(clearOnlyDefault, abortJob);
+                    printerErrorDialog.setTitle(Lookup.i18n("dialogs.error.errorEncountered"));
+                    printerErrorDialog.setContentText(response.getErrorsAsString());
+                    errorHandlingResponse = printerErrorDialog.showAndWait();
                 }
 
                 try
@@ -138,7 +160,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     steno.error("Couldn't reset errors after error detection");
                 }
 
-                if (errorHandlingResponse == abortJob)
+                if (errorHandlingResponse.equals(abortJob))
                 {
                     try
                     {
@@ -163,18 +185,21 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (okCalibrate == null)
         {
-            okCalibrate = new Dialogs.CommandLink(Lookup.i18n("dialogs.headUpdateCalibrationYes"), null);
-            dontCalibrate = new Dialogs.CommandLink(Lookup.i18n("dialogs.headUpdateCalibrationNo"), null);
+            okCalibrate = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.headUpdateCalibrationYes"), true);
+            dontCalibrate = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.headUpdateCalibrationNo"), false);
         }
 
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
-            Action calibrationResponse = Dialogs.create().title(Lookup.i18n("dialogs.headUpdateCalibrationRequiredTitle"))
-                .message(Lookup.i18n("dialogs.headUpdateCalibrationRequiredInstruction"))
-                .masthead(null)
-                .showCommandLinks(okCalibrate, okCalibrate, dontCalibrate);
+            CommandLinksDialog calibrationDialog = new CommandLinksDialog(
+                okCalibrate,
+                dontCalibrate
+            );
+            calibrationDialog.setTitle(Lookup.i18n("dialogs.headUpdateCalibrationRequiredTitle"));
+            calibrationDialog.setContentText(Lookup.i18n("dialogs.headUpdateCalibrationRequiredInstruction"));
+            Optional<ButtonType> calibrationResponse = calibrationDialog.showAndWait();
 
-            if (calibrationResponse == okCalibrate)
+            if (calibrationResponse.equals(okCalibrate))
             {
                 MaintenancePanelController.calibrateBAction();
                 MaintenancePanelController.calibrateZOffsetAction();
@@ -305,10 +330,12 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (firmwareDowngradeOK == null)
         {
-            firmwareDowngradeOK = new Dialogs.CommandLink(Lookup.i18n("dialogs.firmwareDowngradeOKTitle"),
-                                                          Lookup.i18n("dialogs.firmwareUpgradeOKMessage"));
-            firmwareDowngradeNotOK = new Dialogs.CommandLink(Lookup.i18n("dialogs.firmwareDowngradeNotOKTitle"),
-                                                             Lookup.i18n("dialogs.firmwareUpgradeNotOKMessage"));
+            firmwareDowngradeOK = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.firmwareDowngradeOKTitle"),
+                                                                                Lookup.i18n("dialogs.firmwareUpgradeOKMessage"),
+                                                                                true);
+            firmwareDowngradeNotOK = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.firmwareDowngradeNotOKTitle"),
+                                                                                   Lookup.i18n("dialogs.firmwareUpgradeNotOKMessage"),
+                                                                                   false);
         }
 
         Callable<Boolean> askUserToDowngradeDialog = new Callable()
@@ -316,23 +343,22 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             @Override
             public Boolean call() throws Exception
             {
-                Action downgradeApplicationResponse = Dialogs.create().title(
-                    Lookup.i18n(
-                        "dialogs.firmwareVersionTooLowTitle"))
-                    .message(Lookup.i18n(
-                            "dialogs.firmwareVersionError1")
-                        + actualFirmwareVersion
-                        + Lookup.i18n(
-                            "dialogs.firmwareVersionError2")
-                        + requiredFirmwareVersion + ".\n"
-                        + Lookup.i18n(
-                            "dialogs.firmwareVersionError3"))
-                    .masthead(null)
-                    .showCommandLinks(firmwareDowngradeOK,
-                                      firmwareDowngradeOK,
-                                      firmwareDowngradeNotOK);
+                CommandLinksDialog firmwareDowngradeDialog = new CommandLinksDialog(
+                    firmwareDowngradeOK,
+                    firmwareDowngradeNotOK
+                );
+                firmwareDowngradeDialog.setTitle(Lookup.i18n("dialogs.firmwareVersionTooLowTitle"));
+                firmwareDowngradeDialog.setContentText(Lookup.i18n(
+                    "dialogs.firmwareVersionError1")
+                    + actualFirmwareVersion
+                    + Lookup.i18n(
+                        "dialogs.firmwareVersionError2")
+                    + requiredFirmwareVersion + ".\n"
+                    + Lookup.i18n(
+                        "dialogs.firmwareVersionError3"));
+                Optional<ButtonType> firmwareDowngradeResponse = firmwareDowngradeDialog.showAndWait();
 
-                return downgradeApplicationResponse.equals(firmwareDowngradeOK);
+                return firmwareDowngradeResponse.equals(firmwareDowngradeOK);
             }
         };
         FutureTask<Boolean> askUserToUpgradeTask = new FutureTask<>(askUserToDowngradeDialog);
@@ -360,10 +386,12 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (firmwareUpgradeOK == null)
         {
-            firmwareUpgradeOK = new Dialogs.CommandLink(Lookup.i18n("dialogs.firmwareUpgradeOKTitle"),
-                                                        Lookup.i18n("dialogs.firmwareUpgradeOKMessage"));
-            firmwareUpgradeNotOK = new Dialogs.CommandLink(Lookup.i18n("dialogs.firmwareUpgradeNotOKTitle"),
-                                                           Lookup.i18n("dialogs.firmwareUpgradeNotOKMessage"));
+            firmwareUpgradeOK = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.firmwareUpgradeOKTitle"),
+                                                                              Lookup.i18n("dialogs.firmwareUpgradeOKMessage"),
+                                                                              true);
+            firmwareUpgradeNotOK = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.firmwareUpgradeNotOKTitle"),
+                                                                                 Lookup.i18n("dialogs.firmwareUpgradeNotOKMessage"),
+                                                                                 false);
         }
 
         Callable<Boolean> askUserToUpgradeDialog = new Callable()
@@ -371,18 +399,19 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             @Override
             public Boolean call() throws Exception
             {
-                Action upgradeApplicationResponse = Dialogs.create().title(
-                    Lookup.i18n("dialogs.firmwareUpgradeTitle"))
-                    .message(Lookup.i18n("dialogs.firmwareVersionError1")
-                        + actualFirmwareVersion
-                        + Lookup.i18n("dialogs.firmwareVersionError2")
-                        + requiredFirmwareVersion + ".\n"
-                        + Lookup.i18n("dialogs.firmwareVersionError3"))
-                    .masthead(null)
-                    .showCommandLinks(firmwareUpgradeOK,
-                                      firmwareUpgradeOK,
-                                      firmwareUpgradeNotOK);
-                return upgradeApplicationResponse.equals(firmwareUpgradeOK);
+                CommandLinksDialog firmwareUpgradeDialog = new CommandLinksDialog(
+                    firmwareUpgradeOK,
+                    firmwareUpgradeNotOK
+                );
+                firmwareUpgradeDialog.setTitle(Lookup.i18n("dialogs.firmwareUpgradeTitle"));
+                firmwareUpgradeDialog.setContentText(Lookup.i18n("dialogs.firmwareVersionError1")
+                    + actualFirmwareVersion
+                    + Lookup.i18n("dialogs.firmwareVersionError2")
+                    + requiredFirmwareVersion + ".\n"
+                    + Lookup.i18n("dialogs.firmwareVersionError3"));
+                Optional<ButtonType> firmwareUpgradeResponse = firmwareUpgradeDialog.showAndWait();
+
+                return firmwareUpgradeResponse.equals(firmwareUpgradeOK);
             }
         };
         FutureTask<Boolean> askUserToUpgradeTask = new FutureTask<>(askUserToUpgradeDialog);
@@ -442,6 +471,194 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
                 printerIDDialog.show();
             });
+        }
+    }
+
+    @Override
+    public boolean showOpenDoorDialog()
+    {
+        if (goAheadAndOpenTheLid == null)
+        {
+            goAheadAndOpenTheLid = new CommandLinksDialog.CommandLinksButtonType(
+                Lookup.i18n("dialogs.openLidPrinterHotGoAheadHeading"),
+                Lookup.i18n("dialogs.openLidPrinterHotGoAheadInfo"),
+                true);
+            dontOpenTheLid = new CommandLinksDialog.CommandLinksButtonType(
+                Lookup.i18n("dialogs.openLidPrinterHotDontOpenHeading"),
+                true);
+        }
+
+        Callable<Boolean> askUserWhetherToOpenDoorDialog = new Callable()
+        {
+            @Override
+            public Boolean call() throws Exception
+            {
+                CommandLinksDialog doorOpenDialog = new CommandLinksDialog(
+                    goAheadAndOpenTheLid,
+                    dontOpenTheLid
+                );
+                doorOpenDialog.setTitle(Lookup.i18n("dialogs.openLidPrinterHotTitle"));
+
+                Optional<ButtonType> doorOpenResponse = doorOpenDialog.showAndWait();
+
+                return doorOpenResponse.equals(goAheadAndOpenTheLid);
+            }
+        };
+
+        FutureTask<Boolean> askUserWhetherToOpenDoorTask = new FutureTask<>(askUserWhetherToOpenDoorDialog);
+        Lookup.getTaskExecutor().runOnGUIThread(askUserWhetherToOpenDoorTask);
+        try
+        {
+            return askUserWhetherToOpenDoorTask.get();
+        } catch (InterruptedException | ExecutionException ex)
+        {
+            steno.error("Error during door open query");
+            return false;
+        }
+    }
+
+    /**
+     *
+     * @param modelFilename
+     * @return True if the user has opted to shrink the model
+     */
+    @Override
+    public boolean showModelTooBigDialog(String modelFilename)
+    {
+        if (shrinkTheModel == null)
+        {
+            shrinkTheModel = new CommandLinksDialog.CommandLinksButtonType(
+                Lookup.i18n("dialogs.ShrinkModelToFit"),
+                true);
+            dontLoadTheModel = new CommandLinksDialog.CommandLinksButtonType(
+                Lookup.i18n("dialogs.ModelTooLargeNo"),
+                false);
+        }
+
+        Callable<Boolean> askUserWhetherToLoadModel = new Callable()
+        {
+            @Override
+            public Boolean call() throws Exception
+            {
+                CommandLinksDialog loadModelDialog = new CommandLinksDialog(
+                    shrinkTheModel,
+                    dontLoadTheModel
+                );
+                loadModelDialog.setTitle(Lookup.i18n("dialogs.ModelTooLargeTitle"));
+                loadModelDialog.setContentText(modelFilename
+                    + ": "
+                    + Lookup.i18n("dialogs.ModelTooLargeDescription"));
+
+                Optional<ButtonType> loadModelResponse = loadModelDialog.showAndWait();
+
+                return loadModelResponse.equals(shrinkTheModel);
+            }
+        };
+
+        FutureTask<Boolean> askUserWhetherToLoadModelTask = new FutureTask<>(askUserWhetherToLoadModel);
+        Lookup.getTaskExecutor().runOnGUIThread(askUserWhetherToLoadModelTask);
+        try
+        {
+            return askUserWhetherToLoadModelTask.get();
+        } catch (InterruptedException | ExecutionException ex)
+        {
+            steno.error("Error during model too large query");
+            return false;
+        }
+    }
+
+    /**
+     *
+     * @param applicationName
+     * @return True if the user has elected to upgrade
+     */
+    @Override
+    public boolean showApplicationUpgradeDialog(String applicationName)
+    {
+        if (upgradeApplication == null)
+        {
+            upgradeApplication = new CommandLinksDialog.CommandLinksButtonType(
+                Lookup.i18n("misc.Yes"),
+                Lookup.i18n("dialogs.updateExplanation"),
+                true);
+            dontUpgradeApplication = new CommandLinksDialog.CommandLinksButtonType(
+                Lookup.i18n("misc.No"),
+                Lookup.i18n("dialogs.updateContinueWithCurrent"),
+                false);
+        }
+
+        Callable<Boolean> askUserWhetherToUpgrade = new Callable()
+        {
+            @Override
+            public Boolean call() throws Exception
+            {
+                CommandLinksDialog upgradeApplicationDialog = new CommandLinksDialog(
+                    upgradeApplication,
+                    dontUpgradeApplication
+                );
+                upgradeApplicationDialog.setTitle(Lookup.i18n("dialogs.updateApplicationTitle"));
+                upgradeApplicationDialog.setContentText(
+                    Lookup.i18n("dialogs.updateApplicationMessagePart1")
+                    + applicationName
+                    + Lookup.i18n("dialogs.updateApplicationMessagePart2"));
+
+                Optional<ButtonType> upgradeApplicationResponse = upgradeApplicationDialog.showAndWait();
+
+                return upgradeApplicationResponse.equals(upgradeApplication);
+            }
+        };
+
+        FutureTask<Boolean> askWhetherToUpgradeTask = new FutureTask<>(askUserWhetherToUpgrade);
+        Lookup.getTaskExecutor().runOnGUIThread(askWhetherToUpgradeTask);
+        try
+        {
+            return askWhetherToUpgradeTask.get();
+        } catch (InterruptedException | ExecutionException ex)
+        {
+            steno.error("Error during model too large query");
+            return false;
+        }
+    }
+
+    /**
+     * @return True if the user has elected to purge
+     */
+    @Override
+    public boolean showPurgeDialog()
+    {
+        Callable<Boolean> askUserWhetherToPurge = new Callable()
+        {
+            @Override
+            public Boolean call() throws Exception
+            {
+                CommandLinksDialog.CommandLinksButtonType purge = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.goForPurgeTitle"),
+                                                                                                                Lookup.i18n("dialogs.goForPurgeInstruction"),
+                                                                                                                true);
+                CommandLinksDialog.CommandLinksButtonType dontPurge = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.dontGoForPurgeTitle"),
+                                                                                                                    Lookup.i18n("dialogs.dontGoForPurgeInstruction"),
+                                                                                                                    true);
+                CommandLinksDialog purgeDialog = new CommandLinksDialog(
+                    purge,
+                    dontPurge
+                );
+                purgeDialog.setTitle(Lookup.i18n("dialogs.purgeRequiredTitle"));
+                purgeDialog.setContentText(Lookup.i18n("dialogs.purgeRequiredInstruction"));
+
+                Optional<ButtonType> purgeResponse = purgeDialog.showAndWait();
+
+                return purgeResponse.equals(purge);
+            }
+        };
+
+        FutureTask<Boolean> askWhetherToPurgeTask = new FutureTask<>(askUserWhetherToPurge);
+        Lookup.getTaskExecutor().runOnGUIThread(askWhetherToPurgeTask);
+        try
+        {
+            return askWhetherToPurgeTask.get();
+        } catch (InterruptedException | ExecutionException ex)
+        {
+            steno.error("Error during purge query");
+            return false;
         }
     }
 }

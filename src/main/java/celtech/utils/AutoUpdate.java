@@ -5,6 +5,7 @@
  */
 package celtech.utils;
 
+import celtech.Lookup;
 import celtech.appManager.Notifier;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.MachineType;
@@ -21,8 +22,6 @@ import java.util.regex.Pattern;
 import javafx.application.Platform;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.control.action.Action;
-import org.controlsfx.dialog.Dialogs;
 
 /**
  *
@@ -43,8 +42,6 @@ public class AutoUpdate extends Thread
     private Class parentClass = null;
     private AutoUpdateCompletionListener completionListener = null;
     private ResourceBundle i18nBundle = null;
-    private Dialogs.CommandLink upgradeApplication = null;
-    private Dialogs.CommandLink dontUpgradeApplication = null;
     private String appDirectory = null;
 
     private final Pattern versionMatcherPattern = Pattern.compile(".*version>(.*)</version.*");
@@ -64,8 +61,6 @@ public class AutoUpdate extends Thread
         this.completionListener = completionListener;
 
         this.i18nBundle = DisplayManager.getLanguageBundle();
-        upgradeApplication = new Dialogs.CommandLink(i18nBundle.getString("misc.Yes"), i18nBundle.getString("dialogs.updateExplanation"));
-        dontUpgradeApplication = new Dialogs.CommandLink(i18nBundle.getString("misc.No"), i18nBundle.getString("dialogs.updateContinueWithCurrent"));
     }
 
     /**
@@ -109,36 +104,25 @@ public class AutoUpdate extends Thread
                         @Override
                         public void run()
                         {
-                            Notifier.showInformationNotification(i18nBundle.getString("dialogs.updateApplicationTitle"), i18nBundle.getString("dialogs.updateApplicationNotAvailableForThisRelease") + applicationName);
+                            Notifier.showInformationNotification(i18nBundle.getString("dialogs.updateApplicationTitle"), i18nBundle.getString("dialogs.updateApplicationNotAvailableForThisRelease")
+                                                                 + applicationName);
                         }
                     });
                     keepRunning = false;
                     completionListener.autoUpdateComplete(false);
-                    break;                    
+                    break;
                 case UPGRADE_REQUIRED:
-                    Platform.runLater(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            Action upgradeApplicationResponse = Dialogs.create().title(i18nBundle.getString("dialogs.updateApplicationTitle"))
-                                    .message(i18nBundle.getString("dialogs.updateApplicationMessagePart1")
-                                            + applicationName
-                                            + i18nBundle.getString("dialogs.updateApplicationMessagePart2"))
-                                    .masthead(null)
-                                    .showCommandLinks(upgradeApplication, upgradeApplication, dontUpgradeApplication);
 
-                            if (upgradeApplicationResponse == upgradeApplication)
-                            {
-                                //Run the autoupdater in the background in download mode
-                                startUpdate();
-                                completionListener.autoUpdateComplete(true);
-                            } else
-                            {
-                                completionListener.autoUpdateComplete(false);
-                            }
-                        }
-                    });
+                    boolean upgradeApplication = Lookup.getSystemNotificationHandler().showApplicationUpgradeDialog(applicationName);
+                    if (upgradeApplication)
+                    {
+                        //Run the autoupdater in the background in download mode
+                        startUpdate();
+                        completionListener.autoUpdateComplete(true);
+                    } else
+                    {
+                        completionListener.autoUpdateComplete(false);
+                    }
                     keepRunning = false;
                     break;
                 case ERROR:
@@ -188,13 +172,13 @@ public class AutoUpdate extends Thread
             //add request header
             con.setRequestProperty("User-Agent", ApplicationConfiguration.getApplicationName());
 
-            con.setConnectTimeout(5000); 
+            con.setConnectTimeout(5000);
             int responseCode = con.getResponseCode();
 
             if (responseCode == 200)
             {
                 BufferedReader in = new BufferedReader(
-                        new InputStreamReader(con.getInputStream()));
+                    new InputStreamReader(con.getInputStream()));
                 String inputLine;
                 StringBuffer response = new StringBuffer();
 

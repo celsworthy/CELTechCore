@@ -31,8 +31,10 @@ public abstract class SlicerConfigWriter
     private SimpleDateFormat dateFormatter = null;
     protected NumberFormat threeDPformatter;
 
-    private double centreX = 0;
-    private double centreY = 0;
+    private float centreX = 0;
+    private float centreY = 0;
+
+    private final String defaultFlag = "D:";
 
     public SlicerConfigWriter()
     {
@@ -65,15 +67,17 @@ public abstract class SlicerConfigWriter
             FileUtils.writeStringToFile(outputFile, "#Slicer type " + slicerType.name() + "\n", true);
             FileUtils.writeStringToFile(outputFile, "#Profile " + profileData.getProfileName() + "\n", true);
             FileUtils.writeStringToFile(outputFile, "#\n", true);
+            
+            outputFilamentDiameter(outputFile, ApplicationConfiguration.filamentDiameterToYieldVolumetricExtrusion);
+            
+            outputPrintCentre(outputFile, centreX, centreY);
 
-//            outputLine(outputFile, "print_center", centreX + "," + centreY);
             for (Map.Entry<String, String> entry : slicerMappings.entrySet())
             {
                 String methodName = entry.getKey();
-                methodName = "get" + methodName.substring(0, 1).toUpperCase() + methodName.substring(1, methodName.length());
-                
                 String targetVariableName = entry.getValue();
-                float scale = 0;
+
+                float scale = 1;
                 if (targetVariableName.contains(":"))
                 {
                     String[] valueElements = targetVariableName.split(":");
@@ -81,79 +85,68 @@ public abstract class SlicerConfigWriter
                     scale = Float.valueOf(valueElements[1]);
                 }
 
-                try
+                if (methodName.startsWith(defaultFlag))
                 {
-                    Method getMethod = SlicerParameters.class.getMethod(methodName, null);
+                    // This is a default value for the slicer - don't look it up.
+                    String value = methodName.replaceFirst(defaultFlag, "");
+                    steno.info("Writing default " + targetVariableName);
+                    outputLine(outputFile, targetVariableName, value);
+                } else
+                {                    
+                    methodName = "get" + methodName.substring(0, 1).toUpperCase() + methodName.substring(1, methodName.length());
 
-                    Class<?> returnTypeClass = getMethod.getReturnType();
+                    try
+                    {
+                        steno.debug("Writing " + methodName + " : " + targetVariableName);
+                        Method getMethod = SlicerParameters.class.getMethod(methodName, null);
 
-                    if (returnTypeClass.equals(boolean.class))
+                        Class<?> returnTypeClass = getMethod.getReturnType();
+
+                        if (returnTypeClass.equals(boolean.class))
+                        {
+                            boolean value = (boolean) getMethod.invoke(profileData);
+                            outputLine(outputFile, targetVariableName, value);
+                        } else if (returnTypeClass.equals(int.class))
+                        {
+                            int value = (int) getMethod.invoke(profileData);
+                            outputLine(outputFile, targetVariableName, value * scale);
+                        } else if (returnTypeClass.equals(float.class))
+                        {
+                            float value = (float) getMethod.invoke(profileData);
+                            outputLine(outputFile, targetVariableName, value * scale);
+                        } else if (returnTypeClass.equals(String.class))
+                        {
+                            String value = (String) getMethod.invoke(profileData);
+                            outputLine(outputFile, targetVariableName, value);
+                        } else if (returnTypeClass.equals(SlicerType.class))
+                        {
+                            SlicerType value = (SlicerType) getMethod.invoke(profileData);
+                            outputLine(outputFile, targetVariableName, value);
+                        } else if (returnTypeClass.equals(FillPattern.class))
+                        {
+                            FillPattern value = (FillPattern) getMethod.invoke(profileData);
+                            outputLine(outputFile, targetVariableName, value);
+                        } else if (returnTypeClass.equals(SupportPattern.class))
+                        {
+                            SupportPattern value = (SupportPattern) getMethod.invoke(profileData);
+                            outputLine(outputFile, targetVariableName, value);
+                        } else
+                        {
+                            steno.error("Got unknown return type: " + returnTypeClass.getName());
+                        }
+
+                    } catch (NoSuchMethodException ex)
                     {
-                        steno.info("Got boolean");
-                        boolean value = (boolean) getMethod.invoke(profileData);
-                        outputLine(outputFile, targetVariableName, value);
-                    } else if (returnTypeClass.equals(int.class))
+                        steno.error("Unable to find " + methodName);
+                    } catch (IllegalAccessException ex)
                     {
-                        steno.info("Got int");
-                        int value = (int) getMethod.invoke(profileData);
-                        outputLine(outputFile, targetVariableName, value * scale);
-                    } else if (returnTypeClass.equals(float.class))
+                        steno.error("Illegal access exception when retrieving from " + methodName);
+                    } catch (InvocationTargetException ex)
                     {
-                        steno.info("Got float");
-                        float value = (float) getMethod.invoke(profileData);
-                        outputLine(outputFile, targetVariableName, value * scale);
-                    } else if (returnTypeClass.equals(String.class))
-                    {
-                        steno.info("Got string");
-                        String value = (String) getMethod.invoke(profileData);
-                        outputLine(outputFile, targetVariableName, value);
-                    } else if (returnTypeClass.equals(SlicerType.class))
-                    {
-                        steno.info("Got slicer type");
-                        SlicerType value = (SlicerType) getMethod.invoke(profileData);
-                        outputLine(outputFile, targetVariableName, value);
-                    } else if (returnTypeClass.equals(FillPattern.class))
-                    {
-                        steno.info("Got fill pattern");
-                        FillPattern value = (FillPattern) getMethod.invoke(profileData);
-                        outputLine(outputFile, targetVariableName, value);
-                    } else if (returnTypeClass.equals(SupportPattern.class))
-                    {
-                        steno.info("Got support pattern");
-                        SupportPattern value = (SupportPattern) getMethod.invoke(profileData);
-                        outputLine(outputFile, targetVariableName, value);
-                    } else
-                    {
-                        steno.error("Got unknown return type: " + returnTypeClass.getName());
+                        steno.error("Invocation target exception when retrieving from " + methodName);
                     }
-
-                } catch (NoSuchMethodException ex)
-                {
-                    steno.error("Unable to find " + methodName);
-                } catch (IllegalAccessException ex)
-                {
-                    steno.error("Illegal access exception when retrieving from " + methodName);
-                } catch (InvocationTargetException ex)
-                {
-                    steno.error("Invocation target exception when retrieving from " + methodName);
                 }
             }
-//            outputLine(outputFile, "bed_size", "226,160");
-//            outputLine(outputFile, "z_offset", "0.0");
-//            outputLine(outputFile, "gcode_flavor", "reprap");
-//            outputLine(outputFile, "use_relative_e_distances", "1");
-//            outputLine(outputFile, "vibration_limit", "0");
-//            outputLine("end_gcode", "");
-//            outputLine("layer_gcode", "");
-//            outputLine("toolchange_gcode", "");
-//            outputLine("retract_before_travel", "0");
-//            outputLine("retract_length", "0.05");
-//            outputLine("retract_length_toolchange", "0");
-//            outputLine("retract_lift", "0");
-//            outputLine("retract_restart_extra", "0");
-//            outputLine("retract_restart_extra_toolchange", "0");
-//
-//            outputLine("retract_speed", "0");
         } catch (FileNotFoundException ex)
         {
             steno.error("Couldn't open slic3r settings file for writing - " + destinationFile + " : " + ex.getMessage());
@@ -168,7 +161,7 @@ public abstract class SlicerConfigWriter
      * @param x
      * @param y
      */
-    public void setPrintCentre(double x, double y)
+    public void setPrintCentre(float x, float y)
     {
         centreX = x;
         centreY = y;
@@ -187,4 +180,8 @@ public abstract class SlicerConfigWriter
     protected abstract void outputLine(File outputFile, String variableName, FillPattern value) throws IOException;
 
     protected abstract void outputLine(File outputFile, String variableName, SupportPattern value) throws IOException;
+    
+    protected abstract void outputPrintCentre(File outputFile, float centreX, float centreY) throws IOException;
+
+    protected abstract void outputFilamentDiameter(File outputFile, float diameter) throws IOException;
 }

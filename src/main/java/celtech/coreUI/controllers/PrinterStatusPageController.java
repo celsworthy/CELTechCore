@@ -41,9 +41,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.control.action.Action;
-import org.controlsfx.dialog.Dialogs;
-import org.controlsfx.dialog.Dialogs.CommandLink;
 
 /**
  * FXML Controller class
@@ -61,11 +58,6 @@ public class PrinterStatusPageController implements Initializable
     private ChangeListener<Color> printerColourChangeListener = null;
     private ChangeListener<PrinterStatus> printerStatusChangeListener = null;
     private ChangeListener<PauseStatus> pauseStatusChangeListener = null;
-
-    private CommandLink goAheadAndOpenTheLid = null;
-    private CommandLink dontOpenTheLid = null;
-    private String openLidPrinterTooHotTitle = null;
-    private String openLidPrinterTooHotInfo = null;
 
     private String transferringDataString = null;
 
@@ -318,31 +310,19 @@ public class PrinterStatusPageController implements Initializable
     @FXML
     void unlockLid(ActionEvent event)
     {
-        boolean openTheLid = true;
-
         if (printerToUse.getPrinterAncillarySystems().bedTemperatureProperty().get() > 60)
         {
-            Action tooBigResponse = Dialogs.create().title(
-                openLidPrinterTooHotTitle)
-                .message(openLidPrinterTooHotInfo)
-                .masthead(null)
-                .showCommandLinks(dontOpenTheLid, dontOpenTheLid,
-                                  goAheadAndOpenTheLid);
+            boolean goAheadAndOpenTheDoor = Lookup.getSystemNotificationHandler().showOpenDoorDialog();
 
-            if (tooBigResponse != goAheadAndOpenTheLid)
+            if (goAheadAndOpenTheDoor)
             {
-                openTheLid = false;
-            }
-        }
-
-        if (openTheLid)
-        {
-            try
-            {
-                printerToUse.goToOpenDoorPosition(null);
-            } catch (PrinterException ex)
-            {
-                steno.error("Error opening door " + ex.getMessage());
+                try
+                {
+                    printerToUse.goToOpenDoorPosition(null);
+                } catch (PrinterException ex)
+                {
+                    steno.error("Error opening door " + ex.getMessage());
+                }
             }
         }
     }
@@ -420,21 +400,11 @@ public class PrinterStatusPageController implements Initializable
     {
         if (taskResponse.succeeded())
         {
-            Dialogs.create()
-                .owner(null)
-                .title(Lookup.i18n("removeHead.title"))
-                .masthead(null)
-                .message(Lookup.i18n("removeHead.finished"))
-                .showInformation();
+            Lookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n("removeHead.title"), Lookup.i18n("removeHead.finished"));
             steno.debug("Head remove completed");
         } else
         {
-            Dialogs.create()
-                .owner(null)
-                .title(Lookup.i18n("removeHead.title"))
-                .masthead(null)
-                .message(Lookup.i18n("removeHead.failed"))
-                .showWarning();
+            Lookup.getSystemNotificationHandler().showWarningNotification(Lookup.i18n("removeHead.title"), Lookup.i18n("removeHead.failed"));
         }
     }
 
@@ -543,14 +513,6 @@ public class PrinterStatusPageController implements Initializable
         transferringDataString = i18nBundle.getString(
             "PrintQueue.SendingToPrinter");
 
-        goAheadAndOpenTheLid = new Dialogs.CommandLink(i18nBundle.getString(
-            "dialogs.openLidPrinterHotGoAheadHeading"), i18nBundle.getString("dialogs.openLidPrinterHotGoAheadInfo"));
-        dontOpenTheLid = new Dialogs.CommandLink(i18nBundle.getString(
-            "dialogs.openLidPrinterHotDontOpenHeading"), null);
-        openLidPrinterTooHotTitle = i18nBundle.getString(
-            "dialogs.openLidPrinterHotTitle");
-        openLidPrinterTooHotInfo = i18nBundle.getString(
-            "dialogs.openLidPrinterHotInfo");
         progressLayerLabel.setText(i18nBundle.getString("dialogs.progressLayerLabel"));
         progressETCLabel.setText(i18nBundle.getString("dialogs.progressETCLabel"));
 
