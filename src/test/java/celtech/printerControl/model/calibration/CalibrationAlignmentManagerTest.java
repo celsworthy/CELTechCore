@@ -47,6 +47,14 @@ public class CalibrationAlignmentManagerTest extends JavaFXConfiguredTest
                                             }));
         
         transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE,
+                                            CalibrationXAndYState.GET_Y_OFFSET,
+                                            CalibrationAlignmentManager.GUIName.COMPLETE,
+                                            (Callable) () ->
+                                            {
+                                                return results.doAction1ButFails();
+                                            }));        
+        
+        transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE,
                                             CalibrationXAndYState.FAILED,
                                             CalibrationAlignmentManager.GUIName.CANCEL,
                                             (Callable) () ->
@@ -92,7 +100,16 @@ public class CalibrationAlignmentManagerTest extends JavaFXConfiguredTest
         assertEquals(CalibrationXAndYState.FAILED, manager.stateProperty().get());
         assertEquals(10, results.x);
         assertTrue(results.cancelled);
-    }       
+    }  
+    
+    @Test
+    public void testFailedTransitionsEndsInFailedState()
+    {
+        manager.followTransition(GUIName.NEXT);
+        manager.followTransition(GUIName.COMPLETE);
+        assertEquals(CalibrationXAndYState.FAILED, manager.stateProperty().get());
+        assertEquals(22, results.x);
+    }      
 
     static class TestResults
     {
@@ -105,6 +122,13 @@ public class CalibrationAlignmentManagerTest extends JavaFXConfiguredTest
             x += 10;
             return true;
         }
+        
+        private boolean doAction1ButFails()
+        {
+            x += 12;
+            return false;
+        }        
+        
 
         private boolean doAction2()
         {
@@ -112,9 +136,10 @@ public class CalibrationAlignmentManagerTest extends JavaFXConfiguredTest
             return true;
         }
 
-        private void doCancelled()
+        private boolean doCancelled()
         {
             cancelled = true;
+            return true;
         }
     }
 }

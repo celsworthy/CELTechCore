@@ -43,8 +43,12 @@ public class TestTaskExecutor implements TaskExecutor
     {
         try
         {
-            action.call();
-            successHandler.handle(null);
+            boolean success = action.call();
+            if (success) {
+                successHandler.handle(null);
+            } else {
+                failureHandler.handle(null);
+            }
         } catch (Exception ex)
         {
             failureHandler.handle(null);
