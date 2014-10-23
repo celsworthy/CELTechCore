@@ -20,9 +20,9 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author tony
  */
-public class CalibrationAlignmentManager
+public class StateTransitionManager
 {
-    private final CalibrationXAndYActions actions;
+    
 
     public enum GUIName
     {
@@ -30,8 +30,7 @@ public class CalibrationAlignmentManager
         START, CANCEL, BACK, NEXT, RETRY, COMPLETE, YES, NO, AUTO;
     }
 
-    private final Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationAlignmentManager.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(StateTransitionManager.class.getName());
 
     Set<StateTransition> allowedTransitions;
 
@@ -42,10 +41,9 @@ public class CalibrationAlignmentManager
         return state;
     }
 
-    public CalibrationAlignmentManager(Set<StateTransition> allowedTransitions, CalibrationXAndYActions actions)
+    public StateTransitionManager(Set<StateTransition> allowedTransitions)
     {
         this.allowedTransitions = allowedTransitions;
-        this.actions = actions;
         state = new SimpleObjectProperty<>(CalibrationXAndYState.IDLE);
     }
 
@@ -124,12 +122,5 @@ public class CalibrationAlignmentManager
             }
         }
     }    
-    
-    public void setXOffset(String xOffset) {
-        actions.setXOffset(xOffset);
-    }
-    
-    public void setYOffset(int yOffset) {
-        actions.setYOffset(yOffset);
-    }    
+   
 }

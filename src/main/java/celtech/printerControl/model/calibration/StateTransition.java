@@ -3,7 +3,7 @@
  */
 package celtech.printerControl.model.calibration;
 
-import celtech.printerControl.model.calibration.CalibrationAlignmentManager.GUIName;
+import celtech.printerControl.model.calibration.StateTransitionManager.GUIName;
 import celtech.services.calibration.CalibrationXAndYState;
 import java.util.concurrent.Callable;
 
@@ -16,10 +16,10 @@ public class StateTransition
     final CalibrationXAndYState fromState;
     final CalibrationXAndYState toState;
     final CalibrationXAndYState transitionFailedState;
-    final CalibrationAlignmentManager.GUIName guiName;
+    final StateTransitionManager.GUIName guiName;
     final Callable<Boolean> action;
 
-    public StateTransition(CalibrationXAndYState fromState, CalibrationAlignmentManager.GUIName guiName, 
+    public StateTransition(CalibrationXAndYState fromState, StateTransitionManager.GUIName guiName, 
         CalibrationXAndYState toState, Callable action)
     {
         this.fromState = fromState;
@@ -29,7 +29,7 @@ public class StateTransition
         transitionFailedState = CalibrationXAndYState.FAILED;
     }
     
-    public StateTransition(CalibrationXAndYState fromState, CalibrationAlignmentManager.GUIName guiName, 
+    public StateTransition(CalibrationXAndYState fromState, StateTransitionManager.GUIName guiName, 
         CalibrationXAndYState toState)
     {
         this.fromState = fromState;

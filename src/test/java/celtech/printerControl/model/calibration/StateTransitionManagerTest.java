@@ -4,8 +4,7 @@
 package celtech.printerControl.model.calibration;
 
 import celtech.JavaFXConfiguredTest;
-import celtech.printerControl.model.calibration.CalibrationAlignmentManager.GUIName;
-import celtech.services.calibration.CalibrationXAndYActions;
+import celtech.printerControl.model.calibration.StateTransitionManager.GUIName;
 import celtech.services.calibration.CalibrationXAndYState;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,52 +21,50 @@ import org.junit.Test;
  *
  * @author tony
  */
-public class CalibrationAlignmentManagerTest extends JavaFXConfiguredTest
+public class StateTransitionManagerTest extends JavaFXConfiguredTest
 {
 
     Set<StateTransition> transitions;
-    CalibrationAlignmentManager manager;
-    TestResults results;
+    TestStateTransitionManager manager;
 
     @Before
     public void setUp()
     {
-        results = new TestResults();
+        TestActions actions = new TestActions();
         transitions = new HashSet<>();
         transitions.add(new StateTransition(CalibrationXAndYState.IDLE,
-                                            CalibrationAlignmentManager.GUIName.NEXT,
+                                            StateTransitionManager.GUIName.NEXT,
                                             CalibrationXAndYState.PRINT_CIRCLE,
                                             (Callable) () ->
                                             {
-                                                return results.doAction1();
+                                                return actions.doAction1();
                                             }));
 
         transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE,
-                                            CalibrationAlignmentManager.GUIName.NEXT,
+                                            StateTransitionManager.GUIName.NEXT,
                                             CalibrationXAndYState.GET_Y_OFFSET,
                                             (Callable) () ->
                                             {
-                                                return results.doAction2();
+                                                return actions.doAction2();
                                             }));
 
         transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE,
-                                            CalibrationAlignmentManager.GUIName.COMPLETE,
+                                            StateTransitionManager.GUIName.COMPLETE,
                                             CalibrationXAndYState.GET_Y_OFFSET,
                                             (Callable) () ->
                                             {
-                                                return results.doAction1ButFails();
+                                                return actions.doAction1ButFails();
                                             }));
 
         transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE,
-                                            CalibrationAlignmentManager.GUIName.CANCEL,
+                                            StateTransitionManager.GUIName.CANCEL,
                                             CalibrationXAndYState.FAILED,
                                             (Callable) () ->
                                             {
-                                                return results.doCancelled();
+                                                return actions.doCancelled();
                                             }));
 
-        TestResults actions = new TestResults();
-        manager = new CalibrationAlignmentManager(transitions, actions);
+        manager = new TestStateTransitionManager(transitions, actions);
 
     }
 
@@ -85,7 +82,7 @@ public class CalibrationAlignmentManagerTest extends JavaFXConfiguredTest
     {
         manager.followTransition(GUIName.NEXT);
         assertEquals(CalibrationXAndYState.PRINT_CIRCLE, manager.stateProperty().get());
-        assertEquals(10, results.x);
+        assertEquals(10, manager.getX());
     }
 
     @Test
@@ -94,7 +91,7 @@ public class CalibrationAlignmentManagerTest extends JavaFXConfiguredTest
         manager.followTransition(GUIName.NEXT);
         manager.followTransition(GUIName.NEXT);
         assertEquals(CalibrationXAndYState.GET_Y_OFFSET, manager.stateProperty().get());
-        assertEquals(11, results.x);
+        assertEquals(11, manager.getX());
     }
 
     @Test
@@ -103,8 +100,8 @@ public class CalibrationAlignmentManagerTest extends JavaFXConfiguredTest
         manager.followTransition(GUIName.NEXT);
         manager.followTransition(GUIName.CANCEL);
         assertEquals(CalibrationXAndYState.FAILED, manager.stateProperty().get());
-        assertEquals(10, results.x);
-        assertTrue(results.cancelled);
+        assertEquals(10, manager.getX());
+        assertTrue(manager.isCancelled());
     }
 
     @Test
@@ -113,7 +110,7 @@ public class CalibrationAlignmentManagerTest extends JavaFXConfiguredTest
         manager.followTransition(GUIName.NEXT);
         manager.followTransition(GUIName.COMPLETE);
         assertEquals(CalibrationXAndYState.FAILED, manager.stateProperty().get());
-        assertEquals(22, results.x);
+        assertEquals(22, manager.getX());
     }
 
     @Test
@@ -132,7 +129,7 @@ public class CalibrationAlignmentManagerTest extends JavaFXConfiguredTest
         assertEquals(CalibrationXAndYState.GET_Y_OFFSET, states.get(1));
     }
 
-    static class TestResults
+    static class TestActions
     {
 
         int x = 0;
@@ -161,5 +158,27 @@ public class CalibrationAlignmentManagerTest extends JavaFXConfiguredTest
             cancelled = true;
             return true;
         }
+    }
+
+    public class TestStateTransitionManager extends StateTransitionManager
+    {
+
+        private final TestActions actions;
+
+        public TestStateTransitionManager(Set<StateTransition> allowedTransitions,
+            TestActions actions)
+        {
+            super(allowedTransitions);
+            this.actions = actions;
+        }
+        
+        public int getX() {
+            return actions.x;
+        }
+        
+        public boolean isCancelled() {
+            return actions.cancelled;
+        }
+
     }
 }

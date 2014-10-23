@@ -11,7 +11,8 @@ import celtech.printerControl.model.Head;
 import celtech.printerControl.model.NozzleHeater;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Reel;
-import celtech.printerControl.model.calibration.CalibrationAlignmentManager;
+import celtech.printerControl.model.calibration.StateTransitionManager;
+import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
 import celtech.services.calibration.CalibrationXAndYState;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOpeningCalibrationState;
@@ -22,7 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -50,7 +50,7 @@ public class CalibrationInsetPanelController implements Initializable,
 {
     
     CalibrationXAndYGUI calibrationXAndYGUI;
-    CalibrationAlignmentManager stateManager;
+    XAndYStateTransitionManager stateManager;
 
     private ResourceBundle resources;
 
@@ -162,13 +162,13 @@ public class CalibrationInsetPanelController implements Initializable,
     void nextButtonAction(ActionEvent event)
     {
 //        calibrationHelper.nextButtonAction();
-        stateManager.followTransition(CalibrationAlignmentManager.GUIName.NEXT);
+        stateManager.followTransition(StateTransitionManager.GUIName.NEXT);
     }
 
     @FXML
     void backToStatusAction(ActionEvent event)
     {
-        stateManager.followTransition(CalibrationAlignmentManager.GUIName.BACK);
+        stateManager.followTransition(StateTransitionManager.GUIName.BACK);
         ApplicationStatus.getInstance().returnToLastMode();
         setCalibrationMode(CalibrationMode.CHOICE);
     }
@@ -177,13 +177,13 @@ public class CalibrationInsetPanelController implements Initializable,
     void startCalibration(ActionEvent event)
     {
 //        calibrationHelper.nextButtonAction();
-        stateManager.followTransition(CalibrationAlignmentManager.GUIName.START);
+        stateManager.followTransition(StateTransitionManager.GUIName.START);
     }
 
     @FXML
     void cancelCalibration(ActionEvent event)
     {
-        stateManager.followTransition(CalibrationAlignmentManager.GUIName.CANCEL);
+        stateManager.followTransition(StateTransitionManager.GUIName.CANCEL);
         cancelCalibrationAction();
     }
 
@@ -191,7 +191,7 @@ public class CalibrationInsetPanelController implements Initializable,
     void retryCalibration(ActionEvent event)
     {
 //        calibrationHelper.retryAction();
-        stateManager.followTransition(CalibrationAlignmentManager.GUIName.RETRY);
+        stateManager.followTransition(StateTransitionManager.GUIName.RETRY);
     }
 
     /**

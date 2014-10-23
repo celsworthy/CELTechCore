@@ -3,8 +3,8 @@
  */
 package celtech.coreUI.controllers.panels;
 
-import celtech.printerControl.model.calibration.CalibrationAlignmentManager;
-import celtech.printerControl.model.calibration.CalibrationAlignmentManager.GUIName;
+import celtech.printerControl.model.calibration.StateTransitionManager;
+import celtech.printerControl.model.calibration.StateTransitionManager.GUIName;
 import celtech.printerControl.model.calibration.StateTransition;
 import celtech.services.calibration.CalibrationXAndYState;
 import java.util.HashMap;
@@ -25,11 +25,11 @@ public class CalibrationXAndYGUI
         CalibrationXAndYHelper.class.getName());
 
     private CalibrationInsetPanelController controller;
-    CalibrationAlignmentManager stateManager;
+    StateTransitionManager stateManager;
     Map<GUIName, Button> namesToButtons = new HashMap<>();
 
     public CalibrationXAndYGUI(CalibrationInsetPanelController controller,
-        CalibrationAlignmentManager stateManager)
+        StateTransitionManager stateManager)
     {
         this.controller = controller;
         this.stateManager = stateManager;
