@@ -116,15 +116,15 @@ public final class HardwarePrinter implements Printer
     /*
      * State machine data
      */
-    private final BooleanProperty canRemoveHeadProperty = new SimpleBooleanProperty(false);
-    private final BooleanProperty canPurgeHeadProperty = new SimpleBooleanProperty(false);
-    private final BooleanProperty mustPurgeHeadProperty = new SimpleBooleanProperty(false);
-    private final BooleanProperty canPrintProperty = new SimpleBooleanProperty(false);
-    private final BooleanProperty canPauseProperty = new SimpleBooleanProperty(false);
-    private final BooleanProperty canResumeProperty = new SimpleBooleanProperty(false);
-    private final BooleanProperty canRunMacroProperty = new SimpleBooleanProperty(false);
-    private final BooleanProperty canCancelProperty = new SimpleBooleanProperty(false);
-    private final BooleanProperty canOpenDoorProperty = new SimpleBooleanProperty(false);
+    private final BooleanProperty canRemoveHead = new SimpleBooleanProperty(false);
+    private final BooleanProperty canPurgeHead = new SimpleBooleanProperty(false);
+    private final BooleanProperty mustPurgeHead = new SimpleBooleanProperty(false);
+    private final BooleanProperty canPrint = new SimpleBooleanProperty(false);
+    private final BooleanProperty canPause = new SimpleBooleanProperty(false);
+    private final BooleanProperty canResume = new SimpleBooleanProperty(false);
+    private final BooleanProperty canRunMacro = new SimpleBooleanProperty(false);
+    private final BooleanProperty canCancel = new SimpleBooleanProperty(false);
+    private final BooleanProperty canOpenDoor = new SimpleBooleanProperty(false);
 
     /*
      * Physical model
@@ -175,19 +175,20 @@ public final class HardwarePrinter implements Printer
         extruders.add(new Extruder("E"));
         extruders.add(new Extruder("D"));
 
-        canPrintProperty.bind(head.isNotNull()
+        canPrint.bind(head.isNotNull()
             .and(printerStatus.isEqualTo(PrinterStatus.IDLE))
             .and(extruders.get(0).filamentLoaded.or(extruders.get(1).filamentLoaded)));
-        canCancelProperty.bind(
+        canCancel.bind(
             printerStatus.isEqualTo(PrinterStatus.PAUSED)
+            .or(printerStatus.isEqualTo(PrinterStatus.PAUSING))
             .or(printerStatus.isEqualTo(PrinterStatus.POST_PROCESSING))
             .or(printerStatus.isEqualTo(PrinterStatus.SLICING))
             .or(printerStatus.isEqualTo(PrinterStatus.SENDING_TO_PRINTER))
             .or(printerStatus.isEqualTo(PrinterStatus.EXECUTING_MACRO))
             .or(printerStatus.isEqualTo(PrinterStatus.PURGING_HEAD)));
-        canRunMacroProperty.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
+        canRunMacro.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
             .or(printerStatus.isEqualTo(PrinterStatus.CANCELLING)));
-        canPauseProperty.bind(printerStatus.isEqualTo(PrinterStatus.PRINTING)
+        canPause.bind(printerStatus.isEqualTo(PrinterStatus.PRINTING)
             .or(printerStatus.isEqualTo(PrinterStatus.RESUMING)));
 
         threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
@@ -213,49 +214,49 @@ public final class HardwarePrinter implements Printer
             {
                 case IDLE:
                     lastStateBeforePause = null;
-                    canRemoveHeadProperty.set(true);
-                    canPurgeHeadProperty.set(true);
-                    canResumeProperty.set(false);
+                    canRemoveHead.set(true);
+                    canPurgeHead.set(true);
+                    canResume.set(false);
                     printEngine.goToIdle();
                     break;
                 case REMOVING_HEAD:
-                    canRemoveHeadProperty.set(false);
-                    canPurgeHeadProperty.set(false);
-                    canResumeProperty.set(false);
+                    canRemoveHead.set(false);
+                    canPurgeHead.set(false);
+                    canResume.set(false);
                     break;
                 case PURGING_HEAD:
-                    canRemoveHeadProperty.set(false);
-                    canPurgeHeadProperty.set(false);
-                    canResumeProperty.set(false);
+                    canRemoveHead.set(false);
+                    canPurgeHead.set(false);
+                    canResume.set(false);
                     break;
                 case SLICING:
-                    canRemoveHeadProperty.set(false);
-                    canPurgeHeadProperty.set(false);
-                    canResumeProperty.set(false);
+                    canRemoveHead.set(false);
+                    canPurgeHead.set(false);
+                    canResume.set(false);
                     printEngine.goToSlicing();
                     break;
                 case POST_PROCESSING:
-                    canRemoveHeadProperty.set(false);
-                    canPurgeHeadProperty.set(false);
-                    canResumeProperty.set(false);
+                    canRemoveHead.set(false);
+                    canPurgeHead.set(false);
+                    canResume.set(false);
                     printEngine.goToPostProcessing();
                     break;
                 case SENDING_TO_PRINTER:
-                    canRemoveHeadProperty.set(false);
-                    canPurgeHeadProperty.set(false);
-                    canResumeProperty.set(false);
+                    canRemoveHead.set(false);
+                    canPurgeHead.set(false);
+                    canResume.set(false);
                     printEngine.goToSendingToPrinter();
                     break;
                 case PAUSED:
-                    canRemoveHeadProperty.set(false);
-                    canPurgeHeadProperty.set(false);
-                    canResumeProperty.set(true);
+                    canRemoveHead.set(false);
+                    canPurgeHead.set(false);
+                    canResume.set(true);
                     printEngine.goToPause();
                     break;
                 case PRINTING:
-                    canRemoveHeadProperty.set(false);
-                    canPurgeHeadProperty.set(false);
-                    canResumeProperty.set(false);
+                    canRemoveHead.set(false);
+                    canPurgeHead.set(false);
+                    canResume.set(false);
                     printEngine.goToPrinting();
                     break;
                 case EXECUTING_MACRO:
@@ -332,13 +333,13 @@ public final class HardwarePrinter implements Printer
     @Override
     public final ReadOnlyBooleanProperty canRemoveHeadProperty()
     {
-        return canRemoveHeadProperty;
+        return canRemoveHead;
     }
 
     @Override
     public void removeHead(TaskResponder responder) throws PrinterException
     {
-        if (!canRemoveHeadProperty.get())
+        if (!canRemoveHead.get())
         {
             throw new PrinterException("Head remove not permitted");
         }
@@ -395,7 +396,7 @@ public final class HardwarePrinter implements Printer
     @Override
     public final ReadOnlyBooleanProperty canPurgeHeadProperty()
     {
-        return canPurgeHeadProperty;
+        return canPurgeHead;
     }
 
     protected final FloatProperty purgeTemperatureProperty = new SimpleFloatProperty(0);
@@ -403,7 +404,7 @@ public final class HardwarePrinter implements Printer
     @Override
     public void prepareToPurgeHead(TaskResponder responder) throws PrinterException
     {
-        if (!canPurgeHeadProperty.get())
+        if (!canPurgeHead.get())
         {
             throw new PrinterException("Purge not permitted");
         }
@@ -515,7 +516,7 @@ public final class HardwarePrinter implements Printer
     @Override
     public final ReadOnlyBooleanProperty canPrintProperty()
     {
-        return canPrintProperty;
+        return canPrint;
     }
 
     /*
@@ -524,13 +525,13 @@ public final class HardwarePrinter implements Printer
     @Override
     public final ReadOnlyBooleanProperty canCancelProperty()
     {
-        return canCancelProperty;
+        return canCancel;
     }
 
     @Override
     public void cancel(TaskResponder responder) throws PrinterException
     {
-        if (!canCancelProperty.get())
+        if (!canCancel.get())
         {
             throw new PrinterException("Cancel not permitted");
         }
@@ -550,8 +551,7 @@ public final class HardwarePrinter implements Printer
         }, "Aborting").start();
     }
 
-    @Override
-    public boolean doAbortActivity(Cancellable cancellable)
+    private boolean doAbortActivity(Cancellable cancellable)
     {
         boolean success = false;
 
@@ -571,7 +571,7 @@ public final class HardwarePrinter implements Printer
         PrinterUtils.waitOnBusy(this, cancellable);
         try
         {
-            runMacro("abort_print");
+            runMacroPrivileged("abort_print");
             PrinterUtils.waitOnMacroFinished(this, cancellable);
             success = true;
         } catch (PrinterException ex)
@@ -587,15 +587,15 @@ public final class HardwarePrinter implements Printer
      * @return
      */
     @Override
-    public final ReadOnlyBooleanProperty getCanPauseProperty()
+    public final ReadOnlyBooleanProperty canPauseProperty()
     {
-        return canPauseProperty;
+        return canPause;
     }
 
     @Override
     public void pause() throws PrinterException
     {
-        if (!canPauseProperty.get())
+        if (!canPause.get())
         {
             throw new PrintActionUnavailableException("Cannot pause at this time");
         }
@@ -624,9 +624,9 @@ public final class HardwarePrinter implements Printer
      * @return
      */
     @Override
-    public final ReadOnlyBooleanProperty getCanResumeProperty()
+    public final ReadOnlyBooleanProperty canResumeProperty()
     {
-        return canResumeProperty;
+        return canResume;
     }
 
     /**
@@ -636,7 +636,7 @@ public final class HardwarePrinter implements Printer
     @Override
     public void resume() throws PrinterException
     {
-        if (!canResumeProperty.get())
+        if (!canResume.get())
         {
             throw new PrintActionUnavailableException("Cannot resume at this time");
         }
@@ -681,15 +681,25 @@ public final class HardwarePrinter implements Printer
     /*
      * Macros
      */
+    private void runMacroPrivileged(String macroName) throws PrinterException
+    {
+        boolean jobAccepted = printEngine.printGCodeFile(GCodeMacros.getFilename(macroName), true);
+
+        if (!jobAccepted)
+        {
+            throw new PrintJobRejectedException("Macro " + macroName + " could not be run in mode " + printerStatus.get().name());
+        }
+    }
+    
     @Override
     public final void runMacro(String macroName) throws PrinterException
     {
-        if (!canRunMacroProperty.get())
+        if (!canRunMacro.get())
         {
             throw new PrintActionUnavailableException("Run macro not available");
         }
 
-        if (mustPurgeHeadProperty.get())
+        if (mustPurgeHead.get())
         {
             throw new PurgeRequiredException("Cannot run macro - purge required");
         }
@@ -698,7 +708,7 @@ public final class HardwarePrinter implements Printer
 
         if (!jobAccepted)
         {
-            throw new PrintJobRejectedException("Macro " + macroName + " could not be run");
+            throw new PrintJobRejectedException("Macro " + macroName + " could not be run in mode " + printerStatus.get().name());
         }
     }
 
@@ -733,7 +743,7 @@ public final class HardwarePrinter implements Printer
     @Override
     public final void runMacroWithoutPurgeCheck(String macroName) throws PrinterException
     {
-        if (!canRunMacroProperty.get())
+        if (!canRunMacro.get())
         {
             throw new PrintActionUnavailableException("Run macro not available");
         }
@@ -1404,7 +1414,7 @@ public final class HardwarePrinter implements Printer
     @Override
     public void goToOpenDoorPosition(TaskResponder responder) throws PrinterException
     {
-        if (!canOpenDoorProperty.get())
+        if (!canOpenDoor.get())
         {
             throw new PrintActionUnavailableException("Door open not available");
         }

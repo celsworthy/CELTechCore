@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 
@@ -26,6 +27,7 @@ public class SlicerMappingsContainer
     private SlicerMappingsContainer()
     {
         mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
+        mapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
 
         File slicerMappingsInputFile = new File(ApplicationConfiguration.getApplicationPrintProfileDirectory() + defaultSlicerMappingsFileName);
         if (!slicerMappingsInputFile.exists())

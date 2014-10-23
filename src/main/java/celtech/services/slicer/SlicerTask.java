@@ -92,7 +92,6 @@ public class SlicerTask extends Task<SliceResult>
                 macSlicerCommand = "?";
                 linuxSlicerCommand = "Cura/bin/CuraEngine";
                 configLoadCommand = "-c";
-                configFile = "\"" + ApplicationConfiguration.getUserPrintProfileDirectory() + "curaProfile.ini\"";
                 combinedConfigSection = configLoadCommand + " " + configFile;
                 break;
         }

@@ -1788,7 +1788,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
                     int intersectionCounter = 0;
                     int maxNumberOfIntersectionsToConsider = currentSettings.getNumberOfPerimeters();
-                    float maxDistanceFromEndPoint = currentSettings.getPerimeterExtrusionWidth() * maxNumberOfIntersectionsToConsider * 4;
+                    float maxDistanceFromEndPoint = currentSettings.getPerimeterExtrusionWidth_mm() * maxNumberOfIntersectionsToConsider * 4;
 
                     // Attempt to use the inwards move to find the innermost perimeter
                     if (lastInwardsMoveEvent != null)

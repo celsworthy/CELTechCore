@@ -655,9 +655,13 @@ public class PrintEngine implements ControllableService
 
             //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
             Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
-            configWriter.setPrintCentre(centreOfPrintedObject.getX() + ApplicationConfiguration.xPrintOffset, centreOfPrintedObject.getZ() + ApplicationConfiguration.yPrintOffset);
-
-            configWriter.generateConfigForSlicer(settings, printJobDirectoryName + File.separator + printUUID + ApplicationConfiguration.printProfileFileExtension);
+            configWriter.setPrintCentre((float) (centreOfPrintedObject.getX() + ApplicationConfiguration.xPrintOffset),
+                                        (float) (centreOfPrintedObject.getZ() + ApplicationConfiguration.yPrintOffset));
+            configWriter.generateConfigForSlicer(settings,
+                                                 printJobDirectoryName
+                                                 + File.separator
+                                                 + printUUID
+                                                 + ApplicationConfiguration.printProfileFileExtension);
 
             associatedPrinter.setPrinterStatus(PrinterStatus.SLICING);
             slicerService.reset();
@@ -870,7 +874,9 @@ public class PrintEngine implements ControllableService
         boolean acceptedPrintRequest = false;
         consideringPrintRequest = true;
 
-        if (associatedPrinter.printerStatusProperty().get() == PrinterStatus.IDLE)
+        if (associatedPrinter.printerStatusProperty().get() == PrinterStatus.IDLE
+            || associatedPrinter.printerStatusProperty().get() == PrinterStatus.CANCELLING
+            || associatedPrinter.printerStatusProperty().get() == PrinterStatus.PAUSING)
         {
             if (Platform.isFxApplicationThread() == false)
             {

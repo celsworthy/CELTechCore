@@ -68,8 +68,6 @@ public interface Printer extends RoboxResponseConsumer
 
     public void closeNozzleFully() throws PrinterException;
 
-    public boolean doAbortActivity(Cancellable cancellable);
-
     public void ejectFilament(int extruderNumber, TaskResponder responder) throws PrinterException;
 
     public ObservableList<Extruder> extrudersProperty();
@@ -98,13 +96,13 @@ public interface Printer extends RoboxResponseConsumer
      *
      * @return
      */
-    public ReadOnlyBooleanProperty getCanPauseProperty();
+    public ReadOnlyBooleanProperty canPauseProperty();
 
     /**
      *
      * @return
      */
-    public ReadOnlyBooleanProperty getCanResumeProperty();
+    public ReadOnlyBooleanProperty canResumeProperty();
 
     /**
      *
@@ -217,34 +215,6 @@ public interface Printer extends RoboxResponseConsumer
      */
     public void runMacro(String macroName) throws PrinterException;
 
-    //    /**
-    //     *
-    //     * @param macroName
-    //     * @param checkForPurge
-    //     * @throws celtech.printerControl.model.PrinterException
-    //     */
-    //    public void runMacro(final String macroName, boolean checkForPurge) throws PrinterException
-    //    {
-    //        if (!canPrintProperty.get())
-    //        {
-    //            throw new PrintActionUnavailableException("Cannot print at this time");
-    //        }
-    //        if (checkForPurge)
-    //        {
-    //            boolean purgeConsent = PrinterUtils.getInstance().offerPurgeIfNecessary(this);
-    //
-    //            if (purgeConsent)
-    //            {
-    //                DisplayManager.getInstance().getPurgeInsetPanelController().purgeAndRunMacro(macroName, this);
-    //            } else
-    //            {
-    //                printEngine.printGCodeFile(GCodeMacros.getFilename(macroName), true);
-    //            }
-    //        } else
-    //        {
-    //            printEngine.printGCodeFile(GCodeMacros.getFilename(macroName), true);
-    //        }
-    //    }
     public void runMacroWithoutPurgeCheck(String macroName) throws PrinterException;
 
     /**

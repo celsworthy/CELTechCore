@@ -5,6 +5,7 @@
  */
 package celtech.utils;
 
+import celtech.Lookup;
 import celtech.appManager.TaskController;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
@@ -21,8 +22,6 @@ import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.control.action.Action;
-import org.controlsfx.dialog.Dialogs;
 
 /**
  *
@@ -35,19 +34,11 @@ public class PrinterUtils
         PrinterUtils.class.getName());
     private static PrinterUtils instance = null;
     private static ResourceBundle i18nBundle = null;
-    private Dialogs.CommandLink goForPurge = null;
-    private Dialogs.CommandLink dontGoForPurge = null;
     private boolean purgeDialogVisible = false;
 
     private PrinterUtils()
     {
         i18nBundle = DisplayManager.getLanguageBundle();
-        goForPurge = new Dialogs.CommandLink(i18nBundle.getString("dialogs.goForPurgeTitle"),
-                                             i18nBundle.getString("dialogs.goForPurgeInstruction"));
-        dontGoForPurge = new Dialogs.CommandLink(i18nBundle.getString("dialogs.dontGoForPurgeTitle"),
-                                                 i18nBundle.getString(
-                                                     "dialogs.dontGoForPurgeInstruction"));
-
     }
 
     /**
@@ -312,13 +303,10 @@ public class PrinterUtils
         {
             purgeDialogVisible = true;
 
-            Action nozzleFlushResponse = Dialogs.create().title(i18nBundle.getString(
-                "dialogs.purgeRequiredTitle"))
-                .message(i18nBundle.getString("dialogs.purgeRequiredInstruction"))
-                .masthead(null)
-                .showCommandLinks(goForPurge, goForPurge, dontGoForPurge);
+            boolean goForPurge = Lookup.getSystemNotificationHandler().showPurgeDialog();
+            
 
-            if (nozzleFlushResponse == goForPurge)
+            if (goForPurge)
             {
                 purgeConsent = true;
             }

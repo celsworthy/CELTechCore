@@ -20,9 +20,9 @@ public class SlicerParameters
     /*
      * Extrusion data
      */
-    private float firstLayerHeight;
-    private float layerHeight;
-    private float fillDensity;
+    private float firstLayerHeight_mm;
+    private float layerHeight_mm;
+    private float fillDensity_normalised;
     private FillPattern fillPattern;
     private int fillEveryNLayers;
     private int solidLayersAtTop;
@@ -34,12 +34,12 @@ public class SlicerParameters
     /*
      * Nozzle data
      */
-    private float firstLayerExtrusionWidth;
-    private float perimeterExtrusionWidth;
-    private float fillExtrusionWidth;
-    private float solidFillExtrusionWidth;
-    private float topSolidFillExtrusionWidth;
-    private float supportExtrusionWidth;
+    private float firstLayerExtrusionWidth_mm;
+    private float perimeterExtrusionWidth_mm;
+    private float fillExtrusionWidth_mm;
+    private float solidFillExtrusionWidth_mm;
+    private float topSolidFillExtrusionWidth_mm;
+    private float supportExtrusionWidth_mm;
     private ArrayList<NozzleParameters> nozzleParameters;
     private int firstLayerNozzle;
     private int perimeterNozzle;
@@ -51,11 +51,11 @@ public class SlicerParameters
      * Support
      */
     private boolean generateSupportMaterial;
-    private int supportOverhangThreshold;
+    private int supportOverhangThreshold_degrees;
     private int forcedSupportForFirstNLayers;
     private SupportPattern supportPattern;
-    private float supportPatternSpacing;
-    private int supportPatternAngle;
+    private float supportPatternSpacing_mm;
+    private int supportPatternAngle_degrees;
 
     /*
      * Speed settings
@@ -112,34 +112,34 @@ public class SlicerParameters
         this.slicerOverride = slicerOverride;
     }
 
-    public float getFirstLayerHeight()
+    public float getFirstLayerHeight_mm()
     {
-        return firstLayerHeight;
+        return firstLayerHeight_mm;
     }
 
-    public void setFirstLayerHeight(float firstLayerHeight)
+    public void setFirstLayerHeight_mm(float firstLayerHeight_mm)
     {
-        this.firstLayerHeight = firstLayerHeight;
+        this.firstLayerHeight_mm = firstLayerHeight_mm;
     }
 
-    public float getLayerHeight()
+    public float getLayerHeight_mm()
     {
-        return layerHeight;
+        return layerHeight_mm;
     }
 
-    public void setLayerHeight(float layerHeight)
+    public void setLayerHeight_mm(float layerHeight_mm)
     {
-        this.layerHeight = layerHeight;
+        this.layerHeight_mm = layerHeight_mm;
     }
 
-    public float getFillDensity()
+    public float getFillDensity_normalised()
     {
-        return fillDensity;
+        return fillDensity_normalised;
     }
 
-    public void setFillDensity(float fillDensity)
+    public void setFillDensity_normalised(float fillDensity_normalised)
     {
-        this.fillDensity = fillDensity;
+        this.fillDensity_normalised = fillDensity_normalised;
     }
 
     public FillPattern getFillPattern()
@@ -202,7 +202,7 @@ public class SlicerParameters
         this.brimWidth_mm = brimWidth_mm;
     }
 
-    public boolean isSpiralPrint()
+    public boolean getSpiralPrint()
     {
         return spiralPrint;
     }
@@ -212,64 +212,64 @@ public class SlicerParameters
         this.spiralPrint = spiralPrint;
     }
 
-    public float getFirstLayerExtrusionWidth()
+    public float getFirstLayerExtrusionWidth_mm()
     {
-        return firstLayerExtrusionWidth;
+        return firstLayerExtrusionWidth_mm;
     }
 
-    public void setFirstLayerExtrusionWidth(float firstLayerExtrusionWidth)
+    public void setFirstLayerExtrusionWidth_mm(float firstLayerExtrusionWidth_mm)
     {
-        this.firstLayerExtrusionWidth = firstLayerExtrusionWidth;
+        this.firstLayerExtrusionWidth_mm = firstLayerExtrusionWidth_mm;
     }
 
-    public float getPerimeterExtrusionWidth()
+    public float getPerimeterExtrusionWidth_mm()
     {
-        return perimeterExtrusionWidth;
+        return perimeterExtrusionWidth_mm;
     }
 
-    public void setPerimeterExtrusionWidth(float perimeterExtrusionWidth)
+    public void setPerimeterExtrusionWidth_mm(float perimeterExtrusionWidth_mm)
     {
-        this.perimeterExtrusionWidth = perimeterExtrusionWidth;
+        this.perimeterExtrusionWidth_mm = perimeterExtrusionWidth_mm;
     }
 
-    public float getFillExtrusionWidth()
+    public float getFillExtrusionWidth_mm()
     {
-        return fillExtrusionWidth;
+        return fillExtrusionWidth_mm;
     }
 
-    public void setFillExtrusionWidth(float fillExtrusionWidth)
+    public void setFillExtrusionWidth_mm(float fillExtrusionWidth_mm)
     {
-        this.fillExtrusionWidth = fillExtrusionWidth;
+        this.fillExtrusionWidth_mm = fillExtrusionWidth_mm;
     }
 
-    public float getSolidFillExtrusionWidth()
+    public float getSolidFillExtrusionWidth_mm()
     {
-        return solidFillExtrusionWidth;
+        return solidFillExtrusionWidth_mm;
     }
 
-    public void setSolidFillExtrusionWidth(float solidFillExtrusionWidth)
+    public void setSolidFillExtrusionWidth_mm(float solidFillExtrusionWidth_mm)
     {
-        this.solidFillExtrusionWidth = solidFillExtrusionWidth;
+        this.solidFillExtrusionWidth_mm = solidFillExtrusionWidth_mm;
     }
 
-    public float getTopSolidFillExtrusionWidth()
+    public float getTopSolidFillExtrusionWidth_mm()
     {
-        return topSolidFillExtrusionWidth;
+        return topSolidFillExtrusionWidth_mm;
     }
 
-    public void setTopSolidFillExtrusionWidth(float topSolidFillExtrusionWidth)
+    public void setTopSolidFillExtrusionWidth_mm(float topSolidFillExtrusionWidth_mm)
     {
-        this.topSolidFillExtrusionWidth = topSolidFillExtrusionWidth;
+        this.topSolidFillExtrusionWidth_mm = topSolidFillExtrusionWidth_mm;
     }
 
-    public float getSupportExtrusionWidth()
+    public float getSupportExtrusionWidth_mm()
     {
-        return supportExtrusionWidth;
+        return supportExtrusionWidth_mm;
     }
 
-    public void setSupportExtrusionWidth(float supportExtrusionWidth)
+    public void setSupportExtrusionWidth_mm(float supportExtrusionWidth_mm)
     {
-        this.supportExtrusionWidth = supportExtrusionWidth;
+        this.supportExtrusionWidth_mm = supportExtrusionWidth_mm;
     }
 
     public ArrayList<NozzleParameters> getNozzleParameters()
@@ -332,7 +332,7 @@ public class SlicerParameters
         this.supportInterfaceNozzle = supportInterfaceNozzle;
     }
 
-    public boolean isGenerateSupportMaterial()
+    public boolean getGenerateSupportMaterial()
     {
         return generateSupportMaterial;
     }
@@ -342,14 +342,14 @@ public class SlicerParameters
         this.generateSupportMaterial = generateSupportMaterial;
     }
 
-    public int getSupportOverhangThreshold()
+    public int getSupportOverhangThreshold_degrees()
     {
-        return supportOverhangThreshold;
+        return supportOverhangThreshold_degrees;
     }
 
-    public void setSupportOverhangThreshold(int supportOverhangThreshold)
+    public void setSupportOverhangThreshold_degrees(int supportOverhangThreshold_degrees)
     {
-        this.supportOverhangThreshold = supportOverhangThreshold;
+        this.supportOverhangThreshold_degrees = supportOverhangThreshold_degrees;
     }
 
     public int getForcedSupportForFirstNLayers()
@@ -372,24 +372,24 @@ public class SlicerParameters
         this.supportPattern = supportPattern;
     }
 
-    public float getSupportPatternSpacing()
+    public float getSupportPatternSpacing_mm()
     {
-        return supportPatternSpacing;
+        return supportPatternSpacing_mm;
     }
 
-    public void setSupportPatternSpacing(float supportPatternSpacing)
+    public void setSupportPatternSpacing_mm(float supportPatternSpacing_mm)
     {
-        this.supportPatternSpacing = supportPatternSpacing;
+        this.supportPatternSpacing_mm = supportPatternSpacing_mm;
     }
 
-    public int getSupportPatternAngle()
+    public int getSupportPatternAngle_degrees()
     {
-        return supportPatternAngle;
+        return supportPatternAngle_degrees;
     }
 
-    public void setSupportPatternAngle(int supportPatternAngle)
+    public void setSupportPatternAngle_degrees(int supportPatternAngle_degrees)
     {
-        this.supportPatternAngle = supportPatternAngle;
+        this.supportPatternAngle_degrees = supportPatternAngle_degrees;
     }
 
     public int getPerimeterSpeed_mm_per_s()
@@ -482,7 +482,7 @@ public class SlicerParameters
         this.gapFillSpeed_mm_per_s = gapFillSpeed_mm_per_s;
     }
 
-    public boolean isEnableCooling()
+    public boolean getEnableCooling()
     {
         return enableCooling;
     }
@@ -572,9 +572,9 @@ public class SlicerParameters
         /*
          * Extrusion data
          */
-        clone.firstLayerHeight = firstLayerHeight;
-        clone.layerHeight = layerHeight;
-        clone.fillDensity = fillDensity;
+        clone.firstLayerHeight_mm = firstLayerHeight_mm;
+        clone.layerHeight_mm = layerHeight_mm;
+        clone.fillDensity_normalised = fillDensity_normalised;
         clone.fillPattern = fillPattern;
         clone.fillEveryNLayers = fillEveryNLayers;
         clone.solidLayersAtTop = solidLayersAtTop;
@@ -586,12 +586,12 @@ public class SlicerParameters
         /*
          * Nozzle data
          */
-        clone.firstLayerExtrusionWidth = firstLayerExtrusionWidth;
-        clone.perimeterExtrusionWidth = perimeterExtrusionWidth;
-        clone.fillExtrusionWidth = fillExtrusionWidth;
-        clone.solidFillExtrusionWidth = solidFillExtrusionWidth;
-        clone.topSolidFillExtrusionWidth = topSolidFillExtrusionWidth;
-        clone.supportExtrusionWidth = supportExtrusionWidth;
+        clone.firstLayerExtrusionWidth_mm = firstLayerExtrusionWidth_mm;
+        clone.perimeterExtrusionWidth_mm = perimeterExtrusionWidth_mm;
+        clone.fillExtrusionWidth_mm = fillExtrusionWidth_mm;
+        clone.solidFillExtrusionWidth_mm = solidFillExtrusionWidth_mm;
+        clone.topSolidFillExtrusionWidth_mm = topSolidFillExtrusionWidth_mm;
+        clone.supportExtrusionWidth_mm = supportExtrusionWidth_mm;
 
         clone.nozzleParameters = new ArrayList<>();
         nozzleParameters.stream().forEach(nozzleParameter -> clone.nozzleParameters.add(nozzleParameter.clone()));
@@ -606,11 +606,11 @@ public class SlicerParameters
          * Support
          */
         clone.generateSupportMaterial = generateSupportMaterial;
-        clone.supportOverhangThreshold = supportOverhangThreshold;
+        clone.supportOverhangThreshold_degrees = supportOverhangThreshold_degrees;
         clone.forcedSupportForFirstNLayers = forcedSupportForFirstNLayers;
         clone.supportPattern = supportPattern;
-        clone.supportPatternSpacing = supportPatternSpacing;
-        clone.supportPatternAngle = supportPatternAngle;
+        clone.supportPatternSpacing_mm = supportPatternSpacing_mm;
+        clone.supportPatternAngle_degrees = supportPatternAngle_degrees;
 
         /*
          * Speed settings

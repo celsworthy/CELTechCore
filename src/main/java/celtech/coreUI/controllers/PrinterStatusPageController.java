@@ -41,9 +41,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.control.action.Action;
-import org.controlsfx.dialog.Dialogs;
-import org.controlsfx.dialog.Dialogs.CommandLink;
 
 /**
  * FXML Controller class
@@ -61,11 +58,6 @@ public class PrinterStatusPageController implements Initializable
     private ChangeListener<Color> printerColourChangeListener = null;
     private ChangeListener<PrinterStatus> printerStatusChangeListener = null;
     private ChangeListener<PauseStatus> pauseStatusChangeListener = null;
-
-    private CommandLink goAheadAndOpenTheLid = null;
-    private CommandLink dontOpenTheLid = null;
-    private String openLidPrinterTooHotTitle = null;
-    private String openLidPrinterTooHotInfo = null;
 
     private String transferringDataString = null;
 
@@ -245,9 +237,6 @@ public class PrinterStatusPageController implements Initializable
     @FXML
     private Group temperatureWarning;
 
-    @FXML
-    private HBox printControlButtons;
-
     private Node[] advancedControls = null;
 
     private Printer lastSelectedPrinter = null;
@@ -318,31 +307,19 @@ public class PrinterStatusPageController implements Initializable
     @FXML
     void unlockLid(ActionEvent event)
     {
-        boolean openTheLid = true;
-
         if (printerToUse.getPrinterAncillarySystems().bedTemperatureProperty().get() > 60)
         {
-            Action tooBigResponse = Dialogs.create().title(
-                openLidPrinterTooHotTitle)
-                .message(openLidPrinterTooHotInfo)
-                .masthead(null)
-                .showCommandLinks(dontOpenTheLid, dontOpenTheLid,
-                                  goAheadAndOpenTheLid);
+            boolean goAheadAndOpenTheDoor = Lookup.getSystemNotificationHandler().showOpenDoorDialog();
 
-            if (tooBigResponse != goAheadAndOpenTheLid)
+            if (goAheadAndOpenTheDoor)
             {
-                openTheLid = false;
-            }
-        }
-
-        if (openTheLid)
-        {
-            try
-            {
-                printerToUse.goToOpenDoorPosition(null);
-            } catch (PrinterException ex)
-            {
-                steno.error("Error opening door " + ex.getMessage());
+                try
+                {
+                    printerToUse.goToOpenDoorPosition(null);
+                } catch (PrinterException ex)
+                {
+                    steno.error("Error opening door " + ex.getMessage());
+                }
             }
         }
     }
@@ -420,21 +397,11 @@ public class PrinterStatusPageController implements Initializable
     {
         if (taskResponse.succeeded())
         {
-            Dialogs.create()
-                .owner(null)
-                .title(Lookup.i18n("removeHead.title"))
-                .masthead(null)
-                .message(Lookup.i18n("removeHead.finished"))
-                .showInformation();
+            Lookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n("removeHead.title"), Lookup.i18n("removeHead.finished"));
             steno.debug("Head remove completed");
         } else
         {
-            Dialogs.create()
-                .owner(null)
-                .title(Lookup.i18n("removeHead.title"))
-                .masthead(null)
-                .message(Lookup.i18n("removeHead.failed"))
-                .showWarning();
+            Lookup.getSystemNotificationHandler().showWarningNotification(Lookup.i18n("removeHead.title"), Lookup.i18n("removeHead.failed"));
         }
     }
 
@@ -543,14 +510,6 @@ public class PrinterStatusPageController implements Initializable
         transferringDataString = i18nBundle.getString(
             "PrintQueue.SendingToPrinter");
 
-        goAheadAndOpenTheLid = new Dialogs.CommandLink(i18nBundle.getString(
-            "dialogs.openLidPrinterHotGoAheadHeading"), i18nBundle.getString("dialogs.openLidPrinterHotGoAheadInfo"));
-        dontOpenTheLid = new Dialogs.CommandLink(i18nBundle.getString(
-            "dialogs.openLidPrinterHotDontOpenHeading"), null);
-        openLidPrinterTooHotTitle = i18nBundle.getString(
-            "dialogs.openLidPrinterHotTitle");
-        openLidPrinterTooHotInfo = i18nBundle.getString(
-            "dialogs.openLidPrinterHotInfo");
         progressLayerLabel.setText(i18nBundle.getString("dialogs.progressLayerLabel"));
         progressETCLabel.setText(i18nBundle.getString("dialogs.progressETCLabel"));
 
@@ -622,8 +581,6 @@ public class PrinterStatusPageController implements Initializable
         reel.setVisible(false);
         filamentRectangle.setVisible(false);
 
-        printControlButtons.setVisible(false);
-
         advancedControls = new Node[]
         {
             extruder_minus100, extruder_minus20, extruder_minus5, extruder_plus100, extruder_plus20, extruder_plus5,
@@ -635,6 +592,10 @@ public class PrinterStatusPageController implements Initializable
             headFanButton, headLEDButton, removeHeadButton
         };
         setAdvancedControlsVisibility(false);
+        
+        pausePrintButton.setVisible(false);
+        resumePrintButton.setVisible(false);
+        cancelPrintButton.setVisible(false);
 
         if (Lookup.getCurrentlySelectedPrinter() != null)
         {
@@ -798,6 +759,7 @@ public class PrinterStatusPageController implements Initializable
                         }
 
                         processPrinterStatusChange(selectedPrinter.printerStatusProperty().get());
+                        bindToSelectedPrinter(selectedPrinter);
                         selectedPrinter.printerStatusProperty().addListener(printerStatusChangeListener);
 
                         printerOpenImage.visibleProperty().bind(selectedPrinter.getPrinterAncillarySystems().lidOpenProperty());
@@ -818,80 +780,49 @@ public class PrinterStatusPageController implements Initializable
         }
     }
 
+    private void bindToSelectedPrinter(Printer printer)
+    {
+        pausePrintButton.visibleProperty().bind(printer.canPauseProperty());
+        resumePrintButton.visibleProperty().bind(printer.canResumeProperty());
+        cancelPrintButton.visibleProperty().bind(printer.canCancelProperty());
+    }
+
     private void processPrinterStatusChange(PrinterStatus printerStatus)
     {
         if (printerStatus == null)
         {
-            printControlButtons.setVisible(false);
             setAdvancedControlsVisibility(false);
         } else
         {
             switch (printerStatus)
             {
                 case IDLE:
-                    resumePrintButton.setVisible(false);
-                    resumePrintButton.setDisable(false);
-                    pausePrintButton.setVisible(false);
-                    pausePrintButton.setDisable(false);
-                    cancelPrintButton.setVisible(false);
-                    printControlButtons.setVisible(false);
                     showProgressGroup.set(false);
                     setAdvancedControlsVisibility(true);
                     break;
                 case PAUSING:
-                    resumePrintButton.setVisible(true);
-                    resumePrintButton.setDisable(false);
-                    pausePrintButton.setVisible(false);
-                    pausePrintButton.setDisable(false);
-                    cancelPrintButton.setVisible(false);
-                    printControlButtons.setVisible(true);
                     showProgressGroup.set(false);
                     setAdvancedControlsVisibility(false);
                     break;
                 case RESUMING:
-                    resumePrintButton.setVisible(false);
-                    resumePrintButton.setDisable(false);
-                    pausePrintButton.setVisible(true);
-                    pausePrintButton.setDisable(false);
-                    cancelPrintButton.setVisible(false);
-                    printControlButtons.setVisible(true);
                     showProgressGroup.set(false);
                     setAdvancedControlsVisibility(false);
                     break;
                 case PAUSED:
-                    resumePrintButton.setVisible(true);
-                    resumePrintButton.setDisable(false);
-                    pausePrintButton.setVisible(false);
-                    pausePrintButton.setDisable(false);
-                    cancelPrintButton.setVisible(true);
-                    printControlButtons.setVisible(true);
                     showProgressGroup.set(false);
                     setAdvancedControlsVisibility(true);
                     break;
                 case SENDING_TO_PRINTER:
                 case PRINTING:
-                    resumePrintButton.setVisible(false);
-                    resumePrintButton.setDisable(true);
-                    pausePrintButton.setVisible(true);
-                    pausePrintButton.setDisable(false);
-                    cancelPrintButton.setVisible(false);
-                    printControlButtons.setVisible(true);
                     showProgressGroup.set(true);
                     setAdvancedControlsVisibility(false);
                     break;
                 case SLICING:
                 case POST_PROCESSING:
-                    resumePrintButton.setVisible(false);
-                    resumePrintButton.setDisable(false);
-                    pausePrintButton.setVisible(false);
-                    pausePrintButton.setDisable(false);
-                    cancelPrintButton.setVisible(true);
-                    printControlButtons.setVisible(true);
                     showProgressGroup.set(true);
                     setAdvancedControlsVisibility(false);
                     break;
                 default:
-                    printControlButtons.setVisible(false);
                     showProgressGroup.set(false);
                     break;
             }
@@ -986,6 +917,10 @@ public class PrinterStatusPageController implements Initializable
             //TODO modify to support multiple reels
             lastSelectedPrinter.reelsProperty().removeListener(reelChangeListener);
             lastSelectedPrinter.printerStatusProperty().removeListener(printerStatusChangeListener);
+
+            pausePrintButton.visibleProperty().unbind();
+            resumePrintButton.visibleProperty().unbind();
+            cancelPrintButton.visibleProperty().unbind();
         }
 
         filamentRectangle.visibleProperty().unbind();

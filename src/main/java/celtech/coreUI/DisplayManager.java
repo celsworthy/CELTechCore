@@ -61,9 +61,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.control.action.Action;
-import org.controlsfx.dialog.Dialogs;
-import org.controlsfx.dialog.Dialogs.CommandLink;
 
 /**
  *
@@ -171,11 +168,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private void whenModelLoadSucceeded()
     {
-        CommandLink dontLoadModel = new Dialogs.CommandLink(getLanguageBundle().getString(
-            "dialogs.ModelTooLargeNo"), null);
-        CommandLink shrinkModel = new Dialogs.CommandLink(getLanguageBundle().getString(
-            "dialogs.ShrinkModelToFit"), null);
-
         ModelLoadResults loadResults = modelLoaderService.getValue();
         if (loadResults.getResults().isEmpty())
         {
@@ -189,14 +181,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
             {
                 if (loadResult.isModelTooLarge())
                 {
-                    Action tooBigResponse = Dialogs.create().title(getLanguageBundle().getString(
-                        "dialogs.ModelTooLargeTitle"))
-                        .message(loadResult.getModelFilename() + ": "
-                            + getLanguageBundle().getString("dialogs.ModelTooLargeDescription"))
-                        .masthead(null)
-                        .showCommandLinks(shrinkModel, shrinkModel, dontLoadModel);
+                    boolean shrinkModel = Lookup.getSystemNotificationHandler().showModelTooBigDialog(loadResult.getModelFilename());
 
-                    if (tooBigResponse == shrinkModel)
+                    if (shrinkModel)
                     {
                         ModelContainer modelContainer = loadResult.getModelContainer();
                         modelContainer.shrinkToFitBed();
