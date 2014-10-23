@@ -11,6 +11,7 @@ import celtech.printerControl.model.Head;
 import celtech.printerControl.model.NozzleHeater;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Reel;
+import celtech.printerControl.model.calibration.CalibrationAlignmentManager;
 import celtech.services.calibration.CalibrationXAndYState;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOpeningCalibrationState;
@@ -21,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -46,6 +48,9 @@ public class CalibrationInsetPanelController implements Initializable,
     CalibrationBStateListener, CalibrationNozzleOffsetStateListener,
     CalibrationXAndYStateListener, PrinterListChangesListener
 {
+    
+    CalibrationXAndYGUI calibrationXAndYGUI;
+    CalibrationAlignmentManager stateManager;
 
     private ResourceBundle resources;
 
@@ -156,7 +161,8 @@ public class CalibrationInsetPanelController implements Initializable,
     @FXML
     void nextButtonAction(ActionEvent event)
     {
-        calibrationHelper.nextButtonAction();
+//        calibrationHelper.nextButtonAction();
+        stateManager.followTransition(CalibrationAlignmentManager.GUIName.NEXT);
     }
 
     @FXML
@@ -169,12 +175,14 @@ public class CalibrationInsetPanelController implements Initializable,
     @FXML
     void startCalibration(ActionEvent event)
     {
-        calibrationHelper.nextButtonAction();
+//        calibrationHelper.nextButtonAction();
+        stateManager.followTransition(CalibrationAlignmentManager.GUIName.START);
     }
 
     @FXML
     void cancelCalibration(ActionEvent event)
     {
+        stateManager.followTransition(CalibrationAlignmentManager.GUIName.CANCEL);
         cancelCalibrationAction();
     }
 
@@ -537,13 +545,19 @@ public class CalibrationInsetPanelController implements Initializable,
                 setNozzleHeightState(NozzleOffsetCalibrationState.IDLE);
                 break;
             case X_AND_Y_OFFSET:
-                calibrationHelper = new CalibrationXAndYHelper();
-                calibrationXAndYGUIStateHandler
-                    = new CalibrationXAndYGUIStateHandler(this, calibrationHelper);
-                ((CalibrationXAndYHelper) calibrationHelper).addStateListener(this);
-                calibrationHelper.goToIdleState();
-                calibrationHelper.setPrinterToUse(currentPrinter);
-                setXAndYState(CalibrationXAndYState.IDLE);
+//                calibrationHelper = new CalibrationXAndYHelper();
+//                calibrationXAndYGUIStateHandler
+//                    = new CalibrationXAndYGUIStateHandler(this, calibrationHelper);
+//                ((CalibrationXAndYHelper) calibrationHelper).addStateListener(this);
+//                calibrationHelper.goToIdleState();
+//                calibrationHelper.setPrinterToUse(currentPrinter);
+//                setXAndYState(CalibrationXAndYState.IDLE);
+                calibrationHelper = null;
+                calibrationXAndYGUIStateHandler = null;
+                
+                stateManager = currentPrinter.startCalibrateXAndY();
+                calibrationXAndYGUI = new CalibrationXAndYGUI(this, stateManager);
+                calibrationXAndYGUI.setState(CalibrationXAndYState.IDLE);
                 break;
             case CHOICE:
                 calibrationHelper = null;

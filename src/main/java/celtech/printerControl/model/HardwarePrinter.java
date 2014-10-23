@@ -54,6 +54,9 @@ import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
 import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.WritePrinterID;
 import celtech.printerControl.comms.commands.tx.WriteReelEEPROM;
+import celtech.printerControl.model.calibration.CalibrationAlignmentManager;
+import celtech.services.calibration.CalibrationXAndYState;
+import celtech.services.calibration.CalibrationXAndYTransitions;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.slicer.PrintQualityEnumeration;
@@ -2017,6 +2020,15 @@ public final class HardwarePrinter implements Printer
         printEngine.shutdown();
 
         commandInterface.shutdown();
+    }
+
+    @Override
+    public CalibrationAlignmentManager startCalibrateXAndY()
+    {
+        CalibrationXAndYTransitions calibrationXAndYTransitions = new CalibrationXAndYTransitions(this);
+        CalibrationAlignmentManager calibrationAlignmentManager = 
+            new CalibrationAlignmentManager(calibrationXAndYTransitions.getTransitions());
+        return calibrationAlignmentManager;
     }
 
     class RoboxEventProcessor implements Runnable

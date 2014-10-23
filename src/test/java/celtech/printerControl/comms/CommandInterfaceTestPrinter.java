@@ -22,6 +22,7 @@ import celtech.printerControl.model.PrinterAncillarySystems;
 import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.PrinterIdentity;
 import celtech.printerControl.model.Reel;
+import celtech.printerControl.model.calibration.CalibrationAlignmentManager;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.slicer.PrintQualityEnumeration;
@@ -581,6 +582,12 @@ public class CommandInterfaceTestPrinter implements Printer
 
     @Override
     public ReadOnlyObjectProperty pauseStatusProperty()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public CalibrationAlignmentManager startCalibrateXAndY()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

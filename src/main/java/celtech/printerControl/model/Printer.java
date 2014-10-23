@@ -15,6 +15,7 @@ import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.comms.events.RoboxResponseConsumer;
+import celtech.printerControl.model.calibration.CalibrationAlignmentManager;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.slicer.PrintQualityEnumeration;
@@ -447,4 +448,6 @@ public interface Printer extends RoboxResponseConsumer
     public ReadOnlyStringProperty printJobIDProperty();
     
     public ReadOnlyObjectProperty pauseStatusProperty();
+
+    public CalibrationAlignmentManager startCalibrateXAndY();
 }

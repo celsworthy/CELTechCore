@@ -4,14 +4,12 @@
 package celtech.printerControl.model.calibration;
 
 import celtech.Lookup;
-import celtech.appManager.TaskController;
 import celtech.services.calibration.CalibrationXAndYState;
 import java.util.HashSet;
 import java.util.Set;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import libertysystems.stenographer.Stenographer;
@@ -23,10 +21,11 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class CalibrationAlignmentManager
 {
-    
+
     public enum GUIName
     {
-        CANCEL, BACK, NEXT, RETRY, COMPLETE;
+
+        START, CANCEL, BACK, NEXT, RETRY, COMPLETE, YES, NO;
     }
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -46,7 +45,7 @@ public class CalibrationAlignmentManager
         this.allowedTransitions = allowedTransitions;
         state = new SimpleObjectProperty<>(CalibrationXAndYState.IDLE);
     }
-    
+
     public Set<StateTransition> getTransitions()
     {
         Set<StateTransition> transitions = new HashSet<>();
@@ -70,7 +69,8 @@ public class CalibrationAlignmentManager
         StateTransition foundTransition = null;
         for (StateTransition transition : getTransitions())
         {
-            if (transition.guiName == guiName) {
+            if (transition.guiName == guiName)
+            {
                 foundTransition = transition;
                 break;
             }
@@ -83,35 +83,28 @@ public class CalibrationAlignmentManager
 
         StateTransition stateTransition = getTransitionForGUIName(guiName);
 
-        EventHandler<WorkerStateEvent> goToNextState = (WorkerStateEvent event) ->
+        if (stateTransition.action == null)
         {
             setState(stateTransition.toState);
-        };
-
-        EventHandler<WorkerStateEvent> gotToFailedState = (WorkerStateEvent event) ->
+        } else
         {
-            setState(stateTransition.transitionFailedState);
-        };
-        
-        String taskName = String.format("State transition from %s to %s", 
-                                         stateTransition.fromState, stateTransition.toState);
-        
-        Lookup.getTaskExecutor().runAsTask(stateTransition.action, goToNextState, gotToFailedState,
-                                                                                  taskName);
-        
-    }
+            EventHandler<WorkerStateEvent> goToNextState = (WorkerStateEvent event) ->
+            {
+                setState(stateTransition.toState);
+            };
 
-//    private void doPrintCircleAction() throws Exception
-//    {
-//        try
-//        {
-//            savedHeadData = printer.readHeadEEPROM();
-//            printer.runMacro("rbx_XY_offset_roboxised");
-//            PrinterUtils.waitOnMacroFinished(printer, (Cancellable) null);
-//        } catch (RoboxCommsException ex)
-//        {
-//            steno.error("Error in nozzle alignment");
-//            setState(CalibrationXAndYState.FAILED);
-//        }
-//    }
+            EventHandler<WorkerStateEvent> gotToFailedState = (WorkerStateEvent event) ->
+            {
+                setState(stateTransition.transitionFailedState);
+            };
+
+            String taskName = String.format("State transition from %s to %s",
+                                            stateTransition.fromState, stateTransition.toState);
+
+            Lookup.getTaskExecutor().runAsTask(stateTransition.action, goToNextState,
+                                               gotToFailedState,
+                                               taskName);
+        }
+
+    }
 }

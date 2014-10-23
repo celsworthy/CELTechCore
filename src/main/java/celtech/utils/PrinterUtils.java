@@ -138,7 +138,7 @@ public class PrinterUtils
             {
                 Thread.sleep(100);
 
-                if (cancellable.cancelled)
+                if (cancellable != null && cancellable.cancelled)
                 {
                     failed = true;
                     break;
