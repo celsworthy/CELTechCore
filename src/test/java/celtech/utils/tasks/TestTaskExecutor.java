@@ -1,5 +1,11 @@
 package celtech.utils.tasks;
 
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
+
 /**
  *
  * @author Ian
@@ -29,5 +35,19 @@ public class TestTaskExecutor implements TaskExecutor
     public void runOnGUIThread(Runnable runnable)
     {
         runnable.run();
+    }
+
+    @Override
+    public void runAsTask(Callable<Boolean> action, EventHandler<WorkerStateEvent> successHandler,
+        EventHandler<WorkerStateEvent> failureHandler, String taskName)
+    {
+        try
+        {
+            action.call();
+            successHandler.handle(null);
+        } catch (Exception ex)
+        {
+            failureHandler.handle(null);
+        }
     }
 }

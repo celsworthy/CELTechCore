@@ -16,7 +16,7 @@ public class StateTransition
     final CalibrationXAndYState toState;
     final CalibrationXAndYState transitionFailedState;
     final CalibrationAlignmentManager.GUIName guiName;
-    final Callable action;
+    final Callable<Boolean> action;
 
     public StateTransition(CalibrationXAndYState fromState, CalibrationXAndYState toState, 
         CalibrationAlignmentManager.GUIName guiName, Callable action)

@@ -3,16 +3,11 @@
  */
 package celtech.printerControl.model.calibration;
 
+import celtech.Lookup;
 import celtech.appManager.TaskController;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
-import celtech.printerControl.model.Printer;
 import celtech.services.calibration.CalibrationXAndYState;
-import celtech.utils.PrinterUtils;
-import celtech.utils.tasks.Cancellable;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -28,44 +23,37 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class CalibrationAlignmentManager
 {
-
-    private final Printer printer;
-    private HeadEEPROMDataResponse savedHeadData;
-
-    private final Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationAlignmentManager.class.getName());
     
-    Set<StateTransition> allowedTransitions;
-
     public enum GUIName
     {
-
         CANCEL, BACK, NEXT, RETRY, COMPLETE;
     }
 
-    public CalibrationAlignmentManager(Printer printer)
-    {
-        this.printer = printer;
-    }
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        CalibrationAlignmentManager.class.getName());
 
-    private final ObjectProperty<CalibrationXAndYState> state = new SimpleObjectProperty<>(
-        CalibrationXAndYState.IDLE);
+    Set<StateTransition> allowedTransitions;
+
+    private final ObjectProperty<CalibrationXAndYState> state;
 
     public ReadOnlyObjectProperty<CalibrationXAndYState> stateProperty()
     {
         return state;
     }
-    
-    public void setTransitions(Set<StateTransition> allowedTransitions) {
-        this.allowedTransitions = allowedTransitions;
-    }
 
-    public Set<StateTransition> getTransitions(CalibrationXAndYState startState)
+    public CalibrationAlignmentManager(Set<StateTransition> allowedTransitions)
+    {
+        this.allowedTransitions = allowedTransitions;
+        state = new SimpleObjectProperty<>(CalibrationXAndYState.IDLE);
+    }
+    
+    public Set<StateTransition> getTransitions()
     {
         Set<StateTransition> transitions = new HashSet<>();
         for (StateTransition allowedTransition : allowedTransitions)
         {
-            if (allowedTransition.fromState == startState) {
+            if (allowedTransition.fromState == state.get())
+            {
                 transitions.add(allowedTransition);
             }
         }
@@ -77,8 +65,23 @@ public class CalibrationAlignmentManager
         this.state.set(state);
     }
 
-    public void followTransition(StateTransition stateTransition)
+    private StateTransition getTransitionForGUIName(GUIName guiName)
     {
+        StateTransition foundTransition = null;
+        for (StateTransition transition : getTransitions())
+        {
+            if (transition.guiName == guiName) {
+                foundTransition = transition;
+                break;
+            }
+        }
+        return foundTransition;
+    }
+
+    public void followTransition(GUIName guiName)
+    {
+
+        StateTransition stateTransition = getTransitionForGUIName(guiName);
 
         EventHandler<WorkerStateEvent> goToNextState = (WorkerStateEvent event) ->
         {
@@ -89,29 +92,26 @@ public class CalibrationAlignmentManager
         {
             setState(stateTransition.transitionFailedState);
         };
-
-        Task calibrationTask = new CalibrationTask(stateTransition.action);
-        calibrationTask.setOnSucceeded(goToNextState);
-        calibrationTask.setOnFailed(gotToFailedState);
-        TaskController.getInstance().manageTask(calibrationTask);
-
-        Thread taskThread = new Thread(calibrationTask);
-        taskThread.setName("Calibration");
-        taskThread.start();
+        
+        String taskName = String.format("State transition from %s to %s", 
+                                         stateTransition.fromState, stateTransition.toState);
+        
+        Lookup.getTaskExecutor().runAsTask(stateTransition.action, goToNextState, gotToFailedState,
+                                                                                  taskName);
+        
     }
 
-    private void doPrintCircleAction() throws Exception
-    {
-        try
-        {
-            savedHeadData = printer.readHeadEEPROM();
-            printer.runMacro("rbx_XY_offset_roboxised");
-            PrinterUtils.waitOnMacroFinished(printer, (Cancellable) null);
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error in nozzle alignment");
-            setState(CalibrationXAndYState.FAILED);
-        }
-    }
-
+//    private void doPrintCircleAction() throws Exception
+//    {
+//        try
+//        {
+//            savedHeadData = printer.readHeadEEPROM();
+//            printer.runMacro("rbx_XY_offset_roboxised");
+//            PrinterUtils.waitOnMacroFinished(printer, (Cancellable) null);
+//        } catch (RoboxCommsException ex)
+//        {
+//            steno.error("Error in nozzle alignment");
+//            setState(CalibrationXAndYState.FAILED);
+//        }
+//    }
 }

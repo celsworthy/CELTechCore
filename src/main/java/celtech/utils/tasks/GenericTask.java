@@ -1,7 +1,7 @@
 /*
  * Copyright 2014 CEL UK
  */
-package celtech.printerControl.model.calibration;
+package celtech.utils.tasks;
 
 import java.util.concurrent.Callable;
 import javafx.concurrent.Task;
@@ -10,11 +10,11 @@ import javafx.concurrent.Task;
  *
  * @author tony
  */
-class CalibrationTask extends Task
+class GenericTask extends Task
 {
     private final Callable callable;
 
-    public CalibrationTask(Callable runnable)
+    public GenericTask(Callable runnable)
     {
         this.callable = runnable;
     }

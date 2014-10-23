@@ -1,6 +1,11 @@
 package celtech.utils.tasks;
 
+import celtech.appManager.TaskController;
+import java.util.concurrent.Callable;
 import javafx.application.Platform;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 
 /**
  *
@@ -46,5 +51,19 @@ public class LiveTaskExecutor implements TaskExecutor
 
             responder.taskEnded(taskResponse);
         }
+    }
+
+    @Override
+    public void runAsTask(Callable<Boolean> action, EventHandler<WorkerStateEvent> successHandler,
+        EventHandler<WorkerStateEvent> failureHandler, String taskName)
+    {
+        Task task = new GenericTask(action);
+        task.setOnSucceeded(successHandler);
+        task.setOnFailed(failureHandler);
+        TaskController.getInstance().manageTask(task);
+
+        Thread taskThread = new Thread(task);
+        taskThread.setName(taskName);
+        taskThread.start();
     }
 }
