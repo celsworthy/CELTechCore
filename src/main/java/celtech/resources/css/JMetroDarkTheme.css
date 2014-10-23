@@ -1739,6 +1739,14 @@ table-view .column-header-background {
     -fx-background-color: transparent;
 }
 
+.spinnerOuter {
+    -fx-fill: white;
+}
+
+.spinnerInner {
+    -fx-fill: transparent;
+}
+
 /**
 * Vertical Menu
 */

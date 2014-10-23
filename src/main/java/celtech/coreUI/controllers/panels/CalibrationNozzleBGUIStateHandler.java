@@ -125,7 +125,6 @@ public class CalibrationNozzleBGUIStateHandler
             case FINISHED:
                 controller.hideAllInputControlsExceptStepNumber();
                 controller.backToStatus.setVisible(true);
-                controller.cancelCalibrationButton.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                  controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Step 10.fxml");
                 controller.stepNumber.setText(String.format("Step %s of 10", 10));

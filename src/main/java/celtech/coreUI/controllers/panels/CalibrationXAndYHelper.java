@@ -99,7 +99,14 @@ public class CalibrationXAndYHelper implements CalibrationHelper
         if (state == CalibrationXAndYState.PRINT_CIRCLE || state
             == CalibrationXAndYState.PRINT_PATTERN)
         {
-            printerToUse.doAbortActivity(null);
+            try
+            {
+                printerToUse.cancel(null);
+            } catch (PrinterException ex)
+            {
+                steno.error("Error cancelling X&Y macro");
+            }
+
         }
         if (state != CalibrationXAndYState.IDLE)
         {
@@ -115,8 +122,7 @@ public class CalibrationXAndYHelper implements CalibrationHelper
             } catch (PrinterException ex)
             {
                 steno.error("Error in nozzle offset calibration - mode=" + state.name());
-            }
-            catch (RoboxCommsException ex)
+            } catch (RoboxCommsException ex)
             {
                 steno.error("Error in nozzle offset calibration - mode=" + state.name());
             }
@@ -207,8 +213,7 @@ public class CalibrationXAndYHelper implements CalibrationHelper
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in x and y calibration - mode=" + state.name());
-                }
-                catch (PrinterException ex)
+                } catch (PrinterException ex)
                 {
                     steno.error("Error in x and y calibration - mode=" + state.name());
                 }
@@ -266,13 +271,14 @@ public class CalibrationXAndYHelper implements CalibrationHelper
     {
 
         // F and 6 are zero values
-        float nozzle1XCorrection = -xOffset * 0.05f;
-        float nozzle2XCorrection = xOffset * 0.05f;
+        float nozzle1XCorrection = -xOffset * 0.025f;
+        float nozzle2XCorrection = xOffset * 0.025f;
 
-        float nozzle1YCorrection = (yOffset - 6) * 0.05f;
-        float nozzle2YCorrection = -(yOffset - 6) * 0.05f;
+        float nozzle1YCorrection = (yOffset - 6) * 0.025f;
+        float nozzle2YCorrection = -(yOffset - 6) * 0.025f;
 
-        steno.info(String.format("Saving XY with correction %1.2f %1.2f %1.2f %1.2f ", nozzle1XCorrection,
+        steno.info(String.format("Saving XY with correction %1.2f %1.2f %1.2f %1.2f ",
+                                 nozzle1XCorrection,
                                  nozzle2XCorrection, nozzle1YCorrection, nozzle2YCorrection));
 
         try

@@ -28,9 +28,6 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
     private final Stenographer steno = StenographerFactory.getStenographer(
         CalibrationNozzleBHelper.class.getName());
 
-    private final static int FINE_NOZZLE = 0;
-    private final static int FILL_NOZZLE = 1;
-
     private Printer printerToUse = null;
 
     private final float bOffsetStartingValue = 0.8f;
@@ -323,7 +320,7 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
                     steno.error("Error in needle valve calibration - mode=" + state.name());
                 }
 
-                calibrationTask = new CalibrateBTask(state, FINE_NOZZLE, printerToUse);
+                calibrationTask = new CalibrateBTask(state, printerToUse);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
@@ -338,7 +335,7 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
                 break;
             case PRE_CALIBRATION_PRIMING_FILL:
                 nozzlePosition = 0;
-                calibrationTask = new CalibrateBTask(state, FILL_NOZZLE, printerToUse);
+                calibrationTask = new CalibrateBTask(state, printerToUse);
                 calibrationTask.setOnSucceeded(succeededTaskHandler);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
@@ -358,7 +355,7 @@ public class CalibrationNozzleBHelper implements CalibrationHelper
                 nozzlePosition = 0;
                 break;
             case CONFIRM_MATERIAL_EXTRUDING:
-                calibrationTask = new CalibrateBTask(state, FINE_NOZZLE, printerToUse);
+                calibrationTask = new CalibrateBTask(state, printerToUse);
                 calibrationTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(calibrationTask);
 

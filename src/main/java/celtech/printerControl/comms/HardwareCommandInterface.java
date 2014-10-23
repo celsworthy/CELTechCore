@@ -222,6 +222,8 @@ public class HardwareCommandInterface extends CommandInterface
             {
                 actionOnCommsFailure();
             }
+        } else {
+            throw new RoboxCommsException("Invalid state for writing data");
         }
 
         return receivedPacket;

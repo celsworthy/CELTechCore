@@ -1,6 +1,5 @@
 package celtech.printerControl.model;
 
-import celtech.configuration.EEPROMState;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.NozzleData;
@@ -8,11 +7,10 @@ import celtech.configuration.fileRepresentation.NozzleHeaterData;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.SystemUtils;
 import java.util.ArrayList;
+import java.util.List;
 import javafx.beans.property.FloatProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyFloatProperty;
 import javafx.beans.property.SimpleFloatProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -71,8 +69,8 @@ public class Head implements Cloneable
         String friendlyName,
         String uniqueID,
         float headHours,
-        ArrayList<NozzleHeater> nozzleHeaters,
-        ArrayList<Nozzle> nozzles)
+        List<NozzleHeater> nozzleHeaters,
+        List<Nozzle> nozzles)
     {
         this.typeCode.set(typeCode);
         this.name.set(friendlyName);
@@ -153,7 +151,7 @@ public class Head implements Cloneable
     {
         return nozzles;
     }
-
+    
     /**
      *
      * @return
@@ -303,16 +301,5 @@ public class Head implements Cloneable
         }
 
         return result;
-    }
-
-    void noHeadAttached()
-    {
-        typeCode.set("");
-        name.set("");
-        uniqueID.set("");
-        headHours.set(0);
-
-        nozzleHeaters.clear();
-        nozzles.clear();
     }
 }

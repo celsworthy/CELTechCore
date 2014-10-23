@@ -28,7 +28,7 @@
                     <children>
                         <HBox fx:id="statusButtonHBox" alignment="CENTER">
                             <children>
-                                <GraphicButton fx:id="calibrateButton" fxmlFileName="addToProjectButton" onAction="#calibrate" />
+                                <GraphicButton fx:id="calibrateButton" fxmlFileName="calibrateButton" onAction="#calibrate" />
                             </children>
                         </HBox>
                         <HBox fx:id="layoutButtonHBox" alignment="CENTER">

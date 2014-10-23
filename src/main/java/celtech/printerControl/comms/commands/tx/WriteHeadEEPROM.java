@@ -18,6 +18,22 @@ import java.util.ArrayList;
 public class WriteHeadEEPROM extends RoboxTxPacket
 {
 
+    private String headTypeCode;
+    private String headUniqueID;
+    private float maximumTemperature;
+    private float thermistorBeta;
+    private float thermistorTCal;
+    private float nozzle1XOffset;
+    private float nozzle1YOffset;
+    private float nozzle1ZOffset;
+    private float nozzle1BOffset;
+    private float nozzle2XOffset;
+    private float nozzle2YOffset;
+    private float nozzle2ZOffset;
+    private float nozzle2BOffset;
+    private float lastFilamentTemperature;
+    private float hourCounter;
+
     /**
      *
      */
@@ -50,6 +66,23 @@ public class WriteHeadEEPROM extends RoboxTxPacket
         float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
         float lastFilamentTemperature, float hourCounter)
     {
+
+        this.headTypeCode = headTypeCode;
+        this.headUniqueID = headUniqueID;
+        this.maximumTemperature = maximumTemperature;
+        this.thermistorBeta = thermistorBeta;
+        this.thermistorTCal = thermistorTCal;
+        this.nozzle1XOffset = nozzle1XOffset;
+        this.nozzle1YOffset = nozzle1YOffset;
+        this.nozzle1ZOffset = nozzle1ZOffset;
+        this.nozzle1BOffset = nozzle1BOffset;
+        this.nozzle2XOffset = nozzle2XOffset;
+        this.nozzle2YOffset = nozzle2YOffset;
+        this.nozzle2ZOffset = nozzle2ZOffset;
+        this.nozzle2BOffset = nozzle2BOffset;
+        this.lastFilamentTemperature = lastFilamentTemperature;
+        this.hourCounter = hourCounter;
+
         StringBuilder payload = new StringBuilder();
 
         FixedDecimalFloatFormat decimalFloatFormatter = new FixedDecimalFloatFormat();
@@ -161,4 +194,81 @@ public class WriteHeadEEPROM extends RoboxTxPacket
     {
         return false;
     }
+
+    public String getHeadTypeCode()
+    {
+        return headTypeCode;
+    }
+
+    public String getHeadUniqueID()
+    {
+        return headUniqueID;
+    }
+
+    public float getMaximumTemperature()
+    {
+        return maximumTemperature;
+    }
+
+    public float getThermistorBeta()
+    {
+        return thermistorBeta;
+    }
+
+    public float getThermistorTCal()
+    {
+        return thermistorTCal;
+    }
+
+    public float getNozzle1XOffset()
+    {
+        return nozzle1XOffset;
+    }
+
+    public float getNozzle1YOffset()
+    {
+        return nozzle1YOffset;
+    }
+
+    public float getNozzle1ZOffset()
+    {
+        return nozzle1ZOffset;
+    }
+
+    public float getNozzle1BOffset()
+    {
+        return nozzle1BOffset;
+    }
+
+    public float getNozzle2XOffset()
+    {
+        return nozzle2XOffset;
+    }
+
+    public float getNozzle2YOffset()
+    {
+        return nozzle2YOffset;
+    }
+
+    public float getNozzle2ZOffset()
+    {
+        return nozzle2ZOffset;
+    }
+
+    public float getNozzle2BOffset()
+    {
+        return nozzle2BOffset;
+    }
+
+    public float getLastFilamentTemperature()
+    {
+        return lastFilamentTemperature;
+    }
+
+    public float getHourCounter()
+    {
+        return hourCounter;
+    }
+    
+    
 }

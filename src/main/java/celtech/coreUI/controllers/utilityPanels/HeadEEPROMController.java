@@ -89,9 +89,6 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
     private ModalDialog eepromCommsError = null;
 
-    private Float nozzle1ZOffsetCalculated;
-    private Float nozzle2ZOffsetCalculated;
-
     private final BooleanProperty offsetFieldsDirty = new SimpleBooleanProperty();
 
     private Printer selectedPrinter;
@@ -130,6 +127,12 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             Float nozzle2BOffsetVal = nozzle2BOffset.getFloatValue();
             Float lastFilamentTemperatureVal = lastFilamentTemperature.getFloatValue();
             Float headHourCounterVal = headHourCounter.getFloatValue();
+
+            float nozzle1ZOffsetCalculated = PrinterUtils.deriveNozzle1ZOffsetsFromOverrun(
+                nozzle1ZOverrun.getFloatValue(), nozzle2ZOverrun.getFloatValue());
+            float nozzle2ZOffsetCalculated = PrinterUtils.deriveNozzle2ZOffsetsFromOverrun(
+                nozzle1ZOverrun.getFloatValue(), nozzle2ZOverrun.getFloatValue());
+
             selectedPrinter.transmitWriteHeadEEPROM(
                 headTypeCodeText, uniqueId, headMaxTemperatureVal, headThermistorBetaVal,
                 headThermistorTCalVal, nozzle1XOffsetVal, nozzle1YOffsetVal,
@@ -138,7 +141,8 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
                 nozzle2ZOffsetCalculated, nozzle2BOffsetVal,
                 lastFilamentTemperatureVal, headHourCounterVal);
             offsetFieldsDirty.set(false);
-            selectedPrinter.readHeadEEPROM();
+//            selectedPrinter.readHeadEEPROM();
+//            updateFieldsFromAttachedHead(selectedPrinter.headProperty().get());
         } catch (RoboxCommsException ex)
         {
             steno.error("Error writing head EEPROM");
@@ -174,7 +178,6 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             eepromCommsError.setTitle(DisplayManager.getLanguageBundle().getString("eeprom.error"));
             eepromCommsError.addButton(DisplayManager.getLanguageBundle().getString("dialogs.OK"));
 
-            setupNozzleOverrunListeners();
             setUpWriteEnabledAfterEdits();
 
             Lookup.currentlySelectedPrinterProperty().addListener(
@@ -200,62 +203,6 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             ex.printStackTrace();
         }
 
-    }
-
-    private void setupNozzleOverrunListeners()
-    {
-        nozzle1ZOverrun.textProperty().addListener(new ChangeListener<String>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends String> ov, String t, String t1)
-            {
-                try
-                {
-                    if (nozzle2ZOverrun.getText().isEmpty())
-                    {
-                        return;
-                    }
-                    float nozzle1OverrunValue = Float.valueOf(t1);
-                    float nozzle2OverrunValue = Float.valueOf(nozzle2ZOverrun.getText());
-
-                    nozzle1ZOffsetCalculated = PrinterUtils.deriveNozzle1ZOffsetsFromOverrun(
-                        nozzle1OverrunValue, nozzle2OverrunValue);
-                    nozzle2ZOffsetCalculated = PrinterUtils.deriveNozzle2ZOffsetsFromOverrun(
-                        nozzle1OverrunValue, nozzle2OverrunValue);
-//                    nozzle1ZOffset.setText(String.format("%.2f", temporaryHead.getNozzle1ZOffset()));
-//                    nozzle2ZOffset.setText(String.format("%.2f", temporaryHead.getNozzle2ZOffset()));
-                } catch (NumberFormatException ex)
-                {
-                    steno.error("Error parsing nozzle overrun string value");
-                }
-            }
-        });
-
-        nozzle2ZOverrun.textProperty().addListener(new ChangeListener<String>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends String> ov, String t, String t1)
-            {
-                try
-                {
-                    if (nozzle1ZOverrun.getText().isEmpty())
-                    {
-                        return;
-                    }
-                    float nozzle1OverrunValue = Float.valueOf(nozzle1ZOverrun.getText());
-                    float nozzle2OverrunValue = Float.valueOf(t1);
-                    nozzle1ZOffsetCalculated = PrinterUtils.deriveNozzle1ZOffsetsFromOverrun(
-                        nozzle1OverrunValue, nozzle2OverrunValue);
-                    nozzle2ZOffsetCalculated = PrinterUtils.deriveNozzle2ZOffsetsFromOverrun(
-                        nozzle1OverrunValue, nozzle2OverrunValue);
-//                    nozzle1ZOffset.setText(String.format("%.2f", temporaryHead.getNozzle1ZOffset()));
-//                    nozzle2ZOffset.setText(String.format("%.2f", temporaryHead.getNozzle2ZOffset()));
-                } catch (NumberFormatException ex)
-                {
-                    steno.error("Error parsing nozzle overrun string value");
-                }
-            }
-        });
     }
 
     private void setUpWriteEnabledAfterEdits()
@@ -302,21 +249,19 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
                                              head.getNozzles().get(0).xOffsetProperty().get()));
         nozzle1YOffset.setText(String.format("%.2f",
                                              head.getNozzles().get(0).yOffsetProperty().get()));
-        nozzle1ZOffsetCalculated = head.getNozzles().get(0).zOffsetProperty().get();
         nozzle2BOffset.setText(String.format("%.2f",
                                              head.getNozzles().get(1).bOffsetProperty().get()));
         nozzle2XOffset.setText(String.format("%.2f",
                                              head.getNozzles().get(1).xOffsetProperty().get()));
         nozzle2YOffset.setText(String.format("%.2f",
                                              head.getNozzles().get(1).yOffsetProperty().get()));
-        nozzle2ZOffsetCalculated = head.getNozzles().get(1).zOffsetProperty().get();
 
         //TODO modify to deal with variable numbers of nozzle
-        float nozzle1Offset = head.getNozzles().get(0).bOffsetProperty().get();
-        float nozzle2Offset = head.getNozzles().get(1).bOffsetProperty().get();
+        float nozzle1Offset = head.getNozzles().get(0).zOffsetProperty().get();
+        float nozzle2Offset = head.getNozzles().get(1).zOffsetProperty().get();
         float nozzle1ZOverrunValue = PrinterUtils.deriveNozzle1OverrunFromOffsets(nozzle1Offset,
                                                                                   nozzle2Offset);
-        float nozzle2ZOverrunValue = PrinterUtils.deriveNozzle1OverrunFromOffsets(nozzle1Offset,
+        float nozzle2ZOverrunValue = PrinterUtils.deriveNozzle2OverrunFromOffsets(nozzle1Offset,
                                                                                   nozzle2Offset);
 
         nozzle1ZOverrun.setText(String.format("%.2f", nozzle1ZOverrunValue));
@@ -390,6 +335,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         {
             Head head = printer.headProperty().get();
             updateFieldsFromAttachedHead(head);
+            listenForHeadChanges(head);
             updateHeadUniqueId();
         }
     }
@@ -412,6 +358,22 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     @Override
     public void whenReelRemoved(Printer printer, Reel reel)
     {
+    }
+
+    private void listenForHeadChanges(Head head)
+    {
+        ChangeListener<Object> headChangeListener = (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
+        {
+            updateFieldsFromAttachedHead(head);
+        };
+        head.getNozzles().get(0).xOffsetProperty().addListener(headChangeListener);
+        head.getNozzles().get(0).yOffsetProperty().addListener(headChangeListener);
+        head.getNozzles().get(0).zOffsetProperty().addListener(headChangeListener);
+        head.getNozzles().get(0).bOffsetProperty().addListener(headChangeListener);
+        head.getNozzles().get(1).xOffsetProperty().addListener(headChangeListener);
+        head.getNozzles().get(1).yOffsetProperty().addListener(headChangeListener);
+        head.getNozzles().get(1).zOffsetProperty().addListener(headChangeListener);
+        head.getNozzles().get(1).bOffsetProperty().addListener(headChangeListener);
     }
 
 }

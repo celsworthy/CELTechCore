@@ -2,22 +2,17 @@ package celtech.coreUI.components;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
-import celtech.coreUI.controllers.ModalDialogController;
-import celtech.coreUI.controllers.MyMiniFactoryLoaderController;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.animation.AnimationTimer;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
@@ -33,8 +28,10 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class Spinner extends StackPane implements Initializable
 {
+    
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        Spinner.class.getName());
 
-    private Stenographer steno = StenographerFactory.getStenographer(Spinner.class.getName());
     @FXML
     private SVGPath outerArcs;
 
@@ -63,9 +60,10 @@ public class Spinner extends StackPane implements Initializable
             scaleXProperty().set(0.5);
             scaleYProperty().set(0.5);
 
-            Scene dialogScene = new Scene(fxmlParent, Color.TRANSPARENT);
-            dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
-            stage.setScene(dialogScene);
+            Scene scene = new Scene(fxmlParent, Color.TRANSPARENT);
+            scene.getStylesheets().clear();
+            scene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
+            stage.setScene(scene);
             stage.initOwner(DisplayManager.getMainStage());
             stage.initModality(Modality.NONE);
         } catch (IOException exception)
@@ -123,6 +121,12 @@ public class Spinner extends StackPane implements Initializable
     
     public void recentre(Node nodeToCentreOn)
     {
+        Bounds nodeBounds = nodeToCentreOn.getBoundsInLocal();
+        double centreX = nodeBounds.getMinX() + nodeBounds.getWidth() / 2.0;
+        double centreY = nodeBounds.getMinY() + nodeBounds.getHeight()/ 2.0;
+        Point2D nodeCentreInScene = nodeToCentreOn.localToScene(centreX, centreY);
+        stage.setX(nodeCentreInScene.getX());
+        stage.setY(nodeCentreInScene.getY());
     }
 
 }
