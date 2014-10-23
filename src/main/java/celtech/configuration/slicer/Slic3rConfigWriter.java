@@ -64,12 +64,12 @@ public class Slic3rConfigWriter extends SlicerConfigWriter
     @Override
     protected void outputPrintCentre(File outputFile, float centreX, float centreY) throws IOException
     {
-        outputLine(outputFile, "print_center = " + (int)centreX + "," + (int)centreY, true);
+        outputLine(outputFile, "print_center", (int)centreX + "," + (int)centreY);
     }
 
     @Override
     protected void outputFilamentDiameter(File outputFile, float diameter) throws IOException
     {
-        outputLine(outputFile, "filament_diameter=" + String.format(Locale.UK, "%f", diameter), true);
+        outputLine(outputFile, "filament_diameter", String.format(Locale.UK, "%f", diameter));
     }
 }

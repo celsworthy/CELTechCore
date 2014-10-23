@@ -64,13 +64,13 @@ public class CuraConfigWriter extends SlicerConfigWriter
     @Override
     protected void outputPrintCentre(File outputFile, float centreX, float centreY) throws IOException
     {
-        outputLine(outputFile, "posx=" + (int) (centreX * 1000), true);
-        outputLine(outputFile, "posy=" + (int) (centreY * 1000), true);
+        outputLine(outputFile, "posx", (int) (centreX * 1000));
+        outputLine(outputFile, "posy", (int) (centreY * 1000));
     }
 
     @Override
     protected void outputFilamentDiameter(File outputFile, float diameter) throws IOException
     {
-        outputLine(outputFile, "filamentDiameter=" + String.format(Locale.UK, "%d", (int)(diameter * 1000)), true);
+        outputLine(outputFile, "filamentDiameter", String.format(Locale.UK, "%d", (int)(diameter * 1000)));
     }
 }

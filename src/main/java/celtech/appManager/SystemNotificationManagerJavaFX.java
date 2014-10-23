@@ -160,11 +160,11 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     steno.error("Couldn't reset errors after error detection");
                 }
 
-                if (errorHandlingResponse.equals(abortJob))
+                if (errorHandlingResponse.get() == abortJob.getButtonType())
                 {
                     try
                     {
-                        if (printer.getCanPauseProperty().get())
+                        if (printer.canPauseProperty().get())
                         {
                             printer.pause();
                         }
@@ -199,7 +199,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             calibrationDialog.setContentText(Lookup.i18n("dialogs.headUpdateCalibrationRequiredInstruction"));
             Optional<ButtonType> calibrationResponse = calibrationDialog.showAndWait();
 
-            if (calibrationResponse.equals(okCalibrate))
+            if (calibrationResponse.get()== okCalibrate.getButtonType())
             {
                 MaintenancePanelController.calibrateBAction();
                 MaintenancePanelController.calibrateZOffsetAction();
@@ -358,7 +358,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                         "dialogs.firmwareVersionError3"));
                 Optional<ButtonType> firmwareDowngradeResponse = firmwareDowngradeDialog.showAndWait();
 
-                return firmwareDowngradeResponse.equals(firmwareDowngradeOK);
+                return firmwareDowngradeResponse.get() == firmwareDowngradeOK.getButtonType();
             }
         };
         FutureTask<Boolean> askUserToUpgradeTask = new FutureTask<>(askUserToDowngradeDialog);
@@ -411,7 +411,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     + Lookup.i18n("dialogs.firmwareVersionError3"));
                 Optional<ButtonType> firmwareUpgradeResponse = firmwareUpgradeDialog.showAndWait();
 
-                return firmwareUpgradeResponse.equals(firmwareUpgradeOK);
+                return firmwareUpgradeResponse.get() == firmwareUpgradeOK.getButtonType();
             }
         };
         FutureTask<Boolean> askUserToUpgradeTask = new FutureTask<>(askUserToUpgradeDialog);
@@ -501,7 +501,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
                 Optional<ButtonType> doorOpenResponse = doorOpenDialog.showAndWait();
 
-                return doorOpenResponse.equals(goAheadAndOpenTheLid);
+                return doorOpenResponse.get() == goAheadAndOpenTheLid.getButtonType();
             }
         };
 
@@ -551,7 +551,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
                 Optional<ButtonType> loadModelResponse = loadModelDialog.showAndWait();
 
-                return loadModelResponse.equals(shrinkTheModel);
+                return loadModelResponse.get() == shrinkTheModel.getButtonType();
             }
         };
 
@@ -604,7 +604,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
                 Optional<ButtonType> upgradeApplicationResponse = upgradeApplicationDialog.showAndWait();
 
-                return upgradeApplicationResponse.equals(upgradeApplication);
+                return upgradeApplicationResponse.get() == upgradeApplication.getButtonType();
             }
         };
 
@@ -636,7 +636,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                                                                                                 true);
                 CommandLinksDialog.CommandLinksButtonType dontPurge = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.dontGoForPurgeTitle"),
                                                                                                                     Lookup.i18n("dialogs.dontGoForPurgeInstruction"),
-                                                                                                                    true);
+                                                                                                                    false);
                 CommandLinksDialog purgeDialog = new CommandLinksDialog(
                     purge,
                     dontPurge
@@ -646,7 +646,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
                 Optional<ButtonType> purgeResponse = purgeDialog.showAndWait();
 
-                return purgeResponse.equals(purge);
+                return purgeResponse.get() == purge.getButtonType();
             }
         };
 
@@ -661,7 +661,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             return false;
         }
     }
-    
+
     /**
      * @return True if the user has elected to shutdown
      */
@@ -674,11 +674,11 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             public Boolean call() throws Exception
             {
                 CommandLinksDialog.CommandLinksButtonType shutdown = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.shutDownAndTerminateTitle"),
-                                                                                                                Lookup.i18n("dialogs.shutDownAndTerminateMessage"),
-                                                                                                                true);
+                                                                                                                   Lookup.i18n("dialogs.shutDownAndTerminateMessage"),
+                                                                                                                   false);
                 CommandLinksDialog.CommandLinksButtonType dontShutdown = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.dontShutDownTitle"),
-                                                                                                                    Lookup.i18n("dialogs.dontShutDownMessage"),
-                                                                                                                    true);
+                                                                                                                       Lookup.i18n("dialogs.dontShutDownMessage"),
+                                                                                                                       true);
                 CommandLinksDialog shutdownDialog = new CommandLinksDialog(
                     shutdown,
                     dontShutdown
@@ -688,7 +688,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
                 Optional<ButtonType> shutdownResponse = shutdownDialog.showAndWait();
 
-                return shutdownResponse.equals(shutdown);
+                return shutdownResponse.get() == shutdown.getButtonType();
             }
         };
 

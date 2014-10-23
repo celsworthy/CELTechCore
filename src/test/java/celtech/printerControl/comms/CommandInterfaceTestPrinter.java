@@ -90,12 +90,6 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public boolean doAbortActivity(Cancellable cancellable)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void ejectFilament(int extruderNumber, TaskResponder responder) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -132,13 +126,13 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public ReadOnlyBooleanProperty getCanPauseProperty()
+    public ReadOnlyBooleanProperty canPauseProperty()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public ReadOnlyBooleanProperty getCanResumeProperty()
+    public ReadOnlyBooleanProperty canResumeProperty()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

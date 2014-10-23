@@ -237,9 +237,6 @@ public class PrinterStatusPageController implements Initializable
     @FXML
     private Group temperatureWarning;
 
-    @FXML
-    private HBox printControlButtons;
-
     private Node[] advancedControls = null;
 
     private Printer lastSelectedPrinter = null;
@@ -584,8 +581,6 @@ public class PrinterStatusPageController implements Initializable
         reel.setVisible(false);
         filamentRectangle.setVisible(false);
 
-        printControlButtons.setVisible(false);
-
         advancedControls = new Node[]
         {
             extruder_minus100, extruder_minus20, extruder_minus5, extruder_plus100, extruder_plus20, extruder_plus5,
@@ -597,6 +592,10 @@ public class PrinterStatusPageController implements Initializable
             headFanButton, headLEDButton, removeHeadButton
         };
         setAdvancedControlsVisibility(false);
+        
+        pausePrintButton.setVisible(false);
+        resumePrintButton.setVisible(false);
+        cancelPrintButton.setVisible(false);
 
         if (Lookup.getCurrentlySelectedPrinter() != null)
         {
@@ -760,6 +759,7 @@ public class PrinterStatusPageController implements Initializable
                         }
 
                         processPrinterStatusChange(selectedPrinter.printerStatusProperty().get());
+                        bindToSelectedPrinter(selectedPrinter);
                         selectedPrinter.printerStatusProperty().addListener(printerStatusChangeListener);
 
                         printerOpenImage.visibleProperty().bind(selectedPrinter.getPrinterAncillarySystems().lidOpenProperty());
@@ -780,80 +780,49 @@ public class PrinterStatusPageController implements Initializable
         }
     }
 
+    private void bindToSelectedPrinter(Printer printer)
+    {
+        pausePrintButton.visibleProperty().bind(printer.canPauseProperty());
+        resumePrintButton.visibleProperty().bind(printer.canResumeProperty());
+        cancelPrintButton.visibleProperty().bind(printer.canCancelProperty());
+    }
+
     private void processPrinterStatusChange(PrinterStatus printerStatus)
     {
         if (printerStatus == null)
         {
-            printControlButtons.setVisible(false);
             setAdvancedControlsVisibility(false);
         } else
         {
             switch (printerStatus)
             {
                 case IDLE:
-                    resumePrintButton.setVisible(false);
-                    resumePrintButton.setDisable(false);
-                    pausePrintButton.setVisible(false);
-                    pausePrintButton.setDisable(false);
-                    cancelPrintButton.setVisible(false);
-                    printControlButtons.setVisible(false);
                     showProgressGroup.set(false);
                     setAdvancedControlsVisibility(true);
                     break;
                 case PAUSING:
-                    resumePrintButton.setVisible(true);
-                    resumePrintButton.setDisable(false);
-                    pausePrintButton.setVisible(false);
-                    pausePrintButton.setDisable(false);
-                    cancelPrintButton.setVisible(false);
-                    printControlButtons.setVisible(true);
                     showProgressGroup.set(false);
                     setAdvancedControlsVisibility(false);
                     break;
                 case RESUMING:
-                    resumePrintButton.setVisible(false);
-                    resumePrintButton.setDisable(false);
-                    pausePrintButton.setVisible(true);
-                    pausePrintButton.setDisable(false);
-                    cancelPrintButton.setVisible(false);
-                    printControlButtons.setVisible(true);
                     showProgressGroup.set(false);
                     setAdvancedControlsVisibility(false);
                     break;
                 case PAUSED:
-                    resumePrintButton.setVisible(true);
-                    resumePrintButton.setDisable(false);
-                    pausePrintButton.setVisible(false);
-                    pausePrintButton.setDisable(false);
-                    cancelPrintButton.setVisible(true);
-                    printControlButtons.setVisible(true);
                     showProgressGroup.set(false);
                     setAdvancedControlsVisibility(true);
                     break;
                 case SENDING_TO_PRINTER:
                 case PRINTING:
-                    resumePrintButton.setVisible(false);
-                    resumePrintButton.setDisable(true);
-                    pausePrintButton.setVisible(true);
-                    pausePrintButton.setDisable(false);
-                    cancelPrintButton.setVisible(false);
-                    printControlButtons.setVisible(true);
                     showProgressGroup.set(true);
                     setAdvancedControlsVisibility(false);
                     break;
                 case SLICING:
                 case POST_PROCESSING:
-                    resumePrintButton.setVisible(false);
-                    resumePrintButton.setDisable(false);
-                    pausePrintButton.setVisible(false);
-                    pausePrintButton.setDisable(false);
-                    cancelPrintButton.setVisible(true);
-                    printControlButtons.setVisible(true);
                     showProgressGroup.set(true);
                     setAdvancedControlsVisibility(false);
                     break;
                 default:
-                    printControlButtons.setVisible(false);
                     showProgressGroup.set(false);
                     break;
             }
@@ -948,6 +917,10 @@ public class PrinterStatusPageController implements Initializable
             //TODO modify to support multiple reels
             lastSelectedPrinter.reelsProperty().removeListener(reelChangeListener);
             lastSelectedPrinter.printerStatusProperty().removeListener(printerStatusChangeListener);
+
+            pausePrintButton.visibleProperty().unbind();
+            resumePrintButton.visibleProperty().unbind();
+            cancelPrintButton.visibleProperty().unbind();
         }
 
         filamentRectangle.visibleProperty().unbind();

@@ -874,7 +874,9 @@ public class PrintEngine implements ControllableService
         boolean acceptedPrintRequest = false;
         consideringPrintRequest = true;
 
-        if (associatedPrinter.printerStatusProperty().get() == PrinterStatus.IDLE)
+        if (associatedPrinter.printerStatusProperty().get() == PrinterStatus.IDLE
+            || associatedPrinter.printerStatusProperty().get() == PrinterStatus.CANCELLING
+            || associatedPrinter.printerStatusProperty().get() == PrinterStatus.PAUSING)
         {
             if (Platform.isFxApplicationThread() == false)
             {
