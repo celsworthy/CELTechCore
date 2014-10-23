@@ -661,4 +661,46 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             return false;
         }
     }
+    
+    /**
+     * @return True if the user has elected to shutdown
+     */
+    @Override
+    public boolean showJobsTransferringShutdownDialog()
+    {
+        Callable<Boolean> askUserWhetherToShutdown = new Callable()
+        {
+            @Override
+            public Boolean call() throws Exception
+            {
+                CommandLinksDialog.CommandLinksButtonType shutdown = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.shutDownAndTerminateTitle"),
+                                                                                                                Lookup.i18n("dialogs.shutDownAndTerminateMessage"),
+                                                                                                                true);
+                CommandLinksDialog.CommandLinksButtonType dontShutdown = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.dontShutDownTitle"),
+                                                                                                                    Lookup.i18n("dialogs.dontShutDownMessage"),
+                                                                                                                    true);
+                CommandLinksDialog shutdownDialog = new CommandLinksDialog(
+                    shutdown,
+                    dontShutdown
+                );
+                shutdownDialog.setTitle(Lookup.i18n("dialogs.printJobsAreStillTransferringTitle"));
+                shutdownDialog.setContentText(Lookup.i18n("dialogs.printJobsAreStillTransferringMessage"));
+
+                Optional<ButtonType> shutdownResponse = shutdownDialog.showAndWait();
+
+                return shutdownResponse.equals(shutdown);
+            }
+        };
+
+        FutureTask<Boolean> askWhetherToShutdownTask = new FutureTask<>(askUserWhetherToShutdown);
+        Lookup.getTaskExecutor().runOnGUIThread(askWhetherToShutdownTask);
+        try
+        {
+            return askWhetherToShutdownTask.get();
+        } catch (InterruptedException | ExecutionException ex)
+        {
+            steno.error("Error during shutdown whilst transferring query");
+            return false;
+        }
+    }
 }

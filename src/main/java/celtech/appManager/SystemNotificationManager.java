@@ -82,4 +82,6 @@ public interface SystemNotificationManager
     boolean showApplicationUpgradeDialog(String applicationName);
 
     public boolean showPurgeDialog();
+
+    public boolean showJobsTransferringShutdownDialog();
 }

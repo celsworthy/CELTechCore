@@ -152,4 +152,10 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     {
         return false;
     }
+
+    @Override
+    public boolean showJobsTransferringShutdownDialog()
+    {
+        return false;
+    }
 }
