@@ -36,8 +36,8 @@ public class CalibrationXAndYActions
     public boolean doSaveHeadAndPrintPattern() throws PrinterException, RoboxCommsException
     {
         savedHeadData = printer.readHeadEEPROM();
-        printer.runMacro("rbx_XY_offset_roboxised");
-//                printer.runMacro("tiny_robox");
+//        printer.runMacro("rbx_XY_offset_roboxised");
+//        printer.runMacro("tiny_robox");
         boolean interrupted = PrinterUtils.waitOnMacroFinished(printer, (Cancellable) null);
         return !interrupted;
     }
@@ -45,8 +45,8 @@ public class CalibrationXAndYActions
     public boolean doSaveSettingsAndPrintCircle() throws PrinterException
     {
         saveSettings();
-        printer.runMacro("rbx_XY_offset_roboxised");
-//                printer.runMacro("tiny_robox");
+//        printer.runMacro("rbx_XY_offset_roboxised");
+//        printer.runMacro("tiny_robox");
         boolean interrupted = PrinterUtils.waitOnMacroFinished(printer, (Cancellable) null);
         return !interrupted;
     }
@@ -131,6 +131,51 @@ public class CalibrationXAndYActions
         {
             steno.error("Error in needle valve calibration - saving settings");
         }
+    }
+
+    public void setXOffset(String xStr)
+    {
+        switch (xStr)
+        {
+            case "A":
+                xOffset = -5;
+                break;
+            case "B":
+                xOffset = -4;
+                break;
+            case "C":
+                xOffset = -3;
+                break;
+            case "D":
+                xOffset = -2;
+                break;
+            case "E":
+                xOffset = -1;
+                break;
+            case "F":
+                xOffset = 0;
+                break;
+            case "G":
+                xOffset = 1;
+                break;
+            case "H":
+                xOffset = 2;
+                break;
+            case "I":
+                xOffset = 3;
+                break;
+            case "J":
+                xOffset = 4;
+                break;
+            case "K":
+                xOffset = 5;
+                break;
+        }
+    }
+
+    public void setYOffset(int yOffset)
+    {
+        this.yOffset = yOffset;
     }
 
 }

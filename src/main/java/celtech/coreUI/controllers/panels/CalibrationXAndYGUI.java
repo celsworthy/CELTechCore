@@ -41,7 +41,10 @@ public class CalibrationXAndYGUI
         controller.hideAllInputControlsExceptStepNumber();
         for (StateTransition allowedTransition : this.stateManager.getTransitions())
         {
-            namesToButtons.get(allowedTransition.getGUIName()).setVisible(true);
+            if (namesToButtons.containsKey(allowedTransition.getGUIName()))
+            {
+                namesToButtons.get(allowedTransition.getGUIName()).setVisible(true);
+            }
         }
     }
 
@@ -102,7 +105,6 @@ public class CalibrationXAndYGUI
                 break;
             case FAILED:
                 controller.hideAllInputControlsExceptStepNumber();
-//                controller.buttonAAlt.disableProperty().unbind();
                 controller.backToStatus.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.stepNumber.setText("");

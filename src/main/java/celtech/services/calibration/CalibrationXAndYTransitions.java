@@ -3,7 +3,6 @@
  */
 package celtech.services.calibration;
 
-import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.calibration.CalibrationAlignmentManager;
 import celtech.printerControl.model.calibration.StateTransition;
 import java.util.HashSet;
@@ -21,13 +20,9 @@ public class CalibrationXAndYTransitions
     Set<StateTransition> transitions;
     CalibrationAlignmentManager manager;
     
-    Printer printer;
-
-    public CalibrationXAndYTransitions(Printer printer)
+    public CalibrationXAndYTransitions(CalibrationXAndYActions actions)
     {
-        this.printer = printer;
-        actions = new CalibrationXAndYActions(printer);
-        
+        this.actions = actions;
         transitions = new HashSet<>();
         
         // IDLE
@@ -43,7 +38,7 @@ public class CalibrationXAndYTransitions
         // PRINT PATTERN
         
         transitions.add(new StateTransition(CalibrationXAndYState.PRINT_PATTERN,
-                                            CalibrationAlignmentManager.GUIName.NEXT,
+                                            CalibrationAlignmentManager.GUIName.AUTO,
                                             CalibrationXAndYState.GET_Y_OFFSET));   
         
         transitions.add(new StateTransition(CalibrationXAndYState.PRINT_PATTERN,
@@ -74,7 +69,7 @@ public class CalibrationXAndYTransitions
         // PRINT CIRCLE
         
         transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE,
-                                            CalibrationAlignmentManager.GUIName.NEXT,
+                                            CalibrationAlignmentManager.GUIName.AUTO,
                                             CalibrationXAndYState.PRINT_CIRCLE_CHECK));   
         
         transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE,

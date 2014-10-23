@@ -55,6 +55,7 @@ import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.WritePrinterID;
 import celtech.printerControl.comms.commands.tx.WriteReelEEPROM;
 import celtech.printerControl.model.calibration.CalibrationAlignmentManager;
+import celtech.services.calibration.CalibrationXAndYActions;
 import celtech.services.calibration.CalibrationXAndYState;
 import celtech.services.calibration.CalibrationXAndYTransitions;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
@@ -2025,9 +2026,10 @@ public final class HardwarePrinter implements Printer
     @Override
     public CalibrationAlignmentManager startCalibrateXAndY()
     {
-        CalibrationXAndYTransitions calibrationXAndYTransitions = new CalibrationXAndYTransitions(this);
+        CalibrationXAndYActions actions = new CalibrationXAndYActions(this);
+        CalibrationXAndYTransitions calibrationXAndYTransitions = new CalibrationXAndYTransitions(actions);
         CalibrationAlignmentManager calibrationAlignmentManager = 
-            new CalibrationAlignmentManager(calibrationXAndYTransitions.getTransitions());
+            new CalibrationAlignmentManager(calibrationXAndYTransitions.getTransitions(), actions);
         return calibrationAlignmentManager;
     }
 

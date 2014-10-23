@@ -5,6 +5,7 @@ package celtech.printerControl.model.calibration;
 
 import celtech.JavaFXConfiguredTest;
 import celtech.printerControl.model.calibration.CalibrationAlignmentManager.GUIName;
+import celtech.services.calibration.CalibrationXAndYActions;
 import celtech.services.calibration.CalibrationXAndYState;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -65,7 +66,8 @@ public class CalibrationAlignmentManagerTest extends JavaFXConfiguredTest
                                                 return results.doCancelled();
                                             }));
 
-        manager = new CalibrationAlignmentManager(transitions);
+        TestResults actions = new TestResults();
+        manager = new CalibrationAlignmentManager(transitions, actions);
 
     }
 

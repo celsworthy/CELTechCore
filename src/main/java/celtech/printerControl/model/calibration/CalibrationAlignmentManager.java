@@ -4,6 +4,7 @@
 package celtech.printerControl.model.calibration;
 
 import celtech.Lookup;
+import celtech.services.calibration.CalibrationXAndYActions;
 import celtech.services.calibration.CalibrationXAndYState;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,11 +22,12 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class CalibrationAlignmentManager
 {
+    private final CalibrationXAndYActions actions;
 
     public enum GUIName
     {
 
-        START, CANCEL, BACK, NEXT, RETRY, COMPLETE, YES, NO;
+        START, CANCEL, BACK, NEXT, RETRY, COMPLETE, YES, NO, AUTO;
     }
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -40,9 +42,10 @@ public class CalibrationAlignmentManager
         return state;
     }
 
-    public CalibrationAlignmentManager(Set<StateTransition> allowedTransitions)
+    public CalibrationAlignmentManager(Set<StateTransition> allowedTransitions, CalibrationXAndYActions actions)
     {
         this.allowedTransitions = allowedTransitions;
+        this.actions = actions;
         state = new SimpleObjectProperty<>(CalibrationXAndYState.IDLE);
     }
 
@@ -62,6 +65,7 @@ public class CalibrationAlignmentManager
     private void setState(CalibrationXAndYState state)
     {
         this.state.set(state);
+        checkForAutoFollowOnState();
     }
 
     private StateTransition getTransitionForGUIName(GUIName guiName)
@@ -86,6 +90,7 @@ public class CalibrationAlignmentManager
         if (stateTransition.action == null)
         {
             setState(stateTransition.toState);
+            
         } else
         {
             EventHandler<WorkerStateEvent> goToNextState = (WorkerStateEvent event) ->
@@ -105,6 +110,26 @@ public class CalibrationAlignmentManager
                                                gotToFailedState,
                                                taskName);
         }
-
     }
+    
+    /**
+     * If the newly entered state has an AUTO transition then follow it.
+     */
+    private void checkForAutoFollowOnState()
+    {
+        for (StateTransition allowedTransition : getTransitions())
+        {
+            if (allowedTransition.guiName == GUIName.AUTO) {
+                followTransition(GUIName.AUTO);
+            }
+        }
+    }    
+    
+    public void setXOffset(String xOffset) {
+        actions.setXOffset(xOffset);
+    }
+    
+    public void setYOffset(int yOffset) {
+        actions.setYOffset(yOffset);
+    }    
 }

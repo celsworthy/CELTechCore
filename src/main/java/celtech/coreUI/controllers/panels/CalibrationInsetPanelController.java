@@ -168,6 +168,7 @@ public class CalibrationInsetPanelController implements Initializable,
     @FXML
     void backToStatusAction(ActionEvent event)
     {
+        stateManager.followTransition(CalibrationAlignmentManager.GUIName.BACK);
         ApplicationStatus.getInstance().returnToLastMode();
         setCalibrationMode(CalibrationMode.CHOICE);
     }
@@ -189,7 +190,8 @@ public class CalibrationInsetPanelController implements Initializable,
     @FXML
     void retryCalibration(ActionEvent event)
     {
-        calibrationHelper.retryAction();
+//        calibrationHelper.retryAction();
+        stateManager.followTransition(CalibrationAlignmentManager.GUIName.RETRY);
     }
 
     /**
@@ -545,13 +547,6 @@ public class CalibrationInsetPanelController implements Initializable,
                 setNozzleHeightState(NozzleOffsetCalibrationState.IDLE);
                 break;
             case X_AND_Y_OFFSET:
-//                calibrationHelper = new CalibrationXAndYHelper();
-//                calibrationXAndYGUIStateHandler
-//                    = new CalibrationXAndYGUIStateHandler(this, calibrationHelper);
-//                ((CalibrationXAndYHelper) calibrationHelper).addStateListener(this);
-//                calibrationHelper.goToIdleState();
-//                calibrationHelper.setPrinterToUse(currentPrinter);
-//                setXAndYState(CalibrationXAndYState.IDLE);
                 calibrationHelper = null;
                 calibrationXAndYGUIStateHandler = null;
                 
@@ -567,12 +562,14 @@ public class CalibrationInsetPanelController implements Initializable,
 
     protected void setXOffset(String xOffset)
     {
-        calibrationHelper.setXOffset(xOffset);
+//        calibrationHelper.setXOffset(xOffset);
+        stateManager.setXOffset(xOffset);
     }
 
     protected void setYOffset(Integer yOffset)
     {
-        calibrationHelper.setYOffset(yOffset);
+//        calibrationHelper.setYOffset(yOffset);
+        stateManager.setYOffset(yOffset);
     }
 
     private void setupChoice()
