@@ -22,7 +22,7 @@ import org.codehaus.jackson.map.SerializationConfig;
  */
 public class SlicerParametersContainer
 {
-
+    
     private static final Stenographer steno = StenographerFactory.getStenographer(SlicerParametersContainer.class.getName());
     private static SlicerParametersContainer instance = null;
     private static final ObservableList<SlicerParameters> appProfileList = FXCollections.observableArrayList();
@@ -45,7 +45,7 @@ public class SlicerParametersContainer
     {
         return Collections.unmodifiableSet(profileMap.keySet());
     }
-
+    
     private SlicerParametersContainer()
     {
         mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
@@ -61,46 +61,53 @@ public class SlicerParametersContainer
     {
         return ApplicationConfiguration.getUserPrintProfileDirectory() + profileName + ApplicationConfiguration.printProfileFileExtension;
     }
-
+    
     private static void loadProfileData()
     {
         completeProfileList.clear();
         appProfileList.clear();
         userProfileList.clear();
-
+        
         File applicationDirHandle = new File(ApplicationConfiguration.getApplicationPrintProfileDirectory());
         File[] applicationprofiles = applicationDirHandle.listFiles(new PrintProfileFileFilter());
         ArrayList<SlicerParameters> profiles = ingestProfiles(applicationprofiles, false);
         appProfileList.addAll(profiles);
         completeProfileList.addAll(profiles);
-
+        
         File userDirHandle = new File(ApplicationConfiguration.getUserPrintProfileDirectory());
         File[] userprofiles = userDirHandle.listFiles(new PrintProfileFileFilter());
         profiles = ingestProfiles(userprofiles, true);
         userProfileList.addAll(profiles);
         completeProfileList.addAll(profiles);
     }
-
+    
     private static ArrayList<SlicerParameters> ingestProfiles(File[] userprofiles, boolean mutableProfiles)
     {
         ArrayList<SlicerParameters> profileList = new ArrayList<>();
-
+        
         for (File profileFile : userprofiles)
         {
             SlicerParameters newSettings = new SlicerParameters();
             String profileName = profileFile.getName().replaceAll(ApplicationConfiguration.printProfileFileExtension, "");
-
-            try
+            
+            if (profileMap.containsKey(profileName) == false)
             {
-                newSettings = mapper.readValue(profileFile, SlicerParameters.class);
-                profileList.add(newSettings);
-                profileMap.put(profileName, newSettings);
-            } catch (IOException ex)
+                try
+                {
+                    newSettings = mapper.readValue(profileFile, SlicerParameters.class);
+                    
+                    profileList.add(newSettings);
+                    profileMap.put(profileName, newSettings);
+                } catch (IOException ex)
+                {
+                    steno.error("Error reading profile " + profileName);
+                }
+            } else
             {
-                steno.error("Error reading profile " + profileName);
+                steno.warning("Profile with name " + profileName + " has already been loaded - ignoring " + profileFile.getAbsolutePath());
             }
         }
-
+        
         return profileList;
     }
 
@@ -158,7 +165,7 @@ public class SlicerParametersContainer
         {
             instance = new SlicerParametersContainer();
         }
-
+        
         return instance;
     }
 
@@ -173,7 +180,7 @@ public class SlicerParametersContainer
         {
             instance = new SlicerParametersContainer();
         }
-
+        
         return profileMap.get(profileName);
     }
 
@@ -187,7 +194,7 @@ public class SlicerParametersContainer
         {
             instance = new SlicerParametersContainer();
         }
-
+        
         return completeProfileList;
     }
 
@@ -201,7 +208,7 @@ public class SlicerParametersContainer
         {
             instance = new SlicerParametersContainer();
         }
-
+        
         return userProfileList;
     }
 
@@ -215,7 +222,7 @@ public class SlicerParametersContainer
         {
             instance = new SlicerParametersContainer();
         }
-
+        
         return appProfileList;
     }
 }
