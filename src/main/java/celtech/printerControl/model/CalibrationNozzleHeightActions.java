@@ -29,8 +29,8 @@ public class CalibrationNozzleHeightActions
 
     private final Printer printer;
     private HeadEEPROMDataResponse savedHeadData;
-    private double zco = 0;
-    private double zDifference = 0;
+    private double zco;
+    private double zDifference;
 
     public CalibrationNozzleHeightActions(Printer printer)
     {
@@ -40,6 +40,8 @@ public class CalibrationNozzleHeightActions
     public boolean doInitialiseAndHeatBedAction() throws InterruptedException, PrinterException, RoboxCommsException
     {
         boolean success = false;
+        zco = 0;
+        zDifference = 0;
         
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT);
 

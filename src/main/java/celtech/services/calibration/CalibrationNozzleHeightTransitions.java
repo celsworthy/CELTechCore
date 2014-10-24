@@ -130,7 +130,7 @@ public class CalibrationNozzleHeightTransitions
         // LIFT_HEAD
         
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.LIFT_HEAD,
-                                            StateTransitionManager.GUIName.NEXT,
+                                            StateTransitionManager.GUIName.AUTO,
                                             NozzleOffsetCalibrationState.REPLACE_PEI_BED,
                                             NozzleOffsetCalibrationState.PREFAILED));
 
