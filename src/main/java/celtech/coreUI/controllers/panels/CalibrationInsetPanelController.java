@@ -10,7 +10,9 @@ import static celtech.coreUI.controllers.panels.CalibrationMenuConfiguration.con
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.NozzleHeater;
 import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.Reel;
+import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
 import celtech.printerControl.model.calibration.StateTransitionManager;
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
 import celtech.services.calibration.CalibrationXAndYState;
@@ -63,9 +65,18 @@ public class CalibrationInsetPanelController implements Initializable,
 
     void whenZCoChanged(double zco)
     {
+//        if (diagramController != null)
+//        {
+//            diagramController.setCalibrationTextField(String.format("%1.2f", zco));
+//        }
+    }
+
+    void updateZCO()
+    {
         if (diagramController != null)
         {
-            diagramController.setCalibrationTextField(String.format("%1.2f", zco));
+            diagramController.setCalibrationTextField(String.format("%1.2f",
+                                    ((NozzleHeightStateTransitionManager) stateManager).getZco()));
         }
     }
 
@@ -160,9 +171,20 @@ public class CalibrationInsetPanelController implements Initializable,
     }
 
     @FXML
+    void upButtonAction(ActionEvent event)
+    {
+        stateManager.followTransition(StateTransitionManager.GUIName.UP);
+    }
+
+    @FXML
+    void downButtonAction(ActionEvent event)
+    {
+        stateManager.followTransition(StateTransitionManager.GUIName.DOWN);
+    }
+
+    @FXML
     void nextButtonAction(ActionEvent event)
     {
-//        calibrationHelper.nextButtonAction();
         stateManager.followTransition(StateTransitionManager.GUIName.NEXT);
     }
 
@@ -177,7 +199,6 @@ public class CalibrationInsetPanelController implements Initializable,
     @FXML
     void startCalibration(ActionEvent event)
     {
-//        calibrationHelper.nextButtonAction();
         stateManager.followTransition(StateTransitionManager.GUIName.START);
     }
 
@@ -191,7 +212,6 @@ public class CalibrationInsetPanelController implements Initializable,
     @FXML
     void retryCalibration(ActionEvent event)
     {
-//        calibrationHelper.retryAction();
         stateManager.followTransition(StateTransitionManager.GUIName.RETRY);
     }
 
@@ -541,8 +561,16 @@ public class CalibrationInsetPanelController implements Initializable,
 
                 calibrationHelper = null;
                 calibrationXAndYGUIStateHandler = null;
-                
-                stateManager = currentPrinter.startCalibrateNozzleHeight();
+                {
+                    try
+                    {
+                        stateManager = currentPrinter.startCalibrateNozzleHeight();
+                    } catch (PrinterException ex)
+                    {
+                        steno.warning("Can't switch to calibration: " + ex);
+                        return;
+                    }
+                }
                 calibrationNozzleHeightGUI = new CalibrationNozzleHeightGUI(this, stateManager);
                 calibrationNozzleHeightGUI.setState(NozzleOffsetCalibrationState.IDLE);
 
@@ -550,8 +578,16 @@ public class CalibrationInsetPanelController implements Initializable,
             case X_AND_Y_OFFSET:
                 calibrationHelper = null;
                 calibrationXAndYGUIStateHandler = null;
-
-                stateManager = currentPrinter.startCalibrateXAndY();
+                {
+                    try
+                    {
+                        stateManager = currentPrinter.startCalibrateXAndY();
+                    } catch (PrinterException ex)
+                    {
+                        steno.warning("Can't switch to calibration: " + ex);
+                        return;
+                    }
+                }
                 calibrationXAndYGUI = new CalibrationXAndYGUI(this, stateManager);
                 calibrationXAndYGUI.setState(CalibrationXAndYState.IDLE);
                 break;

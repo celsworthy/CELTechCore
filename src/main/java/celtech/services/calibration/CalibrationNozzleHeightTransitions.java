@@ -3,6 +3,7 @@
  */
 package celtech.services.calibration;
 
+import celtech.printerControl.model.CalibrationNozzleHeightActions;
 import celtech.printerControl.model.calibration.StateTransitionManager;
 import celtech.printerControl.model.calibration.StateTransition;
 import java.util.HashSet;
@@ -93,6 +94,36 @@ public class CalibrationNozzleHeightTransitions
                                                 return actions.doLiftHeadAction();
                                             },
                                             NozzleOffsetCalibrationState.PREFAILED));
+        
+        transitions.add(new StateTransition(NozzleOffsetCalibrationState.PROBING,
+                                            StateTransitionManager.GUIName.UP,
+                                            NozzleOffsetCalibrationState.INCREMENT_Z,
+                                            (Callable) () ->
+                                            {
+                                                return actions.doIncrementZAction();
+                                            },
+                                            NozzleOffsetCalibrationState.PREFAILED));
+        
+        
+        transitions.add(new StateTransition(NozzleOffsetCalibrationState.INCREMENT_Z,
+                                            StateTransitionManager.GUIName.AUTO,
+                                            NozzleOffsetCalibrationState.PROBING,
+                                            NozzleOffsetCalibrationState.PREFAILED));  
+        
+        transitions.add(new StateTransition(NozzleOffsetCalibrationState.PROBING,
+                                            StateTransitionManager.GUIName.DOWN,
+                                            NozzleOffsetCalibrationState.DECREMENT_Z,
+                                            (Callable) () ->
+                                            {
+                                                return actions.doDecrementZAction();
+                                            },
+                                            NozzleOffsetCalibrationState.PREFAILED));
+        
+        
+        transitions.add(new StateTransition(NozzleOffsetCalibrationState.DECREMENT_Z,
+                                            StateTransitionManager.GUIName.AUTO,
+                                            NozzleOffsetCalibrationState.PROBING,
+                                            NozzleOffsetCalibrationState.PREFAILED));         
 
         transitions.add(makeCancelledStateTransition(NozzleOffsetCalibrationState.PROBING));
         
@@ -134,6 +165,12 @@ public class CalibrationNozzleHeightTransitions
                                                 return actions.doFailedAction();
                                             },
                                             NozzleOffsetCalibrationState.FAILED));
+        
+        // FAILED
+        transitions.add(new StateTransition(NozzleOffsetCalibrationState.FAILED,
+                                            StateTransitionManager.GUIName.BACK,
+                                            NozzleOffsetCalibrationState.IDLE,
+                                            NozzleOffsetCalibrationState.IDLE));        
 
     }
 

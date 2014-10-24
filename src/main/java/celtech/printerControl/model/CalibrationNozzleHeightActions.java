@@ -1,18 +1,17 @@
 /*
  * Copyright 2014 CEL UK
  */
-package celtech.services.calibration;
+package celtech.printerControl.model;
 
 import celtech.configuration.HeaterMode;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.NozzleData;
 import celtech.coreUI.controllers.panels.CalibrationXAndYHelper;
+import celtech.printerControl.PrinterStatus;
+import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
-import celtech.printerControl.model.NozzleHeater;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
 import libertysystems.stenographer.Stenographer;
@@ -41,6 +40,8 @@ public class CalibrationNozzleHeightActions
     public boolean doInitialiseAndHeatBedAction() throws InterruptedException, PrinterException, RoboxCommsException
     {
         boolean success = false;
+        
+        printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT);
 
         savedHeadData = printer.readHeadEEPROM();
 
@@ -82,7 +83,7 @@ public class CalibrationNozzleHeightActions
     private boolean heatBed(boolean success) throws InterruptedException, PrinterException
     {
         printer.goToTargetNozzleTemperature();
-        printer.runMacroWithoutPurgeCheck("Home_all");
+        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("Home_all"), true);
         if (PrinterUtils.waitOnMacroFinished(printer, (Cancellable) null) == false)
         {
             printer.goToTargetNozzleTemperature();
@@ -204,17 +205,33 @@ public class CalibrationNozzleHeightActions
         return success;
 
     }
-
-    public boolean doFinishedAction() throws PrinterException
+    
+    public boolean doIncrementZAction() {
+         zco += 0.05;
+         printer.goToZPosition(zco);
+         return true;
+    }
+    
+    public boolean doDecrementZAction() {
+         zco -= 0.05;
+         printer.goToZPosition(zco);
+         return true;
+    }    
+    
+    public boolean doFinishedAction() throws PrinterException, RoboxCommsException
     {
+        saveSettings();
+        printer.setPrinterStatus(PrinterStatus.IDLE);
         switchHeaterOffAndRaiseHead();
         return true;
     }
 
     public boolean doFailedAction() throws PrinterException, RoboxCommsException
     {
+        printer.setPrinterStatus(PrinterStatus.IDLE);
         restoreHeadData();
         switchHeaterOffAndRaiseHead();
+        
         return true;
     }
     
@@ -271,8 +288,8 @@ public class CalibrationNozzleHeightActions
         return true;
     }
 
-    public void setZco(double zco)
+    public double getZco()
     {
-        this.zco = zco;
+        return zco;
     }
 }

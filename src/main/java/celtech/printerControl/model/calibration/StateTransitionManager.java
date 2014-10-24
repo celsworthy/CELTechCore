@@ -23,7 +23,7 @@ public class StateTransitionManager<StateType>
     public enum GUIName
     {
 
-        START, CANCEL, BACK, NEXT, RETRY, COMPLETE, YES, NO, AUTO;
+        START, CANCEL, BACK, NEXT, RETRY, COMPLETE, YES, NO, UP, DOWN, AUTO;
     }
 
     private final Stenographer steno = StenographerFactory.getStenographer(StateTransitionManager.class.getName());
@@ -80,6 +80,10 @@ public class StateTransitionManager<StateType>
     {
 
         StateTransition<StateType> stateTransition = getTransitionForGUIName(guiName);
+        
+        if (stateTransition == null) {
+            throw new RuntimeException("No transition found from state " + state.get() + " for action " + guiName);
+        }
 
         if (stateTransition.action == null)
         {

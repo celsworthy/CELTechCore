@@ -39,6 +39,11 @@ public enum NozzleOffsetCalibrationState
     /**
      *
      */
+    INCREMENT_Z(""),
+    
+    DECREMENT_Z(""),
+    
+    
     LIFT_HEAD(""),
     /**
      *

@@ -3,6 +3,7 @@
  */
 package celtech.services.calibration;
 
+import celtech.printerControl.model.CalibrationXAndYActions;
 import celtech.printerControl.model.calibration.StateTransitionManager;
 import celtech.printerControl.model.calibration.StateTransition;
 import java.util.HashSet;

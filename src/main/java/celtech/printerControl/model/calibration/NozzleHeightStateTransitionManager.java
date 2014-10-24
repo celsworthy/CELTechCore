@@ -3,7 +3,7 @@
  */
 package celtech.printerControl.model.calibration;
 
-import celtech.services.calibration.CalibrationNozzleHeightActions;
+import celtech.printerControl.model.CalibrationNozzleHeightActions;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import java.util.Set;
 
@@ -24,9 +24,9 @@ public class NozzleHeightStateTransitionManager extends StateTransitionManager<N
         this.actions = actions;
     }
 
-    public void setZco(double zco)
+    public double getZco()
     {
-        actions.setZco(zco);
+        return actions.getZco();
     }
 
 }

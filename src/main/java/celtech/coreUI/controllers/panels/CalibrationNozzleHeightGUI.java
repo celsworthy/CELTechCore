@@ -63,6 +63,7 @@ public class CalibrationNozzleHeightGUI
     public void setState(NozzleOffsetCalibrationState state)
     {
         steno.info("GUI going to state " + state);
+        controller.updateZCO();
         showAppropriateButtons(state);
         switch (state)
         {

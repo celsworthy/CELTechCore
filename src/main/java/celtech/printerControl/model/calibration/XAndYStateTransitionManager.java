@@ -3,7 +3,7 @@
  */
 package celtech.printerControl.model.calibration;
 
-import celtech.services.calibration.CalibrationXAndYActions;
+import celtech.printerControl.model.CalibrationXAndYActions;
 import celtech.services.calibration.CalibrationXAndYState;
 import java.util.Set;
 

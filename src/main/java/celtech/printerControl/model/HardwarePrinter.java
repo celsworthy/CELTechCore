@@ -56,9 +56,7 @@ import celtech.printerControl.comms.commands.tx.WritePrinterID;
 import celtech.printerControl.comms.commands.tx.WriteReelEEPROM;
 import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
-import celtech.services.calibration.CalibrationNozzleHeightActions;
 import celtech.services.calibration.CalibrationNozzleHeightTransitions;
-import celtech.services.calibration.CalibrationXAndYActions;
 import celtech.services.calibration.CalibrationXAndYTransitions;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
@@ -125,6 +123,7 @@ public final class HardwarePrinter implements Printer
     private final BooleanProperty canRunMacro = new SimpleBooleanProperty(false);
     private final BooleanProperty canCancel = new SimpleBooleanProperty(false);
     private final BooleanProperty canOpenDoor = new SimpleBooleanProperty(false);
+    private final BooleanProperty canCalibrateHead = new SimpleBooleanProperty(false);
 
     /*
      * Physical model
@@ -190,7 +189,9 @@ public final class HardwarePrinter implements Printer
             .or(printerStatus.isEqualTo(PrinterStatus.CANCELLING)));
         canPause.bind(printerStatus.isEqualTo(PrinterStatus.PRINTING)
             .or(printerStatus.isEqualTo(PrinterStatus.RESUMING)));
-
+        canCalibrateHead.bind(head.isNotNull()
+            .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
+        
         threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
         threeDPformatter.setMaximumFractionDigits(3);
         threeDPformatter.setGroupingUsed(false);
@@ -518,6 +519,13 @@ public final class HardwarePrinter implements Printer
     {
         return canPrint;
     }
+    
+    /**
+     * Calibrate head
+     */
+    public ReadOnlyBooleanProperty canCalibrateHeadProperty() {
+        return canCalibrateHead;
+    }
 
     /*
      * Cancel
@@ -569,15 +577,9 @@ public final class HardwarePrinter implements Printer
             steno.error("Couldn't send abort command to printer");
         }
         PrinterUtils.waitOnBusy(this, cancellable);
-        try
-        {
-            runMacroPrivileged("abort_print");
-            PrinterUtils.waitOnMacroFinished(this, cancellable);
-            success = true;
-        } catch (PrinterException ex)
-        {
-            steno.error("Error during abort sequence " + ex.getMessage());
-        }
+        printEngine.printGCodeFile(GCodeMacros.getFilename("abort_print"), false);
+        PrinterUtils.waitOnMacroFinished(this, cancellable);
+        success = true;
 
         return success;
     }
@@ -678,19 +680,6 @@ public final class HardwarePrinter implements Printer
         return printInitiated;
     }
 
-    /*
-     * Macros
-     */
-    private void runMacroPrivileged(String macroName) throws PrinterException
-    {
-        boolean jobAccepted = printEngine.printGCodeFile(GCodeMacros.getFilename(macroName), true);
-
-        if (!jobAccepted)
-        {
-            throw new PrintJobRejectedException("Macro " + macroName + " could not be run in mode " + printerStatus.get().name());
-        }
-    }
-    
     @Override
     public final void runMacro(String macroName) throws PrinterException
     {
@@ -2036,8 +2025,12 @@ public final class HardwarePrinter implements Printer
     }
 
     @Override
-    public XAndYStateTransitionManager startCalibrateXAndY()
+    public XAndYStateTransitionManager startCalibrateXAndY() throws PrinterException
     {
+        if (!canCalibrateHead.get())
+        {
+            throw new PrinterException("Calibrate not permitted");
+        }
         CalibrationXAndYActions actions = new CalibrationXAndYActions(this);
         CalibrationXAndYTransitions calibrationXAndYTransitions = new CalibrationXAndYTransitions(actions);
         XAndYStateTransitionManager calibrationAlignmentManager = 
@@ -2046,8 +2039,12 @@ public final class HardwarePrinter implements Printer
     }
     
     @Override
-    public NozzleHeightStateTransitionManager startCalibrateNozzleHeight()
+    public NozzleHeightStateTransitionManager startCalibrateNozzleHeight() throws PrinterException
     {
+        if (!canCalibrateHead.get())
+        {
+            throw new PrinterException("Calibrate not permitted");
+        }
         CalibrationNozzleHeightActions actions = new CalibrationNozzleHeightActions(this);
         CalibrationNozzleHeightTransitions calibrationNozzleHeightTransitions = new CalibrationNozzleHeightTransitions(actions);
         NozzleHeightStateTransitionManager calibrationAlignmentManager = 

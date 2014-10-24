@@ -63,23 +63,23 @@ public class LiveTaskExecutor implements TaskExecutor
     public void runAsTask(Callable<Boolean> action, EventHandler<WorkerStateEvent> successHandler,
         EventHandler<WorkerStateEvent> failureHandler, String taskName)
     {
+        
         Task task = new GenericTask(action);
+        
+        EventHandler<WorkerStateEvent> outerFailureHandler = (WorkerStateEvent event) ->
+            {
+                if (task.getException() != null) {
+                    task.getException().printStackTrace();
+                }
+                failureHandler.handle(event);
+            };
+        
         task.setOnSucceeded(successHandler);
-        task.setOnFailed(failureHandler);
+        task.setOnFailed(outerFailureHandler);
         TaskController.getInstance().manageTask(task);
 
         Thread taskThread = new Thread(task);
 
-        taskThread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
-        {
-
-            @Override
-            public void uncaughtException(Thread t, Throwable e)
-            {
-                steno.error("Uncaught exception " + e);
-                e.printStackTrace();
-            }
-        });
 
         taskThread.setName(taskName);
         taskThread.start();

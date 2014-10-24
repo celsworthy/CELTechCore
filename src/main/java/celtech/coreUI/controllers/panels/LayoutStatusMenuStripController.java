@@ -282,6 +282,7 @@ public class LayoutStatusMenuStripController
             ApplicationMode.STATUS));
 //        forwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS).and(printerOKToPrint));
         printButton.setVisible(false);
+        calibrateButton.setDisable(true);
 
         settingsScreenState.selectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
@@ -297,8 +298,7 @@ public class LayoutStatusMenuStripController
                         calibrateButton.disableProperty().unbind();
                         
                     }
-                    calibrateButton.disableProperty().bind(newValue.printerStatusProperty().isNotEqualTo(
-                        PrinterStatus.IDLE));
+                    calibrateButton.disableProperty().bind(newValue.canCalibrateHeadProperty().not());
                     printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
                         ApplicationMode.SETTINGS).and(newValue.canPrintProperty()));
 

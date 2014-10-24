@@ -35,7 +35,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
@@ -312,7 +311,8 @@ public class PrintEngine implements ControllableService
                     }
                 } else
                 {
-                    Lookup.getSystemNotificationHandler().showPrintTransferSuccessfulNotification(associatedPrinter.getPrinterIdentity().printerFriendlyNameProperty().get());
+                    Lookup.getSystemNotificationHandler().showPrintTransferSuccessfulNotification(
+                        associatedPrinter.getPrinterIdentity().printerFriendlyNameProperty().get());
                     associatedPrinter.setPrinterStatus(PrinterStatus.PRINTING);
                 }
             } else
@@ -510,7 +510,8 @@ public class PrintEngine implements ControllableService
      * @param settings
      * @return
      */
-    public synchronized boolean printProject(Project project, PrintQualityEnumeration printQuality, SlicerParameters settings)
+    public synchronized boolean printProject(Project project, PrintQualityEnumeration printQuality,
+        SlicerParameters settings)
     {
         boolean acceptedPrintRequest = false;
         etcAvailable.set(false);
@@ -651,12 +652,15 @@ public class PrintEngine implements ControllableService
                 slicerTypeToUse = Lookup.getUserPreferences().getSlicerType();
             }
 
-            SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(slicerTypeToUse);
+            SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(
+                slicerTypeToUse);
 
             //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
             Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
-            configWriter.setPrintCentre((float) (centreOfPrintedObject.getX() + ApplicationConfiguration.xPrintOffset),
-                                        (float) (centreOfPrintedObject.getZ() + ApplicationConfiguration.yPrintOffset));
+            configWriter.setPrintCentre((float) (centreOfPrintedObject.getX()
+                + ApplicationConfiguration.xPrintOffset),
+                                        (float) (centreOfPrintedObject.getZ()
+                                        + ApplicationConfiguration.yPrintOffset));
             configWriter.generateConfigForSlicer(settings,
                                                  printJobDirectoryName
                                                  + File.separator
@@ -869,31 +873,14 @@ public class PrintEngine implements ControllableService
      * @param useSDCard
      * @return
      */
-    public boolean printGCodeFile(final String filename, final boolean useSDCard)
+    protected boolean printGCodeFile(final String filename, final boolean useSDCard)
     {
         boolean acceptedPrintRequest = false;
         consideringPrintRequest = true;
 
-        if (associatedPrinter.printerStatusProperty().get() == PrinterStatus.IDLE
-            || associatedPrinter.printerStatusProperty().get() == PrinterStatus.CANCELLING
-            || associatedPrinter.printerStatusProperty().get() == PrinterStatus.PAUSING)
-        {
-            if (Platform.isFxApplicationThread() == false)
-            {
-                Platform.runLater(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        runMacroPrintJob(filename, useSDCard);
-                    }
-                });
-            } else
-            {
-                runMacroPrintJob(filename, useSDCard);
-            }
-            acceptedPrintRequest = true;
-        }
+        Lookup.getTaskExecutor().runOnGUIThread(() -> {runMacroPrintJob(filename, useSDCard);});
+        
+        acceptedPrintRequest = true;
 
         return acceptedPrintRequest;
     }
@@ -948,7 +935,7 @@ public class PrintEngine implements ControllableService
         {
             steno.error(
                 "Error whilst preparing for gcode print. Can't copy " + filename
-                + " to " + printjobFilename);
+                + " to " + printjobFilename + ": " + ex);
         }
 
         int numberOfLines = SystemUtils.countLinesInFile(printjobFile, ";");

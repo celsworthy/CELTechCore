@@ -118,7 +118,7 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
             gotToEndOK = true;
         } catch (FileNotFoundException ex)
         {
-            steno.error("Couldn't open gcode file " + gcodeFileToPrint);
+            steno.error("Couldn't open gcode file " + gcodeFileToPrint + ": " + ex);
         } catch (RoboxCommsException ex)
         {
             steno.error("Error during print operation - abandoning print " + printJobID + " " + ex.getMessage());

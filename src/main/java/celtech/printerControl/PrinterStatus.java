@@ -26,6 +26,9 @@ public enum PrinterStatus
     CANCELLING("printerStatus.cancelling"),
     EJECTING_FILAMENT("printerStatus.ejectingFilament"),
     OPENING_DOOR("printerStatus.openingDoor"),
+    CALIBRATING_NOZZLE_ALIGNMENT("printerStatus.calibratingNozzleAlignment"),
+    CALIBRATING_NOZZLE_HEIGHT("printerStatus.calibratingNozzleHeight"),
+    CALIBRATING_NOZZLE_OPENING("printerStatus.calibratingNozzleOpening"),
     ERROR("PrintQueue.Error");
 
     private final String i18nString;

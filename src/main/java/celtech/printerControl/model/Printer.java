@@ -54,8 +54,20 @@ public interface Printer extends RoboxResponseConsumer
      * Print
      */
     public ReadOnlyBooleanProperty canPrintProperty();
-
+    
+    /**
+     * Purge
+     */
     public ReadOnlyBooleanProperty canPurgeHeadProperty();
+    
+    /**
+     * Calibrate head
+     */
+    public ReadOnlyBooleanProperty canCalibrateHeadProperty();
+    
+    public XAndYStateTransitionManager startCalibrateXAndY() throws PrinterException;
+    
+    public NozzleHeightStateTransitionManager startCalibrateNozzleHeight() throws PrinterException;
 
     /*
      * Remove head
@@ -420,7 +432,4 @@ public interface Printer extends RoboxResponseConsumer
     
     public ReadOnlyObjectProperty pauseStatusProperty();
 
-    public XAndYStateTransitionManager startCalibrateXAndY();
-    
-    public NozzleHeightStateTransitionManager startCalibrateNozzleHeight();
 }

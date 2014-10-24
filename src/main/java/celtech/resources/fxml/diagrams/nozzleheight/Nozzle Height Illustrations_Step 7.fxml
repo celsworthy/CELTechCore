@@ -13948,7 +13948,7 @@
                <SVGPath content="     M574.391,183.255c-4.742,5.096-10.391,9.053-16.176,12.824c-7.539,4.912-15.168,9.689-22.65,14.684     c-3.07,2.051-5.871,4.509-8.416,7.211c-4.984,5.281-10.801,9.527-16.645,13.787c-5.256,3.832-10.645,7.516-15.43,11.965     c-1.121,1.039-1.998,2.27-2.713,3.564c-1.887,3.4-0.479,6.713,3.105,9.291c4.4,3.162,9.357,2.938,14.385,1.545     c7.441-2.063,13.525-6.627,19.908-10.648c4.379-2.76,8.676-5.624,13.441-7.742c7.02-3.119,13.648-6.998,20.219-10.965     c7.35-4.438,14.709-8.855,22.686-12.109c8.041-3.279,16.326-5.869,24.684-8.178c7.768-2.146,15.635-3.934,23.455-5.875" fill="#646464" stroke="#009FE3" styleClass="calibrationAltABButton" />
                <SVGPath content="     M573.207,152.871c-3.057,3.791-7.146,6.4-10.814,9.49c-5.154,4.348-11.168,7.451-16.586,11.414     c-3.357,2.455-5.141,5.891-6.064,9.852c-0.316,1.354-0.725,2.699-0.879,4.076c-0.396,3.529,0.625,5.283,3.818,6.957     c2.586,1.357,5.277,2.443,8.102,3.178c0.781,0.203,1.547,0.361,2.203,0.852" fill="#646464" stroke="#009FE3" styleClass="calibrationAltABButton" />
                <SVGPath content="     M561.648,162.236c-1.125-3.412-0.418-6.85,0.266-10.154c1.557-7.545,3.918-14.848,7.111-21.904     c1.145-2.527,2.566-4.682,4.322-6.738c0.373-0.436,1.105-0.887,0.852-1.711" fill="#646464" stroke="#009FE3" styleClass="calibrationAltABButton" />
-                  <Button fx:id="buttonA" layoutX="331.0" layoutY="115.0" mnemonicParsing="false" onAction="#buttonAAction" rotate="180.0" scaleX="0.5" scaleY="0.5" scaleZ="0.5" style="-fx-background-color: transparent;" styleClass="calibrationAltABButton">
+                  <Button fx:id="buttonA" layoutX="331.0" layoutY="115.0" mnemonicParsing="false" onAction="#downButtonAction" rotate="180.0" scaleX="0.5" scaleY="0.5" scaleZ="0.5" style="-fx-background-color: transparent;" styleClass="calibrationAltABButton">
                      <graphic>
                         <Polygon fill="DODGERBLUE" stroke="BLACK" strokeType="INSIDE">
                           <points>
@@ -13962,7 +13962,7 @@
                         </Polygon>
                      </graphic>
                   </Button>
-                  <Button fx:id="buttonB" layoutX="332.0" layoutY="31.0" mnemonicParsing="false" onAction="#buttonBAction" scaleX="0.5" scaleY="0.5" scaleZ="0.5" style="-fx-background-color: transparent;" styleClass="calibrationAltABButton">
+                  <Button fx:id="buttonB" layoutX="332.0" layoutY="31.0" mnemonicParsing="false" onAction="#upButtonAction" scaleX="0.5" scaleY="0.5" scaleZ="0.5" style="-fx-background-color: transparent;" styleClass="calibrationAltABButton">
                      <graphic>
                         <Polygon fill="DODGERBLUE" stroke="BLACK" strokeType="INSIDE">
                            <points>

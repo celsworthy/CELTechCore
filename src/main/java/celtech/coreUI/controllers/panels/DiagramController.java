@@ -96,6 +96,16 @@ class DiagramController implements Initializable
     {
         parentController.buttonBAction();
     }
+    
+    @FXML
+    void upButtonAction(ActionEvent event) {
+        parentController.upButtonAction(event);
+    }
+    
+    @FXML
+    void downButtonAction(ActionEvent event) {
+        parentController.downButtonAction(event);
+    }        
 
     protected void setCalibrationTextField(String textFieldData)
     {

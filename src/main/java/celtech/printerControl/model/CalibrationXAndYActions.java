@@ -1,7 +1,7 @@
 /*
  * Copyright 2014 CEL UK
  */
-package celtech.services.calibration;
+package celtech.printerControl.model;
 
 import celtech.coreUI.controllers.panels.CalibrationXAndYHelper;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
