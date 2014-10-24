@@ -124,7 +124,7 @@ public class CalibrationNozzleHeightActions
     {
         printer.switchToAbsoluteMoveMode();
         printer.goToZPosition(30);
-        printer.goToOpenDoorPosition(null);
+//        printer.goToOpenDoorPosition(null);
         return true;
     }
 
@@ -270,6 +270,8 @@ public class CalibrationNozzleHeightActions
 
     public boolean saveSettings() throws RoboxCommsException
     {
+        steno.info("zDifference is " + zDifference);
+        steno.info("zco is " + zDifference);
         printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                                         savedHeadData.getUniqueID(),
                                         savedHeadData.getMaximumTemperature(),

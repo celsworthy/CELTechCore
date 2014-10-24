@@ -1415,8 +1415,10 @@ public final class HardwarePrinter implements Printer
         new Thread(() ->
         {
             boolean success = doOpenLidActivity(cancellable);
-
-            Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Door open");
+            
+            if (responder != null) {
+                Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Door open");
+            }    
 
             setPrinterStatus(PrinterStatus.IDLE);
 
