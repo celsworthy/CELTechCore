@@ -6,8 +6,10 @@ package celtech.printerControl.model.calibration;
 import celtech.JavaFXConfiguredTest;
 import celtech.printerControl.model.calibration.StateTransitionManager.GUIName;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import javafx.beans.value.ChangeListener;
@@ -23,12 +25,15 @@ import org.junit.Test;
  */
 public class StateTransitionManagerTest extends JavaFXConfiguredTest
 {
-    
-    enum TestState {
-        IDLE, PRINT_CIRCLE, GET_Y_OFFSET, FAILED;
+
+    enum TestState
+    {
+
+        IDLE, PRINT_CIRCLE, GET_Y_OFFSET, DONE, FAILED;
     }
 
     Set<StateTransition<TestState>> transitions;
+    Map<TestState, ArrivalAction<TestState>> arrivals;
     TestStateTransitionManager manager;
 
     @Before
@@ -54,6 +59,11 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
                                             },
                                             TestState.FAILED));
 
+        transitions.add(new StateTransition(TestState.GET_Y_OFFSET,
+                                            StateTransitionManager.GUIName.NEXT,
+                                            TestState.DONE,
+                                            TestState.FAILED));
+
         transitions.add(new StateTransition(TestState.PRINT_CIRCLE,
                                             StateTransitionManager.GUIName.COMPLETE,
                                             TestState.GET_Y_OFFSET,
@@ -72,7 +82,14 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
                                             },
                                             TestState.FAILED));
 
-        manager = new TestStateTransitionManager(transitions, actions);
+        arrivals = new HashMap<>();
+
+        arrivals.put(TestState.DONE, new ArrivalAction<>((Callable) () ->
+                 {
+                     return actions.doDoneAction();
+        }, TestState.FAILED));
+
+        manager = new TestStateTransitionManager(transitions, arrivals, actions);
 
     }
 
@@ -134,12 +151,21 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
                 states.add((TestState) newValue);
             }
         });
-        
+
         manager.followTransition(GUIName.NEXT);
         manager.followTransition(GUIName.NEXT);
         assertEquals(2, states.size());
         assertEquals(TestState.PRINT_CIRCLE, states.get(0));
         assertEquals(TestState.GET_Y_OFFSET, states.get(1));
+    }
+
+    @Test
+    public void testArrivalActionPerformed()
+    {
+        manager.followTransition(GUIName.NEXT);
+        manager.followTransition(GUIName.NEXT);
+        manager.followTransition(GUIName.NEXT);
+        assertEquals(43, manager.getX());
     }
 
     static class TestActions
@@ -158,6 +184,12 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
         {
             x += 12;
             return false;
+        }
+
+        private boolean doDoneAction()
+        {
+            x = 43;
+            return true;
         }
 
         private boolean doAction2()
@@ -179,9 +211,10 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
         private final TestActions actions;
 
         public TestStateTransitionManager(
-            Set<StateTransition<TestState>> allowedTransitions, TestActions actions)
+            Set<StateTransition<TestState>> allowedTransitions,
+            Map<TestState, ArrivalAction<TestState>> arrivals, TestActions actions)
         {
-            super(allowedTransitions, TestState.IDLE);
+            super(allowedTransitions, arrivals, TestState.IDLE);
             this.actions = actions;
         }
 

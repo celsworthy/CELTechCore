@@ -5,6 +5,7 @@ package celtech.printerControl.model.calibration;
 
 import celtech.printerControl.model.CalibrationNozzleHeightActions;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -18,9 +19,10 @@ public class NozzleHeightStateTransitionManager extends StateTransitionManager<N
 
     public NozzleHeightStateTransitionManager(
         Set<StateTransition<NozzleOffsetCalibrationState>> allowedTransitions,
+        Map<NozzleOffsetCalibrationState, ArrivalAction<NozzleOffsetCalibrationState>> arrivals,
         CalibrationNozzleHeightActions actions)
     {
-        super(allowedTransitions, NozzleOffsetCalibrationState.IDLE);
+        super(allowedTransitions, arrivals, NozzleOffsetCalibrationState.IDLE);
         this.actions = actions;
     }
 

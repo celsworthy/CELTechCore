@@ -4,9 +4,11 @@
 package celtech.services.calibration;
 
 import celtech.printerControl.model.CalibrationXAndYActions;
+import celtech.printerControl.model.calibration.ArrivalAction;
 import celtech.printerControl.model.calibration.StateTransitionManager;
 import celtech.printerControl.model.calibration.StateTransition;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -19,6 +21,7 @@ public class CalibrationXAndYTransitions
 
     CalibrationXAndYActions actions;
     Set<StateTransition<CalibrationXAndYState>> transitions;
+    Map<CalibrationXAndYState, ArrivalAction<CalibrationXAndYState>> arrivals;
     StateTransitionManager manager;
 
     public CalibrationXAndYTransitions(CalibrationXAndYActions actions)
@@ -105,6 +108,11 @@ public class CalibrationXAndYTransitions
     public Set<StateTransition<CalibrationXAndYState>> getTransitions()
     {
         return transitions;
+    }
+    
+    public Map<CalibrationXAndYState, ArrivalAction<CalibrationXAndYState>> getArrivals()
+    {
+        return arrivals;
     }
 
 }

@@ -5,6 +5,8 @@ package celtech.printerControl.model.calibration;
 
 import celtech.printerControl.model.CalibrationXAndYActions;
 import celtech.services.calibration.CalibrationXAndYState;
+import celtech.services.calibration.NozzleOffsetCalibrationState;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -17,9 +19,10 @@ public class XAndYStateTransitionManager extends StateTransitionManager<Calibrat
     private final CalibrationXAndYActions actions;
 
     public XAndYStateTransitionManager(Set<StateTransition<CalibrationXAndYState>> allowedTransitions,
+        Map<CalibrationXAndYState, ArrivalAction<CalibrationXAndYState>> arrivals,
         CalibrationXAndYActions actions)
     {
-        super(allowedTransitions, CalibrationXAndYState.IDLE);
+        super(allowedTransitions, arrivals, CalibrationXAndYState.IDLE);
         this.actions = actions;
     }
 

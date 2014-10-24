@@ -4,9 +4,11 @@
 package celtech.services.calibration;
 
 import celtech.printerControl.model.CalibrationNozzleHeightActions;
+import celtech.printerControl.model.calibration.ArrivalAction;
 import celtech.printerControl.model.calibration.StateTransitionManager;
 import celtech.printerControl.model.calibration.StateTransition;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -19,6 +21,7 @@ public class CalibrationNozzleHeightTransitions
 
     CalibrationNozzleHeightActions actions;
     Set<StateTransition<NozzleOffsetCalibrationState>> transitions;
+    Map<NozzleOffsetCalibrationState, ArrivalAction<NozzleOffsetCalibrationState>> arrivals;
     StateTransitionManager manager;
 
     public CalibrationNozzleHeightTransitions(CalibrationNozzleHeightActions actions)
@@ -190,5 +193,10 @@ public class CalibrationNozzleHeightTransitions
     {
         return transitions;
     }
+    
+    public Map<NozzleOffsetCalibrationState, ArrivalAction<NozzleOffsetCalibrationState>> getArrivals()
+    {
+        return arrivals;
+    }    
 
 }
