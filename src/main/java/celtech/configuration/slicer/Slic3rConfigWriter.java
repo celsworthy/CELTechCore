@@ -1,10 +1,9 @@
 package celtech.configuration.slicer;
 
 import celtech.configuration.SlicerType;
-import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Locale;
-import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -19,57 +18,57 @@ public class Slic3rConfigWriter extends SlicerConfigWriter
     }
 
     @Override
-    protected void outputLine(File outputFile, String variableName, boolean value) throws IOException
+    protected void outputLine(FileWriter writer, String variableName, boolean value) throws IOException
     {
         int valueToWrite = (value)?1:0;
-        FileUtils.writeStringToFile(outputFile, variableName + " = " + valueToWrite + "\n", true);
+        writer.append(variableName + " = " + valueToWrite + "\n");
     }
 
     @Override
-    protected void outputLine(File outputFile, String variableName, int value) throws IOException
+    protected void outputLine(FileWriter writer, String variableName, int value) throws IOException
     {
-        FileUtils.writeStringToFile(outputFile, variableName + " = " + value + "\n", true);
+        writer.append(variableName + " = " + value + "\n");
     }
 
     @Override
-    protected void outputLine(File outputFile, String variableName, float value) throws IOException
+    protected void outputLine(FileWriter writer, String variableName, float value) throws IOException
     {
-        FileUtils.writeStringToFile(outputFile, variableName + " = " + threeDPformatter.format(value) + "\n", true);
+        writer.append(variableName + " = " + threeDPformatter.format(value) + "\n");
     }
 
     @Override
-    protected void outputLine(File outputFile, String variableName, String value) throws IOException
+    protected void outputLine(FileWriter writer, String variableName, String value) throws IOException
     {
-        FileUtils.writeStringToFile(outputFile, variableName + " = " + value + "\n", true);
+        writer.append(variableName + " = " + value + "\n");
     }
 
     @Override
-    protected void outputLine(File outputFile, String variableName, SlicerType value) throws IOException
+    protected void outputLine(FileWriter writer, String variableName, SlicerType value) throws IOException
     {
-        FileUtils.writeStringToFile(outputFile, variableName + " = " + value + "\n", true);
+        writer.append(variableName + " = " + value + "\n");
     }
 
     @Override
-    protected void outputLine(File outputFile, String variableName, FillPattern value) throws IOException
+    protected void outputLine(FileWriter writer, String variableName, FillPattern value) throws IOException
     {
-        FileUtils.writeStringToFile(outputFile, variableName + " = " + value.name().toLowerCase() + "\n", true);
+        writer.append(variableName + " = " + value.name().toLowerCase() + "\n");
     }
 
     @Override
-    protected void outputLine(File outputFile, String variableName, SupportPattern value) throws IOException
+    protected void outputLine(FileWriter writer, String variableName, SupportPattern value) throws IOException
     {
-        FileUtils.writeStringToFile(outputFile, variableName + " = " + value.name().toLowerCase() + "\n", true);
+        writer.append(variableName + " = " + value.name().toLowerCase() + "\n");
     }
 
     @Override
-    protected void outputPrintCentre(File outputFile, float centreX, float centreY) throws IOException
+    protected void outputPrintCentre(FileWriter writer, float centreX, float centreY) throws IOException
     {
-        outputLine(outputFile, "print_center", (int)centreX + "," + (int)centreY);
+        outputLine(writer, "print_center", (int)centreX + "," + (int)centreY);
     }
 
     @Override
-    protected void outputFilamentDiameter(File outputFile, float diameter) throws IOException
+    protected void outputFilamentDiameter(FileWriter writer, float diameter) throws IOException
     {
-        outputLine(outputFile, "filament_diameter", String.format(Locale.UK, "%f", diameter));
+        outputLine(writer, "filament_diameter", String.format(Locale.UK, "%f", diameter));
     }
 }

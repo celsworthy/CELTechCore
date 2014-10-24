@@ -98,7 +98,7 @@ public class ApplicationConfiguration
     /**
      *
      */
-    public static final String mainCSSFile = cssResourcePath + "JMetroDarkTheme.css";
+    private static final String mainCSSFile = cssResourcePath + "JMetroDarkTheme.css";
 
     /**
      *
@@ -1111,5 +1111,10 @@ public class ApplicationConfiguration
     public static void setAutoRepairReels(boolean value)
     {
         autoRepairReels = value;
+    }
+    
+    public static String getMainCSSFile()
+    {
+        return ApplicationConfiguration.class.getResource(mainCSSFile).toExternalForm();
     }
 }

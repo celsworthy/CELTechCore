@@ -62,7 +62,7 @@ public class Spinner extends StackPane implements Initializable
 
             Scene scene = new Scene(fxmlParent, Color.TRANSPARENT);
             scene.getStylesheets().clear();
-            scene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
+            scene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
             stage.setScene(scene);
             stage.initOwner(DisplayManager.getMainStage());
             stage.initModality(Modality.NONE);

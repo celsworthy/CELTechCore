@@ -581,7 +581,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
         scene = new Scene(root, ApplicationConfiguration.DEFAULT_WIDTH,
                           ApplicationConfiguration.DEFAULT_HEIGHT);
 
-        scene.getStylesheets().add("/celtech/resources/css/JMetroDarkTheme.css");
+        scene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
         
         captureHiddenKeys();
 

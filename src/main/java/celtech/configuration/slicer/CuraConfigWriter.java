@@ -1,10 +1,9 @@
 package celtech.configuration.slicer;
 
 import celtech.configuration.SlicerType;
-import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Locale;
-import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -20,57 +19,57 @@ public class CuraConfigWriter extends SlicerConfigWriter
     }
 
     @Override
-    protected void outputLine(File outputFile, String variableName, boolean value) throws IOException
+    protected void outputLine(FileWriter writer, String variableName, boolean value) throws IOException
     {
-        FileUtils.writeStringToFile(outputFile, variableName + "=" + value + "\n", true);
+        writer.append(variableName + "=" + value + "\n");
     }
 
     @Override
-    protected void outputLine(File outputFile, String variableName, int value) throws IOException
+    protected void outputLine(FileWriter writer, String variableName, int value) throws IOException
     {
-        FileUtils.writeStringToFile(outputFile, variableName + "=" + value + "\n", true);
+        writer.append(variableName + "=" + value + "\n");
     }
 
     @Override
-    protected void outputLine(File outputFile, String variableName, float value) throws IOException
+    protected void outputLine(FileWriter writer, String variableName, float value) throws IOException
     {
-        FileUtils.writeStringToFile(outputFile, variableName + "=" + threeDPformatter.format(value) + "\n", true);
+        writer.append(variableName + "=" + threeDPformatter.format(value) + "\n");
     }
 
     @Override
-    protected void outputLine(File outputFile, String variableName, String value) throws IOException
+    protected void outputLine(FileWriter writer, String variableName, String value) throws IOException
     {
-        FileUtils.writeStringToFile(outputFile, variableName + "=" + value + "\n", true);
+        writer.append(variableName + "=" + value + "\n");
     }
 
     @Override
-    protected void outputLine(File outputFile, String variableName, SlicerType value) throws IOException
+    protected void outputLine(FileWriter writer, String variableName, SlicerType value) throws IOException
     {
-        FileUtils.writeStringToFile(outputFile, variableName + "=" + value + "\n", true);
+        writer.append(variableName + "=" + value + "\n");
     }
 
     @Override
-    protected void outputLine(File outputFile, String variableName, FillPattern value) throws IOException
+    protected void outputLine(FileWriter writer, String variableName, FillPattern value) throws IOException
     {
-        FileUtils.writeStringToFile(outputFile, variableName + "=" + value + "\n", true);
+        writer.append(variableName + "=" + value + "\n");
     }
 
     @Override
-    protected void outputLine(File outputFile, String variableName, SupportPattern value) throws IOException
+    protected void outputLine(FileWriter writer, String variableName, SupportPattern value) throws IOException
     {
-        FileUtils.writeStringToFile(outputFile, variableName + "=" + value + "\n", true);
+        writer.append(variableName + "=" + value + "\n");
     }
 
     @Override
-    protected void outputPrintCentre(File outputFile, float centreX, float centreY) throws IOException
+    protected void outputPrintCentre(FileWriter writer, float centreX, float centreY) throws IOException
     {
-        outputLine(outputFile, "posx", (int) (centreX * 1000));
-        outputLine(outputFile, "posy", (int) (centreY * 1000));
+        outputLine(writer, "posx", (int) (centreX * 1000));
+        outputLine(writer, "posy", (int) (centreY * 1000));
     }
 
     @Override
-    protected void outputFilamentDiameter(File outputFile, float diameter) throws IOException
+    protected void outputFilamentDiameter(FileWriter writer, float diameter) throws IOException
     {
-        outputLine(outputFile, "filamentDiameter", String.format(Locale.UK, "%d", (int)(diameter * 1000)));
+        outputLine(writer, "filamentDiameter", String.format(Locale.UK, "%d", (int)(diameter * 1000)));
     }
 }

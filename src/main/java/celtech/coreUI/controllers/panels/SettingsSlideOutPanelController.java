@@ -12,7 +12,6 @@ import celtech.coreUI.controllers.popups.PopupCommandTransmitter;
 import celtech.coreUI.controllers.utilityPanels.MaterialDetailsController;
 import celtech.coreUI.controllers.utilityPanels.ProfileDetailsController;
 import celtech.printerControl.model.Printer;
-import celtech.utils.FXUtils;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
@@ -64,8 +63,6 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
     @FXML
     private VBox materialData;
 
-    private final StringConverter intConverter = FXUtils.getIntConverter();
-    private final StringConverter floatConverter = FXUtils.getFloatConverter(2);
     private StringConverter booleanConverter = null;
 
     private SlicerParameters draftSettings = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);

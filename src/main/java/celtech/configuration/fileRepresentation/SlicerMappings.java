@@ -10,25 +10,15 @@ import java.util.HashMap;
 public class SlicerMappings
 {
 
-    private HashMap<SlicerType, HashMap<String, String>> mappings;
+    private HashMap<SlicerType, SlicerMappingData> mappings;
 
-    public HashMap<SlicerType, HashMap<String, String>> getMappings()
+    public HashMap<SlicerType, SlicerMappingData> getMappings()
     {
         return mappings;
     }
 
-    public void setMappings(HashMap<SlicerType, HashMap<String, String>> mappings)
+    public void setMappings(HashMap<SlicerType, SlicerMappingData> mappings)
     {
         this.mappings = mappings;
-    }
-
-    public HashMap<String, String> getMappingData(SlicerType slicerType)
-    {
-        return this.mappings.get(slicerType);
-    }
-
-    public void setMappingData(SlicerType slicerType, HashMap<String, String> mappingData)
-    {
-        this.mappings.put(slicerType, mappingData);
     }
 }
