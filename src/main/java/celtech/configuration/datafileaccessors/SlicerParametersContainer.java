@@ -67,6 +67,7 @@ public class SlicerParametersContainer
         completeProfileList.clear();
         appProfileList.clear();
         userProfileList.clear();
+        profileMap.clear();
         
         File applicationDirHandle = new File(ApplicationConfiguration.getApplicationPrintProfileDirectory());
         File[] applicationprofiles = applicationDirHandle.listFiles(new PrintProfileFileFilter());

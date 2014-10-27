@@ -38,6 +38,7 @@ public abstract class SlicerConfigWriter
     private final String parameterDivider = ":";
     private final String queryDivider = "?";
     private final String optionalDivider = "->";
+    private final String equivalenceDivider = "=";
 
     public SlicerConfigWriter()
     {
@@ -102,7 +103,6 @@ public abstract class SlicerConfigWriter
                 String targetVariableName = extractTargetVariableName(entry.getValue());
                 steno.info("Processing method: " + methodName + " and variable : " + targetVariableName);
 
-                methodName = "get" + methodName.substring(0, 1).toUpperCase() + methodName.substring(1, methodName.length());
                 Method getMethod = getVariableMethod(methodName);
 
                 if (getMethod != null)
@@ -221,26 +221,70 @@ public abstract class SlicerConfigWriter
                 for (int elementCounter = 1; elementCounter < valueElements.length; elementCounter++)
                 {
                     String operation = valueElements[elementCounter];
-
+                    String operator = operation.substring(0, 1);
+                    String variable = operation.substring(1);
+                    
                     if (operation.contains(queryDivider))
                     {
                         String[] optionalAssignmentString = operation.substring(1).split(optionalDivider);
                         if (optionalAssignmentString.length == 2)
                         {
-                            try
+                            if (optionalAssignmentString[0].contains(equivalenceDivider))
                             {
-                                float valueToCheckFor = Float.valueOf(optionalAssignmentString[0]);
-                                float optionalAssignmentValue = Float.valueOf(optionalAssignmentString[1]);
+                                String[] optionalCheckParts = optionalAssignmentString[0].split(equivalenceDivider);
 
-                                if (value == valueToCheckFor)
+                                if (optionalCheckParts.length == 2)
                                 {
-                                    resultingValue = optionalAssignmentValue;
-                                    doneProcessing = true;
+                                    Method getMethod = getVariableMethod(optionalCheckParts[0]);
+
+                                    Class<?> returnTypeClass = getMethod.getReturnType();
+
+                                    if (returnTypeClass.equals(boolean.class))
+                                    {
+                                        try
+                                        {
+                                            boolean valueToTest = (boolean) getMethod.invoke(profileData);
+                                            boolean valueWeAreLookingFor = Boolean.valueOf(optionalCheckParts[1]);
+                                            float valueToSet = Float.valueOf(optionalAssignmentString[1]);
+
+                                            if (valueToTest == valueWeAreLookingFor)
+                                            {
+                                                resultingValue = valueToSet;
+                                                doneProcessing = true;
+                                            }
+                                            else
+                                            {
+                                                variable = valueElements[0];
+                                            }
+                                        } catch (IllegalAccessException | InvocationTargetException ex)
+                                        {
+                                            steno.error("Error retrieving test for value from variable " + optionalCheckParts[0]);
+                                        } catch (NumberFormatException ex)
+                                        {
+                                            steno.error("Error processing numeric value for " + optionalCheckParts[1]);
+                                        }
+                                    } else
+                                    {
+                                        steno.error("I don't support return types of " + returnTypeClass.getName() + " at this time");
+                                    }
                                 }
-                            } catch (NumberFormatException ex)
+                            } else
                             {
-                                // Failed to process...
-                                steno.warning("Couldn't process optional slicer mapping: " + operation);
+                                try
+                                {
+                                    float valueToCheckFor = Float.valueOf(optionalAssignmentString[0]);
+                                    float optionalAssignmentValue = Float.valueOf(optionalAssignmentString[1]);
+
+                                    if (value == valueToCheckFor)
+                                    {
+                                        resultingValue = optionalAssignmentValue;
+                                        doneProcessing = true;
+                                    }
+                                } catch (NumberFormatException ex)
+                                {
+                                    // Failed to process...
+                                    steno.warning("Couldn't process optional slicer mapping: " + operation);
+                                }
                             }
                         } else
                         {
@@ -250,8 +294,6 @@ public abstract class SlicerConfigWriter
 
                     if (!doneProcessing)
                     {
-                        String operator = operation.substring(0, 1);
-                        String variable = operation.substring(1);
 
                         Method getMethod = getVariableMethod(variable);
 
@@ -324,6 +366,8 @@ public abstract class SlicerConfigWriter
     private Method getVariableMethod(String methodName)
     {
         Method foundMethod = null;
+
+        methodName = "get" + methodName.substring(0, 1).toUpperCase() + methodName.substring(1, methodName.length());
 
         try
         {

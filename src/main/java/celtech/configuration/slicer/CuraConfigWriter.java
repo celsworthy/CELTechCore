@@ -57,7 +57,18 @@ public class CuraConfigWriter extends SlicerConfigWriter
     @Override
     protected void outputLine(FileWriter writer, String variableName, SupportPattern value) throws IOException
     {
-        writer.append(variableName + "=" + value + "\n");
+        int supportType = 0;
+        
+        switch (value)
+        {
+            case RECTILINEAR:
+                supportType = 1;
+                break;
+            case RECTILINEAR_GRID:
+                supportType = 0;
+                break;
+        }
+        writer.append(variableName + "=" + supportType + "\n");
     }
 
     @Override
