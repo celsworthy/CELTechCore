@@ -7,7 +7,6 @@ import celtech.configuration.DirectoryMemoryProperty;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.GCodeMacroButton;
 import celtech.coreUI.components.ProgressDialog;
-import celtech.coreUI.controllers.panels.CalibrationNozzleBInsetPanelController;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.printerControl.model.Printer;
@@ -52,7 +51,6 @@ public class MaintenancePanelController implements Initializable
     private FileChooser firmwareFileChooser = new FileChooser();
 
     private static Stage needleValvecalibrationStage = null;
-    private static CalibrationNozzleBInsetPanelController needleValveCalibrationController = null;
     private static Stage offsetCalibrationStage = null;
 
     private ProgressDialog gcodeUpdateProgress = null;

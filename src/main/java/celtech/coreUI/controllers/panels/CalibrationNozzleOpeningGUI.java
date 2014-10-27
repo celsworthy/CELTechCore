@@ -55,7 +55,6 @@ public class CalibrationNozzleOpeningGUI
             if (namesToButtons.containsKey(allowedTransition.getGUIName()))
             {
                 namesToButtons.get(allowedTransition.getGUIName()).setVisible(true);
-                steno.info(("Show button " + allowedTransition.getGUIName()));
             }
         }
     }

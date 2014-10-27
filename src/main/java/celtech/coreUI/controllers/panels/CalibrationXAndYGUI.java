@@ -23,7 +23,7 @@ public class CalibrationXAndYGUI
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationXAndYHelper.class.getName());
+        CalibrationXAndYGUI.class.getName());
 
     private CalibrationInsetPanelController controller;
     StateTransitionManager<CalibrationXAndYState> stateManager;
@@ -55,7 +55,6 @@ public class CalibrationXAndYGUI
             if (namesToButtons.containsKey(allowedTransition.getGUIName()))
             {
                 namesToButtons.get(allowedTransition.getGUIName()).setVisible(true);
-                steno.info(("Show button " + allowedTransition.getGUIName()));
             }
         }
     }

@@ -3,7 +3,6 @@
  */
 package celtech.printerControl.model;
 
-import celtech.coreUI.controllers.panels.CalibrationXAndYHelper;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
@@ -19,7 +18,7 @@ public class CalibrationXAndYActions
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationXAndYHelper.class.getName());
+        CalibrationXAndYActions.class.getName());
 
     private final Printer printer;
     private HeadEEPROMDataResponse savedHeadData;

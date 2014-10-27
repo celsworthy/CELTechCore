@@ -23,7 +23,7 @@ public class CalibrationNozzleHeightGUI
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationXAndYHelper.class.getName());
+        CalibrationNozzleHeightGUI.class.getName());
 
     private CalibrationInsetPanelController controller;
     StateTransitionManager<NozzleOffsetCalibrationState> stateManager;
@@ -55,7 +55,6 @@ public class CalibrationNozzleHeightGUI
             if (namesToButtons.containsKey(allowedTransition.getGUIName()))
             {
                 namesToButtons.get(allowedTransition.getGUIName()).setVisible(true);
-                steno.info(("Show button " + allowedTransition.getGUIName()));
             }
         }
     }

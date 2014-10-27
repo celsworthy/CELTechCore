@@ -23,7 +23,7 @@ import libertysystems.stenographer.StenographerFactory;
 public class PurgeHelper
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(CalibrationNozzleBHelper.class.getName());
+    private Stenographer steno = StenographerFactory.getStenographer(PurgeHelper.class.getName());
 
     private Printer printerToUse = null;
 
