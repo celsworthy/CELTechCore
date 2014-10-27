@@ -30,15 +30,6 @@
                 <Button fx:id="PurgeMaterialButton" layoutX="23.0" layoutY="152.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#purge" text="%maintenancePanel.purgeMaterial" GridPane.columnIndex="1" GridPane.rowIndex="6" />
                 <GCodeMacroButton fx:id="EjectStuckMaterialButton" layoutX="23.0" layoutY="152.0" macroName="eject_stuck_material" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#macroButtonPress" text="%maintenancePanel.ejectStuckMaterial" GridPane.columnIndex="1" GridPane.rowIndex="7" />
 
-                <Separator prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="8">
-                    <padding>
-                        <Insets bottom="5.0" top="5.0" />
-                    </padding>
-                </Separator>
-
-                <Button fx:id="CalibrateBButton" layoutX="10.0" layoutY="19.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#calibrateB" text="%calibrationPanel.calibrateB" GridPane.columnSpan="2" GridPane.rowIndex="9" />
-                <Button fx:id="CalibrateOffsetButton" layoutX="10.0" layoutY="10.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#calibrateZOffset" text="%calibrationPanel.calibrateZOffset" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="10" />
-
                 <Separator prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="11">
                     <padding>
                         <Insets bottom="5.0" top="5.0" />
