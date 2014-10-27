@@ -1029,7 +1029,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
             container.setVisible(true);
             bindToNewSettings(workingProfile);
-            isMutable.set(SlicerParametersContainer.getApplicationProfileList().contains(settings));
+            isMutable.set(!SlicerParametersContainer.getApplicationProfileList().contains(settings));
             isDirty.set(false);
         }
     }
