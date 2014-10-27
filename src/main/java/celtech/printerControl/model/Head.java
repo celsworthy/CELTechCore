@@ -9,7 +9,6 @@ import celtech.utils.SystemUtils;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.property.FloatProperty;
-import javafx.beans.property.ReadOnlyFloatProperty;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;

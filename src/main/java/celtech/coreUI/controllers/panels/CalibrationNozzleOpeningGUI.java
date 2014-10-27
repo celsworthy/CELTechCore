@@ -80,8 +80,6 @@ public class CalibrationNozzleOpeningGUI
                 controller.stepNumber.setText(String.format("Step %s of 10", 2));
                 break;
             case NO_MATERIAL_CHECK:
-                controller.buttonA.setVisible(true);
-                controller.buttonB.setVisible(true);
                 controller.buttonA.setText("Yes");
                 controller.buttonB.setText("No");
                 controller.calibrationStatus.setText(state.getStepTitle());
@@ -92,8 +90,6 @@ public class CalibrationNozzleOpeningGUI
                 controller.calibrationStatus.setText(state.getStepTitle());
                 break;
             case CALIBRATE_FINE_NOZZLE:
-                controller.buttonA.setVisible(true);
-                controller.buttonB.setVisible(true);
                 controller.buttonA.setText("Flowing");
                 controller.buttonB.setText("Not flowing");
                 controller.calibrationStatus.setText(state.getStepTitle());
@@ -106,8 +102,6 @@ public class CalibrationNozzleOpeningGUI
                 controller.stepNumber.setText(String.format("Step %s of 10", 5));
                 break;
             case CALIBRATE_FILL_NOZZLE:
-                controller.buttonA.setVisible(true);
-                controller.buttonB.setVisible(true);
                 controller.buttonA.setText("Flowing");
                 controller.buttonB.setText("Not flowing");
                 controller.calibrationStatus.setText(state.getStepTitle());
@@ -120,8 +114,6 @@ public class CalibrationNozzleOpeningGUI
                 controller.stepNumber.setText(String.format("Step %s of 10", 7));
                 break;
             case CONFIRM_NO_MATERIAL:
-                controller.buttonA.setVisible(true);
-                controller.buttonB.setVisible(true);
                 controller.buttonA.setText("No");
                 controller.buttonB.setText("Yes");
                 controller.calibrationStatus.setText(state.getStepTitle());
@@ -129,8 +121,6 @@ public class CalibrationNozzleOpeningGUI
                 controller.stepNumber.setText(String.format("Step %s of 10", 8));
                 break;
             case CONFIRM_MATERIAL_EXTRUDING:
-                controller.buttonA.setVisible(true);
-                controller.buttonB.setVisible(true);
                 controller.buttonA.setText("Yes");
                 controller.buttonB.setText("No");
                 controller.calibrationStatus.setText(state.getStepTitle());
