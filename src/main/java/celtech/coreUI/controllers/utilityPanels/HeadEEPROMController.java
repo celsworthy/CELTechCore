@@ -109,12 +109,6 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     {
         try
         {
-            HeadEEPROMDataResponse headDataResponse = selectedPrinter.readHeadEEPROM();
-            String uniqueId = headDataResponse.getUniqueID();
-            if (uniqueId.length() == 0)
-            {
-                uniqueId = headUniqueID.getText();
-            }
             String headTypeCodeText = headTypeCode.getText();
             Float headMaxTemperatureVal = headMaxTemperature.getFloatValue();
             Float headThermistorBetaVal = headThermistorBeta.getFloatValue();
@@ -133,6 +127,16 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             float nozzle2ZOffsetCalculated = PrinterUtils.deriveNozzle2ZOffsetsFromOverrun(
                 nozzle1ZOverrun.getFloatValue(), nozzle2ZOverrun.getFloatValue());
 
+            // N.B. this call must come after reading the data in the fields because
+            // reading the head eeprom results in the fields being updated with current head
+            // data (i.e. fields will lose edited values)
+            HeadEEPROMDataResponse headDataResponse = selectedPrinter.readHeadEEPROM();
+            String uniqueId = headDataResponse.getUniqueID();
+            if (uniqueId.length() == 0)
+            {
+                uniqueId = headUniqueID.getText();
+            }            
+            
             selectedPrinter.transmitWriteHeadEEPROM(
                 headTypeCodeText, uniqueId, headMaxTemperatureVal, headThermistorBetaVal,
                 headThermistorTCalVal, nozzle1XOffsetVal, nozzle1YOffsetVal,
