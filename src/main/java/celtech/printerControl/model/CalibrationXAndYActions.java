@@ -3,6 +3,7 @@
  */
 package celtech.printerControl.model;
 
+import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
@@ -35,6 +36,7 @@ public class CalibrationXAndYActions
     public boolean doSaveHeadAndPrintPattern() throws PrinterException, RoboxCommsException, InterruptedException
     {
         cancellable.cancelled = false;
+        printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT);
         savedHeadData = printer.readHeadEEPROM();
         Thread.sleep(3000);
 //        printer.runMacro("rbx_XY_offset_roboxised");
@@ -55,8 +57,10 @@ public class CalibrationXAndYActions
 
     public boolean doFinishedAction() throws PrinterException
     {
+        
         saveSettings();
         switchHeaterOffAndRaiseHead();
+        printer.setPrinterStatus(PrinterStatus.IDLE);
         return true;
     }
 
@@ -64,6 +68,7 @@ public class CalibrationXAndYActions
     {
         restoreHeadData();
         switchHeaterOffAndRaiseHead();
+        printer.setPrinterStatus(PrinterStatus.IDLE);
         return true;
     }
     
@@ -71,6 +76,7 @@ public class CalibrationXAndYActions
         cancellable.cancelled = true;
         restoreHeadData();
         switchHeaterOffAndRaiseHead();
+        printer.setPrinterStatus(PrinterStatus.IDLE);
         return true;
     }
 

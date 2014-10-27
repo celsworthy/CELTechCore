@@ -147,6 +147,9 @@ public class CalibrationNozzleHeightActions
         {
             for (int i = 0; i < 3; i++)
             {
+                if (cancellable.cancelled) {
+                    return false;
+                }
                 printer.selectNozzle(0);
                 PrinterUtils.waitOnBusy(printer, cancellable);
                 printer.homeZ();
@@ -225,17 +228,16 @@ public class CalibrationNozzleHeightActions
     public boolean doFinishedAction() throws PrinterException, RoboxCommsException
     {
         saveSettings();
-        printer.setPrinterStatus(PrinterStatus.IDLE);
         switchHeaterOffAndRaiseHead();
+        printer.setPrinterStatus(PrinterStatus.IDLE);
         return true;
     }
 
     public boolean doFailedAction() throws PrinterException, RoboxCommsException
     {
-        printer.setPrinterStatus(PrinterStatus.IDLE);
         restoreHeadData();
         switchHeaterOffAndRaiseHead();
-        
+        printer.setPrinterStatus(PrinterStatus.IDLE);
         return true;
     }
     

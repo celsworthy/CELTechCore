@@ -4,6 +4,7 @@
 package celtech.printerControl.model;
 
 import celtech.configuration.HeaterMode;
+import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
@@ -40,6 +41,9 @@ public class CalibrationNozzleOpeningActions
     public boolean doHeatingAction() throws RoboxCommsException, PrinterException, InterruptedException
     {
         cancellable.cancelled = false;
+        
+        printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_OPENING);
+        
         savedHeadData = printer.readHeadEEPROM();
         printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                                         savedHeadData.getUniqueID(),
@@ -210,6 +214,7 @@ public class CalibrationNozzleOpeningActions
     {
         saveSettings();
         turnHeaterAndLEDSOff();
+        printer.setPrinterStatus(PrinterStatus.IDLE);
         return true;
     }
 
@@ -217,6 +222,7 @@ public class CalibrationNozzleOpeningActions
     {
         restoreHeadState();
         turnHeaterAndLEDSOff();
+        printer.setPrinterStatus(PrinterStatus.IDLE);
         return true;
     }
 
@@ -225,6 +231,7 @@ public class CalibrationNozzleOpeningActions
         cancellable.cancelled = true;
         restoreHeadState();
         turnHeaterAndLEDSOff();
+        printer.setPrinterStatus(PrinterStatus.IDLE);
         return true;
     }
 

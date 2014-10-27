@@ -97,13 +97,7 @@ public class MaintenancePanelController implements Initializable
     private GCodeMacroButton SpeedTestButton;
 
     @FXML
-    private Button CalibrateOffsetButton;
-
-    @FXML
     private Button sendGCodeStreamGCodeMacroButton;
-
-    @FXML
-    private Button CalibrateBButton;
 
     @FXML
     private GCodeMacroButton XTestButton;
@@ -449,11 +443,7 @@ public class MaintenancePanelController implements Initializable
 
         SpeedTestButton.setDisable(printingdisabled);
 
-        CalibrateOffsetButton.setDisable(noFilamentOrPrintingdisabled);
-
         sendGCodeStreamGCodeMacroButton.setDisable(printingdisabled);
-
-        CalibrateBButton.setDisable(noFilamentOrPrintingdisabled);
 
         XTestButton.setDisable(printingdisabled);
 
