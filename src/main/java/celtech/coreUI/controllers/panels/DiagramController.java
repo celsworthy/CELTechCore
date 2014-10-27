@@ -88,13 +88,13 @@ class DiagramController implements Initializable
     @FXML
     void buttonAAction(ActionEvent event)
     {
-        parentController.buttonAAction();
+        parentController.buttonAAction(event);
     }
 
     @FXML
     void buttonBAction(ActionEvent event)
     {
-        parentController.buttonBAction();
+        parentController.buttonBAction(event);
     }
     
     @FXML

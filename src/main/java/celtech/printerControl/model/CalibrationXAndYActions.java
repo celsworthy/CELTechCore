@@ -6,8 +6,6 @@ package celtech.printerControl.model;
 import celtech.coreUI.controllers.panels.CalibrationXAndYHelper;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
 import libertysystems.stenographer.Stenographer;

@@ -7,7 +7,6 @@ import celtech.configuration.HeaterMode;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.NozzleData;
-import celtech.coreUI.controllers.panels.CalibrationXAndYHelper;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -25,7 +24,7 @@ public class CalibrationNozzleHeightActions
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationXAndYHelper.class.getName());
+        CalibrationNozzleHeightActions.class.getName());
 
     private final Printer printer;
     private HeadEEPROMDataResponse savedHeadData;

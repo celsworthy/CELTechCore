@@ -16,12 +16,12 @@ import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.comms.events.RoboxResponseConsumer;
 import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
+import celtech.printerControl.model.calibration.NozzleOpeningStateTransitionManager;
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.AxisSpecifier;
-import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponder;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
@@ -68,6 +68,8 @@ public interface Printer extends RoboxResponseConsumer
     public XAndYStateTransitionManager startCalibrateXAndY() throws PrinterException;
     
     public NozzleHeightStateTransitionManager startCalibrateNozzleHeight() throws PrinterException;
+    
+    public NozzleOpeningStateTransitionManager startCalibrateNozzleOpening() throws PrinterException;
 
     /*
      * Remove head

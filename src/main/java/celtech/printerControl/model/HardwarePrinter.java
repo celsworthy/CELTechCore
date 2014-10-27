@@ -55,8 +55,10 @@ import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.WritePrinterID;
 import celtech.printerControl.comms.commands.tx.WriteReelEEPROM;
 import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
+import celtech.printerControl.model.calibration.NozzleOpeningStateTransitionManager;
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
 import celtech.services.calibration.CalibrationNozzleHeightTransitions;
+import celtech.services.calibration.CalibrationNozzleOpeningTransitions;
 import celtech.services.calibration.CalibrationXAndYTransitions;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
@@ -2050,11 +2052,26 @@ public final class HardwarePrinter implements Printer
         }
         CalibrationNozzleHeightActions actions = new CalibrationNozzleHeightActions(this);
         CalibrationNozzleHeightTransitions calibrationNozzleHeightTransitions = new CalibrationNozzleHeightTransitions(actions);
-        NozzleHeightStateTransitionManager calibrationAlignmentManager = 
+        NozzleHeightStateTransitionManager calibrationHeightManager = 
             new NozzleHeightStateTransitionManager(calibrationNozzleHeightTransitions.getTransitions(),
                 calibrationNozzleHeightTransitions.getArrivals(), actions);
-        return calibrationAlignmentManager;
+        return calibrationHeightManager;
     }    
+    
+    @Override
+    public NozzleOpeningStateTransitionManager startCalibrateNozzleOpening() throws PrinterException
+    {
+        if (!canCalibrateHead.get())
+        {
+            throw new PrinterException("Calibrate not permitted");
+        }
+        CalibrationNozzleOpeningActions actions = new CalibrationNozzleOpeningActions(this);
+        CalibrationNozzleOpeningTransitions calibrationNozzleOpeningTransitions = new CalibrationNozzleOpeningTransitions(actions);
+        NozzleOpeningStateTransitionManager calibrationOpeningManager = 
+            new NozzleOpeningStateTransitionManager(calibrationNozzleOpeningTransitions.getTransitions(),
+                calibrationNozzleOpeningTransitions.getArrivals(), actions);
+        return calibrationOpeningManager;
+    }       
 
     class RoboxEventProcessor implements Runnable
     {

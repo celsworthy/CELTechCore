@@ -7,6 +7,7 @@ import celtech.printerControl.model.CalibrationXAndYActions;
 import celtech.printerControl.model.calibration.ArrivalAction;
 import celtech.printerControl.model.calibration.StateTransitionManager;
 import celtech.printerControl.model.calibration.StateTransition;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +29,21 @@ public class CalibrationXAndYTransitions
     {
         this.actions = actions;
         transitions = new HashSet<>();
+        arrivals = new HashMap<>();
+
+        arrivals.put(CalibrationXAndYState.FINISHED,
+                     new ArrivalAction<>(() ->
+                         {
+                             return actions.doFinishedAction();
+                     },
+                                         CalibrationXAndYState.FAILED));
+
+        arrivals.put(CalibrationXAndYState.FAILED,
+                     new ArrivalAction<>(() ->
+                         {
+                             return actions.doFailedAction();
+                     },
+                                         CalibrationXAndYState.FAILED));
 
         // IDLE
         transitions.add(new StateTransition(CalibrationXAndYState.IDLE,
@@ -85,23 +101,24 @@ public class CalibrationXAndYTransitions
         transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE_CHECK,
                                             StateTransitionManager.GUIName.NEXT,
                                             CalibrationXAndYState.FINISHED,
-                                            (Callable) () ->
-                                            {
-                                                return actions.doFinishedAction();
-                                            },
                                             CalibrationXAndYState.FAILED));
 
-        transitions.add(new StateTransition(
-            CalibrationXAndYState.PRINT_CIRCLE_CHECK,
-            StateTransitionManager.GUIName.CANCEL,
-            CalibrationXAndYState.IDLE,
-            CalibrationXAndYState.FAILED));
+        transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE_CHECK,
+                                            StateTransitionManager.GUIName.CANCEL,
+                                            CalibrationXAndYState.IDLE,
+                                            CalibrationXAndYState.FAILED));
 
         // FINISHED
         transitions.add(new StateTransition(CalibrationXAndYState.FINISHED,
                                             StateTransitionManager.GUIName.BACK,
                                             CalibrationXAndYState.IDLE,
                                             CalibrationXAndYState.FAILED));
+        
+        // FAILED
+        transitions.add(new StateTransition(CalibrationXAndYState.FAILED,
+                                            StateTransitionManager.GUIName.BACK,
+                                            CalibrationXAndYState.IDLE,
+                                            CalibrationXAndYState.FAILED));        
 
     }
 
@@ -109,7 +126,7 @@ public class CalibrationXAndYTransitions
     {
         return transitions;
     }
-    
+
     public Map<CalibrationXAndYState, ArrivalAction<CalibrationXAndYState>> getArrivals()
     {
         return arrivals;

@@ -47,12 +47,12 @@ import libertysystems.stenographer.StenographerFactory;
  * @author Ian
  */
 public class CalibrationInsetPanelController implements Initializable,
-    CalibrationBStateListener, CalibrationNozzleOffsetStateListener,
-    CalibrationXAndYStateListener, PrinterListChangesListener
+     PrinterListChangesListener
 {
 
     CalibrationXAndYGUI calibrationXAndYGUI;
     CalibrationNozzleHeightGUI calibrationNozzleHeightGUI;
+    CalibrationNozzleOpeningGUI calibrationNozzleOpeningGUI;
     StateTransitionManager stateManager;
 
     private ResourceBundle resources;
@@ -88,11 +88,6 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         CalibrationInsetPanelController.class.getName());
-
-    private CalibrationHelper calibrationHelper;
-    private CalibrationNozzleOffsetGUIStateHandler calibrationNozzleOffsetGUIStateHandler;
-    private CalibrationNozzleBGUIStateHandler calibrationNozzleBGUIStateHandler;
-    private CalibrationXAndYGUIStateHandler calibrationXAndYGUIStateHandler;
 
     @FXML
     protected VerticalMenu calibrationMenu;
@@ -159,18 +154,6 @@ public class CalibrationInsetPanelController implements Initializable,
     private final Map<String, Node> nameToNodeCache = new HashMap<>();
 
     @FXML
-    void buttonAAction()
-    {
-        calibrationHelper.buttonAAction();
-    }
-
-    @FXML
-    void buttonBAction()
-    {
-        calibrationHelper.buttonBAction();
-    }
-
-    @FXML
     void upButtonAction(ActionEvent event)
     {
         stateManager.followTransition(StateTransitionManager.GUIName.UP);
@@ -181,6 +164,18 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         stateManager.followTransition(StateTransitionManager.GUIName.DOWN);
     }
+    
+    @FXML
+    void buttonAAction(ActionEvent event)
+    {
+        stateManager.followTransition(StateTransitionManager.GUIName.UP);
+    }
+    
+    @FXML
+    void buttonBAction(ActionEvent event)
+    {
+        stateManager.followTransition(StateTransitionManager.GUIName.UP);
+    }    
 
     @FXML
     void nextButtonAction(ActionEvent event)
@@ -221,10 +216,6 @@ public class CalibrationInsetPanelController implements Initializable,
     public void cancelCalibrationAction()
     {
         ApplicationStatus.getInstance().returnToLastMode();
-        if (calibrationHelper != null)
-        {
-            calibrationHelper.cancelCalibrationAction();
-        }
         setCalibrationMode(CalibrationMode.CHOICE);
     }
 
@@ -352,8 +343,8 @@ public class CalibrationInsetPanelController implements Initializable,
         Pane loadedDiagramNode = null;
         if (!nameToNodeCache.containsKey(diagramName))
         {
-            URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlResourcePath
-                + "diagrams/" + section + "/" + diagramName);
+            URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlDiagramsResourcePath
+                + section + "/" + diagramName);
             try
             {
                 FXMLLoader loader = new FXMLLoader(fxmlFileName, resources);
@@ -395,24 +386,6 @@ public class CalibrationInsetPanelController implements Initializable,
 
         resizeDiagram();
         diagramNode.setVisible(true);
-    }
-
-    @Override
-    public void setNozzleOpeningState(NozzleOpeningCalibrationState state)
-    {
-        calibrationNozzleBGUIStateHandler.setNozzleOpeningState(state);
-    }
-
-    @Override
-    public void setNozzleHeightState(NozzleOffsetCalibrationState state)
-    {
-        calibrationNozzleOffsetGUIStateHandler.setNozzleHeightState(state);
-    }
-
-    @Override
-    public void setXAndYState(CalibrationXAndYState state)
-    {
-        calibrationXAndYGUIStateHandler.setXAndYState(state);
     }
 
     private final ChangeListener<Number> targetTemperatureListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
@@ -549,18 +522,20 @@ public class CalibrationInsetPanelController implements Initializable,
         switch (calibrationMode)
         {
             case NOZZLE_OPENING:
-                calibrationHelper = new CalibrationNozzleBHelper();
-                calibrationNozzleBGUIStateHandler
-                    = new CalibrationNozzleBGUIStateHandler(this, calibrationHelper);
-                ((CalibrationNozzleBHelper) calibrationHelper).addStateListener(this);
-                calibrationHelper.goToIdleState();
-                calibrationHelper.setPrinterToUse(currentPrinter);
-                setNozzleOpeningState(NozzleOpeningCalibrationState.IDLE);
+                {
+                    try
+                    {
+                        stateManager = currentPrinter.startCalibrateNozzleOpening();
+                    } catch (PrinterException ex)
+                    {
+                        steno.warning("Can't switch to calibration: " + ex);
+                        return;
+                    }
+                }
+                calibrationNozzleOpeningGUI = new CalibrationNozzleOpeningGUI(this, stateManager);
+                calibrationNozzleOpeningGUI.setState(NozzleOpeningCalibrationState.IDLE);
                 break;
             case NOZZLE_HEIGHT:
-
-                calibrationHelper = null;
-                calibrationXAndYGUIStateHandler = null;
                 {
                     try
                     {
@@ -576,8 +551,6 @@ public class CalibrationInsetPanelController implements Initializable,
 
                 break;
             case X_AND_Y_OFFSET:
-                calibrationHelper = null;
-                calibrationXAndYGUIStateHandler = null;
                 {
                     try
                     {
@@ -592,7 +565,6 @@ public class CalibrationInsetPanelController implements Initializable,
                 calibrationXAndYGUI.setState(CalibrationXAndYState.IDLE);
                 break;
             case CHOICE:
-                calibrationHelper = null;
                 setupChoice();
         }
     }
@@ -625,9 +597,12 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private void setupProgressBars()
     {
-        calibrationProgressPrint.setTargetLegend("Approximate Build Time Remaining:");
-        calibrationProgressPrint.setProgressDescription("PRINTING...");
+        calibrationProgressPrint.setTargetLegend(Lookup.i18n("calibrationPanel.approxBuildTime"));
+        calibrationProgressPrint.setProgressDescription(Lookup.i18n("calibrationPanel.printingCaps"));
         calibrationProgressPrint.setTargetValue("0");
+        
+        calibrationProgressTemp.setTargetLegend(Lookup.i18n("calibrationPanel.targetTemperature"));
+        calibrationProgressPrint.setProgressDescription(Lookup.i18n("calibrationPanel.heatingCaps"));
     }
 
     protected void showSpinner()

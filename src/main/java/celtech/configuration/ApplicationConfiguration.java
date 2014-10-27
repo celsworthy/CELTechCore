@@ -64,6 +64,8 @@ public class ApplicationConfiguration
      *
      */
     public static final String fxmlPanelResourcePath = resourcePath + "fxml/panels/";
+    
+    public static final String fxmlDiagramsResourcePath = resourcePath + "fxml/diagrams/";
 
     /**
      *

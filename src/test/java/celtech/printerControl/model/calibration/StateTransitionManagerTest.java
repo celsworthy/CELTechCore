@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -142,14 +141,9 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
     {
         final List<TestState> states = new ArrayList<>();
 
-        manager.stateProperty().addListener(new ChangeListener()
+        manager.stateProperty().addListener((ObservableValue observable, Object oldValue, Object newValue) ->
         {
-
-            @Override
-            public void changed(ObservableValue observable, Object oldValue, Object newValue)
-            {
-                states.add((TestState) newValue);
-            }
+            states.add((TestState) newValue);
         });
 
         manager.followTransition(GUIName.NEXT);
