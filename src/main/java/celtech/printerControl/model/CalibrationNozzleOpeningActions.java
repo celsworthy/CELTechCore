@@ -34,10 +34,12 @@ public class CalibrationNozzleOpeningActions
     public CalibrationNozzleOpeningActions(Printer printer)
     {
         this.printer = printer;
+        cancellable.cancelled = false;
     }
 
     public boolean doHeatingAction() throws RoboxCommsException, PrinterException, InterruptedException
     {
+        cancellable.cancelled = false;
         savedHeadData = printer.readHeadEEPROM();
         printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                                         savedHeadData.getUniqueID(),
@@ -220,6 +222,7 @@ public class CalibrationNozzleOpeningActions
 
     public boolean doCancelledAction() throws RoboxCommsException
     {
+        cancellable.cancelled = true;
         restoreHeadState();
         turnHeaterAndLEDSOff();
         return true;

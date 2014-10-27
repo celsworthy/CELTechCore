@@ -30,15 +30,18 @@ public class CalibrationNozzleHeightActions
     private HeadEEPROMDataResponse savedHeadData;
     private double zco;
     private double zDifference;
+    private final Cancellable cancellable = new Cancellable();
 
     public CalibrationNozzleHeightActions(Printer printer)
     {
         this.printer = printer;
+        cancellable.cancelled = false;
     }
 
     public boolean doInitialiseAndHeatBedAction() throws InterruptedException, PrinterException, RoboxCommsException
     {
         boolean success = false;
+        cancellable.cancelled = false;
         zco = 0;
         zDifference = 0;
         
@@ -85,7 +88,7 @@ public class CalibrationNozzleHeightActions
     {
         printer.goToTargetNozzleTemperature();
         printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("Home_all"), true);
-        if (PrinterUtils.waitOnMacroFinished(printer, (Cancellable) null) == false)
+        if (PrinterUtils.waitOnMacroFinished(printer, cancellable) == false)
         {
             printer.goToTargetNozzleTemperature();
             if (printer.headProperty().get()
@@ -145,17 +148,17 @@ public class CalibrationNozzleHeightActions
             for (int i = 0; i < 3; i++)
             {
                 printer.selectNozzle(0);
-                PrinterUtils.waitOnBusy(printer, (Cancellable) null);
+                PrinterUtils.waitOnBusy(printer, cancellable);
                 printer.homeZ();
-                PrinterUtils.waitOnBusy(printer, (Cancellable) null);
+                PrinterUtils.waitOnBusy(printer, cancellable);
                 printer.goToZPosition(5);
-                PrinterUtils.waitOnBusy(printer, (Cancellable) null);
+                PrinterUtils.waitOnBusy(printer, cancellable);
                 printer.selectNozzle(1);
-                PrinterUtils.waitOnBusy(printer, (Cancellable) null);
+                PrinterUtils.waitOnBusy(printer, cancellable);
                 printer.probeBed();
-                PrinterUtils.waitOnBusy(printer, (Cancellable) null);
+                PrinterUtils.waitOnBusy(printer, cancellable);
                 printer.goToZPosition(5);
-                PrinterUtils.waitOnBusy(printer, (Cancellable) null);
+                PrinterUtils.waitOnBusy(printer, cancellable);
                 String measurementString = printer.getZDelta();
                 measurementString = measurementString.replaceFirst("Zdelta:", "").replaceFirst(
                     "\nok", "");
@@ -202,7 +205,7 @@ public class CalibrationNozzleHeightActions
         }
 
         printer.selectNozzle(0);
-        PrinterUtils.waitOnBusy(printer, (Cancellable) null);
+        PrinterUtils.waitOnBusy(printer, cancellable);
         return success;
 
     }
@@ -238,6 +241,7 @@ public class CalibrationNozzleHeightActions
     
     public boolean doCancelledAction() throws PrinterException, RoboxCommsException
     {
+        cancellable.cancelled = true;
         return doFailedAction();
     }
     

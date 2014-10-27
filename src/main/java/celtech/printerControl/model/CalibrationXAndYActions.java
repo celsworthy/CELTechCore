@@ -25,19 +25,22 @@ public class CalibrationXAndYActions
     private HeadEEPROMDataResponse savedHeadData;
     private int xOffset = 0;
     private int yOffset = 0;
+    private Cancellable cancellable = new Cancellable();
 
     public CalibrationXAndYActions(Printer printer)
     {
         this.printer = printer;
+        cancellable.cancelled = false;
     }
 
     public boolean doSaveHeadAndPrintPattern() throws PrinterException, RoboxCommsException, InterruptedException
     {
+        cancellable.cancelled = false;
         savedHeadData = printer.readHeadEEPROM();
         Thread.sleep(3000);
 //        printer.runMacro("rbx_XY_offset_roboxised");
 //        printer.runMacro("tiny_robox");
-        boolean interrupted = PrinterUtils.waitOnMacroFinished(printer, (Cancellable) null);
+        boolean interrupted = PrinterUtils.waitOnMacroFinished(printer, cancellable);
         return !interrupted;
     }
 
@@ -47,7 +50,7 @@ public class CalibrationXAndYActions
         Thread.sleep(3000);
 //        printer.runMacro("rbx_XY_offset_roboxised");
 //        printer.runMacro("tiny_robox");
-        boolean interrupted = PrinterUtils.waitOnMacroFinished(printer, (Cancellable) null);
+        boolean interrupted = PrinterUtils.waitOnMacroFinished(printer, cancellable);
         return !interrupted;
     }
 
@@ -60,6 +63,13 @@ public class CalibrationXAndYActions
 
     public boolean doFailedAction() throws PrinterException, RoboxCommsException
     {
+        restoreHeadData();
+        switchHeaterOffAndRaiseHead();
+        return true;
+    }
+    
+    public boolean doCancelledAction() throws PrinterException, RoboxCommsException {
+        cancellable.cancelled = true;
         restoreHeadData();
         switchHeaterOffAndRaiseHead();
         return true;

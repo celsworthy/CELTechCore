@@ -5,7 +5,6 @@ package celtech.printerControl.model.calibration;
 
 import celtech.printerControl.model.CalibrationXAndYActions;
 import celtech.services.calibration.CalibrationXAndYState;
-import celtech.services.calibration.NozzleOffsetCalibrationState;
 import java.util.Map;
 import java.util.Set;
 

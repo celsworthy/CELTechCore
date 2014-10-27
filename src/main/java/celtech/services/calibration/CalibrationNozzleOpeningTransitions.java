@@ -213,7 +213,7 @@ public class CalibrationNozzleOpeningTransitions
             NozzleOpeningCalibrationState.CONFIRM_MATERIAL_EXTRUDING,
             NozzleOpeningCalibrationState.FAILED));
         
-    transitions.add(new StateTransition(
+        transitions.add(new StateTransition(
             NozzleOpeningCalibrationState.CONFIRM_NO_MATERIAL,
             StateTransitionManager.GUIName.A_BUTTON,
             NozzleOpeningCalibrationState.FAILED,
@@ -225,9 +225,15 @@ public class CalibrationNozzleOpeningTransitions
         // CONFIRM_MATERIAL_EXTRUDING
         transitions.add(new StateTransition(
             NozzleOpeningCalibrationState.CONFIRM_MATERIAL_EXTRUDING,
-            StateTransitionManager.GUIName.NEXT,
+            StateTransitionManager.GUIName.A_BUTTON,
             NozzleOpeningCalibrationState.FINISHED,
             NozzleOpeningCalibrationState.FAILED));
+        
+        transitions.add(new StateTransition(
+            NozzleOpeningCalibrationState.CONFIRM_MATERIAL_EXTRUDING,
+            StateTransitionManager.GUIName.B_BUTTON,
+            NozzleOpeningCalibrationState.FAILED,
+            NozzleOpeningCalibrationState.FAILED));        
 
         transitions.add(
             makeCancelledStateTransition(NozzleOpeningCalibrationState.CONFIRM_MATERIAL_EXTRUDING));
