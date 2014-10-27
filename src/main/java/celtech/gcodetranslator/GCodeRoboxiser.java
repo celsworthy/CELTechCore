@@ -93,7 +93,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     private ArrayList<GCodeParseEvent> extrusionBuffer = new ArrayList<>();
 //    private Vector2D precursorPoint = null;
 
-    private boolean triggerCloseFromTravel = false;
+    private boolean triggerCloseFromTravel = true;
     private boolean triggerCloseFromRetract = true;
 
     private int tempNozzleMemory = 0;
@@ -276,8 +276,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         settings.getNozzleParameters()
             .stream()
             .forEach(nozzleData -> nozzleProxies.add(new NozzleProxy(nozzleData)));
-
-        currentNozzle = nozzleProxies.get(POINT_3MM_NOZZLE);
 
         wipeFeedRate_mmPerMin = currentSettings.getPerimeterSpeed_mm_per_s() * 60;
 
@@ -462,6 +460,15 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         moveToMiddleYEvent.setComment("Go to middle of bed in Y");
         moveToMiddleYEvent.setGNumber(0);
         moveToMiddleYEvent.setGString("Y50");
+
+        if (currentNozzle == null)
+        {
+            NozzleChangeEvent nozzleChangeEvent = new NozzleChangeEvent();
+            nozzleChangeEvent.setNozzleNumber(POINT_3MM_NOZZLE);
+            nozzleChangeEvent.setComment("Initialise using nozzle 0");
+            extrusionBuffer.add(nozzleChangeEvent);
+            currentNozzle = nozzleProxies.get(POINT_3MM_NOZZLE);
+        }
 
         try
         {
@@ -921,7 +928,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             ArrayList<Integer> inwardsMoveIndexList = new ArrayList<>();
 
             int tempFinalExtrusionEventIndex = getPreviousExtrusionEventIndex(extrusionBuffer.size() - 1);
-            if (((ExtrusionEvent)extrusionBuffer.get(tempFinalExtrusionEventIndex)).getExtrusionTask() == ExtrusionTask.ExternalPerimeter)
+            if (((ExtrusionEvent) extrusionBuffer.get(tempFinalExtrusionEventIndex)).getExtrusionTask() == ExtrusionTask.ExternalPerimeter)
             {
                 int endOfPerimeter = getPreviousExtrusionTask(extrusionBuffer.size() - 1, ExtrusionTask.Perimeter);
                 if (endOfPerimeter >= 0)
@@ -1920,7 +1927,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 extrusionBuffer.add(insertedEventIndex, travelToClosestPoint);
                 insertedEventIndex++;
             }
-            
+
             wipeTypeComment = "Wipe - reverse";
 
             reverseWipePath = true;
