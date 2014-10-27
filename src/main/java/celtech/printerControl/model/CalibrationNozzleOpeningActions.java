@@ -29,7 +29,7 @@ public class CalibrationNozzleOpeningActions
     private float nozzle1BOffset = 0;
     private float nozzlePosition = 0;
 
-    private Cancellable cancellable = new Cancellable();
+    private final Cancellable cancellable = new Cancellable();
 
     public CalibrationNozzleOpeningActions(Printer printer)
     {

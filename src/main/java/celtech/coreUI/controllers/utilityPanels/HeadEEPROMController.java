@@ -15,6 +15,8 @@ import celtech.utils.PrinterUtils;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -97,7 +99,13 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     void resetToDefaults(ActionEvent event)
     {
         String headId = headTypeCode.getText();
-        selectedPrinter.headProperty().get().repair(headId);
+        try
+        {
+            selectedPrinter.repairHead(headId);
+        } catch (PrinterException ex)
+        {
+            steno.error("Unable to repair head");
+        }
     }
 
     @FXML

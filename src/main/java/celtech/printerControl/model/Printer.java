@@ -185,6 +185,8 @@ public interface Printer extends RoboxResponseConsumer
 
     @Override
     public void processRoboxResponse(RoboxRxPacket rxPacket);
+    
+    public void repairHead(String receivedTypeCode) throws PrinterException;
 
     public void purgeHead(TaskResponder responder) throws PrinterException;
 

@@ -193,7 +193,7 @@ public final class HardwarePrinter implements Printer
             .or(printerStatus.isEqualTo(PrinterStatus.RESUMING)));
         canCalibrateHead.bind(head.isNotNull()
             .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
-        
+
         threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
         threeDPformatter.setMaximumFractionDigits(3);
         threeDPformatter.setGroupingUsed(false);
@@ -521,11 +521,12 @@ public final class HardwarePrinter implements Printer
     {
         return canPrint;
     }
-    
+
     /**
      * Calibrate head
      */
-    public ReadOnlyBooleanProperty canCalibrateHeadProperty() {
+    public ReadOnlyBooleanProperty canCalibrateHeadProperty()
+    {
         return canCalibrateHead;
     }
 
@@ -699,7 +700,8 @@ public final class HardwarePrinter implements Printer
 
         if (!jobAccepted)
         {
-            throw new PrintJobRejectedException("Macro " + macroName + " could not be run in mode " + printerStatus.get().name());
+            throw new PrintJobRejectedException("Macro " + macroName + " could not be run in mode "
+                + printerStatus.get().name());
         }
     }
 
@@ -1417,10 +1419,11 @@ public final class HardwarePrinter implements Printer
         new Thread(() ->
         {
             boolean success = doOpenLidActivity(cancellable);
-            
-            if (responder != null) {
+
+            if (responder != null)
+            {
                 Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Door open");
-            }    
+            }
 
             setPrinterStatus(PrinterStatus.IDLE);
 
@@ -2036,13 +2039,14 @@ public final class HardwarePrinter implements Printer
             throw new PrinterException("Calibrate not permitted");
         }
         CalibrationXAndYActions actions = new CalibrationXAndYActions(this);
-        CalibrationXAndYTransitions calibrationXAndYTransitions = new CalibrationXAndYTransitions(actions);
-        XAndYStateTransitionManager calibrationAlignmentManager = 
-            new XAndYStateTransitionManager(calibrationXAndYTransitions.getTransitions(),
-                calibrationXAndYTransitions.getArrivals(), actions);
+        CalibrationXAndYTransitions calibrationXAndYTransitions = new CalibrationXAndYTransitions(
+            actions);
+        XAndYStateTransitionManager calibrationAlignmentManager
+            = new XAndYStateTransitionManager(calibrationXAndYTransitions.getTransitions(),
+                                              calibrationXAndYTransitions.getArrivals(), actions);
         return calibrationAlignmentManager;
     }
-    
+
     @Override
     public NozzleHeightStateTransitionManager startCalibrateNozzleHeight() throws PrinterException
     {
@@ -2051,13 +2055,15 @@ public final class HardwarePrinter implements Printer
             throw new PrinterException("Calibrate not permitted");
         }
         CalibrationNozzleHeightActions actions = new CalibrationNozzleHeightActions(this);
-        CalibrationNozzleHeightTransitions calibrationNozzleHeightTransitions = new CalibrationNozzleHeightTransitions(actions);
-        NozzleHeightStateTransitionManager calibrationHeightManager = 
-            new NozzleHeightStateTransitionManager(calibrationNozzleHeightTransitions.getTransitions(),
+        CalibrationNozzleHeightTransitions calibrationNozzleHeightTransitions = new CalibrationNozzleHeightTransitions(
+            actions);
+        NozzleHeightStateTransitionManager calibrationHeightManager
+            = new NozzleHeightStateTransitionManager(
+                calibrationNozzleHeightTransitions.getTransitions(),
                 calibrationNozzleHeightTransitions.getArrivals(), actions);
         return calibrationHeightManager;
-    }    
-    
+    }
+
     @Override
     public NozzleOpeningStateTransitionManager startCalibrateNozzleOpening() throws PrinterException
     {
@@ -2066,12 +2072,28 @@ public final class HardwarePrinter implements Printer
             throw new PrinterException("Calibrate not permitted");
         }
         CalibrationNozzleOpeningActions actions = new CalibrationNozzleOpeningActions(this);
-        CalibrationNozzleOpeningTransitions calibrationNozzleOpeningTransitions = new CalibrationNozzleOpeningTransitions(actions);
-        NozzleOpeningStateTransitionManager calibrationOpeningManager = 
-            new NozzleOpeningStateTransitionManager(calibrationNozzleOpeningTransitions.getTransitions(),
+        CalibrationNozzleOpeningTransitions calibrationNozzleOpeningTransitions = new CalibrationNozzleOpeningTransitions(
+            actions);
+        NozzleOpeningStateTransitionManager calibrationOpeningManager
+            = new NozzleOpeningStateTransitionManager(
+                calibrationNozzleOpeningTransitions.getTransitions(),
                 calibrationNozzleOpeningTransitions.getArrivals(), actions);
         return calibrationOpeningManager;
-    }       
+    }
+
+    @Override
+    public void repairHead(String receivedTypeCode) throws PrinterException
+    {
+        head.get().repair(receivedTypeCode);
+        try
+        {
+            writeHeadEEPROM(head.get());
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error repairing head");
+            throw new PrinterException("Error repairing head");
+        }
+    }
 
     class RoboxEventProcessor implements Runnable
     {
