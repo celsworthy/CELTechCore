@@ -47,9 +47,10 @@ import libertysystems.stenographer.StenographerFactory;
  * @author Ian
  */
 public class CalibrationInsetPanelController implements Initializable,
-     PrinterListChangesListener
+    PrinterListChangesListener
 {
 
+    CalibrationMode calibrationMode;
     CalibrationXAndYGUI calibrationXAndYGUI;
     CalibrationNozzleHeightGUI calibrationNozzleHeightGUI;
     CalibrationNozzleOpeningGUI calibrationNozzleOpeningGUI;
@@ -76,7 +77,7 @@ public class CalibrationInsetPanelController implements Initializable,
         if (diagramController != null)
         {
             diagramController.setCalibrationTextField(String.format("%1.2f",
-                                    ((NozzleHeightStateTransitionManager) stateManager).getZco()));
+                                                                    ((NozzleHeightStateTransitionManager) stateManager).getZco()));
         }
     }
 
@@ -164,18 +165,18 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         stateManager.followTransition(StateTransitionManager.GUIName.DOWN);
     }
-    
+
     @FXML
     void buttonAAction(ActionEvent event)
     {
         stateManager.followTransition(StateTransitionManager.GUIName.A_BUTTON);
     }
-    
+
     @FXML
     void buttonBAction(ActionEvent event)
     {
         stateManager.followTransition(StateTransitionManager.GUIName.B_BUTTON);
-    }    
+    }
 
     @FXML
     void nextButtonAction(ActionEvent event)
@@ -200,8 +201,14 @@ public class CalibrationInsetPanelController implements Initializable,
     @FXML
     void cancelCalibration(ActionEvent event)
     {
-        stateManager.followTransition(StateTransitionManager.GUIName.CANCEL);
-        cancelCalibrationAction();
+        if (calibrationMode == CalibrationMode.CHOICE)
+        {
+            ApplicationStatus.getInstance().returnToLastMode();
+        } else
+        {
+            stateManager.followTransition(StateTransitionManager.GUIName.CANCEL);
+            cancelCalibrationAction();
+        }
     }
 
     @FXML
@@ -343,7 +350,8 @@ public class CalibrationInsetPanelController implements Initializable,
         Pane loadedDiagramNode = null;
         if (!nameToNodeCache.containsKey(diagramName))
         {
-            URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlDiagramsResourcePath
+            URL fxmlFileName = getClass().getResource(
+                ApplicationConfiguration.fxmlDiagramsResourcePath
                 + section + "/" + diagramName);
             try
             {
@@ -518,52 +526,53 @@ public class CalibrationInsetPanelController implements Initializable,
 
     public void setCalibrationMode(CalibrationMode calibrationMode)
     {
+        this.calibrationMode = calibrationMode;
         switchToPrinter(Lookup.getCurrentlySelectedPrinter());
         switch (calibrationMode)
         {
             case NOZZLE_OPENING:
+            {
+                try
                 {
-                    try
-                    {
-                        stateManager = currentPrinter.startCalibrateNozzleOpening();
-                    } catch (PrinterException ex)
-                    {
-                        steno.warning("Can't switch to calibration: " + ex);
-                        return;
-                    }
+                    stateManager = currentPrinter.startCalibrateNozzleOpening();
+                } catch (PrinterException ex)
+                {
+                    steno.warning("Can't switch to calibration: " + ex);
+                    return;
                 }
-                calibrationNozzleOpeningGUI = new CalibrationNozzleOpeningGUI(this, stateManager);
-                calibrationNozzleOpeningGUI.setState(NozzleOpeningCalibrationState.IDLE);
-                break;
+            }
+            calibrationNozzleOpeningGUI = new CalibrationNozzleOpeningGUI(this, stateManager);
+            calibrationNozzleOpeningGUI.setState(NozzleOpeningCalibrationState.IDLE);
+            break;
             case NOZZLE_HEIGHT:
+            {
+                try
                 {
-                    try
-                    {
-                        stateManager = currentPrinter.startCalibrateNozzleHeight();
-                    } catch (PrinterException ex)
-                    {
-                        steno.warning("Can't switch to calibration: " + ex);
-                        return;
-                    }
+                    stateManager = currentPrinter.startCalibrateNozzleHeight();
+                } catch (PrinterException ex)
+                {
+                    steno.warning("Can't switch to calibration: " + ex);
+                    return;
                 }
-                calibrationNozzleHeightGUI = new CalibrationNozzleHeightGUI(this, stateManager);
-                calibrationNozzleHeightGUI.setState(NozzleOffsetCalibrationState.IDLE);
+            }
+            calibrationNozzleHeightGUI = new CalibrationNozzleHeightGUI(this, stateManager);
+            calibrationNozzleHeightGUI.setState(NozzleOffsetCalibrationState.IDLE);
 
-                break;
+            break;
             case X_AND_Y_OFFSET:
+            {
+                try
                 {
-                    try
-                    {
-                        stateManager = currentPrinter.startCalibrateXAndY();
-                    } catch (PrinterException ex)
-                    {
-                        steno.warning("Can't switch to calibration: " + ex);
-                        return;
-                    }
+                    stateManager = currentPrinter.startCalibrateXAndY();
+                } catch (PrinterException ex)
+                {
+                    steno.warning("Can't switch to calibration: " + ex);
+                    return;
                 }
-                calibrationXAndYGUI = new CalibrationXAndYGUI(this, stateManager);
-                calibrationXAndYGUI.setState(CalibrationXAndYState.IDLE);
-                break;
+            }
+            calibrationXAndYGUI = new CalibrationXAndYGUI(this, stateManager);
+            calibrationXAndYGUI.setState(CalibrationXAndYState.IDLE);
+            break;
             case CHOICE:
                 setupChoice();
         }
@@ -600,7 +609,7 @@ public class CalibrationInsetPanelController implements Initializable,
         calibrationProgressPrint.setTargetLegend(Lookup.i18n("calibrationPanel.approxBuildTime"));
         calibrationProgressPrint.setProgressDescription(Lookup.i18n("calibrationPanel.printingCaps"));
         calibrationProgressPrint.setTargetValue("0");
-        
+
         calibrationProgressTemp.setTargetLegend(Lookup.i18n("calibrationPanel.targetTemperature"));
         calibrationProgressPrint.setProgressDescription(Lookup.i18n("calibrationPanel.heatingCaps"));
     }
