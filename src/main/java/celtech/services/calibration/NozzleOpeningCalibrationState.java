@@ -29,6 +29,9 @@ public enum NozzleOpeningCalibrationState
      *
      */
     CALIBRATE_FINE_NOZZLE("calibrationPanel.calibrationCommencedMessageFine"),
+    
+    INCREMENT_FINE_NOZZLE_POSITION(""),
+    
     /**
      *
      */

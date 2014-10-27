@@ -168,13 +168,13 @@ public class CalibrationInsetPanelController implements Initializable,
     @FXML
     void buttonAAction(ActionEvent event)
     {
-        stateManager.followTransition(StateTransitionManager.GUIName.UP);
+        stateManager.followTransition(StateTransitionManager.GUIName.A_BUTTON);
     }
     
     @FXML
     void buttonBAction(ActionEvent event)
     {
-        stateManager.followTransition(StateTransitionManager.GUIName.UP);
+        stateManager.followTransition(StateTransitionManager.GUIName.B_BUTTON);
     }    
 
     @FXML

@@ -6,6 +6,7 @@ package celtech.printerControl.model;
 import celtech.configuration.HeaterMode;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
+import celtech.services.calibration.NozzleOpeningCalibrationState;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
 import libertysystems.stenographer.Stenographer;
@@ -130,6 +131,30 @@ public class CalibrationNozzleOpeningActions
         return true;
     }
 
+    public boolean doIncrementFineNozzlePosition()
+    {
+        nozzlePosition += 0.05;
+        steno.info("(FINE) nozzle position set to " + nozzlePosition);
+        if (nozzlePosition >= 2f)
+        {
+            return false;
+        }
+        printer.gotoNozzlePosition(nozzlePosition);
+        return true;
+    }
+
+    public boolean doIncrementFillNozzlePosition()
+    {
+        nozzlePosition += 0.05;
+        steno.info("(FILL) nozzle position set to " + nozzlePosition);
+        if (nozzlePosition >= 2f)
+        {
+            return false;
+        }
+        printer.gotoNozzlePosition(nozzlePosition);
+        return true;
+    }
+
     public boolean doPreCalibrationPrimingFill() throws RoboxCommsException
     {
         nozzlePosition = 0;
@@ -140,6 +165,15 @@ public class CalibrationNozzleOpeningActions
     public boolean doCalibrateFillNozzle()
     {
         printer.gotoNozzlePosition(nozzlePosition);
+        return true;
+    }
+
+    public boolean doFinaliseCalibrateFillNozzle() throws PrinterException
+    {
+        printer.closeNozzleFully();
+        // calculate offset
+        steno.info("(FILL) finalise nozzle position set at " + nozzlePosition);
+        nozzle0BOffset = bOffsetStartingValue - 0.1f + nozzlePosition;
         return true;
     }
 

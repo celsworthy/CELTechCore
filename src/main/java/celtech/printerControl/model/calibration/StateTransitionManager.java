@@ -24,8 +24,7 @@ public class StateTransitionManager<StateType>
 
     public enum GUIName
     {
-
-        START, CANCEL, BACK, NEXT, RETRY, COMPLETE, YES, NO, UP, DOWN, AUTO;
+        START, CANCEL, BACK, NEXT, RETRY, COMPLETE, YES, NO, UP, DOWN, A_BUTTON, B_BUTTON, AUTO;
     }
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -66,7 +65,7 @@ public class StateTransitionManager<StateType>
     {
         this.state.set(state);
         processArrivedAtState(state);
-        checkForAutoFollowOnState();
+        followAutoTransitionIfPresent();
     }
     
     private void processArrivedAtState(StateType state)
@@ -145,7 +144,7 @@ public class StateTransitionManager<StateType>
     /**
      * If the newly entered state has an AUTO transition then follow it.
      */
-    private void checkForAutoFollowOnState()
+    private void followAutoTransitionIfPresent()
     {
         for (StateTransition allowedTransition : getTransitions())
         {

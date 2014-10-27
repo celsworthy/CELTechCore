@@ -152,8 +152,8 @@ public class CalibrationNozzleOpeningGUI
 
     private void populateNamesToButtons(CalibrationInsetPanelController controller)
     {
-        namesToButtons.put(GUIName.YES, controller.buttonA);
-        namesToButtons.put(GUIName.NO, controller.buttonB);
+        namesToButtons.put(GUIName.A_BUTTON, controller.buttonA);
+        namesToButtons.put(GUIName.B_BUTTON, controller.buttonB);
         namesToButtons.put(GUIName.NEXT, controller.nextButton);
         namesToButtons.put(GUIName.CANCEL, controller.cancelCalibrationButton);
         namesToButtons.put(GUIName.RETRY, controller.retryPrintButton);
