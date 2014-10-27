@@ -44,6 +44,8 @@ public enum NozzleOpeningCalibrationState
      *
      */
     CALIBRATE_FILL_NOZZLE("calibrationPanel.calibrationCommencedMessageFill"),
+    
+    INCREMENT_FILL_NOZZLE_POSITION(""),
     /**
      *
      */

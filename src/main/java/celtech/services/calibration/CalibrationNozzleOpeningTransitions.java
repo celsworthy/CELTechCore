@@ -37,6 +37,13 @@ public class CalibrationNozzleOpeningTransitions
                      },
                                          NozzleOpeningCalibrationState.FAILED));
 
+        arrivals.put(NozzleOpeningCalibrationState.CONFIRM_MATERIAL_EXTRUDING,
+                     new ArrivalAction<>(() ->
+                         {
+                             return actions.doConfirmMaterialExtrudingAction();
+                     },
+                                         NozzleOpeningCalibrationState.FAILED));
+
         arrivals.put(NozzleOpeningCalibrationState.FINISHED,
                      new ArrivalAction<>(() ->
                          {
@@ -73,12 +80,17 @@ public class CalibrationNozzleOpeningTransitions
 
         // NO MATERIAL CHECK
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.NO_MATERIAL_CHECK,
-                                            StateTransitionManager.GUIName.NEXT,
+                                            StateTransitionManager.GUIName.B_BUTTON,
                                             NozzleOpeningCalibrationState.PRE_CALIBRATION_PRIMING_FINE,
                                             (Callable) () ->
                                             {
                                                 return actions.doPreCalibrationPrimingFine();
                                             },
+                                            NozzleOpeningCalibrationState.FAILED));
+
+        transitions.add(new StateTransition(NozzleOpeningCalibrationState.NO_MATERIAL_CHECK,
+                                            StateTransitionManager.GUIName.A_BUTTON,
+                                            NozzleOpeningCalibrationState.FAILED,
                                             NozzleOpeningCalibrationState.FAILED));
 
         transitions.add(
@@ -91,7 +103,7 @@ public class CalibrationNozzleOpeningTransitions
             NozzleOpeningCalibrationState.CALIBRATE_FINE_NOZZLE,
             (Callable) () ->
             {
-                return actions.doCalibrateFillNozzle();
+                return actions.doCalibrateFineNozzle();
             },
             NozzleOpeningCalibrationState.FAILED));
 
@@ -113,19 +125,19 @@ public class CalibrationNozzleOpeningTransitions
                                             NozzleOpeningCalibrationState.HEAD_CLEAN_CHECK_FINE_NOZZLE,
                                             (Callable) () ->
                                             {
-                                                return actions.doFinaliseCalibrateFillNozzle();
+                                                return actions.doFinaliseCalibrateFineNozzle();
                                             },
                                             NozzleOpeningCalibrationState.FAILED));
 
         transitions.add(
             makeCancelledStateTransition(NozzleOpeningCalibrationState.CALIBRATE_FINE_NOZZLE));
-        
-        // INCREMENT_FINE_NOZZLE_POSITION
-        transitions.add(new StateTransition(NozzleOpeningCalibrationState.INCREMENT_FINE_NOZZLE_POSITION,
-                                            StateTransitionManager.GUIName.AUTO,
-                                            NozzleOpeningCalibrationState.CALIBRATE_FINE_NOZZLE,
-                                            NozzleOpeningCalibrationState.FAILED));
 
+        // INCREMENT_FINE_NOZZLE_POSITION
+        transitions.add(new StateTransition(
+            NozzleOpeningCalibrationState.INCREMENT_FINE_NOZZLE_POSITION,
+            StateTransitionManager.GUIName.AUTO,
+            NozzleOpeningCalibrationState.CALIBRATE_FINE_NOZZLE,
+            NozzleOpeningCalibrationState.FAILED));
 
         // HEAD_CLEAN_CHECK_FINE_NOZZLE
         transitions.add(new StateTransition(
@@ -136,6 +148,89 @@ public class CalibrationNozzleOpeningTransitions
 
         transitions.add(
             makeCancelledStateTransition(NozzleOpeningCalibrationState.HEAD_CLEAN_CHECK_FINE_NOZZLE));
+
+        // PRE_CALIBRATION_PRIMING_FILL
+        transitions.add(new StateTransition(
+            NozzleOpeningCalibrationState.PRE_CALIBRATION_PRIMING_FILL,
+            StateTransitionManager.GUIName.AUTO,
+            NozzleOpeningCalibrationState.CALIBRATE_FILL_NOZZLE,
+            (Callable) () ->
+            {
+                return actions.doCalibrateFillNozzle();
+            },
+            NozzleOpeningCalibrationState.FAILED));
+
+        transitions.add(
+            makeCancelledStateTransition(NozzleOpeningCalibrationState.PRE_CALIBRATION_PRIMING_FILL));
+
+        // CALIBRATE_FILL_NOZZLE
+        transitions.add(new StateTransition(NozzleOpeningCalibrationState.CALIBRATE_FILL_NOZZLE,
+                                            StateTransitionManager.GUIName.B_BUTTON,
+                                            NozzleOpeningCalibrationState.INCREMENT_FILL_NOZZLE_POSITION,
+                                            (Callable) () ->
+                                            {
+                                                return actions.doIncrementFillNozzlePosition();
+                                            },
+                                            NozzleOpeningCalibrationState.FAILED));
+
+        transitions.add(new StateTransition(NozzleOpeningCalibrationState.CALIBRATE_FILL_NOZZLE,
+                                            StateTransitionManager.GUIName.A_BUTTON,
+                                            NozzleOpeningCalibrationState.HEAD_CLEAN_CHECK_FILL_NOZZLE,
+                                            (Callable) () ->
+                                            {
+                                                return actions.doFinaliseCalibrateFillNozzle();
+                                            },
+                                            NozzleOpeningCalibrationState.FAILED));
+
+        transitions.add(
+            makeCancelledStateTransition(NozzleOpeningCalibrationState.CALIBRATE_FILL_NOZZLE));
+
+        // INCREMENT_FILL_NOZZLE_POSITION
+        transitions.add(new StateTransition(
+            NozzleOpeningCalibrationState.INCREMENT_FILL_NOZZLE_POSITION,
+            StateTransitionManager.GUIName.AUTO,
+            NozzleOpeningCalibrationState.CALIBRATE_FILL_NOZZLE,
+            NozzleOpeningCalibrationState.FAILED));
+
+        // HEAD_CLEAN_CHECK_FILL_NOZZLE
+        transitions.add(new StateTransition(
+            NozzleOpeningCalibrationState.HEAD_CLEAN_CHECK_FILL_NOZZLE,
+            StateTransitionManager.GUIName.NEXT,
+            NozzleOpeningCalibrationState.CONFIRM_NO_MATERIAL,
+            (Callable) () ->
+            {
+                return actions.doConfirmNoMaterialAction();
+            },
+            NozzleOpeningCalibrationState.FAILED));
+
+        transitions.add(
+            makeCancelledStateTransition(NozzleOpeningCalibrationState.HEAD_CLEAN_CHECK_FILL_NOZZLE));
+
+        // CONFIRM_NO_MATERIAL
+        transitions.add(new StateTransition(
+            NozzleOpeningCalibrationState.CONFIRM_NO_MATERIAL,
+            StateTransitionManager.GUIName.B_BUTTON,
+            NozzleOpeningCalibrationState.CONFIRM_MATERIAL_EXTRUDING,
+            NozzleOpeningCalibrationState.FAILED));
+        
+    transitions.add(new StateTransition(
+            NozzleOpeningCalibrationState.CONFIRM_NO_MATERIAL,
+            StateTransitionManager.GUIName.A_BUTTON,
+            NozzleOpeningCalibrationState.FAILED,
+            NozzleOpeningCalibrationState.FAILED));        
+
+        transitions.add(
+            makeCancelledStateTransition(NozzleOpeningCalibrationState.CONFIRM_NO_MATERIAL));
+
+        // CONFIRM_MATERIAL_EXTRUDING
+        transitions.add(new StateTransition(
+            NozzleOpeningCalibrationState.CONFIRM_MATERIAL_EXTRUDING,
+            StateTransitionManager.GUIName.NEXT,
+            NozzleOpeningCalibrationState.FINISHED,
+            NozzleOpeningCalibrationState.FAILED));
+
+        transitions.add(
+            makeCancelledStateTransition(NozzleOpeningCalibrationState.CONFIRM_MATERIAL_EXTRUDING));
 
         // FINISHED
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.FINISHED,
