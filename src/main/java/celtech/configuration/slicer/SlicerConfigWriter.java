@@ -35,7 +35,9 @@ public abstract class SlicerConfigWriter
     private float centreX = 0;
     private float centreY = 0;
 
-    private final String defaultFlag = "D:";
+    private final String parameterDivider = ":";
+    private final String queryDivider = "?";
+    private final String optionalDivider = "->";
 
     public SlicerConfigWriter()
     {
@@ -97,68 +99,60 @@ public abstract class SlicerConfigWriter
             for (Map.Entry<String, String> entry : mappingData.getMappingData().entrySet())
             {
                 String methodName = entry.getKey();
-                String targetVariableName = entry.getValue();
+                String targetVariableName = extractTargetVariableName(entry.getValue());
                 steno.info("Processing method: " + methodName + " and variable : " + targetVariableName);
 
-                float scale = 1;
-                if (targetVariableName.contains(":"))
-                {
-                    String[] valueElements = targetVariableName.split(":");
-                    targetVariableName = valueElements[0];
-                    scale = Float.valueOf(valueElements[1]);
-                }
-
                 methodName = "get" + methodName.substring(0, 1).toUpperCase() + methodName.substring(1, methodName.length());
+                Method getMethod = getVariableMethod(methodName);
 
-                try
+                if (getMethod != null)
                 {
-                    steno.debug("Writing " + methodName + " : " + targetVariableName);
-                    Method getMethod = SlicerParameters.class.getMethod(methodName, null);
+                    try
+                    {
+                        steno.debug("Writing " + methodName + " : " + targetVariableName);
 
-                    Class<?> returnTypeClass = getMethod.getReturnType();
+                        Class<?> returnTypeClass = getMethod.getReturnType();
 
-                    if (returnTypeClass.equals(boolean.class))
+                        if (returnTypeClass.equals(boolean.class))
+                        {
+                            boolean value = (boolean) getMethod.invoke(profileData);
+                            outputLine(writer, targetVariableName, value);
+                        } else if (returnTypeClass.equals(int.class))
+                        {
+                            int value = (int) getMethod.invoke(profileData);
+                            outputLine(writer, targetVariableName, (int) applyValue(profileData, value, entry.getValue()));
+                        } else if (returnTypeClass.equals(float.class))
+                        {
+                            float value = (float) getMethod.invoke(profileData);
+                            outputLine(writer, targetVariableName, applyValue(profileData, value, entry.getValue()));
+                        } else if (returnTypeClass.equals(String.class))
+                        {
+                            String value = (String) getMethod.invoke(profileData);
+                            outputLine(writer, targetVariableName, value);
+                        } else if (returnTypeClass.equals(SlicerType.class))
+                        {
+                            SlicerType value = (SlicerType) getMethod.invoke(profileData);
+                            outputLine(writer, targetVariableName, value);
+                        } else if (returnTypeClass.equals(FillPattern.class))
+                        {
+                            FillPattern value = (FillPattern) getMethod.invoke(profileData);
+                            outputLine(writer, targetVariableName, value);
+                        } else if (returnTypeClass.equals(SupportPattern.class))
+                        {
+                            SupportPattern value = (SupportPattern) getMethod.invoke(profileData);
+                            outputLine(writer, targetVariableName, value);
+                        } else
+                        {
+                            steno.error("Got unknown return type: " + returnTypeClass.getName());
+                        }
+
+                    } catch (IllegalAccessException ex)
                     {
-                        boolean value = (boolean) getMethod.invoke(profileData);
-                        outputLine(writer, targetVariableName, value);
-                    } else if (returnTypeClass.equals(int.class))
+                        steno.error("Illegal access exception when retrieving from " + methodName);
+                    } catch (InvocationTargetException ex)
                     {
-                        int value = (int) getMethod.invoke(profileData);
-                        outputLine(writer, targetVariableName, value * scale);
-                    } else if (returnTypeClass.equals(float.class))
-                    {
-                        float value = (float) getMethod.invoke(profileData);
-                        outputLine(writer, targetVariableName, value * scale);
-                    } else if (returnTypeClass.equals(String.class))
-                    {
-                        String value = (String) getMethod.invoke(profileData);
-                        outputLine(writer, targetVariableName, value);
-                    } else if (returnTypeClass.equals(SlicerType.class))
-                    {
-                        SlicerType value = (SlicerType) getMethod.invoke(profileData);
-                        outputLine(writer, targetVariableName, value);
-                    } else if (returnTypeClass.equals(FillPattern.class))
-                    {
-                        FillPattern value = (FillPattern) getMethod.invoke(profileData);
-                        outputLine(writer, targetVariableName, value);
-                    } else if (returnTypeClass.equals(SupportPattern.class))
-                    {
-                        SupportPattern value = (SupportPattern) getMethod.invoke(profileData);
-                        outputLine(writer, targetVariableName, value);
-                    } else
-                    {
-                        steno.error("Got unknown return type: " + returnTypeClass.getName());
+                        steno.error("Invocation target exception when retrieving from " + methodName);
                     }
-
-                } catch (NoSuchMethodException ex)
-                {
-                    steno.error("Unable to find " + methodName);
-                } catch (IllegalAccessException ex)
-                {
-                    steno.error("Illegal access exception when retrieving from " + methodName);
-                } catch (InvocationTargetException ex)
-                {
-                    steno.error("Invocation target exception when retrieving from " + methodName);
                 }
             }
         } catch (FileNotFoundException ex)
@@ -210,4 +204,135 @@ public abstract class SlicerConfigWriter
     protected abstract void outputPrintCentre(FileWriter writer, float centreX, float centreY) throws IOException;
 
     protected abstract void outputFilamentDiameter(FileWriter writer, float diameter) throws IOException;
+
+    private float applyValue(SlicerParameters profileData, float value, String operationString)
+    {
+        float resultingValue = value;
+        boolean okToProcess = false;
+
+        if (operationString.contains(parameterDivider))
+        {
+            String[] valueElements = operationString.split(parameterDivider);
+
+            boolean doneProcessing = false;
+
+            if (valueElements.length > 1)
+            {
+                for (int elementCounter = 1; elementCounter < valueElements.length; elementCounter++)
+                {
+                    String operation = valueElements[elementCounter];
+
+                    if (operation.contains(queryDivider))
+                    {
+                        String[] optionalAssignmentString = operation.substring(1).split(optionalDivider);
+                        if (optionalAssignmentString.length == 2)
+                        {
+                            try
+                            {
+                                float valueToCheckFor = Float.valueOf(optionalAssignmentString[0]);
+                                float optionalAssignmentValue = Float.valueOf(optionalAssignmentString[1]);
+
+                                if (value == valueToCheckFor)
+                                {
+                                    resultingValue = optionalAssignmentValue;
+                                    doneProcessing = true;
+                                }
+                            } catch (NumberFormatException ex)
+                            {
+                                // Failed to process...
+                                steno.warning("Couldn't process optional slicer mapping: " + operation);
+                            }
+                        } else
+                        {
+                            steno.warning("Erroneous optional slicer mapping: " + operation);
+                        }
+                    }
+
+                    if (!doneProcessing)
+                    {
+                        String operator = operation.substring(0, 1);
+                        String variable = operation.substring(1);
+
+                        Method getMethod = getVariableMethod(variable);
+
+                        float variableValue = 0;
+
+                        if (getMethod != null)
+                        {
+                            // Found a get - must be a variable that we can use...
+
+                            try
+                            {
+                                variableValue = (float) getMethod.invoke(profileData);
+                                okToProcess = true;
+                            } catch (IllegalAccessException | InvocationTargetException ex)
+                            {
+                                steno.warning("Failed to get value for " + variable);
+                            }
+                        } else
+                        {
+                            // We should have a number instead
+                            try
+                            {
+                                variableValue = Float.valueOf(variable);
+                                okToProcess = true;
+                            } catch (NumberFormatException ex)
+                            {
+                                steno.warning("Failed to get process numeric value " + variable);
+                            }
+                        }
+
+                        if (okToProcess)
+                        {
+                            switch (operator)
+                            {
+                                case "*":
+                                    resultingValue = resultingValue * variableValue;
+                                    break;
+                                case "/":
+                                    resultingValue = resultingValue / variableValue;
+                                    break;
+                                case "+":
+                                    resultingValue = resultingValue + variableValue;
+                                    break;
+                                case "-":
+                                    resultingValue = resultingValue - variableValue;
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return resultingValue;
+    }
+
+    private String extractTargetVariableName(String value)
+    {
+        String targetVariableName = value;
+
+        if (value.contains(":"))
+        {
+            String[] elements = value.split(":");
+            targetVariableName = elements[0];
+        }
+
+        return targetVariableName;
+    }
+
+    private Method getVariableMethod(String methodName)
+    {
+        Method foundMethod = null;
+
+        try
+        {
+            foundMethod = SlicerParameters.class.getMethod(methodName, null);
+        } catch (NoSuchMethodException ex)
+        {
+            steno.warning("Failed to get method for " + methodName);
+        }
+
+        return foundMethod;
+    }
 }
