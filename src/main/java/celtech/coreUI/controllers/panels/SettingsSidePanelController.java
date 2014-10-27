@@ -67,6 +67,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private DisplayManager displayManager = null;
 
     private boolean suppressQualityOverrideTriggers = false;
+    private boolean suppressCustomProfileChangeTriggers = false;
 
     @FXML
     private Label materialLabel;
@@ -106,7 +107,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
 //    @FXML
 //    private ToggleSwitch spiralPrintToggle;
-
     private SlicerParameters draftSettings = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
     private SlicerParameters normalSettings = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.normalSettingsProfileName);
     private SlicerParameters fineSettings = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.fineSettingsProfileName);
@@ -256,33 +256,36 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             @Override
             public void changed(ObservableValue<? extends SlicerParameters> observable, SlicerParameters oldValue, SlicerParameters newValue)
             {
-                if (oldValue != newValue)
+                if (!suppressCustomProfileChangeTriggers)
                 {
-                    if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
+                    if (oldValue != newValue)
                     {
-                        displayManager.slideOutAdvancedPanel();
+                        if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
+                        {
+                            displayManager.slideOutAdvancedPanel();
+                        }
+                        slideOutController.showProfileTab();
+
+                        lastCustomProfileSelected = newValue;
                     }
-                    slideOutController.showProfileTab();
 
-                    lastCustomProfileSelected = newValue;
-                }
-
-                if (newValue == SlicerParametersContainer.createNewProfile)
-                {
-                    showCreateProfileDialogue(draftSettings.clone());
-                } else if (newValue != null)
-                {
-                    if (settingsScreenState.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
+                    if (newValue == SlicerParametersContainer.createNewProfile)
                     {
-                        slideOutController.updateProfileData(newValue);
-                        settingsScreenState.setSettings(newValue);
-                        DisplayManager.getInstance().getCurrentlyVisibleProject().setCustomProfileName(newValue.getProfileName());
+                        showCreateProfileDialogue(draftSettings.clone());
+                    } else if (newValue != null)
+                    {
+                        if (settingsScreenState.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
+                        {
+                            slideOutController.updateProfileData(newValue);
+                            settingsScreenState.setSettings(newValue);
+                            DisplayManager.getInstance().getCurrentlyVisibleProject().setCustomProfileName(newValue.getProfileName());
+                        }
+                        customSettings = newValue;
+                    } else if (newValue == null && settingsScreenState.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
+                    {
+                        slideOutController.updateProfileData(null);
+                        customSettings = null;
                     }
-                    customSettings = newValue;
-                } else if (newValue == null && settingsScreenState.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
-                {
-                    slideOutController.updateProfileData(null);
-                    customSettings = null;
                 }
             }
         });
@@ -743,7 +746,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     {
         for (SlicerParameters settings : availableProfiles)
         {
-            if (settings.getProfileName().equals(profileNameToSave))
+
+            if (settings.getProfileName() != null && settings.getProfileName().equals(profileNameToSave))
             {
                 customProfileChooser.getSelectionModel().select(settings);
                 break;
@@ -807,6 +811,9 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 }
                 settings = customSettings;
                 customProfileVBox.setVisible(true);
+                suppressCustomProfileChangeTriggers = true;
+                customProfileChooser.getSelectionModel().select(settings);
+                suppressCustomProfileChangeTriggers = false;
                 break;
             default:
                 break;
@@ -862,10 +869,11 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     public void whenReelAdded(Printer printer, int reelIndex)
     {
         //TODO modify for multiple reels
-        if (printer == currentPrinter) {
-        currentlyLoadedFilament = new Filament(currentPrinter.reelsProperty().get(0));
-        updateFilamentList();
-        materialChooser.getSelectionModel().select(currentlyLoadedFilament);
+        if (printer == currentPrinter)
+        {
+            currentlyLoadedFilament = new Filament(currentPrinter.reelsProperty().get(0));
+            updateFilamentList();
+            materialChooser.getSelectionModel().select(currentlyLoadedFilament);
         }
     }
 
