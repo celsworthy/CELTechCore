@@ -308,9 +308,9 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     private void setSelectedPrinter(Printer printer)
     {
         updateFieldsForNoHead();
-        if (selectedPrinter != null)
+        if (selectedPrinter != null && selectedPrinter.headProperty().get() != null)
         {
-            removeHeadChangeListeners(printer.headProperty().get());
+            removeHeadChangeListeners(selectedPrinter.headProperty().get());
         }
         selectedPrinter = printer;
         if (printer != null && printer.headProperty().get() != null)

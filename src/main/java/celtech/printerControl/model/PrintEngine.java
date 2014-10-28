@@ -981,7 +981,7 @@ public class PrintEngine implements ControllableService
     {
         return progressNumLayers;
     }
-
+    
     protected void goToIdle()
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->

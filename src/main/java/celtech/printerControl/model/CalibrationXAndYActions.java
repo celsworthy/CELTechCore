@@ -4,6 +4,7 @@
 package celtech.printerControl.model;
 
 import celtech.printerControl.PrinterStatus;
+import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
@@ -38,9 +39,9 @@ public class CalibrationXAndYActions
         cancellable.cancelled = false;
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT);
         savedHeadData = printer.readHeadEEPROM();
-        Thread.sleep(3000);
+//        Thread.sleep(3000);
 //        printer.runMacro("rbx_XY_offset_roboxised");
-//        printer.runMacro("tiny_robox");
+        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
         boolean interrupted = PrinterUtils.waitOnMacroFinished(printer, cancellable);
         return !interrupted;
     }
@@ -48,9 +49,9 @@ public class CalibrationXAndYActions
     public boolean doSaveSettingsAndPrintCircle() throws PrinterException, InterruptedException
     {
         saveSettings();
-        Thread.sleep(3000);
+//        Thread.sleep(3000);
 //        printer.runMacro("rbx_XY_offset_roboxised");
-//        printer.runMacro("tiny_robox");
+        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
         boolean interrupted = PrinterUtils.waitOnMacroFinished(printer, cancellable);
         return !interrupted;
     }

@@ -434,6 +434,8 @@ public interface Printer extends RoboxResponseConsumer
 
     public ReadOnlyStringProperty printJobIDProperty();
     
+    public boolean printJobIDIndicatesPrinting();
+    
     public ReadOnlyObjectProperty pauseStatusProperty();
 
 }

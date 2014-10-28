@@ -5,6 +5,7 @@ package celtech.printerControl.model;
 
 import celtech.configuration.HeaterMode;
 import celtech.printerControl.PrinterStatus;
+import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
@@ -64,7 +65,7 @@ public class CalibrationNozzleOpeningActions
         printer.goToTargetNozzleTemperature();
         if (PrinterUtils.waitOnBusy(printer, cancellable) == false)
         {
-            printer.runMacroWithoutPurgeCheck("Home_all");
+            printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("Home_all"), true);
             if (PrinterUtils.waitOnMacroFinished(printer, cancellable) == false)
             {
                 printer.goToZPosition(50);

@@ -317,6 +317,11 @@ public final class HardwarePrinter implements Printer
     {
         return printJobID;
     }
+    
+    @Override
+    public boolean printJobIDIndicatesPrinting() {
+        return printJobID.get().codePointAt(0) != 0;
+    }    
 
     @Override
     public ReadOnlyObjectProperty pauseStatusProperty()

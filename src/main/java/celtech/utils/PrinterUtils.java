@@ -137,7 +137,7 @@ public class PrinterUtils
             steno.error("Interrupted whilst waiting on Macro");
         }        
 
-        while (printerToCheck.printerStatusProperty().get() != PrinterStatus.IDLE
+        while (printerToCheck.printJobIDIndicatesPrinting()
             && !TaskController.isShuttingDown())
         {
             try
