@@ -184,8 +184,7 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
                                                 {
                                                     return actions.doAction1();
                                                 },
-                                                TestState.FAILED,
-                                                TestState.CANCELLED));
+                                                TestState.FAILED));
 
             transitions.add(new StateTransition(TestState.PRINT_CIRCLE,
                                                 StateTransitionManager.GUIName.NEXT,
@@ -194,14 +193,12 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
                                                 {
                                                     return actions.doAction2();
                                                 },
-                                                TestState.FAILED,
-                                                TestState.CANCELLED));
+                                                TestState.FAILED));
 
             transitions.add(new StateTransition(TestState.GET_Y_OFFSET,
                                                 StateTransitionManager.GUIName.NEXT,
                                                 TestState.DONE,
-                                                TestState.FAILED,
-                                                TestState.CANCELLED));
+                                                TestState.FAILED));
 
             transitions.add(new StateTransition(TestState.PRINT_CIRCLE,
                                                 StateTransitionManager.GUIName.COMPLETE,
@@ -210,8 +207,7 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
                                                 {
                                                     return actions.doAction1ButFails();
                                                 },
-                                                TestState.FAILED,
-                                                TestState.CANCELLED));
+                                                TestState.FAILED));
 
             transitions.add(new StateTransition(TestState.PRINT_CIRCLE,
                                                 StateTransitionManager.GUIName.UP,
@@ -220,8 +216,7 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
                                                 {
                                                     return actions.doAction1ButCancelled();
                                                 },
-                                                TestState.FAILED,
-                                                TestState.CANCELLED));
+                                                TestState.FAILED));
 
             transitions.add(new StateTransition(TestState.PRINT_CIRCLE,
                                                 StateTransitionManager.GUIName.CANCEL,
@@ -230,8 +225,7 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
                                                 {
                                                     return actions.cancel();
                                                 },
-                                                TestState.FAILED,
-                                                TestState.CANCELLED));
+                                                TestState.FAILED));
 
             arrivals = new HashMap<>();
 

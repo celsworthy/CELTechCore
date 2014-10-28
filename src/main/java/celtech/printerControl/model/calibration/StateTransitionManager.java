@@ -178,7 +178,7 @@ public class StateTransitionManager<StateType>
     }
     
     public void cancel() {
-        setState(cancelledState);
+        
         try
         {
             transitions.cancel();
@@ -187,6 +187,7 @@ public class StateTransitionManager<StateType>
             ex.printStackTrace();
             steno.error("Error doing cancelled action " + ex);
         }
+        setState(cancelledState);
     }
 
 }

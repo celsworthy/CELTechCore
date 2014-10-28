@@ -95,9 +95,15 @@ public class CalibrationNozzleOpeningActions
                             .nozzleTargetTemperatureProperty().get(), 5, 300);
                     }
                     printer.switchOnHeadLEDs();
+                } else {
+                    return false;
                 }
+            } else {
+                return false;
             }
 
+        } else {
+            return false;
         }
         return true;
     }

@@ -114,7 +114,11 @@ public class CalibrationNozzleHeightActions
             {
                 printer.switchOnHeadLEDs();
                 success = true;
+            } else {
+                return false;
             }
+        } else {
+            return false;
         }
         return success;
     }
