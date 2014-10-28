@@ -41,9 +41,9 @@ public class CalibrationNozzleOpeningActions
     public boolean doHeatingAction() throws RoboxCommsException, PrinterException, InterruptedException
     {
         cancellable.cancelled = false;
-        
+
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_OPENING);
-        
+
         savedHeadData = printer.readHeadEEPROM();
         printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                                         savedHeadData.getUniqueID(),
@@ -172,7 +172,7 @@ public class CalibrationNozzleOpeningActions
         printer.gotoNozzlePosition(nozzlePosition);
         return true;
     }
-    
+
     public boolean doFinaliseCalibrateFineNozzle() throws PrinterException
     {
         printer.closeNozzleFully();
@@ -180,7 +180,7 @@ public class CalibrationNozzleOpeningActions
         steno.info("(FINE) finalise nozzle position set at " + nozzlePosition);
         nozzle0BOffset = bOffsetStartingValue - 0.1f + nozzlePosition;
         return true;
-    }    
+    }
 
     public boolean doFinaliseCalibrateFillNozzle() throws PrinterException
     {
@@ -270,21 +270,24 @@ public class CalibrationNozzleOpeningActions
 
     private void restoreHeadState() throws RoboxCommsException
     {
-        printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                        savedHeadData.getUniqueID(),
-                                        savedHeadData.getMaximumTemperature(),
-                                        savedHeadData.getBeta(),
-                                        savedHeadData.getTCal(),
-                                        savedHeadData.getNozzle1XOffset(),
-                                        savedHeadData.getNozzle1YOffset(),
-                                        savedHeadData.getNozzle1ZOffset(),
-                                        savedHeadData.getNozzle1BOffset(),
-                                        savedHeadData.getNozzle2XOffset(),
-                                        savedHeadData.getNozzle2YOffset(),
-                                        savedHeadData.getNozzle2ZOffset(),
-                                        savedHeadData.getNozzle2BOffset(),
-                                        savedHeadData.getLastFilamentTemperature(),
-                                        savedHeadData.getHeadHours());
+        if (savedHeadData != null)
+        {
+            printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+                                            savedHeadData.getUniqueID(),
+                                            savedHeadData.getMaximumTemperature(),
+                                            savedHeadData.getBeta(),
+                                            savedHeadData.getTCal(),
+                                            savedHeadData.getNozzle1XOffset(),
+                                            savedHeadData.getNozzle1YOffset(),
+                                            savedHeadData.getNozzle1ZOffset(),
+                                            savedHeadData.getNozzle1BOffset(),
+                                            savedHeadData.getNozzle2XOffset(),
+                                            savedHeadData.getNozzle2YOffset(),
+                                            savedHeadData.getNozzle2ZOffset(),
+                                            savedHeadData.getNozzle2BOffset(),
+                                            savedHeadData.getLastFilamentTemperature(),
+                                            savedHeadData.getHeadHours());
+        }
     }
 
     private boolean extrudeUntilStall(int nozzleNumber)

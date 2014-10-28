@@ -65,6 +65,8 @@ public class CalibrationNozzleOpeningTransitions
                                             StateTransitionManager.GUIName.START,
                                             NozzleOpeningCalibrationState.HEATING,
                                             NozzleOpeningCalibrationState.FAILED));
+        
+        transitions.add(makeCancelledStateTransition(NozzleOpeningCalibrationState.IDLE));
 
         // HEATING
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.HEATING,

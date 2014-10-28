@@ -44,7 +44,7 @@ public class CalibrationNozzleHeightActions
         cancellable.cancelled = false;
         zco = 0;
         zDifference = 0;
-        
+
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT);
 
         savedHeadData = printer.readHeadEEPROM();
@@ -118,8 +118,9 @@ public class CalibrationNozzleHeightActions
         }
         return success;
     }
-    
-    public boolean doHomeZAction() {
+
+    public boolean doHomeZAction()
+    {
         printer.homeZ();
         return true;
     }
@@ -147,7 +148,8 @@ public class CalibrationNozzleHeightActions
         {
             for (int i = 0; i < 3; i++)
             {
-                if (cancellable.cancelled) {
+                if (cancellable.cancelled)
+                {
                     return false;
                 }
                 printer.selectNozzle(0);
@@ -212,19 +214,21 @@ public class CalibrationNozzleHeightActions
         return success;
 
     }
-    
-    public boolean doIncrementZAction() {
-         zco += 0.05;
-         printer.goToZPosition(zco);
-         return true;
+
+    public boolean doIncrementZAction()
+    {
+        zco += 0.05;
+        printer.goToZPosition(zco);
+        return true;
     }
-    
-    public boolean doDecrementZAction() {
-         zco -= 0.05;
-         printer.goToZPosition(zco);
-         return true;
-    }    
-    
+
+    public boolean doDecrementZAction()
+    {
+        zco -= 0.05;
+        printer.goToZPosition(zco);
+        return true;
+    }
+
     public boolean doFinishedAction() throws PrinterException, RoboxCommsException
     {
         saveSettings();
@@ -240,13 +244,12 @@ public class CalibrationNozzleHeightActions
         printer.setPrinterStatus(PrinterStatus.IDLE);
         return true;
     }
-    
+
     public boolean doCancelledAction() throws PrinterException, RoboxCommsException
     {
         cancellable.cancelled = true;
         return doFailedAction();
     }
-    
 
     private void switchHeaterOffAndRaiseHead() throws PrinterException
     {
@@ -258,21 +261,24 @@ public class CalibrationNozzleHeightActions
 
     private void restoreHeadData() throws RoboxCommsException
     {
-        printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                        savedHeadData.getUniqueID(),
-                                        savedHeadData.getMaximumTemperature(),
-                                        savedHeadData.getBeta(),
-                                        savedHeadData.getTCal(),
-                                        savedHeadData.getNozzle1XOffset(),
-                                        savedHeadData.getNozzle1YOffset(),
-                                        savedHeadData.getNozzle1ZOffset(),
-                                        savedHeadData.getNozzle1BOffset(),
-                                        savedHeadData.getNozzle2XOffset(),
-                                        savedHeadData.getNozzle2YOffset(),
-                                        savedHeadData.getNozzle2ZOffset(),
-                                        savedHeadData.getNozzle2BOffset(),
-                                        savedHeadData.getLastFilamentTemperature(),
-                                        savedHeadData.getHeadHours());
+        if (savedHeadData != null)
+        {
+            printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+                                            savedHeadData.getUniqueID(),
+                                            savedHeadData.getMaximumTemperature(),
+                                            savedHeadData.getBeta(),
+                                            savedHeadData.getTCal(),
+                                            savedHeadData.getNozzle1XOffset(),
+                                            savedHeadData.getNozzle1YOffset(),
+                                            savedHeadData.getNozzle1ZOffset(),
+                                            savedHeadData.getNozzle1BOffset(),
+                                            savedHeadData.getNozzle2XOffset(),
+                                            savedHeadData.getNozzle2YOffset(),
+                                            savedHeadData.getNozzle2ZOffset(),
+                                            savedHeadData.getNozzle2BOffset(),
+                                            savedHeadData.getLastFilamentTemperature(),
+                                            savedHeadData.getHeadHours());
+        }
     }
 
     public boolean saveSettings() throws RoboxCommsException

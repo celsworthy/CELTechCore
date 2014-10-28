@@ -50,6 +50,8 @@ public class CalibrationXAndYTransitions
                                             StateTransitionManager.GUIName.START,
                                             CalibrationXAndYState.PRINT_PATTERN,
                                             CalibrationXAndYState.FAILED));
+        
+        transitions.add(makeCancelledStateTransition(CalibrationXAndYState.IDLE));
 
         // PRINT PATTERN
         transitions.add(new StateTransition(CalibrationXAndYState.PRINT_PATTERN,

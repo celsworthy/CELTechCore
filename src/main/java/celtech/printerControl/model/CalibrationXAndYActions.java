@@ -57,7 +57,7 @@ public class CalibrationXAndYActions
 
     public boolean doFinishedAction() throws PrinterException
     {
-        
+
         saveSettings();
         switchHeaterOffAndRaiseHead();
         printer.setPrinterStatus(PrinterStatus.IDLE);
@@ -71,8 +71,9 @@ public class CalibrationXAndYActions
         printer.setPrinterStatus(PrinterStatus.IDLE);
         return true;
     }
-    
-    public boolean doCancelledAction() throws PrinterException, RoboxCommsException {
+
+    public boolean doCancelledAction() throws PrinterException, RoboxCommsException
+    {
         cancellable.cancelled = true;
         restoreHeadData();
         switchHeaterOffAndRaiseHead();
@@ -90,21 +91,24 @@ public class CalibrationXAndYActions
 
     private void restoreHeadData() throws RoboxCommsException
     {
-        printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                        savedHeadData.getUniqueID(),
-                                        savedHeadData.getMaximumTemperature(),
-                                        savedHeadData.getBeta(),
-                                        savedHeadData.getTCal(),
-                                        savedHeadData.getNozzle1XOffset(),
-                                        savedHeadData.getNozzle1YOffset(),
-                                        savedHeadData.getNozzle1ZOffset(),
-                                        savedHeadData.getNozzle1BOffset(),
-                                        savedHeadData.getNozzle2XOffset(),
-                                        savedHeadData.getNozzle2YOffset(),
-                                        savedHeadData.getNozzle2ZOffset(),
-                                        savedHeadData.getNozzle2BOffset(),
-                                        savedHeadData.getLastFilamentTemperature(),
-                                        savedHeadData.getHeadHours());
+        if (savedHeadData != null)
+        {
+            printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+                                            savedHeadData.getUniqueID(),
+                                            savedHeadData.getMaximumTemperature(),
+                                            savedHeadData.getBeta(),
+                                            savedHeadData.getTCal(),
+                                            savedHeadData.getNozzle1XOffset(),
+                                            savedHeadData.getNozzle1YOffset(),
+                                            savedHeadData.getNozzle1ZOffset(),
+                                            savedHeadData.getNozzle1BOffset(),
+                                            savedHeadData.getNozzle2XOffset(),
+                                            savedHeadData.getNozzle2YOffset(),
+                                            savedHeadData.getNozzle2ZOffset(),
+                                            savedHeadData.getNozzle2BOffset(),
+                                            savedHeadData.getLastFilamentTemperature(),
+                                            savedHeadData.getHeadHours());
+        }
     }
 
     private void saveSettings()
