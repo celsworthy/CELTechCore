@@ -592,7 +592,7 @@ public class PrinterStatusPageController implements Initializable
             headFanButton, headLEDButton, removeHeadButton
         };
         setAdvancedControlsVisibility(false);
-        
+
         pausePrintButton.setVisible(false);
         resumePrintButton.setVisible(false);
         cancelPrintButton.setVisible(false);
@@ -919,8 +919,11 @@ public class PrinterStatusPageController implements Initializable
             lastSelectedPrinter.printerStatusProperty().removeListener(printerStatusChangeListener);
 
             pausePrintButton.visibleProperty().unbind();
+            pausePrintButton.setVisible(false);
             resumePrintButton.visibleProperty().unbind();
+            resumePrintButton.setVisible(false);
             cancelPrintButton.visibleProperty().unbind();
+            cancelPrintButton.setVisible(false);
         }
 
         filamentRectangle.visibleProperty().unbind();

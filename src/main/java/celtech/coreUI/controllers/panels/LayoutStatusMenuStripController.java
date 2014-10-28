@@ -327,7 +327,7 @@ public class LayoutStatusMenuStripController
             Parent dialogBoxScreen = (Parent) dialogLoader.load();
             miniFactoryController = dialogLoader.getController();
             Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
-            dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
+            dialogScene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
             myMiniFactoryLoaderStage.setScene(dialogScene);
             myMiniFactoryLoaderStage.initOwner(DisplayManager.getMainStage());
             myMiniFactoryLoaderStage.initModality(Modality.WINDOW_MODAL);

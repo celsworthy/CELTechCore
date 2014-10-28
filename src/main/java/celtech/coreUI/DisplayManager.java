@@ -581,8 +581,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
         scene = new Scene(root, ApplicationConfiguration.DEFAULT_WIDTH,
                           ApplicationConfiguration.DEFAULT_HEIGHT);
 
-        URL cssURL = DisplayManager.class.getResource("../resources/css/JMetroDarkTheme.css");
-        scene.getStylesheets().add(cssURL.toExternalForm());
+        scene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
         
         captureHiddenKeys();
 

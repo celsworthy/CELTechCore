@@ -48,7 +48,7 @@ public class SlicerMappingsContainer
 
             } catch (IOException ex)
             {
-                steno.error("Error loading slicer mapping file " + slicerMappingsInputFile.getAbsolutePath());
+                steno.error("Error loading slicer mapping file " + slicerMappingsInputFile.getAbsolutePath() + " " + ex.getMessage());
             }
         }
     }

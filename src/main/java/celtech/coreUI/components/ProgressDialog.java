@@ -73,7 +73,7 @@ public class ProgressDialog
             dialogController = (ProgressDialogController) dialogLoader.getController();
 
             Scene dialogScene = new Scene(dialogBoxContainer, Color.TRANSPARENT);
-            dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
+            dialogScene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
             dialogStage.setScene(dialogScene);
             dialogStage.initOwner(DisplayManager.getMainStage());
             dialogStage.initModality(Modality.WINDOW_MODAL);

@@ -14,7 +14,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -71,7 +70,7 @@ public class ModalDialog
             dialogController = (ModalDialogController) dialogLoader.getController();
 
             Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
-            dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
+            dialogScene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
             dialogStage.setScene(dialogScene);
             dialogStage.initOwner(DisplayManager.getMainStage());
             dialogStage.initModality(Modality.WINDOW_MODAL);

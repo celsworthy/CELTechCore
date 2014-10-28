@@ -93,7 +93,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     private ArrayList<GCodeParseEvent> extrusionBuffer = new ArrayList<>();
 //    private Vector2D precursorPoint = null;
 
-    private boolean triggerCloseFromTravel = false;
+    private boolean triggerCloseFromTravel = true;
     private boolean triggerCloseFromRetract = true;
 
     private int tempNozzleMemory = 0;
@@ -276,8 +276,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         settings.getNozzleParameters()
             .stream()
             .forEach(nozzleData -> nozzleProxies.add(new NozzleProxy(nozzleData)));
-
-        currentNozzle = nozzleProxies.get(POINT_3MM_NOZZLE);
 
         wipeFeedRate_mmPerMin = currentSettings.getPerimeterSpeed_mm_per_s() * 60;
 
@@ -462,6 +460,15 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         moveToMiddleYEvent.setComment("Go to middle of bed in Y");
         moveToMiddleYEvent.setGNumber(0);
         moveToMiddleYEvent.setGString("Y50");
+
+        if (currentNozzle == null)
+        {
+            NozzleChangeEvent nozzleChangeEvent = new NozzleChangeEvent();
+            nozzleChangeEvent.setNozzleNumber(POINT_3MM_NOZZLE);
+            nozzleChangeEvent.setComment("Initialise using nozzle 0");
+            extrusionBuffer.add(nozzleChangeEvent);
+            currentNozzle = nozzleProxies.get(POINT_3MM_NOZZLE);
+        }
 
         try
         {
@@ -921,6 +928,14 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             ArrayList<Integer> inwardsMoveIndexList = new ArrayList<>();
 
             int tempFinalExtrusionEventIndex = getPreviousExtrusionEventIndex(extrusionBuffer.size() - 1);
+            if (((ExtrusionEvent) extrusionBuffer.get(tempFinalExtrusionEventIndex)).getExtrusionTask() == ExtrusionTask.ExternalPerimeter)
+            {
+                int endOfPerimeter = getPreviousExtrusionTask(extrusionBuffer.size() - 1, ExtrusionTask.Perimeter);
+                if (endOfPerimeter >= 0)
+                {
+                    tempFinalExtrusionEventIndex = endOfPerimeter;
+                }
+            }
             int tempFirstExtrusionEventIndex = getStartOfExtrusionEventBoundaryIndex(tempFinalExtrusionEventIndex);
 
             for (int extrusionBufferIndex = 0; extrusionBufferIndex <= extrusionBuffer.size() - 1; extrusionBufferIndex++)
@@ -1735,128 +1750,147 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     {
         boolean reverseWipePath = forceReverse;
 
+        ExtrusionEvent originalFinalExtrusionEvent = (ExtrusionEvent) extrusionBuffer.get(finalExtrusionEventIndex);
+        int modifiedFinalExtrusionEventIndex = finalExtrusionEventIndex;
+
+        int insertedEventIndex = modifiedFinalExtrusionEventIndex + 1;
+
         int startOfClose = -1;
 
-        final String perimeterKey = "perimeter";
-
-        ExtrusionEvent finalExtrusionEvent = (ExtrusionEvent) extrusionBuffer.get(finalExtrusionEventIndex);
+        ExtrusionEvent finalExtrusionEvent = (ExtrusionEvent) extrusionBuffer.get(modifiedFinalExtrusionEventIndex);
         Vector2D endOfExtrusion = new Vector2D(finalExtrusionEvent.getX(), finalExtrusionEvent.getY());
-        int penultimateExtrusionEventIndex = getPreviousExtrusionEventIndex(finalExtrusionEventIndex);
 
-        // Fairly horrible, but we're going to scan through the events to find the start of the perimeter
-        // by looking for the ketword - this is because Slic3r chops up the perimeter into pieces in some circumstances.
-        int startOfPerimeter = -1;
-        int endOfPenultimatePerimeterSegment = -1;
         int closestEventIndex = -1;
 
         boolean finalExtrusionWasPerimeter = false;
 
         int indexToCopyFrom = -1;
-        int minimumIndexToCopyFrom = 0;
+        int minimumIndexToCopyFrom = firstExtrusionEventIndex;
 
-        if (reverseWipePath == false && penultimateExtrusionEventIndex >= 0)
+        if (reverseWipePath == false && getPreviousExtrusionEventIndex(modifiedFinalExtrusionEventIndex) >= 0)
         {
-            String finalExtrusionEventComment = finalExtrusionEvent.getComment();
-
-            if (finalExtrusionEventComment != null)
+            if (finalExtrusionEvent.getExtrusionTask() == ExtrusionTask.ExternalPerimeter)
             {
-                if (finalExtrusionEventComment.contains(perimeterKey))
+                // We have to make sure we only close on the inner perimeters (if we can!)
+                // Calculate new start/end values
+                int endOfInnerPerimeter = getPreviousExtrusionTask(modifiedFinalExtrusionEventIndex, ExtrusionTask.Perimeter);
+                if (endOfInnerPerimeter < 0
+                    || getPreviousExtrusionEventIndex(modifiedFinalExtrusionEventIndex) < 0)
                 {
+                    // We couldn't find an inner perimeter - revert to reverse
+                    finalExtrusionWasPerimeter = false;
+                } else
+                {
+                    modifiedFinalExtrusionEventIndex = endOfInnerPerimeter;
+                    finalExtrusionEvent = (ExtrusionEvent) extrusionBuffer.get(modifiedFinalExtrusionEventIndex);
                     finalExtrusionWasPerimeter = true;
+                }
+            } else if (finalExtrusionEvent.getExtrusionTask() == ExtrusionTask.Perimeter)
+            {
+                // We're OK to use the start/end values we were passed
+                finalExtrusionWasPerimeter = true;
+            }
 
-                    // We can't go back over a layer boundary to wipe...
-                    int lastLayerChangeIndex = getPreviousEventIndex(finalExtrusionEventIndex, LayerChangeEvent.class);
+            if (finalExtrusionWasPerimeter)
+            {
+                // We can't go back over a layer boundary to wipe...
+                int lastLayerChangeIndex = getPreviousEventIndex(modifiedFinalExtrusionEventIndex, LayerChangeEvent.class);
 
-                    if (lastLayerChangeIndex
-                        <= 0)
+                if (lastLayerChangeIndex
+                    <= 0)
+                {
+                    lastLayerChangeIndex = 0;
+                }
+
+                Segment orthogonalSegment = null;
+                Vector2D lastPointConsidered = null;
+
+                Comparator<Double> intersectedPointComparator = new Comparator<Double>()
+                {
+                    @Override
+                    public int compare(Double t, Double t1)
                     {
-                        lastLayerChangeIndex = 0;
+                        return compareDouble(t, t1);
                     }
+                };
+                TreeMap<Double, Integer> intersectedPointDistances = new TreeMap<>();
 
-                    Segment orthogonalSegment = null;
-                    Vector2D lastPointConsidered = null;
+                int intersectionCounter = 0;
+                int maxNumberOfIntersectionsToConsider = currentSettings.getNumberOfPerimeters();
+                float maxDistanceFromEndPoint = currentSettings.getPerimeterExtrusionWidth_mm() * maxNumberOfIntersectionsToConsider * 4;
 
-                    Comparator<Double> intersectedPointComparator = new Comparator<Double>()
+                // Attempt to use the inwards move to find the innermost perimeter
+                if (lastInwardsMoveEvent != null)
+                {
+                    Vector2D inwardsMoveEndPoint = new Vector2D(lastInwardsMoveEvent.getX(), lastInwardsMoveEvent.getY());
+                    inwardsMoveEndPoint.scalarMultiply(4);
+                    orthogonalSegment = new Segment(endOfExtrusion, inwardsMoveEndPoint, new Line(endOfExtrusion, inwardsMoveEndPoint, 1e-12));
+                } else
+                {
+//                    steno.warning("Using backup orthogonal segment");
+                    int absolutelyTheLastExtrusionEventIndexEver = getPreviousExtrusionEventIndex(extrusionBuffer.size() - 1);
+                    ExtrusionEvent absolutelyTheLastExtrusionEventEver = (ExtrusionEvent) extrusionBuffer.get(absolutelyTheLastExtrusionEventIndexEver);
+
+                    endOfExtrusion = new Vector2D(absolutelyTheLastExtrusionEventEver.getX(), absolutelyTheLastExtrusionEventEver.getY());
+
+                    int absolutelyTheLastMovementEventIndexEver = getPreviousMovementEventIndex(absolutelyTheLastExtrusionEventIndexEver);
+                    MovementEvent absolutelyTheLastMovementEventEver = (MovementEvent) extrusionBuffer.get(absolutelyTheLastMovementEventIndexEver);
+                    Vector2D absolutelyTheLastMovementVectorEver = new Vector2D(absolutelyTheLastMovementEventEver.getX(), absolutelyTheLastMovementEventEver.getY());
+
+                    orthogonalSegment = MathUtils.getOrthogonalLineToLinePoints(maxDistanceFromEndPoint, absolutelyTheLastMovementVectorEver, endOfExtrusion);
+                }
+
+                for (int eventIndex = modifiedFinalExtrusionEventIndex - 1;
+                    eventIndex > lastLayerChangeIndex
+                    && intersectionCounter <= maxNumberOfIntersectionsToConsider
+                    && eventIndex >= firstExtrusionEventIndex;
+                    eventIndex--)
+                {
+                    if (extrusionBuffer.get(eventIndex) instanceof MovementEvent)
                     {
-                        @Override
-                        public int compare(Double t, Double t1)
+                        MovementEvent thisMovementEvent = (MovementEvent) extrusionBuffer.get(eventIndex);
+                        Vector2D thisMovement = new Vector2D(thisMovementEvent.getX(), thisMovementEvent.getY());
+
+                        if (extrusionBuffer.get(eventIndex) instanceof ExtrusionEvent && lastPointConsidered != null)
                         {
-                            return compareDouble(t, t1);
-                        }
-                    };
-                    TreeMap<Double, Integer> intersectedPointDistances = new TreeMap<>();
-
-                    int intersectionCounter = 0;
-                    int maxNumberOfIntersectionsToConsider = currentSettings.getNumberOfPerimeters();
-                    float maxDistanceFromEndPoint = currentSettings.getPerimeterExtrusionWidth_mm() * maxNumberOfIntersectionsToConsider * 4;
-
-                    // Attempt to use the inwards move to find the innermost perimeter
-                    if (lastInwardsMoveEvent != null)
-                    {
-                        Vector2D inwardsMoveEndPoint = new Vector2D(lastInwardsMoveEvent.getX(), lastInwardsMoveEvent.getY());
-                        inwardsMoveEndPoint.scalarMultiply(4);
-                        orthogonalSegment = new Segment(endOfExtrusion, inwardsMoveEndPoint, new Line(endOfExtrusion, inwardsMoveEndPoint, 1e-12));
-                    }
-
-                    for (int eventIndex = finalExtrusionEventIndex - 1;
-                        eventIndex > lastLayerChangeIndex
-                        && intersectionCounter <= maxNumberOfIntersectionsToConsider
-                        && eventIndex >= firstExtrusionEventIndex;
-                        eventIndex--)
-                    {
-                        if (extrusionBuffer.get(eventIndex) instanceof MovementEvent)
-                        {
-                            MovementEvent thisMovementEvent = (MovementEvent) extrusionBuffer.get(eventIndex);
-                            Vector2D thisMovement = new Vector2D(thisMovementEvent.getX(), thisMovementEvent.getY());
-
-                            // Default 
-                            if (orthogonalSegment == null)
+                            // Detect intersections
+                            Segment segmentUnderConsideration = new Segment(lastPointConsidered, thisMovement, new Line(lastPointConsidered, thisMovement, 1e-12));
+                            Vector2D intersectionPoint = MathUtils.getSegmentIntersection(orthogonalSegment, segmentUnderConsideration);
+                            if (intersectionPoint != null)
                             {
-                                steno.warning("Using backup orthogonal segment");
-                                orthogonalSegment = MathUtils.getOrthogonalLineToLinePoints(maxDistanceFromEndPoint, thisMovement, endOfExtrusion);
-                            } else if (extrusionBuffer.get(eventIndex) instanceof ExtrusionEvent && lastPointConsidered != null)
-                            {
-                                // Detect intersections
-                                Segment segmentUnderConsideration = new Segment(lastPointConsidered, thisMovement, new Line(lastPointConsidered, thisMovement, 1e-12));
-                                Vector2D intersectionPoint = MathUtils.getSegmentIntersection(orthogonalSegment, segmentUnderConsideration);
-                                if (intersectionPoint != null)
+                                double distanceFromEndPoint = intersectionPoint.distance(endOfExtrusion);
+
+                                if (distanceFromEndPoint <= maxDistanceFromEndPoint)
                                 {
-                                    double distanceFromEndPoint = intersectionPoint.distance(endOfExtrusion);
-
-                                    if (distanceFromEndPoint <= maxDistanceFromEndPoint)
-                                    {
-                                        intersectedPointDistances.put(distanceFromEndPoint, eventIndex);
-                                        intersectionCounter++;
-                                    }
+                                    intersectedPointDistances.put(distanceFromEndPoint, eventIndex);
+                                    intersectionCounter++;
                                 }
                             }
-
-                            lastPointConsidered = thisMovement;
                         }
-                    }
 
-                    if (intersectedPointDistances.size()
-                        >= maxNumberOfIntersectionsToConsider)
-                    {
-                        closestEventIndex = (int) intersectedPointDistances.values().toArray()[maxNumberOfIntersectionsToConsider - 1];
-                    } else if (intersectedPointDistances.size() > 0)
-                    {
-                        closestEventIndex = (int) intersectedPointDistances.values().toArray()[intersectedPointDistances.size() - 1];
+                        lastPointConsidered = thisMovement;
                     }
+                }
 
-                    if (closestEventIndex < 0)
-                    {
-                        steno.warning("Couldn't find closest point to end of line when analysing inward wipe - defaulting to reverse");
-                        finalExtrusionWasPerimeter = false;
-                    } else
-                    {
-                        indexToCopyFrom = closestEventIndex;
-                    }
+                if (intersectedPointDistances.size()
+                    >= maxNumberOfIntersectionsToConsider)
+                {
+                    closestEventIndex = (int) intersectedPointDistances.values().toArray()[maxNumberOfIntersectionsToConsider - 1];
+                } else if (intersectedPointDistances.size() > 0)
+                {
+                    closestEventIndex = (int) intersectedPointDistances.values().toArray()[intersectedPointDistances.size() - 1];
+                }
+
+                if (closestEventIndex < 0)
+                {
+                    steno.warning("Couldn't find closest point to end of line when analysing inward wipe - defaulting to reverse");
+                    finalExtrusionWasPerimeter = false;
+                } else
+                {
+                    indexToCopyFrom = closestEventIndex;
                 }
             }
         }
-
-        int insertedEventIndex = finalExtrusionEventIndex + 1;
 
         String wipeTypeComment = "";
 
@@ -1879,18 +1913,33 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
         } else
         {
+            if (finalExtrusionEventIndex != modifiedFinalExtrusionEventIndex)
+            {
+                // We need to travel to the start of the close 
+                // Add a travel to the closest point
+                TravelEvent travelToClosestPoint = new TravelEvent();
+                ExtrusionEvent closestEvent = (ExtrusionEvent) extrusionBuffer.get(modifiedFinalExtrusionEventIndex);
+                travelToClosestPoint.setX(closestEvent.getX());
+                travelToClosestPoint.setY(closestEvent.getY());
+                travelToClosestPoint.setComment("Travelling to start of close");
+                travelToClosestPoint.setFeedRate(wipeFeedRate_mmPerMin);
+
+                extrusionBuffer.add(insertedEventIndex, travelToClosestPoint);
+                insertedEventIndex++;
+            }
+
             wipeTypeComment = "Wipe - reverse";
 
             reverseWipePath = true;
 
-            indexToCopyFrom = finalExtrusionEventIndex - 1;
+            indexToCopyFrom = modifiedFinalExtrusionEventIndex - 1;
 
-            if (firstExtrusionEventIndex != finalExtrusionEventIndex)
+            if (firstExtrusionEventIndex != modifiedFinalExtrusionEventIndex)
             {
                 minimumIndexToCopyFrom = firstExtrusionEventIndex;
             } else
             {
-                int previousTravelEvent = getPreviousEventIndex(finalExtrusionEventIndex, TravelEvent.class);
+                int previousTravelEvent = getPreviousEventIndex(modifiedFinalExtrusionEventIndex, TravelEvent.class);
                 if (previousTravelEvent >= 0)
                 {
                     minimumIndexToCopyFrom = previousTravelEvent;
@@ -1910,8 +1959,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         if (minimumIndexToCopyFrom >= 0)
         {
             while (cumulativeExtrusionVolume < targetVolume
-                && indexToCopyFrom <= finalExtrusionEventIndex
-                && indexToCopyFrom >= minimumIndexToCopyFrom)
+                && indexToCopyFrom <= modifiedFinalExtrusionEventIndex
+                && indexToCopyFrom >= minimumIndexToCopyFrom + 1)
             {
                 boolean dontIncrementEventIndex = false;
 
@@ -1938,7 +1987,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
                         if (reverseWipePath)
                         {
-                            fromReferencePosition = getNextPosition(indexToCopyFrom, finalExtrusionEventIndex);
+                            fromReferencePosition = getNextPosition(indexToCopyFrom, modifiedFinalExtrusionEventIndex);
                         } else
                         {
                             fromReferencePosition = getLastPosition(indexToCopyFrom);
@@ -2090,12 +2139,33 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     {
         int indexOfEvent = -1;
 
-        for (int index = startingIndex; index >= 0; index--)
+        if (startingIndex > 0)
         {
-            if (extrusionBuffer.get(index) instanceof ExtrusionEvent)
+            for (int index = startingIndex - 1; index >= 0; index--)
             {
-                indexOfEvent = index;
-                break;
+                if (extrusionBuffer.get(index) instanceof ExtrusionEvent)
+                {
+                    indexOfEvent = index;
+                    break;
+                }
+            }
+        }
+        return indexOfEvent;
+    }
+
+    private int getPreviousMovementEventIndex(int startingIndex)
+    {
+        int indexOfEvent = -1;
+
+        if (startingIndex > 0)
+        {
+            for (int index = startingIndex - 1; index >= 0; index--)
+            {
+                if (extrusionBuffer.get(index) instanceof MovementEvent)
+                {
+                    indexOfEvent = index;
+                    break;
+                }
             }
         }
         return indexOfEvent;
@@ -2116,6 +2186,26 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         return indexOfEvent;
     }
 
+    private int getPreviousExtrusionTask(int startingIndex, ExtrusionTask task)
+    {
+        int lastValidEventBoundaryIndex = -1;
+
+        for (int index = startingIndex; index >= 0; index--)
+        {
+            if (extrusionBuffer.get(index).getClass() == ExtrusionEvent.class)
+            {
+                ExtrusionEvent extrusionEvent = (ExtrusionEvent) extrusionBuffer.get(index);
+                if (extrusionEvent.getExtrusionTask() == task)
+                {
+                    lastValidEventBoundaryIndex = index;
+                    break;
+                }
+            }
+        }
+
+        return lastValidEventBoundaryIndex;
+    }
+
     private int getStartOfExtrusionEventBoundaryIndex(int startingIndex)
     {
         int lastValidExtrusionIndex = startingIndex;
@@ -2129,8 +2219,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 if (extrusionBuffer.get(index).getClass() == ExtrusionEvent.class)
                 {
                     ExtrusionEvent extrusionEvent = (ExtrusionEvent) extrusionBuffer.get(index);
-                    if ((extrusionEvent.getExtrusionTask() == ExtrusionTask.ExternalPerimeter && currentTask == ExtrusionTask.Perimeter)
-                        || extrusionEvent.getExtrusionTask() == currentTask)
+                    if (extrusionEvent.getExtrusionTask() == currentTask
+                        || (currentTask == ExtrusionTask.ExternalPerimeter && extrusionEvent.getExtrusionTask() == ExtrusionTask.Perimeter))
                     {
                         lastValidExtrusionIndex = index;
                     } else
