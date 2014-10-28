@@ -3,10 +3,8 @@
  */
 package celtech.printerControl.model.calibration;
 
-import celtech.printerControl.model.CalibrationNozzleOpeningActions;
 import celtech.services.calibration.NozzleOpeningCalibrationState;
-import java.util.Map;
-import java.util.Set;
+import celtech.services.calibration.Transitions;
 
 /**
  *
@@ -15,15 +13,9 @@ import java.util.Set;
 public class NozzleOpeningStateTransitionManager extends StateTransitionManager<NozzleOpeningCalibrationState>
 {
 
-    private final CalibrationNozzleOpeningActions actions;
-
-    public NozzleOpeningStateTransitionManager(
-        Set<StateTransition<NozzleOpeningCalibrationState>> allowedTransitions,
-        Map<NozzleOpeningCalibrationState, ArrivalAction<NozzleOpeningCalibrationState>> arrivals,
-        CalibrationNozzleOpeningActions actions)
+    public NozzleOpeningStateTransitionManager(Transitions<NozzleOpeningCalibrationState> transitions)
     {
-        super(allowedTransitions, arrivals, NozzleOpeningCalibrationState.IDLE);
-        this.actions = actions;
+        super(transitions, NozzleOpeningCalibrationState.IDLE, NozzleOpeningCalibrationState.CANCELLED);
     }
 
 }

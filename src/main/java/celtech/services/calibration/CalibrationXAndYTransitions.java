@@ -17,7 +17,7 @@ import java.util.concurrent.Callable;
  *
  * @author tony
  */
-public class CalibrationXAndYTransitions
+public class CalibrationXAndYTransitions implements Transitions
 {
 
     CalibrationXAndYActions actions;
@@ -49,8 +49,9 @@ public class CalibrationXAndYTransitions
         transitions.add(new StateTransition(CalibrationXAndYState.IDLE,
                                             StateTransitionManager.GUIName.START,
                                             CalibrationXAndYState.PRINT_PATTERN,
-                                            CalibrationXAndYState.FAILED));
-        
+                                            CalibrationXAndYState.FAILED,
+                                            CalibrationXAndYState.CANCELLED));
+
         transitions.add(makeCancelledStateTransition(CalibrationXAndYState.IDLE));
 
         // PRINT PATTERN
@@ -61,19 +62,22 @@ public class CalibrationXAndYTransitions
                                             {
                                                 return actions.doSaveHeadAndPrintPattern();
                                             },
-                                            CalibrationXAndYState.FAILED));
+                                            CalibrationXAndYState.FAILED,
+                                            CalibrationXAndYState.CANCELLED));
         transitions.add(makeCancelledStateTransition(CalibrationXAndYState.PRINT_PATTERN));
 
         // GET Y OFFSET
         transitions.add(new StateTransition(CalibrationXAndYState.GET_Y_OFFSET,
                                             StateTransitionManager.GUIName.NEXT,
                                             CalibrationXAndYState.PRINT_CIRCLE,
-                                            CalibrationXAndYState.FAILED));
+                                            CalibrationXAndYState.FAILED,
+                                            CalibrationXAndYState.CANCELLED));
 
         transitions.add(new StateTransition(CalibrationXAndYState.GET_Y_OFFSET,
                                             StateTransitionManager.GUIName.RETRY,
                                             CalibrationXAndYState.PRINT_PATTERN,
-                                            CalibrationXAndYState.FAILED));
+                                            CalibrationXAndYState.FAILED,
+                                            CalibrationXAndYState.CANCELLED));
 
         transitions.add(makeCancelledStateTransition(CalibrationXAndYState.GET_Y_OFFSET));
 
@@ -85,7 +89,8 @@ public class CalibrationXAndYTransitions
                                             {
                                                 return actions.doSaveSettingsAndPrintCircle();
                                             },
-                                            CalibrationXAndYState.FAILED));
+                                            CalibrationXAndYState.FAILED,
+                                            CalibrationXAndYState.CANCELLED));
 
         transitions.add(makeCancelledStateTransition(CalibrationXAndYState.PRINT_CIRCLE));
 
@@ -93,21 +98,24 @@ public class CalibrationXAndYTransitions
         transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE_CHECK,
                                             StateTransitionManager.GUIName.NEXT,
                                             CalibrationXAndYState.FINISHED,
-                                            CalibrationXAndYState.FAILED));
+                                            CalibrationXAndYState.FAILED,
+                                            CalibrationXAndYState.CANCELLED));
 
         transitions.add(makeCancelledStateTransition(CalibrationXAndYState.PRINT_CIRCLE_CHECK));
 
         // FINISHED
         transitions.add(new StateTransition(CalibrationXAndYState.FINISHED,
                                             StateTransitionManager.GUIName.BACK,
-                                            CalibrationXAndYState.IDLE,
-                                            CalibrationXAndYState.FAILED));
-        
+                                            CalibrationXAndYState.DONE,
+                                            CalibrationXAndYState.FAILED,
+                                            CalibrationXAndYState.CANCELLED));
+
         // FAILED
         transitions.add(new StateTransition(CalibrationXAndYState.FAILED,
                                             StateTransitionManager.GUIName.BACK,
-                                            CalibrationXAndYState.IDLE,
-                                            CalibrationXAndYState.FAILED));        
+                                            CalibrationXAndYState.DONE,
+                                            CalibrationXAndYState.DONE,
+                                            CalibrationXAndYState.CANCELLED));
 
     }
 
@@ -115,14 +123,15 @@ public class CalibrationXAndYTransitions
     {
         return new StateTransition(fromState,
                                    StateTransitionManager.GUIName.CANCEL,
-                                   CalibrationXAndYState.IDLE,
+                                   CalibrationXAndYState.DONE,
                                    (Callable) () ->
                                    {
-                                       return actions.doCancelledAction();
+                                       return actions.cancel();
                                    },
-                                   CalibrationXAndYState.FAILED);
-    }    
-    
+                                   CalibrationXAndYState.FAILED,
+                                            CalibrationXAndYState.DONE);
+    }
+
     public Set<StateTransition<CalibrationXAndYState>> getTransitions()
     {
         return transitions;
@@ -131,6 +140,12 @@ public class CalibrationXAndYTransitions
     public Map<CalibrationXAndYState, ArrivalAction<CalibrationXAndYState>> getArrivals()
     {
         return arrivals;
+    }
+
+    @Override
+    public void cancel() throws Exception
+    {
+        actions.cancel();
     }
 
 }

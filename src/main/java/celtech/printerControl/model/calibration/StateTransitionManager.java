@@ -4,14 +4,13 @@
 package celtech.printerControl.model.calibration;
 
 import celtech.Lookup;
+import celtech.services.calibration.Transitions;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.concurrent.WorkerStateEvent;
-import javafx.event.EventHandler;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -21,7 +20,6 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class StateTransitionManager<StateType>
 {
-
     public enum GUIName
     {
         START, CANCEL, BACK, NEXT, RETRY, COMPLETE, YES, NO, UP, DOWN, A_BUTTON, B_BUTTON, AUTO;
@@ -30,21 +28,25 @@ public class StateTransitionManager<StateType>
     private final Stenographer steno = StenographerFactory.getStenographer(
         StateTransitionManager.class.getName());
 
+    Transitions<StateType> transitions;
     Set<StateTransition<StateType>> allowedTransitions;
     Map<StateType, ArrivalAction<StateType>> arrivals;
 
     private final ObjectProperty<StateType> state;
+    private final StateType cancelledState;
 
     public ReadOnlyObjectProperty<StateType> stateProperty()
     {
         return state;
     }
 
-    public StateTransitionManager(Set<StateTransition<StateType>> allowedTransitions,
-        Map<StateType, ArrivalAction<StateType>> arrivals, StateType initialState)
+    public StateTransitionManager(Transitions<StateType> transitions, StateType initialState,
+        StateType cancelledState)
     {
-        this.allowedTransitions = allowedTransitions;
-        this.arrivals = arrivals;
+        this.transitions = transitions;
+        this.allowedTransitions = transitions.getTransitions();
+        this.cancelledState = cancelledState;
+        this.arrivals = transitions.getArrivals();
         state = new SimpleObjectProperty<>(initialState);
     }
 
@@ -67,26 +69,33 @@ public class StateTransitionManager<StateType>
         processArrivedAtState(state);
         followAutoTransitionIfPresent();
     }
-    
+
     private void processArrivedAtState(StateType state)
     {
-        
-        if (arrivals.containsKey(state)) {
+
+        if (arrivals.containsKey(state))
+        {
+
             ArrivalAction<StateType> arrival = arrivals.get(state);
-            
-            EventHandler<WorkerStateEvent> nullAction = (WorkerStateEvent event) ->
+
+            Runnable nullAction = () ->
             {
             };
 
-            EventHandler<WorkerStateEvent> gotToFailedState = (WorkerStateEvent event) ->
+            Runnable gotToFailedState = () ->
             {
                 setState(arrival.failedState);
+            };
+
+            // Currently can't cancel an 'arrivedAt' action
+            Runnable whenCancelled = () ->
+            {
             };
 
             String taskName = String.format("State arrival at %s", state);
 
             Lookup.getTaskExecutor().runAsTask(arrival.action, nullAction,
-                                               gotToFailedState,
+                                               gotToFailedState, whenCancelled,
                                                taskName);
         }
     }
@@ -122,21 +131,34 @@ public class StateTransitionManager<StateType>
 
         } else
         {
-            EventHandler<WorkerStateEvent> goToNextState = (WorkerStateEvent event) ->
+
+            Runnable goToNextState = () ->
             {
                 setState(stateTransition.toState);
             };
 
-            EventHandler<WorkerStateEvent> gotToFailedState = (WorkerStateEvent event) ->
+            Runnable gotToFailedState = () ->
             {
                 setState(stateTransition.transitionFailedState);
+            };
+
+            Runnable whenCancelled = () ->
+            {
+                try
+                {
+                    cancel();
+                } catch (Exception ex)
+                {
+                    ex.printStackTrace();
+                    steno.error("Error processing cancelled action " + ex);
+                }
             };
 
             String taskName = String.format("State transition from %s to %s",
                                             stateTransition.fromState, stateTransition.toState);
 
             Lookup.getTaskExecutor().runAsTask(stateTransition.action, goToNextState,
-                                               gotToFailedState,
+                                               gotToFailedState, whenCancelled,
                                                taskName);
         }
     }
@@ -152,6 +174,18 @@ public class StateTransitionManager<StateType>
             {
                 followTransition(GUIName.AUTO);
             }
+        }
+    }
+    
+    public void cancel() {
+        setState(cancelledState);
+        try
+        {
+            transitions.cancel();
+        } catch (Exception ex)
+        {
+            ex.printStackTrace();
+            steno.error("Error doing cancelled action " + ex);
         }
     }
 

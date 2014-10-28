@@ -3,6 +3,7 @@
  */
 package celtech.services.calibration;
 
+import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.model.CalibrationNozzleOpeningActions;
 import celtech.printerControl.model.calibration.ArrivalAction;
 import celtech.printerControl.model.calibration.StateTransitionManager;
@@ -12,13 +13,18 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
  * @author tony
  */
-public class CalibrationNozzleOpeningTransitions
+public class CalibrationNozzleOpeningTransitions implements Transitions
 {
+
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        CalibrationNozzleOpeningTransitions.class.getName());
 
     CalibrationNozzleOpeningActions actions;
     Set<StateTransition<NozzleOpeningCalibrationState>> transitions;
@@ -64,9 +70,8 @@ public class CalibrationNozzleOpeningTransitions
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.IDLE,
                                             StateTransitionManager.GUIName.START,
                                             NozzleOpeningCalibrationState.HEATING,
-                                            NozzleOpeningCalibrationState.FAILED));
-        
-        transitions.add(makeCancelledStateTransition(NozzleOpeningCalibrationState.IDLE));
+                                            NozzleOpeningCalibrationState.FAILED,
+                                            NozzleOpeningCalibrationState.CANCELLED));
 
         // HEATING
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.HEATING,
@@ -76,9 +81,8 @@ public class CalibrationNozzleOpeningTransitions
                                             {
                                                 return actions.doHeatingAction();
                                             },
-                                            NozzleOpeningCalibrationState.FAILED));
-
-        transitions.add(makeCancelledStateTransition(NozzleOpeningCalibrationState.HEATING));
+                                            NozzleOpeningCalibrationState.FAILED,
+                                            NozzleOpeningCalibrationState.CANCELLED));
 
         // NO MATERIAL CHECK
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.NO_MATERIAL_CHECK,
@@ -88,15 +92,14 @@ public class CalibrationNozzleOpeningTransitions
                                             {
                                                 return actions.doPreCalibrationPrimingFine();
                                             },
-                                            NozzleOpeningCalibrationState.FAILED));
+                                            NozzleOpeningCalibrationState.FAILED,
+                                            NozzleOpeningCalibrationState.CANCELLED));
 
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.NO_MATERIAL_CHECK,
                                             StateTransitionManager.GUIName.A_BUTTON,
                                             NozzleOpeningCalibrationState.FAILED,
-                                            NozzleOpeningCalibrationState.FAILED));
-
-        transitions.add(
-            makeCancelledStateTransition(NozzleOpeningCalibrationState.NO_MATERIAL_CHECK));
+                                            NozzleOpeningCalibrationState.FAILED,
+                                            NozzleOpeningCalibrationState.CANCELLED));
 
         // PRE_CALIBRATION_PRIMING_FINE
         transitions.add(new StateTransition(
@@ -109,9 +112,6 @@ public class CalibrationNozzleOpeningTransitions
             },
             NozzleOpeningCalibrationState.FAILED));
 
-        transitions.add(
-            makeCancelledStateTransition(NozzleOpeningCalibrationState.PRE_CALIBRATION_PRIMING_FINE));
-
         // CALIBRATE_FINE_NOZZLE
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.CALIBRATE_FINE_NOZZLE,
                                             StateTransitionManager.GUIName.B_BUTTON,
@@ -120,7 +120,8 @@ public class CalibrationNozzleOpeningTransitions
                                             {
                                                 return actions.doIncrementFineNozzlePosition();
                                             },
-                                            NozzleOpeningCalibrationState.FAILED));
+                                            NozzleOpeningCalibrationState.FAILED,
+                                            NozzleOpeningCalibrationState.CANCELLED));
 
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.CALIBRATE_FINE_NOZZLE,
                                             StateTransitionManager.GUIName.A_BUTTON,
@@ -129,17 +130,16 @@ public class CalibrationNozzleOpeningTransitions
                                             {
                                                 return actions.doFinaliseCalibrateFineNozzle();
                                             },
-                                            NozzleOpeningCalibrationState.FAILED));
-
-        transitions.add(
-            makeCancelledStateTransition(NozzleOpeningCalibrationState.CALIBRATE_FINE_NOZZLE));
+                                            NozzleOpeningCalibrationState.FAILED,
+                                            NozzleOpeningCalibrationState.CANCELLED));
 
         // INCREMENT_FINE_NOZZLE_POSITION
         transitions.add(new StateTransition(
             NozzleOpeningCalibrationState.INCREMENT_FINE_NOZZLE_POSITION,
             StateTransitionManager.GUIName.AUTO,
             NozzleOpeningCalibrationState.CALIBRATE_FINE_NOZZLE,
-            NozzleOpeningCalibrationState.FAILED));
+            NozzleOpeningCalibrationState.FAILED,
+            NozzleOpeningCalibrationState.CANCELLED));
 
         // HEAD_CLEAN_CHECK_FINE_NOZZLE
         transitions.add(new StateTransition(
@@ -150,10 +150,8 @@ public class CalibrationNozzleOpeningTransitions
             {
                 return actions.doPreCalibrationPrimingFill();
             },
-            NozzleOpeningCalibrationState.FAILED));
-
-        transitions.add(
-            makeCancelledStateTransition(NozzleOpeningCalibrationState.HEAD_CLEAN_CHECK_FINE_NOZZLE));
+            NozzleOpeningCalibrationState.FAILED,
+            NozzleOpeningCalibrationState.CANCELLED));
 
         // PRE_CALIBRATION_PRIMING_FILL
         transitions.add(new StateTransition(
@@ -166,9 +164,6 @@ public class CalibrationNozzleOpeningTransitions
             },
             NozzleOpeningCalibrationState.FAILED));
 
-        transitions.add(
-            makeCancelledStateTransition(NozzleOpeningCalibrationState.PRE_CALIBRATION_PRIMING_FILL));
-
         // CALIBRATE_FILL_NOZZLE
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.CALIBRATE_FILL_NOZZLE,
                                             StateTransitionManager.GUIName.B_BUTTON,
@@ -177,7 +172,8 @@ public class CalibrationNozzleOpeningTransitions
                                             {
                                                 return actions.doIncrementFillNozzlePosition();
                                             },
-                                            NozzleOpeningCalibrationState.FAILED));
+                                            NozzleOpeningCalibrationState.FAILED,
+                                            NozzleOpeningCalibrationState.CANCELLED));
 
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.CALIBRATE_FILL_NOZZLE,
                                             StateTransitionManager.GUIName.A_BUTTON,
@@ -186,17 +182,16 @@ public class CalibrationNozzleOpeningTransitions
                                             {
                                                 return actions.doFinaliseCalibrateFillNozzle();
                                             },
-                                            NozzleOpeningCalibrationState.FAILED));
-
-        transitions.add(
-            makeCancelledStateTransition(NozzleOpeningCalibrationState.CALIBRATE_FILL_NOZZLE));
+                                            NozzleOpeningCalibrationState.FAILED,
+                                            NozzleOpeningCalibrationState.CANCELLED));
 
         // INCREMENT_FILL_NOZZLE_POSITION
         transitions.add(new StateTransition(
             NozzleOpeningCalibrationState.INCREMENT_FILL_NOZZLE_POSITION,
             StateTransitionManager.GUIName.AUTO,
             NozzleOpeningCalibrationState.CALIBRATE_FILL_NOZZLE,
-            NozzleOpeningCalibrationState.FAILED));
+            NozzleOpeningCalibrationState.FAILED,
+            NozzleOpeningCalibrationState.CANCELLED));
 
         // HEAD_CLEAN_CHECK_FILL_NOZZLE
         transitions.add(new StateTransition(
@@ -207,77 +202,71 @@ public class CalibrationNozzleOpeningTransitions
             {
                 return actions.doConfirmNoMaterialAction();
             },
-            NozzleOpeningCalibrationState.FAILED));
-
-        transitions.add(
-            makeCancelledStateTransition(NozzleOpeningCalibrationState.HEAD_CLEAN_CHECK_FILL_NOZZLE));
+            NozzleOpeningCalibrationState.FAILED,
+            NozzleOpeningCalibrationState.CANCELLED));
 
         // CONFIRM_NO_MATERIAL
         transitions.add(new StateTransition(
             NozzleOpeningCalibrationState.CONFIRM_NO_MATERIAL,
             StateTransitionManager.GUIName.B_BUTTON,
             NozzleOpeningCalibrationState.CONFIRM_MATERIAL_EXTRUDING,
-            NozzleOpeningCalibrationState.FAILED));
+            NozzleOpeningCalibrationState.FAILED,
+            NozzleOpeningCalibrationState.CANCELLED));
 
         transitions.add(new StateTransition(
             NozzleOpeningCalibrationState.CONFIRM_NO_MATERIAL,
             StateTransitionManager.GUIName.A_BUTTON,
             NozzleOpeningCalibrationState.FAILED,
-            NozzleOpeningCalibrationState.FAILED));
-
-        transitions.add(
-            makeCancelledStateTransition(NozzleOpeningCalibrationState.CONFIRM_NO_MATERIAL));
+            NozzleOpeningCalibrationState.FAILED,
+            NozzleOpeningCalibrationState.CANCELLED));
 
         // CONFIRM_MATERIAL_EXTRUDING
         transitions.add(new StateTransition(
             NozzleOpeningCalibrationState.CONFIRM_MATERIAL_EXTRUDING,
             StateTransitionManager.GUIName.A_BUTTON,
             NozzleOpeningCalibrationState.FINISHED,
-            NozzleOpeningCalibrationState.FAILED));
+            NozzleOpeningCalibrationState.FAILED,
+            NozzleOpeningCalibrationState.CANCELLED));
 
         transitions.add(new StateTransition(
             NozzleOpeningCalibrationState.CONFIRM_MATERIAL_EXTRUDING,
             StateTransitionManager.GUIName.B_BUTTON,
             NozzleOpeningCalibrationState.FAILED,
-            NozzleOpeningCalibrationState.FAILED));
-
-        transitions.add(
-            makeCancelledStateTransition(NozzleOpeningCalibrationState.CONFIRM_MATERIAL_EXTRUDING));
+            NozzleOpeningCalibrationState.FAILED,
+            NozzleOpeningCalibrationState.CANCELLED));
 
         // FINISHED
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.FINISHED,
                                             StateTransitionManager.GUIName.BACK,
-                                            NozzleOpeningCalibrationState.IDLE,
-                                            NozzleOpeningCalibrationState.FAILED));
+                                            NozzleOpeningCalibrationState.DONE,
+                                            NozzleOpeningCalibrationState.FAILED,
+                                            NozzleOpeningCalibrationState.CANCELLED));
 
         // FAILED
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.FAILED,
                                             StateTransitionManager.GUIName.BACK,
-                                            NozzleOpeningCalibrationState.IDLE,
-                                            NozzleOpeningCalibrationState.IDLE));
+                                            NozzleOpeningCalibrationState.DONE,
+                                            NozzleOpeningCalibrationState.DONE,
+                                            NozzleOpeningCalibrationState.CANCELLED));
 
     }
 
-    private StateTransition makeCancelledStateTransition(NozzleOpeningCalibrationState fromState)
-    {
-        return new StateTransition(fromState,
-                                   StateTransitionManager.GUIName.CANCEL,
-                                   NozzleOpeningCalibrationState.IDLE,
-                                   (Callable) () ->
-                                   {
-                                       return actions.doCancelledAction();
-                                   },
-                                   NozzleOpeningCalibrationState.FAILED);
-    }
-
+    @Override
     public Set<StateTransition<NozzleOpeningCalibrationState>> getTransitions()
     {
         return transitions;
     }
 
+    @Override
     public Map<NozzleOpeningCalibrationState, ArrivalAction<NozzleOpeningCalibrationState>> getArrivals()
     {
         return arrivals;
+    }
+
+    @Override
+    public void cancel() throws RoboxCommsException
+    {
+        actions.cancel();
     }
 
 }

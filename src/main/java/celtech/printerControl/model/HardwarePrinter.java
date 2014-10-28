@@ -2047,8 +2047,7 @@ public final class HardwarePrinter implements Printer
         CalibrationXAndYTransitions calibrationXAndYTransitions = new CalibrationXAndYTransitions(
             actions);
         XAndYStateTransitionManager calibrationAlignmentManager
-            = new XAndYStateTransitionManager(calibrationXAndYTransitions.getTransitions(),
-                                              calibrationXAndYTransitions.getArrivals(), actions);
+            = new XAndYStateTransitionManager(calibrationXAndYTransitions, actions);
         return calibrationAlignmentManager;
     }
 
@@ -2063,9 +2062,7 @@ public final class HardwarePrinter implements Printer
         CalibrationNozzleHeightTransitions calibrationNozzleHeightTransitions = new CalibrationNozzleHeightTransitions(
             actions);
         NozzleHeightStateTransitionManager calibrationHeightManager
-            = new NozzleHeightStateTransitionManager(
-                calibrationNozzleHeightTransitions.getTransitions(),
-                calibrationNozzleHeightTransitions.getArrivals(), actions);
+            = new NozzleHeightStateTransitionManager(calibrationNozzleHeightTransitions, actions);
         return calibrationHeightManager;
     }
 
@@ -2081,8 +2078,7 @@ public final class HardwarePrinter implements Printer
             actions);
         NozzleOpeningStateTransitionManager calibrationOpeningManager
             = new NozzleOpeningStateTransitionManager(
-                calibrationNozzleOpeningTransitions.getTransitions(),
-                calibrationNozzleOpeningTransitions.getArrivals(), actions);
+                calibrationNozzleOpeningTransitions);
         return calibrationOpeningManager;
     }
 
@@ -2297,6 +2293,9 @@ public final class HardwarePrinter implements Printer
                         head.set(newHead);
                     }
 
+                    break;
+                    
+                case GCODE_RESPONSE:
                     break;
 
                 default:

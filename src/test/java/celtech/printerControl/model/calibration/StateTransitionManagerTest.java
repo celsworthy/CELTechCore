@@ -5,6 +5,7 @@ package celtech.printerControl.model.calibration;
 
 import celtech.JavaFXConfiguredTest;
 import celtech.printerControl.model.calibration.StateTransitionManager.GUIName;
+import celtech.services.calibration.Transitions;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,67 +29,17 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
     enum TestState
     {
 
-        IDLE, PRINT_CIRCLE, GET_Y_OFFSET, DONE, FAILED;
+        IDLE, PRINT_CIRCLE, GET_Y_OFFSET, DONE, FAILED, CANCELLED;
     }
 
-    Set<StateTransition<TestState>> transitions;
-    Map<TestState, ArrivalAction<TestState>> arrivals;
     TestStateTransitionManager manager;
 
     @Before
     public void setUp()
     {
         TestActions actions = new TestActions();
-        transitions = new HashSet<>();
-        transitions.add(new StateTransition(TestState.IDLE,
-                                            StateTransitionManager.GUIName.NEXT,
-                                            TestState.PRINT_CIRCLE,
-                                            (Callable) () ->
-                                            {
-                                                return actions.doAction1();
-                                            },
-                                            TestState.FAILED));
-
-        transitions.add(new StateTransition(TestState.PRINT_CIRCLE,
-                                            StateTransitionManager.GUIName.NEXT,
-                                            TestState.GET_Y_OFFSET,
-                                            (Callable) () ->
-                                            {
-                                                return actions.doAction2();
-                                            },
-                                            TestState.FAILED));
-
-        transitions.add(new StateTransition(TestState.GET_Y_OFFSET,
-                                            StateTransitionManager.GUIName.NEXT,
-                                            TestState.DONE,
-                                            TestState.FAILED));
-
-        transitions.add(new StateTransition(TestState.PRINT_CIRCLE,
-                                            StateTransitionManager.GUIName.COMPLETE,
-                                            TestState.GET_Y_OFFSET,
-                                            (Callable) () ->
-                                            {
-                                                return actions.doAction1ButFails();
-                                            },
-                                            TestState.FAILED));
-
-        transitions.add(new StateTransition(TestState.PRINT_CIRCLE,
-                                            StateTransitionManager.GUIName.CANCEL,
-                                            TestState.FAILED,
-                                            (Callable) () ->
-                                            {
-                                                return actions.doCancelled();
-                                            },
-                                            TestState.FAILED));
-
-        arrivals = new HashMap<>();
-
-        arrivals.put(TestState.DONE, new ArrivalAction<>((Callable) () ->
-                 {
-                     return actions.doDoneAction();
-        }, TestState.FAILED));
-
-        manager = new TestStateTransitionManager(transitions, arrivals, actions);
+        Transitions transitions = new TestTransitions(actions);
+        manager = new TestStateTransitionManager(transitions, actions);
 
     }
 
@@ -137,14 +88,24 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
     }
 
     @Test
+    public void testCancelledTransitionsEndsInCancelledState()
+    {
+        manager.followTransition(GUIName.NEXT);
+        manager.followTransition(GUIName.UP);
+        assertEquals(TestState.CANCELLED, manager.stateProperty().get());
+        assertEquals(22, manager.getX());
+    }
+
+    @Test
     public void testStateListenerCorrectlyUpdated()
     {
         final List<TestState> states = new ArrayList<>();
 
-        manager.stateProperty().addListener((ObservableValue observable, Object oldValue, Object newValue) ->
-        {
-            states.add((TestState) newValue);
-        });
+        manager.stateProperty().addListener(
+            (ObservableValue observable, Object oldValue, Object newValue) ->
+            {
+                states.add((TestState) newValue);
+            });
 
         manager.followTransition(GUIName.NEXT);
         manager.followTransition(GUIName.NEXT);
@@ -177,6 +138,12 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
         private boolean doAction1ButFails()
         {
             x += 12;
+            throw new RuntimeException();
+        }
+
+        private boolean doAction1ButCancelled()
+        {
+            x += 12;
             return false;
         }
 
@@ -192,11 +159,107 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
             return true;
         }
 
-        private boolean doCancelled()
+        private boolean cancel()
         {
             cancelled = true;
             return true;
         }
+    }
+
+    public class TestTransitions implements Transitions
+    {
+
+        TestActions actions;
+        Set<StateTransition<TestState>> transitions;
+        Map<TestState, ArrivalAction<TestState>> arrivals;
+
+        public TestTransitions(TestActions actions)
+        {
+            this.actions = actions;
+            transitions = new HashSet<>();
+            transitions.add(new StateTransition(TestState.IDLE,
+                                                StateTransitionManager.GUIName.NEXT,
+                                                TestState.PRINT_CIRCLE,
+                                                (Callable) () ->
+                                                {
+                                                    return actions.doAction1();
+                                                },
+                                                TestState.FAILED,
+                                                TestState.CANCELLED));
+
+            transitions.add(new StateTransition(TestState.PRINT_CIRCLE,
+                                                StateTransitionManager.GUIName.NEXT,
+                                                TestState.GET_Y_OFFSET,
+                                                (Callable) () ->
+                                                {
+                                                    return actions.doAction2();
+                                                },
+                                                TestState.FAILED,
+                                                TestState.CANCELLED));
+
+            transitions.add(new StateTransition(TestState.GET_Y_OFFSET,
+                                                StateTransitionManager.GUIName.NEXT,
+                                                TestState.DONE,
+                                                TestState.FAILED,
+                                                TestState.CANCELLED));
+
+            transitions.add(new StateTransition(TestState.PRINT_CIRCLE,
+                                                StateTransitionManager.GUIName.COMPLETE,
+                                                TestState.GET_Y_OFFSET,
+                                                (Callable) () ->
+                                                {
+                                                    return actions.doAction1ButFails();
+                                                },
+                                                TestState.FAILED,
+                                                TestState.CANCELLED));
+
+            transitions.add(new StateTransition(TestState.PRINT_CIRCLE,
+                                                StateTransitionManager.GUIName.UP,
+                                                TestState.GET_Y_OFFSET,
+                                                (Callable) () ->
+                                                {
+                                                    return actions.doAction1ButCancelled();
+                                                },
+                                                TestState.FAILED,
+                                                TestState.CANCELLED));
+
+            transitions.add(new StateTransition(TestState.PRINT_CIRCLE,
+                                                StateTransitionManager.GUIName.CANCEL,
+                                                TestState.FAILED,
+                                                (Callable) () ->
+                                                {
+                                                    return actions.cancel();
+                                                },
+                                                TestState.FAILED,
+                                                TestState.CANCELLED));
+
+            arrivals = new HashMap<>();
+
+            arrivals.put(TestState.DONE, new ArrivalAction<>((Callable) () ->
+                     {
+                         return actions.doDoneAction();
+            }, TestState.FAILED));
+
+        }
+
+        @Override
+        public Set getTransitions()
+        {
+            return transitions;
+        }
+
+        @Override
+        public Map getArrivals()
+        {
+            return arrivals;
+        }
+
+        @Override
+        public void cancel() throws Exception
+        {
+            actions.cancel();
+        }
+
     }
 
     public class TestStateTransitionManager extends StateTransitionManager
@@ -204,11 +267,9 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
 
         private final TestActions actions;
 
-        public TestStateTransitionManager(
-            Set<StateTransition<TestState>> allowedTransitions,
-            Map<TestState, ArrivalAction<TestState>> arrivals, TestActions actions)
+        public TestStateTransitionManager(Transitions transitions, TestActions actions)
         {
-            super(allowedTransitions, arrivals, TestState.IDLE);
+            super(transitions, TestState.IDLE, TestState.CANCELLED);
             this.actions = actions;
         }
 

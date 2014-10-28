@@ -50,6 +50,7 @@ public class CalibrationXAndYGUI
     private void showAppropriateButtons(CalibrationXAndYState state)
     {
         controller.hideAllInputControlsExceptStepNumber();
+        controller.cancelCalibrationButton.setVisible(true);
         for (StateTransition<CalibrationXAndYState> allowedTransition : this.stateManager.getTransitions())
         {
             if (namesToButtons.containsKey(allowedTransition.getGUIName()))

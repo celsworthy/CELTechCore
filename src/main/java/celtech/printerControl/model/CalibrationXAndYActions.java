@@ -73,12 +73,18 @@ public class CalibrationXAndYActions
         return true;
     }
 
-    public boolean doCancelledAction() throws PrinterException, RoboxCommsException
+    public boolean cancel() throws PrinterException, RoboxCommsException
     {
         cancellable.cancelled = true;
-        restoreHeadData();
-        switchHeaterOffAndRaiseHead();
-        printer.setPrinterStatus(PrinterStatus.IDLE);
+        try
+        {
+            // wait for any current actions to respect cancelled flag
+            Thread.sleep(500);
+        } catch (InterruptedException ex)
+        {
+            steno.info("interrupted during wait of cancel");
+        }
+        doFailedAction();
         return true;
     }
 

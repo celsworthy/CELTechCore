@@ -57,6 +57,10 @@ public enum NozzleOffsetCalibrationState
      *
      */
     FAILED("calibrationPanel.nozzleCalibrationFailed"),
+    
+    CANCELLED(""),
+    
+    DONE(""),
     /**
      *
      */

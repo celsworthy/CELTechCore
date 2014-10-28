@@ -38,20 +38,20 @@ public class TestTaskExecutor implements TaskExecutor
     }
 
     @Override
-    public void runAsTask(Callable<Boolean> action, EventHandler<WorkerStateEvent> successHandler,
-        EventHandler<WorkerStateEvent> failureHandler, String taskName)
+    public void runAsTask(Callable<Boolean> action, Runnable successHandler,
+        Runnable failureHandler, Runnable cancelledHandler, String taskName)
     {
         try
         {
             boolean success = action.call();
             if (success) {
-                successHandler.handle(null);
+                successHandler.run();
             } else {
-                failureHandler.handle(null);
+                cancelledHandler.run();
             }
         } catch (Exception ex)
         {
-            failureHandler.handle(null);
+            failureHandler.run();
         }
     }
 }

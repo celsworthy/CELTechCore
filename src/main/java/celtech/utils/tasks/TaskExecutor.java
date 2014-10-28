@@ -1,8 +1,6 @@
 package celtech.utils.tasks;
 
 import java.util.concurrent.Callable;
-import javafx.concurrent.WorkerStateEvent;
-import javafx.event.EventHandler;
 
 /**
  *
@@ -15,8 +13,10 @@ public interface TaskExecutor
     public void runOnGUIThread(Runnable runnable);
 
     /**
-     * Run the given action in a JavaFX task, using the given success and failure handlers.
+     * Run the given action in a JavaFX task, using the given success,  failure and
+     * cancelled handlers. The cancelled handler is called if the action returns false,
+     * the failure handler is called if the action raises an exception.
      */
-    public void runAsTask(Callable<Boolean> action, EventHandler<WorkerStateEvent> successHandler,
-        EventHandler<WorkerStateEvent> failureHandler, String taskName);
+    public void runAsTask(Callable<Boolean> action, Runnable successHandler,
+        Runnable failureHandler, Runnable cancelledHandler, String taskName);
 }

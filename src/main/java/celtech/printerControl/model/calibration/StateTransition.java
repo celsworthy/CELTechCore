@@ -18,27 +18,25 @@ public class StateTransition<T>
     final T fromState;
     final T toState;
     final T transitionFailedState;
+    final T transitionCancelledState;
     final StateTransitionManager.GUIName guiName;
     final Callable<Boolean> action;
 
     public StateTransition(T fromState, StateTransitionManager.GUIName guiName, 
-        T toState, Callable action, T failedState)
+        T toState, Callable action, T failedState, T cancelledState)
     {
         this.fromState = fromState;
         this.toState = toState;
         this.guiName = guiName;
         this.action = action;
         transitionFailedState = failedState;
+        transitionCancelledState = cancelledState;
     }
     
     public StateTransition(T fromState, StateTransitionManager.GUIName guiName, 
-        T toState, T failedState)
+        T toState, T failedState, T cancelledState)
     {
-        this.fromState = fromState;
-        this.toState = toState;
-        this.guiName = guiName;
-        this.action = null;
-        transitionFailedState = failedState;
+        this(fromState, guiName, toState, null, failedState, cancelledState);
     }    
     
     public GUIName getGUIName() {

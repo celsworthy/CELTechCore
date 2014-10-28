@@ -50,6 +50,7 @@ public class CalibrationNozzleOpeningGUI
     private void showAppropriateButtons(NozzleOpeningCalibrationState state)
     {
         controller.hideAllInputControlsExceptStepNumber();
+        controller.cancelCalibrationButton.setVisible(true);
         for (StateTransition<NozzleOpeningCalibrationState> allowedTransition : this.stateManager.getTransitions())
         {
             if (namesToButtons.containsKey(allowedTransition.getGUIName()))

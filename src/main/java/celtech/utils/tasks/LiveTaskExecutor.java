@@ -3,6 +3,8 @@ package celtech.utils.tasks;
 import celtech.appManager.TaskController;
 import celtech.printerControl.model.HardwarePrinter;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
@@ -60,27 +62,29 @@ public class LiveTaskExecutor implements TaskExecutor
     }
 
     @Override
-    public void runAsTask(Callable<Boolean> action, EventHandler<WorkerStateEvent> successHandler,
-        EventHandler<WorkerStateEvent> failureHandler, String taskName)
+    public void runAsTask(Callable<Boolean> action, Runnable successHandler,
+        Runnable failureHandler, Runnable cancelledHandler, String taskName)
     {
-        
-        Task task = new GenericTask(action);
-        
-        EventHandler<WorkerStateEvent> outerFailureHandler = (WorkerStateEvent event) ->
+
+        Runnable runTask = () ->
+        {
+            try
             {
-                if (task.getException() != null) {
-                    task.getException().printStackTrace();
+                Boolean result = action.call();
+                if (result)
+                {
+                    runOnGUIThread(successHandler);
+                } else {
+                    runOnGUIThread(cancelledHandler);
                 }
-                failureHandler.handle(event);
-            };
-        
-        task.setOnSucceeded(successHandler);
-        task.setOnFailed(outerFailureHandler);
-        TaskController.getInstance().manageTask(task);
-
-        Thread taskThread = new Thread(task);
-
-
+            } catch (Exception ex)
+            {
+                ex.printStackTrace();
+                steno.error("Failure running task: " + ex);
+                runOnGUIThread(failureHandler);
+            }
+        };
+        Thread taskThread = new Thread(runTask);
         taskThread.setName(taskName);
         taskThread.start();
     }
