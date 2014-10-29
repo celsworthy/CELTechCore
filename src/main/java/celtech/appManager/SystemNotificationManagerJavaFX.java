@@ -201,8 +201,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
             if (calibrationResponse.get()== okCalibrate.getButtonType())
             {
-                MaintenancePanelController.calibrateBAction();
-                MaintenancePanelController.calibrateZOffsetAction();
+                ApplicationStatus.getInstance().setMode(ApplicationMode.CALIBRATION_CHOICE);
             }
         });
     }

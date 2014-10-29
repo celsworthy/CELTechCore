@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import celtech.coreUI.components.buttons.*?>
 <?import celtech.coreUI.components.buttons.* ?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
@@ -13,13 +14,17 @@
     <right>
         <StackPane>
             <children>
-                <GraphicButton fx:id="forwardButton" fxmlFileName="forwardButton" onAction="#forwardPressed"/>
-                <GraphicButton fx:id="printButton" fxmlFileName="printButton" onAction="#printPressed"/>
+                <GraphicButton fx:id="forwardButton" fxmlFileName="forwardButton" onAction="#forwardPressed" />
+                <GraphicButton fx:id="printButton" fxmlFileName="printButton" onAction="#printPressed" />
             </children>
         </StackPane>
     </right>
     <left>
-        <GraphicButton fx:id="backwardButton" fxmlFileName="backwardButton" onAction="#backwardPressed"/>
+      <HBox alignment="CENTER">
+         <children>
+              <GraphicButton fx:id="backwardButton" fxmlFileName="backwardButton" onAction="#backwardPressed" />
+         </children>
+      </HBox>
     </left>
     <center>
         <VBox alignment="CENTER">
@@ -37,7 +42,7 @@
                                 <GraphicButton fx:id="addmyMiniFactoryButton" fxmlFileName="loadMyMiniFactoryButton" onAction="#addMyMiniFactoryModel" />
                                 <GraphicButton fx:id="deleteModelButton" fxmlFileName="deleteModelButton" onAction="#deleteModel" />
                                 <GraphicButton fx:id="duplicateModelButton" fxmlFileName="copyModelButton" onAction="#copyModel" />
-                                <GraphicToggleButton fx:id="snapToGroundButton" fxmlFileName="snapToGroundButton" onAction="#snapToGround" />
+                                <GraphicToggleButton id="snapToGroundButton" fx:id="snapToGroundButton" fxmlFileName="snapToGroundButton" onAction="#snapToGround" />
                                 <GraphicButton fx:id="distributeModelsButton" fxmlFileName="layoutModelButton" onAction="#autoLayoutModels" />
                             </children>
                         </HBox>
@@ -45,15 +50,5 @@
                 </StackPane>
             </children>
         </VBox>
-        <!--        <HBox fx:id="layoutButtonHBox" alignment="CENTER">
-            <children>
-                <GraphicButton fx:id="addModelButton" fxmlFileName="addToProjectButton" onAction="#addModel" />
-                <GraphicButton fx:id="addmyMiniFactoryButton" fxmlFileName="loadMyMiniFactoryButton" onAction="#addMyMiniFactoryModel" />
-                <GraphicButton fx:id="deleteModelButton" fxmlFileName="deleteModelButton" onAction="#deleteModel" />
-                <GraphicButton fx:id="duplicateModelButton" fxmlFileName="copyModelButton" onAction="#copyModel" />
-                <GraphicToggleButton fx:id="snapToGroundButton" fxmlFileName="snapToGroundButton" onAction="#snapToGround" />
-                <GraphicButton fx:id="distributeModelsButton" fxmlFileName="layoutModelButton" onAction="#autoLayoutModels" />
-            </children>
-        </HBox>-->
     </center>
 </BorderPane>

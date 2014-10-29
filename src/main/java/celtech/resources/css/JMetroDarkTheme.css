@@ -183,8 +183,20 @@
 .graphic-button {
     -fx-background-color: transparent;
     -fx-padding: -0 -0 -0 -0;
-    -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
-    -fx-background-radius: 20;
+    -fx-background-insets: 2,2 2 2 2, 2 2 2 2, 2 2 2 2;
+    -fx-background-radius: 30;
+    -fx-font-weight: bold;
+    -fx-font-size: 1.1em;
+    -fx-border-color: transparent;
+    -fx-content-display: graphic-only;
+    -fx-opacity: 1.0;
+}
+
+.graphic-button:disabled {
+    -fx-background-color: transparent;
+    -fx-padding: -0 -0 -0 -0;
+    -fx-background-insets: 2,2 2 2 2, 2 2 2 2, 2 2 2 2;
+    -fx-background-radius: 30;
     -fx-font-weight: bold;
     -fx-font-size: 1.1em;
     -fx-border-color: transparent;
@@ -192,44 +204,38 @@
     -fx-opacity: 0.4;
 }
 
-.graphic-button:disabled {
-    -fx-background-color: transparent;
-    -fx-padding: -0 -0 -0 -0;
-    -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
-    -fx-background-radius: 20;
-    -fx-font-weight: bold;
-    -fx-font-size: 1.1em;
-    -fx-border-color: transparent;
-    -fx-content-display: graphic-only;
-    -fx-opacity: 0.1;
-}
-
 .graphic-button:hover {
-    -fx-background-color: transparent;
+    -fx-background-color: dark_grey;
     -fx-padding: -0 -0 -0 -0;
-    -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
-    -fx-background-radius: 20;
+    -fx-background-insets: 2,2 2 2 2, 2 2 2 2, 2 2 2 2;
+    -fx-background-radius: 30;
     -fx-font-weight: bold;
     -fx-font-size: 1.1em;
-    -fx-effect: dropshadow(three-pass-box, #000000, 10, 0, 0, 0);
-    -fx-border-width: 0;
+    -fx-effect: innershadow (three-pass-box, dark_grey, 10, 0, 0, 0);
+    /*-fx-border-width: 0;*/
     -fx-opacity: 1.0;
 }
 
 .graphic-button:pressed {
-    -fx-background-color: transparent;
+    -fx-background-color: light_grey;
     -fx-padding: -0 -0 -0 -0;
-    -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
-    -fx-background-radius: 20;
+    -fx-background-radius: 30;
     -fx-font-weight: bold;
     -fx-font-size: 1.1em;
-    -fx-border-width: 0;
-    -fx-effect: dropshadow(three-pass-box, #ffffff, 10, 0, 0, 0);
+    -fx-background-insets: 2,2 2 2 2, 2 2 2 2, 2 2 2 2;
+    /*-fx-border-width: 0;*/
+    /*-fx-effect: dropshadow(three-pass-box, #ffffff, 10, 0, 0, 0);*/
 }
 .graphic-button:focused {
-    -fx-border-width: 0;
+    -fx-background-insets: 2,2 2 2 2, 2 2 2 2, 2 2 2 2;
+    -fx-border-color: transparent;
+    /*-fx-border-width: 0;*/
 }
 
+.toggle-button:selected {
+    -fx-background-color: light_grey;
+    -fx-background-insets: 2,2 2 2 2, 2 2 2 2, 2 2 2 2;
+}
 /*
  * Jog Button
  */
@@ -338,7 +344,7 @@
  * Toggle Button                                                               *
  *                                                                             *
  ******************************************************************************/
-
+/*
 .toggle-button {
     -fx-padding: 5 22 5 22;   
     -fx-border-color: #e2e2e2;
@@ -379,7 +385,7 @@
 }
 .toggle-button:disabled {
     -fx-opacity: -fx-disabled-opacity;
-}
+}*/
 
 /*******************************************************************************
  *                                                                             *
@@ -1559,31 +1565,6 @@ table-view .column-header-background {
     -fx-opacity: -fx-disabled-opacity;
 }
 
-
-// TODO: Remove when custom control for menu strip introduced
-
-#snapToGroundButton {
-    -fx-padding: 0 0 0 0;
-    -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
-    -fx-background-radius: 50;
-    -fx-content-display: graphic-only;
-    -fx-border-color: transparent;
-}
-
-#snapToGroundButton:focused {
-    -fx-border-color: transparent;
-}
-
-#snapToGroundButton:pressed .graphic {
-    -fx-fill: black;   
-}
-
-#snapToGroundButton:disabled, #snapToGroundButton:default:disabled
-{
-    -fx-opacity: 0.4;
-    -fx-background-color: #1d1d1d;
-    -fx-text-fill: white;
-}
 
 /*******************************************************************************
  *                                                                             *

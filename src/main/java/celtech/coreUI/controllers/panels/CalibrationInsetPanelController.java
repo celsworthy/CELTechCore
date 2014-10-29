@@ -617,7 +617,7 @@ public class CalibrationInsetPanelController implements Initializable,
         calibrationProgressPrint.setTargetValue("0");
 
         calibrationProgressTemp.setTargetLegend(Lookup.i18n("calibrationPanel.targetTemperature"));
-        calibrationProgressPrint.setProgressDescription(Lookup.i18n("calibrationPanel.heatingCaps"));
+        calibrationProgressTemp.setProgressDescription(Lookup.i18n("calibrationPanel.heatingCaps"));
     }
 
     protected void showSpinner()

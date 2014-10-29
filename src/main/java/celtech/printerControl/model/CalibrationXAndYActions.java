@@ -40,8 +40,8 @@ public class CalibrationXAndYActions
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT);
         savedHeadData = printer.readHeadEEPROM();
 //        Thread.sleep(3000);
-//        printer.runMacro("rbx_XY_offset_roboxised");
-        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
+//        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
+        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_XY_offset_roboxised"), true);
         boolean interrupted = PrinterUtils.waitOnMacroFinished(printer, cancellable);
         return !interrupted;
     }
@@ -50,8 +50,8 @@ public class CalibrationXAndYActions
     {
         saveSettings();
 //        Thread.sleep(3000);
-//        printer.runMacro("rbx_XY_offset_roboxised");
-        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
+//        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
+        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_XY_offset_roboxised"), true);
         boolean interrupted = PrinterUtils.waitOnMacroFinished(printer, cancellable);
         return !interrupted;
     }
