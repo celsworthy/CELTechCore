@@ -3,6 +3,7 @@
  */
 package celtech.services.calibration;
 
+import celtech.printerControl.model.calibration.Transitions;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.model.CalibrationNozzleOpeningActions;
 import celtech.printerControl.model.calibration.ArrivalAction;

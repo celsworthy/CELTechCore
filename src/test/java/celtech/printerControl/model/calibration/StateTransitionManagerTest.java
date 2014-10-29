@@ -5,7 +5,6 @@ package celtech.printerControl.model.calibration;
 
 import celtech.JavaFXConfiguredTest;
 import celtech.printerControl.model.calibration.StateTransitionManager.GUIName;
-import celtech.services.calibration.Transitions;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;

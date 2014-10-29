@@ -3,6 +3,7 @@
  */
 package celtech.services.calibration;
 
+import celtech.printerControl.model.calibration.Transitions;
 import celtech.printerControl.model.CalibrationXAndYActions;
 import celtech.printerControl.model.calibration.ArrivalAction;
 import celtech.printerControl.model.calibration.StateTransitionManager;

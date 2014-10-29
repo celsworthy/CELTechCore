@@ -4,7 +4,6 @@
 package celtech.printerControl.model.calibration;
 
 import celtech.services.calibration.NozzleOpeningCalibrationState;
-import celtech.services.calibration.Transitions;
 
 /**
  *

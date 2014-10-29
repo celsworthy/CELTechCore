@@ -1,14 +1,8 @@
 package celtech.utils.tasks;
 
-import celtech.appManager.TaskController;
 import celtech.printerControl.model.HardwarePrinter;
 import java.util.concurrent.Callable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
-import javafx.event.EventHandler;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
