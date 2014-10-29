@@ -56,9 +56,9 @@ public class GCodeEditorPanelController extends SlidingElementController impleme
         setDimensions(gcodeEditParent.getPrefWidth(), gcodeEditParent.getPrefHeight(), gcodeEditParent.getLayoutX(), gcodeEditParent.getLayoutY());
         configurePanel(gcodeEditParent, SlidingComponentDirection.IN_FROM_RIGHT);
 
-        if (Lookup.getCurrentlySelectedPrinter() != null)
+        if (Lookup.getCurrentlySelectedPrinterProperty().get() != null)
         {
-            gcodeListView.setItems(Lookup.getCurrentlySelectedPrinter().gcodeTranscriptProperty());
+            gcodeListView.setItems(Lookup.getCurrentlySelectedPrinterProperty().get().gcodeTranscriptProperty());
         }
 
         Lookup.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()

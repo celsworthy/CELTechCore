@@ -1,5 +1,6 @@
 package celtech.coreUI.controllers.panels;
 
+import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
@@ -283,27 +284,32 @@ public class LayoutStatusMenuStripController
 //        forwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS).and(printerOKToPrint));
         printButton.setVisible(false);
         calibrateButton.setDisable(true);
-
-        settingsScreenState.selectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        
+        Lookup.getCurrentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue,
-                Printer newValue)
+            if (newValue != null)
             {
-                if (newValue != null)
+                if (currentPrinter != null)
                 {
-                    if (currentPrinter != null)
-                    {
-                        printButton.visibleProperty().unbind();
-                        calibrateButton.disableProperty().unbind();
-                        
-                    }
-                    calibrateButton.disableProperty().bind(newValue.canCalibrateHeadProperty().not());
-                    printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
-                        ApplicationMode.SETTINGS).and(newValue.canPrintProperty()));
-
-                    currentPrinter = newValue;
+                    calibrateButton.disableProperty().unbind();
                 }
+                calibrateButton.disableProperty().bind(newValue.canCalibrateHeadProperty().not());
+            }
+        });
+
+        settingsScreenState.selectedPrinterProperty().addListener((ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
+        {
+            if (newValue != null)
+            {
+                if (currentPrinter != null)
+                {
+                    printButton.visibleProperty().unbind();
+                    
+                }
+                printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
+                    ApplicationMode.SETTINGS).and(newValue.canPrintProperty()));
+                
+                currentPrinter = newValue;
             }
         });
 

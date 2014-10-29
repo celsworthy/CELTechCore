@@ -533,7 +533,7 @@ public class CalibrationInsetPanelController implements Initializable,
     public void setCalibrationMode(CalibrationMode calibrationMode)
     {
         this.calibrationMode = calibrationMode;
-        switchToPrinter(Lookup.getCurrentlySelectedPrinter());
+        switchToPrinter(Lookup.getCurrentlySelectedPrinterProperty().get());
         switch (calibrationMode)
         {
             case NOZZLE_OPENING:

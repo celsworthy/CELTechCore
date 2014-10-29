@@ -65,7 +65,7 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
     private void fireGCodeAtPrinter()
     {
         gcodeEntryField.selectAll();
-        Lookup.getCurrentlySelectedPrinter().sendRawGCode(gcodeEntryField.getText(), true);
+        Lookup.getCurrentlySelectedPrinterProperty().get().sendRawGCode(gcodeEntryField.getText(), true);
     }
 
     @Override
@@ -176,10 +176,10 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
 
     private void populateGCodeArea()
     {
-        if (Lookup.getCurrentlySelectedPrinter() != null)
+        if (Lookup.getCurrentlySelectedPrinterProperty().get() != null)
         {
             gcodeTranscript.setText("");
-            for (String gcodeLine : Lookup.getCurrentlySelectedPrinter().gcodeTranscriptProperty())
+            for (String gcodeLine : Lookup.getCurrentlySelectedPrinterProperty().get().gcodeTranscriptProperty())
             {
                 gcodeTranscript.appendText(gcodeLine);
             }

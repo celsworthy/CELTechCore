@@ -15,13 +15,13 @@ import libertysystems.stenographer.StenographerFactory;
 
 /**
  * The StateTransitionManager maintains the state, and follows transitions from one state to
- * the other. Transitions {@link StateTransition} can have actions which will be called when the transition is followed.
+ * the other. Transitions ({@link StateTransition}) can have actions which will be called when the transition is followed.
  * <p>
- * GUIs should call  {@link #getTransitions() getTransitions} and for each transition returned ther is
- * a GUIName. This indicates what transitions are available to the user e.g. Next, Back, Retry, Up.
+ * GUIs should call  {@link #getTransitions() getTransitions} and for each transition returned there is
+ * a GUIName. This indicates which transitions are available to the user e.g. Next, Back, Retry, Up.
  * </p>
  * <p>
- * If the user selects e.g. Next, then {@link #followTransition(GUIName guiName) followTransition} should
+ * If the user selects e.g. Next, then {@link #followTransition(GUIName guiName) followTransition(guiName)} should
  * be called. This will cause the StateTransitionManager to follow that transition to its toState,
  * executing the appropriate action if it is present.
  * </p>

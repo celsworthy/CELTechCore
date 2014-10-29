@@ -63,7 +63,7 @@ public class GCodeEntryPanelController implements Initializable
     {
         gcodeEntryField.selectAll();
 
-        Lookup.getCurrentlySelectedPrinter().sendRawGCode(gcodeEntryField.getText(), true);
+        Lookup.getCurrentlySelectedPrinterProperty().get().sendRawGCode(gcodeEntryField.getText(), true);
     }
 
     @Override
@@ -180,9 +180,9 @@ public class GCodeEntryPanelController implements Initializable
 
     private void populateGCodeArea()
     {
-        if (Lookup.getCurrentlySelectedPrinter() != null)
+        if (Lookup.getCurrentlySelectedPrinterProperty().get() != null)
         {
-            for (String gcodeLine : Lookup.getCurrentlySelectedPrinter().gcodeTranscriptProperty())
+            for (String gcodeLine : Lookup.getCurrentlySelectedPrinterProperty().get().gcodeTranscriptProperty())
             {
                 gcodeListView.appendText(gcodeLine);
             }

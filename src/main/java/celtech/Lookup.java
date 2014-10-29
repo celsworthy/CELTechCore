@@ -18,6 +18,7 @@ import celtech.utils.tasks.TaskExecutor;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -117,9 +118,9 @@ public class Lookup
      *
      * @return
      */
-    public static Printer getCurrentlySelectedPrinter()
+    public static ReadOnlyObjectProperty<Printer> getCurrentlySelectedPrinterProperty()
     {
-        return currentlySelectedPrinterProperty.get();
+        return currentlySelectedPrinterProperty;
     }
 
     /**

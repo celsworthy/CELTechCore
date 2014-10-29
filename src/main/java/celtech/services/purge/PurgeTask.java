@@ -39,7 +39,7 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
     {
         boolean success = false;
 
-        printerToUse = Lookup.getCurrentlySelectedPrinter();
+        printerToUse = Lookup.getCurrentlySelectedPrinterProperty().get();
 
         switch (desiredState)
         {
