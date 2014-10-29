@@ -6,9 +6,9 @@ package celtech.printerControl.model.calibration;
 import java.util.concurrent.Callable;
 
 /**
- * ArrivalAction represents an action to be called(when a state is arrived at).
+ * ArrivalAction represents an action to be called (when a state is arrived at).
  * If the action fails then the governing 
- * {@link StateTransitionManager} should move to the {@link failedState}.
+ * {@link StateTransitionManager} should move to the {@link #failedState}.
  * @author tony
  */
 public class ArrivalAction<StateType>
@@ -20,8 +20,7 @@ public class ArrivalAction<StateType>
      */
     final Callable<Boolean> action;
     /**
-     * The state to go to if this actions fails (ie an exception is thrown when the {@link action} is 
-     * called).
+     * The state to go to if this actions fails (ie an exception is thrown by the {@link #action}).
      */
     StateType failedState;
 

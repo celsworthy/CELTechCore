@@ -14,7 +14,19 @@ import java.util.Set;
  */
 public interface Transitions<StateType>
 {
+    /**
+     * Return the set of {@link StateTransition}s that are valid for this state machine.
+     */
     public Set<StateTransition<StateType>> getTransitions();
+    /**
+     * Return a Map of state to {@link ArrivalAction} that should run when the given states
+     * are reached.
+     * @return 
+     */
     public Map<StateType, ArrivalAction<StateType>> getArrivals();
+    /**
+     * This should stop any currently running actions (if required).
+     * @throws Exception 
+     */
     public void cancel() throws Exception;
 }

@@ -4,7 +4,9 @@
  * and open the template in the editor.
  */
 
-package celtech.services.calibration;
+package celtech.services.calibration.old;
+
+import celtech.services.calibration.CalibrationXAndYState;
 
 /**
  *

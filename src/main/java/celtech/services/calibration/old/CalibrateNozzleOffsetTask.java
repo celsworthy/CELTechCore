@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package celtech.services.calibration;
+package celtech.services.calibration.old;
 
 import celtech.Lookup;
 import celtech.configuration.HeaterMode;
@@ -11,6 +11,7 @@ import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.NozzleHeater;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.ControllableService;
+import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.utils.PrinterUtils;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;

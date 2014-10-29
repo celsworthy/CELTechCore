@@ -3,13 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package celtech.services.calibration;
+package celtech.services.calibration.old;
 
 import celtech.configuration.HeaterMode;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.NozzleHeater;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.ControllableService;
+import celtech.services.calibration.NozzleOpeningCalibrationState;
 import celtech.utils.PrinterUtils;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;

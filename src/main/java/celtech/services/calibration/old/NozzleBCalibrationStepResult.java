@@ -8,28 +8,27 @@
  * and open the template in the editor.
  */
 
-package celtech.services.calibration;
+package celtech.services.calibration.old;
+
+import celtech.services.calibration.NozzleOpeningCalibrationState;
 
 /**
  *
  * @author Ian
  */
-public class NozzleOffsetCalibrationStepResult
+public class NozzleBCalibrationStepResult
 {
-    private NozzleOffsetCalibrationState completedState = null;
+    private NozzleOpeningCalibrationState completedState = null;
     private boolean success = false;
-    private float floatValue = 0;
 
     /**
      *
      * @param completedState
-     * @param floatValue
      * @param success
      */
-    public NozzleOffsetCalibrationStepResult(NozzleOffsetCalibrationState completedState, float floatValue, boolean success)
+    public NozzleBCalibrationStepResult(NozzleOpeningCalibrationState completedState, boolean success)
     {
         this.completedState = completedState;
-        this.floatValue = floatValue;
         this.success = success;
     }
     
@@ -37,7 +36,7 @@ public class NozzleOffsetCalibrationStepResult
      *
      * @return
      */
-    public NozzleOffsetCalibrationState getCompletedState()
+    public NozzleOpeningCalibrationState getCompletedState()
     {
         return completedState;
     }
@@ -49,14 +48,5 @@ public class NozzleOffsetCalibrationStepResult
     public boolean isSuccess()
     {
         return success;
-    }
-    
-    /**
-     *
-     * @return
-     */
-    public float getFloatValue()
-    {
-        return floatValue;
     }
 }

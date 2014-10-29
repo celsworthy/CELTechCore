@@ -1067,6 +1067,10 @@
     -fx-background-color: black;
 }
 
+.main-project-tabPane {
+    -fx-font-family: 'Source Sans Pro Regular';
+}
+
 /*
  * List view
  */
