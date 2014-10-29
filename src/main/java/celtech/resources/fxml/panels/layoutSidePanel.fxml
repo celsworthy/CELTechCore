@@ -9,7 +9,7 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.shape.*?>
 
-<HBox maxWidth="360.0" minWidth="-Infinity" prefWidth="360.0" styleClass="sidePanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.LayoutSidePanelController">
+<HBox maxWidth="360.0" minWidth="-Infinity" prefWidth="360.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.LayoutSidePanelController">
 
     <children>  
         <BorderPane id="border" prefHeight="-1.0" HBox.hgrow="ALWAYS">
@@ -199,4 +199,8 @@
             </HBox.margin>
         </BorderPane>
     </children>
+   <styleClass>
+      <String fx:value="sidePanel" />
+      <String fx:value="regularFont" />
+   </styleClass>
 </HBox>

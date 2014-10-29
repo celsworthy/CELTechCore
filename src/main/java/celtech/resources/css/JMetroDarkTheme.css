@@ -964,8 +964,8 @@
     -fx-border-width: 2;
 }
 #temperatureChart .axis:left {
-    -fx-border-color: transparent transparent transparent transparent;
-    -fx-border-width: 0;
+    -fx-border-color: blue blue blue blue;
+    -fx-border-width: 5;
 }
 
 #temperatureChart .axis .text {
@@ -1010,6 +1010,10 @@
 
 #temperatureChart {
     -fx-font-family: 'Source Sans Pro Regular';
+    -fx-background-color: dark_grey;
+}
+
+#temperatureChart .chart-content .chart-plot-background {
     -fx-background-color: dark_grey;
 }
 
