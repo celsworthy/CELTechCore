@@ -94,6 +94,11 @@ public class StateTransitionManager<StateType>
         return transitions;
     }
 
+    /**
+     * Set the current state. Process any relevant {@link ArrivalAction} and if there is
+     * an AUTO transition from this state the follow it.
+     * @param state 
+     */
     private void setState(StateType state)
     {
         this.state.set(state);
@@ -145,6 +150,14 @@ public class StateTransitionManager<StateType>
         return foundTransition;
     }
 
+    /**
+     * Follow the {@link StateTransition} associated with this GUIName. If there is an action
+     * declared then call it. If the action succeeds (or if there is no action) then move to
+     * the toState of the relevant {@link StateTransition}. If the action is cancelled (i.e.
+     * returns false) then call {@link cancel() cancel}. If the action fails (i.e. throws
+     * an exception) then move to the {@link StateTransition#transitionFailedState}.
+     * @param guiName 
+     */
     public void followTransition(GUIName guiName)
     {
 
@@ -208,6 +221,10 @@ public class StateTransitionManager<StateType>
         }
     }
     
+    /**
+     * Move to the {@link cancelledState}. Also call the cancel() method of {@link #transitions},
+     * which might for instance cause any current long-running action to be stopped.
+     */
     public void cancel() {
         
         try

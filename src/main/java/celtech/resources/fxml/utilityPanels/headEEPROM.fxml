@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import celtech.coreUI.components.*?>
 
-<AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="-1" prefWidth="-1" styleClass="sidePanel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.HeadEEPROMController">
+<AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="-1" prefWidth="-1" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.HeadEEPROMController">
     <children>
         <VBox fx:id="headFullContainer" alignment="TOP_CENTER" spacing="5" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
@@ -89,4 +89,7 @@
             </children>
         </VBox>
     </children>
+   <styleClass>
+      <String fx:value="sidePanel" />
+   </styleClass>
 </AnchorPane>

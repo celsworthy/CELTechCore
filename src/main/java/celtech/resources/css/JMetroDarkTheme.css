@@ -1188,6 +1188,10 @@ table-view .column-header-background {
     -fx-padding: 5px;
 }
 
+.regularFont {
+    -fx-font-family: 'Source Sans Pro Regular';
+}
+
 .statusPanel{
     -fx-background-color: mid_grey;
 }

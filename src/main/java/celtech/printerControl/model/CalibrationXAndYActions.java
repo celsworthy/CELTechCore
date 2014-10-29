@@ -26,7 +26,7 @@ public class CalibrationXAndYActions
     private HeadEEPROMDataResponse savedHeadData;
     private int xOffset = 0;
     private int yOffset = 0;
-    private Cancellable cancellable = new Cancellable();
+    private final Cancellable cancellable = new Cancellable();
 
     public CalibrationXAndYActions(Printer printer)
     {
