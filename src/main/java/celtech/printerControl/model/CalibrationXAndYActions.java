@@ -36,7 +36,6 @@ public class CalibrationXAndYActions
 
     public boolean doSaveHeadAndPrintPattern() throws PrinterException, RoboxCommsException, InterruptedException
     {
-        cancellable.cancelled = false;
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT);
         savedHeadData = printer.readHeadEEPROM();
 //        Thread.sleep(3000);

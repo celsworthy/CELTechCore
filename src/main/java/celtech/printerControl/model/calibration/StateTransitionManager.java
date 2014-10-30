@@ -89,18 +89,22 @@ public class StateTransitionManager<StateType>
         this.arrivals = transitions.getArrivals();
         state = new SimpleObjectProperty<>(initialState);
     }
-
+    
     /**
      * Get the transitions that can be followed from the current {@link #state}.
      *
      * @return
      */
-    public Set<StateTransition<StateType>> getTransitions()
+    public Set<StateTransition<StateType>> getTransitions() {
+        return getTransitions(state.get());
+    }    
+
+    public Set<StateTransition<StateType>> getTransitions(StateType state)
     {
         Set<StateTransition<StateType>> transitions = new HashSet<>();
         for (StateTransition<StateType> allowedTransition : allowedTransitions)
         {
-            if (allowedTransition.fromState == state.get())
+            if (allowedTransition.fromState == state)
             {
                 transitions.add(allowedTransition);
             }
@@ -122,7 +126,7 @@ public class StateTransitionManager<StateType>
             this.state.set(state);
         });
         processArrivedAtState(state);
-        followAutoTransitionIfPresent();
+        followAutoTransitionIfPresent(state);
     }
 
     private void processArrivedAtState(StateType state)
@@ -240,11 +244,11 @@ public class StateTransitionManager<StateType>
     }
 
     /**
-     * If the newly entered state has an AUTO transition then follow it.
+     * If the given (newly entered) state has an AUTO transition then follow it.
      */
-    private void followAutoTransitionIfPresent()
+    private void followAutoTransitionIfPresent(StateType state)
     {
-        for (StateTransition allowedTransition : getTransitions())
+        for (StateTransition allowedTransition : getTransitions(state))
         {
             if (allowedTransition.guiName == GUIName.AUTO)
             {

@@ -41,7 +41,6 @@ public class CalibrationNozzleHeightActions
     public boolean doInitialiseAndHeatBedAction() throws InterruptedException, PrinterException, RoboxCommsException
     {
         boolean success = false;
-        cancellable.cancelled = false;
         zco = 0;
         zDifference = 0;
 
@@ -100,7 +99,7 @@ public class CalibrationNozzleHeightActions
                 PrinterUtils.waitUntilTemperatureIsReached(
                     nozzleHeater.nozzleTemperatureProperty(), null,
                     nozzleHeater
-                    .nozzleFirstLayerTargetTemperatureProperty().get(), 5, 300);
+                    .nozzleFirstLayerTargetTemperatureProperty().get(), 5, 300, cancellable);
             } else
             {
                 NozzleHeater nozzleHeater = printer.headProperty().get()
@@ -108,9 +107,9 @@ public class CalibrationNozzleHeightActions
                 PrinterUtils.waitUntilTemperatureIsReached(
                     nozzleHeater.nozzleTemperatureProperty(), null,
                     nozzleHeater
-                    .nozzleTargetTemperatureProperty().get(), 5, 300);
+                    .nozzleTargetTemperatureProperty().get(), 5, 300, cancellable);
             }
-            if (PrinterUtils.waitOnBusy(printer, (Cancellable) null) == false)
+            if (PrinterUtils.waitOnBusy(printer, cancellable) == false)
             {
                 printer.switchOnHeadLEDs();
                 success = true;

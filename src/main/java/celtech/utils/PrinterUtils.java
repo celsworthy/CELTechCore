@@ -315,9 +315,16 @@ public class PrinterUtils
 
         return purgeConsent;
     }
-
+    
     public static boolean waitUntilTemperatureIsReached(ReadOnlyIntegerProperty temperatureProperty,
         Task task, int temperature, int tolerance, int timeoutSec) throws InterruptedException
+    {
+        return waitUntilTemperatureIsReached(temperatureProperty,
+            task, temperature, tolerance, timeoutSec, (Cancellable) null);
+    }
+
+    public static boolean waitUntilTemperatureIsReached(ReadOnlyIntegerProperty temperatureProperty,
+        Task task, int temperature, int tolerance, int timeoutSec, Cancellable cancellable) throws InterruptedException
     {
         boolean failed = false;
 
@@ -326,14 +333,17 @@ public class PrinterUtils
         long timestampAtStart = System.currentTimeMillis();
         long timeoutMillis = timeoutSec * 1000;
 
-        if (task != null)
+        if (task != null || cancellable != null)
         {
             try
             {
                 while ((temperatureProperty.get() < minTemp
-                    || temperatureProperty.get() > maxTemp)
-                    && task.isCancelled() == false)
+                    || temperatureProperty.get() > maxTemp))
                 {
+                    if (task != null && task.isCancelled() ||
+                       (cancellable != null && cancellable.cancelled)) {
+                        break;
+                    }
                     Thread.sleep(100);
 
                     long currentTimeMillis = System.currentTimeMillis();
