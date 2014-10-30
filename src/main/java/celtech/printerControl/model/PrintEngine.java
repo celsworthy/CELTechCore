@@ -35,6 +35,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
@@ -53,11 +57,13 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
+import javafx.scene.control.ButtonType;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.apache.commons.io.FileDeleteStrategy;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.controlsfx.dialog.CommandLinksDialog;
 
 /**
  *
@@ -878,8 +884,11 @@ public class PrintEngine implements ControllableService
         boolean acceptedPrintRequest = false;
         consideringPrintRequest = true;
 
-        Lookup.getTaskExecutor().runOnGUIThread(() -> {runMacroPrintJob(filename, useSDCard);});
-        
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            runMacroPrintJob(filename, useSDCard);
+        });
+
         acceptedPrintRequest = true;
 
         return acceptedPrintRequest;
@@ -981,7 +990,7 @@ public class PrintEngine implements ControllableService
     {
         return progressNumLayers;
     }
-    
+
     protected void goToIdle()
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
@@ -1085,22 +1094,40 @@ public class PrintEngine implements ControllableService
         });
     }
 
+    /**
+     * Stop all services, in the GUI thread. Block current thread until the routine has completed.
+     */
     protected void stopAllServices()
     {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
+
+        Callable<Boolean> stopServices = new Callable()
         {
-            if (slicerService.isRunning())
+            @Override
+            public Boolean call() throws Exception
             {
-                slicerService.cancelRun();
+                if (slicerService.isRunning())
+                {
+                    slicerService.cancelRun();
+                }
+                if (gcodePostProcessorService.isRunning())
+                {
+                    gcodePostProcessorService.cancelRun();
+                }
+                if (gcodePrintService.isRunning())
+                {
+                    gcodePrintService.cancelRun();
+                }
+                return true;
             }
-            if (gcodePostProcessorService.isRunning())
-            {
-                gcodePostProcessorService.cancelRun();
-            }
-            if (gcodePrintService.isRunning())
-            {
-                gcodePrintService.cancelRun();
-            }
-        });
+        };
+        FutureTask<Boolean> stopServicesTask = new FutureTask<>(stopServices);
+        Lookup.getTaskExecutor().runOnGUIThread(stopServicesTask);
+        try
+        {
+            stopServicesTask.get();
+        } catch (InterruptedException | ExecutionException ex)
+        {
+            steno.error("Error while stopping services");
+        }
     }
 }

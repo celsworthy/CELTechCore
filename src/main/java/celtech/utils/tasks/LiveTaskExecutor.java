@@ -67,15 +67,15 @@ public class LiveTaskExecutor implements TaskExecutor
                 Boolean result = action.call();
                 if (result)
                 {
-                    runOnGUIThread(successHandler);
+                    successHandler.run();
                 } else {
-                    runOnGUIThread(cancelledHandler);
+                    cancelledHandler.run();
                 }
             } catch (Exception ex)
             {
                 ex.printStackTrace();
                 steno.error("Failure running task: " + ex);
-                runOnGUIThread(failureHandler);
+                failureHandler.run();
             }
         };
         Thread taskThread = new Thread(runTask);

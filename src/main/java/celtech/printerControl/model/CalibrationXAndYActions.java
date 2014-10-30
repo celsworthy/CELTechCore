@@ -42,8 +42,8 @@ public class CalibrationXAndYActions
 //        Thread.sleep(3000);
 //        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
         printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_XY_offset_roboxised"), true);
-        boolean interrupted = PrinterUtils.waitOnMacroFinished(printer, cancellable);
-        return !interrupted;
+        PrinterUtils.waitOnMacroFinished(printer, cancellable);
+        return !cancellable.cancelled;
     }
 
     public boolean doSaveSettingsAndPrintCircle() throws PrinterException, InterruptedException
@@ -52,8 +52,8 @@ public class CalibrationXAndYActions
 //        Thread.sleep(3000);
 //        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
         printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_XY_offset_roboxised"), true);
-        boolean interrupted = PrinterUtils.waitOnMacroFinished(printer, cancellable);
-        return !interrupted;
+        PrinterUtils.waitOnMacroFinished(printer, cancellable);
+        return !cancellable.cancelled;
     }
 
     public boolean doFinishedAction() throws PrinterException
@@ -84,6 +84,7 @@ public class CalibrationXAndYActions
         {
             steno.info("interrupted during wait of cancel");
         }
+        printer.cancel(null);
         doFailedAction();
         return true;
     }

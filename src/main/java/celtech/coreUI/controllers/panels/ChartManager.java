@@ -7,6 +7,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.HeaterMode;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
@@ -105,42 +106,50 @@ class ChartManager
             });
 
     }
+    
+    ChangeListener<Number> bedTargetTemperatureListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+    {
+        if (bedHeaterMode == HeaterMode.OFF)
+        {
+            bedTargetPoint.setYValue(0);
+        } else
+        {
+            bedTargetPoint.setYValue(newValue);
+        }
+    };
 
     void setTargetBedTemperatureProperty(
         ReadOnlyIntegerProperty bedTargetTemperatureProperty)
     {
         bedTargetPoint.setYValue(bedTargetTemperatureProperty.get());
+        if (this.bedTargetTemperatureProperty != null) {
+            this.bedTargetTemperatureProperty.removeListener(bedTargetTemperatureListener);
+        }
         this.bedTargetTemperatureProperty = bedTargetTemperatureProperty;
-        bedTargetTemperatureProperty.addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                if (bedHeaterMode == HeaterMode.OFF)
-                {
-                    bedTargetPoint.setYValue(0);
-                } else
-                {
-                    bedTargetPoint.setYValue(newValue);
-                }
-            });
+        bedTargetTemperatureProperty.addListener(bedTargetTemperatureListener);
 
     }
 
+    ChangeListener<Number> nozzleTargetTemperatureListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+    {
+        if (nozzleHeaterMode == HeaterMode.OFF)
+        {
+            nozzleTargetPoint.setYValue(0);
+        } else
+        {
+            nozzleTargetPoint.setYValue(newValue);
+        }
+    };
+    
     void setTargetNozzleTemperatureProperty(
         ReadOnlyIntegerProperty nozzleTargetTemperatureProperty)
     {
         this.nozzleTargetTemperatureProperty = nozzleTargetTemperatureProperty;
+        if (this.nozzleTargetTemperatureProperty != null) {
+            this.nozzleTargetTemperatureProperty.removeListener(bedTargetTemperatureListener);
+        }        
         nozzleTargetPoint.setYValue(nozzleTargetTemperatureProperty.get());
-        nozzleTargetTemperatureProperty.addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                if (nozzleHeaterMode == HeaterMode.OFF)
-                {
-                    nozzleTargetPoint.setYValue(0);
-                } else
-                {
-                    nozzleTargetPoint.setYValue(newValue);
-                }
-            });
+        nozzleTargetTemperatureProperty.addListener(nozzleTargetTemperatureListener);
 
     }
 

@@ -67,6 +67,7 @@ public class CalibrationXAndYGUI
         switch (state)
         {
             case IDLE:
+            case CANCELLED:
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzlealignment",
                                        "Nozzle Alignment Illustrations_Step 1.fxml");
@@ -115,8 +116,8 @@ public class CalibrationXAndYGUI
                 controller.stepNumber.setText(String.format("Step %s of 6", 6));
                 break;
             case FAILED:
-                controller.backToStatus.setVisible(true);
                 controller.calibrationStatus.setText(state.getStepTitle());
+                controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Failure.fxml");
                 controller.stepNumber.setText("");
                 break;
         }

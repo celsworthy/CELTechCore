@@ -549,7 +549,7 @@ public final class HardwarePrinter implements Printer
     {
         if (!canCancel.get())
         {
-            throw new PrinterException("Cancel not permitted");
+            throw new PrinterException("Cancel not permitted: printer status is " + printerStatus);
         }
 
         setPrinterStatus(PrinterStatus.CANCELLING);
@@ -560,7 +560,9 @@ public final class HardwarePrinter implements Printer
         {
             boolean success = doAbortActivity(cancellable);
 
-            Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Abort complete");
+            if (responder != null) {
+                Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Abort complete");
+            }
 
             setPrinterStatus(PrinterStatus.IDLE);
 

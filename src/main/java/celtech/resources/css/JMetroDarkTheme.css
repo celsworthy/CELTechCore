@@ -211,7 +211,7 @@
     -fx-background-radius: 30;
     -fx-font-weight: bold;
     -fx-font-size: 1.1em;
-    -fx-effect: innershadow (three-pass-box, dark_grey, 10, 0, 0, 0);
+    /*-fx-effect: innershadow (three-pass-box, dark_grey, 10, 0, 0, 0);*/
     /*-fx-border-width: 0;*/
     -fx-opacity: 1.0;
 }

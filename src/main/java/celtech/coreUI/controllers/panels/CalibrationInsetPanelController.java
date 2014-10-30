@@ -64,14 +64,6 @@ public class CalibrationInsetPanelController implements Initializable,
         topBorderPane.setPrefHeight(topPane.getHeight());
     }
 
-    void whenZCoChanged(double zco)
-    {
-//        if (diagramController != null)
-//        {
-//            diagramController.setCalibrationTextField(String.format("%1.2f", zco));
-//        }
-    }
-
     void updateZCO()
     {
         if (diagramController != null)
