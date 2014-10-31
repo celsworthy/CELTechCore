@@ -486,7 +486,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                     lineNumberOfFirstExtrusion = event.getLinesSoFar();
                 }
 
-                if (((slicerType == SlicerType.Slic3r && layer == 2) || (slicerType == SlicerType.Cura && layer == 3)) && forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenReinstated == false)
+                if (((slicerType == SlicerType.Slic3r && layer == 2) || (slicerType == SlicerType.Cura && layer == 2)) && forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenReinstated == false)
                 {
                     nozzleHasBeenReinstated = true;
                     int nozzleToUse = chooseNozzleByTask(event);
@@ -800,7 +800,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
     private void handleForcedNozzleAtLayerChange() throws PostProcessingError
     {
-        if (((slicerType == SlicerType.Slic3r && layer == 0) || (slicerType == SlicerType.Cura && layer == 1)) && forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenForced == false)
+        if (((slicerType == SlicerType.Slic3r && layer == 0) || (slicerType == SlicerType.Cura && layer == 0)) && forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenForced == false)
         {
             nozzleHasBeenForced = true;
             NozzleChangeEvent nozzleChangeEvent = new NozzleChangeEvent();
@@ -821,7 +821,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             currentNozzle = nozzleProxies.get(nozzleInUse);
         }
 
-        if (((slicerType == SlicerType.Slic3r && layer == 1) || (slicerType == SlicerType.Cura && layer == 2)) && forcedNozzleOnFirstLayer >= 0)
+        if (((slicerType == SlicerType.Slic3r && layer == 1) || (slicerType == SlicerType.Cura && layer == 1)) && forcedNozzleOnFirstLayer >= 0)
         {
             writeEventsWithNozzleClose(
                 "closing nozzle after forced nozzle select on layer 0");
