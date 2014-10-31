@@ -212,7 +212,13 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     {
         currentSettings = settings;
 
-        slicerType = Lookup.getUserPreferences().getSlicerType();
+        if (currentSettings.getSlicerOverride() != null)
+        {
+            slicerType = currentSettings.getSlicerOverride();
+        } else
+        {
+            slicerType = Lookup.getUserPreferences().getSlicerType();
+        }
 
         layerNumberToLineNumber = new ArrayList<>();
         layerNumberToDistanceTravelled = new ArrayList<>();
@@ -827,24 +833,32 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     {
         int nozzleToUse;
 
-        switch (((ExtrusionEvent) event).getExtrusionTask())
+        ExtrusionTask extrusionTask = ((ExtrusionEvent) event).getExtrusionTask();
+
+        if (extrusionTask != null)
         {
-            case Perimeter:
-            case ExternalPerimeter:
-                nozzleToUse = currentSettings.getPerimeterNozzle();
-                break;
-            case Fill:
-                nozzleToUse = currentSettings.getFillNozzle();
-                break;
-            case Support:
-                nozzleToUse = currentSettings.getSupportNozzle();
-                break;
-            case Support_Interface:
-                nozzleToUse = currentSettings.getSupportInterfaceNozzle();
-                break;
-            default:
-                nozzleToUse = currentSettings.getFillNozzle();
-                break;
+            switch (extrusionTask)
+            {
+                case Perimeter:
+                case ExternalPerimeter:
+                    nozzleToUse = currentSettings.getPerimeterNozzle();
+                    break;
+                case Fill:
+                    nozzleToUse = currentSettings.getFillNozzle();
+                    break;
+                case Support:
+                    nozzleToUse = currentSettings.getSupportNozzle();
+                    break;
+                case Support_Interface:
+                    nozzleToUse = currentSettings.getSupportInterfaceNozzle();
+                    break;
+                default:
+                    nozzleToUse = currentSettings.getFillNozzle();
+                    break;
+            }
+        } else
+        {
+            nozzleToUse = currentSettings.getFillNozzle();
         }
         return nozzleToUse;
     }
@@ -927,7 +941,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
             ArrayList<Integer> inwardsMoveIndexList = new ArrayList<>();
 
-            int tempFinalExtrusionEventIndex = getPreviousExtrusionEventIndex(extrusionBuffer.size() - 1);
+            int tempFinalExtrusionEventIndex = getExtrusionEventIndexBackwards(extrusionBuffer.size() - 1);
             if (((ExtrusionEvent) extrusionBuffer.get(tempFinalExtrusionEventIndex)).getExtrusionTask() == ExtrusionTask.ExternalPerimeter)
             {
                 int endOfPerimeter = getPreviousExtrusionTask(extrusionBuffer.size() - 1, ExtrusionTask.Perimeter);
@@ -2142,6 +2156,24 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         if (startingIndex > 0)
         {
             for (int index = startingIndex - 1; index >= 0; index--)
+            {
+                if (extrusionBuffer.get(index) instanceof ExtrusionEvent)
+                {
+                    indexOfEvent = index;
+                    break;
+                }
+            }
+        }
+        return indexOfEvent;
+    }
+
+    private int getExtrusionEventIndexBackwards(int startingIndex)
+    {
+        int indexOfEvent = -1;
+
+        if (startingIndex > 0)
+        {
+            for (int index = startingIndex; index >= 0; index--)
             {
                 if (extrusionBuffer.get(index) instanceof ExtrusionEvent)
                 {

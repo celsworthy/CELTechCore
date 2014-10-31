@@ -637,6 +637,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         profileNameField.textProperty()
             .addListener(dirtyStringListener);
 
+        slicerChooser.valueProperty().addListener(dirtyNumberListener);
+
         //Nozzle Page
         firstLayerExtrusionWidthSlider.valueProperty()
             .bindBidirectional(firstLayerExtrusionWidth.floatValueProperty());
@@ -789,7 +791,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
                 }
             }
         );
-        
+
         slicerChooser.setMax(SlicerType.values().length - 1);
         slicerChooser.setMin(0);
         slicerChooser.setValue(Lookup.getUserPreferences().getSlicerType().getEnumPosition());
@@ -874,6 +876,14 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         }
 
         profileNameField.setText(newSettings.getProfileName());
+
+        if (newSettings.getSlicerOverride() != null)
+        {
+            slicerChooser.setValue(newSettings.getSlicerOverride().getEnumPosition());
+        } else
+        {
+            slicerChooser.setValue(Lookup.getUserPreferences().getSlicerType().getEnumPosition());
+        }
 
         inhibitAutoExtrusionWidth = true;
         updateGUIFromSettings(newSettings);
