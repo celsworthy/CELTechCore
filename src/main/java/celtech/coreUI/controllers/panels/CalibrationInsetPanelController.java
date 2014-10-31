@@ -693,5 +693,10 @@ public class CalibrationInsetPanelController implements Initializable,
     public void whenReelRemoved(Printer printer, Reel reel)
     {
     }
+    
+    @Override
+    public void whenReelChanged(Printer printer, Reel reel)
+    {
+    }    
 
 }

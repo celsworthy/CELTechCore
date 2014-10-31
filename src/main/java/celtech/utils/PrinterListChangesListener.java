@@ -26,4 +26,6 @@ public interface PrinterListChangesListener
 
     public void whenReelRemoved(Printer printer, Reel reel);
     
+    public void whenReelChanged(Printer printer, Reel reel);
+    
 }

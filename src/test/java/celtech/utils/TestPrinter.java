@@ -73,7 +73,10 @@ class TestPrinter implements Printer
         reelsProperty.remove(reelsProperty.get(0));
     }
     
-    
+    void changeReel(int i) {
+        ReelEEPROMDataResponse eepromData = new ReelEEPROMDataResponse();
+//        reelsProperty().get(i).updateFromEEPROMData(eepromData);
+    }
 
     @Override
     public void addToGCodeTranscript(String gcodeToSend)

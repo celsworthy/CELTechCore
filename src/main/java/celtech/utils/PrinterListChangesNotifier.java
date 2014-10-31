@@ -113,6 +113,12 @@ public class PrinterListChangesNotifier
                 fireWhenReelRemoved(printer, reel);
             }
             
+            @Override
+            public void whenReelChanged(Reel reel)
+            {
+                fireWhenReelChanged(printer, reel);
+            }            
+            
         };
         printerListeners.put(printer, printerChangesListener);
         printerNotifiers.put(printer, printerChangesNotifier);
@@ -174,6 +180,15 @@ public class PrinterListChangesNotifier
         {
             listener.whenReelRemoved(printer, reel);
         }
+    }  
+    
+    private void fireWhenReelChanged(Printer printer, Reel reel)
+    {
+        for (PrinterListChangesListener listener : listeners)
+        {
+            listener.whenReelChanged(printer, reel);
+        }
     }       
+    
 
 }

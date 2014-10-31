@@ -550,5 +550,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             updateReelMaterial(null);
         }
     }
+    
+    @Override
+    public void whenReelChanged(Printer printer, Reel reel)
+    {
+    }     
 
 }

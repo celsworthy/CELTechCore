@@ -57,10 +57,12 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class SettingsSidePanelController implements Initializable, SidePanelManager, PopupCommandReceiver, PrinterListChangesListener
+public class SettingsSidePanelController implements Initializable, SidePanelManager,
+    PopupCommandReceiver, PrinterListChangesListener
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(SettingsSidePanelController.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        SettingsSidePanelController.class.getName());
     private ObservableList<Printer> printerStatusList = null;
     private SettingsScreenState settingsScreenState = null;
     private ApplicationStatus applicationStatus = null;
@@ -107,9 +109,12 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
 //    @FXML
 //    private ToggleSwitch spiralPrintToggle;
-    private SlicerParameters draftSettings = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
-    private SlicerParameters normalSettings = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.normalSettingsProfileName);
-    private SlicerParameters fineSettings = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.fineSettingsProfileName);
+    private SlicerParameters draftSettings = SlicerParametersContainer.getSettingsByProfileName(
+        ApplicationConfiguration.draftSettingsProfileName);
+    private SlicerParameters normalSettings = SlicerParametersContainer.getSettingsByProfileName(
+        ApplicationConfiguration.normalSettingsProfileName);
+    private SlicerParameters fineSettings = SlicerParametersContainer.getSettingsByProfileName(
+        ApplicationConfiguration.fineSettingsProfileName);
     private SlicerParameters customSettings = null;
     private SlicerParameters lastSettings = null;
 
@@ -155,19 +160,26 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         try
         {
-            FXMLLoader createMaterialPageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlUtilityPanelResourcePath + "materialDetails.fxml"), DisplayManager.
+            FXMLLoader createMaterialPageLoader = new FXMLLoader(getClass().getResource(
+                ApplicationConfiguration.fxmlUtilityPanelResourcePath + "materialDetails.fxml"),
+                                                                 DisplayManager.
                                                                  getLanguageBundle());
             createMaterialPage = createMaterialPageLoader.load();
             materialDetailsController = createMaterialPageLoader.getController();
             materialDetailsController.updateMaterialData(new Filament("", MaterialType.ABS, null,
-                                                                      0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, true));
+                                                                      0, 0, 0, 0, 0, 0, 0, 0,
+                                                                      Color.ALICEBLUE, true));
             materialDetailsController.showButtons(false);
 
-            createMaterialDialogue = new ModalDialog(DisplayManager.getLanguageBundle().getString("sidePanel_settings.createMaterialDialogueTitle"));
+            createMaterialDialogue = new ModalDialog(DisplayManager.getLanguageBundle().getString(
+                "sidePanel_settings.createMaterialDialogueTitle"));
             createMaterialDialogue.setContent(createMaterialPage);
-            saveMaterialAction = createMaterialDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Save"), materialDetailsController.
-                                                                  getProfileNameInvalidProperty());
-            cancelMaterialSaveAction = createMaterialDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Cancel"));
+            saveMaterialAction = createMaterialDialogue.addButton(
+                DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Save"),
+                materialDetailsController.
+                getProfileNameInvalidProperty());
+            cancelMaterialSaveAction = createMaterialDialogue.addButton(
+                DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Cancel"));
 
         } catch (Exception ex)
         {
@@ -185,17 +197,23 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         try
         {
-            FXMLLoader createProfilePageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetails.fxml"), DisplayManager.
+            FXMLLoader createProfilePageLoader = new FXMLLoader(getClass().getResource(
+                ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetails.fxml"),
+                                                                DisplayManager.
                                                                 getLanguageBundle());
             createProfilePage = createProfilePageLoader.load();
             profileDetailsController = createProfilePageLoader.getController();
             profileDetailsController.showButtons(false);
 
-            createProfileDialogue = new ModalDialog(DisplayManager.getLanguageBundle().getString("sidePanel_settings.createProfileDialogueTitle"));
+            createProfileDialogue = new ModalDialog(DisplayManager.getLanguageBundle().getString(
+                "sidePanel_settings.createProfileDialogueTitle"));
             createProfileDialogue.setContent(createProfilePage);
-            saveProfileAction = createProfileDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Save"), profileDetailsController.
-                                                                getProfileNameInvalidProperty());
-            cancelProfileSaveAction = createProfileDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Cancel"));
+            saveProfileAction = createProfileDialogue.addButton(
+                DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Save"),
+                profileDetailsController.
+                getProfileNameInvalidProperty());
+            cancelProfileSaveAction = createProfileDialogue.addButton(
+                DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Cancel"));
         } catch (Exception ex)
         {
             steno.error("Failed to load profile creation page");
@@ -206,7 +224,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             @Override
             public String toString(Double n)
             {
-                PrintQualityEnumeration selectedQuality = PrintQualityEnumeration.fromEnumPosition(n.intValue());
+                PrintQualityEnumeration selectedQuality = PrintQualityEnumeration.fromEnumPosition(
+                    n.intValue());
                 return selectedQuality.getFriendlyName();
             }
 
@@ -231,11 +250,13 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         qualityChooser.valueProperty().addListener(new ChangeListener<Number>()
         {
             @Override
-            public void changed(ObservableValue<? extends Number> ov, Number lastQualityValue, Number newQualityValue)
+            public void changed(ObservableValue<? extends Number> ov, Number lastQualityValue,
+                Number newQualityValue)
             {
                 if (lastQualityValue != newQualityValue)
                 {
-                    PrintQualityEnumeration quality = PrintQualityEnumeration.fromEnumPosition(newQualityValue.intValue());
+                    PrintQualityEnumeration quality = PrintQualityEnumeration.fromEnumPosition(
+                        newQualityValue.intValue());
 
                     printQualityUpdate(quality);
                 }
@@ -251,49 +272,55 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         updateProfileList();
 
-        customProfileChooser.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<SlicerParameters>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends SlicerParameters> observable, SlicerParameters oldValue, SlicerParameters newValue)
+        customProfileChooser.getSelectionModel().selectedItemProperty().addListener(
+            new ChangeListener<SlicerParameters>()
             {
-                if (!suppressCustomProfileChangeTriggers)
+                @Override
+                public void changed(ObservableValue<? extends SlicerParameters> observable,
+                    SlicerParameters oldValue, SlicerParameters newValue)
                 {
-                    if (oldValue != newValue)
+                    if (!suppressCustomProfileChangeTriggers)
                     {
-                        if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
+                        if (oldValue != newValue)
                         {
-                            displayManager.slideOutAdvancedPanel();
+                            if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
+                            {
+                                displayManager.slideOutAdvancedPanel();
+                            }
+                            slideOutController.showProfileTab();
+
+                            lastCustomProfileSelected = newValue;
                         }
-                        slideOutController.showProfileTab();
 
-                        lastCustomProfileSelected = newValue;
-                    }
-
-                    if (newValue == SlicerParametersContainer.createNewProfile)
-                    {
-                        showCreateProfileDialogue(draftSettings.clone());
-                    } else if (newValue != null)
-                    {
-                        if (settingsScreenState.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
+                        if (newValue == SlicerParametersContainer.createNewProfile)
                         {
-                            slideOutController.updateProfileData(newValue);
-                            settingsScreenState.setSettings(newValue);
-                            DisplayManager.getInstance().getCurrentlyVisibleProject().setCustomProfileName(newValue.getProfileName());
+                            showCreateProfileDialogue(draftSettings.clone());
+                        } else if (newValue != null)
+                        {
+                            if (settingsScreenState.getPrintQuality()
+                            == PrintQualityEnumeration.CUSTOM)
+                            {
+                                slideOutController.updateProfileData(newValue);
+                                settingsScreenState.setSettings(newValue);
+                                DisplayManager.getInstance().getCurrentlyVisibleProject().setCustomProfileName(
+                                    newValue.getProfileName());
+                            }
+                            customSettings = newValue;
+                        } else if (newValue == null && settingsScreenState.getPrintQuality()
+                        == PrintQualityEnumeration.CUSTOM)
+                        {
+                            slideOutController.updateProfileData(null);
+                            customSettings = null;
                         }
-                        customSettings = newValue;
-                    } else if (newValue == null && settingsScreenState.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
-                    {
-                        slideOutController.updateProfileData(null);
-                        customSettings = null;
                     }
                 }
-            }
-        });
+            });
 
-        SlicerParametersContainer.getUserProfileList().addListener((ListChangeListener.Change<? extends SlicerParameters> c) ->
-        {
-            updateProfileList();
-        });
+        SlicerParametersContainer.getUserProfileList().addListener(
+            (ListChangeListener.Change<? extends SlicerParameters> c) ->
+            {
+                updateProfileList();
+            });
 
         printerChooser.setCellFactory(
             new Callback<ListView<Printer>, ListCell<Printer>>()
@@ -314,7 +341,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                             super.updateItem(item, empty);
                             if (item != null)
                             {
-                                setText(item.getPrinterIdentity().printerFriendlyNameProperty().get());
+                                setText(
+                                    item.getPrinterIdentity().printerFriendlyNameProperty().get());
                             } else
                             {
                                 setText(null);
@@ -330,66 +358,68 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         printerChooser.getSelectionModel()
             .clearSelection();
 
-        printerChooser.getItems().addListener((ListChangeListener.Change<? extends Printer> change) ->
-        {
-            while (change.next())
+        printerChooser.getItems().addListener(
+            (ListChangeListener.Change<? extends Printer> change) ->
             {
-                if (change.wasAdded())
+                while (change.next())
                 {
-                    for (Printer addedPrinter : change.getAddedSubList())
+                    if (change.wasAdded())
                     {
-                        Platform.runLater(new Runnable()
+                        for (Printer addedPrinter : change.getAddedSubList())
                         {
+                            Platform.runLater(new Runnable()
+                                {
 
-                            @Override
-                            public void run()
-                            {
-                                printerChooser.setValue(addedPrinter);
-                            }
-                        });
-                    }
-                } else if (change.wasRemoved())
-                {
-                    for (Printer removedPrinter : change.getRemoved())
-                    {
-                        if (printerChooser.getItems().isEmpty())
-                        {
-                            Platform.runLater(new Runnable()
-                            {
-                                @Override
-                                public void run()
-                                {
-                                    printerChooser.getSelectionModel().select(null);
-                                }
-                            });
-                        } else
-                        {
-                            Platform.runLater(new Runnable()
-                            {
-                                @Override
-                                public void run()
-                                {
-                                    printerChooser.getSelectionModel().selectFirst();
-                                }
+                                    @Override
+                                    public void run()
+                                    {
+                                        printerChooser.setValue(addedPrinter);
+                                    }
                             });
                         }
-                    }
-                } else if (change.wasReplaced())
-                {
-                    steno.info("Replace");
-                } else if (change.wasUpdated())
-                {
-                    steno.info("Update");
+                    } else if (change.wasRemoved())
+                    {
+                        for (Printer removedPrinter : change.getRemoved())
+                        {
+                            if (printerChooser.getItems().isEmpty())
+                            {
+                                Platform.runLater(new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            printerChooser.getSelectionModel().select(null);
+                                        }
+                                });
+                            } else
+                            {
+                                Platform.runLater(new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            printerChooser.getSelectionModel().selectFirst();
+                                        }
+                                });
+                            }
+                        }
+                    } else if (change.wasReplaced())
+                    {
+                        steno.info("Replace");
+                    } else if (change.wasUpdated())
+                    {
+                        steno.info("Update");
 
+                    }
                 }
-            }
-        });
+            });
 
         printerChooser.getSelectionModel()
             .selectedItemProperty().addListener(new ChangeListener<Printer>()
                 {
                     @Override
-                    public void changed(ObservableValue<? extends Printer> ov, Printer lastSelectedPrinter, Printer selectedPrinter
+                    public void changed(ObservableValue<? extends Printer> ov,
+                        Printer lastSelectedPrinter, Printer selectedPrinter
                     )
                     {
                         if (lastSelectedPrinter != null)
@@ -418,47 +448,50 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         materialChooser.setButtonCell(new MaterialChoiceListCell());
         materialChooser.setItems(availableFilaments);
 
-        materialChooser.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Filament>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue)
+        materialChooser.getSelectionModel().selectedItemProperty().addListener(
+            new ChangeListener<Filament>()
             {
-                if (oldValue != newValue)
+                @Override
+                public void changed(ObservableValue<? extends Filament> observable,
+                    Filament oldValue, Filament newValue)
                 {
-                    if (slideOutController != null)
+                    if (oldValue != newValue)
                     {
-                        slideOutController.showMaterialTab();
+                        if (slideOutController != null)
+                        {
+                            slideOutController.showMaterialTab();
+                        }
+                        lastFilamentSelected = newValue;
                     }
-                    lastFilamentSelected = newValue;
-                }
 
-                if (inhibitMaterialSelection == false)
-                {
-                    if (newValue == FilamentContainer.createNewFilament)
+                    if (inhibitMaterialSelection == false)
                     {
-                        showCreateMaterialDialogue();
-                    } else if (newValue == null)
-                    {
-                        if (slideOutController != null)
+                        if (newValue == FilamentContainer.createNewFilament)
                         {
-                            slideOutController.updateFilamentData(newValue);
-                        }
-                        settingsScreenState.setFilament(null);
-                    } else
-                    {
-                        if (slideOutController != null)
+                            showCreateMaterialDialogue();
+                        } else if (newValue == null)
                         {
-                            slideOutController.updateFilamentData(newValue);
+                            if (slideOutController != null)
+                            {
+                                slideOutController.updateFilamentData(newValue);
+                            }
+                            settingsScreenState.setFilament(null);
+                        } else
+                        {
+                            if (slideOutController != null)
+                            {
+                                slideOutController.updateFilamentData(newValue);
+                            }
+                            settingsScreenState.setFilament(newValue);
                         }
-                        settingsScreenState.setFilament(newValue);
                     }
                 }
             }
-        }
         );
 
         nonCustomProfileVBox.visibleProperty()
-            .bind(qualityChooser.valueProperty().isNotEqualTo(PrintQualityEnumeration.CUSTOM.getEnumPosition()));
+            .bind(qualityChooser.valueProperty().isNotEqualTo(
+                    PrintQualityEnumeration.CUSTOM.getEnumPosition()));
 
         supportToggle.selectedProperty().addListener(new ChangeListener<Boolean>()
         {
@@ -481,7 +514,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         fillDensitySlider.valueProperty().addListener(new ChangeListener<Number>()
         {
             @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue,
+                Number newValue)
             {
                 if (suppressQualityOverrideTriggers == false)
                 {
@@ -490,7 +524,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
                     }
 
-                    settingsScreenState.getSettings().setFillDensity_normalised(newValue.floatValue() / 100.0f);
+                    settingsScreenState.getSettings().setFillDensity_normalised(
+                        newValue.floatValue() / 100.0f);
                 }
             }
         });
@@ -498,7 +533,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         brimSlider.valueProperty().addListener(new ChangeListener<Number>()
         {
             @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue,
+                Number newValue)
             {
                 if (suppressQualityOverrideTriggers == false)
                 {
@@ -556,7 +592,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         availableProfiles.addAll(SlicerParametersContainer.getUserProfileList());
         availableProfiles.add(SlicerParametersContainer.createNewProfile);
 
-        if (currentSelection != null && availableProfiles.contains(currentSelection) && currentSelection != SlicerParametersContainer.createNewProfile)
+        if (currentSelection != null && availableProfiles.contains(currentSelection)
+            && currentSelection != SlicerParametersContainer.createNewProfile)
         {
             customProfileChooser.getSelectionModel().select(currentSelection);
         } else if (customProfileChooser.getItems().size() > 1)
@@ -581,7 +618,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         availableFilaments.addAll(FilamentContainer.getUserFilamentList());
         availableFilaments.add(FilamentContainer.createNewFilament);
 
-        if (currentSelection != null && availableFilaments.contains(currentSelection) && currentSelection != FilamentContainer.createNewFilament)
+        if (currentSelection != null && availableFilaments.contains(currentSelection)
+            && currentSelection != FilamentContainer.createNewFilament)
         {
             materialChooser.getSelectionModel().select(currentSelection);
         } else if (materialChooser.getItems().size() > 1)
@@ -638,7 +676,9 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 clonedFilament = currentlyLoadedFilament.clone();
             }
             String originalFilamentName = clonedFilament.getFriendlyFilamentName();
-            String filename = SystemUtils.getIncrementalFilenameOnly(ApplicationConfiguration.getUserFilamentDirectory(), originalFilamentName, ApplicationConfiguration.filamentFileExtension);
+            String filename = SystemUtils.getIncrementalFilenameOnly(
+                ApplicationConfiguration.getUserFilamentDirectory(), originalFilamentName,
+                ApplicationConfiguration.filamentFileExtension);
             clonedFilament.setFriendlyFilamentName(filename);
             clonedFilament.setMutable(true);
             materialDetailsController.updateMaterialData(clonedFilament);
@@ -647,7 +687,9 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         {
             SlicerParameters settings = settingsScreenState.getSettings().clone();
             String originalProfileName = settings.getProfileName();
-            String filename = SystemUtils.getIncrementalFilenameOnly(ApplicationConfiguration.getUserPrintProfileDirectory(), originalProfileName, ApplicationConfiguration.printProfileFileExtension);
+            String filename = SystemUtils.getIncrementalFilenameOnly(
+                ApplicationConfiguration.getUserPrintProfileDirectory(), originalProfileName,
+                ApplicationConfiguration.printProfileFileExtension);
             settings.setProfileName(filename);
             profileDetailsController.updateProfileData(settings);
             showCreateProfileDialogue(settings);
@@ -666,7 +708,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             Filament filamentToSave = (Filament) profile;
 
             FilamentContainer.saveFilament(filamentToSave);
-            Filament chosenFilament = FilamentContainer.getFilamentByID(filamentToSave.getFilamentID());
+            Filament chosenFilament = FilamentContainer.getFilamentByID(
+                filamentToSave.getFilamentID());
             materialChooser.getSelectionModel().select(chosenFilament);
         } else if (profile instanceof SlicerParameters)
         {
@@ -690,7 +733,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     Filament filamentToSave = materialDetailsController.getMaterialData();
                     FilamentContainer.saveFilament(filamentToSave);
 
-                    Filament chosenFilament = FilamentContainer.getFilamentByID(filamentToSave.getFilamentID());
+                    Filament chosenFilament = FilamentContainer.getFilamentByID(
+                        filamentToSave.getFilamentID());
                     materialChooser.getSelectionModel().select(chosenFilament);
                 } else
                 {
@@ -747,7 +791,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         for (SlicerParameters settings : availableProfiles)
         {
 
-            if (settings.getProfileName() != null && settings.getProfileName().equals(profileNameToSave))
+            if (settings.getProfileName() != null && settings.getProfileName().equals(
+                profileNameToSave))
             {
                 customProfileChooser.getSelectionModel().select(settings);
                 break;
@@ -767,9 +812,11 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         if (project.getCustomProfileName() != null)
         {
-            if (customSettings == null || project.getCustomProfileName().equals(customSettings.getProfileName()) == false)
+            if (customSettings == null || project.getCustomProfileName().equals(
+                customSettings.getProfileName()) == false)
             {
-                SlicerParameters chosenProfile = SlicerParametersContainer.getSettingsByProfileName(project.getCustomProfileName());
+                SlicerParameters chosenProfile = SlicerParametersContainer.getSettingsByProfileName(
+                    project.getCustomProfileName());
                 customProfileChooser.getSelectionModel().select(chosenProfile);
             }
         }
@@ -882,5 +929,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     {
         currentlyLoadedFilament = null;
         updateFilamentList();
+    }
+
+    @Override
+    public void whenReelChanged(Printer printer, Reel reel)
+    {
     }
 }

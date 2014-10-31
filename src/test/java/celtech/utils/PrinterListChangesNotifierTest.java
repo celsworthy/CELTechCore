@@ -27,13 +27,13 @@ public class PrinterListChangesNotifierTest
         PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
         TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
         notifier.addListener(plcListener);
-        
+
         assertEquals(0, plcListener.addedPrinters.size());
         TestPrinter printer = new TestPrinter();
         printers.add(printer);
         assertEquals(1, plcListener.addedPrinters.size());
     }
-    
+
     @Test
     public void testWhenPrinterAddedAndRemoved()
     {
@@ -41,13 +41,13 @@ public class PrinterListChangesNotifierTest
         PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
         TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
         notifier.addListener(plcListener);
-        
+
         TestPrinter printer = new TestPrinter();
         printers.add(printer);
         printers.remove(printer);
         assertEquals(0, plcListener.addedPrinters.size());
-    }   
-    
+    }
+
     @Test
     public void testWhenPrinterAddedThenHeadAdded()
     {
@@ -55,14 +55,14 @@ public class PrinterListChangesNotifierTest
         PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
         TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
         notifier.addListener(plcListener);
-        
+
         assertEquals(0, plcListener.printersWithHeadAdded.size());
         TestPrinter printer = new TestPrinter();
         printers.add(printer);
         printer.addHead();
         assertEquals(1, plcListener.printersWithHeadAdded.size());
-    }   
-    
+    }
+
     @Test
     public void testWhenPrinterAddedThenHeadRemoved()
     {
@@ -70,15 +70,15 @@ public class PrinterListChangesNotifierTest
         PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
         TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
         notifier.addListener(plcListener);
-        
+
         assertEquals(0, plcListener.printersWithHeadRemoved.size());
         TestPrinter printer = new TestPrinter();
         printers.add(printer);
         printer.addHead();
         printer.removeHead();
         assertEquals(1, plcListener.printersWithHeadRemoved.size());
-    }    
-    
+    }
+
     @Test
     public void testWhenPrinterAddedThenHeadRemovedWithThreePrinters()
     {
@@ -86,7 +86,7 @@ public class PrinterListChangesNotifierTest
         PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
         TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
         notifier.addListener(plcListener);
-        
+
         assertEquals(0, plcListener.printersWithHeadRemoved.size());
         TestPrinter printer1 = new TestPrinter();
         TestPrinter printer2 = new TestPrinter();
@@ -99,12 +99,12 @@ public class PrinterListChangesNotifierTest
         printer2.removeHead();
         assertEquals(1, plcListener.printersWithHeadRemoved.size());
         assertEquals(printer2, plcListener.printersWithHeadRemoved.get(0));
-        
+
         assertEquals(2, plcListener.printersWithHeadAdded.size());
         assertEquals(printer1, plcListener.printersWithHeadAdded.get(0));
         assertEquals(printer2, plcListener.printersWithHeadAdded.get(1));
-    }      
-    
+    }
+
     @Test
     public void testWhenPrinterAddedThenReelAdded()
     {
@@ -112,14 +112,14 @@ public class PrinterListChangesNotifierTest
         PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
         TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
         notifier.addListener(plcListener);
-        
+
         assertEquals(0, plcListener.printersWithHeadAdded.size());
         TestPrinter printer = new TestPrinter();
         printers.add(printer);
         printer.addReel(0);
         assertEquals(1, plcListener.printersWithReelAdded.size());
-    }   
-    
+    }
+
     @Test
     public void testWhenPrinterAddedThenReelRemoved()
     {
@@ -127,14 +127,14 @@ public class PrinterListChangesNotifierTest
         PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
         TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
         notifier.addListener(plcListener);
-        
+
         assertEquals(0, plcListener.printersWithHeadAdded.size());
         TestPrinter printer = new TestPrinter();
         printers.add(printer);
         printer.addReel(0);
         assertEquals(1, plcListener.printersWithReelAdded.size());
-    }    
-    
+    }
+
     @Test
     public void testListenerRemovedWhenPrinterAddedThenRemoved()
     {
@@ -142,25 +142,25 @@ public class PrinterListChangesNotifierTest
         PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
         TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
         notifier.addListener(plcListener);
-        
+
         assertEquals(0, plcListener.addedPrinters.size());
         TestPrinter printer = new TestPrinter();
         printers.add(printer);
         printers.remove(printer);
         assertEquals(0, plcListener.addedPrinters.size());
-        
+
         printer.addHead();
         assertEquals(0, plcListener.printersWithHeadAdded.size());
-    }    
-    
+    }
+
     private static class TestPrinterListChangesListener implements PrinterListChangesListener
     {
-        
+
         public List<Printer> addedPrinters = new ArrayList<>();
         public List<Printer> printersWithHeadAdded = new ArrayList<>();
         public List<Printer> printersWithHeadRemoved = new ArrayList<>();
         public List<Printer> printersWithReelAdded = new ArrayList<>();
-        public List<Printer> printersWithReelRemoved = new ArrayList<>();        
+        public List<Printer> printersWithReelRemoved = new ArrayList<>();
 
         @Override
         public void whenPrinterAdded(Printer printer)
@@ -197,7 +197,11 @@ public class PrinterListChangesNotifierTest
         {
             printersWithReelRemoved.add(printer);
         }
-    }
 
+        @Override
+        public void whenReelChanged(Printer printer, Reel reel)
+        {
+        }
+    }
 
 }

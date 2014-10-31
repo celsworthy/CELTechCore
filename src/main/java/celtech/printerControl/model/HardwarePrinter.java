@@ -317,11 +317,12 @@ public final class HardwarePrinter implements Printer
     {
         return printJobID;
     }
-    
+
     @Override
-    public boolean printJobIDIndicatesPrinting() {
+    public boolean printJobIDIndicatesPrinting()
+    {
         return printJobID.get().codePointAt(0) != 0;
-    }    
+    }
 
     @Override
     public ReadOnlyObjectProperty pauseStatusProperty()
@@ -560,7 +561,8 @@ public final class HardwarePrinter implements Printer
         {
             boolean success = doAbortActivity(cancellable);
 
-            if (responder != null) {
+            if (responder != null)
+            {
                 Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Abort complete");
             }
 
@@ -983,7 +985,10 @@ public final class HardwarePrinter implements Printer
                                        filament.getFriendlyFilamentName(),
                                        filament.getMaterial(),
                                        filament.getDisplayColour());
-        return (AckResponse) commandInterface.writeToPrinter(writeReelEEPROM);
+        AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeReelEEPROM);
+        commandInterface.writeToPrinter(RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.READ_REEL_EEPROM));
+        return response;
     }
 
     /**
@@ -1018,6 +1023,8 @@ public final class HardwarePrinter implements Printer
                                        reelRemainingFilament,
                                        friendlyName, materialType, displayColour);
         commandInterface.writeToPrinter(writeReelEEPROM);
+        commandInterface.writeToPrinter(RoboxTxPacketFactory.createPacket(
+            TxPacketTypeEnum.READ_REEL_EEPROM));
     }
 
     /**
@@ -2296,7 +2303,7 @@ public final class HardwarePrinter implements Printer
                     }
 
                     break;
-                    
+
                 case GCODE_RESPONSE:
                     break;
 

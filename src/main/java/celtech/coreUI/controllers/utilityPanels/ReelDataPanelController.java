@@ -14,13 +14,11 @@ import celtech.coreUI.components.RestrictedTextField;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.Reel;
 import celtech.utils.PrinterListChangesListener;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ResourceBundle;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -133,8 +131,6 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
         {
             steno.info("Parse error getting filament data");
         }
-        readReelConfig(event);
-
     }
 
     private Filament makeFilamentFromFields() throws ParseException
@@ -163,29 +159,6 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
             true);
         newFilament.setRemainingFilament(remainingFilament);
         return newFilament;
-    }
-
-    void readReelConfig(ActionEvent event)
-    {
-        try
-        {
-            selectedPrinter.readReelEEPROM();
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error reading reel EEPROM");
-        }
-    }
-
-    void formatReelEEPROM(ActionEvent event)
-    {
-        try
-        {
-            selectedPrinter.formatReelEEPROM();
-        } catch (PrinterException ex)
-        {
-            steno.error("Error formatting reel EEPROM");
-        }
-        readReelConfig(null);
     }
 
     private void populateSelectedPrinter()
@@ -261,75 +234,18 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
                 Lookup.currentlySelectedPrinterProperty().get());
         }
     }
-    
-    private final ChangeListener<String> filamentIDListener = (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
-    {
-        makeReadOnlyIfNecessary();
-    };
-    
-    private final ChangeListener<MaterialType> materialTypeListener = (ObservableValue<? extends MaterialType> observable, MaterialType oldValue, MaterialType newValue) ->
-    {
-        reelMaterialType.getSelectionModel().select(newValue);
-    };
-    
-    private void unbind(Reel reel) {
-        filamentID.textProperty().unbind();
-        reelAmbientTemperature.textProperty().unbind();
-        reelFirstLayerBedTemperature.textProperty().unbind();
-        reelBedTemperature.textProperty().unbind();
-        reelFirstLayerNozzleTemperature.textProperty().unbind();
-        reelNozzleTemperature.textProperty().unbind();
-        reelFilamentName.textProperty().unbind();
-        reelDisplayColor.valueProperty().unbind();
-
-        reel.filamentIDProperty().removeListener(filamentIDListener);
-        reel.materialProperty().removeListener(materialTypeListener);
-        
-        reelFilamentMultiplier.textProperty().unbind();
-        reelFeedRateMultiplier.textProperty().unbind();
-        reelRemainingFilament.textProperty().unbind();
-        reelFilamentDiameter.textProperty().unbind();
-    }
-
-    private void bindReel(Reel reel)
-    {
-        filamentID.textProperty().bind(reel.filamentIDProperty());
-        reelAmbientTemperature.textProperty().bind(reel.ambientTemperatureProperty().asString());
-        reelFirstLayerBedTemperature.textProperty().bind(
-            reel.firstLayerBedTemperatureProperty().asString());
-        reelBedTemperature.textProperty().bind(reel.bedTemperatureProperty().asString());
-        reelFirstLayerNozzleTemperature.textProperty().bind(
-            reel.firstLayerNozzleTemperatureProperty().asString());
-        reelNozzleTemperature.textProperty().bind(reel.nozzleTemperatureProperty().asString());
-        reelFilamentName.textProperty().bind(reel.friendlyFilamentNameProperty());
-        reelDisplayColor.valueProperty().bind(reel.displayColourProperty());
-
-        reel.filamentIDProperty().addListener(
-            (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
-            {
-                makeReadOnlyIfNecessary();
-            });
-
-        reel.materialProperty().addListener((ObservableValue<? extends MaterialType> observable, MaterialType oldValue, MaterialType newValue) ->
-        {
-            reelMaterialType.getSelectionModel().select(newValue);
-        });
-        
-        reelFilamentMultiplier.textProperty().bind(reel.filamentMultiplierProperty().asString("%.2f"));
-        reelFeedRateMultiplier.textProperty().bind(reel.feedRateMultiplierProperty().asString("%.2f"));
-        reelRemainingFilament.textProperty().bind(reel.remainingFilamentProperty().asString("%.2f"));
-        reelFilamentDiameter.textProperty().bind(reel.diameterProperty().asString("%.2f"));
-    }
 
     private void setSelectedPrinter(Printer printer)
     {
+        if (selectedPrinter != null && !selectedPrinter.reelsProperty().isEmpty())
+        {
+        }
         setFieldsVisible(false);
         selectedPrinter = printer;
 
         if (printer != null && !printer.reelsProperty().isEmpty())
         {
             populateSelectedPrinter();
-            bindReel(printer.reelsProperty().get(0));
             setFieldsVisible(true);
         }
     }
@@ -367,7 +283,6 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
         if (printer == selectedPrinter)
         {
             populateSelectedPrinter();
-            bindReel(printer.reelsProperty().get(reelIndex));
             setFieldsVisible(true);
         }
     }
@@ -378,6 +293,15 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
         if (printer == selectedPrinter)
         {
             setFieldsVisible(false);
+        }
+    }
+
+    @Override
+    public void whenReelChanged(Printer printer, Reel reel)
+    {
+        if (printer == selectedPrinter)
+        {
+            populateSelectedPrinter();
         }
     }
 }

@@ -67,7 +67,21 @@ public class PrinterChangesNotifierTest
         printer.removeReel(0);
 
         assertTrue(listener.reel0Removed);
-    }    
+    }   
+    
+    @Test
+    public void testWhenReelChanged()
+    {
+        TestPrinter printer = new TestPrinter();
+        PrinterChangesNotifier notifier = new PrinterChangesNotifier(printer);
+        TestPrinterChangesListener listener = new TestPrinterChangesListener();
+        notifier.addListener(listener);
+
+        printer.addReel(0);
+        printer.changeReel(0).
+
+        assertTrue(listener.reel0Changed);
+    }        
 
     private static class TestPrinterChangesListener implements PrinterChangesListener
     {
@@ -76,6 +90,7 @@ public class PrinterChangesNotifierTest
         public boolean headRemoved = false;
         public boolean reel0Added = false;
         public boolean reel0Removed = false;
+        public boolean reel0Changed = false;
 
         @Override
         public void whenHeadAdded()
@@ -100,6 +115,13 @@ public class PrinterChangesNotifierTest
         {
             reel0Removed = true;
         }
+        
+        @Override
+        public void whenReelChanged(Reel reel)
+        {
+            reel0Changed = true;
+        }        
+        
     }
 
 }
