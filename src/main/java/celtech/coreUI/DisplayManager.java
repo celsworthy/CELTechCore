@@ -343,101 +343,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
         // Load in all of the side panels
         for (ApplicationMode mode : ApplicationMode.values())
         {
-            try
-            {
-                URL fxmlFileName = getClass().getResource(mode.getInsetPanelFXMLName());
-                if (fxmlFileName != null)
-                {
-                    steno.debug("About to load inset panel fxml: " + fxmlFileName);
-                    FXMLLoader insetPanelLoader = new FXMLLoader(fxmlFileName, getLanguageBundle());
-                    Pane insetPanel = (Pane) insetPanelLoader.load();
-                    Initializable insetPanelController = insetPanelLoader.getController();
-                    insetPanel.setId(mode.name());
-                    insetPanels.put(mode, insetPanel);
-                    insetPanelControllers.put(mode, insetPanelController);
-                }
-            } catch (Exception ex)
-            {
-                ex.printStackTrace();
-                insetPanels.put(mode, null);
-                insetPanelControllers.put(mode, null);
-                steno.warning("Couldn't load inset panel for mode:" + mode + ". " + ex.getMessage());
-            }
-
-            SidePanelManager sidePanelController = null;
-            HBox sidePanel = null;
-            boolean sidePanelLoadedOK = false;
-
-            if (sidePanelControllerCache.containsKey(mode.getSidePanelFXMLName()) == false)
-            {
-                try
-                {
-                    URL fxmlFileName = getClass().getResource(mode.getSidePanelFXMLName());
-                    steno.debug("About to load side panel fxml: " + fxmlFileName);
-                    FXMLLoader sidePanelLoader = new FXMLLoader(fxmlFileName, getLanguageBundle());
-                    sidePanel = (HBox) sidePanelLoader.load();
-                    sidePanelController = sidePanelLoader.getController();
-                    sidePanel.setId(mode.name());
-                    sidePanelLoadedOK = true;
-                    sidePanelControllerCache.put(mode.getSidePanelFXMLName(), sidePanelController);
-                    sidePanelCache.put(mode.getSidePanelFXMLName(), sidePanel);
-                } catch (Exception ex)
-                {
-                    ex.printStackTrace();
-                    sidePanels.put(mode, null);
-                    sidePanelControllers.put(mode, null);
-                    steno.error("Couldn't load side panel for mode:" + mode + ". "
-                        + ex);
-                    System.out.println("Exception: " + ex.getMessage());
-                }
-            } else
-            {
-                sidePanelController = sidePanelControllerCache.get(mode.getSidePanelFXMLName());
-                sidePanel = sidePanelCache.get(mode.getSidePanelFXMLName());
-                sidePanelLoadedOK = true;
-            }
-
-            if (sidePanelLoadedOK)
-            {
-                sidePanels.put(mode, sidePanel);
-                sidePanelControllers.put(mode, sidePanelController);
-            }
-
-            Initializable slideOutController = null;
-            HBox slideOut = null;
-            boolean slideoutPanelLoadedOK = false;
-
-            if (slideoutPanelControllerCache.containsKey(mode.getSlideOutFXMLName()) == false)
-            {
-                try
-                {
-                    URL fxmlSlideOutFileName = getClass().getResource(mode.getSlideOutFXMLName());
-                    steno.debug("About to load slideout fxml: "
-                        + fxmlSlideOutFileName);
-                    FXMLLoader slideOutLoader = new FXMLLoader(fxmlSlideOutFileName, getLanguageBundle());
-                    slideOut = (HBox) slideOutLoader.load();
-                    slideOutController = slideOutLoader.getController();
-                    sidePanelControllers.get(mode).configure(slideOutController);
-                    slideoutPanelLoadedOK = true;
-                } catch (Exception ex)
-                {
-                    slideOutPanels.put(mode, null);
-                    slideOutControllers.put(mode, null);
-                    steno.error("Couldn't load slideout panel for mode:" + mode
-                        + ". " + ex + " : " + ex.getCause());
-                    System.out.println("Exception: " + ex.getMessage());
-                }
-            } else
-            {
-                slideOutController = slideoutPanelControllerCache.get(mode.getSlideOutFXMLName());
-                slideOut = slideoutPanelCache.get(mode.getSlideOutFXMLName());
-            }
-
-            if (slideoutPanelLoadedOK)
-            {
-                slideOutPanels.put(mode, slideOut);
-                slideOutControllers.put(mode, slideOutController);
-            }
+            setupPanelsForMode(mode);
         }
 
         // Create a place to hang the side panels from
@@ -452,18 +358,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         HBox.setHgrow(rhPanel, Priority.ALWAYS);
 
-        try
-        {
-            URL menuStripURL = getClass().getResource(ApplicationConfiguration.fxmlPanelResourcePath
-                + "TopMenuStrip.fxml");
-            FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, getLanguageBundle());
-            VBox topMenuStripControls = (VBox) menuStripLoader.load();
-            VBox.setVgrow(topMenuStripControls, Priority.NEVER);
-            rhPanel.getChildren().add(topMenuStripControls);
-        } catch (IOException ex)
-        {
-            steno.error("Failed to load top menu strip controls:" + ex);
-        }
+//        addTopMenuStripController();
 
         mainHolder.getChildren().add(rhPanel);
 
@@ -595,6 +490,121 @@ public class DisplayManager implements EventHandler<KeyEvent>
         loadProjectsAtStartup();
 
         root.layout();
+    }
+
+    private void setupPanelsForMode(ApplicationMode mode)
+    {
+        try
+        {
+            URL fxmlFileName = getClass().getResource(mode.getInsetPanelFXMLName());
+            if (fxmlFileName != null)
+            {
+                steno.debug("About to load inset panel fxml: " + fxmlFileName);
+                FXMLLoader insetPanelLoader = new FXMLLoader(fxmlFileName, getLanguageBundle());
+                Pane insetPanel = (Pane) insetPanelLoader.load();
+                Initializable insetPanelController = insetPanelLoader.getController();
+                insetPanel.setId(mode.name());
+                insetPanels.put(mode, insetPanel);
+                insetPanelControllers.put(mode, insetPanelController);
+            }
+        } catch (Exception ex)
+        {
+            ex.printStackTrace();
+            insetPanels.put(mode, null);
+            insetPanelControllers.put(mode, null);
+            steno.warning("Couldn't load inset panel for mode:" + mode + ". " + ex.getMessage());
+        }
+        
+        SidePanelManager sidePanelController = null;
+        HBox sidePanel = null;
+        boolean sidePanelLoadedOK = false;
+        
+        if (sidePanelControllerCache.containsKey(mode.getSidePanelFXMLName()) == false)
+        {
+            try
+            {
+                URL fxmlFileName = getClass().getResource(mode.getSidePanelFXMLName());
+                steno.debug("About to load side panel fxml: " + fxmlFileName);
+                FXMLLoader sidePanelLoader = new FXMLLoader(fxmlFileName, getLanguageBundle());
+                sidePanel = (HBox) sidePanelLoader.load();
+                sidePanelController = sidePanelLoader.getController();
+                sidePanel.setId(mode.name());
+                sidePanelLoadedOK = true;
+                sidePanelControllerCache.put(mode.getSidePanelFXMLName(), sidePanelController);
+                sidePanelCache.put(mode.getSidePanelFXMLName(), sidePanel);
+            } catch (Exception ex)
+            {
+                ex.printStackTrace();
+                sidePanels.put(mode, null);
+                sidePanelControllers.put(mode, null);
+                steno.error("Couldn't load side panel for mode:" + mode + ". "
+                    + ex);
+                System.out.println("Exception: " + ex.getMessage());
+            }
+        } else
+        {
+            sidePanelController = sidePanelControllerCache.get(mode.getSidePanelFXMLName());
+            sidePanel = sidePanelCache.get(mode.getSidePanelFXMLName());
+            sidePanelLoadedOK = true;
+        }
+        
+        if (sidePanelLoadedOK)
+        {
+            sidePanels.put(mode, sidePanel);
+            sidePanelControllers.put(mode, sidePanelController);
+        }
+        
+        Initializable slideOutController = null;
+        HBox slideOut = null;
+        boolean slideoutPanelLoadedOK = false;
+        
+        if (slideoutPanelControllerCache.containsKey(mode.getSlideOutFXMLName()) == false)
+        {
+            try
+            {
+                URL fxmlSlideOutFileName = getClass().getResource(mode.getSlideOutFXMLName());
+                steno.debug("About to load slideout fxml: "
+                    + fxmlSlideOutFileName);
+                FXMLLoader slideOutLoader = new FXMLLoader(fxmlSlideOutFileName, getLanguageBundle());
+                slideOut = (HBox) slideOutLoader.load();
+                slideOutController = slideOutLoader.getController();
+                sidePanelControllers.get(mode).configure(slideOutController);
+                slideoutPanelLoadedOK = true;
+            } catch (Exception ex)
+            {
+                slideOutPanels.put(mode, null);
+                slideOutControllers.put(mode, null);
+                steno.error("Couldn't load slideout panel for mode:" + mode
+                    + ". " + ex + " : " + ex.getCause());
+                System.out.println("Exception: " + ex.getMessage());
+            }
+        } else
+        {
+            slideOutController = slideoutPanelControllerCache.get(mode.getSlideOutFXMLName());
+            slideOut = slideoutPanelCache.get(mode.getSlideOutFXMLName());
+        }
+        
+        if (slideoutPanelLoadedOK)
+        {
+            slideOutPanels.put(mode, slideOut);
+            slideOutControllers.put(mode, slideOutController);
+        }
+    }
+
+    private void addTopMenuStripController()
+    {
+        try
+        {
+            URL menuStripURL = getClass().getResource(ApplicationConfiguration.fxmlPanelResourcePath
+                + "TopMenuStrip.fxml");
+            FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, getLanguageBundle());
+            VBox topMenuStripControls = (VBox) menuStripLoader.load();
+            VBox.setVgrow(topMenuStripControls, Priority.NEVER);
+            rhPanel.getChildren().add(topMenuStripControls);
+        } catch (IOException ex)
+        {
+            steno.error("Failed to load top menu strip controls:" + ex);
+        }
     }
 
     private ProjectTab createAndAddNewProjectTab()

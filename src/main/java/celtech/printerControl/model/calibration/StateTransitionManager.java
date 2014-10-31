@@ -10,6 +10,7 @@ import java.util.Set;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -60,6 +61,10 @@ public class StateTransitionManager<StateType>
      */
     private final ObjectProperty<StateType> state;
     /**
+    * A copy of {@link #state} this is only updated in the GUI thread
+    */
+    private final ObjectProperty<StateType> stateGUIT;
+    /**
      * The state to go to if {@link cancel() cancel} is called.
      */
     private final StateType cancelledState;
@@ -71,13 +76,13 @@ public class StateTransitionManager<StateType>
     private boolean cancelCalled = false;
 
     /**
-     * Return the current state as a property.
+     * Return the current state as a property. This variable is only updated on the GUI thread.
      *
      * @return the current state.
      */
-    public ReadOnlyObjectProperty<StateType> stateProperty()
+    public ReadOnlyObjectProperty<StateType> stateGUITProperty()
     {
-        return state;
+        return stateGUIT;
     }
 
     public StateTransitionManager(Transitions<StateType> transitions, StateType initialState,
@@ -88,6 +93,11 @@ public class StateTransitionManager<StateType>
         this.cancelledState = cancelledState;
         this.arrivals = transitions.getArrivals();
         state = new SimpleObjectProperty<>(initialState);
+        stateGUIT = new SimpleObjectProperty<>(initialState);
+        state.addListener((ObservableValue<? extends StateType> observable, StateType oldValue, StateType newValue) ->
+        {
+            Lookup.getTaskExecutor().runOnGUIThread(() -> {stateGUIT.set(state.get());});
+        });
     }
     
     /**
@@ -120,11 +130,7 @@ public class StateTransitionManager<StateType>
      */
     private void setState(StateType state)
     {
-
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
-        {
-            this.state.set(state);
-        });
+        this.state.set(state);
         processArrivedAtState(state);
         followAutoTransitionIfPresent(state);
     }

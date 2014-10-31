@@ -54,7 +54,7 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
     public void testFollowTransitionFromIdleByNext()
     {
         manager.followTransition(GUIName.NEXT);
-        assertEquals(TestState.PRINT_CIRCLE, manager.stateProperty().get());
+        assertEquals(TestState.PRINT_CIRCLE, manager.stateGUITProperty().get());
         assertEquals(10, manager.getX());
     }
 
@@ -63,7 +63,7 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
     {
         manager.followTransition(GUIName.NEXT);
         manager.followTransition(GUIName.NEXT);
-        assertEquals(TestState.GET_Y_OFFSET, manager.stateProperty().get());
+        assertEquals(TestState.GET_Y_OFFSET, manager.stateGUITProperty().get());
         assertEquals(11, manager.getX());
     }
 
@@ -72,7 +72,7 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
     {
         manager.followTransition(GUIName.NEXT);
         manager.followTransition(GUIName.CANCEL);
-        assertEquals(TestState.FAILED, manager.stateProperty().get());
+        assertEquals(TestState.FAILED, manager.stateGUITProperty().get());
         assertEquals(10, manager.getX());
         assertTrue(manager.isCancelled());
     }
@@ -82,7 +82,7 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
     {
         manager.followTransition(GUIName.NEXT);
         manager.followTransition(GUIName.COMPLETE);
-        assertEquals(TestState.FAILED, manager.stateProperty().get());
+        assertEquals(TestState.FAILED, manager.stateGUITProperty().get());
         assertEquals(22, manager.getX());
     }
 
@@ -91,7 +91,7 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
     {
         manager.followTransition(GUIName.NEXT);
         manager.followTransition(GUIName.UP);
-        assertEquals(TestState.CANCELLED, manager.stateProperty().get());
+        assertEquals(TestState.CANCELLED, manager.stateGUITProperty().get());
         assertEquals(22, manager.getX());
     }
 
@@ -100,7 +100,7 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
     {
         final List<TestState> states = new ArrayList<>();
 
-        manager.stateProperty().addListener(
+        manager.stateGUITProperty().addListener(
             (ObservableValue observable, Object oldValue, Object newValue) ->
             {
                 states.add((TestState) newValue);

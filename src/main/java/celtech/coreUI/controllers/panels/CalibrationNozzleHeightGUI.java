@@ -35,7 +35,7 @@ public class CalibrationNozzleHeightGUI
         this.controller = controller;
         this.stateManager = stateManager;
         
-        stateManager.stateProperty().addListener(new ChangeListener()
+        stateManager.stateGUITProperty().addListener(new ChangeListener()
         {
 
             @Override

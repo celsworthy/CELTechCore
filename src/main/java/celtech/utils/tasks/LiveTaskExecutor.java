@@ -79,6 +79,9 @@ public class LiveTaskExecutor implements TaskExecutor
             }
         };
         Thread taskThread = new Thread(runTask);
+        // This is not strictly necessary if the cancelling logic is implemented correctly, but
+        // just in case.
+        taskThread.setDaemon(true);
         taskThread.setName(taskName);
         taskThread.start();
     }
