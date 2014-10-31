@@ -131,7 +131,7 @@ public class GCodeFileParser
                     comment = commentSplit[1];
                 }
 
-                String[] lineParts = commentSplit[0].split(" ");
+                String[] lineParts = commentSplit[0].trim().split(" ");
 
                 for (String partToConsider : lineParts)
                 {

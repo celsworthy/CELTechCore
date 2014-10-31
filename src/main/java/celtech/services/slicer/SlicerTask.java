@@ -77,6 +77,11 @@ public class SlicerTask extends Task<SliceResult>
         String linuxSlicerCommand = null;
         String configLoadCommand = null;
         String combinedConfigSection = null;
+        
+        if (settings.getSlicerOverride() != null)
+        {
+            slicerType = settings.getSlicerOverride();
+        }
 
         switch (slicerType)
         {

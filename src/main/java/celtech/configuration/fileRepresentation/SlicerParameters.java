@@ -568,6 +568,7 @@ public class SlicerParameters
         SlicerParameters clone = new SlicerParameters();
 
         clone.profileName = profileName;
+        clone.slicerOverride = slicerOverride;
 
         /*
          * Extrusion data
