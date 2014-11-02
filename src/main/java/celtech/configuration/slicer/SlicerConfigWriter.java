@@ -331,6 +331,9 @@ public abstract class SlicerConfigWriter
                                 case "*":
                                     resultingValue = resultingValue * variableValue;
                                     break;
+                                case "[":
+                                    resultingValue = variableValue / resultingValue;
+                                    break;
                                 case "/":
                                     resultingValue = resultingValue / variableValue;
                                     break;
