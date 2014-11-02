@@ -325,13 +325,21 @@ public class MathUtils
 
     public static Segment getOrthogonalLineToLinePoints(double orthogonalLength, Vector2D startPoint, Vector2D endPoint)
     {
+        double halfXDifference = (Math.max(startPoint.getX(), endPoint.getX()) - Math.min(startPoint.getX(), endPoint.getX())) / 2;
+        double halfYDifference = (Math.max(startPoint.getY(), endPoint.getY()) - Math.min(startPoint.getY(), endPoint.getY())) / 2;
+
+        double midX = Math.min(startPoint.getX(), endPoint.getX()) + halfXDifference;
+        double midY = Math.min(startPoint.getY(), endPoint.getY()) + halfYDifference;
+
         Vector2D originalVector = endPoint.subtract(startPoint);
-        Vector2D midPoint = originalVector.scalarMultiply(0.5);
-        Vector2D normalisedOrthogonal = (new Vector2D(-midPoint.getY(), midPoint.getX())).normalize();
+
+        Vector2D normalisedOrthogonal = (new Vector2D(-originalVector.getY(), originalVector.getX())).normalize();
         Vector2D scaledOrthogonal = normalisedOrthogonal.scalarMultiply(orthogonalLength);
 
-        Vector2D newStartPoint = endPoint.add(scaledOrthogonal);
-        Vector2D newEndPoint = endPoint.subtract(scaledOrthogonal);
+        Vector2D midPoint = new Vector2D(midX, midY);
+
+        Vector2D newStartPoint = midPoint.add(scaledOrthogonal);
+        Vector2D newEndPoint = midPoint.subtract(scaledOrthogonal);
 
         Line resultantLine = new Line(newStartPoint, newEndPoint, 1e-12);
 
@@ -346,7 +354,7 @@ public class MathUtils
         {
             boolean withinFirstSegment = doesPointLieWithinSegment(intersectionPoint, firstSegment);
             boolean withinSecondSegment = doesPointLieWithinSegment(intersectionPoint, secondSegment);
-            
+
             if (!withinFirstSegment || !withinSecondSegment)
             {
                 intersectionPoint = null;

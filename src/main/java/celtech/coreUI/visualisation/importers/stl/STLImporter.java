@@ -28,6 +28,7 @@ import java.io.LineNumberReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Scanner;
 import javafx.beans.property.DoubleProperty;
@@ -38,6 +39,7 @@ import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
  *
@@ -254,6 +256,8 @@ public class STLImporter
         byte[] facetBytes = new byte[4];     // Holds the number of faces
         byte[] facetData;
         int progressPercent = 0;
+        
+        long timeAtStart = System.currentTimeMillis();
 
         TriangleMesh triangleMesh = new TriangleMesh();
         try
@@ -282,7 +286,7 @@ public class STLImporter
             float[] vertexXArray = new float[3];
             float[] vertexYArray = new float[3];
             float[] vertexZArray = new float[3];
-
+            
             for (int facetNum = 0; facetNum < numberOfFacets; facetNum++)
             {
                 if ((parentTask != null) && parentTask.isCancelled())
@@ -337,6 +341,9 @@ public class STLImporter
                     dataBuffer.get();
                 }
             }
+            
+            long timeAfterLoad = System.currentTimeMillis();
+            steno.info("Loaded mesh data - took " + ((timeAfterLoad - timeAtStart) / 1000) + " seconds" );
 
             FloatArrayList texCoords = new FloatArrayList();
             texCoords.add(0f);
