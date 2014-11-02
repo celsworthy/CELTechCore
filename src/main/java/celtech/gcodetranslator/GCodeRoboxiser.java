@@ -90,7 +90,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     private Vector2D nozzleLastOpenedAt = null;
     private MovementEvent lastProcessedMovementEvent = null;
 
-    private ArrayList<GCodeParseEvent> extrusionBuffer = new ArrayList<>();
+    protected ArrayList<GCodeParseEvent> extrusionBuffer = new ArrayList<>();
 //    private Vector2D precursorPoint = null;
 
     private boolean triggerCloseFromTravel = true;
@@ -132,7 +132,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     private double distanceSoFarInLayer = 0;
     private Integer lineNumberOfFirstExtrusion;
 
-    private SlicerParameters currentSettings = null;
+    protected SlicerParameters currentSettings = null;
     private int wipeFeedRate_mmPerMin = 0;
 
     // Causes home and return events to be inserted, triggering the camera
@@ -1764,7 +1764,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         }
     }
 
-    private int insertTravelAndClosePath(final int firstExtrusionEventIndex, final int finalExtrusionEventIndex, final String comment, boolean forceReverse, TravelEvent lastInwardsMoveEvent,
+    protected int insertTravelAndClosePath(final int firstExtrusionEventIndex, final int finalExtrusionEventIndex, final String comment, boolean forceReverse, TravelEvent lastInwardsMoveEvent,
         double targetVolume) throws PostProcessingError
     {
         boolean reverseWipePath = forceReverse;
@@ -1850,7 +1850,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
                 int intersectionCounter = 0;
                 int maxNumberOfIntersectionsToConsider = currentSettings.getNumberOfPerimeters();
-                float maxDistanceFromEndPoint = currentSettings.getPerimeterExtrusionWidth_mm() * maxNumberOfIntersectionsToConsider * 4;
+                float maxDistanceFromEndPoint = currentSettings.getPerimeterExtrusionWidth_mm() * 1.01f * maxNumberOfIntersectionsToConsider;
 
                 // Attempt to use the inwards move to find the innermost perimeter
                 if (lastInwardsMoveEvent != null)
@@ -1913,8 +1913,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
 //                                if (distanceFromEndPoint <= maxDistanceFromEndPoint)
 //                                {
-                                    intersectedPointDistances.put(distanceFromEndPoint, eventIndex);
-                                    intersectionCounter++;
+                                intersectedPointDistances.put(distanceFromEndPoint, eventIndex);
+                                intersectionCounter++;
 //                                }
                             }
                         }
@@ -1952,8 +1952,19 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             reverseWipePath = false;
 
             // Add a travel to the closest point
+            ExtrusionEvent closestEvent = null;
+
+            int previousMovement = getPreviousMovementEventIndex(closestEventIndex);
+            if (previousMovement > 0)
+            {
+                closestEvent = (ExtrusionEvent) extrusionBuffer.get(previousMovement);
+
+            } else
+            {
+                closestEvent = (ExtrusionEvent) extrusionBuffer.get(closestEventIndex);
+            }
+
             TravelEvent travelToClosestPoint = new TravelEvent();
-            ExtrusionEvent closestEvent = (ExtrusionEvent) extrusionBuffer.get(closestEventIndex);
             travelToClosestPoint.setX(closestEvent.getX());
             travelToClosestPoint.setY(closestEvent.getY());
             travelToClosestPoint.setComment(comment);
@@ -2004,8 +2015,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
         MovementEvent lastMovement = null;
 
-//        int indexDelta = (reverseWipePath == true) ? -1 : 1;
-        int indexDelta = -1;
+        int indexDelta = (reverseWipePath == true) ? -1 : 1;
 
         if (minimumIndexToCopyFrom >= 0)
         {
