@@ -15,7 +15,8 @@ import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
-import static java.lang.Thread.sleep;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.concurrent.WorkerStateEvent;
 import jssc.SerialPort;
 import libertysystems.configuration.ConfigNotLoadedException;
@@ -32,7 +33,8 @@ public abstract class CommandInterface extends Thread
 
     protected boolean keepRunning = true;
 
-    protected Stenographer steno = StenographerFactory.getStenographer(HardwareCommandInterface.class.getName());
+    protected Stenographer steno = StenographerFactory.getStenographer(
+        HardwareCommandInterface.class.getName());
     protected PrinterStatusConsumer controlInterface = null;
     protected String portName = null;
     protected Printer printerToUse = null;
@@ -46,6 +48,7 @@ public abstract class CommandInterface extends Thread
 
     protected boolean suppressPrinterIDChecks = false;
     protected int sleepBetweenStatusChecks = 1000;
+    private boolean loadingFirmware = false;
 
     /**
      *
@@ -129,6 +132,19 @@ public abstract class CommandInterface extends Thread
                     break;
 
                 case CHECKING_FIRMWARE:
+
+                    if (loadingFirmware)
+                    {
+                        try
+                        {
+                            Thread.sleep(200);
+                        } catch (InterruptedException ex)
+                        {
+                            steno.error("Interrupted while waiting for firmware to be loaded " + ex);
+                        }
+                        break;
+                    }
+
                     FirmwareResponse firmwareResponse = null;
                     boolean loadRequiredFirmware = false;
 
@@ -145,8 +161,10 @@ public abstract class CommandInterface extends Thread
                                 + firmwareResponse.getFirmwareRevisionInt() + " and should be "
                                 + requiredFirmwareVersion);
 
-                            loadRequiredFirmware = Lookup.getSystemNotificationHandler().askUserToDowngradeFirmware(requiredFirmwareVersion, firmwareResponse.getFirmwareRevisionInt());
-                        } else if (firmwareResponse.getFirmwareRevisionInt() < requiredFirmwareVersion)
+                            loadRequiredFirmware = Lookup.getSystemNotificationHandler().askUserToDowngradeFirmware(
+                                requiredFirmwareVersion, firmwareResponse.getFirmwareRevisionInt());
+                        } else if (firmwareResponse.getFirmwareRevisionInt()
+                            < requiredFirmwareVersion)
                         {
                             //The firmware version is lower than that associated with AutoMaker
                             // Tell the user to upgrade
@@ -155,11 +173,12 @@ public abstract class CommandInterface extends Thread
                                 + firmwareResponse.getFirmwareRevisionInt() + " and should be "
                                 + requiredFirmwareVersion);
 
-                            loadRequiredFirmware = Lookup.getSystemNotificationHandler().askUserToUpgradeFirmware(requiredFirmwareVersion, firmwareResponse.getFirmwareRevisionInt());
+                            loadRequiredFirmware = Lookup.getSystemNotificationHandler().askUserToUpgradeFirmware(
+                                requiredFirmwareVersion, firmwareResponse.getFirmwareRevisionInt());
                         }
-
                         if (loadRequiredFirmware)
                         {
+                            loadingFirmware = true;
                             loadFirmware(requiredFirmwareVersion);
                         } else
                         {
@@ -233,6 +252,7 @@ public abstract class CommandInterface extends Thread
             controlInterface.printerConnected(portName);
             commsState = RoboxCommsState.CONNECTED;
         }
+        loadingFirmware = false;
     }
 
     private void loadFirmware(int versionToLoad)

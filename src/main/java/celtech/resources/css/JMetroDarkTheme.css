@@ -1278,42 +1278,42 @@ table-view .column-header-background {
 }*/
 
 .slideout-and-project-holder{
-    -fx-background-color: dark_grey;
+    -fx-background-color: black;
 }
 
 .slideout-control-button{
     -fx-min-height:10;
     -fx-max-height: 5000;
-    -fx-min-width: 16;
-    -fx-max-width: 16;
+    -fx-min-width: 30;
+    -fx-max-width: 30;
     -fx-content-display: graphic-only;
     -fx-border-width: 0px;
-    -fx-background-color: dark_grey;
+    -fx-background-color: black;
     -fx-padding: 0 0 0 0;
     -fx-content-display: graphic-only;
     -fx-cursor: E_RESIZE;
 }
 
 .slideout-control-button:hover{
-    -fx-background-color: dark_grey;
+    -fx-background-color: black;
     -fx-border-width: 0px;
 }
 
 .slideout-control-button:pressed, .slideout-control-button:default:hover:pressed
 {
-    -fx-background-color: dark_grey;
+    -fx-background-color: black;
     -fx-border-width: 0px;
 }
 
 .slideout-control-button:focused
 {
-    -fx-background-color: dark_grey;
+    -fx-background-color: black;
     -fx-border-width: 0px;
 }
 
 .slideout-control-button:disabled, .slideout-control-button:default:disabled
 {
-    -fx-background-color: dark_grey;
+    -fx-background-color: black;
     -fx-border-width: 0px;
 }
 /*
