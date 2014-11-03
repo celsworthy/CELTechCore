@@ -75,7 +75,20 @@ class TestPrinter implements Printer
     
     void changeReel(int i) {
         ReelEEPROMDataResponse eepromData = new ReelEEPROMDataResponse();
-//        reelsProperty().get(i).updateFromEEPROMData(eepromData);
+        eepromData.setReelFilamentID("ABC");
+        eepromData.setReelAmbientTemperature(100);
+        eepromData.setReelBedTemperature(120);
+        eepromData.setReelDisplayColour(Color.DARKCYAN);
+        eepromData.setReelFeedRateMultiplier(2);
+        eepromData.setReelFilamentDiameter(3);
+        eepromData.setReelFilamentMultiplier(2);
+        eepromData.setReelFirstLayerBedTemperature(110);
+        eepromData.setReelFirstLayerNozzleTemperature(180);
+        eepromData.setReelFriendlyName("F1");
+        eepromData.setReelMaterialType(MaterialType.Nylon);
+        eepromData.setReelNozzleTemperature(205);
+        eepromData.setReelRemainingFilament(85);
+        reelsProperty().get(i).updateFromEEPROMData(eepromData);
     }
 
     @Override

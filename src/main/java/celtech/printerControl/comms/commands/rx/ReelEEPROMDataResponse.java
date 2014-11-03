@@ -351,4 +351,71 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
         reelFriendlyName = attachedReel.friendlyFilamentNameProperty().get();
     }
 
+    public void setReelFilamentID(String reelFilamentID)
+    {
+        this.reelFilamentID = reelFilamentID;
+    }
+
+    public void setReelFirstLayerNozzleTemperature(int reelFirstLayerNozzleTemperature)
+    {
+        this.reelFirstLayerNozzleTemperature = reelFirstLayerNozzleTemperature;
+    }
+
+    public void setReelNozzleTemperature(int reelNozzleTemperature)
+    {
+        this.reelNozzleTemperature = reelNozzleTemperature;
+    }
+
+    public void setReelFirstLayerBedTemperature(int reelFirstLayerBedTemperature)
+    {
+        this.reelFirstLayerBedTemperature = reelFirstLayerBedTemperature;
+    }
+
+    public void setReelBedTemperature(int reelBedTemperature)
+    {
+        this.reelBedTemperature = reelBedTemperature;
+    }
+
+    public void setReelAmbientTemperature(int reelAmbientTemperature)
+    {
+        this.reelAmbientTemperature = reelAmbientTemperature;
+    }
+
+    public void setReelFilamentDiameter(float reelFilamentDiameter)
+    {
+        this.reelFilamentDiameter = reelFilamentDiameter;
+    }
+
+    public void setReelFilamentMultiplier(float reelFilamentMultiplier)
+    {
+        this.reelFilamentMultiplier = reelFilamentMultiplier;
+    }
+
+    public void setReelFeedRateMultiplier(float reelFeedRateMultiplier)
+    {
+        this.reelFeedRateMultiplier = reelFeedRateMultiplier;
+    }
+
+    public void setReelRemainingFilament(float reelRemainingFilament)
+    {
+        this.reelRemainingFilament = reelRemainingFilament;
+    }
+
+    public void setReelMaterialType(MaterialType reelMaterialType)
+    {
+        this.reelMaterialType = reelMaterialType;
+    }
+
+    public void setReelDisplayColour(Color reelDisplayColour)
+    {
+        this.reelDisplayColour = reelDisplayColour;
+    }
+
+    public void setReelFriendlyName(String reelFriendlyName)
+    {
+        this.reelFriendlyName = reelFriendlyName;
+    }
+    
+    
+
 }
