@@ -17,7 +17,7 @@
             <center>
                 <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
                     <children>
-                        <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="%maintenancePanel.purgeMaterial">
+                        <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="purgeTitle" text="%maintenancePanel.purgeMaterial">
                             <font>
                                 <Font name="Segoe UI" size="18.0" />
                             </font>
@@ -25,12 +25,15 @@
                         <Insets bottom="90.0" />
                      </VBox.margin>
                         </Text>
-                        <Text fx:id="purgeStatus" fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="CENTER" wrappingWidth="500.0" BorderPane.alignment="CENTER">
+                        <Text fx:id="purgeStatus" fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="purgeInstructions" textAlignment="CENTER" wrappingWidth="500.0" BorderPane.alignment="CENTER">
                             <font>
                                 <Font name="Segoe UI" size="18.0" />
                             </font>
+                     <VBox.margin>
+                        <Insets bottom="30.0" />
+                     </VBox.margin>
                         </Text>
-                        <GridPane fx:id="purgeDetailsGrid" alignment="CENTER" hgap="5.0" vgap="5.0">
+                        <GridPane fx:id="purgeDetailsGrid" alignment="CENTER" hgap="5.0" styleClass="purgeInstructions" vgap="5.0">
                             <columnConstraints>
                                 <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="390.0" minWidth="10.0" prefWidth="390.0" />
                                 <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="10.0" />
@@ -43,30 +46,15 @@
                             </rowConstraints>
                             <children>
                                 <Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%purgeMaterial.purgeTemperature" textAlignment="CENTER" GridPane.rowIndex="2">
-                                    <font>
-                                        <Font name="Segoe UI" size="18.0" />
-                                    </font>
                                 </Text>
-                                <RestrictedNumberField fx:id="purgeTemperature" maxLength="3" prefColumnCount="4" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                <RestrictedNumberField id="purgeTemperature" fx:id="purgeTemperature" maxLength="3" prefColumnCount="4" styleClass="purgeInstructions" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                 <Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%purgeMaterial.currentTemperature" textAlignment="CENTER" GridPane.rowIndex="1">
-                                    <font>
-                                        <Font name="Segoe UI" size="18.0" />
-                                    </font>
                                 </Text>
                                 <Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%purgeMaterial.lastTemperature" textAlignment="CENTER">
-                                    <font>
-                                        <Font name="Segoe UI" size="18.0" />
-                                    </font>
                                 </Text>
                                 <Text fx:id="lastMaterialTemperature" fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="CENTER" GridPane.columnIndex="1">
-                                    <font>
-                                        <Font name="Segoe UI" size="18.0" />
-                                    </font>
                                 </Text>
                                 <Text fx:id="currentMaterialTemperature" fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                    <font>
-                                        <Font name="Segoe UI" size="18.0" />
-                                    </font>
                                 </Text>
                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" />
                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="1" />

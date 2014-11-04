@@ -900,6 +900,23 @@
 }
 
 /**
+* Purge
+*/
+.purgeInstructions {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 22px;
+}
+
+.purgeTitle {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 36px;
+}
+
+#purgeTemperature {
+    -fx-font-size: 18px;
+}
+
+/**
 * Reel and Material
 */
 
