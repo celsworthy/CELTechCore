@@ -1,6 +1,7 @@
 package celtech.configuration.datafileaccessors;
 
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.SlicerType;
 import celtech.configuration.fileRepresentation.UserPreferenceFile;
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +31,7 @@ public class UserPreferenceContainer
         if (!userPreferenceInputFile.exists())
         {
             userPreferenceFile = new UserPreferenceFile();
+            userPreferenceFile.setSlicerType(SlicerType.Cura);
             try
             {
                 mapper.writeValue(userPreferenceInputFile, userPreferenceFile);
