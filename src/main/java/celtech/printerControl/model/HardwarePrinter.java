@@ -589,7 +589,7 @@ public final class HardwarePrinter implements Printer
             steno.error("Couldn't send abort command to printer");
         }
         PrinterUtils.waitOnBusy(this, cancellable);
-        printEngine.printGCodeFile(GCodeMacros.getFilename("abort_print"), false);
+        printEngine.printGCodeFile(GCodeMacros.getFilename("abort_print"), true);
         PrinterUtils.waitOnMacroFinished(this, cancellable);
         success = true;
 
