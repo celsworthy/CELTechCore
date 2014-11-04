@@ -66,7 +66,7 @@ public enum CalibrationXAndYState
      */
     public String getStepTitle()
     {
-        if (stepTitleResource == null)
+        if (stepTitleResource == null || stepTitleResource.equals(""))
         {
             return "";
         } else
