@@ -358,7 +358,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         HBox.setHgrow(rhPanel, Priority.ALWAYS);
 
-//        addTopMenuStripController();
+        addTopMenuStripController();
 
         mainHolder.getChildren().add(rhPanel);
 
@@ -366,8 +366,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
         tabDisplay = new TabPane();
         tabDisplay.setPickOnBounds(false);
         tabDisplay.setOnKeyPressed(this);
-        tabDisplay.setTabMinHeight(50);
-        tabDisplay.setTabMaxHeight(50);
+        tabDisplay.setTabMinHeight(56);
+        tabDisplay.setTabMaxHeight(56);
         tabDisplaySelectionModel = tabDisplay.getSelectionModel();
         tabDisplay.getStyleClass().add("main-project-tabPane");
 

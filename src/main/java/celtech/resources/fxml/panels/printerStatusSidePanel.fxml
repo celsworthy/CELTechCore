@@ -22,9 +22,9 @@
                     <children>
                         <HBox alignment="TOP_CENTER" VBox.vgrow="NEVER">
                             <children>
-                                <Label id="printerStatusTitle" styleClass="sidePanelTitle" text="%sidePanel_printerStatus.title">
+                                <Label id="printerStatusTitle" styleClass="sidePanelTitle" text="%sidePanel_printerStatus.title" translateX="7.0">
                                     <graphic>
-                                        <Group>
+                                        <Group scaleX="1.5" scaleY="1.5" translateX="-15.0">
                                             <children>
                                                 <Group>
                                                     <children>

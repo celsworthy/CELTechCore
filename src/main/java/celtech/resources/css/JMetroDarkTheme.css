@@ -1231,8 +1231,9 @@ table-view .column-header-background {
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-text-fill: highlight_colour;
     -fx-pref-height: 60;
-    -fx-scale-x: 1.7;
-    -fx-scale-y: 1.7;
+    -fx-font-size: 36px;
+/*    -fx-scale-x: 1.7;
+    -fx-scale-y: 1.7;*/
 }
 
 .slideOutPanel, .slideOutPanel .tab-pane{
@@ -1278,7 +1279,7 @@ table-view .column-header-background {
 }*/
 
 .slideout-and-project-holder{
-    -fx-background-color: black;
+    -fx-background-color: dark_grey;
 }
 
 .slideout-control-button{
@@ -1329,7 +1330,7 @@ table-view .column-header-background {
 }*/
 
 .slideout-control-button:hover .slideout-control-button-graphic{
-    -fx-fill: light_grey;
+    -fx-fill: white;
 }
 
 .slideout-control-button:pressed .slideout-control-button-graphic, .slideout-control-button:default:hover:pressed .slideout-control-button-graphic{
@@ -1337,7 +1338,7 @@ table-view .column-header-background {
 }
 
 .slideout-control-button .slideout-control-button-graphic{
-    -fx-fill: mid_grey;
+    -fx-fill: white;
 }
 
 /*
@@ -1816,7 +1817,7 @@ table-view .column-header-background {
 */
 
 #printerStatusTitle {
-    -fx-font-size: 22px;
+    -fx-font-size: 36px;
 }
 
 .table-view .column-header .label { 
