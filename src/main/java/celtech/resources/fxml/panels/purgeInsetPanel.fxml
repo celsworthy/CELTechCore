@@ -6,108 +6,103 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
+<?import celtech.coreUI.components.buttons.*?>
 
 <VBox fx:id="container" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" pickOnBounds="false" styleClass="inset-panel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.PurgeInsetPanelController">
     <children>
         <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" pickOnBounds="false" VBox.vgrow="ALWAYS">
             <VBox.margin>
-                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                <Insets />
             </VBox.margin>
             <center>
                 <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
                     <children>
-                        <Text fx:id="purgeStatus" fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="CENTER" wrappingWidth="500.0" BorderPane.alignment="CENTER">
+                        <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="purgeTitle" text="%maintenancePanel.purgeMaterial">
                             <font>
                                 <Font name="Segoe UI" size="18.0" />
                             </font>
-                        </Text><GridPane fx:id="purgeDetailsGrid" alignment="CENTER" hgap="5.0" vgap="5.0">
-  <columnConstraints>
-    <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="390.0" minWidth="10.0" prefWidth="390.0" />
-    <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="10.0" />
-<ColumnConstraints halignment="LEFT" hgrow="NEVER" maxWidth="105.0" minWidth="10.0" prefWidth="105.0" />
-  </columnConstraints>
-  <rowConstraints>
-    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-  </rowConstraints>
-<children>
-<Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%purgeMaterial.purgeTemperature" textAlignment="CENTER" GridPane.rowIndex="2">
-<font>
-<Font name="Segoe UI" size="18.0" />
-</font>
-</Text><RestrictedNumberField fx:id="purgeTemperature" maxLength="3" prefColumnCount="4" GridPane.columnIndex="1" GridPane.rowIndex="2" /><Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%purgeMaterial.currentTemperature" textAlignment="CENTER" GridPane.rowIndex="1">
-<font>
-<Font name="Segoe UI" size="18.0" />
-</font>
-</Text><Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%purgeMaterial.lastTemperature" textAlignment="CENTER">
-<font>
-<Font name="Segoe UI" size="18.0" />
-</font>
-</Text><Text fx:id="lastMaterialTemperature" fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="CENTER" GridPane.columnIndex="1">
-<font>
-<Font name="Segoe UI" size="18.0" />
-</font>
-</Text><Text fx:id="currentMaterialTemperature" fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="1">
-<font>
-<Font name="Segoe UI" size="18.0" />
-</font>
-</Text><Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" /><Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="1" /><Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-</children>
-</GridPane>
-<HBox alignment="CENTER" />
+                     <VBox.margin>
+                        <Insets bottom="90.0" />
+                     </VBox.margin>
+                        </Text>
+                        <Text fx:id="purgeStatus" fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="purgeInstructions" textAlignment="CENTER" wrappingWidth="500.0" BorderPane.alignment="CENTER">
+                            <font>
+                                <Font name="Segoe UI" size="18.0" />
+                            </font>
+                     <VBox.margin>
+                        <Insets bottom="30.0" />
+                     </VBox.margin>
+                        </Text>
+                        <GridPane fx:id="purgeDetailsGrid" alignment="CENTER" hgap="5.0" styleClass="purgeInstructions" vgap="5.0">
+                            <columnConstraints>
+                                <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="390.0" minWidth="10.0" prefWidth="390.0" />
+                                <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="10.0" />
+                                <ColumnConstraints halignment="LEFT" hgrow="NEVER" maxWidth="105.0" minWidth="10.0" prefWidth="105.0" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            </rowConstraints>
+                            <children>
+                                <Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%purgeMaterial.purgeTemperature" textAlignment="CENTER" GridPane.rowIndex="2">
+                                </Text>
+                                <RestrictedNumberField id="purgeTemperature" fx:id="purgeTemperature" maxLength="3" prefColumnCount="4" styleClass="purgeInstructions" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                <Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%purgeMaterial.currentTemperature" textAlignment="CENTER" GridPane.rowIndex="1">
+                                </Text>
+                                <Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%purgeMaterial.lastTemperature" textAlignment="CENTER">
+                                </Text>
+                                <Text fx:id="lastMaterialTemperature" fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="CENTER" GridPane.columnIndex="1">
+                                </Text>
+                                <Text fx:id="currentMaterialTemperature" fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                </Text>
+                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" />
+                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                            </children>
+                        </GridPane>
+                        <HBox alignment="CENTER" />
                     </children>
                 </VBox>
             </center>
-            <top>
-                <VBox alignment="TOP_CENTER" BorderPane.alignment="CENTER">
-                    <children>
-                        <Text fill="WHITE" layoutX="10.0" layoutY="26.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%maintenancePanel.purgeMaterial">
-                            <font>
-                                <Font name="Segoe UI" size="18.0" />
-                            </font>
-                        </Text>
-                    </children>
-                    <padding>
-                        <Insets bottom="5.0" top="5.0" />
-                    </padding>
-                </VBox>
-            </top>
             <bottom>
-                <VBox alignment="CENTER" pickOnBounds="false" spacing="5.0" BorderPane.alignment="CENTER">
+                <VBox alignment="CENTER" maxHeight="-Infinity" minHeight="-Infinity" pickOnBounds="false" prefHeight="90.0" spacing="5.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER">
                     <children>
-                        <Text fx:id="instruction" fill="WHITE" layoutX="278.0" layoutY="177.0" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="CENTER">
-                            <font>
-                                <Font name="Segoe UI" size="18.0" />
-                            </font>
-                        </Text>
-<StackPane pickOnBounds="false">
-<children>
-<Button fx:id="okButton" layoutX="19.0" layoutY="10.0" mnemonicParsing="false" onAction="#okPressed" text="%misc.OK" />
-<HBox alignment="CENTER_RIGHT" pickOnBounds="false">
-<children>
-<StackPane pickOnBounds="false">
-<children>
-                                        <Button fx:id="startPurgeButton" mnemonicParsing="false" onAction="#start" text="%purgeMaterial.StartPurge" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
-<Button fx:id="proceedButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#proceed" text="%purgeMaterial.proceed" />
-</children>
-</StackPane>
-</children>
-</HBox>
+                        <StackPane pickOnBounds="false">
+                            <children>
+                                <GraphicButton fx:id="okButton" fxmlFileName="backwardButton" layoutX="19.0" layoutY="10.0" mnemonicParsing="false" onAction="#okPressed" text="%misc.OK" />
+                                <HBox alignment="CENTER_RIGHT" pickOnBounds="false">
+                                    <children>
+                                        <StackPane pickOnBounds="false">
+                                            <children>
+                                                <GraphicButton fx:id="startPurgeButton" fxmlFileName="startButton" onAction="#start" text="%purgeMaterial.StartPurge" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
+                                                <GraphicButton fx:id="proceedButton" fxmlFileName="nextButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#proceed" text="%purgeMaterial.proceed" />
+                                            </children>
+                                        </StackPane>
+                                    </children>
+                           <StackPane.margin>
+                              <Insets right="10.0" />
+                           </StackPane.margin>
+                                </HBox>
                                 <HBox alignment="CENTER_LEFT" pickOnBounds="false">
                                     <children>
-                                        <Button fx:id="cancelPurgeButton" mnemonicParsing="false" onAction="#cancel" text="%calibrationPanel.cancelCalibration">
-                                            <StackPane.margin>
-                                                <Insets />
-                                            </StackPane.margin>
-                                        </Button>
+                                        <GraphicButton fx:id="cancelPurgeButton" fxmlFileName="cancelButton" onAction="#cancel" text="%calibrationPanel.cancelCalibration" />
                                     </children>
+                           <padding>
+                              <Insets left="40.0" right="10.0" />
+                           </padding>
                                 </HBox>
-</children>
-</StackPane>
+                            </children>
+                        </StackPane>
                     </children>
                 </VBox>
             </bottom>
+         <left>
+            <VBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="30.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER" />
+         </left>
+         <top>
+            <HBox maxHeight="-Infinity" minHeight="-Infinity" prefHeight="60.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER" />
+         </top>
         </BorderPane>
     </children>
 </VBox>

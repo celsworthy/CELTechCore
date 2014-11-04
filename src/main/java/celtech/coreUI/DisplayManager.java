@@ -10,6 +10,7 @@ import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.components.SlideoutAndProjectHolder;
+import celtech.coreUI.components.TopMenuStrip;
 import celtech.coreUI.controllers.InfoScreenIndicatorController;
 import celtech.coreUI.controllers.PrinterStatusPageController;
 import celtech.coreUI.controllers.panels.LayoutSidePanelController;
@@ -593,18 +594,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private void addTopMenuStripController()
     {
-        try
-        {
-            URL menuStripURL = getClass().getResource(ApplicationConfiguration.fxmlPanelResourcePath
-                + "TopMenuStrip.fxml");
-            FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, getLanguageBundle());
-            VBox topMenuStripControls = (VBox) menuStripLoader.load();
-            VBox.setVgrow(topMenuStripControls, Priority.NEVER);
-            rhPanel.getChildren().add(topMenuStripControls);
-        } catch (IOException ex)
-        {
-            steno.error("Failed to load top menu strip controls:" + ex);
-        }
+            HBox topMenuStrip = new TopMenuStrip();
+            rhPanel.getChildren().add(topMenuStrip);
     }
 
     private ProjectTab createAndAddNewProjectTab()
