@@ -13,9 +13,9 @@
 
 <Pane fx:id="topPane" minHeight="700.0" pickOnBounds="false" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationInsetPanelController">
     <children>
-        <BorderPane fx:id="topBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+        <BorderPane fx:id="topBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: black;">
             <center>
-                <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
+                <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="calibrationBody" BorderPane.alignment="CENTER">
                     <children>
                         <BorderPane>
                             <top>
@@ -137,12 +137,12 @@
                     </padding>
                 </VBox>
             </bottom>
-            <top>
-                <HBox id="calibrationTopMenu" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="60.0" BorderPane.alignment="CENTER" />
-            </top>
             <left>
                 <Pane id="calibrationLeftBorder" prefWidth="30.0" BorderPane.alignment="CENTER" />
             </left>
+         <top>
+            <TopMenuStrip BorderPane.alignment="CENTER" />
+         </top>
         </BorderPane>
     </children>
 </Pane>

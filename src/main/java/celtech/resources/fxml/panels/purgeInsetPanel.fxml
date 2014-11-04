@@ -10,12 +10,12 @@
 
 <VBox fx:id="container" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" pickOnBounds="false" styleClass="inset-panel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.PurgeInsetPanelController">
     <children>
-        <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" pickOnBounds="false" VBox.vgrow="ALWAYS">
+        <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" pickOnBounds="false" style="-fx-background-color: black;" VBox.vgrow="ALWAYS">
             <VBox.margin>
                 <Insets />
             </VBox.margin>
             <center>
-                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" style="-fx-background-color: &quot;0x636363&quot;;" styleClass="purgeBody" BorderPane.alignment="CENTER">
                     <children>
                         <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="purgeTitle" text="%maintenancePanel.purgeMaterial">
                             <font>
@@ -101,7 +101,7 @@
             <VBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="30.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER" />
          </left>
          <top>
-            <HBox maxHeight="-Infinity" minHeight="-Infinity" prefHeight="60.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER" />
+            <TopMenuStrip BorderPane.alignment="CENTER" />
          </top>
         </BorderPane>
     </children>

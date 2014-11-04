@@ -26,7 +26,7 @@ public class TopMenuStrip extends HBox
 
     @FXML
     private HBox container;
-    
+
     @FXML
     private GraphicButton helpButton;
 
@@ -73,9 +73,14 @@ public class TopMenuStrip extends HBox
             ApplicationMode.STATUS)
             .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LAYOUT)
                 .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)
-                    .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.ABOUT)))));
-        
+                    .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.ABOUT)
+                        .or(applicationStatus.modeProperty().isEqualTo(
+                                ApplicationMode.CALIBRATION_CHOICE)
+                            .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)))))));
+
         helpButton.disableProperty().bind(applicationStatus.modeProperty().isEqualTo(
-            ApplicationMode.ABOUT));
+            ApplicationMode.ABOUT)
+            .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
+            .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE))));
     }
 }

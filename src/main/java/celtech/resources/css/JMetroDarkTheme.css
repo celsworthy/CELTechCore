@@ -902,6 +902,11 @@
 /**
 * Purge
 */
+
+.purgeBody {
+    -fx-background_color: light_grey;
+}
+
 .purgeInstructions {
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 22px;
@@ -1700,6 +1705,10 @@ table-view .column-header-background {
 
 #calibrationBottomArea {
     -fx-background-color: black;
+}
+
+.calibrationBody {
+    -fx-background-color: light_grey;
 }
 
 .calibrationButtonsAB {
