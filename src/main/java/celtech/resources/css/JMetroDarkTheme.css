@@ -1718,6 +1718,10 @@ table-view .column-header-background {
 * About Panel
 */
 
+.aboutBody {
+    -fx-background-color: robox_blue;
+}
+
 .aboutVersionText {
     -fx-font-size: 32px;
 }

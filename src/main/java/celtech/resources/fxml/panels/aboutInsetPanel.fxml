@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import celtech.coreUI.components.*?>
 <?import javafx.scene.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
@@ -12,9 +13,9 @@
 
 <VBox minWidth="920.0" styleClass="blue-inset-panel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.AboutPanelController">
     <children>
-      <BorderPane>
+      <BorderPane style="-fx-background-color: black;">
          <center>
-              <AnchorPane BorderPane.alignment="CENTER">
+              <AnchorPane styleClass="aboutBody" BorderPane.alignment="CENTER">
                   <children>
                       <Group AnchorPane.leftAnchor="60.0" AnchorPane.topAnchor="60.0">
                           <children>
@@ -186,7 +187,7 @@
             <VBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="30.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER" />
          </left>
          <top>
-            <HBox maxHeight="-Infinity" minHeight="-Infinity" prefHeight="60.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER" />
+            <TopMenuStrip BorderPane.alignment="CENTER" />
          </top>
       </BorderPane>
     </children>
