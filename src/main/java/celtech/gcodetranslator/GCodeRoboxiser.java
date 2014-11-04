@@ -26,6 +26,9 @@ import celtech.gcodetranslator.events.TravelEvent;
 import celtech.gcodetranslator.events.UnretractEvent;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.utils.Math.MathUtils;
+import static celtech.utils.Math.MathUtils.EQUAL;
+import static celtech.utils.Math.MathUtils.MORE_THAN;
+import static celtech.utils.Math.MathUtils.compareDouble;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -138,7 +141,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     // Causes home and return events to be inserted, triggering the camera
     private boolean movieMakerEnabled = false;
 
-    private SlicerType slicerType;
+    protected SlicerType slicerType;
 
     /**
      * OutputWriter is a wrapper to a file writer that allows us to count the number of non-comment and non-blank lines.
@@ -885,27 +888,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         extrusionBuffer.clear();
     }
 
-    private final int EQUAL = 0;
-    private final int MORE_THAN = 1;
-    private final int LESS_THAN = -1;
-
-    private int compareDouble(double a, double b)
-    {
-        double epsilon = 10e-5;
-        double result = a - b;
-
-        if (Math.abs(result) < epsilon)
-        {
-            return EQUAL;
-        } else if (result > 0)
-        {
-            return MORE_THAN;
-        } else
-        {
-            return LESS_THAN;
-        }
-    }
-
     protected void writeEventsWithNozzleClose(String comment) throws PostProcessingError
     {
         boolean closeAtEndOfPath = false;
@@ -1371,7 +1353,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                                                           comment,
                                                                           FindEventDirection.BACKWARDS_FROM_END);
 
-                            if (compareDouble(nozzleCloseOverVolume, currentNozzle.getNozzleParameters().getEjectionVolume()) == EQUAL)
+                            if (compareDouble(nozzleCloseOverVolume, currentNozzle.getNozzleParameters().getEjectionVolume(), 10e-5) == EQUAL)
                             {
                                 extrusionBuffer.get(nozzleCloseStartIndex).setComment(
                                     "Full open - full eject volume full wipe volume");
@@ -1609,7 +1591,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                     + (event.getE()
                                     / currentNozzle.getNozzleParameters().getOpenOverVolume());
 
-                                if (compareDouble(currentNozzlePosition, 1)
+                                if (compareDouble(currentNozzlePosition, 1, 10e-5)
                                     == EQUAL
                                     || currentNozzlePosition > 1)
                                 {
@@ -1650,7 +1632,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                         / (nozzleCloseOverVolume
                                         * (currentNozzle.getNozzleParameters().getMidPointPercent() / 100.0))));
                                 }
-                                if (compareDouble(currentNozzlePosition, 0)
+                                if (compareDouble(currentNozzlePosition, 0, 10e-5)
                                     == EQUAL
                                     || currentNozzlePosition < 0)
                                 {
@@ -1689,7 +1671,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                     * (event.getE()
                                     / (nozzleCloseOverVolume * (1
                                     - (currentNozzle.getNozzleParameters().getMidPointPercent() / 100.0)))));
-                                if (compareDouble(currentNozzlePosition, 0)
+                                if (compareDouble(currentNozzlePosition, 0, 10e-5)
                                     == EQUAL
                                     || currentNozzlePosition < 0)
                                 {
@@ -1790,20 +1772,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         {
             if (finalExtrusionEvent.getExtrusionTask() == ExtrusionTask.ExternalPerimeter)
             {
-                if (slicerType == SlicerType.Cura && lastInwardsMoveEvent == null)
-                {
-                    // The penultimate travel seems to be an inwards move!    
-                    int ultimateTravelEventIndex = getPreviousEventIndex(modifiedFinalExtrusionEventIndex, TravelEvent.class);
-                    if (ultimateTravelEventIndex > 0)
-                    {
-                        GCodeParseEvent candidateInwardsMove = extrusionBuffer.get(ultimateTravelEventIndex - 1);
-                        if (candidateInwardsMove instanceof TravelEvent)
-                        {
-                            lastInwardsMoveEvent = (TravelEvent) candidateInwardsMove;
-                        }
-                    }
-                }
-
                 // We have to make sure we only close on the inner perimeters (if we can!)
                 // Calculate new start/end values
                 int endOfInnerPerimeter = getPreviousExtrusionTask(modifiedFinalExtrusionEventIndex, ExtrusionTask.Perimeter);
@@ -1836,16 +1804,9 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 }
 
                 Segment orthogonalSegment = null;
+                Vector2D orthogonalSegmentMidpoint = null;
                 Vector2D lastPointConsidered = null;
 
-                Comparator<Double> intersectedPointComparator = new Comparator<Double>()
-                {
-                    @Override
-                    public int compare(Double t, Double t1)
-                    {
-                        return compareDouble(t, t1);
-                    }
-                };
                 TreeMap<Double, Integer> intersectedPointDistances = new TreeMap<>();
 
                 int intersectionCounter = 0;
@@ -1873,6 +1834,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                     orthogonalSegment = MathUtils.getOrthogonalLineToLinePoints(maxDistanceFromEndPoint, absolutelyTheLastMovementVectorEver, endOfExtrusion);
                 }
 
+                orthogonalSegmentMidpoint = MathUtils.findMidPoint(orthogonalSegment.getStart(), orthogonalSegment.getEnd());
+
                 //Prime the last movement if we can...
                 int indexToBeginSearchAt = Math.max(lastLayerChangeIndex, firstExtrusionEventIndex);
                 int indexOfPriorMovement = getPreviousMovementEventIndex(indexToBeginSearchAt);
@@ -1894,7 +1857,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
                 for (int eventIndex = indexToBeginSearchAt;
                     intersectionCounter <= maxNumberOfIntersectionsToConsider
-                    && eventIndex < modifiedFinalExtrusionEventIndex;
+                    && eventIndex <= modifiedFinalExtrusionEventIndex;
                     eventIndex++)
                 {
                     if (extrusionBuffer.get(eventIndex) instanceof MovementEvent)
@@ -1909,11 +1872,11 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                             Vector2D intersectionPoint = MathUtils.getSegmentIntersection(orthogonalSegment, segmentUnderConsideration);
                             if (intersectionPoint != null)
                             {
-                                double distanceFromEndPoint = Math.min(intersectionPoint.distance(orthogonalSegment.getStart()), intersectionPoint.distance(orthogonalSegment.getEnd()));
+                                double distanceFromMidPoint = intersectionPoint.distance(orthogonalSegmentMidpoint);
 
 //                                if (distanceFromEndPoint <= maxDistanceFromEndPoint)
 //                                {
-                                intersectedPointDistances.put(distanceFromEndPoint, eventIndex);
+                                intersectedPointDistances.put(distanceFromMidPoint, eventIndex);
                                 intersectionCounter++;
 //                                }
                             }
@@ -1923,11 +1886,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                     }
                 }
 
-                if (intersectedPointDistances.size()
-                    >= maxNumberOfIntersectionsToConsider)
-                {
-                    closestEventIndex = (int) intersectedPointDistances.values().toArray()[maxNumberOfIntersectionsToConsider - 1];
-                } else if (intersectedPointDistances.size() > 0)
+                if (intersectedPointDistances.size() > 0)
                 {
                     closestEventIndex = (int) intersectedPointDistances.values().toArray()[intersectedPointDistances.size() - 1];
                 }
@@ -2401,14 +2360,14 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                     if (volumeIndex == -1)
                     {
                         if (compareDouble(volumeConsidered,
-                                          requiredEjectionVolume) == EQUAL)
+                                          requiredEjectionVolume, 10e-5) == EQUAL)
                         {
                             // No need to split line - replace the current event with a nozzle change event
                             volumeIndex = eventIndex;
                             eventIndices.put(eventType, volumeIndex);
                             break;
                         } else if (compareDouble(volumeConsidered,
-                                                 requiredEjectionVolume)
+                                                 requiredEjectionVolume, 10e-5)
                             == MORE_THAN)
                         {
                             // Split the line
@@ -2501,14 +2460,14 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                     if (volumeIndex == -1)
                     {
                         if (compareDouble(volumeConsidered,
-                                          requiredEjectionVolume) == EQUAL)
+                                          requiredEjectionVolume, 10e-5) == EQUAL)
                         {
                             // No need to split line - replace the current event with a nozzle change event
                             volumeIndex = eventIndex;
                             eventIndices.put(eventType, volumeIndex);
                             break;
                         } else if (compareDouble(volumeConsidered,
-                                                 requiredEjectionVolume)
+                                                 requiredEjectionVolume, 10e-5)
                             == MORE_THAN)
                         {
                             // Split the line

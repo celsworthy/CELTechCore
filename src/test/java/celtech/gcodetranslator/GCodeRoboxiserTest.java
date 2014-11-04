@@ -4,6 +4,7 @@
 package celtech.gcodetranslator;
 
 import celtech.JavaFXConfiguredTest;
+import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParameters;
 import celtech.gcodetranslator.events.CommentEvent;
@@ -99,6 +100,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
         GCodeRoboxiser gCodeRoboxiser = new GCodeRoboxiser();
         gCodeRoboxiser.currentSettings = parameters;
         gCodeRoboxiser.extrusionBuffer = extrusionBuffer;
+        gCodeRoboxiser.slicerType = SlicerType.Cura;
 
         try
         {
@@ -143,20 +145,17 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
         //G1 X2.250 Y22.750 E1.23083
         //G1 X22.750 Y22.750 E1.23083
         //G1 X22.750 Y2.250 E1.23083
-        
         /*
          * 0.75 - 24.25
          * E 1.41095
          * Goto RF
-         * LF->LB->RB->RF
+         * RB->LB->LF->RF
          */
         //G0 F18000 X24.250 Y0.750
-        // RB->LB->LF->RF
         //G1 F780 X24.250 Y24.250 E1.41095
         //G1 X0.750 Y24.250 E1.41095
         //G1 X0.750 Y0.750 E1.41095
         //G1 X24.250 Y0.750 E1.41095
-        
         /*
          * 0.45 - 24.55
          * E 1.44697
@@ -208,8 +207,6 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
         //G1 X0.150 Y0.150 E1.48300
         //G1 X24.850 Y0.150 E1.48300
         //G0 F18000 X24.179 Y1.269
-        
-        
         /*
          * 2.25 - 22.75
          * E 1.23083
@@ -237,7 +234,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
          * 0.75 - 24.25
          * E 1.41095
          * Goto RF
-         * LF->LB->RB->RF
+         * RB->LB->LF->RF
          */
         lhX = frontY = 0.75;
         rhX = backY = 24.25;
@@ -245,9 +242,9 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 
         extrusionBuffer.add(constructTravelEvent(rhX, frontY, 18000));
 
-        extrusionBuffer.add(constructExtrusionEvent(extrusion, 0, lhX, frontY, 960, ExtrusionTask.Perimeter));
+        extrusionBuffer.add(constructExtrusionEvent(extrusion, 0, rhX, backY, 960, ExtrusionTask.Perimeter));
         extrusionBuffer.add(constructExtrusionEvent(extrusion, 0, lhX, backY, 0, ExtrusionTask.Perimeter));
-        extrusionBuffer.add(constructExtrusionEvent(extrusion, 0, rhX, backY, 0, ExtrusionTask.Perimeter));
+        extrusionBuffer.add(constructExtrusionEvent(extrusion, 0, lhX, frontY, 0, ExtrusionTask.Perimeter));
         extrusionBuffer.add(constructExtrusionEvent(extrusion, 0, rhX, frontY, 0, ExtrusionTask.Perimeter));
 
         /*
@@ -336,6 +333,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
         GCodeRoboxiser gCodeRoboxiser = new GCodeRoboxiser();
         gCodeRoboxiser.currentSettings = parameters;
         gCodeRoboxiser.extrusionBuffer = extrusionBuffer;
+        gCodeRoboxiser.slicerType = SlicerType.Cura;
 
         try
         {
@@ -343,13 +341,162 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 
             // Check that there is a travel event to the next part
             TravelEvent travelToWipe = (TravelEvent) gCodeRoboxiser.extrusionBuffer.get(34);
-            assertEquals(0.45, travelToWipe.getX(), 1e-12);
-            assertEquals(0.45, travelToWipe.getY(), 1e-12);
+            assertEquals(0.75, travelToWipe.getX(), 1e-12);
+            assertEquals(0.75, travelToWipe.getY(), 1e-12);
 
             // Check that there is a single wipe extrusion event - we're only wiping 0.5mm3 so this only requires part of the line
             ExtrusionEvent wipeEvent = (ExtrusionEvent) gCodeRoboxiser.extrusionBuffer.get(35);
-            assertEquals(8.777, wipeEvent.getX(), 1e-3);
-            assertEquals(0.45, wipeEvent.getY(), 1e-12);
+            assertEquals(9.077, wipeEvent.getX(), 1e-3);
+            assertEquals(0.75, wipeEvent.getY(), 1e-12);
+
+            // Check that the final event is the travel to the next part
+            TravelEvent finalTravel = (TravelEvent) gCodeRoboxiser.extrusionBuffer.get(gCodeRoboxiser.extrusionBuffer.size() - 1);
+            assertEquals(finalTravelToX, finalTravel.getX(), 1e-12);
+            assertEquals(finalTravelToY, finalTravel.getY(), 1e-12);
+        } catch (PostProcessingError ex)
+        {
+            fail("Got PostProcessingError");
+        }
+    }
+
+    @Test
+    public void testInsertTravelAndClosePathBoxScenario2() throws IOException, URISyntaxException
+    {
+        SlicerParameters parameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
+        parameters.setSlicerOverride(SlicerType.Cura);
+
+        ArrayList<GCodeParseEvent> extrusionBuffer = new ArrayList<>();
+
+        /*
+         * X 95.595 - 119.095
+         * Y 64.539 - 88.039
+         * E 1.41095
+         * Goto RF
+         * RB->LB->LF->RF
+         */
+        //G0 F18000 X119.095 Y64.539 Z0.400
+        //;TYPE:WALL-INNER
+        //G1 F960 X119.095 Y88.039 E1.41095
+        //G1 X95.595 Y88.039 E1.41095
+        //G1 X95.595 Y64.539 E1.41095
+        //G1 X119.095 Y64.539 E1.41095
+        /*
+         * X 95.295 - 119.395
+         * Y 64.239 - 88.339
+         * E 1.44697
+         * Goto RF
+         * RB->LB->LF->RF
+         */
+        //G0 F18000 X119.395 Y64.239
+        //G1 F960 X119.395 Y88.339 E1.44697
+        //G1 X95.295 Y88.339 E1.44697
+        //G1 X95.295 Y64.239 E1.44697
+        //G1 X119.395 Y64.239 E1.44697
+        /*
+         * X 94.995 - 119.965
+         * Y 63.939 - 88.639
+         * E 1.483
+         * Goto RF
+         * RB->LB->LF->RF
+         */
+        //G0 F18000 X119.695 Y63.939
+        //;TYPE:WALL-OUTER
+        //G1 F960 X119.695 Y88.639 E1.48300
+        //G1 X94.995 Y88.639 E1.48300
+        //G1 X94.995 Y63.939 E1.48300
+        //G1 X119.695 Y63.939 E1.48300
+        //G0 F18000 X119.023 Y64.824      
+        
+        /*
+         * X 95.595 - 119.095
+         * Y 64.539 - 88.039
+         * E 1.41095
+         * Goto RF
+         * RB->LB->LF->RF
+         */
+        double lhX = 95.595;
+        double rhX = 119.095;
+        double backY = 88.039;
+        double frontY = 64.539;
+        double extrusion = 1.41095;
+
+        extrusionBuffer.add(constructLayerChangeWithTravelEvent(0.4, rhX, frontY, 18000));
+
+        CommentEvent innerWallComment = new CommentEvent();
+        innerWallComment.setComment(";TYPE:WALL-INNER");
+        extrusionBuffer.add(innerWallComment);
+
+        extrusionBuffer.add(constructExtrusionEvent(extrusion, 0, rhX, backY, 780, ExtrusionTask.Perimeter));
+        extrusionBuffer.add(constructExtrusionEvent(extrusion, 0, lhX, backY, 0, ExtrusionTask.Perimeter));
+        extrusionBuffer.add(constructExtrusionEvent(extrusion, 0, lhX, frontY, 0, ExtrusionTask.Perimeter));
+        extrusionBuffer.add(constructExtrusionEvent(extrusion, 0, rhX, frontY, 0, ExtrusionTask.Perimeter));
+
+        /*
+         * X 95.295 - 119.395
+         * Y 64.239 - 88.339
+         * E 1.44697
+         * Goto RF
+         * RB->LB->LF->RF
+         */
+        lhX = 95.295;
+        rhX = 119.395;
+        backY = 88.339;
+        frontY = 64.239;
+        extrusion = 1.44697;
+
+        extrusionBuffer.add(constructTravelEvent(rhX, frontY, 18000));
+
+        extrusionBuffer.add(constructExtrusionEvent(extrusion, 0, rhX, backY, 960, ExtrusionTask.Perimeter));
+        extrusionBuffer.add(constructExtrusionEvent(extrusion, 0, lhX, backY, 0, ExtrusionTask.Perimeter));
+        extrusionBuffer.add(constructExtrusionEvent(extrusion, 0, lhX, frontY, 0, ExtrusionTask.Perimeter));
+        extrusionBuffer.add(constructExtrusionEvent(extrusion, 0, rhX, frontY, 0, ExtrusionTask.Perimeter));
+
+        /*
+         * X 94.995 - 119.965
+         * Y 63.939 - 88.639
+         * E 1.483
+         * Goto RF
+         * RB->LB->LF->RF
+         */
+        lhX = 94.995;
+        rhX = 119.965;
+        backY = 88.639;
+        frontY = 63.939;
+        extrusion = 1.483;
+
+        extrusionBuffer.add(constructTravelEvent(rhX, frontY, 18000));
+
+        CommentEvent outerWallComment = new CommentEvent();
+        outerWallComment.setComment(";TYPE:WALL-OUTER");
+        extrusionBuffer.add(outerWallComment);
+
+        extrusionBuffer.add(constructExtrusionEvent(extrusion, 0, rhX, backY, 960, ExtrusionTask.ExternalPerimeter));
+        extrusionBuffer.add(constructExtrusionEvent(extrusion, 0, lhX, backY, 0, ExtrusionTask.ExternalPerimeter));
+        extrusionBuffer.add(constructExtrusionEvent(extrusion, 0, lhX, frontY, 0, ExtrusionTask.ExternalPerimeter));
+        extrusionBuffer.add(constructExtrusionEvent(extrusion, 0, rhX, frontY, 0, ExtrusionTask.ExternalPerimeter));
+
+        double finalTravelToX = 119.023;
+        double finalTravelToY = 64.824;
+        extrusionBuffer.add(constructTravelEvent(finalTravelToX, finalTravelToY, 18000));
+
+        GCodeRoboxiser gCodeRoboxiser = new GCodeRoboxiser();
+        gCodeRoboxiser.currentSettings = parameters;
+        gCodeRoboxiser.extrusionBuffer = extrusionBuffer;
+        gCodeRoboxiser.slicerType = SlicerType.Cura;
+
+        try
+        {
+            gCodeRoboxiser.insertTravelAndClosePath(2, 16, "nothing", false, null, 0.5);
+
+            // Check that there is a travel event to the next part
+            TravelEvent travelToWipe = (TravelEvent) gCodeRoboxiser.extrusionBuffer.get(17);
+            assertEquals(95.595, travelToWipe.getX(), 1e-12);
+            assertEquals(64.539, travelToWipe.getY(), 1e-12);
+
+            // Check that there is a single wipe extrusion event - we're only wiping 0.5mm3 so this only requires part of the line
+            ExtrusionEvent wipeEvent = (ExtrusionEvent) gCodeRoboxiser.extrusionBuffer.get(18);
+            assertEquals(103.922, wipeEvent.getX(), 1e-3);
+            assertEquals(64.539, wipeEvent.getY(), 1e-12);
 
             // Check that the final event is the travel to the next part
             TravelEvent finalTravel = (TravelEvent) gCodeRoboxiser.extrusionBuffer.get(gCodeRoboxiser.extrusionBuffer.size() - 1);

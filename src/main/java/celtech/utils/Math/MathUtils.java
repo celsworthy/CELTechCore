@@ -325,18 +325,12 @@ public class MathUtils
 
     public static Segment getOrthogonalLineToLinePoints(double orthogonalLength, Vector2D startPoint, Vector2D endPoint)
     {
-        double halfXDifference = (Math.max(startPoint.getX(), endPoint.getX()) - Math.min(startPoint.getX(), endPoint.getX())) / 2;
-        double halfYDifference = (Math.max(startPoint.getY(), endPoint.getY()) - Math.min(startPoint.getY(), endPoint.getY())) / 2;
-
-        double midX = Math.min(startPoint.getX(), endPoint.getX()) + halfXDifference;
-        double midY = Math.min(startPoint.getY(), endPoint.getY()) + halfYDifference;
+        Vector2D midPoint = findMidPoint(startPoint, endPoint);
 
         Vector2D originalVector = endPoint.subtract(startPoint);
 
         Vector2D normalisedOrthogonal = (new Vector2D(-originalVector.getY(), originalVector.getX())).normalize();
         Vector2D scaledOrthogonal = normalisedOrthogonal.scalarMultiply(orthogonalLength);
-
-        Vector2D midPoint = new Vector2D(midX, midY);
 
         Vector2D newStartPoint = midPoint.add(scaledOrthogonal);
         Vector2D newEndPoint = midPoint.subtract(scaledOrthogonal);
@@ -344,6 +338,18 @@ public class MathUtils
         Line resultantLine = new Line(newStartPoint, newEndPoint, 1e-12);
 
         return new Segment(newStartPoint, newEndPoint, resultantLine);
+    }
+
+    public static Vector2D findMidPoint(Vector2D startPoint, Vector2D endPoint)
+    {
+        double halfXDifference = (Math.max(startPoint.getX(), endPoint.getX()) - Math.min(startPoint.getX(), endPoint.getX())) / 2;
+        double halfYDifference = (Math.max(startPoint.getY(), endPoint.getY()) - Math.min(startPoint.getY(), endPoint.getY())) / 2;
+        double midX = Math.min(startPoint.getX(), endPoint.getX()) + halfXDifference;
+        double midY = Math.min(startPoint.getY(), endPoint.getY()) + halfYDifference;
+        
+        Vector2D midPoint = new Vector2D(midX, midY);
+        
+        return midPoint;
     }
 
     public static Vector2D getSegmentIntersection(Segment firstSegment, Segment secondSegment)
@@ -367,14 +373,39 @@ public class MathUtils
     {
         boolean pointWithinSegment = false;
 
-        if (pointToTest.getX() >= Math.min(segmentToTest.getStart().getX(), segmentToTest.getEnd().getX())
-            && pointToTest.getX() <= Math.max(segmentToTest.getStart().getX(), segmentToTest.getEnd().getX())
-            && pointToTest.getY() >= Math.min(segmentToTest.getStart().getY(), segmentToTest.getEnd().getY())
-            && pointToTest.getY() <= Math.max(segmentToTest.getStart().getY(), segmentToTest.getEnd().getY()))
+        int pointXMinTest = compareDouble(pointToTest.getX(), Math.min(segmentToTest.getStart().getX(), segmentToTest.getEnd().getX()), 1e-10);
+        int pointXMaxTest = compareDouble(pointToTest.getX(), Math.max(segmentToTest.getStart().getX(), segmentToTest.getEnd().getX()), 1e-10);
+        int pointYMinTest = compareDouble(pointToTest.getY(), Math.min(segmentToTest.getStart().getY(), segmentToTest.getEnd().getY()), 1e-10);
+        int pointYMaxTest = compareDouble(pointToTest.getY(), Math.max(segmentToTest.getStart().getY(), segmentToTest.getEnd().getY()), 1e-10);
+        
+        if ((pointXMinTest == EQUAL || pointXMinTest == MORE_THAN)
+            && (pointXMaxTest == EQUAL || pointXMaxTest == LESS_THAN)
+            && (pointYMinTest == EQUAL || pointYMinTest == MORE_THAN)
+            && (pointYMaxTest == EQUAL || pointYMaxTest == LESS_THAN))
         {
             pointWithinSegment = true;
         }
 
         return pointWithinSegment;
+    }
+
+    public static final int EQUAL = 0;
+    public static final int MORE_THAN = 1;
+    public static final int LESS_THAN = -1;
+
+    public static int compareDouble(double a, double b, double epsilon)
+    {
+        double result = a - b;
+
+        if (Math.abs(result) < epsilon)
+        {
+            return EQUAL;
+        } else if (result > 0)
+        {
+            return MORE_THAN;
+        } else
+        {
+            return LESS_THAN;
+        }
     }
 }

@@ -5,9 +5,6 @@
  */
 package celtech.utils.Math;
 
-import javafx.geometry.Point2D;
-import javafx.geometry.Point3D;
-import javafx.scene.Node;
 import org.apache.commons.math3.geometry.euclidean.twod.Line;
 import org.apache.commons.math3.geometry.euclidean.twod.Segment;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
@@ -290,11 +287,12 @@ public class MathUtilsTest
     public void testDoesPointLieWithinSegment()
     {
         System.out.println("doesPointLieWithinSegment");
-        Vector2D passPoint = new Vector2D(5, 0);
-        Vector2D failPoint = new Vector2D(5, 5);
+        Vector2D passPoint = new Vector2D(107.47999999999999, 64.53900000000002);
+        Vector2D failPoint = new Vector2D(107.47999999999999, 61.53900000000002);
 
-        Vector2D firstLineStart = new Vector2D(0, 0);
-        Vector2D firstLineEnd = new Vector2D(10, 0);
+        Vector2D firstLineStart = new Vector2D(107.48, 65.55500005626678);
+        Vector2D firstLineEnd = new Vector2D(107.48, 62.322999943733215);
+        
         Line firstLine = new Line(firstLineStart, firstLineEnd, 1e-12);
         Segment firstSegment = new Segment(firstLineStart, firstLineEnd, firstLine);
 
