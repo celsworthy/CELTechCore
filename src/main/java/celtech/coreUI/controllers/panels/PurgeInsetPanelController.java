@@ -68,9 +68,6 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     private Text purgeStatus;
 
     @FXML
-    private Text instruction;
-
-    @FXML
     private RestrictedNumberField purgeTemperature;
 
     @FXML
