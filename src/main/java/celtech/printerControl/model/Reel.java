@@ -194,6 +194,13 @@ public class Reel
         remainingFilament.set(eepromData.getReelRemainingFilament());
     }
 
+    /**
+     * Compare the contents of this reel with filament data.
+     * Note that the remaining
+     * 
+     * @param filament
+     * @return 
+     */
     public boolean isSameAs(Filament filament)
     {
         boolean same = false;
@@ -209,8 +216,7 @@ public class Reel
             && SystemUtils.isDoubleSame(filament.getFirstLayerNozzleTemperatureProperty().get(), firstLayerNozzleTemperature.get())
             && filament.getFriendlyFilamentNameProperty().get().equals(friendlyFilamentName.get())
             && filament.getMaterialProperty().get() == material.get()
-            && filament.getNozzleTemperatureProperty().intValue() == nozzleTemperature.get()
-            && SystemUtils.isDoubleSame(filament.getRemainingFilamentProperty().get(), remainingFilament.get()))
+            && filament.getNozzleTemperatureProperty().intValue() == nozzleTemperature.get())
         {
             same = true;
         }
