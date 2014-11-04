@@ -94,8 +94,8 @@ public class SlicerTask extends Task<SliceResult>
                 break;
             case Cura:
                 windowsSlicerCommand = "\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Cura\\CuraEngine.exe\" -v ";
-                macSlicerCommand = "?";
-                linuxSlicerCommand = "Cura/bin/CuraEngine";
+                macSlicerCommand = "Cura/CuraEngine";
+                linuxSlicerCommand = "Cura/CuraEngine";
                 configLoadCommand = "-c";
                 combinedConfigSection = configLoadCommand + " " + configFile;
                 break;
