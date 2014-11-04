@@ -3,7 +3,6 @@ package celtech.appManager;
 import celtech.Lookup;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
-import celtech.coreUI.controllers.utilityPanels.MaintenancePanelController;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
