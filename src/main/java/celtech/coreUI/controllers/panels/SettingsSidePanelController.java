@@ -367,15 +367,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     {
                         for (Printer addedPrinter : change.getAddedSubList())
                         {
-                            Platform.runLater(new Runnable()
-                                {
-
-                                    @Override
-                                    public void run()
-                                    {
-                                        printerChooser.setValue(addedPrinter);
-                                    }
-                            });
+                            printerChooser.setValue(addedPrinter);
                         }
                     } else if (change.wasRemoved())
                     {
@@ -383,24 +375,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         {
                             if (printerChooser.getItems().isEmpty())
                             {
-                                Platform.runLater(new Runnable()
-                                    {
-                                        @Override
-                                        public void run()
-                                        {
-                                            printerChooser.getSelectionModel().select(null);
-                                        }
-                                });
+                                printerChooser.getSelectionModel().select(null);
                             } else
                             {
-                                Platform.runLater(new Runnable()
-                                    {
-                                        @Override
-                                        public void run()
-                                        {
-                                            printerChooser.getSelectionModel().selectFirst();
-                                        }
-                                });
+                                printerChooser.getSelectionModel().selectFirst();
                             }
                         }
                     } else if (change.wasReplaced())
