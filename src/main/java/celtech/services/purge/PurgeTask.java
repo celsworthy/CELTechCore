@@ -67,7 +67,7 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
             case RUNNING_PURGE:
                 try
                 {
-                    printerToUse.runMacro("Purge Material");
+                    printerToUse.executeMacro("Purge Material");
                 } catch (PrinterException ex)
                 {
                     steno.error("Error running purge");

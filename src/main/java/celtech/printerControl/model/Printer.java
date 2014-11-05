@@ -229,9 +229,11 @@ public interface Printer extends RoboxResponseConsumer
     /*
      * Macros
      */
-    public void runMacro(String macroName) throws PrinterException;
+    public void executeGCodeFile(String fileName) throws PrinterException;
 
-    public void runMacroWithoutPurgeCheck(String macroName) throws PrinterException;
+    public void executeMacro(String macroName) throws PrinterException;
+
+    public void executeMacroWithoutPurgeCheck(String macroName) throws PrinterException;
 
     /**
      *

@@ -508,7 +508,7 @@ public final class HardwarePrinter implements Printer
 
         try
         {
-            runMacroWithoutPurgeCheck("Purge Material");
+            executeMacroWithoutPurgeCheck("Purge Material");
             PrinterUtils.waitOnMacroFinished(this, cancellable);
             success = true;
         } catch (PrinterException ex)
@@ -693,7 +693,29 @@ public final class HardwarePrinter implements Printer
     }
 
     @Override
-    public final void runMacro(String macroName) throws PrinterException
+    public void executeGCodeFile(String fileName) throws PrinterException
+    {
+        if (!canRunMacro.get())
+        {
+            throw new PrintActionUnavailableException("Execute GCode not available");
+        }
+
+        if (mustPurgeHead.get())
+        {
+            throw new PurgeRequiredException("Cannot execute GCode - purge required");
+        }
+
+        boolean jobAccepted = printEngine.printGCodeFile(fileName, true);
+
+        if (!jobAccepted)
+        {
+            throw new PrintJobRejectedException("Could not run GCode " + fileName + " in mode "
+                + printerStatus.get().name());
+        }
+    }
+
+    @Override
+    public final void executeMacro(String macroName) throws PrinterException
     {
         if (!canRunMacro.get())
         {
@@ -720,7 +742,7 @@ public final class HardwarePrinter implements Printer
 //     * @param checkForPurge
 //     * @throws celtech.printerControl.model.PrinterException
 //     */
-//    public void runMacro(final String macroName, boolean checkForPurge) throws PrinterException
+//    public void executeMacro(final String macroName, boolean checkForPurge) throws PrinterException
 //    {
 //        if (!canPrintProperty.get())
 //        {
@@ -743,7 +765,7 @@ public final class HardwarePrinter implements Printer
 //        }
 //    }
     @Override
-    public final void runMacroWithoutPurgeCheck(String macroName) throws PrinterException
+    public final void executeMacroWithoutPurgeCheck(String macroName) throws PrinterException
     {
         if (!canRunMacro.get())
         {

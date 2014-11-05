@@ -132,7 +132,7 @@ public class MaintenancePanelController implements Initializable
             {
                 try
                 {
-                    connectedPrinter.runMacro(macroName);
+                    connectedPrinter.executeMacro(macroName);
                 } catch (PrinterException ex)
                 {
                     steno.error("Error sending macro : " + macroName);
@@ -153,7 +153,7 @@ public class MaintenancePanelController implements Initializable
             {
                 try
                 {
-                    connectedPrinter.runMacroWithoutPurgeCheck(macroName);
+                    connectedPrinter.executeMacroWithoutPurgeCheck(macroName);
                 } catch (PrinterException ex)
                 {
                     steno.error("Error sending macro : " + macroName);
@@ -228,17 +228,14 @@ public class MaintenancePanelController implements Initializable
 
         if (file != null)
         {
-            if (connectedPrinter.printerStatusProperty().get() == PrinterStatus.IDLE)
+            try
             {
-                try
-                {
-                    connectedPrinter.runMacro(file.getAbsolutePath());
-                } catch (PrinterException ex)
-                {
-                    steno.error("Error sending SD job");
-                }
+                connectedPrinter.executeGCodeFile(file.getAbsolutePath());
+            } catch (PrinterException ex)
+            {
+                steno.error("Error sending SD job");
             }
-            ApplicationConfiguration.setLastDirectory(DirectoryMemoryProperty.MACRO, file.getParentFile().getAbsolutePath());
+            ApplicationConfiguration.setLastDirectory(DirectoryMemoryProperty.GCODE, file.getParentFile().getAbsolutePath());
         }
     }
 
@@ -329,9 +326,9 @@ public class MaintenancePanelController implements Initializable
             {
                 connectedPrinter.printerStatusProperty().removeListener(printerStatusListener);
             }
-            
+
             connectedPrinter = newValue;
-            
+
             if (connectedPrinter != null)
             {
                 readFirmwareVersion();

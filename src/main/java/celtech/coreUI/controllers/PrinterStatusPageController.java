@@ -248,7 +248,7 @@ public class PrinterStatusPageController implements Initializable
     {
         try
         {
-            printerToUse.runMacro("Home_all");
+            printerToUse.executeMacro("Home_all");
         } catch (PrinterException ex)
         {
             steno.error("Couldn't run home macro");

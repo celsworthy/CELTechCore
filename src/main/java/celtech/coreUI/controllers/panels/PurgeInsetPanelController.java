@@ -154,7 +154,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                         .showWarning();
                     try
                     {
-                        printerToUse.runMacro(GCodeMacros.getFilename(macroToExecuteAfterPurge));
+                        printerToUse.executeMacro(GCodeMacros.getFilename(macroToExecuteAfterPurge));
                     } catch (PrinterException ex)
                     {
                         steno.error("Error running macro");

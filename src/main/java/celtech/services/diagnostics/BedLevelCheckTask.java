@@ -42,10 +42,10 @@ public class BedLevelCheckTask extends Task<BedLevelCheckResult> implements Cont
 
         try
         {
-            printerToUse.runMacro("Home_all");
+            printerToUse.executeMacro("Home_all");
             //Go to centre
-            printerToUse.runMacro("level_gantry");
-            printerToUse.runMacro("level_Y");
+            printerToUse.executeMacro("level_gantry");
+            printerToUse.executeMacro("level_Y");
         } catch (PrinterException ex)
         {
             steno.error("Error levelling bed");

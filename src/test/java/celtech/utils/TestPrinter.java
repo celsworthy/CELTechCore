@@ -369,13 +369,13 @@ class TestPrinter implements Printer
     }
 
     @Override
-    public void runMacro(String macroName) throws PrinterException
+    public void executeMacro(String macroName) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void runMacroWithoutPurgeCheck(String macroName) throws PrinterException
+    public void executeMacroWithoutPurgeCheck(String macroName) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -668,6 +668,12 @@ class TestPrinter implements Printer
 
     @Override
     public boolean printJobIDIndicatesPrinting()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void executeGCodeFile(String fileName) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
