@@ -824,7 +824,9 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             currentNozzle = nozzleProxies.get(nozzleInUse);
         }
 
-        if (((slicerType == SlicerType.Slic3r && layer == 1) || (slicerType == SlicerType.Cura && layer == 1)) && forcedNozzleOnFirstLayer >= 0)
+        if (((slicerType == SlicerType.Slic3r && layer == 1) || (slicerType == SlicerType.Cura && layer == 1))
+            && forcedNozzleOnFirstLayer >= 0
+            && currentNozzle.getState() == NozzleState.OPEN)
         {
             writeEventsWithNozzleClose(
                 "closing nozzle after forced nozzle select on layer 0");
