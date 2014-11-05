@@ -74,8 +74,8 @@ public class CuraConfigWriter extends SlicerConfigWriter
     @Override
     protected void outputPrintCentre(FileWriter writer, float centreX, float centreY) throws IOException
     {
-        outputLine(writer, "posx", (int) (centreX * 1000));
-        outputLine(writer, "posy", (int) (centreY * 1000));
+//        outputLine(writer, "posx", (int) (centreX * 1000));
+//        outputLine(writer, "posy", (int) (centreY * 1000));
     }
 
     @Override

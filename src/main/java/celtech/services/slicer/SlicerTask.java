@@ -72,11 +72,12 @@ public class SlicerTask extends Task<SliceResult>
         ArrayList<String> commands = new ArrayList<>();
 
         SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
-        String windowsSlicerCommand = null;
-        String macSlicerCommand = null;
-        String linuxSlicerCommand = null;
-        String configLoadCommand = null;
-        String combinedConfigSection = null;
+        String windowsSlicerCommand = "";
+        String macSlicerCommand = "";
+        String linuxSlicerCommand = "";
+        String configLoadCommand = "";
+        String combinedConfigSection = "";
+        String verboseOutputCommand = "";
         
         if (settings.getSlicerOverride() != null)
         {
@@ -93,9 +94,10 @@ public class SlicerTask extends Task<SliceResult>
                 combinedConfigSection = configLoadCommand + " " + configFile;
                 break;
             case Cura:
-                windowsSlicerCommand = "\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Cura\\CuraEngine.exe\" -v ";
-                macSlicerCommand = "Cura/CuraEngine -v ";
-                linuxSlicerCommand = "Cura/CuraEngine -v ";
+                windowsSlicerCommand = "\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Cura\\CuraEngine.exe\"";
+                macSlicerCommand = "Cura/CuraEngine";
+                linuxSlicerCommand = "Cura/CuraEngine";
+                verboseOutputCommand = "-v";
                 configLoadCommand = "-c";
                 combinedConfigSection = configLoadCommand + " " + configFile;
                 break;
@@ -109,22 +111,41 @@ public class SlicerTask extends Task<SliceResult>
                 commands.add("command.com");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"pushd \"" + workingDirectory + "\" && "
-                    + windowsSlicerCommand + " " + combinedConfigSection + " -o "
-                    + tempGcodeFilename + " " + tempModelFilename
+                commands.add("\"pushd \""
+                    + workingDirectory
+                    + "\" && "
+                    + windowsSlicerCommand
+                    + " "
+                    + verboseOutputCommand
+                    + " "
+                    + combinedConfigSection
+                    + " -o "
+                    + tempGcodeFilename
+                    + " "
+                    + tempModelFilename
                     + " && popd\"");
                 break;
             case WINDOWS:
                 commands.add("cmd.exe");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"pushd \"" + workingDirectory + "\" && "
-                    + windowsSlicerCommand + " " + combinedConfigSection + " -o "
-                    + tempGcodeFilename + " " + tempModelFilename
+                commands.add("\"pushd \""
+                    + workingDirectory
+                    + "\" && "
+                    + windowsSlicerCommand
+                    + " "
+                    + verboseOutputCommand
+                    + " "
+                    + combinedConfigSection
+                    + " -o "
+                    + tempGcodeFilename
+                    + " "
+                    + tempModelFilename
                     + " && popd\"");
                 break;
             case MAC:
                 commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + macSlicerCommand);
+                commands.add(verboseOutputCommand);
                 commands.add(configLoadCommand);
                 commands.add(configFile);
                 commands.add("-o");
@@ -134,6 +155,7 @@ public class SlicerTask extends Task<SliceResult>
             case LINUX_X86:
             case LINUX_X64:
                 commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + linuxSlicerCommand);
+                commands.add(verboseOutputCommand);
                 commands.add(configLoadCommand);
                 commands.add(configFile);
                 commands.add("-o");
