@@ -7,11 +7,11 @@ package celtech.utils.tasks;
  *
  * @author tony
  */
-public class TaskResponse
+public class TaskResponse<T>
 {
-
     private boolean succeeded = false;
     private final String message;
+    private T returnedObject;
 
     public TaskResponse(String message)
     {
@@ -23,7 +23,7 @@ public class TaskResponse
     {
         return message;
     }
-    
+
     /**
      *
      * @return
@@ -32,7 +32,7 @@ public class TaskResponse
     {
         return succeeded;
     }
-    
+
     /**
      *
      * @param succeeded
@@ -40,5 +40,23 @@ public class TaskResponse
     public void setSucceeded(boolean succeeded)
     {
         this.succeeded = succeeded;
+    }
+
+    /**
+     *
+     * @param returnedObject
+     */
+    public void setReturnedObject(T returnedObject)
+    {
+        this.returnedObject = returnedObject;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public T getReturnedObject()
+    {
+        return returnedObject;
     }
 }

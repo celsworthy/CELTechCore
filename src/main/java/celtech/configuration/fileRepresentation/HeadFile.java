@@ -9,13 +9,14 @@ import java.util.List;
  */
 public class HeadFile
 {
+
     private int version = 1;
     private String name;
     private String typeCode;
-    
+
     private List<NozzleHeaterData> nozzleHeaters = new ArrayList<>();
     private List<NozzleData> nozzles = new ArrayList<>();
-    
+
     public int getVersion()
     {
         return version;
@@ -66,5 +67,9 @@ public class HeadFile
         this.nozzles = nozzles;
     }
 
-
+    @Override
+    public String toString()
+    {
+        return name;
+    }
 }

@@ -31,10 +31,21 @@ public class LiveTaskExecutor implements TaskExecutor
     @Override
     public void respondOnGUIThread(TaskResponder responder, boolean success, String message)
     {
+        respondOnGUIThread(responder, success, message, null);
+    }
+
+    @Override
+    public void respondOnGUIThread(TaskResponder responder, boolean success, String message, Object returnedObject)
+    {
         if (responder != null)
         {
             TaskResponse taskResponse = new TaskResponse(message);
             taskResponse.setSucceeded(success);
+            
+            if (returnedObject != null)
+            {
+                taskResponse.setReturnedObject(returnedObject);
+            }
 
             Platform.runLater(() ->
             {
@@ -68,7 +79,8 @@ public class LiveTaskExecutor implements TaskExecutor
                 if (result)
                 {
                     successHandler.run();
-                } else {
+                } else
+                {
                     cancelledHandler.run();
                 }
             } catch (Exception ex)

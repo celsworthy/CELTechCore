@@ -9,6 +9,7 @@ import java.util.concurrent.Callable;
 public interface TaskExecutor
 {
     public void respondOnGUIThread(TaskResponder responder, boolean success, String message);
+    public void respondOnGUIThread(TaskResponder responder, boolean success, String message, Object returnedObject);
     public void respondOnCurrentThread(TaskResponder responder, boolean success, String message);
     public void runOnGUIThread(Runnable runnable);
 

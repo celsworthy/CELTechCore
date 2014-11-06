@@ -138,8 +138,6 @@ public interface Printer extends RoboxResponseConsumer
 
     public void goToZPosition(double position);
 
-    public void hardResetHead();
-
     public void homeZ();
 
     /**

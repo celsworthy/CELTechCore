@@ -19,6 +19,16 @@ public class TestTaskExecutor implements TaskExecutor
     }
 
     @Override
+    public void respondOnGUIThread(TaskResponder responder, boolean success, String message, Object returnedObject)
+    {
+        TaskResponse taskResponse = new TaskResponse(message);
+        taskResponse.setSucceeded(success);
+        taskResponse.setReturnedObject(returnedObject);
+
+        responder.taskEnded(taskResponse);
+    }
+    
+    @Override
     public void respondOnCurrentThread(TaskResponder responder, boolean success, String message)
     {
         TaskResponse taskResponse = new TaskResponse(message);

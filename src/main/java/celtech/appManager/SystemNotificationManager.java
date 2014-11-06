@@ -1,9 +1,12 @@
 package celtech.appManager;
 
+import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.model.Printer;
 import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
+import celtech.utils.tasks.TaskResponder;
+import celtech.utils.tasks.TaskResponse;
 
 /**
  *
@@ -84,4 +87,6 @@ public interface SystemNotificationManager
     public boolean showPurgeDialog();
 
     public boolean showJobsTransferringShutdownDialog();
+
+    public void showProgramInvalidHeadDialog(TaskResponder<HeadFile> taskResponse);
 }

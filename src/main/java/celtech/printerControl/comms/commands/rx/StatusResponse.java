@@ -14,50 +14,7 @@ import java.text.ParseException;
  */
 public class StatusResponse extends RoboxRxPacket
 {
-    /* Current spec of status response as of v684 firmware */
-
     /*
-     status: <0xe1> iiiiiiiiiiiiiiii llllllll p b x y z e d b g h i j a k mmmmmmmm nnnnnnnn cccccccc o pppppppp qqqqqqqq aaaaaaaa r ssssssss tttttttt u c v w s xxxxxxxx yyyyyyyy zzzzzzzz bbbbbbbb eeeeeeee gggggggg ffffffff
-    iiiiiiiiiiiiiiii = id of running job
-     llllllll = line # of running job in hex
-     p = pause ('0'->normal, '1'->pause pending, '2'->paused, '3'->resume pending)
-     b = busy
-     x = X switch state
-     y = Y switch state
-     z = Z switch state
-     e = E switch state
-     d = D switch state
-     b = nozzle switch state
-     g = lid switch state
-     h = eject switch state
-     i = E index wheel state
-     j = D index wheel state
-     a = Z top switch state
-     k = extruder heater mode ('0'->off, '1'->normal, '2'->first layer)
-     mmmmmmmm = extruder temperature (decimal float format)
-     nnnnnnnn = extruder target (decimal float format)
-     cccccccc = extruder first layer target (decimal float format)
-     o = bed heater mode ('0'->off, '1'->normal, '2'->first layer)
-     pppppppp = bed temperature (decimal float format)
-     qqqqqqqq = bed target (decimal float format)
-     aaaaaaaa = bed first layer target (decimal float format)
-     r = ambient controller on
-     ssssssss = ambient temperature (decimal float format)
-     tttttttt = ambient target (decimal float format)
-     u = head fan on
-     c = why are we waiting ('0'->not waiting, '1'->waiting for bed to cool, '2'->waiting for bed to reach target, '3'->waiting for extruder to reach target
-     v = head EEPROM state ('0'->none, '1'->not valid, '2'->valid)
-     w = reel EEPROM state ('0'->none, '1'->not valid, '2'->valid
-     s = SD card present
-     xxxxxxxx = X position (decimal float format)
-     yyyyyyyy = Y position (decimal float format)
-     zzzzzzzz = Z position (decimal float format)
-     bbbbbbbb = B position (decimal float format)
-     eeeeeeee = E filament diameter (decimal float format)
-     gggggggg = E filament multiplier (decimal float format)
-     ffffffff = Feed rate multiplier (decimal float format)
-     total length = 166
-    
     // v 687
     status: <0xe1> iiiiiiiiiiiiiiii llllllll p b x y z e d b g h i j a k mmmmmmmm nnnnnnnn cccccccc l rrrrrrrr uuuuuuuu dddddddd o pppppppp qqqqqqqq aaaaaaaa r ssssssss tttttttt u c v w x s xxxxxxxx yyyyyyyy zzzzzzzz bbbbbbbb eeeeeeee gggggggg hhhhhhhh jjjjjjjj ffffffff
     iiiiiiiiiiiiiiii = id of running job
@@ -314,7 +271,7 @@ public class StatusResponse extends RoboxRxPacket
      *
      * @return
      */
-    public HeaterMode getNozzleHeaterMode()
+    public HeaterMode getNozzle0HeaterMode()
     {
         return nozzle0HeaterMode;
     }
@@ -323,7 +280,7 @@ public class StatusResponse extends RoboxRxPacket
      *
      * @return
      */
-    public int getNozzleTemperature()
+    public int getNozzle0Temperature()
     {
         return nozzle0Temperature;
     }
@@ -332,7 +289,7 @@ public class StatusResponse extends RoboxRxPacket
      *
      * @return
      */
-    public int getNozzleTargetTemperature()
+    public int getNozzle0TargetTemperature()
     {
         return nozzle0TargetTemperature;
     }
@@ -341,9 +298,45 @@ public class StatusResponse extends RoboxRxPacket
      *
      * @return
      */
-    public int getNozzleFirstLayerTargetTemperature()
+    public int getNozzle0FirstLayerTargetTemperature()
     {
         return nozzle0FirstLayerTargetTemperature;
+    }
+    
+    /**
+     *
+     * @return
+     */
+    public HeaterMode getNozzle1HeaterMode()
+    {
+        return nozzle1HeaterMode;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public int getNozzle1Temperature()
+    {
+        return nozzle1Temperature;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public int getNozzle1TargetTemperature()
+    {
+        return nozzle1TargetTemperature;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public int getNozzle1FirstLayerTargetTemperature()
+    {
+        return nozzle1FirstLayerTargetTemperature;
     }
 
     /**
@@ -597,42 +590,42 @@ public class StatusResponse extends RoboxRxPacket
         this.topZSwitchStatus = topZSwitchStatus;
     }
 
-    public void setNozzleHeaterMode(HeaterMode nozzleHeaterMode)
+    public void setNozzle0HeaterMode(HeaterMode nozzleHeaterMode)
     {
         this.nozzle0HeaterMode = nozzleHeaterMode;
     }
 
-    public void setNozzleHeaterModeString(String nozzleHeaterModeString)
+    public void setNozzle0HeaterModeString(String nozzleHeaterModeString)
     {
         this.nozzle0HeaterModeString = nozzleHeaterModeString;
     }
 
-    public void setNozzleTemperatureString(String nozzleTemperatureString)
+    public void setNozzle0TemperatureString(String nozzleTemperatureString)
     {
         this.nozzle0TemperatureString = nozzleTemperatureString;
     }
 
-    public void setNozzleTemperature(int nozzleTemperature)
+    public void setNozzle0Temperature(int nozzleTemperature)
     {
         this.nozzle0Temperature = nozzleTemperature;
     }
 
-    public void setNozzleTargetTemperatureString(String nozzleTargetTemperatureString)
+    public void setNozzle0TargetTemperatureString(String nozzleTargetTemperatureString)
     {
         this.nozzle0TargetTemperatureString = nozzleTargetTemperatureString;
     }
 
-    public void setNozzleTargetTemperature(int nozzleTargetTemperature)
+    public void setNozzle0TargetTemperature(int nozzleTargetTemperature)
     {
         this.nozzle0TargetTemperature = nozzleTargetTemperature;
     }
 
-    public void setNozzleFirstLayerTargetTemperatureString(String nozzleFirstLayerTargetTemperatureString)
+    public void setNozzle0FirstLayerTargetTemperatureString(String nozzleFirstLayerTargetTemperatureString)
     {
         this.nozzle0FirstLayerTargetTemperatureString = nozzleFirstLayerTargetTemperatureString;
     }
 
-    public void setNozzleFirstLayerTargetTemperature(int nozzleFirstLayerTargetTemperature)
+    public void setNozzle0FirstLayerTargetTemperature(int nozzleFirstLayerTargetTemperature)
     {
         this.nozzle0FirstLayerTargetTemperature = nozzleFirstLayerTargetTemperature;
     }
@@ -1194,13 +1187,13 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append("\n");
         outputString.append("Top Z switch status: " + isTopZSwitchStatus());
         outputString.append("\n");
-        outputString.append("Extruder heater on: " + getNozzleHeaterMode());
+        outputString.append("Extruder heater on: " + getNozzle0HeaterMode());
         outputString.append("\n");
-        outputString.append("Extruder temperature: " + getNozzleTemperature());
+        outputString.append("Extruder temperature: " + getNozzle0Temperature());
         outputString.append("\n");
-        outputString.append("Extruder target temperature: " + getNozzleTargetTemperature());
+        outputString.append("Extruder target temperature: " + getNozzle0TargetTemperature());
         outputString.append("\n");
-        outputString.append("Extruder first layer target temperature: " + getNozzleFirstLayerTargetTemperature());
+        outputString.append("Extruder first layer target temperature: " + getNozzle0FirstLayerTargetTemperature());
         outputString.append("\n");
         outputString.append("Bed heater on: " + getBedHeaterMode());
         outputString.append("\n");

@@ -68,6 +68,7 @@ import celtech.utils.PrinterUtils;
 import celtech.utils.SystemUtils;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponder;
+import celtech.utils.tasks.TaskResponse;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -938,6 +939,7 @@ public final class HardwarePrinter implements Printer
         try
         {
             response = (AckResponse) commandInterface.writeToPrinter(formatHead);
+            steno.info("Head formatted");
         } catch (RoboxCommsException ex)
         {
             steno.error("Error sending format head");
@@ -1345,8 +1347,7 @@ public final class HardwarePrinter implements Printer
         Lookup.getTaskExecutor().runOnGUIThread(roboxEventProcessor);
     }
 
-    @Override
-    public void hardResetHead()
+    private void hardResetHead()
     {
         try
         {
@@ -1416,6 +1417,7 @@ public final class HardwarePrinter implements Printer
 
                     String receivedTypeCode = response.getTypeCode();
 
+                    steno.info("Head repair initiated");
                     HeadRepairResult result = head.get().repair(receivedTypeCode);
 
                     switch (result)
@@ -1748,6 +1750,7 @@ public final class HardwarePrinter implements Printer
     @Override
     public void forceHeadReset()
     {
+        steno.info("Head reset initiated");
         head.get().repair(null);
     }
 
@@ -2116,6 +2119,7 @@ public final class HardwarePrinter implements Printer
     @Override
     public void repairHead(String receivedTypeCode) throws PrinterException
     {
+        steno.info("Head repair initiated");
         head.get().repair(receivedTypeCode);
         try
         {
@@ -2223,17 +2227,17 @@ public final class HardwarePrinter implements Printer
                         {
                             //TODO modify for multiple heaters
                             head.get().nozzleHeaters.get(0).nozzleTemperature.set(
-                                statusResponse.getNozzleTemperature());
+                                statusResponse.getNozzle0Temperature());
                             head.get().nozzleHeaters.get(0).nozzleFirstLayerTargetTemperature.set(
-                                statusResponse.getNozzleFirstLayerTargetTemperature());
+                                statusResponse.getNozzle0FirstLayerTargetTemperature());
                             head.get().nozzleHeaters.get(0).nozzleTargetTemperature.set(
-                                statusResponse.getNozzleTargetTemperature());
+                                statusResponse.getNozzle0TargetTemperature());
 
                             //TODO modify for multiple heaters
                             if (head.get().getNozzleHeaters().size() > 0)
                             {
                                 head.get().getNozzleHeaters().get(0).heaterMode.set(
-                                    statusResponse.getNozzleHeaterMode());
+                                    statusResponse.getNozzle0HeaterMode());
                             }
                             head.get().nozzleHeaters
                                 .stream()
@@ -2320,10 +2324,29 @@ public final class HardwarePrinter implements Printer
                         head.get().updateFromEEPROMData(headResponse);
                     } else
                     {
-                        Head newHead = new Head(headResponse);
-                        head.set(newHead);
-                    }
+                        Head newHead = Head.createHead(headResponse);
 
+                        if (newHead == null)
+                        {
+                            Lookup.getSystemNotificationHandler().showProgramInvalidHeadDialog((TaskResponse<HeadFile> taskResponse) ->
+                            {
+                                HeadFile chosenHeadFile = taskResponse.getReturnedObject();
+
+                                if (chosenHeadFile != null)
+                                {
+                                    head.set(new Head(chosenHeadFile));
+                                    steno.info("Reprogrammed head as " + chosenHeadFile.getName());
+                                } else
+                                {
+                                    //Force the head prompt - we must have been cancelled
+                                    lastHeadEEPROMState = EEPROMState.NOT_PRESENT;
+                                }
+                            });
+                        } else
+                        {
+                            head.set(newHead);
+                        }
+                    }
                     break;
 
                 case GCODE_RESPONSE:
@@ -2340,6 +2363,7 @@ public final class HardwarePrinter implements Printer
         {
             if (lastHeadEEPROMState != statusResponse.getHeadEEPROMState())
             {
+                lastHeadEEPROMState = statusResponse.getHeadEEPROMState();
                 switch (statusResponse.getHeadEEPROMState())
                 {
                     case NOT_PRESENT:
@@ -2357,7 +2381,7 @@ public final class HardwarePrinter implements Printer
                     case PROGRAMMED:
                         try
                         {
-//                            steno.info("About to read head EEPROM");
+                            steno.info("About to read head EEPROM");
                             readHeadEEPROM();
                         } catch (RoboxCommsException ex)
                         {
@@ -2365,7 +2389,6 @@ public final class HardwarePrinter implements Printer
                         }
                         break;
                 }
-                lastHeadEEPROMState = statusResponse.getHeadEEPROMState();
             }
         }
 

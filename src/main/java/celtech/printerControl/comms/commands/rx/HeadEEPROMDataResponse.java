@@ -401,11 +401,14 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
         headTypeCode = attachedHead.typeCodeProperty().get();
         uniqueID = attachedHead.uniqueIDProperty().get();
 
-        NozzleHeater heater = attachedHead.getNozzleHeaters().get(0);
-        maximumTemperature = heater.maximumTemperatureProperty().get();
-        thermistorBeta = heater.betaProperty().get();
-        thermistorTCal = heater.tCalProperty().get();
-        lastFilamentTemperature = heater.lastFilamentTemperatureProperty().get();
+        if (attachedHead.getNozzleHeaters().size() > 0)
+        {
+            NozzleHeater heater = attachedHead.getNozzleHeaters().get(0);
+            maximumTemperature = heater.maximumTemperatureProperty().get();
+            thermistorBeta = heater.betaProperty().get();
+            thermistorTCal = heater.tCalProperty().get();
+            lastFilamentTemperature = heater.lastFilamentTemperatureProperty().get();
+        }
         hoursUsed = attachedHead.headHoursProperty().get();
 
         if (attachedHead.getNozzles().size() > 0)

@@ -1,6 +1,8 @@
 package celtech.appManager;
 
 import celtech.Lookup;
+import celtech.configuration.datafileaccessors.HeadContainer;
+import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.printerControl.PrinterStatus;
@@ -10,11 +12,14 @@ import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
+import celtech.utils.tasks.TaskResponder;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceDialog;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.controlsfx.dialog.CommandLinksDialog;
@@ -84,6 +89,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
      */
     private CommandLinksDialog.CommandLinksButtonType upgradeApplication = null;
     private CommandLinksDialog.CommandLinksButtonType dontUpgradeApplication = null;
+
+    private boolean programInvalidHeadDialogOnDisplay = false;
 
     @Override
     public void showErrorNotification(String title, String message)
@@ -198,7 +205,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             calibrationDialog.setContentText(Lookup.i18n("dialogs.headUpdateCalibrationRequiredInstruction"));
             Optional<ButtonType> calibrationResponse = calibrationDialog.showAndWait();
 
-            if (calibrationResponse.get()== okCalibrate.getButtonType())
+            if (calibrationResponse.get() == okCalibrate.getButtonType())
             {
                 ApplicationStatus.getInstance().setMode(ApplicationMode.CALIBRATION_CHOICE);
             }
@@ -699,6 +706,36 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         {
             steno.error("Error during shutdown whilst transferring query");
             return false;
+        }
+    }
+
+    @Override
+    public void showProgramInvalidHeadDialog(TaskResponder<HeadFile> responder)
+    {
+        if (!programInvalidHeadDialogOnDisplay)
+        {
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                programInvalidHeadDialogOnDisplay = true;
+                ArrayList<HeadFile> headFiles = new ArrayList(HeadContainer.getCompleteHeadList());
+                
+                ChoiceDialog headRewriteDialog = new ChoiceDialog(headFiles.get(0), headFiles);
+//                headRewriteDialog.getItems().addAll(HeadContainer.getCompleteHeadList());
+
+                headRewriteDialog.setTitle(Lookup.i18n("dialogs.headRepairTitle"));
+                headRewriteDialog.setHeaderText(Lookup.i18n("dialogs.headRepairHeader"));
+                headRewriteDialog.setContentText(Lookup.i18n("dialogs.headRepairInstruction"));
+                
+                Optional<HeadFile> chosenFileOption = headRewriteDialog.showAndWait();
+                HeadFile chosenFile = null;
+                if (chosenFileOption.isPresent())
+                {
+                    chosenFile = chosenFileOption.get();
+                }
+
+                Lookup.getTaskExecutor().respondOnGUIThread(responder, chosenFile != null, "Head profile chosen", chosenFile);
+                programInvalidHeadDialogOnDisplay = false;
+            });
         }
     }
 }

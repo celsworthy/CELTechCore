@@ -17,6 +17,7 @@ import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
 import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.comms.commands.tx.AbortPrint;
+import celtech.printerControl.comms.commands.tx.FormatHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.InitiatePrint;
 import celtech.printerControl.comms.commands.tx.PausePrint;
 import celtech.printerControl.comms.commands.tx.QueryFirmwareVersion;
@@ -68,7 +69,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
         super(controlInterface, portName, suppressPrinterIDChecks, sleepBetweenStatusChecks);
         this.setName(printerName);
         this.printerName = printerName;
-        
+
         currentStatus.setSdCardPresent(true);
     }
 
@@ -89,7 +90,6 @@ public class DummyPrinterCommandInterface extends CommandInterface
         RoboxRxPacket response = null;
 
 //        steno.debug("Dummy printer received " + messageToWrite.getPacketType().name());
-
         if (messageToWrite instanceof QueryFirmwareVersion)
         {
             FirmwareResponse firmwareResponse = (FirmwareResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.FIRMWARE_RESPONSE);
@@ -120,11 +120,22 @@ public class DummyPrinterCommandInterface extends CommandInterface
             {
                 String headName = messageData.replaceAll(attachHeadCommand, "");
                 HeadFile headData = HeadContainer.getHeadByID(headName);
+
                 if (headData != null)
                 {
                     currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
                     attachedHead = new Head(headData);
                     gcodeResponse.setMessagePayload("Adding head " + headName + " to dummy printer");
+                } else if (headName.equalsIgnoreCase("BLANK"))
+                {
+                    currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
+                    attachedHead = new Head();
+                    gcodeResponse.setMessagePayload("Adding blank head to dummy printer");
+                } else if (headName.equalsIgnoreCase("UNFORMATTED"))
+                {
+                    currentStatus.setHeadEEPROMState(EEPROMState.NOT_PROGRAMMED);
+                    attachedHead = new Head();
+                    gcodeResponse.setMessagePayload("Adding unformatted head to dummy printer");
                 } else
                 {
                     gcodeResponse.setMessagePayload("Didn't recognise head name - " + headName);
@@ -187,12 +198,17 @@ public class DummyPrinterCommandInterface extends CommandInterface
             } else if (messageData.equalsIgnoreCase(insertSDCardCommand))
             {
                 currentStatus.setSdCardPresent(true);
-            }  else if (messageData.equalsIgnoreCase(removeSDCardCommand))
+            } else if (messageData.equalsIgnoreCase(removeSDCardCommand))
             {
                 currentStatus.setSdCardPresent(false);
-            } 
+            }
 
             response = (RoboxRxPacket) gcodeResponse;
+        } else if (messageToWrite instanceof FormatHeadEEPROM)
+        {
+            currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
+            attachedHead = new Head();
+            response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().getExpectedResponse());
         } else if (messageToWrite instanceof ReadHeadEEPROM)
         {
             HeadEEPROMDataResponse headResponse = (HeadEEPROMDataResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.HEAD_EEPROM_DATA);

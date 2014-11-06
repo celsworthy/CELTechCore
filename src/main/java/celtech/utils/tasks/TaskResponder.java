@@ -6,8 +6,9 @@ package celtech.utils.tasks;
 /**
  *
  * @author tony
+ * @param <T>
  */
-public interface TaskResponder
+public interface TaskResponder<T>
 {
-    public void taskEnded(TaskResponse taskResponse);
+    public void taskEnded(TaskResponse<T> taskResponse);
 }

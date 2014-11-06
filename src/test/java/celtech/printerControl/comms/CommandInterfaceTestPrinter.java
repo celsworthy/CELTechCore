@@ -188,12 +188,6 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void hardResetHead()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public ReadOnlyObjectProperty<Head> headProperty()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
