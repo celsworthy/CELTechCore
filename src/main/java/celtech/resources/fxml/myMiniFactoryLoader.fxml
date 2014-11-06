@@ -20,7 +20,6 @@
                 <HBox spacing="5" >
                     <children>
                         <GraphicButton fx:id="cancelButton" fxmlFileName="cancelButton" onAction="#cancelPressed" />
-                        <GraphicButton fx:id="backwardButton" fxmlFileName="backwardButton" onAction="#backwardPressed" />
                     </children>
                 </HBox>
             </left>

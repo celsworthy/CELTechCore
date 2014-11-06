@@ -59,20 +59,11 @@ public class MyMiniFactoryLoaderController implements Initializable
     private GraphicButton addToProjectButton;
     @FXML
     private GraphicButton cancelButton;
-    @FXML
-    private GraphicButton backwardButton;
 
     @FXML
     void cancelPressed(ActionEvent event)
     {
         stage.close();
-    }
-
-    @FXML
-    void backwardPressed(ActionEvent event)
-    {
-        JSObject history = (JSObject) webEngine.executeScript("history");
-        history.call("back");
     }
 
     @FXML
@@ -182,8 +173,8 @@ public class MyMiniFactoryLoaderController implements Initializable
                     case SUCCEEDED:
                         spinner.stopSpinning();
                         steno.info("loaded");
-                        JSObject win = (JSObject) webEngine.executeScript("window");
-                        win.setMember("automaker", new WebCallback());
+                        JSObject fileLink = (JSObject) webEngine.executeScript("autoMakerGetFileLink");
+                        fileLink.getMember();
                         break;
                     case CANCELLED:
                         spinner.stopSpinning();
@@ -242,7 +233,6 @@ public class MyMiniFactoryLoaderController implements Initializable
             {
                 alreadyDownloading = true;
                 spinner.startSpinning();
-                backwardButton.setDisable(true);
 
                 MyMiniFactoryLoader loader = new MyMiniFactoryLoader(fileURL);
 
@@ -277,7 +267,5 @@ public class MyMiniFactoryLoaderController implements Initializable
     {
         alreadyDownloading = false;
         spinner.stopSpinning();
-        backwardButton.setDisable(false);
     }
-
 }
