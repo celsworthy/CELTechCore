@@ -6,20 +6,20 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="container" style="-fx-background-color: black;" stylesheets="@../../css/JMetroDarkTheme.css" VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.MyMiniFactoryLoaderController">
+<VBox fx:id="container" style="-fx-background-color: black;" stylesheets="@../../css/JMetroDarkTheme.css" VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.PreferencesTopInsetPanelController">
     <children>
       <TopMenuStrip />        
         <HBox styleClass="inset-panel" VBox.vgrow="ALWAYS">
             <children>
             <VBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="30.0" style="-fx-background-color: black;" />
-                <VBox fx:id="webContentContainer" minHeight="100.0" HBox.hgrow="ALWAYS" />
+                <VBox fx:id="mainContainer" minHeight="100.0" HBox.hgrow="ALWAYS" />
             </children>
         </HBox>
         <BorderPane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="90.0" styleClass="menubar">
             <right>
             <HBox alignment="CENTER">
                <children>
-                      <GraphicButton fx:id="addToProjectButton" fxmlFileName="addToProjectButton" onAction="#addToProjectPressed" />
+                      <GraphicButton fx:id="backwardButton" fxmlFileName="backwardButton" onAction="#backwardPressed" />
                </children>
                <BorderPane.margin>
                   <Insets right="10.0" />
