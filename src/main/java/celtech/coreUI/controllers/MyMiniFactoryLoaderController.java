@@ -108,11 +108,6 @@ public class MyMiniFactoryLoaderController implements Initializable
                         steno.info("loaded");
                         Object fileLinkFunction = webEngine.executeScript(
                             "window.autoMakerGetFileLink");
-                        if (fileLinkFunction instanceof String
-                                    && ((String) fileLinkFunction).equals("undefined"))
-                        {
-                            break;
-                        }
                         if (fileLinkFunction instanceof JSObject)
                         {
                             fileDownloadLocation.set((String) webEngine.executeScript(
