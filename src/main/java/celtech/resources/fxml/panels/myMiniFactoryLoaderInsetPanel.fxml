@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import celtech.coreUI.components.*?>
+<?import celtech.coreUI.components.buttons.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="container" style="-fx-background-color: black;" stylesheets="@../../css/JMetroDarkTheme.css" VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.MyMiniFactoryLoaderController">
+    <children>
+      <TopMenuStrip />        
+        <HBox styleClass="inset-panel" VBox.vgrow="ALWAYS">
+            <children>
+            <VBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="30.0" style="-fx-background-color: black;" />
+                <VBox fx:id="webContentContainer" minHeight="100.0" HBox.hgrow="ALWAYS" />
+            </children>
+        </HBox>
+        <BorderPane styleClass="menubar">
+            <right>
+            <HBox alignment="CENTER">
+               <children>
+                      <GraphicButton fx:id="addToProjectButton" fxmlFileName="addToProjectButton" onAction="#addToProjectPressed" />
+               </children>
+               <BorderPane.margin>
+                  <Insets right="10.0" />
+               </BorderPane.margin>
+            </HBox>
+            </right>
+            <left>
+                <HBox alignment="CENTER" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="90.0" spacing="5">
+                    <children>
+                        <GraphicButton fx:id="cancelButton" fxmlFileName="cancelButton" onAction="#cancelPressed" />
+                    </children>
+               <BorderPane.margin>
+                  <Insets left="40.0" />
+               </BorderPane.margin>
+                </HBox>
+            </left>
+            <center>
+            </center>
+        </BorderPane>
+    </children>
+</VBox>

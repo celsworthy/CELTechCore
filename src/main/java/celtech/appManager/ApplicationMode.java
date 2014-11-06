@@ -12,7 +12,6 @@ import celtech.configuration.ApplicationConfiguration;
  */
 public enum ApplicationMode
 {
-
     CALIBRATION_CHOICE("printerStatus", "Calibration"),
     PURGE("printerStatus", "purge"),
     ABOUT("printerStatus", "about"),
@@ -25,6 +24,7 @@ public enum ApplicationMode
      */
     LAYOUT("layout", null),
     ADD_MODEL("layout", "loadModel"),
+    MY_MINI_FACTORY("layout", "myMiniFactoryLoader"),
     /**
      *
      */

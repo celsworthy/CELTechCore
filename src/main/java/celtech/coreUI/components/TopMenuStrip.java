@@ -76,11 +76,13 @@ public class TopMenuStrip extends HBox
                     .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.ABOUT)
                         .or(applicationStatus.modeProperty().isEqualTo(
                                 ApplicationMode.CALIBRATION_CHOICE)
-                            .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)))))));
+                            .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
+                                .or(applicationStatus.modeProperty().isEqualTo(
+                                        ApplicationMode.MY_MINI_FACTORY))))))));
 
         helpButton.disableProperty().bind(applicationStatus.modeProperty().isEqualTo(
             ApplicationMode.ABOUT)
             .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
-            .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE))));
+                .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE))));
     }
 }
