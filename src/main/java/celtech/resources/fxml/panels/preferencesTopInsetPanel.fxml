@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.*?>
 <?import javafx.geometry.*?>
 <?import celtech.coreUI.components.*?>
 <?import celtech.coreUI.components.buttons.*?>
@@ -12,7 +13,17 @@
         <HBox styleClass="inset-panel" VBox.vgrow="ALWAYS">
             <children>
             <VBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="30.0" style="-fx-background-color: black;" />
-                <VBox fx:id="mainContainer" minHeight="100.0" HBox.hgrow="ALWAYS" />
+            <HBox prefHeight="100.0" prefWidth="200.0">
+               <children>
+                  <VerticalMenu fx:id="preferencesMenu" maxWidth="-Infinity" minHeight="200.0" minWidth="-Infinity" prefWidth="360.0" />
+                  <Separator id="calibrationMenuSeparator" maxWidth="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefWidth="5.0">
+                     <HBox.margin>
+                        <Insets bottom="30.0" top="130.0" />
+                     </HBox.margin>
+                  </Separator>
+                  <VBox fx:id="preferencesListContainer" prefHeight="200.0" prefWidth="100.0" />
+               </children>
+            </HBox>
             </children>
         </HBox>
         <BorderPane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="90.0" styleClass="menubar">
