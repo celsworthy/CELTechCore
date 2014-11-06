@@ -2,22 +2,17 @@ package celtech.coreUI.controllers;
 
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
-import celtech.appManager.ProjectMode;
-import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.DirectoryMemoryProperty;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.Spinner;
 import celtech.coreUI.components.buttons.GraphicButton;
 import celtech.utils.MyMiniFactoryLoadResult;
 import celtech.utils.MyMiniFactoryLoader;
-import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
 import javafx.concurrent.WorkerStateEvent;
@@ -28,8 +23,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import netscape.javascript.JSObject;
@@ -41,14 +34,14 @@ import netscape.javascript.JSObject;
 public class MyMiniFactoryLoaderController implements Initializable
 {
 
-    private final FileChooser modelFileChooser = new FileChooser();
-    private DisplayManager displayManager = null;
-    private ResourceBundle i18nBundle = null;
-    private static final Stenographer steno = StenographerFactory.getStenographer(MyMiniFactoryLoaderController.class.getName());
+    private static final Stenographer steno = StenographerFactory.getStenographer(
+        MyMiniFactoryLoaderController.class.getName());
 
     private WebEngine webEngine = null;
 
     private Spinner spinner = null;
+
+    private final StringProperty fileDownloadLocation = new SimpleStringProperty("");
 
     @FXML
     private VBox webContentContainer;
@@ -74,83 +67,17 @@ public class MyMiniFactoryLoaderController implements Initializable
     {
         Platform.runLater(() ->
         {
-            ListIterator iterator = modelFileChooser.getExtensionFilters().listIterator();
-
-            while (iterator.hasNext())
-            {
-                iterator.next();
-                iterator.remove();
-            }
-
-            ProjectMode projectMode = ProjectMode.NONE;
-
-            if (displayManager.getCurrentlyVisibleProject() != null)
-            {
-                projectMode = displayManager.getCurrentlyVisibleProject().getProjectMode();
-            }
-
-            String descriptionOfFile = null;
-
-            switch (projectMode)
-            {
-                case NONE:
-                    descriptionOfFile = i18nBundle.getString("dialogs.anyFileChooserDescription");
-                    break;
-                case MESH:
-                    descriptionOfFile = i18nBundle.getString("dialogs.meshFileChooserDescription");
-                    break;
-                case GCODE:
-                    descriptionOfFile = i18nBundle.getString("dialogs.gcodeFileChooserDescription");
-                    break;
-                default:
-                    break;
-            }
-            modelFileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter(descriptionOfFile,
-                                                ApplicationConfiguration.getSupportedFileExtensionWildcards(
-                                                    projectMode)));
-
-            modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(
-                DirectoryMemoryProperty.MODEL)));
-
-            List<File> files;
-            if (projectMode == ProjectMode.NONE || projectMode == ProjectMode.MESH)
-            {
-                files = modelFileChooser.showOpenMultipleDialog(displayManager.getMainStage());
-            } else
-            {
-                File file = modelFileChooser.showOpenDialog(displayManager.getMainStage());
-                files = new ArrayList<>();
-                if (file != null)
-                {
-                    files.add(file);
-                }
-            }
-
-            if (files != null && !files.isEmpty())
-            {
-                ApplicationConfiguration.setLastDirectory(
-                    DirectoryMemoryProperty.MODEL,
-                    files.get(0).getParentFile().getAbsolutePath());
-                displayManager.loadExternalModels(files, true);
-            }
+            downloadFile(fileDownloadLocation.get());
         });
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        displayManager = DisplayManager.getInstance();
-        i18nBundle = DisplayManager.getLanguageBundle();
-
-        modelFileChooser.setTitle(i18nBundle.getString("dialogs.modelFileChooser"));
-        modelFileChooser.getExtensionFilters().addAll(
-            new FileChooser.ExtensionFilter(i18nBundle.getString("dialogs.modelFileChooserDescription"), ApplicationConfiguration.getSupportedFileExtensionWildcards(ProjectMode.NONE)));
-
         spinner = new Spinner();
 
-        addToProjectButton.setDisable(true);
-        
+        addToProjectButton.disableProperty().bind(Bindings.equal("", fileDownloadLocation));
+
         loadWebData();
 
     }
@@ -176,10 +103,21 @@ public class MyMiniFactoryLoaderController implements Initializable
                         steno.info("running");
                         break;
                     case SUCCEEDED:
+                        fileDownloadLocation.set("");
                         spinner.stopSpinning();
                         steno.info("loaded");
-                        JSObject win = (JSObject) webEngine.executeScript("window");
-                        win.setMember("automaker", new WebCallback());
+                        Object fileLinkFunction = webEngine.executeScript(
+                            "window.autoMakerGetFileLink");
+                        if (fileLinkFunction instanceof String
+                                    && ((String) fileLinkFunction).equals("undefined"))
+                        {
+                            break;
+                        }
+                        if (fileLinkFunction instanceof JSObject)
+                        {
+                            fileDownloadLocation.set((String) webEngine.executeScript(
+                                    "window.autoMakerGetFileLink()"));
+                        }
                         break;
                     case CANCELLED:
                         spinner.stopSpinning();
@@ -197,42 +135,38 @@ public class MyMiniFactoryLoaderController implements Initializable
 
     private boolean alreadyDownloading = false;
 
-    public class WebCallback
+    public void downloadFile(String fileURL)
     {
-
-        public void downloadFile(String fileURL)
+        if (!alreadyDownloading)
         {
-            if (!alreadyDownloading)
+            alreadyDownloading = true;
+            spinner.startSpinning();
+
+            MyMiniFactoryLoader loader = new MyMiniFactoryLoader(fileURL);
+
+            loader.setOnSucceeded((WorkerStateEvent event) ->
             {
-                alreadyDownloading = true;
-                spinner.startSpinning();
-
-                MyMiniFactoryLoader loader = new MyMiniFactoryLoader(fileURL);
-
-                loader.setOnSucceeded((WorkerStateEvent event) ->
+                MyMiniFactoryLoadResult result = (MyMiniFactoryLoadResult) event.getSource().getValue();
+                if (result.isSuccess())
                 {
-                    MyMiniFactoryLoadResult result = (MyMiniFactoryLoadResult) event.getSource().getValue();
-                    if (result.isSuccess())
-                    {
-                        displayManager.loadExternalModels(result.getFilesToLoad());
-                    }
-                    finishedWithEngines();
-                    ApplicationStatus.getInstance().setMode(ApplicationMode.LAYOUT);
-                });
+                    DisplayManager.getInstance().loadExternalModels(result.getFilesToLoad());
+                }
+                finishedWithEngines();
+                ApplicationStatus.getInstance().setMode(ApplicationMode.LAYOUT);
+            });
 
-                loader.setOnFailed((WorkerStateEvent event) ->
-                {
-                    finishedWithEngines();
-                });
+            loader.setOnFailed((WorkerStateEvent event) ->
+            {
+                finishedWithEngines();
+            });
 
-                loader.setOnCancelled((WorkerStateEvent event) ->
-                {
-                    finishedWithEngines();
-                });
+            loader.setOnCancelled((WorkerStateEvent event) ->
+            {
+                finishedWithEngines();
+            });
 
-                Thread loaderThread = new Thread(loader);
-                loaderThread.start();
-            }
+            Thread loaderThread = new Thread(loader);
+            loaderThread.start();
         }
     }
 
