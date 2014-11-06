@@ -99,6 +99,7 @@ public class MyMiniFactoryLoaderController implements Initializable
                 switch (newState)
                 {
                     case RUNNING:
+                        fileDownloadLocation.set("");
                         spinner.startSpinning();
                         steno.info("running");
                         break;
@@ -115,10 +116,12 @@ public class MyMiniFactoryLoaderController implements Initializable
                         }
                         break;
                     case CANCELLED:
+                        fileDownloadLocation.set("");
                         spinner.stopSpinning();
                         steno.info("cancelled");
                         break;
                     case FAILED:
+                        fileDownloadLocation.set("");
                         spinner.stopSpinning();
                         steno.info("failed");
                         break;

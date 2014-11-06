@@ -1122,12 +1122,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         TriangleMesh mesh = (TriangleMesh) getMeshView().getMesh();
         ObservableFloatArray originalPoints = mesh.getPoints();
 
-        double minX = 999;
-        double minY = 999;
-        double minZ = 999;
-        double maxX = -999;
-        double maxY = -999;
-        double maxZ = -999;
+        double minX = 1e99;
+        double minY = 1e99;
+        double minZ = 1e99;
+        double maxX = -1e99;
+        double maxY = -1e99;
+        double maxZ = -1e99;
 
         for (int pointOffset = 0; pointOffset < originalPoints.size(); pointOffset += 3)
         {
