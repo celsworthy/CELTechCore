@@ -69,6 +69,10 @@
     -fx-font-family: 'Source Sans Pro Light';
 }
 
+.blackBorder {
+    -fx-background_color: black;
+}
+
 .standardPanel{
     -fx-background-color: mid_grey;
 }

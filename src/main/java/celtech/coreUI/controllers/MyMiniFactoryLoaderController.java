@@ -1,5 +1,7 @@
 package celtech.coreUI.controllers;
 
+import celtech.appManager.ApplicationMode;
+import celtech.appManager.ApplicationStatus;
 import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
@@ -43,29 +45,21 @@ public class MyMiniFactoryLoaderController implements Initializable
     private DisplayManager displayManager = null;
     private ResourceBundle i18nBundle = null;
     private static final Stenographer steno = StenographerFactory.getStenographer(MyMiniFactoryLoaderController.class.getName());
-    private Stage stage = null;
 
     private WebEngine webEngine = null;
 
     private Spinner spinner = null;
 
     @FXML
-    private VBox container;
-
-    @FXML
     private VBox webContentContainer;
 
     @FXML
     private GraphicButton addToProjectButton;
-    @FXML
-    private GraphicButton cancelButton;
-    @FXML
-    private GraphicButton backwardButton;
 
     @FXML
     void cancelPressed(ActionEvent event)
     {
-        stage.close();
+        ApplicationStatus.getInstance().modeProperty().set(ApplicationMode.LAYOUT);
     }
 
     @FXML
@@ -156,6 +150,8 @@ public class MyMiniFactoryLoaderController implements Initializable
         spinner = new Spinner();
 
         addToProjectButton.setDisable(true);
+        
+        loadWebData();
 
     }
 
@@ -199,38 +195,6 @@ public class MyMiniFactoryLoaderController implements Initializable
         webEngine.load("http://cel-robox.myminifactory.com");
     }
 
-    public void setStage(Stage stage)
-    {
-        this.stage = stage;
-        stage.getScene().windowProperty().get().xProperty().addListener(new ChangeListener<Number>()
-        {
-
-            @Override
-            public void changed(
-                ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
-            {
-                spinner.recentre(stage);
-            }
-        });
-
-        stage.getScene().windowProperty().get().yProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                spinner.recentre(stage);
-            });
-        stage.getScene().windowProperty().get().widthProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                spinner.recentre(stage);
-            });
-        stage.getScene().windowProperty().get().heightProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                spinner.recentre(stage);
-            });
-
-    }
-
     private boolean alreadyDownloading = false;
 
     public class WebCallback
@@ -242,7 +206,6 @@ public class MyMiniFactoryLoaderController implements Initializable
             {
                 alreadyDownloading = true;
                 spinner.startSpinning();
-                backwardButton.setDisable(true);
 
                 MyMiniFactoryLoader loader = new MyMiniFactoryLoader(fileURL);
 
@@ -253,8 +216,8 @@ public class MyMiniFactoryLoaderController implements Initializable
                     {
                         displayManager.loadExternalModels(result.getFilesToLoad());
                     }
-                    stage.close();
                     finishedWithEngines();
+                    ApplicationStatus.getInstance().setMode(ApplicationMode.LAYOUT);
                 });
 
                 loader.setOnFailed((WorkerStateEvent event) ->
@@ -277,7 +240,6 @@ public class MyMiniFactoryLoaderController implements Initializable
     {
         alreadyDownloading = false;
         spinner.stopSpinning();
-        backwardButton.setDisable(false);
     }
 
 }
