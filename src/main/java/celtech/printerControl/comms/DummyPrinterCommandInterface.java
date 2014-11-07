@@ -29,6 +29,7 @@ import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.commands.tx.SendDataFileStart;
 import celtech.printerControl.comms.commands.tx.SendGCodeRequest;
 import celtech.printerControl.comms.commands.tx.StatusRequest;
+import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Reel;
 import javafx.scene.paint.Color;
@@ -227,7 +228,17 @@ public class DummyPrinterCommandInterface extends CommandInterface
 
             headResponse.updateContents(attachedHead);
             response = (RoboxRxPacket) headResponse;
-        } else if (messageToWrite instanceof ReadReelEEPROM)
+        } else if (messageToWrite instanceof WriteHeadEEPROM)
+        {
+            WriteHeadEEPROM headWriteCommand = (WriteHeadEEPROM)messageToWrite;
+            
+            HeadEEPROMDataResponse headResponse = (HeadEEPROMDataResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.HEAD_EEPROM_DATA);
+
+            headResponse.updateFromWrite(headWriteCommand);
+            attachedHead.updateFromEEPROMData(headResponse);
+            
+            response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().getExpectedResponse());
+        }  else if (messageToWrite instanceof ReadReelEEPROM)
         {
             ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.REEL_EEPROM_DATA);
 

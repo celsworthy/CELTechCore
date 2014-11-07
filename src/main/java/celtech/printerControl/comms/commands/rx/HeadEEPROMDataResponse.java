@@ -4,6 +4,7 @@
  */
 package celtech.printerControl.comms.commands.rx;
 
+import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.NozzleHeater;
 import celtech.utils.FixedDecimalFloatFormat;
@@ -503,4 +504,30 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
         this.hoursUsed = hoursUsed;
     }
 
+    /**
+     * This method is used to populate the response data prior to head update
+     * It should be used for test purposes ONLY
+     * @param headWriteCommand 
+     */
+    public void updateFromWrite(WriteHeadEEPROM headWriteCommand)
+    {
+        //TODO ensure this copes with all data
+        headTypeCode = headWriteCommand.getHeadTypeCode();
+        uniqueID = headWriteCommand.getHeadUniqueID();
+
+        maximumTemperature = headWriteCommand.getMaximumTemperature();
+        thermistorBeta = headWriteCommand.getThermistorBeta();
+        thermistorTCal = headWriteCommand.getThermistorTCal();
+        lastFilamentTemperature = headWriteCommand.getLastFilamentTemperature();
+
+        nozzle1XOffset = headWriteCommand.getNozzle1XOffset();
+        nozzle1YOffset = headWriteCommand.getNozzle1YOffset();
+        nozzle1ZOffset = headWriteCommand.getNozzle1ZOffset();
+        nozzle1BOffset = headWriteCommand.getNozzle1BOffset();
+
+        nozzle2XOffset = headWriteCommand.getNozzle2XOffset();
+        nozzle2YOffset = headWriteCommand.getNozzle2YOffset();
+        nozzle2ZOffset = headWriteCommand.getNozzle2ZOffset();
+        nozzle2BOffset = headWriteCommand.getNozzle2BOffset();
+    }
 }

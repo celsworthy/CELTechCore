@@ -2219,32 +2219,37 @@ public final class HardwarePrinter implements Printer
                                 head.get().updateFromEEPROMData(headResponse);
                             }
 
-                            HeadRepairResult result = head.get().bringDataInBounds();
-
-                            switch (result)
+                            // Check to see if the data is in bounds
+                            // Suppress the check if we are calibrating, since out of bounds data is used during this operation
+                            if (printerStatus.get() != PrinterStatus.CALIBRATING_NOZZLE_OPENING)
                             {
-                                case REPAIRED_WRITE_ONLY:
-                                    try
-                                    {
-                                        writeHeadEEPROM(head.get());
-                                        steno.info("Automatically updated head data - no calibration required");
-                                        Lookup.getSystemNotificationHandler().showHeadUpdatedNotification();
-                                    } catch (RoboxCommsException ex)
-                                    {
-                                        steno.error("Error updating head after repair " + ex.getMessage());
-                                    }
-                                    break;
-                                case REPAIRED_WRITE_AND_RECALIBRATE:
-                                    try
-                                    {
-                                        writeHeadEEPROM(head.get());
-                                        Lookup.getSystemNotificationHandler().showCalibrationDialogue();
-                                        steno.info("Automatically updated head data - calibration suggested");
-                                    } catch (RoboxCommsException ex)
-                                    {
-                                        steno.error("Error updating head after repair " + ex.getMessage());
-                                    }
-                                    break;
+                                HeadRepairResult result = head.get().bringDataInBounds();
+
+                                switch (result)
+                                {
+                                    case REPAIRED_WRITE_ONLY:
+                                        try
+                                        {
+                                            writeHeadEEPROM(head.get());
+                                            steno.info("Automatically updated head data - no calibration required");
+                                            Lookup.getSystemNotificationHandler().showHeadUpdatedNotification();
+                                        } catch (RoboxCommsException ex)
+                                        {
+                                            steno.error("Error updating head after repair " + ex.getMessage());
+                                        }
+                                        break;
+                                    case REPAIRED_WRITE_AND_RECALIBRATE:
+                                        try
+                                        {
+                                            writeHeadEEPROM(head.get());
+                                            Lookup.getSystemNotificationHandler().showCalibrationDialogue();
+                                            steno.info("Automatically updated head data - calibration suggested");
+                                        } catch (RoboxCommsException ex)
+                                        {
+                                            steno.error("Error updating head after repair " + ex.getMessage());
+                                        }
+                                        break;
+                                }
                             }
                         } else
                         {
