@@ -1938,3 +1938,21 @@ table-view .column-header-background {
 .strokeDashArray23_3158-11_6579-3_4974-11_6579{
     -fx-stroke-dash-array: 2.98 2.98;
 }
+
+/**
+* Preferences
+*/
+.preferenceRow {
+    -fx-alignment:  center;
+    -fx-spacing: 30;
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 22px;
+}
+
+.preferenceLabel {
+    -fx-font-family: 'Source Sans Pro Light';
+}
+
+.preferenceControl {
+    
+}

@@ -13,7 +13,7 @@
         <HBox styleClass="inset-panel" VBox.vgrow="ALWAYS">
             <children>
             <VBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="30.0" style="-fx-background-color: black;" />
-            <HBox prefHeight="100.0" prefWidth="200.0">
+            <HBox>
                <children>
                   <VerticalMenu fx:id="preferencesMenu" maxWidth="-Infinity" minHeight="200.0" minWidth="-Infinity" prefWidth="360.0" />
                   <Separator id="calibrationMenuSeparator" maxWidth="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefWidth="5.0">
@@ -21,14 +21,34 @@
                         <Insets bottom="30.0" top="130.0" />
                      </HBox.margin>
                   </Separator>
-                  <VBox fx:id="preferencesListContainer" prefHeight="200.0" prefWidth="100.0" />
+                  <VBox fx:id="preferencesListContainer" spacing="30.0">
+                     <HBox.margin>
+                        <Insets top="130.0" />
+                     </HBox.margin>
+                     <children>
+                        <HBox alignment="CENTER" spacing="30.0">
+                           <children>
+                              <Label text="Label">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </Label>
+                              <ComboBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="150.0" />
+                           </children>
+                           <VBox.margin>
+                              <Insets left="30.0" />
+                           </VBox.margin>
+                        </HBox>
+                     </children></VBox>
                </children>
             </HBox>
             </children>
         </HBox>
         <BorderPane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="90.0" styleClass="menubar">
-            <right>
-            <HBox alignment="CENTER">
+            <center>
+            </center>
+         <center>
+            <HBox alignment="CENTER" BorderPane.alignment="CENTER">
                <children>
                       <GraphicButton fx:id="backwardButton" fxmlFileName="backwardButton" onAction="#backwardPressed" />
                </children>
@@ -36,19 +56,7 @@
                   <Insets right="10.0" />
                </BorderPane.margin>
             </HBox>
-            </right>
-            <left>
-                <HBox alignment="CENTER" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="90.0" spacing="5">
-                    <children>
-                        <GraphicButton fx:id="cancelButton" fxmlFileName="cancelButton" onAction="#cancelPressed" />
-                    </children>
-               <BorderPane.margin>
-                  <Insets left="40.0" />
-               </BorderPane.margin>
-                </HBox>
-            </left>
-            <center>
-            </center>
+         </center>
         </BorderPane>
     </children>
 </VBox>
