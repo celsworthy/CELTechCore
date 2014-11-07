@@ -11,6 +11,17 @@ public class UserPreferences
 
     private SlicerType slicerType = SlicerType.Cura;
     private boolean overrideSafeties = false;
+    private String language = "";
+
+    public String getLanguage()
+    {
+        return language;
+    }
+
+    public void setLanguage(String language)
+    {
+        this.language = language;
+    }
 
     public UserPreferences(UserPreferenceFile userPreferenceFile)
     {
