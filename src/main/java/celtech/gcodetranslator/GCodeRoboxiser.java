@@ -1913,16 +1913,16 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             reverseWipePath = false;
 
             // Add a travel to the closest point
-            ExtrusionEvent closestEvent = null;
+            MovementEvent closestEvent = null;
 
             int previousMovement = getPreviousMovementEventIndex(closestEventIndex);
             if (previousMovement > 0)
             {
-                closestEvent = (ExtrusionEvent) extrusionBuffer.get(previousMovement);
+                closestEvent = (MovementEvent) extrusionBuffer.get(previousMovement);
 
             } else
             {
-                closestEvent = (ExtrusionEvent) extrusionBuffer.get(closestEventIndex);
+                closestEvent = (MovementEvent) extrusionBuffer.get(closestEventIndex);
             }
 
             TravelEvent travelToClosestPoint = new TravelEvent();
