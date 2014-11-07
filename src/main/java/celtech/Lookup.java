@@ -26,7 +26,7 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
 /**
- *
+ * This class functions as the global service registry for AutoMaker.
  * @author tony
  */
 public class Lookup

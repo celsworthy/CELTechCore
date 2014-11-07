@@ -12,17 +12,18 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.RowConstraints;
 
 /**
  *
@@ -30,23 +31,18 @@ import javafx.scene.layout.VBox;
  */
 public class PreferencesTopInsetPanelController implements Initializable
 {
+    private static final int ROW_HEIGHT = 60;
 
     public interface Preference
     {
 
-        public void updatePreference();
+        public void updateValueFromControl();
 
-        public void getPreference();
+        public void populateControlWithCurrentValue();
 
         public Control getControl();
 
         public String getDescription();
-    }
-
-    @FXML
-    void cancelPressed(ActionEvent event)
-    {
-        ApplicationStatus.getInstance().returnToLastMode();
     }
 
     @FXML
@@ -56,7 +52,7 @@ public class PreferencesTopInsetPanelController implements Initializable
     }
 
     @FXML
-    private VBox preferencesListContainer;
+    private GridPane preferencesGridPane;
 
     @FXML
     private VerticalMenu preferencesMenu;
@@ -70,24 +66,38 @@ public class PreferencesTopInsetPanelController implements Initializable
 
         preferencesMenu.setTitle(Lookup.i18n("preferences.preferences"));
 
-        preferencesMenu.addItem("Environment", this::showEnvironmentPreferences);
-        preferencesMenu.addItem("Printing", this::showPrintingPreferences);
+        preferencesMenu.addItem(Lookup.i18n("preferences.printing"), this::showPrintingPreferences);
+        preferencesMenu.addItem(Lookup.i18n("preferences.environment"), this::showEnvironmentPreferences);
+        preferencesMenu.selectFirstItem();
+        
     }
 
     private Object showEnvironmentPreferences()
     {
+        List<Preference> preferences = createEnvironmentPreferences();
+
+        displayPreferences(preferences);
+
         return null;
+    }
+
+    private void displayPreferences(List<Preference> preferences)
+    {
+        preferencesGridPane.getChildren().clear();
+        int rowNo = 0;
+        for (Preference preference : preferences)
+        {
+            preference.populateControlWithCurrentValue();
+            addPreferenceToContainer(preference, rowNo);
+            rowNo++;
+        }
     }
 
     private Object showPrintingPreferences()
     {
         List<Preference> preferences = createPrintingPreferences();
-        
-        preferencesListContainer.getChildren().clear();
-        for (Preference preference : preferences)
-        {
-            addPreferenceToContainer(preference);
-        }
+
+        displayPreferences(preferences);
 
         return null;
     }
@@ -95,27 +105,31 @@ public class PreferencesTopInsetPanelController implements Initializable
     private List<Preference> createPrintingPreferences()
     {
         List<Preference> preferences = new ArrayList<>();
-        
+
         Preference slicerTypePref = new Preference()
         {
-            private ComboBox<SlicerType> control;
+            private final ComboBox<SlicerType> control;
             
             {
                 control = new ComboBox<>();
                 control.setItems(FXCollections.observableArrayList(SlicerType.values()));
                 control.setPrefWidth(150);
                 control.setMinWidth(control.getPrefWidth());
+                control.valueProperty().addListener((ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) ->
+                {
+                    updateValueFromControl();
+                });
             }
 
             @Override
-            public void updatePreference()
+            public void updateValueFromControl()
             {
                 SlicerType slicerType = control.getValue();
                 userPreferences.setSlicerType(slicerType);
             }
 
             @Override
-            public void getPreference()
+            public void populateControlWithCurrentValue()
             {
                 control.setValue(userPreferences.getSlicerType());
             }
@@ -129,29 +143,33 @@ public class PreferencesTopInsetPanelController implements Initializable
             @Override
             public String getDescription()
             {
-                return "Slicer Type";
+                return Lookup.i18n("preferences.slicerType");
             }
         };
-        
+
         Preference overrideSafetyPref = new Preference()
         {
-            private CheckBox control;
+            private final CheckBox control;
             
             {
                 control = new CheckBox();
                 control.setPrefWidth(150);
                 control.setMinWidth(control.getPrefWidth());
+                control.selectedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    updateValueFromControl();
+                });
             }
 
             @Override
-            public void updatePreference()
+            public void updateValueFromControl()
             {
                 boolean overrideSafety = control.isSelected();
                 userPreferences.setOverrideSafeties(overrideSafety);
             }
 
             @Override
-            public void getPreference()
+            public void populateControlWithCurrentValue()
             {
                 control.setSelected(userPreferences.isOverrideSafeties());
             }
@@ -165,34 +183,94 @@ public class PreferencesTopInsetPanelController implements Initializable
             @Override
             public String getDescription()
             {
-                return "Override Safety";
+                return Lookup.i18n("preferences.overrideSafety");
             }
         };
-        
+
         preferences.add(slicerTypePref);
         preferences.add(overrideSafetyPref);
-        
+
+        return preferences;
+    }
+    
+    private List<Preference> createEnvironmentPreferences()
+    {
+        List<Preference> preferences = new ArrayList<>();
+
+        Preference languagePref = new Preference()
+        {
+            private final ComboBox<String> control;
+            
+            {
+                control = new ComboBox<>();
+                ObservableList<String> languages = FXCollections.<String>observableArrayList();
+                languages.add("en_GB");
+                languages.add("fr_FR");
+                languages.add("de_GE");
+                control.setItems(languages);
+                control.setPrefWidth(200);
+                control.setMinWidth(control.getPrefWidth());
+                control.valueProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) ->
+                {
+                    updateValueFromControl();
+                });
+            }
+
+            @Override
+            public void updateValueFromControl()
+            {
+                userPreferences.setLanguage(control.getValue());
+            }
+
+            @Override
+            public void populateControlWithCurrentValue()
+            {
+                control.setValue(userPreferences.getLanguage());
+            }
+
+            @Override
+            public Control getControl()
+            {
+                return control;
+            }
+
+            @Override
+            public String getDescription()
+            {
+                return Lookup.i18n("preferences.language");
+            }
+        };
+
+
+        preferences.add(languagePref);
+
         return preferences;
     }
 
-    private void addPreferenceToContainer(Preference preference)
+
+    private void addPreferenceToContainer(Preference preference, int rowNo)
     {
-        HBox row = getPreferenceRow(preference);
-        preferencesListContainer.getChildren().add(row);
-        preferencesListContainer.setMargin(row, new Insets(0, 0, 0, 60));
+        Label description = getPreferenceDescriptionLabel(preference);
+        Control editor = getPreferenceEditorControl(preference);
+        preferencesGridPane.addRow(rowNo, description, editor);
+        RowConstraints rowConstraints = preferencesGridPane.getRowConstraints().get(rowNo);
+        rowConstraints.setPrefHeight(ROW_HEIGHT);
+        rowConstraints.setMinHeight(ROW_HEIGHT);
+        rowConstraints.setMaxHeight(ROW_HEIGHT);
     }
 
-    public HBox getPreferenceRow(Preference preference)
+    private Label getPreferenceDescriptionLabel(Preference preference)
     {
-        HBox rowHBox = new HBox();
-        rowHBox.getStyleClass().add("preferenceRow");
         Label descriptionLabel = new Label(preference.getDescription() + ":");
         descriptionLabel.getStyleClass().add("preferenceLabel");
-        rowHBox.getChildren().add(descriptionLabel);
+        return descriptionLabel;
+    }
+
+    private Control getPreferenceEditorControl(Preference preference)
+    {
         Control control = preference.getControl();
         control.getStyleClass().add("preferenceControl");
-        rowHBox.getChildren().add(control);
-        return rowHBox;
+        return control;
     }
 
 }

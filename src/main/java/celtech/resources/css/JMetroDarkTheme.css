@@ -1942,17 +1942,20 @@ table-view .column-header-background {
 /**
 * Preferences
 */
-.preferenceRow {
+
+.preferencesGridPane {
     -fx-alignment:  center;
-    -fx-spacing: 30;
-    -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-size: 22px;
+    -fx-hgap: 60;
+    -fx-vgap: 60;
 }
 
 .preferenceLabel {
     -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-size: 22px;
 }
 
 .preferenceControl {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 22px;
     
 }

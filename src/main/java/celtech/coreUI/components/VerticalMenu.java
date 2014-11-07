@@ -47,6 +47,11 @@ public class VerticalMenu extends VBox
 
     private static final PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     private Set<Text> allItems = new HashSet<>();
+    
+    private boolean firstItemInitialised = false;
+    private Text firstItem;
+    private Rectangle firstSquare;    
+    private Callable firstCallable;
 
     public VerticalMenu()
     {
@@ -83,6 +88,17 @@ public class VerticalMenu extends VBox
         square.setWidth(SQUARE_SIZE);
         addRow(verticalMenuGrid, square, text);
         setUpEventHandlersForItem(square, text, callback);
+        
+        if (! firstItemInitialised) {
+            firstItem = text;
+            firstSquare = square;
+            firstCallable = callback;
+            firstItemInitialised = true;
+        }
+    }
+    
+    public void selectFirstItem() {
+        selectItem(firstItem, firstSquare, firstCallable);
     }
 
     private void setUpEventHandlersForItem(Rectangle square, Text itemName,
@@ -114,18 +130,23 @@ public class VerticalMenu extends VBox
                     deselect(selectedItem, selectedSquare);
                 }
 
-                selectedItem = itemName;
-                selectedSquare = square;
-                select(selectedItem, selectedSquare);
-                try
-                {
-                    callback.call();
-                } catch (Exception ex)
-                {
-                    ex.printStackTrace();
-                }
+                selectItem(itemName, square, callback);
             }
         });
+    }
+
+    private void selectItem(Text itemName, Rectangle square, Callable<Object> callback)
+    {
+        selectedItem = itemName;
+        selectedSquare = square;
+        displayAsSelected(selectedItem, selectedSquare);
+        try
+        {
+            callback.call();
+        } catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
     }
 
     /**
@@ -147,7 +168,7 @@ public class VerticalMenu extends VBox
         square.setFill(Color.WHITE);
     }
 
-    private void select(Text selectedItem, Rectangle square)
+    private void displayAsSelected(Text selectedItem, Rectangle square)
     {
         square.setVisible(true);
         selectedItem.pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, true);
