@@ -92,6 +92,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
     private boolean programInvalidHeadDialogOnDisplay = false;
 
+    private boolean headNotRecognisedDialogOnDisplay = false;
+
     @Override
     public void showErrorNotification(String title, String message)
     {
@@ -718,14 +720,13 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             {
                 programInvalidHeadDialogOnDisplay = true;
                 ArrayList<HeadFile> headFiles = new ArrayList(HeadContainer.getCompleteHeadList());
-                
+
                 ChoiceDialog headRewriteDialog = new ChoiceDialog(headFiles.get(0), headFiles);
-//                headRewriteDialog.getItems().addAll(HeadContainer.getCompleteHeadList());
 
                 headRewriteDialog.setTitle(Lookup.i18n("dialogs.headRepairTitle"));
                 headRewriteDialog.setHeaderText(Lookup.i18n("dialogs.headRepairHeader"));
                 headRewriteDialog.setContentText(Lookup.i18n("dialogs.headRepairInstruction"));
-                
+
                 Optional<HeadFile> chosenFileOption = headRewriteDialog.showAndWait();
                 HeadFile chosenFile = null;
                 if (chosenFileOption.isPresent())
@@ -735,6 +736,27 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
                 Lookup.getTaskExecutor().respondOnGUIThread(responder, chosenFile != null, "Head profile chosen", chosenFile);
                 programInvalidHeadDialogOnDisplay = false;
+            });
+        }
+    }
+
+    @Override
+    public void showHeadNotRecognisedDialog(String printerName)
+    {
+        if (!headNotRecognisedDialogOnDisplay)
+        {
+            headNotRecognisedDialogOnDisplay = true;
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                Dialogs.create().title(
+                    Lookup.i18n("dialogs.headNotRecognisedTitle"))
+                    .message(Lookup.i18n("dialogs.headNotRecognisedMessage1")
+                        + " "
+                        + printerName
+                        + " "
+                        + Lookup.i18n("dialogs.headNotRecognisedMessage2"))
+                    .masthead(null).showError();
+                headNotRecognisedDialogOnDisplay = false;
             });
         }
     }

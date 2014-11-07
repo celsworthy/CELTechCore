@@ -1347,101 +1347,6 @@ public final class HardwarePrinter implements Printer
         Lookup.getTaskExecutor().runOnGUIThread(roboxEventProcessor);
     }
 
-    private void hardResetHead()
-    {
-        try
-        {
-            HeadEEPROMDataResponse response = readHeadEEPROM();
-
-            if (response != null)
-            {
-                String receivedTypeCode = response.getTypeCode();
-
-                HeadFile referenceHeadData = null;
-                if (receivedTypeCode != null)
-                {
-                    referenceHeadData = HeadContainer.getHeadByID(response.getTypeCode());
-                }
-
-                if (referenceHeadData != null)
-                {
-                    Head headToWrite = new Head(referenceHeadData);
-                    headToWrite.uniqueID.set(response.getUniqueID());
-                    headToWrite.headHours.set(response.getHeadHours());
-
-                    // For now we only have one last filament temp from the printer...
-                    head.get().getNozzleHeaters().get(0).lastFilamentTemperature.set(
-                        response.getLastFilamentTemperature());
-                    writeHeadEEPROM(headToWrite);
-                    readHeadEEPROM();
-
-                    steno.info("Updated head data at user request for " + receivedTypeCode);
-                    Lookup.getSystemNotificationHandler().showCalibrationDialogue();
-                } else
-                {
-                    Head headToWrite = new Head(HeadContainer.getHeadByID(
-                        HeadContainer.defaultHeadID));
-                    String typeCode = headToWrite.typeCode.get();
-                    String idToCreate = typeCode + SystemUtils.generate16DigitID().substring(
-                        typeCode.length());
-                    headToWrite.uniqueID.set(idToCreate);
-
-                    writeHeadEEPROM(headToWrite);
-                    readHeadEEPROM();
-                    steno.info(
-                        "Updated head data at user request - type code could not be determined");
-                    Lookup.getSystemNotificationHandler().showCalibrationDialogue();
-                }
-            } else
-            {
-                steno.warning("Request to hard reset head failed");
-            }
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error during hard reset of head");
-        }
-    }
-
-    @Override
-    public void repairHeadIfNecessary()
-    {
-        try
-        {
-            HeadEEPROMDataResponse response = readHeadEEPROM();
-
-            if (ApplicationConfiguration.isAutoRepairHeads())
-            {
-                if (response != null)
-                {
-                    head.get().updateFromEEPROMData(response);
-
-                    String receivedTypeCode = response.getTypeCode();
-
-                    steno.info("Head repair initiated");
-                    HeadRepairResult result = head.get().repair(receivedTypeCode);
-
-                    switch (result)
-                    {
-                        case REPAIRED_WRITE_ONLY:
-                            writeHeadEEPROM(head.get());
-                            steno.info("Automatically updated head data for " + receivedTypeCode);
-                            Lookup.getSystemNotificationHandler().showHeadUpdatedNotification();
-                            break;
-                        case REPAIRED_WRITE_AND_RECALIBRATE:
-                            writeHeadEEPROM(head.get());
-                            Lookup.getSystemNotificationHandler().showCalibrationDialogue();
-                            steno.info("Automatically updated head data for " + receivedTypeCode
-                                + " calibration suggested");
-                            break;
-                    }
-                }
-            }
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error from triggered read of Head EEPROM");
-        }
-    }
-
     @Override
     public void goToOpenDoorPosition(TaskResponder responder) throws PrinterException
     {
@@ -1745,13 +1650,6 @@ public final class HardwarePrinter implements Printer
         {
             steno.error("Error when sending change to relative move command");
         }
-    }
-
-    @Override
-    public void forceHeadReset()
-    {
-        steno.info("Head reset initiated");
-        head.get().repair(null);
     }
 
     /**
@@ -2116,21 +2014,6 @@ public final class HardwarePrinter implements Printer
         return calibrationOpeningManager;
     }
 
-    @Override
-    public void repairHead(String receivedTypeCode) throws PrinterException
-    {
-        steno.info("Head repair initiated");
-        head.get().repair(receivedTypeCode);
-        try
-        {
-            writeHeadEEPROM(head.get());
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error repairing head");
-            throw new PrinterException("Error repairing head");
-        }
-    }
-
     class RoboxEventProcessor implements Runnable
     {
 
@@ -2319,33 +2202,74 @@ public final class HardwarePrinter implements Printer
 
                     HeadEEPROMDataResponse headResponse = (HeadEEPROMDataResponse) rxPacket;
 
-                    if (head.get() != null)
+                    if (Head.isTypeCodeValid(headResponse.getTypeCode()))
                     {
-                        head.get().updateFromEEPROMData(headResponse);
-                    } else
-                    {
-                        Head newHead = Head.createHead(headResponse);
+                        // Might be unrecognised but correct format for a Robox head type code
 
-                        if (newHead == null)
+                        if (Head.isTypeCodeInDatabase(headResponse.getTypeCode()))
                         {
-                            Lookup.getSystemNotificationHandler().showProgramInvalidHeadDialog((TaskResponse<HeadFile> taskResponse) ->
+                            if (head.get() == null)
                             {
-                                HeadFile chosenHeadFile = taskResponse.getReturnedObject();
+                                // No head attached to model
+                                Head newHead = Head.createHead(headResponse);
+                                head.set(newHead);
+                            } else
+                            {
+                                // Head already attached to model
+                                head.get().updateFromEEPROMData(headResponse);
+                            }
 
-                                if (chosenHeadFile != null)
-                                {
-                                    head.set(new Head(chosenHeadFile));
-                                    steno.info("Reprogrammed head as " + chosenHeadFile.getName());
-                                } else
-                                {
-                                    //Force the head prompt - we must have been cancelled
-                                    lastHeadEEPROMState = EEPROMState.NOT_PRESENT;
-                                }
-                            });
+                            HeadRepairResult result = head.get().bringDataInBounds();
+
+                            switch (result)
+                            {
+                                case REPAIRED_WRITE_ONLY:
+                                    try
+                                    {
+                                        writeHeadEEPROM(head.get());
+                                        steno.info("Automatically updated head data - no calibration required");
+                                        Lookup.getSystemNotificationHandler().showHeadUpdatedNotification();
+                                    } catch (RoboxCommsException ex)
+                                    {
+                                        steno.error("Error updating head after repair " + ex.getMessage());
+                                    }
+                                    break;
+                                case REPAIRED_WRITE_AND_RECALIBRATE:
+                                    try
+                                    {
+                                        writeHeadEEPROM(head.get());
+                                        Lookup.getSystemNotificationHandler().showCalibrationDialogue();
+                                        steno.info("Automatically updated head data - calibration suggested");
+                                    } catch (RoboxCommsException ex)
+                                    {
+                                        steno.error("Error updating head after repair " + ex.getMessage());
+                                    }
+                                    break;
+                            }
                         } else
                         {
-                            head.set(newHead);
+                            // We don't recognise the head but it seems to be valid
+                            Lookup.getSystemNotificationHandler().showHeadNotRecognisedDialog(printerIdentity.printerFriendlyName.get());
                         }
+                    } else
+                    {
+                        // Either not set or type code doesn't match Robox head type code
+                        Lookup.getSystemNotificationHandler().showProgramInvalidHeadDialog((TaskResponse<HeadFile> taskResponse) ->
+                        {
+                            HeadFile chosenHeadFile = taskResponse.getReturnedObject();
+
+                            if (chosenHeadFile != null)
+                            {
+                                Head chosenHead = new Head(chosenHeadFile);
+                                chosenHead.allocateRandomID();
+                                head.set(chosenHead);
+                                steno.info("Reprogrammed head as " + chosenHeadFile.getName());
+                            } else
+                            {
+                                //Force the head prompt - we must have been cancelled
+                                lastHeadEEPROMState = EEPROMState.NOT_PRESENT;
+                            }
+                        });
                     }
                     break;
 
@@ -2396,6 +2320,7 @@ public final class HardwarePrinter implements Printer
         {
             if (lastReelEEPROMState != statusResponse.getReelEEPROMState())
             {
+                lastReelEEPROMState = statusResponse.getReelEEPROMState();
                 switch (statusResponse.getReelEEPROMState())
                 {
                     case NOT_PRESENT:
@@ -2424,10 +2349,21 @@ public final class HardwarePrinter implements Printer
                         }
                         break;
                 }
-                lastReelEEPROMState = statusResponse.getReelEEPROMState();
             }
         }
     };
+
+    @Override
+    public void resetHeadToDefaults() throws PrinterException
+    {
+        if (head.get() != null)
+        {
+            head.get().resetToDefaults();
+        } else
+        {
+            throw new PrinterException("Asked to reset head to defaults when no head was attached");
+        }
+    }
 
     @Override
     public String toString()

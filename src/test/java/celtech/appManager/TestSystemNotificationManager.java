@@ -165,4 +165,9 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     public void showProgramInvalidHeadDialog(TaskResponder<HeadFile> taskResponse)
     {
     }
+
+    @Override
+    public void showHeadNotRecognisedDialog(String printerName)
+    {
+    }
 }

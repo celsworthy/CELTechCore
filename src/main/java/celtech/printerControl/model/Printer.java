@@ -86,8 +86,6 @@ public interface Printer extends RoboxResponseConsumer
 
     public ObservableList<Extruder> extrudersProperty();
 
-    public void forceHeadReset();
-
     /**
      *
      * @return @throws celtech.printerControl.model.PrinterException
@@ -184,8 +182,6 @@ public interface Printer extends RoboxResponseConsumer
     @Override
     public void processRoboxResponse(RoboxRxPacket rxPacket);
     
-    public void repairHead(String receivedTypeCode) throws PrinterException;
-
     public void purgeHead(TaskResponder responder) throws PrinterException;
 
     /**
@@ -215,8 +211,6 @@ public interface Printer extends RoboxResponseConsumer
     public ObservableList<Reel> reelsProperty();
 
     public void removeHead(TaskResponder responder) throws PrinterException;
-
-    public void repairHeadIfNecessary();
 
     /**
      *
@@ -437,5 +431,7 @@ public interface Printer extends RoboxResponseConsumer
     public boolean printJobIDIndicatesPrinting();
     
     public ReadOnlyObjectProperty pauseStatusProperty();
+
+    public void resetHeadToDefaults() throws PrinterException;
 
 }

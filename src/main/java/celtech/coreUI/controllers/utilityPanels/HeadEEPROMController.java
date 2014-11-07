@@ -96,10 +96,9 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     @FXML
     void resetToDefaults(ActionEvent event)
     {
-        String headId = headTypeCode.getText();
         try
         {
-            selectedPrinter.repairHead(headId);
+            selectedPrinter.resetHeadToDefaults();
         } catch (PrinterException ex)
         {
             steno.error("Unable to repair head");

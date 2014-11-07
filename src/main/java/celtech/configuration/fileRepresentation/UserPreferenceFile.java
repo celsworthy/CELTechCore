@@ -1,6 +1,7 @@
 package celtech.configuration.fileRepresentation;
 
 import celtech.configuration.SlicerType;
+import celtech.configuration.UserPreferences;
 
 /**
  *
@@ -29,5 +30,11 @@ public class UserPreferenceFile
     public void setOverrideSafeties(boolean overrideSafeties)
     {
         this.overrideSafeties = overrideSafeties;
+    }
+
+    public void populateFromSettings(UserPreferences userPreferences)
+    {
+        setSlicerType(userPreferences.getSlicerType());
+        setOverrideSafeties(userPreferences.isOverrideSafeties());
     }
 }

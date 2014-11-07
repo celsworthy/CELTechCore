@@ -152,12 +152,6 @@ class TestPrinter implements Printer
     }
 
     @Override
-    public void forceHeadReset()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public AckResponse formatHeadEEPROM() throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -346,12 +340,6 @@ class TestPrinter implements Printer
 
     @Override
     public void removeHead(TaskResponder responder) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void repairHeadIfNecessary()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -655,12 +643,6 @@ class TestPrinter implements Printer
     }
 
     @Override
-    public void repairHead(String receivedTypeCode) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public boolean printJobIDIndicatesPrinting()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -668,6 +650,12 @@ class TestPrinter implements Printer
 
     @Override
     public void executeGCodeFile(String fileName) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void resetHeadToDefaults() throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
