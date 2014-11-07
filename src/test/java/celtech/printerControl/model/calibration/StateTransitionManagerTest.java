@@ -4,19 +4,12 @@
 package celtech.printerControl.model.calibration;
 
 import celtech.JavaFXConfiguredTest;
-import celtech.printerControl.model.calibration.StateTransitionManager.GUIName;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import javafx.beans.value.ObservableValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
-import org.junit.Test;
 
 /**
  *

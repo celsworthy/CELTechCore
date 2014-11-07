@@ -114,7 +114,7 @@ public class PrinterTest
         response.setUniqueID("XYZ1");
         testCommandInterface.addHead(response);
 
-        float nozzle1XOffset = 6f;
+        float nozzle1XOffset = 7.4f;
         printer.transmitWriteHeadEEPROM(
             "RBX01-SM", "XZYA",
             250f, 5f, 6f,

@@ -136,6 +136,18 @@ public class DummyPrinterCommandInterface extends CommandInterface
                     currentStatus.setHeadEEPROMState(EEPROMState.NOT_PROGRAMMED);
                     attachedHead = new Head();
                     gcodeResponse.setMessagePayload("Adding unformatted head to dummy printer");
+                } else if (headName.equalsIgnoreCase("BADTYPE"))
+                {
+                    currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
+                    attachedHead = new Head();
+                    attachedHead.typeCodeProperty().set("WRONG");
+                    gcodeResponse.setMessagePayload("Adding head with invalid type code to dummy printer");
+                } else if (headName.equalsIgnoreCase("UNREAL"))
+                {
+                    currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
+                    attachedHead = new Head();
+                    attachedHead.typeCodeProperty().set("RBX01-??");
+                    gcodeResponse.setMessagePayload("Adding head with valid but unknown type code to dummy printer");
                 } else
                 {
                     gcodeResponse.setMessagePayload("Didn't recognise head name - " + headName);

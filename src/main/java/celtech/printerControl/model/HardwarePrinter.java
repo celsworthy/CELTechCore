@@ -2263,7 +2263,16 @@ public final class HardwarePrinter implements Printer
                                 Head chosenHead = new Head(chosenHeadFile);
                                 chosenHead.allocateRandomID();
                                 head.set(chosenHead);
-                                steno.info("Reprogrammed head as " + chosenHeadFile.getName());
+                                steno.info("Reprogrammed head as " + chosenHeadFile.getName() + " with ID " + head.get().uniqueID.get());
+                                try
+                                {
+                                    writeHeadEEPROM(head.get());
+                                    Lookup.getSystemNotificationHandler().showCalibrationDialogue();
+                                    steno.info("Automatically updated head data - calibration suggested");
+                                } catch (RoboxCommsException ex)
+                                {
+                                    steno.error("Error updating head after repair " + ex.getMessage());
+                                }
                             } else
                             {
                                 //Force the head prompt - we must have been cancelled

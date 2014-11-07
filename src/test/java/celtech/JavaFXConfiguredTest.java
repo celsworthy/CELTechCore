@@ -11,8 +11,6 @@ import java.io.File;
 import java.net.URL;
 import java.util.Properties;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
@@ -23,11 +21,11 @@ import org.junit.rules.TemporaryFolder;
 public class JavaFXConfiguredTest
 {
 
-    @ClassRule
-    public static TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
 
-    @BeforeClass
-    public static void setUpClass()
+    @Before
+    public void setUp()
     {
         Properties testProperties = new Properties();
 

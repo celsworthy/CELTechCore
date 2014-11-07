@@ -1,6 +1,7 @@
 package celtech.appManager;
 
 import celtech.Lookup;
+import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.coreUI.components.PrinterIDDialog;
@@ -754,7 +755,9 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                         + " "
                         + printerName
                         + " "
-                        + Lookup.i18n("dialogs.headNotRecognisedMessage2"))
+                        + Lookup.i18n("dialogs.headNotRecognisedMessage2")
+                        + " "
+                        + ApplicationConfiguration.getApplicationName())
                     .masthead(null).showError();
                 headNotRecognisedDialogOnDisplay = false;
             });

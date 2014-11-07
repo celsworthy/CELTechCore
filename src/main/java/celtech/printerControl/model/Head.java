@@ -324,7 +324,7 @@ public class Head implements Cloneable
         boolean typeCodeIsValid = false;
 
         if (typeCode != null
-            && typeCode.matches("RBX-.*"))
+            && typeCode.matches("RBX[0-9]{2}-.*"))
         {
             typeCodeIsValid = true;
         }
@@ -347,7 +347,7 @@ public class Head implements Cloneable
 
     protected void allocateRandomID()
     {
-        String idToCreate = typeCode + SystemUtils.generate16DigitID().substring(typeCode.get().length());
+        String idToCreate = typeCode.get() + SystemUtils.generate16DigitID().substring(typeCode.get().length());
         uniqueID.set(idToCreate);
     }
 }
