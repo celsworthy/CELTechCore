@@ -139,14 +139,14 @@ public class Lookup
     public static ObjectProperty<Printer> currentlySelectedPrinterProperty()
     {
         return currentlySelectedPrinterProperty;
-    }    
-    
+    }
+
     public static UserPreferences getUserPreferences()
     {
         return userPreferences;
     }
-    
-        public static SlicerMappings getSlicerMappings()
+
+    public static SlicerMappings getSlicerMappings()
     {
         return slicerMappings;
     }

@@ -6,6 +6,7 @@ import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
@@ -118,7 +119,13 @@ public class SmartPartProgrammerController implements Initializable
     {
         if (connectedPrinter != null)
         {
-            connectedPrinter.forceHeadReset();
+            try
+            {
+                connectedPrinter.resetHeadToDefaults();
+            } catch (PrinterException ex)
+            {
+                steno.error("Error whilst resetting head to defaults");
+            }
         }
     }
 

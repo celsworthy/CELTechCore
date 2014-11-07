@@ -2,6 +2,7 @@ package celtech.configuration.datafileaccessors;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.SlicerType;
+import celtech.configuration.UserPreferences;
 import celtech.configuration.fileRepresentation.UserPreferenceFile;
 import java.io.File;
 import java.io.IOException;
@@ -78,5 +79,20 @@ public class UserPreferenceContainer
         }
 
         return userPreferenceFile;
+    }
+
+    public static void savePreferences(UserPreferences userPreferences)
+    {
+        File userPreferenceInputFile = new File(ApplicationConfiguration.getUserStorageDirectory() + defaultUserPreferenceFilename);
+
+        userPreferenceFile.populateFromSettings(userPreferences);
+
+        try
+        {
+            mapper.writeValue(userPreferenceInputFile, userPreferenceFile);
+        } catch (IOException ex)
+        {
+            steno.error("Error trying to write user preferences");
+        }
     }
 }
