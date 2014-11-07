@@ -41,6 +41,7 @@ public class CalibrationNozzleOpeningActions
 
     public boolean doHeatingAction() throws RoboxCommsException, PrinterException, InterruptedException
     {
+        printer.inhibitHeadIntegrityChecks(true);
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_OPENING);
 
         savedHeadData = printer.readHeadEEPROM();
@@ -93,14 +94,17 @@ public class CalibrationNozzleOpeningActions
                             .nozzleTargetTemperatureProperty().get(), 5, 300, cancellable);
                     }
                     printer.switchOnHeadLEDs();
-                } else {
+                } else
+                {
                     return false;
                 }
-            } else {
+            } else
+            {
                 return false;
             }
 
-        } else {
+        } else
+        {
             return false;
         }
         return true;
@@ -219,6 +223,7 @@ public class CalibrationNozzleOpeningActions
     {
         saveSettings();
         turnHeaterAndLEDSOff();
+        printer.inhibitHeadIntegrityChecks(false);
         printer.setPrinterStatus(PrinterStatus.IDLE);
         return true;
     }
@@ -227,6 +232,7 @@ public class CalibrationNozzleOpeningActions
     {
         restoreHeadState();
         turnHeaterAndLEDSOff();
+        printer.inhibitHeadIntegrityChecks(false);
         printer.setPrinterStatus(PrinterStatus.IDLE);
         return true;
     }

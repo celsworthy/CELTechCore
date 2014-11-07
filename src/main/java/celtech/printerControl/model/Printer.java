@@ -433,5 +433,7 @@ public interface Printer extends RoboxResponseConsumer
     public ReadOnlyObjectProperty pauseStatusProperty();
 
     public void resetHeadToDefaults() throws PrinterException;
+    
+    public void inhibitHeadIntegrityChecks(boolean inhibit);
 
 }

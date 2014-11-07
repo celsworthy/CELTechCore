@@ -127,6 +127,8 @@ public final class HardwarePrinter implements Printer
     private final BooleanProperty canCancel = new SimpleBooleanProperty(false);
     private final BooleanProperty canOpenDoor = new SimpleBooleanProperty(false);
     private final BooleanProperty canCalibrateHead = new SimpleBooleanProperty(false);
+    
+    private boolean headIntegrityChecksInhibited = false;
 
     /*
      * Physical model
@@ -2221,7 +2223,7 @@ public final class HardwarePrinter implements Printer
 
                             // Check to see if the data is in bounds
                             // Suppress the check if we are calibrating, since out of bounds data is used during this operation
-                            if (printerStatus.get() != PrinterStatus.CALIBRATING_NOZZLE_OPENING)
+                            if (!headIntegrityChecksInhibited)
                             {
                                 HeadRepairResult result = head.get().bringDataInBounds();
 
@@ -2379,6 +2381,12 @@ public final class HardwarePrinter implements Printer
         }
     }
 
+    @Override
+    public void inhibitHeadIntegrityChecks(boolean inhibit)
+    {
+        headIntegrityChecksInhibited = inhibit;
+    }
+    
     @Override
     public String toString()
     {
