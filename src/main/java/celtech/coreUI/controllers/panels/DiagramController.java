@@ -115,32 +115,33 @@ class DiagramController implements Initializable
 
     protected void setupZCoListener(ReadOnlyDoubleProperty zcoProperty)
     {
-        steno.debug("add zco listener");
+        
         if (calibrationTextField != null)
         {
+            steno.debug("add zco listener");
             calibrationTextField.setText(String.format("%1.2f", zcoProperty.get()));
-        }
-        zcoProperty.addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(
-                ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            zcoProperty.addListener(new ChangeListener<Number>()
             {
-                steno.debug("zco listener fired");
-                if (calibrationTextField != null)
+                @Override
+                public void changed(
+                    ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
                 {
-                    steno.debug("set zco text to " + String.format("%1.2f", newValue));
-                    calibrationTextField.setText(String.format("%1.2f", newValue));
-                    if (newValue.floatValue() <= 0f)
+                    steno.debug("zco listener fired");
+                    if (calibrationTextField != null)
                     {
-                        buttonA.setDisable(true);
-                    } else
-                    {
-                        buttonA.setDisable(false);
+                        steno.debug("set zco text to " + String.format("%1.2f", newValue));
+                        calibrationTextField.setText(String.format("%1.2f", newValue));
+                        if (newValue.floatValue() <= 0f)
+                        {
+                            buttonA.setDisable(true);
+                        } else
+                        {
+                            buttonA.setDisable(false);
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     }
 
     @Override
