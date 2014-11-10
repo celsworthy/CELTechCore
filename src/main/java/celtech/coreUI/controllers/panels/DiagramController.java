@@ -4,6 +4,8 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
+import celtech.printerControl.model.calibration.StateTransitionManager;
+import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.ReadOnlyDoubleProperty;
@@ -31,11 +33,11 @@ class DiagramController implements Initializable
     private final Stenographer steno = StenographerFactory.getStenographer(
         DiagramController.class.getName());
 
-    private final CalibrationInsetPanelController parentController;
+    private final StateTransitionManager stateTransitionManager;
 
-    public DiagramController(CalibrationInsetPanelController parentController)
+    public DiagramController(StateTransitionManager stateTransitionManager)
     {
-        this.parentController = parentController;
+        this.stateTransitionManager = stateTransitionManager;
     }
 
     @FXML
@@ -92,25 +94,25 @@ class DiagramController implements Initializable
     @FXML
     void buttonAAction(ActionEvent event)
     {
-        parentController.buttonAAction(event);
+        stateTransitionManager.followTransition(StateTransitionManager.GUIName.A_BUTTON);
     }
 
     @FXML
     void buttonBAction(ActionEvent event)
     {
-        parentController.buttonBAction(event);
+        stateTransitionManager.followTransition(StateTransitionManager.GUIName.B_BUTTON);
     }
 
     @FXML
     void upButtonAction(ActionEvent event)
     {
-        parentController.upButtonAction(event);
+        stateTransitionManager.followTransition(StateTransitionManager.GUIName.UP);
     }
 
     @FXML
     void downButtonAction(ActionEvent event)
     {
-        parentController.downButtonAction(event);
+        stateTransitionManager.followTransition(StateTransitionManager.GUIName.DOWN);
     }
 
     protected void setupZCoListener(ReadOnlyDoubleProperty zcoProperty)
@@ -149,10 +151,10 @@ class DiagramController implements Initializable
     {
         setupOffsetCombos();
         steno.debug("calibrationTextField is " + calibrationTextField);
-        if (parentController.stateManager instanceof NozzleHeightStateTransitionManager)
+        if (stateTransitionManager instanceof NozzleHeightStateTransitionManager)
         {
             ReadOnlyDoubleProperty zcoProperty
-                = ((NozzleHeightStateTransitionManager) parentController.stateManager).getZcoProperty();
+                = ((NozzleHeightStateTransitionManager) stateTransitionManager).getZcoProperty();
             if (calibrationTextField != null)
             {
                 calibrationTextField.setText(String.format("%1.2f", zcoProperty.get()));
@@ -191,13 +193,13 @@ class DiagramController implements Initializable
             cmbXOffset.valueProperty().addListener(
                 (ObservableValue observable, Object oldValue, Object newValue) ->
                 {
-                    parentController.setXOffset(newValue.toString());
+                    ((XAndYStateTransitionManager) stateTransitionManager).setXOffset(newValue.toString());
                 });
 
             cmbYOffset.valueProperty().addListener(
                 (ObservableValue observable, Object oldValue, Object newValue) ->
                 {
-                    parentController.setYOffset(Integer.parseInt(newValue.toString()));
+                    ((XAndYStateTransitionManager) stateTransitionManager).setYOffset(Integer.parseInt(newValue.toString()));
                 });
 
             cmbXOffset.setValue("F");

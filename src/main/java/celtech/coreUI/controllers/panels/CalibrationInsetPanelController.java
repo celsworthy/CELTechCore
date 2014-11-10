@@ -12,9 +12,7 @@ import celtech.printerControl.model.NozzleHeater;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.Reel;
-import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
 import celtech.printerControl.model.calibration.StateTransitionManager;
-import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
 import celtech.services.calibration.CalibrationXAndYState;
 import celtech.services.calibration.NozzleOffsetCalibrationState;
 import celtech.services.calibration.NozzleOpeningCalibrationState;
@@ -138,18 +136,6 @@ public class CalibrationInsetPanelController implements Initializable,
     private final Map<String, Node> nameToNodeCache = new HashMap<>();
 
     @FXML
-    void upButtonAction(ActionEvent event)
-    {
-        stateManager.followTransition(StateTransitionManager.GUIName.UP);
-    }
-
-    @FXML
-    void downButtonAction(ActionEvent event)
-    {
-        stateManager.followTransition(StateTransitionManager.GUIName.DOWN);
-    }
-
-    @FXML
     void buttonAAction(ActionEvent event)
     {
         stateManager.followTransition(StateTransitionManager.GUIName.A_BUTTON);
@@ -206,9 +192,6 @@ public class CalibrationInsetPanelController implements Initializable,
         stateManager.followTransition(StateTransitionManager.GUIName.RETRY);
     }
 
-    /**
-     *
-     */
     public void cancelCalibrationAction()
     {
         ApplicationStatus.getInstance().returnToLastMode();
@@ -345,7 +328,7 @@ public class CalibrationInsetPanelController implements Initializable,
             try
             {
                 FXMLLoader loader = new FXMLLoader(fxmlFileName, resources);
-                diagramController = new DiagramController(this);
+                diagramController = new DiagramController(stateManager);
                 loader.setController(diagramController);
                 loadedDiagramNode = loader.load();
                 nameToNodeCache.put(diagramName, loadedDiagramNode);
@@ -402,9 +385,14 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         if (targetTemperature != 0 && calibrationProgressTemp.isVisible())
         {
+            
+            int currentTemp = (int) currentExtruderTemperature;
+            if (currentTemp > targetTemperature) {
+                currentTemp = targetTemperature;
+            }
+            
             String targetTempStr = targetTemperature + Lookup.i18n("misc.degreesC");
-            String currentTempStr = ((int) currentExtruderTemperature)
-                + Lookup.i18n("misc.degreesC");
+            String currentTempStr = currentTemp + Lookup.i18n("misc.degreesC");
             calibrationProgressTemp.setCurrentValue(currentTempStr);
             calibrationProgressTemp.setTargetValue(targetTempStr);
             calibrationProgressTemp.setProgress(currentExtruderTemperature / targetTemperature);
@@ -564,22 +552,6 @@ public class CalibrationInsetPanelController implements Initializable,
             break;
             case CHOICE:
                 setupChoice();
-        }
-    }
-
-    protected void setXOffset(String xOffset)
-    {
-        if (stateManager instanceof XAndYStateTransitionManager)
-        {
-            ((XAndYStateTransitionManager) stateManager).setXOffset(xOffset);
-        }
-    }
-
-    protected void setYOffset(Integer yOffset)
-    {
-        if (stateManager instanceof XAndYStateTransitionManager)
-        {
-            ((XAndYStateTransitionManager) stateManager).setYOffset(yOffset);
         }
     }
 
