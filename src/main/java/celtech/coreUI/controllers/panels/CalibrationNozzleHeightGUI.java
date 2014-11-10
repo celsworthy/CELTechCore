@@ -37,7 +37,6 @@ public class CalibrationNozzleHeightGUI
         
         stateManager.stateGUITProperty().addListener(new ChangeListener()
         {
-
             @Override
             public void changed(ObservableValue observable, Object oldValue, Object newValue)
             {
@@ -63,7 +62,6 @@ public class CalibrationNozzleHeightGUI
     public void setState(NozzleOffsetCalibrationState state)
     {
         steno.info("GUI going to state " + state);
-        controller.updateZCO();
         showAppropriateButtons(state);
         switch (state)
         {

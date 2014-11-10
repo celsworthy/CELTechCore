@@ -13962,7 +13962,7 @@
                         </Polygon>
                      </graphic>
                   </Button>
-                  <Button fx:id="buttonB" layoutX="332.0" layoutY="31.0" mnemonicParsing="false" onAction="#upButtonAction" scaleX="0.5" scaleY="0.5" scaleZ="0.5" style="-fx-background-color: transparent;" styleClass="calibrationAltABButton">
+                  <Button fx:id="buttonB" layoutX="331.0" layoutY="31.0" mnemonicParsing="false" onAction="#upButtonAction" scaleX="0.5" scaleY="0.5" scaleZ="0.5" style="-fx-background-color: transparent;" styleClass="calibrationAltABButton">
                      <graphic>
                         <Polygon fill="DODGERBLUE" stroke="BLACK" strokeType="INSIDE">
                            <points>

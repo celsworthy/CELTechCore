@@ -3,8 +3,13 @@
  */
 package celtech.coreUI.controllers.panels;
 
+import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
+import celtech.printerControl.model.calibration.StateTransitionManager;
+import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -15,6 +20,8 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -23,22 +30,21 @@ import javafx.scene.layout.VBox;
 class DiagramController implements Initializable
 {
 
-    private final CalibrationInsetPanelController parentController;
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        DiagramController.class.getName());
 
-    public DiagramController(CalibrationInsetPanelController parentController)
+    private final StateTransitionManager stateTransitionManager;
+
+    public DiagramController(StateTransitionManager stateTransitionManager)
     {
-        this.parentController = parentController;
-        if (calibrationTextField != null)
-        {
-            calibrationTextField.setText("0.00");
-        }
+        this.stateTransitionManager = stateTransitionManager;
     }
-    
+
     @FXML
     private TextField xOffsetA;
-    
+
     @FXML
-    private TextField yOffsetA;    
+    private TextField yOffsetA;
 
     @FXML
     protected ComboBox cmbYOffset;
@@ -57,9 +63,9 @@ class DiagramController implements Initializable
 
     @FXML
     private HBox xOffsetComboContainer;
-    
+
     @FXML
-    private VBox yOffsetComboContainer;    
+    private VBox yOffsetComboContainer;
 
     @FXML
     private HBox yOffsetContainerB;
@@ -75,49 +81,68 @@ class DiagramController implements Initializable
 
     @FXML
     private HBox perfectAlignmentContainer;
-    
+
     @FXML
-    private HBox incorrectAlignmentContainer;    
-    
+    private HBox incorrectAlignmentContainer;
+
     @FXML
     private Button buttonB;
-    
+
     @FXML
-    private Button buttonA;    
-    
+    private Button buttonA;
+
     @FXML
     void buttonAAction(ActionEvent event)
     {
-        parentController.buttonAAction(event);
+        stateTransitionManager.followTransition(StateTransitionManager.GUIName.A_BUTTON);
     }
 
     @FXML
     void buttonBAction(ActionEvent event)
     {
-        parentController.buttonBAction(event);
+        stateTransitionManager.followTransition(StateTransitionManager.GUIName.B_BUTTON);
     }
-    
-    @FXML
-    void upButtonAction(ActionEvent event) {
-        parentController.upButtonAction(event);
-    }
-    
-    @FXML
-    void downButtonAction(ActionEvent event) {
-        parentController.downButtonAction(event);
-    }        
 
-    protected void setCalibrationTextField(String textFieldData)
+    @FXML
+    void upButtonAction(ActionEvent event)
     {
+        stateTransitionManager.followTransition(StateTransitionManager.GUIName.UP);
+    }
+
+    @FXML
+    void downButtonAction(ActionEvent event)
+    {
+        stateTransitionManager.followTransition(StateTransitionManager.GUIName.DOWN);
+    }
+
+    protected void setupZCoListener(ReadOnlyDoubleProperty zcoProperty)
+    {
+        
         if (calibrationTextField != null)
         {
-            calibrationTextField.setText(textFieldData);
-            float value = Float.parseFloat(textFieldData);
-            if (value <= 0f) {
-                buttonA.setDisable(true);
-            } else {
-                buttonA.setDisable(false);
-            }
+            steno.debug("add zco listener");
+            calibrationTextField.setText(String.format("%1.2f", zcoProperty.get()));
+            zcoProperty.addListener(new ChangeListener<Number>()
+            {
+                @Override
+                public void changed(
+                    ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+                {
+                    steno.debug("zco listener fired");
+                    if (calibrationTextField != null)
+                    {
+                        steno.debug("set zco text to " + String.format("%1.2f", newValue));
+                        calibrationTextField.setText(String.format("%1.2f", newValue));
+                        if (newValue.floatValue() <= 0f)
+                        {
+                            buttonA.setDisable(true);
+                        } else
+                        {
+                            buttonA.setDisable(false);
+                        }
+                    }
+                }
+            });
         }
     }
 
@@ -125,7 +150,17 @@ class DiagramController implements Initializable
     public void initialize(URL location, ResourceBundle resources)
     {
         setupOffsetCombos();
-        setCalibrationTextField("0.00");
+        steno.debug("calibrationTextField is " + calibrationTextField);
+        if (stateTransitionManager instanceof NozzleHeightStateTransitionManager)
+        {
+            ReadOnlyDoubleProperty zcoProperty
+                = ((NozzleHeightStateTransitionManager) stateTransitionManager).getZcoProperty();
+            if (calibrationTextField != null)
+            {
+                calibrationTextField.setText(String.format("%1.2f", zcoProperty.get()));
+            }
+            setupZCoListener(zcoProperty);
+        }
     }
 
     private void setupOffsetCombos()
@@ -158,18 +193,18 @@ class DiagramController implements Initializable
             cmbXOffset.valueProperty().addListener(
                 (ObservableValue observable, Object oldValue, Object newValue) ->
                 {
-                    parentController.setXOffset(newValue.toString());
+                    ((XAndYStateTransitionManager) stateTransitionManager).setXOffset(newValue.toString());
                 });
 
             cmbYOffset.valueProperty().addListener(
                 (ObservableValue observable, Object oldValue, Object newValue) ->
                 {
-                    parentController.setYOffset(Integer.parseInt(newValue.toString()));
+                    ((XAndYStateTransitionManager) stateTransitionManager).setYOffset(Integer.parseInt(newValue.toString()));
                 });
-            
+
             cmbXOffset.setValue("F");
             cmbYOffset.setValue("6");
-            
+
             xOffsetA.setText(xOffsetA.getText() + ":");
             yOffsetA.setText(yOffsetA.getText() + ":");
         }
@@ -187,7 +222,7 @@ class DiagramController implements Initializable
             xOffsetComboContainer.setScaleX(invertedScale);
             xOffsetComboContainer.setScaleY(invertedScale);
             yOffsetComboContainer.setScaleX(invertedScale);
-            yOffsetComboContainer.setScaleY(invertedScale);            
+            yOffsetComboContainer.setScaleY(invertedScale);
             xOffsetContainerB.setScaleX(invertedScale);
             xOffsetContainerB.setScaleY(invertedScale);
             xOffsetContainerC.setScaleX(invertedScale);
@@ -195,12 +230,12 @@ class DiagramController implements Initializable
             yOffsetContainerB.setScaleX(invertedScale);
             yOffsetContainerB.setScaleY(invertedScale);
             yOffsetContainerC.setScaleX(invertedScale);
-            yOffsetContainerC.setScaleY(invertedScale);            
+            yOffsetContainerC.setScaleY(invertedScale);
 
             incorrectAlignmentContainer.setScaleX(invertedScale);
             incorrectAlignmentContainer.setScaleY(invertedScale);
             perfectAlignmentContainer.setScaleX(invertedScale);
-            perfectAlignmentContainer.setScaleY(invertedScale);            
+            perfectAlignmentContainer.setScaleY(invertedScale);
         }
 
         if (fineNozzleLbl != null)
