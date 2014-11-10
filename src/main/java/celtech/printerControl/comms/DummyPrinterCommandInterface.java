@@ -64,7 +64,9 @@ public class DummyPrinterCommandInterface extends CommandInterface
     private Reel attachedReel = null;
     private String printerName;
 
-    private String printJobID = null;
+    private static String NOTHING_PRINTING_JOB_ID = "\0000";
+    private String printJobID = NOTHING_PRINTING_JOB_ID;
+    protected int printJobLineNo = 0;
     
     private static int ROOM_TEMPERATURE = 20;
     HeaterMode nozzleHeaterMode = HeaterMode.OFF;
@@ -130,6 +132,17 @@ public class DummyPrinterCommandInterface extends CommandInterface
             currentStatus.setNozzle0Temperature(currentNozzleTemperature);
             steno.debug("set status nozzle target temp to " + nozzleTargetTemperature); 
             currentStatus.setNozzle0TargetTemperature(nozzleTargetTemperature);
+            
+            if (! printJobID.equals(NOTHING_PRINTING_JOB_ID)) {
+                printJobLineNo += 1;
+                if (printJobLineNo > 10) {
+                    printJobLineNo = 0;
+                    printJobID = NOTHING_PRINTING_JOB_ID;
+                }
+            }
+            currentStatus.setPrintJobLineNumber(printJobLineNo);
+            currentStatus.setRunningPrintJobID(printJobID);
+            
             response = (RoboxRxPacket) currentStatus;
         } else if (messageToWrite instanceof ReportErrors)
         {
@@ -330,7 +343,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
         currentStatus.setPrintJobLineNumber(printLineNumber);
     }
 
-    private void finishPrintJob()
+    protected void finishPrintJob()
     {
         currentStatus.setPrintJobLineNumberString("");
         currentStatus.setRunningPrintJobID("");

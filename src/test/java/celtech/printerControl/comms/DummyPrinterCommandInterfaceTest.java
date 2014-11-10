@@ -5,8 +5,8 @@ package celtech.printerControl.comms;
 
 import celtech.AutoMakerTestConfigurator;
 import celtech.configuration.HeaterMode;
-import static celtech.printerControl.PrinterTest.temporaryUserStorageFolder;
 import celtech.printerControl.model.HardwarePrinter;
+import celtech.printerControl.model.NozzleHeater;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
@@ -37,9 +37,15 @@ public class DummyPrinterCommandInterfaceTest
             statusConsumer, "Test Printer", false, 500);
         HardwarePrinter hardwarePrinter = new HardwarePrinter(statusConsumer, commandInterface);
         commandInterface.setPrinter(hardwarePrinter);
+        
+        hardwarePrinter.sendRawGCode("ATTACH HEAD RBX01-DM", true);
+        
         hardwarePrinter.setNozzleTargetTemperature(200);
 
         assertEquals(200, commandInterface.nozzleTargetTemperature);
+        
+//        NozzleHeater nozzleHeater = hardwarePrinter.headProperty().get().getNozzleHeaters().get(0);
+//        assertEquals(200, nozzleHeater.nozzleTargetTemperatureProperty().get());
 
     }
     

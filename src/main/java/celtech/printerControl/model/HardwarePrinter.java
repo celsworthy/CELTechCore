@@ -805,7 +805,7 @@ public final class HardwarePrinter implements Printer
 
         if (addToTranscript)
         {
-            Platform.runLater(new Runnable()
+            Lookup.getTaskExecutor().runOnGUIThread(new Runnable()
             {
 
                 public void run()
