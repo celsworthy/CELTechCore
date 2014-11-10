@@ -21,11 +21,11 @@
                 </HBox>
                 <HBox alignment="CENTER">
                     <children>
-                        <Slider fx:id="slicerChooser" majorTickUnit="1.0" max="3.0" maxWidth="1.7976931348623157E308" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="-1.0">
+                        <ComboBox fx:id="slicerChooser" >
                             <VBox.margin>
                                 <Insets left="20.0" right="20.0" />
                             </VBox.margin>
-                        </Slider>
+                        </ComboBox>
                     </children>
                 </HBox>
             </children>

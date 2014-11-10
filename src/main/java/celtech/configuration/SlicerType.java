@@ -45,4 +45,10 @@ public enum SlicerType
 
         return returnVal;
     }
+
+    @Override
+    public String toString()
+    {
+        return name();
+    }
 }

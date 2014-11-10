@@ -5,9 +5,10 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.CustomSlicerType;
 import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.slicer.FillPattern;
 import celtech.configuration.slicer.SupportPattern;
 import celtech.coreUI.DisplayManager;
@@ -18,6 +19,7 @@ import celtech.coreUI.controllers.popups.PopupCommandReceiver;
 import celtech.coreUI.controllers.popups.PopupCommandTransmitter;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -320,7 +322,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private RestrictedNumberField externalPerimeterSpeed;
 
     @FXML
-    private Slider slicerChooser;
+    private ComboBox<CustomSlicerType> slicerChooser;
 
 //    @FXML
 //    private ToggleSwitch spiralPrintToggle;
@@ -377,9 +379,9 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
     private ChangeListener<Toggle> nozzleSelectionListener = null;
 
-    private SlicerParameters masterProfile = null;
-    private SlicerParameters workingProfile = null;
-    private SlicerParameters lastBoundProfile = null;
+    private SlicerParametersFile masterProfile = null;
+    private SlicerParametersFile workingProfile = null;
+    private SlicerParametersFile lastBoundProfile = null;
 
     private int boundToNozzle = -1;
 
@@ -637,7 +639,15 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         profileNameField.textProperty()
             .addListener(dirtyStringListener);
 
-        slicerChooser.valueProperty().addListener(dirtyNumberListener);
+        slicerChooser.valueProperty().addListener(new ChangeListener<CustomSlicerType>()
+        {
+            @Override
+            public void changed(
+                ObservableValue<? extends CustomSlicerType> observable, CustomSlicerType oldValue, CustomSlicerType newValue)
+            {
+                isDirty.set(true);
+            }
+        });
 
         //Nozzle Page
         firstLayerExtrusionWidthSlider.valueProperty()
@@ -792,43 +802,23 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
             }
         );
 
-        slicerChooser.setMax(SlicerType.values().length - 1);
-        slicerChooser.setMin(0);
-        slicerChooser.setValue(Lookup.getUserPreferences().getSlicerType().getEnumPosition());
+        slicerChooser.setItems(FXCollections.observableArrayList(CustomSlicerType.values()));
 
-        slicerChooser.setLabelFormatter(new StringConverter<Double>()
+
+        slicerChooser.valueProperty().addListener(new ChangeListener<CustomSlicerType>()
         {
             @Override
-            public String toString(Double n)
+            public void changed(ObservableValue<? extends CustomSlicerType> ov, CustomSlicerType lastSlicer, CustomSlicerType newSlicer)
             {
-                SlicerType selectedSlicer = SlicerType.fromEnumPosition(n.intValue());
-                return selectedSlicer.name();
-            }
-
-            @Override
-            public Double fromString(String s)
-            {
-                SlicerType selectedSlicer = SlicerType.valueOf(s);
-                return (double) selectedSlicer.getEnumPosition();
-            }
-        });
-
-        slicerChooser.valueProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number lastQualityValue, Number newQualityValue)
-            {
-                if (lastQualityValue != newQualityValue)
+                if (lastSlicer != newSlicer)
                 {
-                    SlicerType selectedSlicer = SlicerType.fromEnumPosition(newQualityValue.intValue());
-
-                    workingProfile.setSlicerOverride(selectedSlicer);
+                    workingProfile.setSlicerOverride(newSlicer.getSlicerType());
                 }
             }
         });
     }
 
-    private void bindNozzleParameters(int nozzleNumber, SlicerParameters newSettings)
+    private void bindNozzleParameters(int nozzleNumber, SlicerParametersFile newSettings)
     {
         boundToNozzle = nozzleNumber;
 
@@ -868,7 +858,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         boundToNozzle = -1;
     }
 
-    private void bindToNewSettings(SlicerParameters newSettings)
+    private void bindToNewSettings(SlicerParametersFile newSettings)
     {
         if (lastBoundProfile != null)
         {
@@ -879,10 +869,10 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
         if (newSettings.getSlicerOverride() != null)
         {
-            slicerChooser.setValue(newSettings.getSlicerOverride().getEnumPosition());
+            slicerChooser.setValue(CustomSlicerType.customTypefromSettings(newSettings.getSlicerOverride()));
         } else
         {
-            slicerChooser.setValue(Lookup.getUserPreferences().getSlicerType().getEnumPosition());
+            slicerChooser.setValue(CustomSlicerType.Default);
         }
 
         inhibitAutoExtrusionWidth = true;
@@ -902,7 +892,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         lastBoundProfile = newSettings;
     }
 
-    private void updateGUIFromSettings(SlicerParameters newSettings)
+    private void updateGUIFromSettings(SlicerParametersFile newSettings)
     {
         // Extrusion tab
         layerHeight.floatValueProperty().set(newSettings.getLayerHeight_mm());
@@ -962,7 +952,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         minPrintSpeed.intValueProperty().set(newSettings.getMinPrintSpeed_mm_per_s());
     }
 
-    private void updateSettingsFromGUI(SlicerParameters settingsToUpdate)
+    private void updateSettingsFromGUI(SlicerParametersFile settingsToUpdate)
     {
         // Extrusion tab
         settingsToUpdate.setLayerHeight_mm(layerHeight.floatValueProperty().get());
@@ -1026,7 +1016,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
      *
      * @param settings
      */
-    public void updateProfileData(SlicerParameters settings)
+    public void updateProfileData(SlicerParametersFile settings)
     {
         if (settings == null)
         {
@@ -1039,7 +1029,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
             container.setVisible(true);
             bindToNewSettings(workingProfile);
-            isMutable.set(!SlicerParametersContainer.getApplicationProfileList().contains(settings));
+            boolean settingsAreInApplicationProfileList = SlicerParametersContainer.applicationProfileListContainsProfile(settings.getProfileName());
+            isMutable.set(!settingsAreInApplicationProfileList);
             isDirty.set(false);
         }
     }
@@ -1048,7 +1039,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
      *
      * @return
      */
-    public SlicerParameters getProfileData()
+    public SlicerParametersFile getProfileData()
     {
         updateSettingsFromGUI(workingProfile);
         return workingProfile;
@@ -1083,8 +1074,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
             invalid = true;
         } else
         {
-            ObservableList<SlicerParameters> existingProfileList = SlicerParametersContainer.getUserProfileList();
-            for (SlicerParameters settings : existingProfileList)
+            ObservableList<SlicerParametersFile> existingProfileList = SlicerParametersContainer.getUserProfileList();
+            for (SlicerParametersFile settings : existingProfileList)
             {
                 if (settings.getProfileName().equals(profileNameText))
                 {

@@ -9,7 +9,7 @@ import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.MaterialType;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.slicer.FillPattern;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.MaterialChoiceListCell;
@@ -84,7 +84,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private ComboBox<Filament> materialChooser;
 
     @FXML
-    private ComboBox<SlicerParameters> customProfileChooser;
+    private ComboBox<SlicerParametersFile> customProfileChooser;
 
     @FXML
     private ToggleSwitch supportToggle;
@@ -109,19 +109,19 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
 //    @FXML
 //    private ToggleSwitch spiralPrintToggle;
-    private SlicerParameters draftSettings = SlicerParametersContainer.getSettingsByProfileName(
+    private SlicerParametersFile draftSettings = SlicerParametersContainer.getSettingsByProfileName(
         ApplicationConfiguration.draftSettingsProfileName);
-    private SlicerParameters normalSettings = SlicerParametersContainer.getSettingsByProfileName(
+    private SlicerParametersFile normalSettings = SlicerParametersContainer.getSettingsByProfileName(
         ApplicationConfiguration.normalSettingsProfileName);
-    private SlicerParameters fineSettings = SlicerParametersContainer.getSettingsByProfileName(
+    private SlicerParametersFile fineSettings = SlicerParametersContainer.getSettingsByProfileName(
         ApplicationConfiguration.fineSettingsProfileName);
-    private SlicerParameters customSettings = null;
-    private SlicerParameters lastSettings = null;
+    private SlicerParametersFile customSettings = null;
+    private SlicerParametersFile lastSettings = null;
 
     private ChangeListener<Toggle> nozzleSelectionListener = null;
 
     private ObservableList<Filament> availableFilaments = FXCollections.observableArrayList();
-    private ObservableList<SlicerParameters> availableProfiles = FXCollections.observableArrayList();
+    private ObservableList<SlicerParametersFile> availableProfiles = FXCollections.observableArrayList();
 
     private Printer currentPrinter = null;
     private Filament currentlyLoadedFilament = null;
@@ -137,7 +137,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private ModalDialog createProfileDialogue = null;
     private int saveProfileAction = 0;
     private int cancelProfileSaveAction = 0;
-    private SlicerParameters lastCustomProfileSelected = null;
+    private SlicerParametersFile lastCustomProfileSelected = null;
 
     private SettingsSlideOutPanelController slideOutController = null;
 
@@ -263,8 +263,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             }
         });
 
-        Callback<ListView<SlicerParameters>, ListCell<SlicerParameters>> profileChooserCellFactory
-            = (ListView<SlicerParameters> list) -> new ProfileChoiceListCell();
+        Callback<ListView<SlicerParametersFile>, ListCell<SlicerParametersFile>> profileChooserCellFactory
+            = (ListView<SlicerParametersFile> list) -> new ProfileChoiceListCell();
 
         customProfileChooser.setCellFactory(profileChooserCellFactory);
         customProfileChooser.setButtonCell(profileChooserCellFactory.call(null));
@@ -272,12 +272,11 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         updateProfileList();
 
-        customProfileChooser.getSelectionModel().selectedItemProperty().addListener(
-            new ChangeListener<SlicerParameters>()
+        customProfileChooser.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<SlicerParametersFile>()
             {
                 @Override
-                public void changed(ObservableValue<? extends SlicerParameters> observable,
-                    SlicerParameters oldValue, SlicerParameters newValue)
+                public void changed(ObservableValue<? extends SlicerParametersFile> observable,
+                    SlicerParametersFile oldValue, SlicerParametersFile newValue)
                 {
                     if (!suppressCustomProfileChangeTriggers)
                     {
@@ -316,8 +315,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 }
             });
 
-        SlicerParametersContainer.getUserProfileList().addListener(
-            (ListChangeListener.Change<? extends SlicerParameters> c) ->
+        SlicerParametersContainer.getUserProfileList().addListener((ListChangeListener.Change<? extends SlicerParametersFile> c) ->
             {
                 updateProfileList();
             });
@@ -548,7 +546,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         Lookup.getPrinterListChangesNotifier().addListener(this);
     }
 
-    private void setupQualityOverrideControls(SlicerParameters settings)
+    private void setupQualityOverrideControls(SlicerParametersFile settings)
     {
         supportToggle.setSelected(settings.getGenerateSupportMaterial());
         fillDensitySlider.setValue(settings.getFillDensity_normalised() * 100.0);
@@ -564,7 +562,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     private void updateProfileList()
     {
-        SlicerParameters currentSelection = customProfileChooser.getSelectionModel().getSelectedItem();
+        SlicerParametersFile currentSelection = customProfileChooser.getSelectionModel().getSelectedItem();
 
         availableProfiles.clear();
         availableProfiles.addAll(SlicerParametersContainer.getUserProfileList());
@@ -663,7 +661,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             showCreateMaterialDialogue();
         } else if (source instanceof ProfileDetailsController)
         {
-            SlicerParameters settings = settingsScreenState.getSettings().clone();
+            SlicerParametersFile settings = settingsScreenState.getSettings().clone();
             String originalProfileName = settings.getProfileName();
             String filename = SystemUtils.getIncrementalFilenameOnly(
                 ApplicationConfiguration.getUserPrintProfileDirectory(), originalProfileName,
@@ -689,9 +687,9 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             Filament chosenFilament = FilamentContainer.getFilamentByID(
                 filamentToSave.getFilamentID());
             materialChooser.getSelectionModel().select(chosenFilament);
-        } else if (profile instanceof SlicerParameters)
+        } else if (profile instanceof SlicerParametersFile)
         {
-            SlicerParameters profiletoSave = (SlicerParameters) profile;
+            SlicerParametersFile profiletoSave = (SlicerParametersFile) profile;
             SlicerParametersContainer.saveProfile(profiletoSave);
             selectPrintProfileByName(profiletoSave.getProfileName());
         }
@@ -731,7 +729,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         });
     }
 
-    private int showCreateProfileDialogue(SlicerParameters dataToUse)
+    private int showCreateProfileDialogue(SlicerParametersFile dataToUse)
     {
         profileDetailsController.updateProfileData(dataToUse);
         profileDetailsController.setNameEditable(true);
@@ -739,7 +737,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         if (response == saveProfileAction)
         {
             String profileNameToSave = profileDetailsController.getProfileName();
-            SlicerParameters settingsToSave = profileDetailsController.getProfileData();
+            SlicerParametersFile settingsToSave = profileDetailsController.getProfileData();
             Collection<String> profileNames = SlicerParametersContainer.getProfileNames();
             profileNameToSave = suggestNonDuplicateName(profileNameToSave, profileNames);
             settingsToSave.setProfileName(profileNameToSave);
@@ -766,7 +764,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     private void selectPrintProfileByName(String profileNameToSave)
     {
-        for (SlicerParameters settings : availableProfiles)
+        for (SlicerParametersFile settings : availableProfiles)
         {
 
             if (settings.getProfileName() != null && settings.getProfileName().equals(
@@ -793,7 +791,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             if (customSettings == null || project.getCustomProfileName().equals(
                 customSettings.getProfileName()) == false)
             {
-                SlicerParameters chosenProfile = SlicerParametersContainer.getSettingsByProfileName(
+                SlicerParametersFile chosenProfile = SlicerParametersContainer.getSettingsByProfileName(
                     project.getCustomProfileName());
                 customProfileChooser.getSelectionModel().select(chosenProfile);
             }
@@ -813,7 +811,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         settingsScreenState.setPrintQuality(quality);
 
-        SlicerParameters settings = null;
+        SlicerParametersFile settings = null;
 
         switch (quality)
         {

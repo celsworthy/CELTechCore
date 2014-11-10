@@ -4,7 +4,7 @@ import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.controllers.popups.PopupCommandReceiver;
@@ -65,11 +65,11 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
 
     private StringConverter booleanConverter = null;
 
-    private SlicerParameters draftSettings = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
-    private SlicerParameters normalSettings = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.normalSettingsProfileName);
-    private SlicerParameters fineSettings = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.fineSettingsProfileName);
-    private SlicerParameters customSettings = null;
-    private SlicerParameters lastSettings = null;
+    private SlicerParametersFile draftSettings = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
+    private SlicerParametersFile normalSettings = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.normalSettingsProfileName);
+    private SlicerParametersFile fineSettings = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.fineSettingsProfileName);
+    private SlicerParametersFile customSettings = null;
+    private SlicerParametersFile lastSettings = null;
 
     private ObservableList<String> nozzleOptions = FXCollections.observableArrayList(new String("0.3mm"), new String("0.8mm"));
     private ObservableList<String> fillPatternOptions = FXCollections.observableArrayList(new String("rectilinear"), new String("line"), new String("concentric"), new String("honeycomb"));
@@ -116,7 +116,7 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
      *
      * @param settings
      */
-    public void updateProfileData(SlicerParameters settings)
+    public void updateProfileData(SlicerParametersFile settings)
     {
         profileDetailsController.updateProfileData(settings);
     }
