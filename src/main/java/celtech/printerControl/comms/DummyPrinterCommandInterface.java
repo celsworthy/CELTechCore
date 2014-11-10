@@ -2,6 +2,7 @@ package celtech.printerControl.comms;
 
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
+import celtech.configuration.HeaterMode;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.datafileaccessors.HeadContainer;
@@ -30,6 +31,7 @@ import celtech.printerControl.comms.commands.tx.SendDataFileStart;
 import celtech.printerControl.comms.commands.tx.SendGCodeRequest;
 import celtech.printerControl.comms.commands.tx.StatusRequest;
 import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
+import celtech.printerControl.model.GCodeConstants;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Reel;
 import javafx.scene.paint.Color;
@@ -63,6 +65,11 @@ public class DummyPrinterCommandInterface extends CommandInterface
     private String printerName;
 
     private String printJobID = null;
+    
+    private static int ROOM_TEMPERATURE = 20;
+    HeaterMode nozzleHeaterMode = HeaterMode.OFF;
+    protected int currentNozzleTemperature = ROOM_TEMPERATURE;
+    protected int nozzleTargetTemperature = 210;
 
     public DummyPrinterCommandInterface(PrinterStatusConsumer controlInterface, String portName,
         boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks, String printerName)
@@ -107,6 +114,22 @@ public class DummyPrinterCommandInterface extends CommandInterface
         } else if (messageToWrite instanceof StatusRequest)
         {
             currentStatus.setAmbientTemperature((int) (Math.random() * 100));
+            if (nozzleHeaterMode != HeaterMode.OFF && currentNozzleTemperature < nozzleTargetTemperature) {
+                currentNozzleTemperature += 10;
+                if (currentNozzleTemperature > nozzleTargetTemperature) {
+                    currentNozzleTemperature = nozzleTargetTemperature;
+                }
+            } else if (nozzleHeaterMode == HeaterMode.OFF && currentNozzleTemperature > ROOM_TEMPERATURE) {
+                currentNozzleTemperature -= 10;
+                if (currentNozzleTemperature < ROOM_TEMPERATURE) {
+                    currentNozzleTemperature = ROOM_TEMPERATURE;
+                }
+            }
+            steno.debug("set status nozzle temp to " + currentNozzleTemperature + "and heater mode to " + nozzleHeaterMode);
+            currentStatus.setNozzle0HeaterMode(nozzleHeaterMode);
+            currentStatus.setNozzle0Temperature(currentNozzleTemperature);
+            steno.debug("set status nozzle target temp to " + nozzleTargetTemperature); 
+            currentStatus.setNozzle0TargetTemperature(nozzleTargetTemperature);
             response = (RoboxRxPacket) currentStatus;
         } else if (messageToWrite instanceof ReportErrors)
         {
@@ -214,6 +237,17 @@ public class DummyPrinterCommandInterface extends CommandInterface
             } else if (messageData.equalsIgnoreCase(removeSDCardCommand))
             {
                 currentStatus.setSdCardPresent(false);
+            } else if (messageData.startsWith("M104 S")) {
+               nozzleTargetTemperature = Integer.parseInt(messageData.substring(6));
+               steno.debug("set temp to " + nozzleTargetTemperature);
+               if (nozzleTargetTemperature == 0) {
+                   nozzleHeaterMode = HeaterMode.OFF;
+                    steno.debug("set heater mode off");
+               }
+            }
+            else if (messageData.startsWith("M104")) {
+               nozzleHeaterMode = HeaterMode.NORMAL;
+               steno.debug("set heater mode normal");
             }
 
             response = (RoboxRxPacket) gcodeResponse;
