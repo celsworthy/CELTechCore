@@ -6,7 +6,6 @@ package celtech.printerControl.comms;
 import celtech.AutoMakerTestConfigurator;
 import celtech.configuration.HeaterMode;
 import celtech.printerControl.model.HardwarePrinter;
-import celtech.printerControl.model.NozzleHeater;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;

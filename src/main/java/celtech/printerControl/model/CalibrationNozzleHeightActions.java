@@ -3,6 +3,7 @@
  */
 package celtech.printerControl.model;
 
+import celtech.Lookup;
 import celtech.configuration.HeaterMode;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
@@ -13,6 +14,10 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ObservableValue;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -28,7 +33,8 @@ public class CalibrationNozzleHeightActions
 
     private final Printer printer;
     private HeadEEPROMDataResponse savedHeadData;
-    private double zco;
+    private final DoubleProperty zco = new SimpleDoubleProperty();
+    private final DoubleProperty zcoGUIT = new SimpleDoubleProperty();
     private double zDifference;
     private final Cancellable cancellable = new Cancellable();
 
@@ -36,22 +42,30 @@ public class CalibrationNozzleHeightActions
     {
         this.printer = printer;
         cancellable.cancelled = false;
+        zco.addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                Lookup.getTaskExecutor().runOnGUIThread(() ->
+                    {
+                        // zcoGUIT mirrors zco but is only changed on the GUI Thread
+                        steno.debug("set zcoGUIT to " + zco.get());
+                        zcoGUIT.set(zco.get());
+                });
+            });
     }
 
     public boolean doInitialiseAndHeatBedAction() throws InterruptedException, PrinterException, RoboxCommsException
     {
         boolean success = false;
-        zco = 0;
-        zDifference = 0;
+
+        zco.set(0);
 
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT);
 
         savedHeadData = printer.readHeadEEPROM();
 
-        zco = 0.5 * (savedHeadData.getNozzle1ZOffset()
-            + savedHeadData.getNozzle2ZOffset());
-        zDifference = savedHeadData.getNozzle2ZOffset()
-            - savedHeadData.getNozzle1ZOffset();
+//        zco.set(0.5 * (savedHeadData.getNozzle1ZOffset() + savedHeadData.getNozzle2ZOffset()));
+//        zDifference = savedHeadData.getNozzle2ZOffset() - savedHeadData.getNozzle1ZOffset();
 
         clearZOffsetsOnHead();
         success = heatBed(success);
@@ -113,10 +127,12 @@ public class CalibrationNozzleHeightActions
             {
                 printer.switchOnHeadLEDs();
                 success = true;
-            } else {
+            } else
+            {
                 return false;
             }
-        } else {
+        } else
+        {
             return false;
         }
         return success;
@@ -136,7 +152,7 @@ public class CalibrationNozzleHeightActions
         return true;
     }
 
-    public boolean doMeasureZDifferenceAction() throws PrinterException
+    public boolean doMeasureZDifferenceAction() throws PrinterException, CalibrationException
     {
         boolean success = false;
 
@@ -168,8 +184,6 @@ public class CalibrationNozzleHeightActions
                 printer.goToZPosition(5);
                 PrinterUtils.waitOnBusy(printer, cancellable);
                 String measurementString = printer.getZDelta();
-                measurementString = measurementString.replaceFirst("Zdelta:", "").replaceFirst(
-                    "\nok", "");
                 try
                 {
                     zDifferenceMeasurement[i] = Float.valueOf(measurementString);
@@ -214,21 +228,27 @@ public class CalibrationNozzleHeightActions
 
         printer.selectNozzle(0);
         PrinterUtils.waitOnBusy(printer, cancellable);
-        return success;
-
+        if (!success)
+        {
+            throw new CalibrationException("ZCO could not be established");
+        }
+        return true;
     }
 
     public boolean doIncrementZAction()
     {
-        zco += 0.05;
-        printer.goToZPosition(zco);
+        zco.set(zco.get() + 0.05);
+        printer.goToZPosition(zco.get());
         return true;
     }
 
     public boolean doDecrementZAction()
     {
-        zco -= 0.05;
-        printer.goToZPosition(zco);
+        zco.set(zco.get() - 0.05);
+        if (zco.get() < 0) {
+            zco.set(0);
+        }
+        printer.goToZPosition(zco.get());
         return true;
     }
 
@@ -303,19 +323,19 @@ public class CalibrationNozzleHeightActions
                                         savedHeadData.getTCal(),
                                         savedHeadData.getNozzle1XOffset(),
                                         savedHeadData.getNozzle1YOffset(),
-                                        (float) (-zco - (0.5 * zDifference)),
+                                        (float) (-zco.get() - (0.5 * zDifference)),
                                         savedHeadData.getNozzle1BOffset(),
                                         savedHeadData.getNozzle2XOffset(),
                                         savedHeadData.getNozzle2YOffset(),
-                                        (float) (-zco + (0.5 * zDifference)),
+                                        (float) (-zco.get() + (0.5 * zDifference)),
                                         savedHeadData.getNozzle2BOffset(),
                                         savedHeadData.getLastFilamentTemperature(),
                                         savedHeadData.getHeadHours());
         return true;
     }
 
-    public double getZco()
+    public ReadOnlyDoubleProperty getZcoGUITProperty()
     {
-        return zco;
+        return zcoGUIT;
     }
 }

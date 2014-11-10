@@ -257,10 +257,12 @@ public class DummyPrinterCommandInterface extends CommandInterface
                    nozzleHeaterMode = HeaterMode.OFF;
                     steno.debug("set heater mode off");
                }
-            }
-            else if (messageData.startsWith("M104")) {
+            } else if (messageData.startsWith("M104")) {
                nozzleHeaterMode = HeaterMode.NORMAL;
                steno.debug("set heater mode normal");
+            } else if (messageData.startsWith("M113")) {
+               // ZDelta
+                gcodeResponse.setMessagePayload("Zdelta:0.01ok");
             }
 
             response = (RoboxRxPacket) gcodeResponse;

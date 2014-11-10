@@ -29,7 +29,7 @@ public class TopMenuStrip extends HBox
 
     @FXML
     private GraphicButton helpButton;
-    
+
     @FXML
     private GraphicButton preferencesButton;
 
@@ -83,16 +83,20 @@ public class TopMenuStrip extends HBox
                                 .or(applicationStatus.modeProperty().isEqualTo(
                                         ApplicationMode.MY_MINI_FACTORY)
                                     .or(applicationStatus.modeProperty().isEqualTo(
-                                        ApplicationMode.PREFERENCES_TOP_LEVEL)))))))));
+                                            ApplicationMode.PREFERENCES_TOP_LEVEL)))))))));
 
         helpButton.disableProperty().bind(applicationStatus.modeProperty().isEqualTo(
             ApplicationMode.ABOUT)
             .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
                 .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)
-                .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PREFERENCES_TOP_LEVEL)))));
-        
+                    .or(applicationStatus.modeProperty().isEqualTo(
+                            ApplicationMode.PREFERENCES_TOP_LEVEL)))));
+
         preferencesButton.disableProperty().bind(applicationStatus.modeProperty().isEqualTo(
-            ApplicationMode.ABOUT)
-            .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PREFERENCES_TOP_LEVEL)));
+            ApplicationMode.ABOUT).or(applicationStatus.modeProperty().isEqualTo(
+                    ApplicationMode.PURGE)
+                .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)
+                    .or(applicationStatus.modeProperty().isEqualTo(
+                            ApplicationMode.PREFERENCES_TOP_LEVEL)))));
     }
 }

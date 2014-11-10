@@ -1940,7 +1940,10 @@ public final class HardwarePrinter implements Printer
     {
         try
         {
-            return transmitDirectGCode("M113", false);
+            String response = transmitDirectGCode("M113", false);
+            String measurementString = response.replaceFirst("Zdelta:", "").replaceFirst(
+                    "\nok", "");
+            return measurementString;
         } catch (RoboxCommsException ex)
         {
             steno.error("Error sending get Z delta");

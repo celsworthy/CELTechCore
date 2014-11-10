@@ -64,15 +64,6 @@ public class CalibrationInsetPanelController implements Initializable,
         topBorderPane.setPrefHeight(topPane.getHeight());
     }
 
-    void updateZCO()
-    {
-        if (diagramController != null)
-        {
-            diagramController.setCalibrationTextField(String.format("%1.2f",
-                                                                    ((NozzleHeightStateTransitionManager) stateManager).getZco()));
-        }
-    }
-
     protected static enum ProgressVisibility
     {
 
@@ -693,10 +684,10 @@ public class CalibrationInsetPanelController implements Initializable,
     public void whenReelRemoved(Printer printer, Reel reel)
     {
     }
-    
+
     @Override
     public void whenReelChanged(Printer printer, Reel reel)
     {
-    }    
+    }
 
 }
