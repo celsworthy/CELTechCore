@@ -4,7 +4,7 @@ import celtech.configuration.slicer.NozzleParameters;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.SlicerType;
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.events.CommentEvent;
 import celtech.gcodetranslator.events.EndOfFileEvent;
 import celtech.gcodetranslator.events.ExtrusionEvent;
@@ -135,7 +135,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     private double distanceSoFarInLayer = 0;
     private Integer lineNumberOfFirstExtrusion;
 
-    protected SlicerParameters currentSettings = null;
+    protected SlicerParametersFile currentSettings = null;
     private int wipeFeedRate_mmPerMin = 0;
 
     // Causes home and return events to be inserted, triggering the camera
@@ -211,7 +211,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
      */
     public RoboxiserResult roboxiseFile(String inputFilename,
         String outputFilename,
-        SlicerParameters settings, DoubleProperty percentProgress)
+        SlicerParametersFile settings, DoubleProperty percentProgress)
     {
         currentSettings = settings;
 
@@ -479,294 +479,286 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             currentNozzle = nozzleProxies.get(POINT_3MM_NOZZLE);
         }
 
-        try
+        if (event instanceof ExtrusionEvent)
         {
-
-            if (event instanceof ExtrusionEvent)
+            if (lineNumberOfFirstExtrusion == null)
             {
-                if (lineNumberOfFirstExtrusion == null)
-                {
-                    lineNumberOfFirstExtrusion = event.getLinesSoFar();
-                }
+                lineNumberOfFirstExtrusion = event.getLinesSoFar();
+            }
 
-                if (((slicerType == SlicerType.Slic3r && layer == 2) || (slicerType == SlicerType.Cura && layer == 2)) && forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenReinstated == false)
-                {
-                    nozzleHasBeenReinstated = true;
-                    int nozzleToUse = chooseNozzleByTask(event);
-
-                    if (nozzleToUse >= 0)
-                    {
-                        NozzleChangeEvent nozzleChangeEvent = new NozzleChangeEvent();
-                        nozzleChangeEvent.setNozzleNumber(nozzleToUse);
-                        nozzleChangeEvent.setComment("return to required nozzle");
-                        extrusionBuffer.add(nozzleChangeEvent);
-
-                        currentNozzle = nozzleProxies.get(nozzleToUse);
-                    } else
-                    {
-                        steno.warning("Couldn't derive required nozzle to return to...");
-                    }
-                } else if (autoGenerateNozzleChangeEvents && ((forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenReinstated)
-                    || forcedNozzleOnFirstLayer < 0))
-                {
-                    int requiredNozzle = chooseNozzleByTask(event);
-
-                    if (currentNozzle != null && nozzleProxies.get(requiredNozzle) != currentNozzle)
-                    {
-                        // Close the old nozzle
-                        writeEventsWithNozzleClose("Closing last used nozzle");
-                    }
-
-                    if (currentNozzle == null || nozzleProxies.get(requiredNozzle) != currentNozzle)
-                    {
-                        //Select the nozzle
-                        NozzleChangeEvent nozzleChangeEvent = new NozzleChangeEvent();
-                        nozzleChangeEvent.setComment("Selecting nozzle " + requiredNozzle);
-                        nozzleChangeEvent.setNozzleNumber(requiredNozzle);
-                        extrusionBuffer.add(nozzleChangeEvent);
-
-                        currentNozzle = nozzleProxies.get(requiredNozzle);
-                    }
-                }
-
-                ExtrusionEvent extrusionEvent = (ExtrusionEvent) event;
-                currentPoint = new Vector2D(extrusionEvent.getX(),
-                                            extrusionEvent.getY());
-
-                totalExtrudedVolume += extrusionEvent.getE() + extrusionEvent.getD();
-
-                if (currentNozzle.getState() != NozzleState.OPEN
-                    && currentNozzle.getNozzleParameters().getOpenOverVolume() == 0)
-                {
-                    // Unretract and open
-                    NozzleOpenFullyEvent openNozzle = new NozzleOpenFullyEvent();
-                    openNozzle.setComment("Open and replenish from extrusion");
-                    openNozzle.setE(autoUnretractEValue);
-                    openNozzle.setD(autoUnretractDValue);
-
-                    autoUnretractEValue = 0;
-                    autoUnretractDValue = 0;
-
-                    extrusionBuffer.add(openNozzle);
-                    currentNozzle.openNozzleFully();
-                    nozzleLastOpenedAt = lastPoint;
-                }
-
-                resetMeasuringThing();
-
-                // Open the nozzle if it isn't already open
-                // This will always be a single event prior to extrusion
-                if (currentNozzle.getState() != NozzleState.OPEN)
-                {
-                    if (currentNozzle.getNozzleParameters().getOpenOverVolume() <= 0)
-                    {
-                        NozzleOpenFullyEvent openNozzle = new NozzleOpenFullyEvent();
-                        openNozzle.setComment("Extrusion trigger - open without replenish");
-                        extrusionBuffer.add(openNozzle);
-                    }
-                    currentNozzle.openNozzleFully();
-                    nozzleLastOpenedAt = currentPoint;
-                }
-
-                // Calculate how long this line is
-                if (lastPoint != null)
-                {
-                    distance = lastPoint.distance(currentPoint);
-                    extrusionEvent.setLength(distance);
-//                        System.out.println("Distance " + distance);
-                    distanceSoFar += distance;
-                    totalXYMovement += distance;
-//                        System.out.println("Total Distance " + distanceSoFar);
-                }
-
-                lastPoint = currentPoint;
-
-                extrusionBuffer.add(extrusionEvent);
-            } else if (event instanceof RetractDuringExtrusionEvent)
+            if (((slicerType == SlicerType.Slic3r && layer == 2) || (slicerType == SlicerType.Cura && layer == 2)) && forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenReinstated == false)
             {
-                RetractDuringExtrusionEvent extrusionEvent = (RetractDuringExtrusionEvent) event;
-                currentPoint = new Vector2D(extrusionEvent.getX(),
-                                            extrusionEvent.getY());
+                nozzleHasBeenReinstated = true;
+                int nozzleToUse = chooseNozzleByTask(event);
 
-                // Calculate how long this line is
-                if (lastPoint != null)
+                if (nozzleToUse >= 0)
                 {
-                    distance = lastPoint.distance(currentPoint);
-                    extrusionEvent.setLength(distance);
-//                        System.out.println("Distance " + distance);
-                    distanceSoFar += distance;
-                    totalXYMovement += distance;
-//                        System.out.println("Total Distance " + distanceSoFar);
-                }
-
-                lastPoint = currentPoint;
-
-                extrusionBuffer.add(extrusionEvent);
-            } else if (event instanceof TravelEvent)
-            {
-                TravelEvent travelEvent = (TravelEvent) event;
-                currentPoint = new Vector2D(travelEvent.getX(),
-                                            travelEvent.getY());
-
-                if (lastPoint != null)
-                {
-                    distance = lastPoint.distance(currentPoint);
-                    travelEvent.setLength(distance);
-//                        System.out.println("Distance " + distance);
-                    distanceSoFar += distance;
-                    totalXYMovement += distance;
-//                        System.out.println("Total Distance " + distanceSoFar);
-
-                    if (currentNozzle.getNozzleParameters().getTravelBeforeForcedClose() > 0
-                        && (currentNozzle.getState() != NozzleState.CLOSED
-                        && distance
-                        > currentNozzle.getNozzleParameters().getTravelBeforeForcedClose()))
-                    {
-                        writeEventsWithNozzleClose("travel trigger");
-                    }
-
-                    extrusionBuffer.add(event);
-                }
-                lastPoint = currentPoint;
-
-            } else if (event instanceof LayerChangeWithoutTravelEvent)
-            {
-                LayerChangeWithoutTravelEvent layerChangeEvent = (LayerChangeWithoutTravelEvent) event;
-
-                currentZHeight = layerChangeEvent.getZ();
-
-                handleForcedNozzleAtLayerChange();
-
-                layer++;
-
-                handleMovieMakerAtLayerChange(relativeMoveEvent, moveUpEvent, absoluteMoveEvent, moveToMiddleYEvent, homeEvent, dwellEvent);
-
-                extrusionBuffer.add(event);
-            } else if (event instanceof LayerChangeWithTravelEvent)
-            {
-                LayerChangeWithTravelEvent layerChangeEvent = (LayerChangeWithTravelEvent) event;
-
-                currentZHeight = layerChangeEvent.getZ();
-
-                handleForcedNozzleAtLayerChange();
-
-                layer++;
-
-                handleMovieMakerAtLayerChange(relativeMoveEvent, moveUpEvent, absoluteMoveEvent, moveToMiddleYEvent, homeEvent, dwellEvent);
-
-                extrusionBuffer.add(event);
-            } else if (event instanceof NozzleChangeEvent && !autoGenerateNozzleChangeEvents)
-            {
-                NozzleChangeEvent nozzleChangeEvent = (NozzleChangeEvent) event;
-
-                if (layer == 0 && forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenForced == false)
-                {
-                    nozzleHasBeenForced = true;
-                    tempNozzleMemory = nozzleChangeEvent.getNozzleNumber();
-                    //Force to required nozzle
-                    nozzleChangeEvent.setNozzleNumber(forcedNozzleOnFirstLayer);
-                    nozzleChangeEvent.setComment(
-                        nozzleChangeEvent.getComment()
-                        + " - force to nozzle " + forcedNozzleOnFirstLayer + " on first layer");
+                    NozzleChangeEvent nozzleChangeEvent = new NozzleChangeEvent();
+                    nozzleChangeEvent.setNozzleNumber(nozzleToUse);
+                    nozzleChangeEvent.setComment("return to required nozzle");
                     extrusionBuffer.add(nozzleChangeEvent);
-                    nozzleInUse = forcedNozzleOnFirstLayer;
-                    currentNozzle = nozzleProxies.get(nozzleInUse);
-                } else if (layer < 1)
+
+                    currentNozzle = nozzleProxies.get(nozzleToUse);
+                } else
                 {
-                    tempNozzleMemory = nozzleChangeEvent.getNozzleNumber();
-                } else if (layer > 1)
+                    steno.warning("Couldn't derive required nozzle to return to...");
+                }
+            } else if (autoGenerateNozzleChangeEvents && ((forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenReinstated)
+                || forcedNozzleOnFirstLayer < 0))
+            {
+                int requiredNozzle = chooseNozzleByTask(event);
+
+                if (currentNozzle != null && nozzleProxies.get(requiredNozzle) != currentNozzle)
                 {
+                    // Close the old nozzle
+                    writeEventsWithNozzleClose("Closing last used nozzle");
+                }
+
+                if (currentNozzle == null || nozzleProxies.get(requiredNozzle) != currentNozzle)
+                {
+                    //Select the nozzle
+                    NozzleChangeEvent nozzleChangeEvent = new NozzleChangeEvent();
+                    nozzleChangeEvent.setComment("Selecting nozzle " + requiredNozzle);
+                    nozzleChangeEvent.setNozzleNumber(requiredNozzle);
                     extrusionBuffer.add(nozzleChangeEvent);
-                    nozzleInUse = nozzleChangeEvent.getNozzleNumber();
-                    currentNozzle = nozzleProxies.get(nozzleInUse);
+
+                    currentNozzle = nozzleProxies.get(requiredNozzle);
                 }
-            } else if (event instanceof RetractEvent)
+            }
+
+            ExtrusionEvent extrusionEvent = (ExtrusionEvent) event;
+            currentPoint = new Vector2D(extrusionEvent.getX(),
+                                        extrusionEvent.getY());
+
+            totalExtrudedVolume += extrusionEvent.getE() + extrusionEvent.getD();
+
+            if (currentNozzle.getState() != NozzleState.OPEN
+                && currentNozzle.getNozzleParameters().getOpenOverVolume() == 0)
             {
-                RetractEvent retractEvent = (RetractEvent) event;
+                // Unretract and open
+                NozzleOpenFullyEvent openNozzle = new NozzleOpenFullyEvent();
+                openNozzle.setComment("Open and replenish from extrusion");
+                openNozzle.setE(autoUnretractEValue);
+                openNozzle.setD(autoUnretractDValue);
 
-                if (triggerCloseFromRetract == true && currentNozzle.getState()
-                    != NozzleState.CLOSED)
-                {
-                    writeEventsWithNozzleClose("retract trigger");
-                }
-
-                resetMeasuringThing();
-            } else if (event instanceof UnretractEvent && !autoGenerateNozzleChangeEvents)
-            {
-                UnretractEvent unretractEvent = (UnretractEvent) event;
-
-                totalExtrudedVolume += unretractEvent.getE();
-
-                if (currentNozzle.getState() != NozzleState.OPEN
-                    && currentNozzle.getNozzleParameters().getOpenOverVolume() <= 0)
-                {
-                    // Unretract and open
-                    NozzleOpenFullyEvent openNozzle = new NozzleOpenFullyEvent();
-                    openNozzle.setComment("Open and replenish");
-                    openNozzle.setE(autoUnretractEValue);
-                    openNozzle.setD(autoUnretractDValue);
-                    extrusionBuffer.add(openNozzle);
-                } else if (autoUnretractDValue > 0 || autoUnretractEValue > 0)
-                {
-                    // Just unretract
-                    unretractEvent.setComment("Replenish before open");
-                    unretractEvent.setE(autoUnretractEValue);
-                    unretractEvent.setD(autoUnretractDValue);
-                    extrusionBuffer.add(unretractEvent);
-                }
-
-                if (currentNozzle.getState() != NozzleState.OPEN)
-                {
-                    currentNozzle.openNozzleFully();
-                    nozzleLastOpenedAt = lastPoint;
-                }
-
-                resetMeasuringThing();
                 autoUnretractEValue = 0;
                 autoUnretractDValue = 0;
-            } else if (event instanceof MCodeEvent)
-            {
-                MCodeEvent mCodeEvent = (MCodeEvent) event;
-                if (mCodeEvent.getMNumber() != 104
-                    && mCodeEvent.getMNumber() != 109
-                    && mCodeEvent.getMNumber() != 140
-                    && mCodeEvent.getMNumber() != 190)
-                {
-                    extrusionBuffer.add(event);
-                }
-            } else if (event instanceof GCodeEvent)
-            {
-                extrusionBuffer.add(event);
-            } else if (event instanceof CommentEvent)
-            {
-                extrusionBuffer.add(event);
-            } else if (event instanceof EndOfFileEvent)
-            {
-                if (currentNozzle.getState() != NozzleState.CLOSED)
-                {
-                    writeEventsWithNozzleClose("End of file");
-                }
 
-                try
-                {
-                    outputWriter.writeOutput(";\n; Post print gcode\n");
-                    for (String macroLine : GCodeMacros.getMacroContents(
-                        "after_print"))
-                    {
-                        outputWriter.writeOutput(macroLine + "\n");
-                    }
-                    outputWriter.writeOutput("; End of Post print gcode\n");
-                } catch (IOException ex)
-                {
-                    steno.error("Error whilst writing post-print gcode to file");
-                }
-
-                writeEventToFile(event);
+                extrusionBuffer.add(openNozzle);
+                currentNozzle.openNozzleFully();
+                nozzleLastOpenedAt = lastPoint;
             }
-        } catch (Exception e)
+
+            resetMeasuringThing();
+
+                // Open the nozzle if it isn't already open
+            // This will always be a single event prior to extrusion
+            if (currentNozzle.getState() != NozzleState.OPEN)
+            {
+                if (currentNozzle.getNozzleParameters().getOpenOverVolume() <= 0)
+                {
+                    NozzleOpenFullyEvent openNozzle = new NozzleOpenFullyEvent();
+                    openNozzle.setComment("Extrusion trigger - open without replenish");
+                    extrusionBuffer.add(openNozzle);
+                }
+                currentNozzle.openNozzleFully();
+                nozzleLastOpenedAt = currentPoint;
+            }
+
+            // Calculate how long this line is
+            if (lastPoint != null)
+            {
+                distance = lastPoint.distance(currentPoint);
+                extrusionEvent.setLength(distance);
+//                        System.out.println("Distance " + distance);
+                distanceSoFar += distance;
+                totalXYMovement += distance;
+//                        System.out.println("Total Distance " + distanceSoFar);
+            }
+
+            lastPoint = currentPoint;
+
+            extrusionBuffer.add(extrusionEvent);
+        } else if (event instanceof RetractDuringExtrusionEvent)
         {
-            steno.error("Exception whilst processing event " + event.toString());
-            e.printStackTrace();
+            RetractDuringExtrusionEvent extrusionEvent = (RetractDuringExtrusionEvent) event;
+            currentPoint = new Vector2D(extrusionEvent.getX(),
+                                        extrusionEvent.getY());
+
+            // Calculate how long this line is
+            if (lastPoint != null)
+            {
+                distance = lastPoint.distance(currentPoint);
+                extrusionEvent.setLength(distance);
+//                        System.out.println("Distance " + distance);
+                distanceSoFar += distance;
+                totalXYMovement += distance;
+//                        System.out.println("Total Distance " + distanceSoFar);
+            }
+
+            lastPoint = currentPoint;
+
+            extrusionBuffer.add(extrusionEvent);
+        } else if (event instanceof TravelEvent)
+        {
+            TravelEvent travelEvent = (TravelEvent) event;
+            currentPoint = new Vector2D(travelEvent.getX(),
+                                        travelEvent.getY());
+
+            if (lastPoint != null)
+            {
+                distance = lastPoint.distance(currentPoint);
+                travelEvent.setLength(distance);
+//                        System.out.println("Distance " + distance);
+                distanceSoFar += distance;
+                totalXYMovement += distance;
+//                        System.out.println("Total Distance " + distanceSoFar);
+
+                if (currentNozzle.getNozzleParameters().getTravelBeforeForcedClose() > 0
+                    && (currentNozzle.getState() != NozzleState.CLOSED
+                    && distance
+                    > currentNozzle.getNozzleParameters().getTravelBeforeForcedClose()))
+                {
+                    writeEventsWithNozzleClose("travel trigger");
+                }
+
+                extrusionBuffer.add(event);
+            }
+            lastPoint = currentPoint;
+
+        } else if (event instanceof LayerChangeWithoutTravelEvent)
+        {
+            LayerChangeWithoutTravelEvent layerChangeEvent = (LayerChangeWithoutTravelEvent) event;
+
+            currentZHeight = layerChangeEvent.getZ();
+
+            handleForcedNozzleAtLayerChange();
+
+            layer++;
+
+            handleMovieMakerAtLayerChange(relativeMoveEvent, moveUpEvent, absoluteMoveEvent, moveToMiddleYEvent, homeEvent, dwellEvent);
+
+            extrusionBuffer.add(event);
+        } else if (event instanceof LayerChangeWithTravelEvent)
+        {
+            LayerChangeWithTravelEvent layerChangeEvent = (LayerChangeWithTravelEvent) event;
+
+            currentZHeight = layerChangeEvent.getZ();
+
+            handleForcedNozzleAtLayerChange();
+
+            layer++;
+
+            handleMovieMakerAtLayerChange(relativeMoveEvent, moveUpEvent, absoluteMoveEvent, moveToMiddleYEvent, homeEvent, dwellEvent);
+
+            extrusionBuffer.add(event);
+        } else if (event instanceof NozzleChangeEvent && !autoGenerateNozzleChangeEvents)
+        {
+            NozzleChangeEvent nozzleChangeEvent = (NozzleChangeEvent) event;
+
+            if (layer == 0 && forcedNozzleOnFirstLayer >= 0 && nozzleHasBeenForced == false)
+            {
+                nozzleHasBeenForced = true;
+                tempNozzleMemory = nozzleChangeEvent.getNozzleNumber();
+                //Force to required nozzle
+                nozzleChangeEvent.setNozzleNumber(forcedNozzleOnFirstLayer);
+                nozzleChangeEvent.setComment(
+                    nozzleChangeEvent.getComment()
+                    + " - force to nozzle " + forcedNozzleOnFirstLayer + " on first layer");
+                extrusionBuffer.add(nozzleChangeEvent);
+                nozzleInUse = forcedNozzleOnFirstLayer;
+                currentNozzle = nozzleProxies.get(nozzleInUse);
+            } else if (layer < 1)
+            {
+                tempNozzleMemory = nozzleChangeEvent.getNozzleNumber();
+            } else if (layer > 1)
+            {
+                extrusionBuffer.add(nozzleChangeEvent);
+                nozzleInUse = nozzleChangeEvent.getNozzleNumber();
+                currentNozzle = nozzleProxies.get(nozzleInUse);
+            }
+        } else if (event instanceof RetractEvent)
+        {
+            RetractEvent retractEvent = (RetractEvent) event;
+
+            if (triggerCloseFromRetract == true && currentNozzle.getState()
+                != NozzleState.CLOSED)
+            {
+                writeEventsWithNozzleClose("retract trigger");
+            }
+
+            resetMeasuringThing();
+        } else if (event instanceof UnretractEvent && !autoGenerateNozzleChangeEvents)
+        {
+            UnretractEvent unretractEvent = (UnretractEvent) event;
+
+            totalExtrudedVolume += unretractEvent.getE();
+
+            if (currentNozzle.getState() != NozzleState.OPEN
+                && currentNozzle.getNozzleParameters().getOpenOverVolume() <= 0)
+            {
+                // Unretract and open
+                NozzleOpenFullyEvent openNozzle = new NozzleOpenFullyEvent();
+                openNozzle.setComment("Open and replenish");
+                openNozzle.setE(autoUnretractEValue);
+                openNozzle.setD(autoUnretractDValue);
+                extrusionBuffer.add(openNozzle);
+            } else if (autoUnretractDValue > 0 || autoUnretractEValue > 0)
+            {
+                // Just unretract
+                unretractEvent.setComment("Replenish before open");
+                unretractEvent.setE(autoUnretractEValue);
+                unretractEvent.setD(autoUnretractDValue);
+                extrusionBuffer.add(unretractEvent);
+            }
+
+            if (currentNozzle.getState() != NozzleState.OPEN)
+            {
+                currentNozzle.openNozzleFully();
+                nozzleLastOpenedAt = lastPoint;
+            }
+
+            resetMeasuringThing();
+            autoUnretractEValue = 0;
+            autoUnretractDValue = 0;
+        } else if (event instanceof MCodeEvent)
+        {
+            MCodeEvent mCodeEvent = (MCodeEvent) event;
+            if (mCodeEvent.getMNumber() != 104
+                && mCodeEvent.getMNumber() != 109
+                && mCodeEvent.getMNumber() != 140
+                && mCodeEvent.getMNumber() != 190)
+            {
+                extrusionBuffer.add(event);
+            }
+        } else if (event instanceof GCodeEvent)
+        {
+            extrusionBuffer.add(event);
+        } else if (event instanceof CommentEvent)
+        {
+            extrusionBuffer.add(event);
+        } else if (event instanceof EndOfFileEvent)
+        {
+            if (currentNozzle.getState() != NozzleState.CLOSED)
+            {
+                writeEventsWithNozzleClose("End of file");
+            }
+
+            try
+            {
+                outputWriter.writeOutput(";\n; Post print gcode\n");
+                for (String macroLine : GCodeMacros.getMacroContents(
+                    "after_print"))
+                {
+                    outputWriter.writeOutput(macroLine + "\n");
+                }
+                outputWriter.writeOutput("; End of Post print gcode\n");
+            } catch (IOException ex)
+            {
+                steno.error("Error whilst writing post-print gcode to file");
+            }
+
+            writeEventToFile(event);
         }
     }
 

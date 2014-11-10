@@ -4,7 +4,7 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.printerControl.comms.commands.GCodeMacros;
@@ -44,7 +44,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     private Project project = null;
     private Filament filament = null;
     private PrintQualityEnumeration printQuality = null;
-    private SlicerParameters settings = null;
+    private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
     private String macroToExecuteAfterPurge = null;
 
@@ -255,7 +255,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         }
     }
 
-    public void purgeAndPrint(Project project, Filament filament, PrintQualityEnumeration printQuality, SlicerParameters settings, Printer printerToUse)
+    public void purgeAndPrint(Project project, Filament filament, PrintQualityEnumeration printQuality, SlicerParametersFile settings, Printer printerToUse)
     {
         this.project = project;
         this.filament = filament;

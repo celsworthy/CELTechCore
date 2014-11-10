@@ -6,7 +6,7 @@ package celtech.gcodetranslator;
 import celtech.JavaFXConfiguredTest;
 import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.events.CommentEvent;
 import celtech.gcodetranslator.events.ExtrusionEvent;
 import celtech.gcodetranslator.events.GCodeParseEvent;
@@ -44,7 +44,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     @Test
     public void testInsertTravelAndClosePathBox() throws IOException, URISyntaxException
     {
-        SlicerParameters parameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
+        SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
 
         ArrayList<GCodeParseEvent> extrusionBuffer = new ArrayList<>();
 
@@ -129,7 +129,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     @Test
     public void testInsertTravelAndClosePathConcentricBox() throws IOException, URISyntaxException
     {
-        SlicerParameters parameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
+        SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
 
         ArrayList<GCodeParseEvent> extrusionBuffer = new ArrayList<>();
 
@@ -362,7 +362,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     @Test
     public void testInsertTravelAndClosePathBoxScenario2() throws IOException, URISyntaxException
     {
-        SlicerParameters parameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
+        SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
         parameters.setSlicerOverride(SlicerType.Cura);
 
         ArrayList<GCodeParseEvent> extrusionBuffer = new ArrayList<>();
@@ -516,11 +516,11 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 //        String outputFilePath = temporaryFolder.newFile("pyramid.gcode").getCanonicalPath()
 //            + "out";
 //
-//        SlicerParameters SlicerParameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
+//        SlicerParametersFile SlicerParametersFile = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
 //        DoubleProperty progressProperty = new SimpleDoubleProperty(0);
 //        RoboxiserResult roboxiserResult = gCodeRoboxiser.roboxiseFile(
 //            inputURL.getFile(), outputFilePath,
-//            SlicerParameters, progressProperty);
+//            SlicerParametersFile, progressProperty);
 //        assertEquals(20, (long) roboxiserResult.getPrintJobStatistics().getLineNumberOfFirstExtrusion());
 //    }
 //    
@@ -532,12 +532,12 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 //        String outputFilePath = temporaryFolder.newFile("pyramid.gcode").getCanonicalPath()
 //            + "out";
 //
-//        SlicerParameters SlicerParameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
+//        SlicerParametersFile SlicerParametersFile = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
 //        DoubleProperty progressProperty = new SimpleDoubleProperty(0);
 //        RoboxiserResult roboxiserResult = gCodeRoboxiser.roboxiseFile(
 //            url.getFile(),
 //            outputFilePath,
-//            SlicerParameters,
+//            SlicerParametersFile,
 //            progressProperty);
 //
 //        List<Double> durationForLayers = roboxiserResult.getPrintJobStatistics().getLayerNumberToPredictedDuration();
@@ -561,11 +561,11 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 //        URL expectedDataURL = this.getClass().getResource(
 //            "/pyramid.expectedroboxgcode");
 //
-//        SlicerParameters SlicerParameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
+//        SlicerParametersFile SlicerParametersFile = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
 //        
 //        DoubleProperty progressProperty = new SimpleDoubleProperty(0);
 //        gCodeRoboxiser.roboxiseFile(inputURL.getFile(), outputFilePath,
-//                                    SlicerParameters,
+//                                    SlicerParametersFile,
 //                                    progressProperty);
 //
 //        String producedFileContents = getFileContentsAsString(Paths.get(outputFilePath));

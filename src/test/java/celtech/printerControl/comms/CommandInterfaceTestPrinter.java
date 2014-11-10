@@ -3,7 +3,7 @@ package celtech.printerControl.comms;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
@@ -236,7 +236,7 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void printProject(Project project, Filament filament, PrintQualityEnumeration printQuality, SlicerParameters settings)
+    public void printProject(Project project, Filament filament, PrintQualityEnumeration printQuality, SlicerParametersFile settings)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

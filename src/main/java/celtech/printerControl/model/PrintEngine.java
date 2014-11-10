@@ -6,7 +6,7 @@ import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.SlicerType;
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.printerControl.PrintJob;
 import celtech.printerControl.PrinterStatus;
@@ -514,7 +514,7 @@ public class PrintEngine implements ControllableService
      * @return
      */
     public synchronized boolean printProject(Project project, PrintQualityEnumeration printQuality,
-        SlicerParameters settings)
+        SlicerParametersFile settings)
     {
         boolean acceptedPrintRequest = false;
         etcAvailable.set(false);
@@ -619,7 +619,7 @@ public class PrintEngine implements ControllableService
     }
 
     private boolean printFromScratch(PrintQualityEnumeration printQuality,
-        SlicerParameters settings, Project project, boolean acceptedPrintRequest)
+        SlicerParametersFile settings, Project project, boolean acceptedPrintRequest)
     {
         //Create the print job directory
         String printUUID = SystemUtils.generate16DigitID();

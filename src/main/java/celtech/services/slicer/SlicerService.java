@@ -1,7 +1,7 @@
 package celtech.services.slicer;
 
 import celtech.appManager.Project;
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.printerControl.model.Printer;
 import javafx.concurrent.Task;
 
@@ -15,7 +15,7 @@ public class SlicerService extends AbstractSlicerService
     private String printJobUUID = null;
     private Project project = null;
     private PrintQualityEnumeration printQuality = null;
-    private SlicerParameters settings = null;
+    private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
 
     /**
@@ -52,7 +52,7 @@ public class SlicerService extends AbstractSlicerService
      * @param settings
      */
     @Override
-    public void setSettings(SlicerParameters settings)
+    public void setSettings(SlicerParametersFile settings)
     {
         this.settings = settings;
     }

@@ -3,7 +3,7 @@ package celtech.coreUI.controllers;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import javafx.beans.property.ObjectProperty;
@@ -19,7 +19,7 @@ public class SettingsScreenState
     private static SettingsScreenState instance = null;
     private final ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
     private final ObjectProperty<Filament> selectedFilament = new SimpleObjectProperty<>(null);
-    private final ObjectProperty<SlicerParameters> settings = new SimpleObjectProperty<>(SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName));
+    private final ObjectProperty<SlicerParametersFile> settings = new SimpleObjectProperty<>(SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName));
     private final ObjectProperty<PrintQualityEnumeration> printQuality = new SimpleObjectProperty<>();
 
     private SettingsScreenState()
@@ -98,7 +98,7 @@ public class SettingsScreenState
      *
      * @param value
      */
-    public void setSettings(SlicerParameters value)
+    public void setSettings(SlicerParametersFile value)
     {
         settings.set(value);
     }
@@ -107,7 +107,7 @@ public class SettingsScreenState
      *
      * @return
      */
-    public SlicerParameters getSettings()
+    public SlicerParametersFile getSettings()
     {
         return settings.get();
     }
@@ -116,7 +116,7 @@ public class SettingsScreenState
      *
      * @return
      */
-    public ObjectProperty<SlicerParameters> getSettingsProperty()
+    public ObjectProperty<SlicerParametersFile> getSettingsProperty()
     {
         return settings;
     }

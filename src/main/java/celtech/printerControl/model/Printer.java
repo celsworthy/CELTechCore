@@ -3,7 +3,7 @@ package celtech.printerControl.model;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
@@ -175,7 +175,7 @@ public interface Printer extends RoboxResponseConsumer
      * @param printQuality
      * @param settings
      */
-    public void printProject(Project project, Filament filament, PrintQualityEnumeration printQuality, SlicerParameters settings);
+    public void printProject(Project project, Filament filament, PrintQualityEnumeration printQuality, SlicerParametersFile settings);
 
     public ReadOnlyObjectProperty<PrinterStatus> printerStatusProperty();
 

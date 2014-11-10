@@ -4,7 +4,7 @@
 package celtech.services.slicer;
 
 import celtech.appManager.Project;
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.printerControl.model.Printer;
 import celtech.services.ControllableService;
 import javafx.concurrent.Service;
@@ -19,7 +19,7 @@ public abstract class AbstractSlicerService extends Service<SliceResult> impleme
     
     public abstract void setProject(Project project);
 
-    public abstract void setSettings(SlicerParameters settings);
+    public abstract void setSettings(SlicerParametersFile settings);
     
     public abstract void setPrintJobUUID(String printJobUUID);
     

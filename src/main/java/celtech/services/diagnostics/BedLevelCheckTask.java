@@ -2,7 +2,7 @@ package celtech.services.diagnostics;
 
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.ControllableService;
@@ -22,7 +22,7 @@ public class BedLevelCheckTask extends Task<BedLevelCheckResult> implements Cont
     private Project project = null;
     private Filament filament = null;
     private PrintQualityEnumeration printQuality = null;
-    private SlicerParameters settings = null;
+    private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
     private String macroName = null;
 

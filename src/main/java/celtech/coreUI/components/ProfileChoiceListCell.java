@@ -2,7 +2,7 @@ package celtech.coreUI.components;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.DisplayManager;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -15,7 +15,7 @@ import javafx.scene.layout.GridPane;
  *
  * @author Ian
  */
-public class ProfileChoiceListCell extends ListCell<SlicerParameters>
+public class ProfileChoiceListCell extends ListCell<SlicerParametersFile>
 {   
     private final static String LIST_CELL_STYLE_CLASS = "profile-choice-list-cell-grid";
     private final GridPane grid = new GridPane();
@@ -47,7 +47,7 @@ public class ProfileChoiceListCell extends ListCell<SlicerParameters>
     }
     
     @Override
-    protected void updateItem(SlicerParameters settings, boolean empty)
+    protected void updateItem(SlicerParametersFile settings, boolean empty)
     {
         super.updateItem(settings, empty);
         if (empty)
@@ -65,7 +65,7 @@ public class ProfileChoiceListCell extends ListCell<SlicerParameters>
         setGraphic(null);
     }
     
-    private void addContent(SlicerParameters settings)
+    private void addContent(SlicerParametersFile settings)
     {
         setText(null);
         if (settings == SlicerParametersContainer.createNewProfile)
@@ -73,7 +73,7 @@ public class ProfileChoiceListCell extends ListCell<SlicerParameters>
             setGraphic(createNewProfileLabel);
         } else
         {
-            padlock.setVisible(SlicerParametersContainer.getApplicationProfileList().contains(settings));
+            padlock.setVisible(SlicerParametersContainer.applicationProfileListContainsProfile(settings.getProfileName()));
             name.textProperty().set(settings.getProfileName());
             setGraphic(grid);
         }

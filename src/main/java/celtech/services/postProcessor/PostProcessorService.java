@@ -1,6 +1,6 @@
 package celtech.services.postProcessor;
 
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.printerControl.model.Printer;
 import celtech.services.ControllableService;
 import javafx.concurrent.Service;
@@ -13,7 +13,7 @@ import javafx.concurrent.Task;
 public class PostProcessorService extends Service<GCodePostProcessingResult> implements ControllableService
 {
     private String printJobUUID = null;
-    private SlicerParameters settings = null;
+    private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
 
     /**
@@ -29,7 +29,7 @@ public class PostProcessorService extends Service<GCodePostProcessingResult> imp
      *
      * @param settings
      */
-    public void setSettings(SlicerParameters settings)
+    public void setSettings(SlicerParametersFile settings)
     {
         this.settings = settings;
     }

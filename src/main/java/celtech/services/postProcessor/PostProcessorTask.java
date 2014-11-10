@@ -1,6 +1,6 @@
 package celtech.services.postProcessor;
 
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.GCodeRoboxiser;
 import celtech.gcodetranslator.RoboxiserResult;
 import celtech.printerControl.PrintJob;
@@ -19,7 +19,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
 {
 
     private String printJobUUID = null;
-    private SlicerParameters settings = null;
+    private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
     private DoubleProperty taskProgress = new SimpleDoubleProperty(0);
 
@@ -29,7 +29,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
      * @param settings
      * @param printerToUse
      */
-    public PostProcessorTask(String printJobUUID, SlicerParameters settings,
+    public PostProcessorTask(String printJobUUID, SlicerParametersFile settings,
         Printer printerToUse)
     {
         this.printJobUUID = printJobUUID;

@@ -10,7 +10,7 @@ import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.MaterialType;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.printerControl.PrintActionUnavailableException;
 import celtech.printerControl.PrintJobRejectedException;
@@ -1287,7 +1287,7 @@ public final class HardwarePrinter implements Printer
      */
     @Override
     public void printProject(Project project, Filament filament,
-        PrintQualityEnumeration printQuality, SlicerParameters settings)
+        PrintQualityEnumeration printQuality, SlicerParametersFile settings)
     {
 
         //TODO modify for multiple reels

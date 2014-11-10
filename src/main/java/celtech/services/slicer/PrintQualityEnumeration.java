@@ -2,7 +2,7 @@ package celtech.services.slicer;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 
 /**
  *
@@ -32,10 +32,10 @@ public enum PrintQualityEnumeration
     CUSTOM("Custom", SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.customSettingsProfileName), 3);
 
     private final String friendlyName;
-    private final SlicerParameters settings;
+    private final SlicerParametersFile settings;
     private final int enumPosition;
 
-    private PrintQualityEnumeration(String friendlyName, SlicerParameters settings, int enumPosition)
+    private PrintQualityEnumeration(String friendlyName, SlicerParametersFile settings, int enumPosition)
     {
         this.friendlyName = friendlyName;
         this.settings = settings;
@@ -55,7 +55,7 @@ public enum PrintQualityEnumeration
      *
      * @return
      */
-    public SlicerParameters getSettings()
+    public SlicerParametersFile getSettings()
     {
         return settings;
     }

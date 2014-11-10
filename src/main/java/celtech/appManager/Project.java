@@ -2,7 +2,7 @@ package celtech.appManager;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.io.File;
@@ -35,7 +35,7 @@ public class Project implements Serializable
     private String gcodeFileName = "";
     private ObjectProperty<ProjectMode> projectMode = new SimpleObjectProperty<>(ProjectMode.NONE);
     private PrintQualityEnumeration printQuality = null;
-    private SlicerParameters customSettings = null;
+    private SlicerParametersFile customSettings = null;
     private String customProfileName = "";
     private BooleanProperty isDirty = new SimpleBooleanProperty(false);
     private String lastPrintJobID = "";
@@ -166,7 +166,7 @@ public class Project implements Serializable
 
         try
         {
-            customSettings = (SlicerParameters) in.readObject();
+            customSettings = (SlicerParametersFile) in.readObject();
             //Introduced in version 1.00.06
             if (in.available() > 0)
             {

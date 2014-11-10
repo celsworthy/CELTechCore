@@ -10,7 +10,7 @@ import celtech.configuration.UserPreferences;
 import celtech.configuration.datafileaccessors.SlicerMappingsContainer;
 import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.SlicerMappings;
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.printerControl.model.Printer;
 import celtech.utils.PrinterListChangesNotifier;
 import celtech.utils.tasks.LiveTaskExecutor;
@@ -41,7 +41,7 @@ public class Lookup
     private static ObservableList<Printer> connectedPrinters = FXCollections.observableArrayList();
     private static UserPreferences userPreferences;
     private static SlicerMappings slicerMappings;
-    private static SlicerParameters slicerParameters;
+    private static SlicerParametersFile slicerParameters;
     private static final ObjectProperty<Printer> currentlySelectedPrinterProperty = new SimpleObjectProperty<>();
 
     /**

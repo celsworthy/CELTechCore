@@ -1,6 +1,6 @@
 package celtech.configuration.slicer;
 
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 
 /**
  *
@@ -8,7 +8,7 @@ import celtech.configuration.fileRepresentation.SlicerParameters;
  */
 public interface ConfigWriter
 {
-    public void generateConfigForSlicer(SlicerParameters profileData, String destinationFile);
+    public void generateConfigForSlicer(SlicerParametersFile profileData, String destinationFile);
     
     public void setPrintCentre(double x, double y);
 }

@@ -4,7 +4,7 @@ import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.SlicerType;
 import celtech.configuration.fileRepresentation.SlicerMappingData;
-import celtech.configuration.fileRepresentation.SlicerParameters;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -53,7 +53,7 @@ public abstract class SlicerConfigWriter
      * @param profileData
      * @param destinationFile
      */
-    public final void generateConfigForSlicer(SlicerParameters profileData, String destinationFile)
+    public final void generateConfigForSlicer(SlicerParametersFile profileData, String destinationFile)
     {
         File outputFile = new File(destinationFile);
         FileWriter writer = null;
@@ -205,7 +205,7 @@ public abstract class SlicerConfigWriter
 
     protected abstract void outputFilamentDiameter(FileWriter writer, float diameter) throws IOException;
 
-    private float applyValue(SlicerParameters profileData, float value, String operationString)
+    private float applyValue(SlicerParametersFile profileData, float value, String operationString)
     {
         float resultingValue = value;
         boolean okToProcess = false;
@@ -374,7 +374,7 @@ public abstract class SlicerConfigWriter
 
         try
         {
-            foundMethod = SlicerParameters.class.getMethod(methodName, null);
+            foundMethod = SlicerParametersFile.class.getMethod(methodName, null);
         } catch (NoSuchMethodException ex)
         {
             steno.warning("Failed to get method for " + methodName);
