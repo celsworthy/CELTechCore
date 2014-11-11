@@ -298,11 +298,23 @@ public class CalibrationInsetPanelController implements Initializable,
         diagramController.setScale(requiredScale, diagramNode);
         
         diagramNode.setPrefWidth(0);
-        diagramNode.setPrefHeight(0);        
+        diagramNode.setPrefHeight(0);    
+        
+        double scaledDiagramWidth = diagramNode.getWidth();
+        double scaledDiagramHeight = diagramNode.getHeight();
 
-//        diagramNode.setTranslateX(availableWidth / 2.0 - (1 - requiredScale) / 2 * diagramWidth);
-//        diagramNode.setTranslateY(- (1 - requiredScale) / 2 * diagramHeight);
+        double xTranslate = 0;
+        double yTranslate = 0;
 //        
+//        xTranslate = -scaledDiagramWidth / 2;
+//        yTranslate = -scaledDiagramHeight / 2;        
+        
+        xTranslate += availableWidth / 2.0;
+        yTranslate -= availableHeight / 2.0;
+        
+        diagramNode.setTranslateX(xTranslate);
+        diagramNode.setTranslateY(yTranslate);
+
         steno.debug("scale by " + requiredScale);
 
     }
@@ -327,6 +339,7 @@ public class CalibrationInsetPanelController implements Initializable,
                 diagramController = new DiagramController(stateManager);
                 loader.setController(diagramController);
                 loadedDiagramNode = loader.load();
+                
                 nameToNodeCache.put(diagramName, loadedDiagramNode);
                 
                 Bounds bounds = getBoundsOfNotYetDisplayedNode(loadedDiagramNode);
