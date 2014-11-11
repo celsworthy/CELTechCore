@@ -48,40 +48,33 @@
                                 <Insets bottom="30.0" top="95.0" />
                             </HBox.margin>
                         </Separator>
-                  <HBox prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
-                     <children>
-                                <VBox fx:id="informationCentre" alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
-                                    <padding>
-                                        <Insets bottom="5.0" top="5.0" />
-                                    </padding>
-                                    <children>
-                                        <Label id="calibrationStatus" fx:id="calibrationStatus" prefWidth="800.0" text="%calibrationPanel.readyToBeginNozzleOpeningCalibration" wrapText="true">
-                                            <padding>
-                                                <Insets left="30.0" right="30.0" />
-                                            </padding>
-                                            <VBox.margin>
-                                                <Insets bottom="20.0" top="120.0" />
-                                            </VBox.margin>
-                                        </Label>
-                              <VBox fx:id="diagramContainer" style="-fx-background-color: red;" VBox.vgrow="ALWAYS" />
-                                        <HBox alignment="CENTER">
-                                            <children>
-                                                <Button id="buttonA" fx:id="buttonA" mnemonicParsing="false" onAction="#buttonAAction" styleClass="calibrationButtonsAB" text="A">
-                                                    <HBox.margin>
-                                                        <Insets left="70.0" right="70.0" />
-                                                    </HBox.margin>
-                                                </Button>
-                                                <Button id="buttonB" fx:id="buttonB" mnemonicParsing="false" onAction="#buttonBAction" styleClass="calibrationButtonsAB" text="B">
-                                                    <HBox.margin>
-                                                        <Insets left="70.0" right="70.0" />
-                                                    </HBox.margin>
-                                                </Button>
-                                            </children>
-                                        </HBox>
-                                    </children>
-                                </VBox>
-                     </children>
-                  </HBox>
+                          <VBox fx:id="informationCentre" alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
+                              <padding>
+                                  <Insets bottom="5.0" top="5.0" />
+                              </padding>
+                              <children>
+                                  <Label id="calibrationStatus" fx:id="calibrationStatus" text="%calibrationPanel.readyToBeginNozzleOpeningCalibration" wrapText="true" VBox.vgrow="ALWAYS">
+                                      <VBox.margin>
+                                          <Insets bottom="20.0" left="30.0" right="30.0" top="120.0" />
+                                      </VBox.margin>
+                                  </Label>
+                        <VBox fx:id="diagramContainer" alignment="CENTER" style="-fx-background-color: red;" VBox.vgrow="ALWAYS" />
+                                  <HBox alignment="CENTER" VBox.vgrow="NEVER">
+                                      <children>
+                                          <Button id="buttonA" fx:id="buttonA" mnemonicParsing="false" onAction="#buttonAAction" styleClass="calibrationButtonsAB" text="A">
+                                              <HBox.margin>
+                                                  <Insets left="70.0" right="70.0" />
+                                              </HBox.margin>
+                                          </Button>
+                                          <Button id="buttonB" fx:id="buttonB" mnemonicParsing="false" onAction="#buttonBAction" styleClass="calibrationButtonsAB" text="B">
+                                              <HBox.margin>
+                                                  <Insets left="70.0" right="70.0" />
+                                              </HBox.margin>
+                                          </Button>
+                                      </children>
+                                  </HBox>
+                              </children>
+                          </VBox>
                     </children>
                 </HBox>
             </center>

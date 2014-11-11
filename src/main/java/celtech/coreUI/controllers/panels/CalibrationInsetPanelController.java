@@ -30,7 +30,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Bounds;
+import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
@@ -128,15 +130,19 @@ public class CalibrationInsetPanelController implements Initializable,
     @FXML
     private Pane topPane;
 
+    @FXML
+    private VBox diagramContainer;
+
     private Printer currentPrinter;
     private int targetTemperature;
     private double currentExtruderTemperature;
     private int targetETC;
     private double printPercent;
     private Spinner spinner;
-    private Node diagramNode;
+    private Pane diagramNode;
     DiagramController diagramController;
     private final Map<String, Node> nameToNodeCache = new HashMap<>();
+    private final Map<Node, Bounds> nodeToBoundsCache = new HashMap<>();
 
     @FXML
     void buttonAAction(ActionEvent event)
@@ -253,15 +259,16 @@ public class CalibrationInsetPanelController implements Initializable,
                 resizeTopBorderPane();
             });
 
-        calibrationStatus.widthProperty().addListener(
+        diagramContainer.widthProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-//                resizeDiagram();
+                resizeDiagram();
             });
 
-        calibrationStatus.heightProperty().addListener(
+        diagramContainer.heightProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
+//                steno.debug("new height is " + newValue);
                 resizeDiagram();
             });
 
@@ -269,48 +276,34 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private void resizeDiagram()
     {
-        Platform.runLater(this::resizeDiagramLater);
-    }
-
-    private void resizeDiagramLater()
-    {
         if (diagramNode == null)
         {
             return;
         }
 
-        double diagramWidth = diagramNode.getBoundsInLocal().getWidth();
-        double diagramHeight = diagramNode.getBoundsInLocal().getHeight();
+        double diagramWidth = nodeToBoundsCache.get(diagramNode).getWidth();
+        double diagramHeight = nodeToBoundsCache.get(diagramNode).getHeight();
+        
+        steno.debug("diagram width, height is " + diagramWidth + " " + diagramHeight);
 
-        Bounds statusBounds = calibrationStatus.localToScene(calibrationStatus.getBoundsInLocal());
-        Bounds ancestorStatusBounds = topPane.sceneToLocal(statusBounds);
-        double upperBoundaryInAncestorCoords = ancestorStatusBounds.getMaxY();
-
-        Bounds bottomAreaBounds = buttonA.localToScene(buttonA.getBoundsInLocal());
-        Bounds ancestorBottomBounds = topPane.sceneToLocal(bottomAreaBounds);
-        double lowerBoundaryInAncestorCoords = ancestorBottomBounds.getMinY();
-        double availableHeight = lowerBoundaryInAncestorCoords - upperBoundaryInAncestorCoords;
-        double availableWidth = ancestorStatusBounds.getWidth();
+        double availableWidth = diagramContainer.getWidth();
+        double availableHeight = diagramContainer.getHeight();
+        
+        steno.info("got actual height of " + availableHeight);
 
         double requiredScaleHeight = availableHeight / diagramHeight * 0.95;
         double requiredScaleWidth = availableWidth / diagramWidth * 0.95;
         double requiredScale = Math.min(requiredScaleHeight, requiredScaleWidth);
         requiredScale = Math.min(requiredScale, 1.3d);
         diagramController.setScale(requiredScale, diagramNode);
+        
+        diagramNode.setPrefWidth(0);
+        diagramNode.setPrefHeight(0);        
 
-        double scaledDiagramWidth = diagramNode.getBoundsInLocal().getWidth();
-        double scaledDiagramHeight = diagramNode.getBoundsInLocal().getHeight();
-
-        double xTranslate = -scaledDiagramWidth / 2;
-        double yTranslate = -scaledDiagramHeight / 2;
-
-        xTranslate += ancestorStatusBounds.getMinX() + (ancestorStatusBounds.getWidth() / 2.0d);
-        yTranslate += upperBoundaryInAncestorCoords + availableHeight / 2.0;
-
-        xTranslate += 10; // Fudge factor
-
-        diagramNode.setTranslateX(xTranslate);
-        diagramNode.setTranslateY(yTranslate);
+//        diagramNode.setTranslateX(availableWidth / 2.0 - (1 - requiredScale) / 2 * diagramWidth);
+//        diagramNode.setTranslateY(- (1 - requiredScale) / 2 * diagramHeight);
+//        
+        steno.debug("scale by " + requiredScale);
 
     }
 
@@ -335,6 +328,11 @@ public class CalibrationInsetPanelController implements Initializable,
                 loader.setController(diagramController);
                 loadedDiagramNode = loader.load();
                 nameToNodeCache.put(diagramName, loadedDiagramNode);
+                
+                Bounds bounds = getBoundsOfNotYetDisplayedNode(loadedDiagramNode);
+                steno.debug("diagram bounds are " + bounds);
+                nodeToBoundsCache.put(loadedDiagramNode, bounds);
+                
             } catch (IOException ex)
             {
                 ex.printStackTrace();
@@ -344,6 +342,17 @@ public class CalibrationInsetPanelController implements Initializable,
         return nameToNodeCache.get(diagramName);
     }
 
+    private Bounds getBoundsOfNotYetDisplayedNode(Pane loadedDiagramNode)
+    {
+        Group group = new Group(loadedDiagramNode);
+        Scene scene = new Scene(group);
+        scene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
+        group.applyCss();
+        group.layout();
+        Bounds bounds = loadedDiagramNode.getLayoutBounds();
+        return bounds;
+    }
+
     protected void showDiagram(String section, String diagramName)
     {
         showDiagram(section, diagramName, true);
@@ -351,23 +360,19 @@ public class CalibrationInsetPanelController implements Initializable,
 
     protected void showDiagram(String section, String diagramName, boolean transparent)
     {
-        diagramNode = getDiagramNode(section, diagramName);
+        diagramNode = (Pane) getDiagramNode(section, diagramName);
         if (diagramNode == null)
         {
             return;
         }
-        if (topPane.getChildren().size() == 1)
-        {
-            topPane.getChildren().add(diagramNode);
-        } else
-        {
-            Node firstChild = topPane.getChildren().get(0);
-            topPane.getChildren().clear();
-            topPane.getChildren().addAll(firstChild, diagramNode);
-            diagramNode.setMouseTransparent(transparent);
-        }
+        
+        diagramContainer.getChildren().clear();
+        diagramContainer.getChildren().add(diagramNode);
 
+        diagramNode.setMouseTransparent(transparent);
+        
         resizeDiagram();
+        
         diagramNode.setVisible(true);
     }
 
@@ -388,12 +393,13 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         if (targetTemperature != 0 && calibrationProgressTemp.isVisible())
         {
-            
+
             int currentTemp = (int) currentExtruderTemperature;
-            if (currentTemp > targetTemperature) {
+            if (currentTemp > targetTemperature)
+            {
                 currentTemp = targetTemperature;
             }
-            
+
             String targetTempStr = targetTemperature + Lookup.i18n("misc.degreesC");
             String currentTempStr = currentTemp + Lookup.i18n("misc.degreesC");
             calibrationProgressTemp.setCurrentValue(currentTempStr);
