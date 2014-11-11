@@ -58,7 +58,7 @@
                                           <Insets bottom="20.0" left="30.0" right="30.0" top="120.0" />
                                       </VBox.margin>
                                   </Label>
-                        <VBox fx:id="diagramContainer" alignment="CENTER" style="-fx-background-color: red;" VBox.vgrow="ALWAYS" />
+                        <VBox fx:id="diagramContainer" alignment="CENTER" fillWidth="false" VBox.vgrow="ALWAYS" />
                                   <HBox alignment="CENTER" VBox.vgrow="NEVER">
                                       <children>
                                           <Button id="buttonA" fx:id="buttonA" mnemonicParsing="false" onAction="#buttonAAction" styleClass="calibrationButtonsAB" text="A">
@@ -72,6 +72,9 @@
                                               </HBox.margin>
                                           </Button>
                                       </children>
+                           <VBox.margin>
+                              <Insets bottom="15.0" top="15.0" />
+                           </VBox.margin>
                                   </HBox>
                               </children>
                           </VBox>
