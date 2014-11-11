@@ -289,7 +289,7 @@ public class CalibrationInsetPanelController implements Initializable,
         double availableWidth = diagramContainer.getWidth();
         double availableHeight = diagramContainer.getHeight();
         
-        steno.info("got actual height of " + availableHeight);
+        steno.debug("got actual height of " + availableHeight);
 
         double requiredScaleHeight = availableHeight / diagramHeight * 0.95;
         double requiredScaleWidth = availableWidth / diagramWidth * 0.95;
@@ -303,15 +303,12 @@ public class CalibrationInsetPanelController implements Initializable,
         double scaledDiagramWidth = diagramWidth * requiredScale;
         double scaledDiagramHeight = diagramHeight * requiredScale;
         
-        steno.info("scaled width, height is " + scaledDiagramWidth + " " + scaledDiagramHeight);
+        steno.debug("scaled width, height is " + scaledDiagramWidth + " " + scaledDiagramHeight);
 
         double xTranslate = 0;
         double yTranslate = 0;
 //        
         xTranslate = -scaledDiagramWidth / 2;
-//        yTranslate = -scaledDiagramHeight / 2;        
-        
-//        xTranslate += availableWidth / 2.0;
         yTranslate -= availableHeight / 2.0;
         
         diagramNode.setTranslateX(xTranslate);
