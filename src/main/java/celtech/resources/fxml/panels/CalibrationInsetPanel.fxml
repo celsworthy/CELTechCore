@@ -13,7 +13,7 @@
 
 <Pane fx:id="topPane" minHeight="700.0" pickOnBounds="false" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationInsetPanelController">
     <children>
-        <BorderPane fx:id="topBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: black;">
+        <BorderPane fx:id="topBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="600.0" style="-fx-background-color: black;">
             <center>
                 <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="calibrationBody" BorderPane.alignment="CENTER">
                     <children>
@@ -48,9 +48,9 @@
                                 <Insets bottom="30.0" top="95.0" />
                             </HBox.margin>
                         </Separator>
-                        <BorderPane fx:id="informationCentre" pickOnBounds="false">
-                            <top>
-                                <VBox alignment="TOP_CENTER" BorderPane.alignment="CENTER">
+                  <HBox prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                     <children>
+                                <VBox fx:id="informationCentre" alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
                                     <padding>
                                         <Insets bottom="5.0" top="5.0" />
                                     </padding>
@@ -60,18 +60,10 @@
                                                 <Insets left="30.0" right="30.0" />
                                             </padding>
                                             <VBox.margin>
-                                                <Insets bottom="20.0" />
+                                                <Insets bottom="20.0" top="120.0" />
                                             </VBox.margin>
                                         </Label>
-                                    </children>
-                                    <BorderPane.margin>
-                                        <Insets top="120.0" />
-                                    </BorderPane.margin>
-                                </VBox>
-                            </top>
-                            <bottom>
-                                <VBox alignment="CENTER" pickOnBounds="false" spacing="5.0" BorderPane.alignment="CENTER">
-                                    <children>
+                              <VBox fx:id="diagramContainer" style="-fx-background-color: red;" VBox.vgrow="ALWAYS" />
                                         <HBox alignment="CENTER">
                                             <children>
                                                 <Button id="buttonA" fx:id="buttonA" mnemonicParsing="false" onAction="#buttonAAction" styleClass="calibrationButtonsAB" text="A">
@@ -85,14 +77,11 @@
                                                     </HBox.margin>
                                                 </Button>
                                             </children>
-                                            <VBox.margin>
-                                                <Insets bottom="30.0" />
-                                            </VBox.margin>
                                         </HBox>
                                     </children>
                                 </VBox>
-                            </bottom>
-                        </BorderPane>
+                     </children>
+                  </HBox>
                     </children>
                 </HBox>
             </center>

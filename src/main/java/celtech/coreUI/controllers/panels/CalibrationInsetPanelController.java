@@ -36,6 +36,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -60,6 +61,8 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         topBorderPane.setPrefWidth(topPane.getWidth());
         topBorderPane.setPrefHeight(topPane.getHeight());
+        topBorderPane.setMaxWidth(topPane.getWidth());
+        topBorderPane.setMaxHeight(topPane.getHeight());
     }
 
     protected static enum ProgressVisibility
@@ -117,7 +120,7 @@ public class CalibrationInsetPanelController implements Initializable,
     protected Label calibrationStatus;
 
     @FXML
-    private BorderPane informationCentre;
+    private VBox informationCentre;
 
     @FXML
     private BorderPane topBorderPane;
@@ -239,21 +242,21 @@ public class CalibrationInsetPanelController implements Initializable,
         topPane.widthProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-                resizeDiagram();
+//                resizeDiagram();
                 resizeTopBorderPane();
             });
 
         topPane.heightProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-                resizeDiagram();
+//                resizeDiagram();
                 resizeTopBorderPane();
             });
 
         calibrationStatus.widthProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-                resizeDiagram();
+//                resizeDiagram();
             });
 
         calibrationStatus.heightProperty().addListener(
