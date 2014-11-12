@@ -10,9 +10,11 @@ import celtech.configuration.UserPreferences;
 import celtech.coreUI.components.VerticalMenu;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.Set;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -214,9 +216,11 @@ public class PreferencesTopInsetPanelController implements Initializable
 
                 setupCellFactory(control);
 
-                Lookup.getLanguages().getLocales();
-                control.setItems(FXCollections.observableArrayList(
-                    Lookup.getLanguages().getLocales()));
+                List<Locale> localesList = new ArrayList<>();
+                localesList.addAll(Lookup.getLanguages().getLocales());
+                localesList.sort((Locale o1, Locale o2) ->
+                    o1.getDisplayName().compareTo(o2.getDisplayName()));
+                control.setItems(FXCollections.observableArrayList(localesList));
                 control.setPrefWidth(200);
                 control.setMinWidth(control.getPrefWidth());
                 control.valueProperty().addListener(

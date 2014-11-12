@@ -27,8 +27,7 @@ public class Languages
     Set<Locale> locales;
 
     /**
-     * Return a map of language_country to ResourceBundle. language_country should be either e.g.
-     * "fr_CN" or "ru".
+     * Return a Set of Locales which correspond to available language bundles.
      *
      * @return
      */
