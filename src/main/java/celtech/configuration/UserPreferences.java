@@ -9,25 +9,26 @@ import celtech.configuration.fileRepresentation.UserPreferenceFile;
  */
 public class UserPreferences
 {
-
     private SlicerType slicerType = SlicerType.Cura;
     private boolean overrideSafeties = false;
-    private String language = "";
+    private String languageTag = "";
 
-    public String getLanguage()
+    public String getLanguageTag()
     {
-        return language;
+        return languageTag;
     }
 
-    public void setLanguage(String language)
+    public void setLanguageTag(String language)
     {
-        this.language = language;
+        this.languageTag = language;
+        saveSettings();
     }
 
     public UserPreferences(UserPreferenceFile userPreferenceFile)
     {
         this.slicerType = userPreferenceFile.getSlicerType();
         this.overrideSafeties = userPreferenceFile.isOverrideSafeties();
+        this.languageTag = userPreferenceFile.getLanguageTag();
     }
 
     public SlicerType getSlicerType()

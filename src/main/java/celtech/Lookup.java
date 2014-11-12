@@ -6,6 +6,7 @@ package celtech;
 import celtech.appManager.SystemNotificationManager;
 import celtech.appManager.SystemNotificationManagerJavaFX;
 import celtech.configuration.ApplicationEnvironment;
+import celtech.configuration.Languages;
 import celtech.configuration.UserPreferences;
 import celtech.configuration.datafileaccessors.SlicerMappingsContainer;
 import celtech.configuration.datafileaccessors.UserPreferenceContainer;
@@ -31,19 +32,24 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class Lookup
 {
-
     private static Lookup instance;
     private ApplicationEnvironment applicationEnvironment;
     private TaskExecutor taskExecutor;
     private SystemNotificationManager systemNotificationHandler;
     private final Stenographer steno = StenographerFactory.getStenographer(Lookup.class.getName());
     private static PrinterListChangesNotifier printerListChangesNotifier;
-    private static ObservableList<Printer> connectedPrinters = FXCollections.observableArrayList();
+    private static final ObservableList<Printer> connectedPrinters = FXCollections.observableArrayList();
     private static UserPreferences userPreferences;
     private static SlicerMappings slicerMappings;
     private static SlicerParametersFile slicerParameters;
     private static final ObjectProperty<Printer> currentlySelectedPrinterProperty = new SimpleObjectProperty<>();
+    private static Languages languages = new Languages();
 
+    public static Languages getLanguages()
+    {
+        return languages;
+    }
+    
     /**
      * @return the applicationEnvironment
      */
@@ -67,15 +73,23 @@ public class Lookup
 
     private Lookup()
     {
-//        Locale.setDefault(new Locale("zh", "CN")); 
-        Locale appLocale = Locale.getDefault();
-        ResourceBundle i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData", appLocale, new UTF8Control());
+        userPreferences = new UserPreferences(UserPreferenceContainer.getUserPreferenceFile());
+        
+        Locale appLocale;
+        String languageTag = userPreferences.getLanguageTag();
+        if (languageTag == null || languageTag.length() == 0) {
+            appLocale = Locale.getDefault();
+        } else {
+            appLocale = Locale.forLanguageTag(languageTag);
+        }
+        ResourceBundle i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData",
+                                                             appLocale, new UTF8Control());
         applicationEnvironment = new ApplicationEnvironment(i18nBundle, appLocale);
         taskExecutor = new LiveTaskExecutor();
         systemNotificationHandler = new SystemNotificationManagerJavaFX();
         steno.info("Detected locale - " + appLocale.toLanguageTag());
         printerListChangesNotifier = new PrinterListChangesNotifier(connectedPrinters);
-        userPreferences = new UserPreferences(UserPreferenceContainer.getUserPreferenceFile());
+        
         slicerMappings = SlicerMappingsContainer.getSlicerMappings();
     }
 
