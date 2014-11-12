@@ -60,6 +60,7 @@ public class SlicerParametersFile
     /*
      * Speed settings
      */
+    private int firstLayerSpeed_mm_per_s;
     private int perimeterSpeed_mm_per_s;
     private int smallPerimeterSpeed_mm_per_s;
     private int externalPerimeterSpeed_mm_per_s;
@@ -392,6 +393,16 @@ public class SlicerParametersFile
         this.supportPatternAngle_degrees = supportPatternAngle_degrees;
     }
 
+    public int getFirstLayerSpeed_mm_per_s()
+    {
+        return firstLayerSpeed_mm_per_s;
+    }
+
+    public void setFirstLayerSpeed_mm_per_s(int firstLayerSpeed_mm_per_s)
+    {
+        this.firstLayerSpeed_mm_per_s = firstLayerSpeed_mm_per_s;
+    }
+
     public int getPerimeterSpeed_mm_per_s()
     {
         return perimeterSpeed_mm_per_s;
@@ -616,6 +627,7 @@ public class SlicerParametersFile
         /*
          * Speed settings
          */
+        clone.firstLayerSpeed_mm_per_s = firstLayerSpeed_mm_per_s;
         clone.perimeterSpeed_mm_per_s = perimeterSpeed_mm_per_s;
         clone.smallPerimeterSpeed_mm_per_s = smallPerimeterSpeed_mm_per_s;
         clone.externalPerimeterSpeed_mm_per_s = externalPerimeterSpeed_mm_per_s;
