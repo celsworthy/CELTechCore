@@ -5,13 +5,16 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.appManager.ApplicationStatus;
+import celtech.configuration.Languages;
 import celtech.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
 import celtech.coreUI.components.VerticalMenu;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -199,18 +202,15 @@ public class PreferencesTopInsetPanelController implements Initializable
 
         Preference languagePref = new Preference()
         {
-            private final ComboBox<String> control;
+            private final ComboBox<Locale> control;
             
             {
                 control = new ComboBox<>();
-                ObservableList<String> languages = FXCollections.<String>observableArrayList();
-                languages.add("en_GB");
-                languages.add("fr_FR");
-                languages.add("de_GE");
-                control.setItems(languages);
+                Lookup.getLanguages().getLocales();
+                control.setItems(FXCollections.observableArrayList(Lookup.getLanguages().getLocales()));
                 control.setPrefWidth(200);
                 control.setMinWidth(control.getPrefWidth());
-                control.valueProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) ->
+                control.valueProperty().addListener((ObservableValue<? extends Locale> observable, Locale oldValue, Locale newValue) ->
                 {
                     updateValueFromControl();
                 });
@@ -219,13 +219,17 @@ public class PreferencesTopInsetPanelController implements Initializable
             @Override
             public void updateValueFromControl()
             {
-                userPreferences.setLanguage(control.getValue());
+                userPreferences.setLanguageTag(control.getValue().toLanguageTag());
             }
 
             @Override
             public void populateControlWithCurrentValue()
             {
-                control.setValue(userPreferences.getLanguage());
+                Locale preferredLocale = Locale.forLanguageTag(userPreferences.getLanguageTag());
+                if (preferredLocale == null) {
+                    preferredLocale = Locale.getDefault();
+                }
+                control.setValue(preferredLocale);
             }
 
             @Override

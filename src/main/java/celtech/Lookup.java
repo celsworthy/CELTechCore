@@ -6,6 +6,7 @@ package celtech;
 import celtech.appManager.SystemNotificationManager;
 import celtech.appManager.SystemNotificationManagerJavaFX;
 import celtech.configuration.ApplicationEnvironment;
+import celtech.configuration.Languages;
 import celtech.configuration.UserPreferences;
 import celtech.configuration.datafileaccessors.SlicerMappingsContainer;
 import celtech.configuration.datafileaccessors.UserPreferenceContainer;
@@ -31,6 +32,8 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class Lookup
 {
+    
+    public final static String DEFAULT_LANGUAGE = "DEFAULT";
 
     private static Lookup instance;
     private ApplicationEnvironment applicationEnvironment;
@@ -43,7 +46,13 @@ public class Lookup
     private static SlicerMappings slicerMappings;
     private static SlicerParametersFile slicerParameters;
     private static final ObjectProperty<Printer> currentlySelectedPrinterProperty = new SimpleObjectProperty<>();
+    private static Languages languages = new Languages();
 
+    public static Languages getLanguages()
+    {
+        return languages;
+    }
+    
     /**
      * @return the applicationEnvironment
      */
@@ -67,9 +76,21 @@ public class Lookup
 
     private Lookup()
     {
-//        Locale.setDefault(new Locale("zh", "CN")); 
-        Locale appLocale = Locale.getDefault();
-        ResourceBundle i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData", appLocale, new UTF8Control());
+        Locale appLocale;
+//        String languagePreference = "zh";
+//        String countryPreference = "CN";
+        String languagePreference = "ru";
+        String countryPreference = "";
+        if (languagePreference == null || languagePreference.equals(DEFAULT_LANGUAGE)
+            || languagePreference.length() != 2) {
+            appLocale = Locale.getDefault();
+        } else if (countryPreference.equals("")) {
+            appLocale = new Locale(languagePreference);
+        } else {
+            appLocale = new Locale(languagePreference, countryPreference);
+        }
+        ResourceBundle i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData",
+                                                             appLocale, new UTF8Control());
         applicationEnvironment = new ApplicationEnvironment(i18nBundle, appLocale);
         taskExecutor = new LiveTaskExecutor();
         systemNotificationHandler = new SystemNotificationManagerJavaFX();
