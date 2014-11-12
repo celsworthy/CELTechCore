@@ -106,6 +106,9 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private ComboBox<String> supportNozzleChoice;
 
     @FXML
+    private RestrictedNumberField firstLayerSpeed;
+
+    @FXML
     private RestrictedNumberField perimeterSpeed;
 
     @FXML
@@ -709,6 +712,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
             .addListener(dirtyStringListener);
         topSolidInfillSpeed.textProperty()
             .addListener(dirtyStringListener);
+        firstLayerSpeed.textProperty()
+            .addListener(dirtyStringListener);
         perimeterSpeed.textProperty()
             .addListener(dirtyStringListener);
         gapFillSpeed.textProperty()
@@ -931,6 +936,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         supportPatternAngle.intValueProperty().set(newSettings.getSupportPatternAngle_degrees());
 
         //Speed tab
+        firstLayerSpeed.intValueProperty().set(newSettings.getFirstLayerSpeed_mm_per_s());
         perimeterSpeed.intValueProperty().set(newSettings.getPerimeterSpeed_mm_per_s());
         smallPerimeterSpeed.intValueProperty().set(newSettings.getSmallPerimeterSpeed_mm_per_s());
         externalPerimeterSpeed.intValueProperty().set(newSettings.getExternalPerimeterSpeed_mm_per_s());
@@ -991,6 +997,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         settingsToUpdate.setSupportPatternAngle_degrees(supportPatternAngle.intValueProperty().get());
 
         //Speed tab
+        settingsToUpdate.setFirstLayerSpeed_mm_per_s(firstLayerSpeed.intValueProperty().get());
         settingsToUpdate.setPerimeterSpeed_mm_per_s(perimeterSpeed.intValueProperty().get());
         settingsToUpdate.setSmallPerimeterSpeed_mm_per_s(smallPerimeterSpeed.intValueProperty().get());
         settingsToUpdate.setExternalPerimeterSpeed_mm_per_s(externalPerimeterSpeed.intValueProperty().get());

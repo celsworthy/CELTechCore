@@ -21,7 +21,7 @@
                 </HBox>
                 <HBox alignment="CENTER">
                     <children>
-                        <ComboBox fx:id="slicerChooser" >
+                        <ComboBox fx:id="slicerChooser">
                             <VBox.margin>
                                 <Insets left="20.0" right="20.0" />
                             </VBox.margin>
@@ -340,64 +340,80 @@
                     <content>
                         <GridPane id="Content" fx:id="speedGrid" alignment="TOP_CENTER" minHeight="0.0" minWidth="0.0">
                             <children>
-                                <Label minWidth="115.0" text="%speed.perimeters" />
-                                <HBox GridPane.columnIndex="1">
+                                <Label alignment="TOP_RIGHT" minWidth="115.0" text="%speed.firstLayer" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="0">
                                     <children>
-                                        <RestrictedNumberField id="retractLength" fx:id="perimeterSpeed" allowedDecimalPlaces="0" layoutX="141.0" maxLength="5" prefWidth="50.0" GridPane.columnIndex="1" />
+                                        <RestrictedNumberField fx:id="firstLayerSpeed" allowedDecimalPlaces="0" layoutX="141.0" maxLength="5" prefWidth="50.0" />
                                         <Label text="%misc.mmpersec" />
                                     </children>
                                 </HBox>
-                                <Label alignment="TOP_RIGHT" minWidth="115.0" text="%speed.smallPerimeters" GridPane.rowIndex="1" />
+                                
+                                <Label alignment="TOP_RIGHT" text="%speed.perimeters" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                                 <HBox GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                    <children>
+                                        <RestrictedNumberField fx:id="perimeterSpeed" allowedDecimalPlaces="0" layoutX="141.0" maxLength="5" prefWidth="50.0" />
+                                        <Label text="%misc.mmpersec" />
+                                    </children>
+                                </HBox>
+                                
+                                <Label alignment="TOP_RIGHT" minWidth="115.0" text="%speed.smallPerimeters" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="2">
                                     <children>
                                         <RestrictedNumberField id="retractLength" fx:id="smallPerimeterSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                         <Label text="%misc.mmpersec" />
                                     </children>
                                 </HBox>
-                                <Label minWidth="115.0" text="%speed.externalPerimeters" GridPane.rowIndex="2" />
-                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                
+                                <Label minWidth="115.0" text="%speed.externalPerimeters" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="3">
                                     <children>
                                         <RestrictedNumberField id="retractLength" fx:id="externalPerimeterSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                         <Label text="%misc.mmpersec" />
                                     </children>
                                 </HBox>
-                                <Label minWidth="115.0" text="%speed.infill" GridPane.rowIndex="3" />
-                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                
+                                <Label text="%speed.infill" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="4">
                                     <children>
                                         <RestrictedNumberField id="retractLength" fx:id="infillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                         <Label text="%misc.mmpersec" />
                                     </children>
                                 </HBox>
-                                <Label minWidth="115.0" text="%speed.solidInfill" GridPane.rowIndex="4" />
-                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                
+                                <Label text="%speed.solidInfill" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="5">
                                     <children>
                                         <RestrictedNumberField id="retractLength" fx:id="solidInfillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                         <Label text="%misc.mmpersec" />
                                     </children>
                                 </HBox>
-                                <Label minWidth="115.0" text="%speed.topSolidInfill" GridPane.rowIndex="5" />
-                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                
+                                <Label text="%speed.topSolidInfill" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="6">
                                     <children>
                                         <RestrictedNumberField id="retractLength" fx:id="topSolidInfillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                         <Label text="%misc.mmpersec" />
                                     </children>
                                 </HBox>
-                                <Label minWidth="115.0" text="%speed.supportMaterial" GridPane.rowIndex="6" />
-                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="6">
+                                
+                                <Label text="%speed.supportMaterial" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="7">
                                     <children>
                                         <RestrictedNumberField id="retractLength" fx:id="supportMaterialSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                         <Label text="%misc.mmpersec" />
                                     </children>
                                 </HBox>
-                                <Label minWidth="115.0" text="%speed.bridges" GridPane.rowIndex="7" />
-                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="7">
+                                
+                                <Label text="%speed.bridges" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="8">
                                     <children>
                                         <RestrictedNumberField id="retractLength" fx:id="bridgesSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                         <Label text="%misc.mmpersec" />
                                     </children>
                                 </HBox>
-                                <Label minWidth="115.0" text="%speed.gapFill" GridPane.rowIndex="8" />
-                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="8">
+                                
+                                <Label text="%speed.gapFill" GridPane.columnIndex="0" GridPane.rowIndex="9" />
+                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="9">
                                     <children>
                                         <RestrictedNumberField id="retractLength" fx:id="gapFillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                         <Label text="%misc.mmpersec" />
@@ -418,6 +434,7 @@
                                 <RowConstraints />
                                 <RowConstraints />
                                 <RowConstraints />
+<RowConstraints />
                             </rowConstraints>
                         </GridPane>
                     </content>
