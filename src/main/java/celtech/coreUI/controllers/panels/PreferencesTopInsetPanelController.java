@@ -209,8 +209,6 @@ public class PreferencesTopInsetPanelController implements Initializable
         Preference languagePref = new Preference()
         {
             private final ComboBox<Locale> control;
-
-            
             {
                 control = new ComboBox<>();
 
@@ -231,7 +229,6 @@ public class PreferencesTopInsetPanelController implements Initializable
             @Override
             public void updateValueFromControl()
             {
-                System.out.println("XXX set language to " + control.getValue().toLanguageTag());
                 userPreferences.setLanguageTag(control.getValue().toLanguageTag());
             }
 
@@ -260,7 +257,8 @@ public class PreferencesTopInsetPanelController implements Initializable
 
             private void setupCellFactory(ComboBox<Locale> control)
             {
-                control.setCellFactory(new Callback<ListView<Locale>, ListCell<Locale>>()
+                
+                Callback<ListView<Locale>, ListCell<Locale>> cellFactory = new Callback<ListView<Locale>, ListCell<Locale>>()
                 {
                     @Override
                     public ListCell<Locale> call(ListView<Locale> p)
@@ -273,13 +271,15 @@ public class PreferencesTopInsetPanelController implements Initializable
                                 super.updateItem(item, empty);
                                 if (item != null && !empty)
                                 {
-                                    System.out.println("XXX set text to " + item.getDisplayName());
                                     setText(item.getDisplayName());
                                 }
                             }
                         };
                     }
-                });
+                };
+                
+                control.setButtonCell(cellFactory.call(null));
+                control.setCellFactory(cellFactory);
             }
         };
 
