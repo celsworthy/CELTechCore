@@ -303,8 +303,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             }
             outputWriter.writeOutput("; End of Pre print gcode\n");
 
-            insertInitialTemperatures();
-
             gcodeParser.parse(inputFilename, percentProgress);
 
             outputWriter.close();
@@ -407,7 +405,9 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
     private void insertSubsequentLayerTemperatures()
     {
-        if (subsequentLayersTemperaturesWritten == false)
+        if (((slicerType == SlicerType.Slic3r && layer == 1)
+            || (slicerType == SlicerType.Cura && layer == 1))
+            && subsequentLayersTemperaturesWritten == false)
         {
             MCodeEvent subsequentLayerNozzleTemp = new MCodeEvent();
             subsequentLayerNozzleTemp.setMNumber(104);
@@ -551,7 +551,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
             resetMeasuringThing();
 
-                // Open the nozzle if it isn't already open
+            // Open the nozzle if it isn't already open
             // This will always be a single event prior to extrusion
             if (currentNozzle.getState() != NozzleState.OPEN)
             {
@@ -634,6 +634,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
             handleForcedNozzleAtLayerChange();
 
+            insertSubsequentLayerTemperatures();
+
             layer++;
 
             handleMovieMakerAtLayerChange(relativeMoveEvent, moveUpEvent, absoluteMoveEvent, moveToMiddleYEvent, homeEvent, dwellEvent);
@@ -646,6 +648,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             currentZHeight = layerChangeEvent.getZ();
 
             handleForcedNozzleAtLayerChange();
+
+            insertSubsequentLayerTemperatures();
 
             layer++;
 
@@ -822,7 +826,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         {
             writeEventsWithNozzleClose(
                 "closing nozzle after forced nozzle select on layer 0");
-            insertSubsequentLayerTemperatures();
         }
     }
 
