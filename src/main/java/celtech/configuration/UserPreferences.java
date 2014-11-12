@@ -21,12 +21,14 @@ public class UserPreferences
     public void setLanguageTag(String language)
     {
         this.languageTag = language;
+        saveSettings();
     }
 
     public UserPreferences(UserPreferenceFile userPreferenceFile)
     {
         this.slicerType = userPreferenceFile.getSlicerType();
         this.overrideSafeties = userPreferenceFile.isOverrideSafeties();
+        this.languageTag = userPreferenceFile.getLanguageTag();
     }
 
     public SlicerType getSlicerType()

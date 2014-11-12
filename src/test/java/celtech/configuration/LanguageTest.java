@@ -19,8 +19,8 @@ public class LanguageTest
     @Test
     public void testGetLanguageBundles()
     {
-        Languages languageBundles =  new Languages();
-        languageBundles.getLocales();
+        Languages languages =  new Languages();
+        languages.getLocales();
     }
     
 }

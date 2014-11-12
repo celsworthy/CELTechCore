@@ -32,16 +32,13 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class Lookup
 {
-    
-    public final static String DEFAULT_LANGUAGE = "DEFAULT";
-
     private static Lookup instance;
     private ApplicationEnvironment applicationEnvironment;
     private TaskExecutor taskExecutor;
     private SystemNotificationManager systemNotificationHandler;
     private final Stenographer steno = StenographerFactory.getStenographer(Lookup.class.getName());
     private static PrinterListChangesNotifier printerListChangesNotifier;
-    private static ObservableList<Printer> connectedPrinters = FXCollections.observableArrayList();
+    private static final ObservableList<Printer> connectedPrinters = FXCollections.observableArrayList();
     private static UserPreferences userPreferences;
     private static SlicerMappings slicerMappings;
     private static SlicerParametersFile slicerParameters;
@@ -76,18 +73,14 @@ public class Lookup
 
     private Lookup()
     {
+        userPreferences = new UserPreferences(UserPreferenceContainer.getUserPreferenceFile());
+        
         Locale appLocale;
-//        String languagePreference = "zh";
-//        String countryPreference = "CN";
-        String languagePreference = "ru";
-        String countryPreference = "";
-        if (languagePreference == null || languagePreference.equals(DEFAULT_LANGUAGE)
-            || languagePreference.length() != 2) {
+        String languageTag = userPreferences.getLanguageTag();
+        if (languageTag == null || languageTag.length() == 0) {
             appLocale = Locale.getDefault();
-        } else if (countryPreference.equals("")) {
-            appLocale = new Locale(languagePreference);
         } else {
-            appLocale = new Locale(languagePreference, countryPreference);
+            appLocale = Locale.forLanguageTag(languageTag);
         }
         ResourceBundle i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData",
                                                              appLocale, new UTF8Control());
@@ -96,7 +89,7 @@ public class Lookup
         systemNotificationHandler = new SystemNotificationManagerJavaFX();
         steno.info("Detected locale - " + appLocale.toLanguageTag());
         printerListChangesNotifier = new PrinterListChangesNotifier(connectedPrinters);
-        userPreferences = new UserPreferences(UserPreferenceContainer.getUserPreferenceFile());
+        
         slicerMappings = SlicerMappingsContainer.getSlicerMappings();
     }
 

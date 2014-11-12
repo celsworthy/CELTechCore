@@ -11,6 +11,17 @@ public class UserPreferenceFile
 {
     private SlicerType slicerType = null;
     private boolean overrideSafeties = false;
+    private String languageTag = "";
+
+    public String getLanguageTag()
+    {
+        return languageTag;
+    }
+
+    public void setLanguageTag(String languageTag)
+    {
+        this.languageTag = languageTag;
+    }
 
     public SlicerType getSlicerType()
     {
@@ -36,5 +47,6 @@ public class UserPreferenceFile
     {
         setSlicerType(userPreferences.getSlicerType());
         setOverrideSafeties(userPreferences.isOverrideSafeties());
+        setLanguageTag(userPreferences.getLanguageTag());
     }
 }

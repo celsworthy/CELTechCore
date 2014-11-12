@@ -5,7 +5,6 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.appManager.ApplicationStatus;
-import celtech.configuration.Languages;
 import celtech.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
 import celtech.coreUI.components.VerticalMenu;
@@ -14,10 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -25,8 +22,11 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
+import javafx.util.Callback;
 
 /**
  *
@@ -34,6 +34,7 @@ import javafx.scene.layout.RowConstraints;
  */
 public class PreferencesTopInsetPanelController implements Initializable
 {
+
     private static final int ROW_HEIGHT = 60;
 
     public interface Preference
@@ -70,9 +71,10 @@ public class PreferencesTopInsetPanelController implements Initializable
         preferencesMenu.setTitle(Lookup.i18n("preferences.preferences"));
 
         preferencesMenu.addItem(Lookup.i18n("preferences.printing"), this::showPrintingPreferences);
-        preferencesMenu.addItem(Lookup.i18n("preferences.environment"), this::showEnvironmentPreferences);
+        preferencesMenu.addItem(Lookup.i18n("preferences.environment"),
+                                this::showEnvironmentPreferences);
         preferencesMenu.selectFirstItem();
-        
+
     }
 
     private Object showEnvironmentPreferences()
@@ -112,16 +114,18 @@ public class PreferencesTopInsetPanelController implements Initializable
         Preference slicerTypePref = new Preference()
         {
             private final ComboBox<SlicerType> control;
+
             
             {
                 control = new ComboBox<>();
                 control.setItems(FXCollections.observableArrayList(SlicerType.values()));
                 control.setPrefWidth(150);
                 control.setMinWidth(control.getPrefWidth());
-                control.valueProperty().addListener((ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) ->
-                {
-                    updateValueFromControl();
-                });
+                control.valueProperty().addListener(
+                    (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) ->
+                    {
+                        updateValueFromControl();
+                    });
             }
 
             @Override
@@ -153,15 +157,17 @@ public class PreferencesTopInsetPanelController implements Initializable
         Preference overrideSafetyPref = new Preference()
         {
             private final CheckBox control;
+
             
             {
                 control = new CheckBox();
                 control.setPrefWidth(150);
                 control.setMinWidth(control.getPrefWidth());
-                control.selectedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    updateValueFromControl();
-                });
+                control.selectedProperty().addListener(
+                    (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                    {
+                        updateValueFromControl();
+                    });
             }
 
             @Override
@@ -195,7 +201,7 @@ public class PreferencesTopInsetPanelController implements Initializable
 
         return preferences;
     }
-    
+
     private List<Preference> createEnvironmentPreferences()
     {
         List<Preference> preferences = new ArrayList<>();
@@ -203,22 +209,29 @@ public class PreferencesTopInsetPanelController implements Initializable
         Preference languagePref = new Preference()
         {
             private final ComboBox<Locale> control;
+
             
             {
                 control = new ComboBox<>();
+
+                setupCellFactory(control);
+
                 Lookup.getLanguages().getLocales();
-                control.setItems(FXCollections.observableArrayList(Lookup.getLanguages().getLocales()));
+                control.setItems(FXCollections.observableArrayList(
+                    Lookup.getLanguages().getLocales()));
                 control.setPrefWidth(200);
                 control.setMinWidth(control.getPrefWidth());
-                control.valueProperty().addListener((ObservableValue<? extends Locale> observable, Locale oldValue, Locale newValue) ->
-                {
-                    updateValueFromControl();
-                });
+                control.valueProperty().addListener(
+                    (ObservableValue<? extends Locale> observable, Locale oldValue, Locale newValue) ->
+                    {
+                        updateValueFromControl();
+                    });
             }
 
             @Override
             public void updateValueFromControl()
             {
+                System.out.println("XXX set language to " + control.getValue().toLanguageTag());
                 userPreferences.setLanguageTag(control.getValue().toLanguageTag());
             }
 
@@ -226,7 +239,8 @@ public class PreferencesTopInsetPanelController implements Initializable
             public void populateControlWithCurrentValue()
             {
                 Locale preferredLocale = Locale.forLanguageTag(userPreferences.getLanguageTag());
-                if (preferredLocale == null) {
+                if (preferredLocale == null)
+                {
                     preferredLocale = Locale.getDefault();
                 }
                 control.setValue(preferredLocale);
@@ -243,14 +257,36 @@ public class PreferencesTopInsetPanelController implements Initializable
             {
                 return Lookup.i18n("preferences.language");
             }
-        };
 
+            private void setupCellFactory(ComboBox<Locale> control)
+            {
+                control.setCellFactory(new Callback<ListView<Locale>, ListCell<Locale>>()
+                {
+                    @Override
+                    public ListCell<Locale> call(ListView<Locale> p)
+                    {
+                        return new ListCell<Locale>()
+                        {
+                            @Override
+                            protected void updateItem(Locale item, boolean empty)
+                            {
+                                super.updateItem(item, empty);
+                                if (item != null && !empty)
+                                {
+                                    System.out.println("XXX set text to " + item.getDisplayName());
+                                    setText(item.getDisplayName());
+                                }
+                            }
+                        };
+                    }
+                });
+            }
+        };
 
         preferences.add(languagePref);
 
         return preferences;
     }
-
 
     private void addPreferenceToContainer(Preference preference, int rowNo)
     {
