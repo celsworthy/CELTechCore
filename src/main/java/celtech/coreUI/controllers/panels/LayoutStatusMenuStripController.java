@@ -146,7 +146,12 @@ public class LayoutStatusMenuStripController
    @FXML
     void calibrate(ActionEvent event) {
         ApplicationStatus.getInstance().setMode(ApplicationMode.CALIBRATION_CHOICE);
-    }    
+    }   
+    
+   @FXML
+    void register(ActionEvent event) {
+        ApplicationStatus.getInstance().setMode(ApplicationMode.REGISTRATION);
+    }        
 
     @FXML
     void addModel(ActionEvent event)

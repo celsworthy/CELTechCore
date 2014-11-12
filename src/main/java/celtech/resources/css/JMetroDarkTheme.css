@@ -73,6 +73,10 @@
     -fx-background_color: black;
 }
 
+.blue-background {
+    -fx-background_color: robox_blue;
+}
+
 .standardPanel{
     -fx-background-color: mid_grey;
 }
@@ -1958,4 +1962,25 @@ table-view .column-header-background {
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 22px;
     
+}
+
+/**
+* Registration
+*/
+
+.registrationGrid {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 13px;
+}
+
+.registrationGrid .text-field {
+    -fx-font-size: 13px;
+}
+
+.registrationGrid .combo-box-base {
+    -fx-font-size: 13px;
+}
+
+#registrationTitle {
+    -fx-font-size: 32px;
 }

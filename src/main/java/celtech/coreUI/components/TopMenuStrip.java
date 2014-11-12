@@ -25,9 +25,6 @@ public class TopMenuStrip extends HBox
     private ApplicationStatus applicationStatus = null;
 
     @FXML
-    private HBox container;
-
-    @FXML
     private GraphicButton helpButton;
 
     @FXML
@@ -61,29 +58,12 @@ public class TopMenuStrip extends HBox
         {
             throw new RuntimeException(exception);
         }
-
     }
 
-    /*
-     * JavaFX initialisation method
-     */
     @FXML
     void initialize()
     {
         applicationStatus = ApplicationStatus.getInstance();
-
-        container.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
-            ApplicationMode.STATUS)
-            .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LAYOUT)
-                .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)
-                    .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.ABOUT)
-                        .or(applicationStatus.modeProperty().isEqualTo(
-                                ApplicationMode.CALIBRATION_CHOICE)
-                            .or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
-                                .or(applicationStatus.modeProperty().isEqualTo(
-                                        ApplicationMode.MY_MINI_FACTORY)
-                                    .or(applicationStatus.modeProperty().isEqualTo(
-                                            ApplicationMode.PREFERENCES_TOP_LEVEL)))))))));
 
         helpButton.disableProperty().bind(applicationStatus.modeProperty().isEqualTo(
             ApplicationMode.ABOUT)
