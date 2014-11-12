@@ -10,11 +10,9 @@ import celtech.configuration.UserPreferences;
 import celtech.coreUI.components.VerticalMenu;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.Set;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -38,6 +36,8 @@ public class PreferencesTopInsetPanelController implements Initializable
 {
 
     private static final int ROW_HEIGHT = 60;
+    
+    private static final String SYSTEM_DEFAULT = "System Default";
 
     public interface Preference
     {
@@ -210,21 +210,35 @@ public class PreferencesTopInsetPanelController implements Initializable
 
         Preference languagePref = new Preference()
         {
-            private final ComboBox<Locale> control;
+            private final ComboBox<Object> control;
+
+            
             {
                 control = new ComboBox<>();
 
                 setupCellFactory(control);
 
-                List<Locale> localesList = new ArrayList<>();
+                List<Object> localesList = new ArrayList<>();
+                localesList.add(SYSTEM_DEFAULT);
                 localesList.addAll(Lookup.getLanguages().getLocales());
-                localesList.sort((Locale o1, Locale o2) ->
-                    o1.getDisplayName().compareTo(o2.getDisplayName()));
+                localesList.sort((Object o1, Object o2) ->
+                {
+                    // Make "System Default" come at the top of the combo
+                    if (o1 instanceof String)
+                    {
+                        return -1;
+                    } else if (o2 instanceof String)
+                    {
+                        return 1;
+                    }
+                    // o1 and o2 are both Locales
+                    return ((Locale) o1).getDisplayName().compareTo(((Locale) o2).getDisplayName());
+                });
                 control.setItems(FXCollections.observableArrayList(localesList));
-                control.setPrefWidth(200);
+                control.setPrefWidth(300);
                 control.setMinWidth(control.getPrefWidth());
                 control.valueProperty().addListener(
-                    (ObservableValue<? extends Locale> observable, Locale oldValue, Locale newValue) ->
+                    (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
                     {
                         updateValueFromControl();
                     });
@@ -233,16 +247,25 @@ public class PreferencesTopInsetPanelController implements Initializable
             @Override
             public void updateValueFromControl()
             {
-                userPreferences.setLanguageTag(control.getValue().toLanguageTag());
+                if (control.getValue() instanceof Locale)
+                {
+                    userPreferences.setLanguageTag(((Locale) control.getValue()).toLanguageTag());
+                } else {
+                    userPreferences.setLanguageTag("");
+                }
             }
 
             @Override
             public void populateControlWithCurrentValue()
             {
-                Locale preferredLocale = Locale.forLanguageTag(userPreferences.getLanguageTag());
-                if (preferredLocale == null)
+                Object preferredLocale;
+                String userPrefLanguageTag = userPreferences.getLanguageTag();
+                
+                if (userPrefLanguageTag == null || userPrefLanguageTag.equals(""))
                 {
-                    preferredLocale = Locale.getDefault();
+                    preferredLocale = SYSTEM_DEFAULT;
+                } else {
+                    preferredLocale = Locale.forLanguageTag(userPrefLanguageTag);
                 }
                 control.setValue(preferredLocale);
             }
@@ -259,29 +282,33 @@ public class PreferencesTopInsetPanelController implements Initializable
                 return Lookup.i18n("preferences.language");
             }
 
-            private void setupCellFactory(ComboBox<Locale> control)
+            private void setupCellFactory(ComboBox<Object> control)
             {
-                
-                Callback<ListView<Locale>, ListCell<Locale>> cellFactory = new Callback<ListView<Locale>, ListCell<Locale>>()
+
+                Callback<ListView<Object>, ListCell<Object>> cellFactory = new Callback<ListView<Object>, ListCell<Object>>()
                 {
                     @Override
-                    public ListCell<Locale> call(ListView<Locale> p)
+                    public ListCell<Object> call(ListView<Object> p)
                     {
-                        return new ListCell<Locale>()
+                        return new ListCell<Object>()
                         {
                             @Override
-                            protected void updateItem(Locale item, boolean empty)
+                            protected void updateItem(Object item, boolean empty)
                             {
                                 super.updateItem(item, empty);
                                 if (item != null && !empty)
                                 {
-                                    setText(item.getDisplayName());
+                                    if (item instanceof Locale) {
+                                        setText(((Locale) item).getDisplayName());
+                                    } else {
+                                        setText((String) item);
+                                    }
                                 }
                             }
                         };
                     }
                 };
-                
+
                 control.setButtonCell(cellFactory.call(null));
                 control.setCellFactory(cellFactory);
             }
