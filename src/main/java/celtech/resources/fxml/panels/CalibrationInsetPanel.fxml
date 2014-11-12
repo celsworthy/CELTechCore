@@ -13,7 +13,7 @@
 
 <Pane fx:id="topPane" minHeight="700.0" pickOnBounds="false" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationInsetPanelController">
     <children>
-        <BorderPane fx:id="topBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: black;">
+        <BorderPane fx:id="topBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="600.0" style="-fx-background-color: black;">
             <center>
                 <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="calibrationBody" BorderPane.alignment="CENTER">
                     <children>
@@ -48,51 +48,36 @@
                                 <Insets bottom="30.0" top="95.0" />
                             </HBox.margin>
                         </Separator>
-                        <BorderPane fx:id="informationCentre" pickOnBounds="false">
-                            <top>
-                                <VBox alignment="TOP_CENTER" BorderPane.alignment="CENTER">
-                                    <padding>
-                                        <Insets bottom="5.0" top="5.0" />
-                                    </padding>
-                                    <children>
-                                        <Label id="calibrationStatus" fx:id="calibrationStatus" prefWidth="800.0" text="%calibrationPanel.readyToBeginNozzleOpeningCalibration" wrapText="true">
-                                            <padding>
-                                                <Insets left="30.0" right="30.0" />
-                                            </padding>
-                                            <VBox.margin>
-                                                <Insets bottom="20.0" />
-                                            </VBox.margin>
-                                        </Label>
-                                    </children>
-                                    <BorderPane.margin>
-                                        <Insets top="120.0" />
-                                    </BorderPane.margin>
-                                </VBox>
-                            </top>
-                            <bottom>
-                                <VBox alignment="CENTER" pickOnBounds="false" spacing="5.0" BorderPane.alignment="CENTER">
-                                    <children>
-                                        <HBox alignment="CENTER">
-                                            <children>
-                                                <Button id="buttonA" fx:id="buttonA" mnemonicParsing="false" onAction="#buttonAAction" styleClass="calibrationButtonsAB" text="A">
-                                                    <HBox.margin>
-                                                        <Insets left="70.0" right="70.0" />
-                                                    </HBox.margin>
-                                                </Button>
-                                                <Button id="buttonB" fx:id="buttonB" mnemonicParsing="false" onAction="#buttonBAction" styleClass="calibrationButtonsAB" text="B">
-                                                    <HBox.margin>
-                                                        <Insets left="70.0" right="70.0" />
-                                                    </HBox.margin>
-                                                </Button>
-                                            </children>
-                                            <VBox.margin>
-                                                <Insets bottom="30.0" />
-                                            </VBox.margin>
-                                        </HBox>
-                                    </children>
-                                </VBox>
-                            </bottom>
-                        </BorderPane>
+                          <VBox fx:id="informationCentre" alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
+                              <padding>
+                                  <Insets bottom="5.0" top="5.0" />
+                              </padding>
+                              <children>
+                                  <Label id="calibrationStatus" fx:id="calibrationStatus" text="%calibrationPanel.readyToBeginNozzleOpeningCalibration" wrapText="true" VBox.vgrow="ALWAYS">
+                                      <VBox.margin>
+                                          <Insets bottom="20.0" left="30.0" right="30.0" top="120.0" />
+                                      </VBox.margin>
+                                  </Label>
+                        <VBox fx:id="diagramContainer" alignment="CENTER" fillWidth="false" VBox.vgrow="ALWAYS" />
+                                  <HBox alignment="CENTER" VBox.vgrow="NEVER">
+                                      <children>
+                                          <Button id="buttonA" fx:id="buttonA" mnemonicParsing="false" onAction="#buttonAAction" styleClass="calibrationButtonsAB" text="A">
+                                              <HBox.margin>
+                                                  <Insets left="70.0" right="70.0" />
+                                              </HBox.margin>
+                                          </Button>
+                                          <Button id="buttonB" fx:id="buttonB" mnemonicParsing="false" onAction="#buttonBAction" styleClass="calibrationButtonsAB" text="B">
+                                              <HBox.margin>
+                                                  <Insets left="70.0" right="70.0" />
+                                              </HBox.margin>
+                                          </Button>
+                                      </children>
+                           <VBox.margin>
+                              <Insets bottom="15.0" top="15.0" />
+                           </VBox.margin>
+                                  </HBox>
+                              </children>
+                          </VBox>
                     </children>
                 </HBox>
             </center>
