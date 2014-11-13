@@ -88,7 +88,13 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private Slider speedMultiplierSlider1;
 
     @FXML
+    private HBox speedSlider1HBox;
+
+    @FXML
     private Slider speedMultiplierSlider2;
+
+    @FXML
+    private HBox speedSlider2HBox;
 
     private PrinterIDDialog printerIDDialog = null;
 
@@ -156,8 +162,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         printerIDDialog = new PrinterIDDialog();
 
         material2.setVisible(false);
-        speedMultiplierSlider1.setVisible(false);
-        speedMultiplierSlider2.setVisible(false);
+        speedSlider1HBox.setVisible(false);
+        speedSlider2HBox.setVisible(false);
 
         initialiseTemperatureChart();
         initialisePrinterStatusGrid();
@@ -427,8 +433,11 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         chartManager.setBedHeaterModeProperty(ancillarySystems.bedHeaterModeProperty());
         chartManager.setTargetBedTemperatureProperty(ancillarySystems.bedTargetTemperatureProperty());
 
-        speedMultiplierSlider1.visibleProperty().bind(printer.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING));
+        speedSlider1HBox.visibleProperty().bind(printer.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING));
         speedMultiplierSlider1.valueProperty().addListener(speedMultiplierListener);
+
+//                speedSlider1HBox.visibleProperty().bind(printer.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING));
+//        speedMultiplierSlider1.valueProperty().addListener(speedMultiplierListener);
     }
 
     private void unbindPrinter(Printer printer)
@@ -448,8 +457,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         chartManager.clearBedData();
         currentAmbientTemperatureHistory = null;
 
-        speedMultiplierSlider1.visibleProperty().unbind();
-        speedMultiplierSlider1.setVisible(false);
+        speedSlider1HBox.visibleProperty().unbind();
+        speedSlider1HBox.setVisible(false);
         speedMultiplierSlider1.valueProperty().removeListener(speedMultiplierListener);
     }
 

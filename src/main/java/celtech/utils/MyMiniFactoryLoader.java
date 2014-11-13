@@ -65,7 +65,7 @@ public class MyMiniFactoryLoader extends Task<MyMiniFactoryLoadResult>
             if (extension.equalsIgnoreCase("stl"))
             {
                 steno.info("Got stl file from My Mini Factory");
-                final String targetname = ApplicationConfiguration.getUserStorageDirectory() + File.separator + file;
+                final String targetname = ApplicationConfiguration.getMyMiniFactoryDownloadDirectory() + file;
                 writeStreamToFile(webInputStream, targetname);
                 final List<File> filesToLoad = new ArrayList<>();
                 filesToLoad.add(new File(targetname));
@@ -84,7 +84,7 @@ public class MyMiniFactoryLoader extends Task<MyMiniFactoryLoadResult>
                     while (entries.hasMoreElements())
                     {
                         final ZipEntry entry = entries.nextElement();
-                        final String tempTargetname = ApplicationConfiguration.getUserStorageDirectory() + entry.getName();
+                        final String tempTargetname = ApplicationConfiguration.getMyMiniFactoryDownloadDirectory() + entry.getName();
                         writeStreamToFile(zipFile.getInputStream(entry), tempTargetname);
                         filesToLoad.add(new File(tempTargetname));
                     }
@@ -124,9 +124,9 @@ public class MyMiniFactoryLoader extends Task<MyMiniFactoryLoadResult>
                     {
                         try
                         {
-                            File out = new File(ApplicationConfiguration.getUserStorageDirectory()
+                            File out = new File(ApplicationConfiguration.getMyMiniFactoryDownloadDirectory()
+                                + File.separator
                                 + fh.getFileNameString().trim());
-                            System.out.println(out.getAbsolutePath());
                             FileOutputStream os = new FileOutputStream(out);
                             archive.extractFile(fh, os);
                             os.close();
@@ -154,7 +154,7 @@ public class MyMiniFactoryLoader extends Task<MyMiniFactoryLoadResult>
                     {
                         result.setSuccess(false);
                     }
-                    
+
                     archive.close();
                 }
                 inputfile.delete();
