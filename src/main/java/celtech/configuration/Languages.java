@@ -90,7 +90,7 @@ public class Languages
         {
             final ArrayList<String> retval = new ArrayList<String>();
             final String classPath = System.getProperty("java.class.path", ".");
-            final String[] classPathElements = classPath.split(":");
+            final String[] classPathElements = classPath.split(File.pathSeparator);
             for (final String element : classPathElements)
             {
                 retval.addAll(getResources(element, pattern));
