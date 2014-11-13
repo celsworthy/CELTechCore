@@ -901,7 +901,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     }
 
     @Override
-    public void whenReelRemoved(Printer printer, Reel reel)
+    public void whenReelRemoved(Printer printer, Reel reel, int reelNumber)
     {
         currentlyLoadedFilament = null;
         updateFilamentList();

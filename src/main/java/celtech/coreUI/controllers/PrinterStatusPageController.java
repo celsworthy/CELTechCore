@@ -749,12 +749,11 @@ public class PrinterStatusPageController implements Initializable
                             selectedPrinter.getPrinterAncillarySystems().bedTemperatureProperty()
                             .greaterThan(ApplicationConfiguration.bedHotAboveDegrees));
 
-                        //TODO modify to support multiple reels
                         selectedPrinter.reelsProperty().addListener(reelChangeListener);
 
-                        if (selectedPrinter.reelsProperty().isEmpty() == false)
+                        //TODO The printer status page only has room to display one filament colour at the moment...
+                        if (selectedPrinter.reelsProperty().get(0) != null)
                         {
-                            //TODO modify to support multiple reels
                             filamentRectangle.setFill(selectedPrinter.reelsProperty().get(0).displayColourProperty().get());
                         }
 

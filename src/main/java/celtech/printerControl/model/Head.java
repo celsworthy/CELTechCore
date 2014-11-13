@@ -20,7 +20,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author ianhudson
  */
-public class Head implements Cloneable
+public class Head implements Cloneable, RepairableComponent
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(Head.class.getName());
@@ -232,11 +232,12 @@ public class Head implements Cloneable
         }
     }
 
-    protected HeadRepairResult bringDataInBounds()
+    @Override
+    public RepairResult bringDataInBounds()
     {
         float epsilon = 1e-5f;
 
-        HeadRepairResult result = HeadRepairResult.NO_REPAIR_NECESSARY;
+        RepairResult result = RepairResult.NO_REPAIR_NECESSARY;
 
         HeadFile referenceHeadData = HeadContainer.getHeadByID(typeCode.get());
         if (referenceHeadData != null)
@@ -250,19 +251,19 @@ public class Head implements Cloneable
                 if (MathUtils.compareDouble(nozzleHeater.maximumTemperatureProperty().get(), nozzleHeaterData.getMaximum_temperature_C(), epsilon) != MathUtils.EQUAL)
                 {
                     nozzleHeater.maximumTemperature.set(nozzleHeaterData.getMaximum_temperature_C());
-                    result = HeadRepairResult.REPAIRED_WRITE_ONLY;
+                    result = RepairResult.REPAIRED_WRITE_ONLY;
                 }
 
                 if (Math.abs(nozzleHeater.tCalProperty().get() - nozzleHeaterData.getTcal()) > epsilon)
                 {
                     nozzleHeater.tcal.set(nozzleHeaterData.getTcal());
-                    result = HeadRepairResult.REPAIRED_WRITE_ONLY;
+                    result = RepairResult.REPAIRED_WRITE_ONLY;
                 }
 
                 if (Math.abs(nozzleHeater.betaProperty().get() - nozzleHeaterData.getBeta()) > epsilon)
                 {
                     nozzleHeater.beta.set(nozzleHeaterData.getBeta());
-                    result = HeadRepairResult.REPAIRED_WRITE_ONLY;
+                    result = RepairResult.REPAIRED_WRITE_ONLY;
                 }
             }
 
@@ -275,25 +276,25 @@ public class Head implements Cloneable
                 if (nozzle.xOffsetProperty().get() < nozzleData.getMinXOffset() || nozzle.xOffsetProperty().get() > nozzleData.getMaxXOffset())
                 {
                     nozzle.xOffset.set(nozzleData.getDefaultXOffset());
-                    result = HeadRepairResult.REPAIRED_WRITE_AND_RECALIBRATE;
+                    result = RepairResult.REPAIRED_WRITE_AND_RECALIBRATE;
                 }
 
                 if (nozzle.yOffsetProperty().get() < nozzleData.getMinYOffset() || nozzle.yOffsetProperty().get() > nozzleData.getMaxYOffset())
                 {
                     nozzle.yOffset.set(nozzleData.getDefaultYOffset());
-                    result = HeadRepairResult.REPAIRED_WRITE_AND_RECALIBRATE;
+                    result = RepairResult.REPAIRED_WRITE_AND_RECALIBRATE;
                 }
 
                 if (nozzle.zOffsetProperty().get() < nozzleData.getMinZOffset() || nozzle.zOffsetProperty().get() > nozzleData.getMaxZOffset())
                 {
                     nozzle.zOffset.set(nozzleData.getDefaultZOffset());
-                    result = HeadRepairResult.REPAIRED_WRITE_AND_RECALIBRATE;
+                    result = RepairResult.REPAIRED_WRITE_AND_RECALIBRATE;
                 }
 
                 if (nozzle.bOffsetProperty().get() < nozzleData.getMinBOffset() || nozzle.bOffsetProperty().get() > nozzleData.getMaxBOffset())
                 {
                     nozzle.bOffset.set(nozzleData.getDefaultBOffset());
-                    result = HeadRepairResult.REPAIRED_WRITE_AND_RECALIBRATE;
+                    result = RepairResult.REPAIRED_WRITE_AND_RECALIBRATE;
                 }
             }
 
@@ -306,7 +307,8 @@ public class Head implements Cloneable
         return result;
     }
 
-    protected void resetToDefaults()
+    @Override
+    public void resetToDefaults()
     {
         HeadFile referenceHeadData = HeadContainer.getHeadByID(typeCode.get());
         if (referenceHeadData != null)
@@ -319,7 +321,7 @@ public class Head implements Cloneable
         }
     }
 
-    protected static boolean isTypeCodeValid(String typeCode)
+    public static boolean isTypeCodeValid(String typeCode)
     {
         boolean typeCodeIsValid = false;
 
@@ -332,7 +334,7 @@ public class Head implements Cloneable
         return typeCodeIsValid;
     }
 
-    protected static boolean isTypeCodeInDatabase(String typeCode)
+    public static boolean isTypeCodeInDatabase(String typeCode)
     {
         boolean typeCodeIsInDatabase = false;
 
@@ -345,7 +347,8 @@ public class Head implements Cloneable
         return typeCodeIsInDatabase;
     }
 
-    protected void allocateRandomID()
+    @Override
+    public void allocateRandomID()
     {
         String idToCreate = typeCode.get() + SystemUtils.generate16DigitID().substring(typeCode.get().length());
         uniqueID.set(idToCreate);

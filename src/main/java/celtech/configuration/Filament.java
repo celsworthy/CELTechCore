@@ -582,246 +582,246 @@ public class Filament implements Serializable, Cloneable
         return clone;
     }
 
-    public static void repairFilamentIfNecessary(Printer printer)
-    {
-        try
-        {
-            ReelEEPROMDataResponse response = printer.readReelEEPROM();
-
-            if (ApplicationConfiguration.isAutoRepairReels())
-            {
-                if (response != null)
-                {
-                    String receivedTypeCode = response.getReelFilamentID();
-
-                    // Check that the filament has the right settings 
-                    if (receivedTypeCode != null)
-                    {
-                        boolean needToWriteFilamentData = false;
-
-                        Filament referenceFilament = FilamentContainer.getFilamentByID(
-                            receivedTypeCode);
-
-                        if (referenceFilament != null)
-                        {
-                            Filament filamentToWrite = new Filament(response);
-                            filamentToWrite.setRemainingFilament(response.getReelRemainingFilament());
-
-                            if (Math.abs(response.getAmbientTemperature()
-                                - referenceFilament.getAmbientTemperature()) > epsilon)
-                            {
-                                filamentToWrite.setAmbientTemperature(
-                                    referenceFilament.getAmbientTemperature());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (Math.abs(response.getBedTemperature()
-                                - referenceFilament.getBedTemperature()) > epsilon)
-                            {
-                                filamentToWrite.setBedTemperature(
-                                    referenceFilament.getBedTemperature());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (Math.abs(response.getFeedRateMultiplier()
-                                - referenceFilament.getFeedRateMultiplier()) > epsilon)
-                            {
-                                filamentToWrite.setFeedRateMultiplier(
-                                    referenceFilament.getFeedRateMultiplier());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (Math.abs(response.getFilamentDiameter()
-                                - referenceFilament.getDiameter()) > epsilon)
-                            {
-                                filamentToWrite.setFilamentDiameter(
-                                    referenceFilament.getDiameter());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (Math.abs(response.getFilamentMultiplier()
-                                - referenceFilament.getFilamentMultiplier()) > epsilon)
-                            {
-                                filamentToWrite.setFilamentMultiplier(
-                                    referenceFilament.getFilamentMultiplier());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (Math.abs(response.getFirstLayerBedTemperature()
-                                - referenceFilament.getFirstLayerBedTemperature()) > epsilon)
-                            {
-                                filamentToWrite.setFirstLayerBedTemperature(
-                                    referenceFilament.getFirstLayerBedTemperature());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (Math.abs(response.getFirstLayerNozzleTemperature()
-                                - referenceFilament.getFirstLayerNozzleTemperature()) > epsilon)
-                            {
-                                filamentToWrite.setFirstLayerNozzleTemperature(
-                                    referenceFilament.getFirstLayerNozzleTemperature());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (Math.abs(response.getNozzleTemperature()
-                                - referenceFilament.getNozzleTemperature()) > epsilon)
-                            {
-                                filamentToWrite.setNozzleTemperature(
-                                    referenceFilament.getNozzleTemperature());
-                                needToWriteFilamentData = true;
-                            }
-                            
-                            if (! response.getReelDisplayColour().equals(
-                                    referenceFilament.getDisplayColour()))
-                            {
-                                filamentToWrite.setDisplayColour(
-                                    referenceFilament.getDisplayColour());
-                                needToWriteFilamentData = true;
-                            }
-                            
-                            if (! response.getReelFriendlyName().equals(
-                                    referenceFilament.getFriendlyFilamentName()))
-                            {
-                                filamentToWrite.setFriendlyFilamentName(
-                                    referenceFilament.getFriendlyFilamentName());
-                                needToWriteFilamentData = true;
-                            }
-                            
-                            if (! response.getReelMaterialType().equals(
-                                    referenceFilament.getMaterial()))
-                            {
-                                filamentToWrite.setMaterial(
-                                    referenceFilament.getMaterial());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (!response.getReelDisplayColour().equals(
-                                referenceFilament.getDisplayColour()))
-                            {
-                                filamentToWrite.setDisplayColour(
-                                    referenceFilament.getDisplayColour());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (!response.getReelFriendlyName().equals(
-                                referenceFilament.getFriendlyFilamentName()))
-                            {
-                                filamentToWrite.setFriendlyFilamentName(
-                                    referenceFilament.getFriendlyFilamentName());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (!response.getReelMaterialType().equals(
-                                referenceFilament.getMaterial()))
-                            {
-                                filamentToWrite.setMaterial(
-                                    referenceFilament.getMaterial());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (!response.getReelDisplayColour().equals(
-                                referenceFilament.getDisplayColour()))
-                            {
-                                filamentToWrite.setDisplayColour(
-                                    referenceFilament.getDisplayColour());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (!response.getReelFriendlyName().equals(
-                                referenceFilament.getFriendlyFilamentName()))
-                            {
-                                filamentToWrite.setFriendlyFilamentName(
-                                    referenceFilament.getFriendlyFilamentName());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (!response.getReelMaterialType().equals(
-                                referenceFilament.getMaterial()))
-                            {
-                                filamentToWrite.setMaterial(
-                                    referenceFilament.getMaterial());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (!response.getReelDisplayColour().equals(
-                                referenceFilament.getDisplayColour()))
-                            {
-                                filamentToWrite.setDisplayColour(
-                                    referenceFilament.getDisplayColour());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (!response.getReelFriendlyName().equals(
-                                referenceFilament.getFriendlyFilamentName()))
-                            {
-                                filamentToWrite.setFriendlyFilamentName(
-                                    referenceFilament.getFriendlyFilamentName());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (!response.getReelMaterialType().equals(
-                                referenceFilament.getMaterial()))
-                            {
-                                filamentToWrite.setMaterial(
-                                    referenceFilament.getMaterial());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (!response.getReelDisplayColour().equals(
-                                referenceFilament.getDisplayColour()))
-                            {
-                                filamentToWrite.setDisplayColour(
-                                    referenceFilament.getDisplayColour());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (!response.getReelFriendlyName().equals(
-                                referenceFilament.getFriendlyFilamentName()))
-                            {
-                                filamentToWrite.setFriendlyFilamentName(
-                                    referenceFilament.getFriendlyFilamentName());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (!response.getReelMaterialType().equals(
-                                referenceFilament.getMaterial()))
-                            {
-                                filamentToWrite.setMaterial(
-                                    referenceFilament.getMaterial());
-                                needToWriteFilamentData = true;
-                            }
-
-                            if (needToWriteFilamentData)
-                            {
-                                printer.transmitWriteReelEEPROM(filamentToWrite);
-                                printer.readReelEEPROM();
-                                steno.info("Automatically updated filament data for "
-                                    + receivedTypeCode);
-
-                                Platform.runLater(new Runnable()
-                                {
-                                    @Override
-                                    public void run()
-                                    {
-                                        Notifier.showInformationNotification(
-                                            DisplayManager.getLanguageBundle().getString(
-                                                "notification.reelDataUpdatedTitle"),
-                                            DisplayManager.getLanguageBundle().getString(
-                                                "notification.noActionRequired"));
-                                    }
-                                });
-
-                            }
-                        } else
-                        {
-                            steno.error("Checking filament - got a filament I didn't recognise");
-                        }
-                    }
-                }
-            }
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error from triggered read of Reel EEPROM");
-        }
-    }
+//    public static void repairFilamentIfNecessary(Printer printer)
+//    {
+//        try
+//        {
+//            ReelEEPROMDataResponse response = printer.readReelEEPROM();
+//
+//            if (ApplicationConfiguration.isAutoRepairReels())
+//            {
+//                if (response != null)
+//                {
+//                    String receivedTypeCode = response.getReelFilamentID();
+//
+//                    // Check that the filament has the right settings 
+//                    if (receivedTypeCode != null)
+//                    {
+//                        boolean needToWriteFilamentData = false;
+//
+//                        Filament referenceFilament = FilamentContainer.getFilamentByID(
+//                            receivedTypeCode);
+//
+//                        if (referenceFilament != null)
+//                        {
+//                            Filament filamentToWrite = new Filament(response);
+//                            filamentToWrite.setRemainingFilament(response.getReelRemainingFilament());
+//
+//                            if (Math.abs(response.getAmbientTemperature()
+//                                - referenceFilament.getAmbientTemperature()) > epsilon)
+//                            {
+//                                filamentToWrite.setAmbientTemperature(
+//                                    referenceFilament.getAmbientTemperature());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (Math.abs(response.getBedTemperature()
+//                                - referenceFilament.getBedTemperature()) > epsilon)
+//                            {
+//                                filamentToWrite.setBedTemperature(
+//                                    referenceFilament.getBedTemperature());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (Math.abs(response.getFeedRateMultiplier()
+//                                - referenceFilament.getFeedRateMultiplier()) > epsilon)
+//                            {
+//                                filamentToWrite.setFeedRateMultiplier(
+//                                    referenceFilament.getFeedRateMultiplier());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (Math.abs(response.getFilamentDiameter()
+//                                - referenceFilament.getDiameter()) > epsilon)
+//                            {
+//                                filamentToWrite.setFilamentDiameter(
+//                                    referenceFilament.getDiameter());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (Math.abs(response.getFilamentMultiplier()
+//                                - referenceFilament.getFilamentMultiplier()) > epsilon)
+//                            {
+//                                filamentToWrite.setFilamentMultiplier(
+//                                    referenceFilament.getFilamentMultiplier());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (Math.abs(response.getFirstLayerBedTemperature()
+//                                - referenceFilament.getFirstLayerBedTemperature()) > epsilon)
+//                            {
+//                                filamentToWrite.setFirstLayerBedTemperature(
+//                                    referenceFilament.getFirstLayerBedTemperature());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (Math.abs(response.getFirstLayerNozzleTemperature()
+//                                - referenceFilament.getFirstLayerNozzleTemperature()) > epsilon)
+//                            {
+//                                filamentToWrite.setFirstLayerNozzleTemperature(
+//                                    referenceFilament.getFirstLayerNozzleTemperature());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (Math.abs(response.getNozzleTemperature()
+//                                - referenceFilament.getNozzleTemperature()) > epsilon)
+//                            {
+//                                filamentToWrite.setNozzleTemperature(
+//                                    referenceFilament.getNozzleTemperature());
+//                                needToWriteFilamentData = true;
+//                            }
+//                            
+//                            if (! response.getReelDisplayColour().equals(
+//                                    referenceFilament.getDisplayColour()))
+//                            {
+//                                filamentToWrite.setDisplayColour(
+//                                    referenceFilament.getDisplayColour());
+//                                needToWriteFilamentData = true;
+//                            }
+//                            
+//                            if (! response.getReelFriendlyName().equals(
+//                                    referenceFilament.getFriendlyFilamentName()))
+//                            {
+//                                filamentToWrite.setFriendlyFilamentName(
+//                                    referenceFilament.getFriendlyFilamentName());
+//                                needToWriteFilamentData = true;
+//                            }
+//                            
+//                            if (! response.getReelMaterialType().equals(
+//                                    referenceFilament.getMaterial()))
+//                            {
+//                                filamentToWrite.setMaterial(
+//                                    referenceFilament.getMaterial());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (!response.getReelDisplayColour().equals(
+//                                referenceFilament.getDisplayColour()))
+//                            {
+//                                filamentToWrite.setDisplayColour(
+//                                    referenceFilament.getDisplayColour());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (!response.getReelFriendlyName().equals(
+//                                referenceFilament.getFriendlyFilamentName()))
+//                            {
+//                                filamentToWrite.setFriendlyFilamentName(
+//                                    referenceFilament.getFriendlyFilamentName());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (!response.getReelMaterialType().equals(
+//                                referenceFilament.getMaterial()))
+//                            {
+//                                filamentToWrite.setMaterial(
+//                                    referenceFilament.getMaterial());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (!response.getReelDisplayColour().equals(
+//                                referenceFilament.getDisplayColour()))
+//                            {
+//                                filamentToWrite.setDisplayColour(
+//                                    referenceFilament.getDisplayColour());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (!response.getReelFriendlyName().equals(
+//                                referenceFilament.getFriendlyFilamentName()))
+//                            {
+//                                filamentToWrite.setFriendlyFilamentName(
+//                                    referenceFilament.getFriendlyFilamentName());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (!response.getReelMaterialType().equals(
+//                                referenceFilament.getMaterial()))
+//                            {
+//                                filamentToWrite.setMaterial(
+//                                    referenceFilament.getMaterial());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (!response.getReelDisplayColour().equals(
+//                                referenceFilament.getDisplayColour()))
+//                            {
+//                                filamentToWrite.setDisplayColour(
+//                                    referenceFilament.getDisplayColour());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (!response.getReelFriendlyName().equals(
+//                                referenceFilament.getFriendlyFilamentName()))
+//                            {
+//                                filamentToWrite.setFriendlyFilamentName(
+//                                    referenceFilament.getFriendlyFilamentName());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (!response.getReelMaterialType().equals(
+//                                referenceFilament.getMaterial()))
+//                            {
+//                                filamentToWrite.setMaterial(
+//                                    referenceFilament.getMaterial());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (!response.getReelDisplayColour().equals(
+//                                referenceFilament.getDisplayColour()))
+//                            {
+//                                filamentToWrite.setDisplayColour(
+//                                    referenceFilament.getDisplayColour());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (!response.getReelFriendlyName().equals(
+//                                referenceFilament.getFriendlyFilamentName()))
+//                            {
+//                                filamentToWrite.setFriendlyFilamentName(
+//                                    referenceFilament.getFriendlyFilamentName());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (!response.getReelMaterialType().equals(
+//                                referenceFilament.getMaterial()))
+//                            {
+//                                filamentToWrite.setMaterial(
+//                                    referenceFilament.getMaterial());
+//                                needToWriteFilamentData = true;
+//                            }
+//
+//                            if (needToWriteFilamentData)
+//                            {
+//                                printer.transmitWriteReelEEPROM(filamentToWrite);
+//                                printer.readReelEEPROM();
+//                                steno.info("Automatically updated filament data for "
+//                                    + receivedTypeCode);
+//
+//                                Platform.runLater(new Runnable()
+//                                {
+//                                    @Override
+//                                    public void run()
+//                                    {
+//                                        Notifier.showInformationNotification(
+//                                            DisplayManager.getLanguageBundle().getString(
+//                                                "notification.reelDataUpdatedTitle"),
+//                                            DisplayManager.getLanguageBundle().getString(
+//                                                "notification.noActionRequired"));
+//                                    }
+//                                });
+//
+//                            }
+//                        } else
+//                        {
+//                            steno.error("Checking filament - got a filament I didn't recognise");
+//                        }
+//                    }
+//                }
+//            }
+//        } catch (RoboxCommsException ex)
+//        {
+//            steno.error("Error from triggered read of Reel EEPROM");
+//        }
+//    }
 }

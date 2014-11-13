@@ -18,10 +18,10 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author ianhudson
  */
-public class WriteReelEEPROM extends RoboxTxPacket
+public class WriteReel0EEPROM extends RoboxTxPacket
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(WriteReelEEPROM.class.getName());
+    private Stenographer steno = StenographerFactory.getStenographer(WriteReel0EEPROM.class.getName());
 
     public static final int FRIENDLY_NAME_LENGTH = 30;
     public static final int MATERIAL_TYPE_LENGTH = 1;
@@ -29,9 +29,9 @@ public class WriteReelEEPROM extends RoboxTxPacket
     public static final int REEL_EEPROM_PADDING_LENGTH = 
                                             80 - FRIENDLY_NAME_LENGTH - MATERIAL_TYPE_LENGTH;
 
-    public WriteReelEEPROM()
+    public WriteReel0EEPROM()
     {
-        super(TxPacketTypeEnum.WRITE_REEL_EEPROM, false, false);
+        super(TxPacketTypeEnum.WRITE_REEL_0_EEPROM, false, false);
     }
 
     private String formatString(String rawString, int length)
@@ -110,7 +110,7 @@ public class WriteReelEEPROM extends RoboxTxPacket
 
         outputArray = new byte[bufferSize];
 
-        outputArray[0] = TxPacketTypeEnum.WRITE_REEL_EEPROM.getCommandByte();
+        outputArray[0] = TxPacketTypeEnum.WRITE_REEL_0_EEPROM.getCommandByte();
 
         StringBuilder finalPayload = new StringBuilder();
 

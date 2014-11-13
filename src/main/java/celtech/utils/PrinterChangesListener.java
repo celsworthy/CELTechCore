@@ -14,7 +14,7 @@ interface PrinterChangesListener
 {
     void whenHeadAdded();
     public void whenHeadRemoved(Head head);
-    public void whenReelAdded(int reelIndex);
-    public void whenReelRemoved(Reel reel);
+    public void whenReelAdded(int reelIndex, Reel reel);
+    public void whenReelRemoved(int reelIndex, Reel reel);
     public void whenReelChanged(Reel reel);
 }

@@ -371,7 +371,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     }
 
     @Override
-    public void whenReelRemoved(Printer printer, Reel reel)
+    public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
     {
     }
     

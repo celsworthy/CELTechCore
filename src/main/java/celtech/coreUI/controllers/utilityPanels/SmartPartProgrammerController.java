@@ -92,7 +92,8 @@ public class SmartPartProgrammerController implements Initializable
             {
                 //TODO modify for multiple reels
                 remainingFilament = connectedPrinter.reelsProperty().get(0).remainingFilamentProperty().get();
-                connectedPrinter.transmitWriteReelEEPROM(selectedFilament.getFilamentID(),
+                connectedPrinter.transmitWriteReelEEPROM(0,
+                                                         selectedFilament.getFilamentID(),
                                                          selectedFilament.getFirstLayerNozzleTemperature(),
                                                          selectedFilament.getNozzleTemperature(),
                                                          selectedFilament.getFirstLayerBedTemperature(),
@@ -106,7 +107,7 @@ public class SmartPartProgrammerController implements Initializable
                                                          selectedFilament.getMaterial(),
                                                          selectedFilament.getDisplayColour());
 
-                connectedPrinter.readReelEEPROM();
+                connectedPrinter.readReelEEPROM(0);
             }
         } catch (RoboxCommsException ex)
         {

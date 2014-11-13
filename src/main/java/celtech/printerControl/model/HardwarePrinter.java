@@ -3,10 +3,8 @@ package celtech.printerControl.model;
 import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.appManager.SystemNotificationManager;
-import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
-import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.MaterialType;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.fileRepresentation.HeadFile;
@@ -32,7 +30,6 @@ import static celtech.printerControl.comms.commands.rx.RxPacketTypeEnum.ACK_WITH
 import static celtech.printerControl.comms.commands.rx.RxPacketTypeEnum.FIRMWARE_RESPONSE;
 import static celtech.printerControl.comms.commands.rx.RxPacketTypeEnum.HEAD_EEPROM_DATA;
 import static celtech.printerControl.comms.commands.rx.RxPacketTypeEnum.PRINTER_ID_RESPONSE;
-import static celtech.printerControl.comms.commands.rx.RxPacketTypeEnum.REEL_EEPROM_DATA;
 import static celtech.printerControl.comms.commands.rx.RxPacketTypeEnum.STATUS_RESPONSE;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.comms.commands.tx.FormatHeadEEPROM;
@@ -42,7 +39,6 @@ import celtech.printerControl.comms.commands.tx.PausePrint;
 import celtech.printerControl.comms.commands.tx.QueryFirmwareVersion;
 import celtech.printerControl.comms.commands.tx.ReadHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.ReadPrinterID;
-import celtech.printerControl.comms.commands.tx.ReadReelEEPROM;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacketFactory;
 import celtech.printerControl.comms.commands.tx.SetAmbientLEDColour;
@@ -53,7 +49,8 @@ import celtech.printerControl.comms.commands.tx.StatusRequest;
 import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
 import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.WritePrinterID;
-import celtech.printerControl.comms.commands.tx.WriteReelEEPROM;
+import celtech.printerControl.comms.commands.tx.WriteReel0EEPROM;
+import celtech.printerControl.comms.commands.tx.WriteReel1EEPROM;
 import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
 import celtech.printerControl.model.calibration.NozzleOpeningStateTransitionManager;
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
@@ -72,7 +69,6 @@ import celtech.utils.tasks.TaskResponse;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
-import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
@@ -127,7 +123,7 @@ public final class HardwarePrinter implements Printer
     private final BooleanProperty canCancel = new SimpleBooleanProperty(false);
     private final BooleanProperty canOpenDoor = new SimpleBooleanProperty(false);
     private final BooleanProperty canCalibrateHead = new SimpleBooleanProperty(false);
-    
+
     private boolean headIntegrityChecksInhibited = false;
 
     /*
@@ -142,7 +138,9 @@ public final class HardwarePrinter implements Printer
     private final PrinterIdentity printerIdentity = new PrinterIdentity();
     private final PrinterAncillarySystems printerAncillarySystems = new PrinterAncillarySystems();
     private final ObjectProperty<Head> head = new SimpleObjectProperty<>(null);
-    private final ObservableList<Reel> reels = FXCollections.observableArrayList();
+    // Reels is now a fixed-size array list so that we can tell which is 0 and which is 1
+    // The value of each reel changes to null when the reel is not present
+    private final ObservableList<Reel> reels = FXCollections.observableArrayList(null, null);
     private final ObservableList<Extruder> extruders = FXCollections.observableArrayList();
 
     private EEPROMState lastHeadEEPROMState = null;
@@ -976,15 +974,31 @@ public final class HardwarePrinter implements Printer
 
     /**
      *
+     * @param reelNumber
      * @return @throws RoboxCommsException
      */
     @Override
-    public ReelEEPROMDataResponse readReelEEPROM() throws RoboxCommsException
+    public ReelEEPROMDataResponse readReelEEPROM(int reelNumber) throws RoboxCommsException
     {
         steno.info("Reading reel EEPROM");
-        ReadReelEEPROM readReel = (ReadReelEEPROM) RoboxTxPacketFactory.createPacket(
-            TxPacketTypeEnum.READ_REEL_EEPROM);
-        return (ReelEEPROMDataResponse) commandInterface.writeToPrinter(readReel);
+
+        RoboxTxPacket packet = null;
+
+        switch (reelNumber)
+        {
+            case 0:
+                packet = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_REEL_0_EEPROM);
+                break;
+            case 1:
+                packet = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_REEL_1_EEPROM);
+                break;
+            default:
+                steno.warning("Using default reel - was asked to read reel number " + reelNumber);
+                packet = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_REEL_0_EEPROM);
+                break;
+        }
+
+        return (ReelEEPROMDataResponse) commandInterface.writeToPrinter(packet);
     }
 
     /**
@@ -994,26 +1008,61 @@ public final class HardwarePrinter implements Printer
      * @throws RoboxCommsException
      */
     @Override
-    public AckResponse transmitWriteReelEEPROM(Filament filament) throws RoboxCommsException
+    public AckResponse transmitWriteReelEEPROM(int reelNumber, Filament filament) throws RoboxCommsException
     {
-        WriteReelEEPROM writeReelEEPROM = (WriteReelEEPROM) RoboxTxPacketFactory.createPacket(
-            TxPacketTypeEnum.WRITE_REEL_EEPROM);
-        writeReelEEPROM.populateEEPROM(filament.getFilamentID(),
-                                       filament.getFirstLayerNozzleTemperature(),
-                                       filament.getNozzleTemperature(),
-                                       filament.getFirstLayerBedTemperature(),
-                                       filament.getBedTemperature(),
-                                       filament.getAmbientTemperature(),
-                                       filament.getDiameter(),
-                                       filament.getFilamentMultiplier(),
-                                       filament.getFeedRateMultiplier(),
-                                       filament.getRemainingFilament(),
-                                       filament.getFriendlyFilamentName(),
-                                       filament.getMaterial(),
-                                       filament.getDisplayColour());
-        AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeReelEEPROM);
-        commandInterface.writeToPrinter(RoboxTxPacketFactory.createPacket(
-            TxPacketTypeEnum.READ_REEL_EEPROM));
+        RoboxTxPacket readPacket = null;
+        RoboxTxPacket writePacket = null;
+
+        switch (reelNumber)
+        {
+            case 0:
+                readPacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_REEL_0_EEPROM);
+                writePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_REEL_0_EEPROM);
+                ((WriteReel0EEPROM) writePacket).populateEEPROM(filament.getFilamentID(),
+                                                                filament.getFirstLayerNozzleTemperature(),
+                                                                filament.getNozzleTemperature(),
+                                                                filament.getFirstLayerBedTemperature(),
+                                                                filament.getBedTemperature(),
+                                                                filament.getAmbientTemperature(),
+                                                                filament.getDiameter(),
+                                                                filament.getFilamentMultiplier(),
+                                                                filament.getFeedRateMultiplier(),
+                                                                filament.getRemainingFilament(),
+                                                                filament.getFriendlyFilamentName(),
+                                                                filament.getMaterial(),
+                                                                filament.getDisplayColour());
+                break;
+            case 1:
+                readPacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_REEL_1_EEPROM);
+                writePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_REEL_1_EEPROM);
+                ((WriteReel1EEPROM) writePacket).populateEEPROM(filament.getFilamentID(),
+                                                                filament.getFirstLayerNozzleTemperature(),
+                                                                filament.getNozzleTemperature(),
+                                                                filament.getFirstLayerBedTemperature(),
+                                                                filament.getBedTemperature(),
+                                                                filament.getAmbientTemperature(),
+                                                                filament.getDiameter(),
+                                                                filament.getFilamentMultiplier(),
+                                                                filament.getFeedRateMultiplier(),
+                                                                filament.getRemainingFilament(),
+                                                                filament.getFriendlyFilamentName(),
+                                                                filament.getMaterial(),
+                                                                filament.getDisplayColour());
+                break;
+            default:
+                steno.warning("Using default reel - was asked to read reel number " + reelNumber);
+                break;
+        }
+
+        AckResponse response = null;
+
+        if (readPacket != null
+            && writePacket != null)
+        {
+            response = (AckResponse) commandInterface.writeToPrinter(writePacket);
+            commandInterface.writeToPrinter(readPacket);
+        }
+
         return response;
     }
 
@@ -1032,25 +1081,67 @@ public final class HardwarePrinter implements Printer
      * @throws RoboxCommsException
      */
     @Override
-    public void transmitWriteReelEEPROM(String filamentID,
+    public void transmitWriteReelEEPROM(int reelNumber,
+        String filamentID,
         float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
         float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature,
         float reelFilamentDiameter,
         float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament,
         String friendlyName, MaterialType materialType, Color displayColour) throws RoboxCommsException
     {
-        WriteReelEEPROM writeReelEEPROM = (WriteReelEEPROM) RoboxTxPacketFactory.createPacket(
-            TxPacketTypeEnum.WRITE_REEL_EEPROM);
-        writeReelEEPROM.populateEEPROM(filamentID, reelFirstLayerNozzleTemperature,
-                                       reelNozzleTemperature,
-                                       reelFirstLayerBedTemperature, reelBedTemperature,
-                                       reelAmbientTemperature, reelFilamentDiameter,
-                                       reelFilamentMultiplier, reelFeedRateMultiplier,
-                                       reelRemainingFilament,
-                                       friendlyName, materialType, displayColour);
-        commandInterface.writeToPrinter(writeReelEEPROM);
-        commandInterface.writeToPrinter(RoboxTxPacketFactory.createPacket(
-            TxPacketTypeEnum.READ_REEL_EEPROM));
+
+        RoboxTxPacket readPacket = null;
+        RoboxTxPacket writePacket = null;
+
+        switch (reelNumber)
+        {
+            case 0:
+                readPacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_REEL_0_EEPROM);
+                writePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_REEL_0_EEPROM);
+                ((WriteReel0EEPROM) writePacket).populateEEPROM(filamentID,
+                                                                reelFirstLayerNozzleTemperature,
+                                                                reelNozzleTemperature,
+                                                                reelFirstLayerBedTemperature,
+                                                                reelBedTemperature,
+                                                                reelAmbientTemperature,
+                                                                reelFilamentDiameter,
+                                                                reelFilamentMultiplier,
+                                                                reelFeedRateMultiplier,
+                                                                reelRemainingFilament,
+                                                                friendlyName,
+                                                                materialType,
+                                                                displayColour);
+                break;
+            case 1:
+                readPacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_REEL_1_EEPROM);
+                writePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_REEL_1_EEPROM);
+                ((WriteReel1EEPROM) writePacket).populateEEPROM(filamentID,
+                                                                reelFirstLayerNozzleTemperature,
+                                                                reelNozzleTemperature,
+                                                                reelFirstLayerBedTemperature,
+                                                                reelBedTemperature,
+                                                                reelAmbientTemperature,
+                                                                reelFilamentDiameter,
+                                                                reelFilamentMultiplier,
+                                                                reelFeedRateMultiplier,
+                                                                reelRemainingFilament,
+                                                                friendlyName,
+                                                                materialType,
+                                                                displayColour);
+                break;
+            default:
+                steno.warning("Using default reel - was asked to read reel number " + reelNumber);
+                break;
+        }
+
+        AckResponse response = null;
+
+        if (readPacket != null
+            && writePacket != null)
+        {
+            response = (AckResponse) commandInterface.writeToPrinter(writePacket);
+            commandInterface.writeToPrinter(readPacket);
+        }
     }
 
     /**
@@ -1074,7 +1165,8 @@ public final class HardwarePrinter implements Printer
      * @throws RoboxCommsException
      */
     @Override
-    public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID,
+    public AckResponse transmitWriteHeadEEPROM(
+        String headTypeCode, String headUniqueID,
         float maximumTemperature,
         float thermistorBeta, float thermistorTCal,
         float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset,
@@ -1109,38 +1201,51 @@ public final class HardwarePrinter implements Printer
      */
     /**
      *
-     * @param nozzleFirstLayerTarget
-     * @param nozzleTarget
+     * @param nozzle0FirstLayerTarget
+     * @param nozzle0Target
      * @param bedFirstLayerTarget
      * @param bedTarget
      * @param ambientTarget
      * @throws RoboxCommsException
      */
     @Override
-    public void transmitSetTemperatures(double nozzleFirstLayerTarget, double nozzleTarget,
+    public void transmitSetTemperatures(double nozzle0FirstLayerTarget, double nozzle0Target,
+        double nozzle1FirstLayerTarget, double nozzle1Target,
         double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException
     {
         SetTemperatures setTemperatures = (SetTemperatures) RoboxTxPacketFactory.createPacket(
             TxPacketTypeEnum.SET_TEMPERATURES);
-        setTemperatures.setTemperatures(nozzleFirstLayerTarget, nozzleTarget, bedFirstLayerTarget,
+        //TODO change this to support multiple nozzle heaters
+        setTemperatures.setTemperatures(nozzle0FirstLayerTarget, nozzle0Target,
+                                        nozzle1FirstLayerTarget, nozzle1Target, bedFirstLayerTarget,
                                         bedTarget, ambientTarget);
         commandInterface.writeToPrinter(setTemperatures);
     }
 
     /**
      *
-     * @param filamentDiameter
-     * @param filamentMultiplier
-     * @param feedRateMultiplier
+     * @param filamentDiameterE
+     * @param filamentMultiplierE
+     * @param feedRateMultiplierE
+     * @param filamentDiameterD
+     * @param filamentMultiplierD
+     * @param feedRateMultiplierD
      * @throws RoboxCommsException
      */
     @Override
-    public void transmitSetFilamentInfo(double filamentDiameter, double filamentMultiplier,
-        double feedRateMultiplier) throws RoboxCommsException
+    public void transmitSetFilamentInfo(
+        double filamentDiameterE,
+        double filamentMultiplierE,
+        double feedRateMultiplierE,
+        double filamentDiameterD,
+        double filamentMultiplierD,
+        double feedRateMultiplierD) throws RoboxCommsException
     {
         SetFilamentInfo setFilamentInfo = (SetFilamentInfo) RoboxTxPacketFactory.createPacket(
             TxPacketTypeEnum.SET_FILAMENT_INFO);
-        setFilamentInfo.setFilamentInfo(filamentDiameter, filamentMultiplier, feedRateMultiplier);
+        //TODO change this to support multiple nozzle heaters
+        setFilamentInfo.setFilamentInfo(filamentDiameterE, filamentMultiplierE, feedRateMultiplierE,
+                                        filamentDiameterD, filamentMultiplierD, feedRateMultiplierD);
         commandInterface.writeToPrinter(setFilamentInfo);
     }
 
@@ -1296,12 +1401,18 @@ public final class HardwarePrinter implements Printer
         {
             try
             {
+                //TODO modify for multiple heaters
                 transmitSetTemperatures(filament.getFirstLayerNozzleTemperature(),
+                                        filament.getNozzleTemperature(),
+                                        filament.getFirstLayerNozzleTemperature(),
                                         filament.getNozzleTemperature(),
                                         filament.getFirstLayerBedTemperature(),
                                         filament.getBedTemperature(),
                                         filament.getAmbientTemperature());
                 transmitSetFilamentInfo(filament.getDiameter(),
+                                        filament.getFilamentMultiplier(),
+                                        filament.getFeedRateMultiplier(),
+                                        filament.getDiameter(),
                                         filament.getFilamentMultiplier(),
                                         filament.getFeedRateMultiplier());
             } catch (RoboxCommsException ex)
@@ -1344,7 +1455,6 @@ public final class HardwarePrinter implements Printer
     @Override
     public void processRoboxResponse(RoboxRxPacket rxPacket)
     {
-//        steno.info("Being asked to process " + rxPacket.getPacketType());
         RoboxEventProcessor roboxEventProcessor = new RoboxEventProcessor(this, rxPacket);
         Lookup.getTaskExecutor().runOnGUIThread(roboxEventProcessor);
     }
@@ -1942,7 +2052,7 @@ public final class HardwarePrinter implements Printer
         {
             String response = transmitDirectGCode("M113", false);
             String measurementString = response.replaceFirst("Zdelta:", "").replaceFirst(
-                    "\nok", "");
+                "\nok", "");
             return measurementString;
         } catch (RoboxCommsException ex)
         {
@@ -2187,19 +2297,8 @@ public final class HardwarePrinter implements Printer
                     break;
 
                 case REEL_EEPROM_DATA:
-//                    steno.info("Reel EEPROM data received");
-                    ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) rxPacket;
-
-                    //TODO modify to work with multiple reels
-                    if (reels.size() == 0)
-                    {
-                        Reel newReel = new Reel();
-                        newReel.updateFromEEPROMData(reelResponse);
-                        reels.add(newReel);
-                    } else
-                    {
-                        reels.get(0).updateFromEEPROMData(reelResponse);
-                    }
+                    ReelEEPROMDataResponse reel0Response = (ReelEEPROMDataResponse) rxPacket;
+                    processReelEEPROMData(reel0Response);
                     break;
 
                 case HEAD_EEPROM_DATA:
@@ -2228,7 +2327,7 @@ public final class HardwarePrinter implements Printer
                             // Suppress the check if we are calibrating, since out of bounds data is used during this operation
                             if (!headIntegrityChecksInhibited)
                             {
-                                HeadRepairResult result = head.get().bringDataInBounds();
+                                RepairResult result = head.get().bringDataInBounds();
 
                                 switch (result)
                                 {
@@ -2302,6 +2401,19 @@ public final class HardwarePrinter implements Printer
             }
         }
 
+        private void processReelEEPROMData(ReelEEPROMDataResponse reelResponse)
+        {
+            if (reels.get(reelResponse.getReelNumber()) == null)
+            {
+                Reel newReel = new Reel();
+                newReel.updateFromEEPROMData(reelResponse);
+                reels.set(reelResponse.getReelNumber(), newReel);
+            } else
+            {
+                reels.get(reelResponse.getReelNumber()).updateFromEEPROMData(reelResponse);
+            }
+        }
+
         private void checkHeadEEPROM(StatusResponse statusResponse)
         {
             if (lastHeadEEPROMState != statusResponse.getHeadEEPROMState())
@@ -2361,7 +2473,7 @@ public final class HardwarePrinter implements Printer
                         try
                         {
                             steno.info("About to read reel EEPROM");
-                            readReelEEPROM();
+                            readReelEEPROM(0);
                         } catch (RoboxCommsException ex)
                         {
                             steno.error("Error attempting to read head eeprom");
@@ -2389,7 +2501,26 @@ public final class HardwarePrinter implements Printer
     {
         headIntegrityChecksInhibited = inhibit;
     }
-    
+
+    @Override
+    public void changeFeedRateMultiplierDuringPrint(double feedRate) throws PrinterException
+    {
+        if (printerStatus.get() != PrinterStatus.PRINTING)
+        {
+            throw new PrinterException("Cannot change feed rate unless printing is in progress");
+        }
+
+        try
+        {
+            transmitSetFilamentInfo(1.75, 1.0, feedRate,
+                                    1.75, 1.0, feedRate);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Comms exception when settings feed rate during print");
+            throw new PrinterException("Comms exception when settings feed rate during print");
+        }
+    }
+
     @Override
     public String toString()
     {

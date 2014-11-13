@@ -59,7 +59,7 @@ public class MaterialComponent extends AnchorPane
     public void setMaterial(int reelNumber, MaterialType materialType, String materialColourString,
         Color colour, double remainingFilament, double filamentDiameter)
     {
-        String numberMaterial = String.valueOf(reelNumber) + ":" + materialType.getFriendlyName();
+        String numberMaterial = String.valueOf(reelNumber + 1) + ":" + materialType.getFriendlyName();
 
         double remainingLengthMeters = remainingFilament / 1000d;
         double densityKGM2 = materialType.getDensity() * 1000d;

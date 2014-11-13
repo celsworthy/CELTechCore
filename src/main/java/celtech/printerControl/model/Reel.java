@@ -30,7 +30,7 @@ import javafx.scene.paint.Color;
  *
  * @author Ian
  */
-public class Reel
+public class Reel implements RepairableComponent
 {
 
     protected final StringProperty friendlyFilamentName = new SimpleStringProperty("");
@@ -261,5 +261,23 @@ public class Reel
         friendlyFilamentName.set(filament.getFriendlyFilamentName());
         material.set(filament.getMaterial());
         remainingFilament.set(filament.getRemainingFilament());
+    }
+
+    @Override
+    public RepairResult bringDataInBounds()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void resetToDefaults()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void allocateRandomID()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

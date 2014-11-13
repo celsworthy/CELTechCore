@@ -193,7 +193,7 @@ public class PrinterListChangesNotifierTest
         }
 
         @Override
-        public void whenReelRemoved(Printer printer, Reel reel)
+        public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
         {
             printersWithReelRemoved.add(printer);
         }

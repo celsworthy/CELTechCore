@@ -18,7 +18,7 @@ import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.comms.commands.tx.QueryFirmwareVersion;
 import celtech.printerControl.comms.commands.tx.ReadHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.ReadPrinterID;
-import celtech.printerControl.comms.commands.tx.ReadReelEEPROM;
+import celtech.printerControl.comms.commands.tx.ReadReel0EEPROM;
 import celtech.printerControl.comms.commands.tx.ReportErrors;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacketFactory;
@@ -115,7 +115,7 @@ public class TestCommandInterface extends CommandInterface
                 Filament filament = FilamentContainer.getFilamentByID(filamentName);
                 if (filament != null)
                 {
-                    currentStatus.setReelEEPROMState(EEPROMState.PROGRAMMED);
+                    currentStatus.setReel0EEPROMState(EEPROMState.PROGRAMMED);
                     attachedReel = new Reel();
                     attachedReel.updateContents(filament);
                     gcodeResponse.setMessagePayload("Adding reel " + filamentName
@@ -127,14 +127,14 @@ public class TestCommandInterface extends CommandInterface
                 }
             } else if (request.getMessageData().startsWith(detachReelCommand))
             {
-                currentStatus.setReelEEPROMState(EEPROMState.NOT_PRESENT);
+                currentStatus.setReel0EEPROMState(EEPROMState.NOT_PRESENT);
             }
 
             response = (RoboxRxPacket) gcodeResponse;
         } else if (messageToWrite instanceof ReadHeadEEPROM)
         {
             response = (RoboxRxPacket) headResponse;
-        } else if (messageToWrite instanceof ReadReelEEPROM)
+        } else if (messageToWrite instanceof ReadReel0EEPROM)
         {
             ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) RoboxRxPacketFactory.createPacket(
                 RxPacketTypeEnum.REEL_EEPROM_DATA);
@@ -194,7 +194,7 @@ public class TestCommandInterface extends CommandInterface
 
     public void noReels()
     {
-        currentStatus.setReelEEPROMState(EEPROMState.NOT_PRESENT);
+        currentStatus.setReel0EEPROMState(EEPROMState.NOT_PRESENT);
     }
 
     public void addHead(HeadEEPROMDataResponse headResponse)

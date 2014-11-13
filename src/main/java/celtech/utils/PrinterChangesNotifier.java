@@ -14,8 +14,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 
 /**
- * PrinterChangesNotifier listens to a list of printers and notifies registered listeners about the
- * following events:
+ * PrinterChangesNotifier listens to a list of printers and notifies registered listeners about the following events:
  * <p>
  * - Head added to printer<p>
  * - Head removed from printer<p>
@@ -67,30 +66,34 @@ public class PrinterChangesNotifier
         {
             while (change.next())
             {
+                // Reels is now a fixed-size array list so that we can tell which is 0 and which is 1
+                // The value of each reel changes to null when the reel is not present
                 if (change.wasAdded())
                 {
-                    for (Reel reel : change.getAddedSubList())
-                    {
-                        for (PrinterChangesListener listener : listeners)
-                        {
-                            listener.whenReelAdded(0);
-                            setupReelChangesNotifier(reel);
-                        }
-                    }
                 } else if (change.wasRemoved())
                 {
-                    for (Reel reel : change.getRemoved())
-                    {
-                        for (PrinterChangesListener listener : listeners)
-                        {
-                            listener.whenReelRemoved(reel);
-                            removeReelChangesNotifier(reel);
-                        }
-                    }
                 } else if (change.wasReplaced())
                 {
                 } else if (change.wasUpdated())
                 {
+                    int reelNumber = 0;
+                    for (Reel reel : change.getAddedSubList())
+                    {
+                        for (PrinterChangesListener listener : listeners)
+                        {
+                            if (reel != null)
+                            {
+                                listener.whenReelAdded(reelNumber, reel);
+                                setupReelChangesNotifier(reel);
+                            } else
+                            {
+                                listener.whenReelRemoved(reelNumber, reel);
+                                removeReelChangesNotifier(reel);
+                            }
+                        }
+
+                        reelNumber++;
+                    }
                 }
             }
         });
@@ -130,9 +133,10 @@ public class PrinterChangesNotifier
 
     private void fireWhenReelChanged(Reel reel)
     {
-        for (PrinterChangesListener listener : listeners)
-        {
-            listener.whenReelChanged(reel);
-        }
+        listeners.stream().
+            forEach((listener) ->
+                {
+                    listener.whenReelChanged(reel);
+            });
     }
 }

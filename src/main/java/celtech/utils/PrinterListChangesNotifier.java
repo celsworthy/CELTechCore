@@ -71,9 +71,11 @@ public class PrinterListChangesNotifier
     {
         for (PrinterListChangesListener listener : listeners)
         {
+            int index = 0;
             for (Reel reel: printer.reelsProperty())
             {
-                listener.whenReelRemoved(printer, reel);
+                listener.whenReelRemoved(printer, reel, index);
+                index++;
             }
             if (printer.headProperty().get() != null) {
                  listener.whenHeadRemoved(printer, printer.headProperty().get());
@@ -102,15 +104,15 @@ public class PrinterListChangesNotifier
             }
             
             @Override
-            public void whenReelAdded(int reelIndex)
+            public void whenReelAdded(int reelIndex, Reel reel)
             {
                 fireWhenReelAdded(printer, reelIndex);
             }
             
             @Override
-            public void whenReelRemoved(Reel reel)
+            public void whenReelRemoved(int reelIndex, Reel reel)
             {
-                fireWhenReelRemoved(printer, reel);
+                fireWhenReelRemoved(printer, reel, reelIndex);
             }
             
             @Override
@@ -174,11 +176,11 @@ public class PrinterListChangesNotifier
         }
     }
     
-    private void fireWhenReelRemoved(Printer printer, Reel reel)
+    private void fireWhenReelRemoved(Printer printer, Reel reel, int reelIndex)
     {
         for (PrinterListChangesListener listener : listeners)
         {
-            listener.whenReelRemoved(printer, reel);
+            listener.whenReelRemoved(printer, reel, reelIndex);
         }
     }  
     

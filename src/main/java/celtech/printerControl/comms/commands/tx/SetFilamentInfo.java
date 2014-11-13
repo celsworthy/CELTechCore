@@ -1,11 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.comms.commands.tx;
 
 import celtech.utils.FixedDecimalFloatFormat;
-import celtech.utils.PrinterUtils;
 
 /**
  *
@@ -35,19 +30,26 @@ public class SetFilamentInfo extends RoboxTxPacket
 
     /**
      *
-     * @param filamentDiameter
-     * @param filamentMultiplier
-     * @param feedRateMultiplier
+     * @param filamentDiameterE
+     * @param filamentMultiplierE
+     * @param feedRateMultiplierE
+     * @param filamentDiameterD
+     * @param filamentMultiplierD
+     * @param feedRateMultiplierD
      */
-    public void setFilamentInfo(double filamentDiameter, double filamentMultiplier, double feedRateMultiplier)
+    public void setFilamentInfo(double filamentDiameterE, double filamentMultiplierE, double feedRateMultiplierE,
+        double filamentDiameterD, double filamentMultiplierD, double feedRateMultiplierD)
     {
         StringBuilder payload = new StringBuilder();
 
         FixedDecimalFloatFormat decimalFloatFormatter = new FixedDecimalFloatFormat();
 
-        payload.append(decimalFloatFormatter.format(filamentDiameter));
-        payload.append(decimalFloatFormatter.format(filamentMultiplier));
-        payload.append(decimalFloatFormatter.format(feedRateMultiplier));
+        payload.append(decimalFloatFormatter.format(filamentDiameterE));
+        payload.append(decimalFloatFormatter.format(filamentMultiplierE));
+        payload.append(decimalFloatFormatter.format(feedRateMultiplierE));
+        payload.append(decimalFloatFormatter.format(filamentDiameterD));
+        payload.append(decimalFloatFormatter.format(filamentMultiplierD));
+        payload.append(decimalFloatFormatter.format(feedRateMultiplierD));
 
         this.setMessagePayload(payload.toString());
     }

@@ -1,22 +1,18 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.comms.commands.tx;
 
 /**
  *
  * @author ianhudson
  */
-public class ReadReelEEPROM extends RoboxTxPacket
+public class ReadReel1EEPROM extends RoboxTxPacket
 {
 
     /**
      *
      */
-    public ReadReelEEPROM()
+    public ReadReel1EEPROM()
     {
-        super(TxPacketTypeEnum.READ_REEL_EEPROM, false, false);
+        super(TxPacketTypeEnum.READ_REEL_1_EEPROM, false, false);
     }
 
     /**

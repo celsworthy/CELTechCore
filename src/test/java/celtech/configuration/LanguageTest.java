@@ -16,11 +16,11 @@ public class LanguageTest
     {
     }
 
-    @Test
-    public void testGetLanguageBundles()
-    {
-        Languages languages =  new Languages();
-        languages.getLocales();
-    }
+//    @Test
+//    public void testGetLanguageBundles()
+//    {
+//        Languages languages =  new Languages();
+//        languages.getLocales();
+//    }
     
 }

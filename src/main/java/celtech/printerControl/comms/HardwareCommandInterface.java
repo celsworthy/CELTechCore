@@ -7,6 +7,7 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.exceptions.UnableToGenerateRoboxPacketException;
 import celtech.printerControl.comms.commands.exceptions.UnknownPacketTypeException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
+import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
 import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
@@ -14,6 +15,8 @@ import celtech.printerControl.comms.commands.tx.FormatHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacketFactory;
 import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
+import celtech.printerControl.comms.commands.tx.WriteReel0EEPROM;
+import celtech.printerControl.comms.commands.tx.WriteReel1EEPROM;
 import celtech.printerControl.model.Printer;
 import jssc.SerialPort;
 import jssc.SerialPortException;
@@ -213,8 +216,7 @@ public class HardwareCommandInterface extends CommandInterface
 //                    InvalidResponseFromPrinterException exception = new InvalidResponseFromPrinterException("Invalid response - got: " + received);
 //                    throw exception;
                     }
-                }
-                else
+                } else
                 {
                     actionOnCommsFailure();
                 }
@@ -222,7 +224,8 @@ public class HardwareCommandInterface extends CommandInterface
             {
                 actionOnCommsFailure();
             }
-        } else {
+        } else
+        {
             throw new RoboxCommsException("Invalid state for writing data");
         }
 

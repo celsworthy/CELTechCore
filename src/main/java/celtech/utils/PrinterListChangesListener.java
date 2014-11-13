@@ -24,7 +24,7 @@ public interface PrinterListChangesListener
 
     public void whenReelAdded(Printer printer, int reelIndex);
 
-    public void whenReelRemoved(Printer printer, Reel reel);
+    public void whenReelRemoved(Printer printer, Reel reel, int reelIndex);
     
     public void whenReelChanged(Printer printer, Reel reel);
     

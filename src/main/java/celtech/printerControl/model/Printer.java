@@ -36,7 +36,7 @@ import javafx.scene.paint.Color;
  */
 public interface Printer extends RoboxResponseConsumer
 {
-    
+
     public ReadOnlyObjectProperty<Head> headProperty();
 
     /**
@@ -54,21 +54,21 @@ public interface Printer extends RoboxResponseConsumer
      * Print
      */
     public ReadOnlyBooleanProperty canPrintProperty();
-    
+
     /**
      * Purge
      */
     public ReadOnlyBooleanProperty canPurgeHeadProperty();
-    
+
     /**
      * Calibrate head
      */
     public ReadOnlyBooleanProperty canCalibrateHeadProperty();
-    
+
     public XAndYStateTransitionManager startCalibrateXAndY() throws PrinterException;
-    
+
     public NozzleHeightStateTransitionManager startCalibrateNozzleHeight() throws PrinterException;
-    
+
     public NozzleOpeningStateTransitionManager startCalibrateNozzleOpening() throws PrinterException;
 
     /*
@@ -181,7 +181,7 @@ public interface Printer extends RoboxResponseConsumer
 
     @Override
     public void processRoboxResponse(RoboxRxPacket rxPacket);
-    
+
     public void purgeHead(TaskResponder responder) throws PrinterException;
 
     /**
@@ -204,9 +204,10 @@ public interface Printer extends RoboxResponseConsumer
 
     /**
      *
+     * @param reelNumber
      * @return @throws RoboxCommsException
      */
-    public ReelEEPROMDataResponse readReelEEPROM() throws RoboxCommsException;
+    public ReelEEPROMDataResponse readReelEEPROM(int reelNumber) throws RoboxCommsException;
 
     public ObservableList<Reel> reelsProperty();
 
@@ -322,26 +323,34 @@ public interface Printer extends RoboxResponseConsumer
 
     /**
      *
-     * @param filamentDiameter
-     * @param filamentMultiplier
-     * @param feedRateMultiplier
+     * @param filamentDiameterE
+     * @param filamentMultiplierE
+     * @param feedRateMultiplierE
+     * @param filamentDiameterD
+     * @param filamentMultiplierD
+     * @param feedRateMultiplierD
      * @throws RoboxCommsException
      */
-    public void transmitSetFilamentInfo(double filamentDiameter, double filamentMultiplier, double feedRateMultiplier) throws RoboxCommsException;
+    public void transmitSetFilamentInfo(double filamentDiameterE, double filamentMultiplierE, double feedRateMultiplierE,
+                                        double filamentDiameterD, double filamentMultiplierD, double feedRateMultiplierD) throws RoboxCommsException;
 
     /*
      * Higher level controls
      */
     /**
      *
-     * @param nozzleFirstLayerTarget
-     * @param nozzleTarget
+     * @param nozzle0FirstLayerTarget
+     * @param nozzle0Target
+     * @param nozzle1FirstLayerTarget
+     * @param nozzle1Target
      * @param bedFirstLayerTarget
      * @param bedTarget
      * @param ambientTarget
      * @throws RoboxCommsException
      */
-    public void transmitSetTemperatures(double nozzleFirstLayerTarget, double nozzleTarget, double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException;
+    public void transmitSetTemperatures(double nozzle0FirstLayerTarget, double nozzle0Target,
+                                        double nozzle1FirstLayerTarget, double nozzle1Target,
+                                        double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException;
 
     /**
      *
@@ -383,14 +392,16 @@ public interface Printer extends RoboxResponseConsumer
 
     /**
      *
+     * @param reelNumber
      * @param filament
      * @return
      * @throws RoboxCommsException
      */
-    public AckResponse transmitWriteReelEEPROM(Filament filament) throws RoboxCommsException;
+    public AckResponse transmitWriteReelEEPROM(int reelNumber, Filament filament) throws RoboxCommsException;
 
     /**
      *
+     * @param reelNumber
      * @param filamentID
      * @param reelFirstLayerNozzleTemperature
      * @param reelNozzleTemperature
@@ -401,9 +412,13 @@ public interface Printer extends RoboxResponseConsumer
      * @param reelFilamentMultiplier
      * @param reelFeedRateMultiplier
      * @param reelRemainingFilament
+     * @param friendlyName
+     * @param materialType
+     * @param displayColour
      * @throws RoboxCommsException
      */
-    public void transmitWriteReelEEPROM(String filamentID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature, float reelFirstLayerBedTemperature, float reelBedTemperature,
+    public void transmitWriteReelEEPROM(int reelNumber, String filamentID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature, float reelFirstLayerBedTemperature,
+        float reelBedTemperature,
         float reelAmbientTemperature, float reelFilamentDiameter, float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament, String friendlyName,
         MaterialType materialType, Color displayColour) throws RoboxCommsException;
 
@@ -427,13 +442,14 @@ public interface Printer extends RoboxResponseConsumer
     public ReadOnlyIntegerProperty printJobLineNumberProperty();
 
     public ReadOnlyStringProperty printJobIDProperty();
-    
+
     public boolean printJobIDIndicatesPrinting();
-    
+
     public ReadOnlyObjectProperty pauseStatusProperty();
 
     public void resetHeadToDefaults() throws PrinterException;
-    
+
     public void inhibitHeadIntegrityChecks(boolean inhibit);
 
+    public void changeFeedRateMultiplierDuringPrint(double feedRate) throws PrinterException;
 }

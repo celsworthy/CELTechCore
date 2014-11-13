@@ -120,7 +120,8 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
             try
             {
                 FilamentContainer.saveFilament(newFilament);
-                selectedPrinter.transmitWriteReelEEPROM(newFilament);
+                //TODO make this work for both reels
+                selectedPrinter.transmitWriteReelEEPROM(0, newFilament);
 
             } catch (RoboxCommsException ex)
             {
@@ -237,13 +238,10 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
 
     private void setSelectedPrinter(Printer printer)
     {
-        if (selectedPrinter != null && !selectedPrinter.reelsProperty().isEmpty())
-        {
-        }
         setFieldsVisible(false);
         selectedPrinter = printer;
 
-        if (printer != null && !printer.reelsProperty().isEmpty())
+        if (printer != null)
         {
             populateSelectedPrinter();
             setFieldsVisible(true);
@@ -288,7 +286,7 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
     }
 
     @Override
-    public void whenReelRemoved(Printer printer, Reel reel)
+    public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
     {
         if (printer == selectedPrinter)
         {

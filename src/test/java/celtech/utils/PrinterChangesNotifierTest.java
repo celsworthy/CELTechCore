@@ -105,13 +105,13 @@ public class PrinterChangesNotifierTest
         }
 
         @Override
-        public void whenReelAdded(int reelIndex)
+        public void whenReelAdded(int reelIndex, Reel reel)
         {
             reel0Added = true;
         }
 
         @Override
-        public void whenReelRemoved(Reel reel)
+        public void whenReelRemoved(int reelIndex, Reel reel)
         {
             reel0Removed = true;
         }

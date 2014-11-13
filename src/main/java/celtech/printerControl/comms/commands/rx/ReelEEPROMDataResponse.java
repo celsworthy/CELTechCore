@@ -4,9 +4,9 @@ import celtech.configuration.MaterialType;
 import static celtech.printerControl.comms.commands.ColourStringConverter.stringToColor;
 import celtech.printerControl.comms.commands.EnumStringConverter;
 import celtech.printerControl.comms.commands.StringToBase64Encoder;
-import static celtech.printerControl.comms.commands.tx.WriteReelEEPROM.FRIENDLY_NAME_LENGTH;
-import static celtech.printerControl.comms.commands.tx.WriteReelEEPROM.MATERIAL_TYPE_LENGTH;
-import static celtech.printerControl.comms.commands.tx.WriteReelEEPROM.REEL_EEPROM_PADDING_LENGTH;
+import static celtech.printerControl.comms.commands.tx.WriteReel0EEPROM.FRIENDLY_NAME_LENGTH;
+import static celtech.printerControl.comms.commands.tx.WriteReel0EEPROM.MATERIAL_TYPE_LENGTH;
+import static celtech.printerControl.comms.commands.tx.WriteReel0EEPROM.REEL_EEPROM_PADDING_LENGTH;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Reel;
 import celtech.utils.FixedDecimalFloatFormat;
@@ -41,6 +41,8 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
     private MaterialType reelMaterialType;
     private Color reelDisplayColour;
     private String reelFriendlyName;
+
+    private int reelNumber = 0;
 
     /**
      *
@@ -415,7 +417,14 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
     {
         this.reelFriendlyName = reelFriendlyName;
     }
-    
-    
 
+    public void setReelNumber(int reelNumber)
+    {
+        this.reelNumber = reelNumber;
+    }
+
+    public int getReelNumber()
+    {
+        return reelNumber;
+    }
 }
