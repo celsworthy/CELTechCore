@@ -40,6 +40,7 @@ import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.scene.paint.Color;
 
 /**
@@ -49,7 +50,7 @@ import javafx.scene.paint.Color;
 class TestPrinter implements Printer
 {
     private final SimpleObjectProperty<Head> headProperty = new SimpleObjectProperty<>();
-    private final ObservableList<Reel> reelsProperty = FXCollections.observableArrayList();
+    private final ObservableMap<Integer, Reel> reelsProperty = FXCollections.observableHashMap();
     
     void addHead()
     {
@@ -65,12 +66,12 @@ class TestPrinter implements Printer
     void addReel(int i)
     {
         Reel reel = new Reel();
-        reelsProperty.add(reel);
+        reelsProperty.put(i, reel);
     }    
     
     void removeReel(int i)
     {
-        reelsProperty.remove(reelsProperty.get(0));
+        reelsProperty.remove(i);
     }
     
     void changeReel(int i) {
@@ -153,12 +154,6 @@ class TestPrinter implements Printer
 
     @Override
     public AckResponse formatHeadEEPROM() throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public AckResponse formatReelEEPROM() throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -324,12 +319,6 @@ class TestPrinter implements Printer
     public PrinterIDResponse readPrinterID() throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public ObservableList<Reel> reelsProperty()
-    {
-        return reelsProperty;
     }
 
     @Override
@@ -668,5 +657,17 @@ class TestPrinter implements Printer
         double ambientTarget) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public AckResponse formatReelEEPROM(int reelNumber) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ObservableMap<Integer, Reel> reelsProperty()
+    {
+        return reelsProperty;
     }
 }

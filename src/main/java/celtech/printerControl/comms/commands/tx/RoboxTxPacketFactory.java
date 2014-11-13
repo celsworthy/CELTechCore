@@ -82,8 +82,11 @@ public class RoboxTxPacketFactory
                 case FORMAT_HEAD_EEPROM:
                     returnVal = new FormatHeadEEPROM();
                     break;
-                case FORMAT_REEL_EEPROM:
-                    returnVal = new FormatReelEEPROM();
+                case FORMAT_REEL_0_EEPROM:
+                    returnVal = new FormatReel0EEPROM();
+                    break;
+                case FORMAT_REEL_1_EEPROM:
+                    returnVal = new FormatReel1EEPROM();
                     break;
                 case READ_HEAD_EEPROM:
                     returnVal = new ReadHeadEEPROM();

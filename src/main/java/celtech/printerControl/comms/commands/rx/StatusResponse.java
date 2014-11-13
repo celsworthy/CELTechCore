@@ -425,9 +425,20 @@ public class StatusResponse extends RoboxRxPacket
      *
      * @return
      */
-    public EEPROMState getReelEEPROMState()
+    public EEPROMState getReelEEPROMState(int reelNumber)
     {
-        return reel0EEPROMState;
+        EEPROMState returnValue = EEPROMState.NOT_PRESENT;
+
+        switch (reelNumber)
+        {
+            case 0:
+                returnValue = reel0EEPROMState;
+                break;
+            case 1:
+                returnValue = reel1EEPROMState;
+                break;
+        }
+        return returnValue;
     }
 
     /**
@@ -1037,13 +1048,13 @@ public class StatusResponse extends RoboxRxPacket
             byteOffset += 1;
             this.headEEPROMState = EEPROMState.modeFromValue(Integer.valueOf(headEEPROMStateString, 16));
 
-            String reelEEPROMStateString = new String(byteData, byteOffset, 1, charsetToUse);
+            String reel0EEPROMStateString = new String(byteData, byteOffset, 1, charsetToUse);
             byteOffset += 1;
-            this.reel0EEPROMState = EEPROMState.modeFromValue(Integer.valueOf(reelEEPROMStateString, 16));
+            this.reel0EEPROMState = EEPROMState.modeFromValue(Integer.valueOf(reel0EEPROMStateString, 16));
 
             String reel1EEPROMStateString = new String(byteData, byteOffset, 1, charsetToUse);
             byteOffset += 1;
-            this.reel1EEPROMState = EEPROMState.modeFromValue(Integer.valueOf(reelEEPROMStateString, 16));
+            this.reel1EEPROMState = EEPROMState.modeFromValue(Integer.valueOf(reel1EEPROMStateString, 16));
 
             this.sdCardPresent = (byteData[byteOffset] & 1) > 0 ? true : false;
             byteOffset += 1;
@@ -1218,7 +1229,9 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append("\n");
         outputString.append("Head EEPROM present: " + getHeadEEPROMState());
         outputString.append("\n");
-        outputString.append("Reel EEPROM present: " + getReelEEPROMState());
+        outputString.append("Reel 0 EEPROM present: " + getReelEEPROMState(0));
+        outputString.append("\n");
+        outputString.append("Reel 1 EEPROM present: " + getReelEEPROMState(1));
         outputString.append("\n");
         outputString.append("SD card present: " + isSDCardPresent());
         outputString.append("\n");

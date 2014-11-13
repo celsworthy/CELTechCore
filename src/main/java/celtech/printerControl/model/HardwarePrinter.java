@@ -33,7 +33,7 @@ import static celtech.printerControl.comms.commands.rx.RxPacketTypeEnum.PRINTER_
 import static celtech.printerControl.comms.commands.rx.RxPacketTypeEnum.STATUS_RESPONSE;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.comms.commands.tx.FormatHeadEEPROM;
-import celtech.printerControl.comms.commands.tx.FormatReelEEPROM;
+import celtech.printerControl.comms.commands.tx.FormatReel0EEPROM;
 import celtech.printerControl.comms.commands.tx.ListFiles;
 import celtech.printerControl.comms.commands.tx.PausePrint;
 import celtech.printerControl.comms.commands.tx.QueryFirmwareVersion;
@@ -85,6 +85,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -138,13 +139,15 @@ public final class HardwarePrinter implements Printer
     private final PrinterIdentity printerIdentity = new PrinterIdentity();
     private final PrinterAncillarySystems printerAncillarySystems = new PrinterAncillarySystems();
     private final ObjectProperty<Head> head = new SimpleObjectProperty<>(null);
-    // Reels is now a fixed-size array list so that we can tell which is 0 and which is 1
-    // The value of each reel changes to null when the reel is not present
-    private final ObservableList<Reel> reels = FXCollections.observableArrayList(null, null);
+    private final ObservableMap<Integer, Reel> reels = FXCollections.observableHashMap();
     private final ObservableList<Extruder> extruders = FXCollections.observableArrayList();
 
+    private final int numberOfStrikesAndYoureOut = 3;
     private EEPROMState lastHeadEEPROMState = null;
-    private EEPROMState lastReelEEPROMState = null;
+    private int formatHeadStrikes = 0;
+    private final int maxNumberOfReels = 2;
+    private EEPROMState[] lastReelEEPROMState = new EEPROMState[maxNumberOfReels];
+    private int[] formatReelStrikes = new int[maxNumberOfReels];
 
     /*
      * Temperature-related data
@@ -203,6 +206,11 @@ public final class HardwarePrinter implements Printer
 
         printEngine = new PrintEngine(this);
         setPrinterStatus(PrinterStatus.IDLE);
+
+        for (int strikeCount = 0; strikeCount < maxNumberOfReels; strikeCount++)
+        {
+            formatReelStrikes[strikeCount] = 0;
+        }
 
         commandInterface.setPrinter(this);
         commandInterface.start();
@@ -296,7 +304,7 @@ public final class HardwarePrinter implements Printer
     }
 
     @Override
-    public ObservableList<Reel> reelsProperty()
+    public ObservableMap<Integer, Reel> reelsProperty()
     {
         return reels;
     }
@@ -951,18 +959,28 @@ public final class HardwarePrinter implements Printer
 
     /**
      *
+     * @param reelNumber
      * @return @throws celtech.printerControl.model.PrinterException
      */
     @Override
-    public AckResponse formatReelEEPROM() throws PrinterException
+    public AckResponse formatReelEEPROM(final int reelNumber) throws PrinterException
     {
-        FormatReelEEPROM formatReel = (FormatReelEEPROM) RoboxTxPacketFactory.createPacket(
-            TxPacketTypeEnum.FORMAT_REEL_EEPROM);
+        RoboxTxPacket formatPacket = null;
+        steno.info("Formatting reel " + reelNumber);
+        switch (reelNumber)
+        {
+            case 0:
+                formatPacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.FORMAT_REEL_0_EEPROM);
+                break;
+            case 1:
+                formatPacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.FORMAT_REEL_1_EEPROM);
+                break;
+        }
 
         AckResponse response = null;
         try
         {
-            response = (AckResponse) commandInterface.writeToPrinter(formatReel);
+            response = (AckResponse) commandInterface.writeToPrinter(formatPacket);
         } catch (RoboxCommsException ex)
         {
             steno.error("Error sending format reel");
@@ -980,7 +998,7 @@ public final class HardwarePrinter implements Printer
     @Override
     public ReelEEPROMDataResponse readReelEEPROM(int reelNumber) throws RoboxCommsException
     {
-        steno.info("Reading reel EEPROM");
+        steno.info("Reading reel " + reelNumber + " EEPROM");
 
         RoboxTxPacket packet = null;
 
@@ -2262,7 +2280,7 @@ public final class HardwarePrinter implements Printer
 
                     checkHeadEEPROM(statusResponse);
 
-                    checkReelEEPROM(statusResponse);
+                    checkReelEEPROMs(statusResponse);
 
                     break;
 
@@ -2297,8 +2315,8 @@ public final class HardwarePrinter implements Printer
                     break;
 
                 case REEL_EEPROM_DATA:
-                    ReelEEPROMDataResponse reel0Response = (ReelEEPROMDataResponse) rxPacket;
-                    processReelEEPROMData(reel0Response);
+                    ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) rxPacket;
+                    processReelEEPROMData(reelResponse);
                     break;
 
                 case HEAD_EEPROM_DATA:
@@ -2403,11 +2421,11 @@ public final class HardwarePrinter implements Printer
 
         private void processReelEEPROMData(ReelEEPROMDataResponse reelResponse)
         {
-            if (reels.get(reelResponse.getReelNumber()) == null)
+            if (!reels.containsKey(reelResponse.getReelNumber()))
             {
                 Reel newReel = new Reel();
                 newReel.updateFromEEPROMData(reelResponse);
-                reels.set(reelResponse.getReelNumber(), newReel);
+                reels.put(reelResponse.getReelNumber(), newReel);
             } else
             {
                 reels.get(reelResponse.getReelNumber()).updateFromEEPROMData(reelResponse);
@@ -2425,15 +2443,20 @@ public final class HardwarePrinter implements Printer
                         head.set(null);
                         break;
                     case NOT_PROGRAMMED:
-                        try
+                        formatHeadStrikes++;
+                        if (formatHeadStrikes >= numberOfStrikesAndYoureOut)
                         {
-                            formatHeadEEPROM();
-                        } catch (PrinterException ex)
-                        {
-                            steno.error("Error formatting head");
+                            try
+                            {
+                                formatHeadEEPROM();
+                            } catch (PrinterException ex)
+                            {
+                                steno.error("Error formatting head");
+                            }
                         }
                         break;
                     case PROGRAMMED:
+                        formatHeadStrikes = 0;
                         try
                         {
                             steno.info("About to read head EEPROM");
@@ -2447,38 +2470,46 @@ public final class HardwarePrinter implements Printer
             }
         }
 
-        private void checkReelEEPROM(StatusResponse statusResponse)
+        private void checkReelEEPROMs(StatusResponse statusResponse)
         {
-            if (lastReelEEPROMState != statusResponse.getReelEEPROMState())
+            for (int reelNumber = 0; reelNumber < maxNumberOfReels; reelNumber++)
             {
-                lastReelEEPROMState = statusResponse.getReelEEPROMState();
-                switch (statusResponse.getReelEEPROMState())
+                if (lastReelEEPROMState[reelNumber] != statusResponse.getReelEEPROMState(reelNumber))
                 {
-                    case NOT_PRESENT:
-                        if (reels.size() > 0)
-                        {
-                            reels.remove(0);
-                        }
-                        break;
-                    case NOT_PROGRAMMED:
-                        try
-                        {
-                            formatReelEEPROM();
-                        } catch (PrinterException ex)
-                        {
-                            steno.error("Error formatting head");
-                        }
-                        break;
-                    case PROGRAMMED:
-                        try
-                        {
-                            steno.info("About to read reel EEPROM");
-                            readReelEEPROM(0);
-                        } catch (RoboxCommsException ex)
-                        {
-                            steno.error("Error attempting to read head eeprom");
-                        }
-                        break;
+                    lastReelEEPROMState[reelNumber] = statusResponse.getReelEEPROMState(reelNumber);
+                    switch (statusResponse.getReelEEPROMState(reelNumber))
+                    {
+                        case NOT_PRESENT:
+                            reels.remove(reelNumber);
+                            break;
+                        case NOT_PROGRAMMED:
+                            formatReelStrikes[reelNumber]++;
+                            if (formatReelStrikes[reelNumber] >= numberOfStrikesAndYoureOut)
+                            {
+                                try
+                                {
+                                    formatReelEEPROM(reelNumber);
+                                } catch (PrinterException ex)
+                                {
+                                    steno.error("Error formatting reel " + reelNumber);
+                                }
+                            }
+                            else
+                            {
+                                steno.info("Reel " + reelNumber + " strike " + formatReelStrikes[reelNumber]);
+                            }
+                            break;
+                        case PROGRAMMED:
+                            formatReelStrikes[reelNumber] = 0;
+                            try
+                            {
+                                readReelEEPROM(reelNumber);
+                            } catch (RoboxCommsException ex)
+                            {
+                                steno.error("Error attempting to read reel " + reelNumber + " eeprom");
+                            }
+                            break;
+                    }
                 }
             }
         }

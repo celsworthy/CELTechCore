@@ -8,15 +8,15 @@ package celtech.printerControl.comms.commands.tx;
  *
  * @author ianhudson
  */
-public class FormatReelEEPROM extends RoboxTxPacket
+public class FormatReel0EEPROM extends RoboxTxPacket
 {
 
     /**
      *
      */
-    public FormatReelEEPROM()
+    public FormatReel0EEPROM()
     {
-        super(TxPacketTypeEnum.FORMAT_REEL_EEPROM, false, false);
+        super(TxPacketTypeEnum.FORMAT_REEL_0_EEPROM, false, false);
     }
 
     /**

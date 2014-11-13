@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
+import javafx.collections.MapChangeListener;
 
 /**
  * PrinterChangesNotifier listens to a list of printers and notifies registered listeners about the following events:
@@ -62,37 +63,25 @@ public class PrinterChangesNotifier
                 }
             });
 
-        printer.reelsProperty().addListener((ListChangeListener.Change<? extends Reel> change) ->
+        printer.reelsProperty().addListener(new MapChangeListener<Integer, Reel>()
         {
-            while (change.next())
+            @Override
+            public void onChanged(
+                MapChangeListener.Change<? extends Integer, ? extends Reel> change)
             {
-                // Reels is now a fixed-size array list so that we can tell which is 0 and which is 1
-                // The value of each reel changes to null when the reel is not present
                 if (change.wasAdded())
                 {
-                } else if (change.wasRemoved())
-                {
-                } else if (change.wasReplaced())
-                {
-                } else if (change.wasUpdated())
-                {
-                    int reelNumber = 0;
-                    for (Reel reel : change.getAddedSubList())
+                    for (PrinterChangesListener listener : listeners)
                     {
-                        for (PrinterChangesListener listener : listeners)
-                        {
-                            if (reel != null)
-                            {
-                                listener.whenReelAdded(reelNumber, reel);
-                                setupReelChangesNotifier(reel);
-                            } else
-                            {
-                                listener.whenReelRemoved(reelNumber, reel);
-                                removeReelChangesNotifier(reel);
-                            }
-                        }
-
-                        reelNumber++;
+                        listener.whenReelAdded(change.getKey(), change.getValueAdded());
+                        setupReelChangesNotifier(change.getValueAdded());
+                    }
+                } else
+                {
+                    for (PrinterChangesListener listener : listeners)
+                    {
+                        listener.whenReelRemoved(change.getKey(), change.getValueRemoved());
+                        setupReelChangesNotifier(change.getValueRemoved());
                     }
                 }
             }

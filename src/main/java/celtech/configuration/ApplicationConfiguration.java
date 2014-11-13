@@ -205,6 +205,8 @@ public class ApplicationConfiguration
 
     private static final String commonFileDirectoryPath = "CEL Robox" + File.separator;
 
+    private static String myMiniFactoryDownloadsDirectory = null;
+    
     private static String headFileDirectory = null;
     public static final String headDirectoryPath = "Heads";
 
@@ -1118,5 +1120,26 @@ public class ApplicationConfiguration
     public static String getMainCSSFile()
     {
         return ApplicationConfiguration.class.getResource(mainCSSFile).toExternalForm();
+    }
+    
+     /**
+     *
+     * @return
+     */
+    public static String getMyMiniFactoryDownloadDirectory()
+    {
+        if (myMiniFactoryDownloadsDirectory == null)
+        {
+            myMiniFactoryDownloadsDirectory = getUserStorageDirectory() + "MyMiniFactory" + '/';
+
+            File dirHandle = new File(myMiniFactoryDownloadsDirectory);
+
+            if (!dirHandle.exists())
+            {
+                dirHandle.mkdirs();
+            }
+        }
+
+        return myMiniFactoryDownloadsDirectory;
     }
 }

@@ -28,6 +28,7 @@ import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.scene.paint.Color;
 
 /**
@@ -96,7 +97,7 @@ public interface Printer extends RoboxResponseConsumer
      *
      * @return @throws celtech.printerControl.model.PrinterException
      */
-    public AckResponse formatReelEEPROM() throws PrinterException;
+    public AckResponse formatReelEEPROM(int reelNumber) throws PrinterException;
 
     /**
      *
@@ -209,7 +210,7 @@ public interface Printer extends RoboxResponseConsumer
      */
     public ReelEEPROMDataResponse readReelEEPROM(int reelNumber) throws RoboxCommsException;
 
-    public ObservableList<Reel> reelsProperty();
+    public ObservableMap<Integer, Reel> reelsProperty();
 
     public void removeHead(TaskResponder responder) throws PrinterException;
 

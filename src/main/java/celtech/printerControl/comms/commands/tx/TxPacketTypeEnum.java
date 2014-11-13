@@ -116,7 +116,12 @@ public enum TxPacketTypeEnum
     /**
      *
      */
-    FORMAT_REEL_EEPROM((byte) 0xf9, 1, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
+    FORMAT_REEL_0_EEPROM((byte) 0xf9, 1, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
+
+    /**
+     *
+     */
+    FORMAT_REEL_1_EEPROM((byte) 0xfa, 1, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
 
     /**
      *

@@ -165,32 +165,36 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
     private void populateSelectedPrinter()
     {
         Reel reel = selectedPrinter.reelsProperty().get(0);
-        makeReadOnlyIfNecessary();
 
-        filamentID.setText(reel.filamentIDProperty().get());
-        reelAmbientTemperature.setText(String.format("%d",
-                                                     reel.ambientTemperatureProperty().get()));
-        reelFirstLayerBedTemperature.setText(String.format("%d",
-                                                           reel.firstLayerBedTemperatureProperty().get()));
-        reelBedTemperature.setText(String.format("%d",
-                                                 reel.bedTemperatureProperty().get()));
-        reelFirstLayerNozzleTemperature.setText(String.format("%d",
-                                                              reel.firstLayerNozzleTemperatureProperty().get()));
-        reelNozzleTemperature.setText(String.format("%d",
-                                                    reel.nozzleTemperatureProperty().get()));
-        reelFilamentMultiplier.setText(String.format("%.2f",
-                                                     reel.filamentMultiplierProperty().get()));
-        reelFeedRateMultiplier.setText(String.format("%.2f",
-                                                     reel.feedRateMultiplierProperty().get()));
-        reelRemainingFilament.setText(String.format("%.0f",
-                                                    reel.remainingFilamentProperty().get()));
-        reelFilamentDiameter.setText(String.format("%.2f",
-                                                   reel.diameterProperty().get()));
-        reelFilamentName.setText(
-            reel.friendlyFilamentNameProperty().get());
-        MaterialType reelMaterialTypeVal = reel.materialProperty().get();
-        reelMaterialType.getSelectionModel().select(reelMaterialTypeVal);
-        reelDisplayColor.setValue(reel.displayColourProperty().get());
+        if (reel != null)
+        {
+            makeReadOnlyIfNecessary();
+
+            filamentID.setText(reel.filamentIDProperty().get());
+            reelAmbientTemperature.setText(String.format("%d",
+                                                         reel.ambientTemperatureProperty().get()));
+            reelFirstLayerBedTemperature.setText(String.format("%d",
+                                                               reel.firstLayerBedTemperatureProperty().get()));
+            reelBedTemperature.setText(String.format("%d",
+                                                     reel.bedTemperatureProperty().get()));
+            reelFirstLayerNozzleTemperature.setText(String.format("%d",
+                                                                  reel.firstLayerNozzleTemperatureProperty().get()));
+            reelNozzleTemperature.setText(String.format("%d",
+                                                        reel.nozzleTemperatureProperty().get()));
+            reelFilamentMultiplier.setText(String.format("%.2f",
+                                                         reel.filamentMultiplierProperty().get()));
+            reelFeedRateMultiplier.setText(String.format("%.2f",
+                                                         reel.feedRateMultiplierProperty().get()));
+            reelRemainingFilament.setText(String.format("%.0f",
+                                                        reel.remainingFilamentProperty().get()));
+            reelFilamentDiameter.setText(String.format("%.2f",
+                                                       reel.diameterProperty().get()));
+            reelFilamentName.setText(
+                reel.friendlyFilamentNameProperty().get());
+            MaterialType reelMaterialTypeVal = reel.materialProperty().get();
+            reelMaterialType.getSelectionModel().select(reelMaterialTypeVal);
+            reelDisplayColor.setValue(reel.displayColourProperty().get());
+        }
     }
     /*
      * Initializes the controller class.
@@ -199,14 +203,18 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
     private void makeReadOnlyIfNecessary()
     {
         Reel reel = selectedPrinter.reelsProperty().get(0);
-        if (reel.isUserFilament())
+
+        if (reel != null)
         {
-            reelContainer.disableProperty().set(false);
-            reelWriteConfig.disableProperty().set(false);
-        } else
-        {
-            reelContainer.disableProperty().set(true);
-            reelWriteConfig.disableProperty().set(true);
+            if (reel.isUserFilament())
+            {
+                reelContainer.disableProperty().set(false);
+                reelWriteConfig.disableProperty().set(false);
+            } else
+            {
+                reelContainer.disableProperty().set(true);
+                reelWriteConfig.disableProperty().set(true);
+            }
         }
     }
 

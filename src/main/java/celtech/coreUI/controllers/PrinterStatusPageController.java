@@ -25,6 +25,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
+import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -54,7 +55,7 @@ public class PrinterStatusPageController implements Initializable
         PrinterStatusPageController.class.getName());
     private Printer printerToUse = null;
     private ChangeListener<Boolean> reelDataChangeListener = null;
-    private ListChangeListener<Reel> reelChangeListener = null;
+    private MapChangeListener<Integer, Reel> reelChangeListener = null;
     private ChangeListener<Color> printerColourChangeListener = null;
     private ChangeListener<PrinterStatus> printerStatusChangeListener = null;
     private ChangeListener<PauseStatus> pauseStatusChangeListener = null;
@@ -519,35 +520,21 @@ public class PrinterStatusPageController implements Initializable
             filamentRectangle.setFill(printerToUse.reelsProperty().get(0).displayColourProperty().get());
         };
 
-        reelChangeListener = new ListChangeListener<Reel>()
+        reelChangeListener = new MapChangeListener<Integer, Reel>()
         {
             @Override
-            public void onChanged(ListChangeListener.Change<? extends Reel> change)
+            public void onChanged(MapChangeListener.Change<? extends Integer, ? extends Reel> change)
             {
-                while (change.next())
+                if (change.wasAdded())
                 {
-                    if (change.wasAdded())
-                    {
-                        for (Reel changedReel : change.getAddedSubList())
-                        {
-                            //TODO modify to support multiple reels
-                            filamentRectangle.setFill(changedReel.displayColourProperty().get());
-                            filamentRectangle.setVisible(true);
-                            reel.setVisible(true);
-                        }
-                    } else if (change.wasRemoved())
-                    {
-                        for (Reel changedReel : change.getRemoved())
-                        {
-                            //TODO modify to support multiple reels
-                            filamentRectangle.setVisible(false);
-                            reel.setVisible(false);
-                        }
-                    } else if (change.wasReplaced())
-                    {
-                    } else if (change.wasUpdated())
-                    {
-                    }
+                    filamentRectangle.setFill(change.getValueAdded().displayColourProperty().get());
+                    filamentRectangle.setVisible(true);
+                    reel.setVisible(true);
+                } else
+                {
+                    //TODO modify to support multiple reels
+                    filamentRectangle.setVisible(false);
+                    reel.setVisible(false);
                 }
             }
         };
@@ -908,11 +895,11 @@ public class PrinterStatusPageController implements Initializable
             lastSelectedPrinter.getPrinterIdentity().printerColourProperty().removeListener(
                 printerColourChangeListener);
 
-            for (Reel reel : lastSelectedPrinter.reelsProperty())
-            {
-                //TODO modify to support multiple reels
-                reel.dataChangedToggleProperty().removeListener(reelDataChangeListener);
-            }
+            lastSelectedPrinter.reelsProperty()
+                .values()
+                .stream()
+                .forEach(reel -> reel.dataChangedToggleProperty().removeListener(reelDataChangeListener));
+
             //TODO modify to support multiple reels
             lastSelectedPrinter.reelsProperty().removeListener(reelChangeListener);
             lastSelectedPrinter.printerStatusProperty().removeListener(printerStatusChangeListener);

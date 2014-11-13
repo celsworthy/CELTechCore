@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
@@ -47,7 +48,7 @@ public class PrinterListChangesNotifier
                 {
                     for (Printer printer : change.getAddedSubList())
                     {
-                        
+
                         fireWhenPrinterAdded(printer);
                         setupPrinterChangesNotifier(printer);
                     }
@@ -70,17 +71,17 @@ public class PrinterListChangesNotifier
     private void fireWhenPrinterRemoved(Printer printer)
     {
         for (PrinterListChangesListener listener : listeners)
-        {
-            int index = 0;
-            for (Reel reel: printer.reelsProperty())
+        {            
+            for (Entry<Integer, Reel> mappedReel : printer.reelsProperty().entrySet())
             {
-                listener.whenReelRemoved(printer, reel, index);
-                index++;
-            }
-            if (printer.headProperty().get() != null) {
-                 listener.whenHeadRemoved(printer, printer.headProperty().get());
+                listener.whenReelRemoved(printer, mappedReel.getValue(), mappedReel.getKey());
             }
             
+            if (printer.headProperty().get() != null)
+            {
+                listener.whenHeadRemoved(printer, printer.headProperty().get());
+            }
+
             listener.whenPrinterRemoved(printer);
         }
     }
@@ -90,60 +91,63 @@ public class PrinterListChangesNotifier
         PrinterChangesNotifier printerChangesNotifier = new PrinterChangesNotifier(printer);
         PrinterChangesListener printerChangesListener = new PrinterChangesListener()
         {
-            
+
             @Override
             public void whenHeadAdded()
             {
                 fireWhenHeadAdded(printer);
             }
-            
+
             @Override
             public void whenHeadRemoved(Head head)
             {
                 fireWhenHeadRemoved(printer, head);
             }
-            
+
             @Override
             public void whenReelAdded(int reelIndex, Reel reel)
             {
                 fireWhenReelAdded(printer, reelIndex);
             }
-            
+
             @Override
             public void whenReelRemoved(int reelIndex, Reel reel)
             {
                 fireWhenReelRemoved(printer, reel, reelIndex);
             }
-            
+
             @Override
             public void whenReelChanged(Reel reel)
             {
                 fireWhenReelChanged(printer, reel);
-            }            
-            
+            }
+
         };
         printerListeners.put(printer, printerChangesListener);
         printerNotifiers.put(printer, printerChangesNotifier);
         printerChangesNotifier.addListener(printerChangesListener);
     }
-    
+
     private void removePrinterChangesNotifier(Printer printer)
     {
         printerNotifiers.get(printer).removeListener(printerListeners.get(printer));
-    }    
+    }
 
     private void fireWhenPrinterAdded(Printer printer)
     {
         for (PrinterListChangesListener listener : listeners)
         {
             listener.whenPrinterAdded(printer);
-            if (printer.headProperty().get() != null) {
-                 listener.whenHeadAdded(printer);
-            }
-            for (int i = 0; i < printer.reelsProperty().size(); i++)
+            if (printer.headProperty().get() != null)
             {
-                listener.whenReelAdded(printer, i);
+                listener.whenHeadAdded(printer);
             }
+            
+            printer.reelsProperty().entrySet().stream().
+                forEach((mappedReel) ->
+            {
+                listener.whenReelAdded(printer, mappedReel.getKey());
+            });
         }
     }
 
@@ -159,15 +163,15 @@ public class PrinterListChangesNotifier
             listener.whenHeadAdded(printer);
         }
     }
-    
+
     private void fireWhenHeadRemoved(Printer printer, Head head)
     {
         for (PrinterListChangesListener listener : listeners)
         {
             listener.whenHeadRemoved(printer, head);
         }
-    }    
-    
+    }
+
     private void fireWhenReelAdded(Printer printer, int reelIndex)
     {
         for (PrinterListChangesListener listener : listeners)
@@ -175,22 +179,21 @@ public class PrinterListChangesNotifier
             listener.whenReelAdded(printer, reelIndex);
         }
     }
-    
+
     private void fireWhenReelRemoved(Printer printer, Reel reel, int reelIndex)
     {
         for (PrinterListChangesListener listener : listeners)
         {
             listener.whenReelRemoved(printer, reel, reelIndex);
         }
-    }  
-    
+    }
+
     private void fireWhenReelChanged(Printer printer, Reel reel)
     {
         for (PrinterListChangesListener listener : listeners)
         {
             listener.whenReelChanged(printer, reel);
         }
-    }       
-    
+    }
 
 }
