@@ -123,15 +123,30 @@
                         </GridPane>
                         <VBox fx:id="materialContainer" alignment="CENTER" spacing="10.0">
                             <children>
-                                <MaterialComponent fx:id="material1" translateX="10.0" />
-                                <MaterialComponent translateX="10.0" />
+                                <VBox alignment="CENTER" spacing="5.0">
+                                    <children>
+                                        <MaterialComponent fx:id="material1" translateX="10.0" />
+                                        <MaterialComponent translateX="10.0" />
+                                        <Slider fx:id="speedMultiplierSlider1" blockIncrement="0.1" layoutX="51.0" layoutY="295.30000019073486" majorTickUnit="0.5" max="1.5" min="0.5" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="1.0">
+                                            <padding>
+                                                <Insets left="20.0" right="20.0" />
+                                            </padding>
+                                        </Slider>
+                                    </children>
+                                </VBox>
+                                <VBox alignment="CENTER" spacing="5.0">
+                                    <children>
+                                        <MaterialComponent fx:id="material2" translateX="10.0" />
+                                        <MaterialComponent translateX="10.0" />
+                                        <Slider fx:id="speedMultiplierSlider2" blockIncrement="0.1" layoutX="51.0" layoutY="295.30000019073486" majorTickUnit="0.5" max="1.5" min="0.5" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="1.0">
+                                            <padding>
+                                                <Insets left="20.0" right="20.0" />
+                                            </padding>
+                                        </Slider>
+                                    </children>
+                                </VBox>
                             </children>
                         </VBox>
-                        <Slider fx:id="speedMultiplierSlider" blockIncrement="0.1" layoutX="51.0" layoutY="295.30000019073486" majorTickUnit="0.5" max="1.5" min="0.5" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="1.0">
-                            <padding>
-                                <Insets left="20.0" right="20.0" />
-                            </padding>
-                        </Slider>
                     </children>
                 </VBox>
                 <LineChart id="temperatureChart" fx:id="temperatureChart" alternativeColumnFillVisible="true" alternativeRowFillVisible="true" animated="false" horizontalGridLinesVisible="false" legendVisible="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="160.0" prefWidth="260.0" verticalGridLinesVisible="false" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="20.0">

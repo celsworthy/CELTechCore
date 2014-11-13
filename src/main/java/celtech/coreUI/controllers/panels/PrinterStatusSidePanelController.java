@@ -85,7 +85,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private Text legendAmbient;
 
     @FXML
-    private Slider speedMultiplierSlider;
+    private Slider speedMultiplierSlider1;
+
+    @FXML
+    private Slider speedMultiplierSlider2;
 
     private PrinterIDDialog printerIDDialog = null;
 
@@ -153,7 +156,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         printerIDDialog = new PrinterIDDialog();
 
         material2.setVisible(false);
-        speedMultiplierSlider.setVisible(false);
+        speedMultiplierSlider1.setVisible(false);
+        speedMultiplierSlider2.setVisible(false);
 
         initialiseTemperatureChart();
         initialisePrinterStatusGrid();
@@ -440,8 +444,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         chartManager.setBedHeaterModeProperty(ancillarySystems.bedHeaterModeProperty());
         chartManager.setTargetBedTemperatureProperty(ancillarySystems.bedTargetTemperatureProperty());
 
-        speedMultiplierSlider.visibleProperty().bind(printer.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING));
-        speedMultiplierSlider.valueProperty().addListener(speedMultiplierListener);
+        speedMultiplierSlider1.visibleProperty().bind(printer.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING));
+        speedMultiplierSlider1.valueProperty().addListener(speedMultiplierListener);
     }
 
     private void unbindPrinter(Printer printer)
@@ -472,9 +476,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         chartManager.clearBedData();
         currentAmbientTemperatureHistory = null;
 
-        speedMultiplierSlider.visibleProperty().unbind();
-        speedMultiplierSlider.setVisible(false);
-        speedMultiplierSlider.valueProperty().removeListener(speedMultiplierListener);
+        speedMultiplierSlider1.visibleProperty().unbind();
+        speedMultiplierSlider1.setVisible(false);
+        speedMultiplierSlider1.valueProperty().removeListener(speedMultiplierListener);
     }
 
     private ChangeListener<Object> reelListener;
