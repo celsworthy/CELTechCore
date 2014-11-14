@@ -10,6 +10,7 @@ import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import javax.crypto.BadPaddingException;
@@ -43,15 +44,24 @@ public class CryptoFileStore
     private SecretKey secretKey = null;
     private SecretKeySpec secret = null;
     private Cipher cipher = null;
-    private byte[] ivBytes = null;
     private boolean initialised = false;
     private File storeFile = null;
     private final String cipherType = "AES/CBC/PKCS5Padding";
+    private IvParameterSpec iv = null;
 
     public CryptoFileStore(String storeFileName)
     {
         this.storeFileName = storeFileName;
         salt = salt + storeFileName;
+
+        byte ivbytes[] =
+        {
+            (byte) 0, (byte) 14, (byte) 23, (byte) 212,
+            (byte) 9, (byte) 55, (byte) 124, (byte) 96,
+            (byte) 21, (byte) 69, (byte) 19, (byte) 244,
+            (byte) 22, (byte) 95, (byte) 13, (byte) 114
+        };
+        iv = new IvParameterSpec(ivbytes);
     }
 
     public String readFile()
@@ -111,12 +121,10 @@ public class CryptoFileStore
 
             //encrypt the message
             Cipher cipher = Cipher.getInstance(cipherType);
-            cipher.init(Cipher.ENCRYPT_MODE, secret);
-            AlgorithmParameters params = cipher.getParameters();
-            ivBytes = params.getParameterSpec(IvParameterSpec.class).getIV();
+            cipher.init(Cipher.ENCRYPT_MODE, secret, iv);
             byte[] encryptedTextBytes = cipher.doFinal(plainText.getBytes("UTF-8"));
             encryptedText = new Base64().encodeAsString(encryptedTextBytes);
-        } catch (BadPaddingException | IllegalBlockSizeException | InvalidKeyException | InvalidKeySpecException | InvalidParameterSpecException | NoSuchAlgorithmException | NoSuchPaddingException | UnsupportedEncodingException ex)
+        } catch (InvalidAlgorithmParameterException | InvalidKeySpecException | InvalidKeyException | NoSuchAlgorithmException | IllegalBlockSizeException | BadPaddingException | NoSuchPaddingException | UnsupportedEncodingException ex)
         {
             steno.error("Error encrypting");
             ex.printStackTrace();
@@ -148,7 +156,7 @@ public class CryptoFileStore
 
             // Decrypt the message
             Cipher cipher = Cipher.getInstance(cipherType);
-            cipher.init(Cipher.DECRYPT_MODE, secret, new IvParameterSpec(ivBytes));
+            cipher.init(Cipher.DECRYPT_MODE, secret, iv);
 
             byte[] decryptedTextBytes = null;
             try

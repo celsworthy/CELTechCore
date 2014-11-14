@@ -51,12 +51,12 @@ public class CryptoStoreTest
         String stringToEncrypt = "hello world!";
         
         String encryptedString = instance.encrypt(stringToEncrypt);
-//        String secondAttemptAtencryptedString = instance.encrypt(stringToEncrypt);
+        String secondAttemptAtencryptedString = instance.encrypt(stringToEncrypt);
         String decryptedString = instance.decrypt(encryptedString);
         
-        String expectedEncryptionResult = "2O|9SeDAaK2s+D+4gKnSfA==";
-//        assertEquals(encryptedString, secondAttemptAtencryptedString);
-//        assertEquals(expectedEncryptionResult, encryptedString);
+        String expectedEncryptionResult = "FiQvWsvqupGbOyDrf+/fxg==";
+        assertEquals(encryptedString, secondAttemptAtencryptedString);
+        assertEquals(expectedEncryptionResult, encryptedString);
         assertEquals(stringToEncrypt, decryptedString);
     }    
 }
