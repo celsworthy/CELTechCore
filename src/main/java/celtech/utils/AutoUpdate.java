@@ -9,7 +9,6 @@ import celtech.Lookup;
 import celtech.appManager.Notifier;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.MachineType;
-import celtech.coreUI.DisplayManager;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -41,7 +40,6 @@ public class AutoUpdate extends Thread
     private boolean keepRunning = true;
     private Class parentClass = null;
     private AutoUpdateCompletionListener completionListener = null;
-    private ResourceBundle i18nBundle = null;
     private String appDirectory = null;
 
     private final Pattern versionMatcherPattern = Pattern.compile(".*version>(.*)</version.*");
@@ -59,8 +57,6 @@ public class AutoUpdate extends Thread
         this.setName("AutoUpdate");
         this.parentClass = completionListener.getClass();
         this.completionListener = completionListener;
-
-        this.i18nBundle = DisplayManager.getLanguageBundle();
     }
 
     /**
@@ -92,7 +88,7 @@ public class AutoUpdate extends Thread
                         @Override
                         public void run()
                         {
-                            Notifier.showInformationNotification(i18nBundle.getString("dialogs.updateApplicationTitle"), i18nBundle.getString("dialogs.updateApplicationNotRequired") + applicationName);
+                            Notifier.showInformationNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateApplicationNotRequired") + applicationName);
                         }
                     });
                     keepRunning = false;
@@ -104,7 +100,7 @@ public class AutoUpdate extends Thread
                         @Override
                         public void run()
                         {
-                            Notifier.showInformationNotification(i18nBundle.getString("dialogs.updateApplicationTitle"), i18nBundle.getString("dialogs.updateApplicationNotAvailableForThisRelease")
+                            Notifier.showInformationNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateApplicationNotAvailableForThisRelease")
                                                                  + applicationName);
                         }
                     });
@@ -131,7 +127,7 @@ public class AutoUpdate extends Thread
                         @Override
                         public void run()
                         {
-                            Notifier.showErrorNotification(i18nBundle.getString("dialogs.updateApplicationTitle"), i18nBundle.getString("dialogs.updateFailedToContact"));
+                            Notifier.showErrorNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateFailedToContact"));
                         }
                     });
                     try

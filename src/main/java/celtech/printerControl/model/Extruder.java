@@ -10,11 +10,11 @@ import javafx.beans.property.SimpleBooleanProperty;
  */
 public class Extruder
 {
-
     private String extruderAxisLetter;
     protected final BooleanProperty filamentLoaded = new SimpleBooleanProperty(false);
     protected final BooleanProperty indexWheelState = new SimpleBooleanProperty(false);
     protected final BooleanProperty canEject = new SimpleBooleanProperty(false);
+    protected final BooleanProperty isFitted = new SimpleBooleanProperty(false);
 
     public Extruder(String extruderAxisLetter)
     {
@@ -39,5 +39,10 @@ public class Extruder
     public ReadOnlyBooleanProperty canEjectProperty()
     {
         return canEject;
+    }
+
+    public ReadOnlyBooleanProperty isFittedProperty()
+    {
+        return isFitted;
     }
 }

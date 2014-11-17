@@ -436,6 +436,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         speedSlider1HBox.visibleProperty().bind(printer.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING));
         speedMultiplierSlider1.valueProperty().addListener(speedMultiplierListener);
 
+        material2.visibleProperty().bind(printer.getPrinterAncillarySystems().dualReelAdaptorPresentProperty());
 //                speedSlider1HBox.visibleProperty().bind(printer.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING));
 //        speedMultiplierSlider1.valueProperty().addListener(speedMultiplierListener);
     }
@@ -460,6 +461,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         speedSlider1HBox.visibleProperty().unbind();
         speedSlider1HBox.setVisible(false);
         speedMultiplierSlider1.valueProperty().removeListener(speedMultiplierListener);
+        
+        material2.visibleProperty().unbind();
     }
 
     private ChangeListener<Object> reelListener;
@@ -473,11 +476,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             reel.remainingFilamentProperty().removeListener(reelListener);
             reel.diameterProperty().removeListener(reelListener);
             reel.materialProperty().removeListener(reelListener);
-        }
-
-        if (reelNumber == 1)
-        {
-            material2.setVisible(false);
         }
     }
 
@@ -494,11 +492,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             reel.remainingFilamentProperty().addListener(reelListener);
             reel.diameterProperty().addListener(reelListener);
             reel.materialProperty().addListener(reelListener);
-        }
-
-        if (reelNumber == 1)
-        {
-            material2.setVisible(true);
         }
     }
 

@@ -142,12 +142,9 @@ public final class HardwarePrinter implements Printer
     private final ObservableMap<Integer, Reel> reels = FXCollections.observableHashMap();
     private final ObservableList<Extruder> extruders = FXCollections.observableArrayList();
 
-    private final int numberOfStrikesAndYoureOut = 3;
     private EEPROMState lastHeadEEPROMState = null;
-    private int formatHeadStrikes = 0;
     private final int maxNumberOfReels = 2;
     private EEPROMState[] lastReelEEPROMState = new EEPROMState[maxNumberOfReels];
-    private int[] formatReelStrikes = new int[maxNumberOfReels];
 
     /*
      * Temperature-related data
@@ -206,11 +203,6 @@ public final class HardwarePrinter implements Printer
 
         printEngine = new PrintEngine(this);
         setPrinterStatus(PrinterStatus.IDLE);
-
-        for (int strikeCount = 0; strikeCount < maxNumberOfReels; strikeCount++)
-        {
-            formatReelStrikes[strikeCount] = 0;
-        }
 
         commandInterface.setPrinter(this);
         commandInterface.start();
@@ -2210,8 +2202,10 @@ public final class HardwarePrinter implements Printer
                     //TODO configure properly for multiple extruders
                     extruders.get(0).filamentLoaded.set(statusResponse.isFilament1SwitchStatus());
                     extruders.get(0).indexWheelState.set(statusResponse.isEIndexStatus());
+                    extruders.get(0).isFitted.set(statusResponse.isExtruderEPresent());
                     extruders.get(1).filamentLoaded.set(statusResponse.isFilament2SwitchStatus());
                     extruders.get(1).indexWheelState.set(statusResponse.isDIndexStatus());
+                    extruders.get(1).isFitted.set(statusResponse.isExtruderDPresent());
 
                     if (pauseStatus.get() != statusResponse.getPauseStatus()
                         && statusResponse.getPauseStatus() == PauseStatus.PAUSED)
@@ -2443,20 +2437,15 @@ public final class HardwarePrinter implements Printer
                         head.set(null);
                         break;
                     case NOT_PROGRAMMED:
-                        formatHeadStrikes++;
-                        if (formatHeadStrikes >= numberOfStrikesAndYoureOut)
+                        try
                         {
-                            try
-                            {
-                                formatHeadEEPROM();
-                            } catch (PrinterException ex)
-                            {
-                                steno.error("Error formatting head");
-                            }
+                            formatHeadEEPROM();
+                        } catch (PrinterException ex)
+                        {
+                            steno.error("Error formatting head");
                         }
                         break;
                     case PROGRAMMED:
-                        formatHeadStrikes = 0;
                         try
                         {
                             steno.info("About to read head EEPROM");
@@ -2483,24 +2472,15 @@ public final class HardwarePrinter implements Printer
                             reels.remove(reelNumber);
                             break;
                         case NOT_PROGRAMMED:
-                            formatReelStrikes[reelNumber]++;
-                            if (formatReelStrikes[reelNumber] >= numberOfStrikesAndYoureOut)
+                            try
                             {
-                                try
-                                {
-                                    formatReelEEPROM(reelNumber);
-                                } catch (PrinterException ex)
-                                {
-                                    steno.error("Error formatting reel " + reelNumber);
-                                }
-                            }
-                            else
+                                formatReelEEPROM(reelNumber);
+                            } catch (PrinterException ex)
                             {
-                                steno.info("Reel " + reelNumber + " strike " + formatReelStrikes[reelNumber]);
+                                steno.error("Error formatting reel " + reelNumber);
                             }
                             break;
                         case PROGRAMMED:
-                            formatReelStrikes[reelNumber] = 0;
                             try
                             {
                                 readReelEEPROM(reelNumber);

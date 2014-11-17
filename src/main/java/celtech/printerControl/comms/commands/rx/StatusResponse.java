@@ -15,8 +15,8 @@ import java.text.ParseException;
 public class StatusResponse extends RoboxRxPacket
 {
     /*
-     // v 687
-     status: <0xe1> iiiiiiiiiiiiiiii llllllll p b x y z e d b g h i j a k mmmmmmmm nnnnnnnn cccccccc l rrrrrrrr uuuuuuuu dddddddd o pppppppp qqqqqqqq aaaaaaaa r ssssssss tttttttt u c v w x s xxxxxxxx yyyyyyyy zzzzzzzz bbbbbbbb eeeeeeee gggggggg hhhhhhhh jjjjjjjj ffffffff
+     v 689
+     status: <0xe1> iiiiiiiiiiiiiiii llllllll p b x y z e d b g h i j a m n k mmmmmmmm nnnnnnnn ccccccccl rrrrrrrr uuuuuuuu dddddddd o pppppppp qqqqqqqq aaaaaaaa r ssssssss tttttttt u c v w x p s xxxxxxxx yyyyyyyy zzzzzzzz bbbbbbbb eeeeeeee gggggggg hhhhhhhh jjjjjjjj ffffffff
      iiiiiiiiiiiiiiii = id of running job
      llllllll = line # of running job in hex
      p = pause ('0'->normal, '1'->pause pending, '2'->paused, '3'->resume pending)
@@ -32,7 +32,10 @@ public class StatusResponse extends RoboxRxPacket
      i = E index wheel state
      j = D index wheel state
      a = Z top switch state
+     m = extruder E ('0'->not present, '1'->present)
+     n = extruder D ('0'->not present, '1'->present)
      k = nozzle 0 heater mode ('0'->off, '1'->normal, '2'->first layer)
+
      mmmmmmmm = nozzle 0 temperature (decimal float format)
      nnnnnnnn = nozzle 0 target (decimal float format)
      cccccccc = nozzle 0 first layer target (decimal float format)
@@ -42,7 +45,6 @@ public class StatusResponse extends RoboxRxPacket
      dddddddd = nozzle 1 first layer target (decimal float format)
      o = bed heater mode ('0'->off, '1'->normal, '2'->first layer)
      pppppppp = bed temperature (decimal float format)
-
      qqqqqqqq = bed target (decimal float format)
      aaaaaaaa = bed first layer target (decimal float format)
      r = ambient controller on
@@ -53,6 +55,7 @@ public class StatusResponse extends RoboxRxPacket
      v = head EEPROM state ('0'->none, '1'->not valid, '2'->valid)
      w = reel0 EEPROM state ('0'->none, '1'->not valid, '2'->valid)
      x = reel1 EEPROM state ('0'->none, '1'->not valid, '2'->valid)
+     p = dual-reel adaptor ('0'->not present, '1'->present)
      s = SD card present
      xxxxxxxx = X position (decimal float format)
      yyyyyyyy = Y position (decimal float format)
@@ -63,9 +66,7 @@ public class StatusResponse extends RoboxRxPacket
      hhhhhhhh = D filament diameter (decimal float format)
      jjjjjjjj = D filament multiplier (decimal float format)
      ffffffff = Feed rate multiplier (decimal float format)
-     total length = 208
-    
-    
+     total length = 211
      */
 
     private final String charsetToUse = "US-ASCII";
@@ -87,6 +88,8 @@ public class StatusResponse extends RoboxRxPacket
     private boolean EIndexStatus = false;
     private boolean DIndexStatus = false;
     private boolean topZSwitchStatus = false;
+    private boolean extruderEPresent = false;
+    private boolean extruderDPresent = false;
     private HeaterMode nozzle0HeaterMode = HeaterMode.OFF;
     private String nozzle0HeaterModeString = null;
     private String nozzle0TemperatureString = null;
@@ -120,6 +123,7 @@ public class StatusResponse extends RoboxRxPacket
     private EEPROMState headEEPROMState = EEPROMState.NOT_PRESENT;
     private EEPROMState reel0EEPROMState = EEPROMState.NOT_PRESENT;
     private EEPROMState reel1EEPROMState = EEPROMState.NOT_PRESENT;
+    private boolean dualReelAdaptorPresent = false;
     private boolean sdCardPresent = false;
     private final int decimalFloatFormatBytes = 8;
     private float headXPosition = 0;
@@ -266,6 +270,24 @@ public class StatusResponse extends RoboxRxPacket
     public boolean isTopZSwitchStatus()
     {
         return topZSwitchStatus;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public boolean isExtruderEPresent()
+    {
+        return extruderEPresent;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public boolean isExtruderDPresent()
+    {
+        return extruderDPresent;
     }
 
     /**
@@ -445,6 +467,15 @@ public class StatusResponse extends RoboxRxPacket
      *
      * @return
      */
+    public boolean isDualReelAdaptorPresent()
+    {
+        return dualReelAdaptorPresent;
+    }
+
+    /**
+     *
+     * @return
+     */
     public boolean isSDCardPresent()
     {
         return sdCardPresent;
@@ -602,6 +633,16 @@ public class StatusResponse extends RoboxRxPacket
         this.topZSwitchStatus = topZSwitchStatus;
     }
 
+    public void setExtruderEPresent(boolean value)
+    {
+        this.extruderEPresent = value;
+    }
+
+    public void setExtruderDPresent(boolean value)
+    {
+        this.extruderDPresent = value;
+    }
+
     public void setNozzle0HeaterMode(HeaterMode nozzleHeaterMode)
     {
         this.nozzle0HeaterMode = nozzleHeaterMode;
@@ -725,6 +766,11 @@ public class StatusResponse extends RoboxRxPacket
     public void setReel1EEPROMState(EEPROMState reelEEPROMState)
     {
         this.reel1EEPROMState = reelEEPROMState;
+    }
+
+    public void setDualReelAdaptorPresent(boolean value)
+    {
+        this.dualReelAdaptorPresent = value;
     }
 
     public void setSdCardPresent(boolean sdCardPresent)
@@ -899,6 +945,12 @@ public class StatusResponse extends RoboxRxPacket
             this.topZSwitchStatus = (byteData[byteOffset] & 1) > 0 ? true : false;
             byteOffset += 1;
 
+            this.extruderEPresent = (byteData[byteOffset] & 1) > 0 ? true : false;
+            byteOffset += 1;
+
+            this.extruderDPresent = (byteData[byteOffset] & 1) > 0 ? true : false;
+            byteOffset += 1;
+
             // Nozzle 0
             this.nozzle0HeaterModeString = new String(byteData, byteOffset, 1, charsetToUse);
             byteOffset += 1;
@@ -1056,6 +1108,9 @@ public class StatusResponse extends RoboxRxPacket
             byteOffset += 1;
             this.reel1EEPROMState = EEPROMState.modeFromValue(Integer.valueOf(reel1EEPROMStateString, 16));
 
+            this.dualReelAdaptorPresent = (byteData[byteOffset] & 1) > 0 ? true : false;
+            byteOffset += 1;
+
             this.sdCardPresent = (byteData[byteOffset] & 1) > 0 ? true : false;
             byteOffset += 1;
 
@@ -1203,6 +1258,10 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append("\n");
         outputString.append("Top Z switch status: " + isTopZSwitchStatus());
         outputString.append("\n");
+        outputString.append("Extruder E present: " + isExtruderEPresent());
+        outputString.append("\n");
+        outputString.append("Extruder D present: " + isExtruderDPresent());
+        outputString.append("\n");
         outputString.append("Extruder heater on: " + getNozzle0HeaterMode());
         outputString.append("\n");
         outputString.append("Extruder temperature: " + getNozzle0Temperature());
@@ -1232,6 +1291,8 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append("Reel 0 EEPROM present: " + getReelEEPROMState(0));
         outputString.append("\n");
         outputString.append("Reel 1 EEPROM present: " + getReelEEPROMState(1));
+        outputString.append("\n");
+        outputString.append("Dual reel adaptor present: " + isDualReelAdaptorPresent());
         outputString.append("\n");
         outputString.append("SD card present: " + isSDCardPresent());
         outputString.append("\n");

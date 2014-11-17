@@ -7,7 +7,7 @@ package celtech.printerControl.comms.commands.rx;
 public class AckResponse extends RoboxRxPacket
 {
     /*
-     Error flags as at firmware v681
+     Error flags as at firmware v689
      ERROR_SD_CARD 0
      ERROR_CHUNK_SEQUENCE 1
      ERROR_FILE_TOO_LARGE 2
@@ -21,12 +21,15 @@ public class AckResponse extends RoboxRxPacket
      ERROR_GCODE_BUFFER_OVERRUN 10
      ERROR_FILE_READ_CLOBBERED 11
      ERROR_MAX_GANTRY_ADJUSTMENT 12
-     ERROR_REEL_EEPROM 13
+     ERROR_REEL0_EEPROM 13
      ERROR_E_FILAMENT_SLIP 14
      ERROR_D_FILAMENT_SLIP 15
      ERROR_NOZZLE_FLUSH_NEEDED 16
      ERROR_Z_TOP_SWITCH 17
      ERROR_B_STUCK 18
+     ERROR_REEL1_EEPROM 19
+     ERROR_HEAD_POWER_EEPROM 20
+     ERROR_HEAD_POWER_OVERTEMP 21
      */
 
     private final String charsetToUse = "US-ASCII";
@@ -49,12 +52,15 @@ public class AckResponse extends RoboxRxPacket
     private boolean gcodeBufferOverrunError = false;
     private boolean fileReadClobbered = false;
     private boolean maxGantryAdjustment = false;
-    private boolean reelEEPROMError = false;
+    private boolean reel0EEPROMError = false;
     private boolean eFilamentSlipError = false;
     private boolean dFilamentSlipError = false;
     private boolean nozzleFlushNeededError = false;
     private boolean zTopSwitchError = false;
     private boolean bStuckError = false;
+    private boolean reel1EEPROMError = false;
+    private boolean headPowerEEPROMError = false;
+    private boolean headPowerOvertempError = false;
     private boolean unknown_error_code = false;
 
     /**
@@ -178,9 +184,9 @@ public class AckResponse extends RoboxRxPacket
      *
      * @return
      */
-    public boolean isReelEEPROMError()
+    public boolean isReel0EEPROMError()
     {
-        return reelEEPROMError;
+        return reel0EEPROMError;
     }
 
     /**
@@ -241,6 +247,33 @@ public class AckResponse extends RoboxRxPacket
      *
      * @return
      */
+    public boolean isReel1EEPROMError()
+    {
+        return reel1EEPROMError;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public boolean isHeadPowerEEPROMError()
+    {
+        return headPowerEEPROMError;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public boolean isHeadPowerOvertempError()
+    {
+        return headPowerOvertempError;
+    }
+
+    /**
+     *
+     * @return
+     */
     public boolean isError()
     {
         return sdCardError
@@ -256,12 +289,15 @@ public class AckResponse extends RoboxRxPacket
             || gcodeBufferOverrunError
             || fileReadClobbered
             || maxGantryAdjustment
-            || reelEEPROMError
+            || reel0EEPROMError
             || eFilamentSlipError
             || dFilamentSlipError
             || nozzleFlushNeededError
             || zTopSwitchError
             || bStuckError
+            || reel1EEPROMError
+            || headPowerEEPROMError
+            || headPowerOvertempError
             || unknown_error_code;
     }
 
@@ -327,7 +363,7 @@ public class AckResponse extends RoboxRxPacket
         this.maxGantryAdjustment = (byteData[byteOffset] & 1) > 0 ? true : false;
         byteOffset += 1;
 
-        this.reelEEPROMError = (byteData[byteOffset] & 1) > 0 ? true : false;
+        this.reel0EEPROMError = (byteData[byteOffset] & 1) > 0 ? true : false;
         byteOffset += 1;
 
         this.eFilamentSlipError = (byteData[byteOffset] & 1) > 0 ? true : false;
@@ -343,6 +379,15 @@ public class AckResponse extends RoboxRxPacket
         byteOffset += 1;
 
         this.bStuckError = (byteData[byteOffset] & 1) > 0 ? true : false;
+        byteOffset += 1;
+
+        this.reel1EEPROMError = (byteData[byteOffset] & 1) > 0 ? true : false;
+        byteOffset += 1;
+
+        this.headPowerEEPROMError = (byteData[byteOffset] & 1) > 0 ? true : false;
+        byteOffset += 1;
+
+        this.headPowerOvertempError = (byteData[byteOffset] & 1) > 0 ? true : false;
         byteOffset += 1;
 
         unknown_error_code = false;
@@ -417,7 +462,7 @@ public class AckResponse extends RoboxRxPacket
         {
             outputString.append("Max gantry adjustment error\n");
         }
-        if (isReelEEPROMError())
+        if (isReel0EEPROMError())
         {
             outputString.append("Reel EEPROM error\n");
         }
@@ -440,6 +485,18 @@ public class AckResponse extends RoboxRxPacket
         if (isBStuckError())
         {
             outputString.append("B axis stuck error\n");
+        }
+        if (isReel1EEPROMError())
+        {
+            outputString.append("Reel 1 EEPROM error\n");
+        }
+        if (isHeadPowerEEPROMError())
+        {
+            outputString.append("Head power off - EEPROM error\n");
+        }
+        if (isHeadPowerOvertempError())
+        {
+            outputString.append("Head power off - Overtemperature error\n");
         }
         if (isUnknown_Error_Code())
         {
@@ -487,7 +544,7 @@ public class AckResponse extends RoboxRxPacket
         outputString.append("\n");
         outputString.append("Max gantry adjustment error: " + isMaxGantryAdjustment());
         outputString.append("\n");
-        outputString.append("Reel EEPROM error: " + isReelEEPROMError());
+        outputString.append("Reel EEPROM error: " + isReel0EEPROMError());
         outputString.append("\n");
         outputString.append("Extruder 1 filament slip error: " + isEFilamentSlipError());
         outputString.append("\n");
@@ -498,6 +555,12 @@ public class AckResponse extends RoboxRxPacket
         outputString.append("Z top switch error: " + isZTopSwitchError());
         outputString.append("\n");
         outputString.append("B axis stuck error: " + isBStuckError());
+        outputString.append("\n");
+        outputString.append("Reel 1 EEPROM error: " + isReel1EEPROMError());
+        outputString.append("\n");
+        outputString.append("Head power off - EEPROM error: " + isHeadPowerEEPROMError());
+        outputString.append("\n");
+        outputString.append("Head power off - Overtemperature error: " + isHeadPowerOvertempError());
         outputString.append("\n");
         outputString.append("Unknown error: " + isUnknown_Error_Code());
         outputString.append("\n");

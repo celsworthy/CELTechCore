@@ -1,6 +1,6 @@
 package celtech.services.calibration;
 
-import celtech.coreUI.DisplayManager;
+import celtech.Lookup;
 
 /**
  *
@@ -71,7 +71,7 @@ public enum CalibrationXAndYState
             return "";
         } else
         {
-            return DisplayManager.getLanguageBundle().getString(stepTitleResource);
+            return Lookup.i18n(stepTitleResource);
         }
     }
 }

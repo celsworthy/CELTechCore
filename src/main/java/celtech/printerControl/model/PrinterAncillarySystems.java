@@ -37,6 +37,7 @@ public class PrinterAncillarySystems
     protected final BooleanProperty ambientFanOn = new SimpleBooleanProperty(false);
     protected final BooleanProperty bAxisHome = new SimpleBooleanProperty(false);
     protected final BooleanProperty lidOpen = new SimpleBooleanProperty(false);
+    protected final BooleanProperty dualReelAdaptorPresent = new SimpleBooleanProperty(false);
 
     protected final ObjectProperty<HeaterMode> bedHeaterMode = new SimpleObjectProperty<>(HeaterMode.OFF);
     protected final IntegerProperty ambientTemperature = new SimpleIntegerProperty(0);
@@ -117,7 +118,12 @@ public class PrinterAncillarySystems
     {
         return lidOpen;
     }
-
+    
+    public ReadOnlyBooleanProperty dualReelAdaptorPresentProperty()
+    {
+        return dualReelAdaptorPresent;
+    }
+    
     public ReadOnlyObjectProperty<HeaterMode> bedHeaterModeProperty()
     {
         return bedHeaterMode;
