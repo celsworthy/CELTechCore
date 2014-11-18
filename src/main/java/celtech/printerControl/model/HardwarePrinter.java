@@ -2157,8 +2157,10 @@ public final class HardwarePrinter implements Printer
             switch (rxPacket.getPacketType())
             {
                 case ACK_WITH_ERRORS:
-                    systemNotificationManager.processErrorPacketFromPrinter((AckResponse) rxPacket,
+                    AckResponse ackResponse = (AckResponse) rxPacket;
+                    systemNotificationManager.processErrorPacketFromPrinter(ackResponse,
                                                                             printer);
+                    steno.trace(ackResponse.toString());
                     break;
 
                 case STATUS_RESPONSE:
