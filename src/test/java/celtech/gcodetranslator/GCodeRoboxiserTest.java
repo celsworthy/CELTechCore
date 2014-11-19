@@ -11,17 +11,12 @@ import celtech.gcodetranslator.events.CommentEvent;
 import celtech.gcodetranslator.events.ExtrusionEvent;
 import celtech.gcodetranslator.events.GCodeParseEvent;
 import celtech.gcodetranslator.events.LayerChangeWithTravelEvent;
+import celtech.gcodetranslator.events.NozzleChangeEvent;
+import celtech.gcodetranslator.events.NozzleOpenFullyEvent;
 import celtech.gcodetranslator.events.TravelEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import org.junit.Rule;
@@ -42,11 +37,42 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
+    public void testShortPathPartialOpenAndClose() throws IOException, URISyntaxException
+    {
+        SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
+
+        ExtrusionBuffer extrusionBuffer = new ExtrusionBuffer();
+
+        NozzleChangeEvent nozzleChange = new NozzleChangeEvent();
+        nozzleChange.setNozzleNumber(0);
+        extrusionBuffer.add(nozzleChange);
+
+        NozzleOpenFullyEvent nozzleOpenFully = new NozzleOpenFullyEvent();
+        extrusionBuffer.add(nozzleOpenFully);
+
+        extrusionBuffer.add(constructExtrusionEvent(0.0709, 0, 74.406, 48.347, 960, ExtrusionTask.Fill));
+
+        GCodeRoboxiser gCodeRoboxiser = new GCodeRoboxiser();
+        gCodeRoboxiser.initialise(parameters, "nonexistentfile");
+        gCodeRoboxiser.extrusionBuffer = extrusionBuffer;
+        gCodeRoboxiser.currentNozzle = gCodeRoboxiser.nozzleProxies.get(0);
+
+        try
+        {
+            gCodeRoboxiser.writeEventsWithNozzleClose("ShortPathPartialOpenTest");
+
+        } catch (PostProcessingError ex)
+        {
+            fail("Got PostProcessingError");
+        }
+    }
+
+    @Test
     public void testInsertTravelAndClosePathBox() throws IOException, URISyntaxException
     {
         SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
 
-        ArrayList<GCodeParseEvent> extrusionBuffer = new ArrayList<>();
+        ExtrusionBuffer extrusionBuffer = new ExtrusionBuffer();
 
         //G0 F18000 X0.750 Y24.250 Z0.400
         //;TYPE:WALL-INNER
@@ -131,7 +157,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     {
         SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
 
-        ArrayList<GCodeParseEvent> extrusionBuffer = new ArrayList<>();
+        ExtrusionBuffer extrusionBuffer = new ExtrusionBuffer();
 
         /*
          * 2.25 - 22.75
@@ -365,7 +391,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
         SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
         parameters.setSlicerOverride(SlicerType.Cura);
 
-        ArrayList<GCodeParseEvent> extrusionBuffer = new ArrayList<>();
+        ExtrusionBuffer extrusionBuffer = new ExtrusionBuffer();
 
         /*
          * X 95.595 - 119.095
@@ -406,7 +432,6 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
         //G1 X94.995 Y63.939 E1.48300
         //G1 X119.695 Y63.939 E1.48300
         //G0 F18000 X119.023 Y64.824      
-        
         /*
          * X 95.595 - 119.095
          * Y 64.539 - 88.039

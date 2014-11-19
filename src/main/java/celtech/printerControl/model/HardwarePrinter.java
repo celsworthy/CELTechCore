@@ -19,6 +19,7 @@ import celtech.printerControl.comms.PrinterStatusConsumer;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
+import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.printerControl.comms.commands.rx.GCodeDataResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
@@ -51,6 +52,7 @@ import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.WritePrinterID;
 import celtech.printerControl.comms.commands.tx.WriteReel0EEPROM;
 import celtech.printerControl.comms.commands.tx.WriteReel1EEPROM;
+import celtech.printerControl.comms.events.ErrorConsumer;
 import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
 import celtech.printerControl.model.calibration.NozzleOpeningStateTransitionManager;
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
@@ -68,7 +70,11 @@ import celtech.utils.tasks.TaskResponder;
 import celtech.utils.tasks.TaskResponse;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
@@ -167,6 +173,11 @@ public final class HardwarePrinter implements Printer
     protected final StringProperty printJobID = new SimpleStringProperty("");
 
     private PrintEngine printEngine;
+
+    /*
+     * Error handling
+     */
+    private final Map<ErrorConsumer, ArrayList<FirmwareError>> errorConsumers = new HashMap<>();
 
     public HardwarePrinter(PrinterStatusConsumer printerStatusConsumer,
         CommandInterface commandInterface)
@@ -832,7 +843,7 @@ public final class HardwarePrinter implements Printer
         AckResponse response = (AckResponse) commandInterface.writeToPrinter(gcodePacket);
         boolean success = false;
         // Only check for SD card errors here...
-        success = !response.isSdCardError();
+        success = !response.getFirmwareErrors().contains(FirmwareError.ERROR_SD_CARD);
 
         return success;
     }
@@ -2139,11 +2150,24 @@ public final class HardwarePrinter implements Printer
         return calibrationOpeningManager;
     }
 
+    @Override
+    public void registerErrorConsumer(ErrorConsumer errorConsumer, ArrayList<FirmwareError> errorsOfInterest)
+    {
+        errorConsumers.put(errorConsumer, errorsOfInterest);
+    }
+
+    @Override
+    public void deregisterErrorConsumer(ErrorConsumer errorConsumer)
+    {
+        errorConsumers.remove(errorConsumer);
+    }
+
     class RoboxEventProcessor implements Runnable
     {
 
         private Printer printer;
         private RoboxRxPacket rxPacket;
+        private boolean errorWasConsumed;
 
         public RoboxEventProcessor(Printer printer, RoboxRxPacket rxPacket)
         {
@@ -2158,9 +2182,33 @@ public final class HardwarePrinter implements Printer
             {
                 case ACK_WITH_ERRORS:
                     AckResponse ackResponse = (AckResponse) rxPacket;
-                    systemNotificationManager.processErrorPacketFromPrinter(ackResponse,
-                                                                            printer);
-                    steno.trace(ackResponse.toString());
+
+                    if (ackResponse.isError())
+                    {
+                        List<FirmwareError> errorsFound = ackResponse.getFirmwareErrors();
+
+                        errorsFound.stream()
+                            .forEach(
+                                foundError ->
+                                {
+                                    errorWasConsumed = false;
+                                    errorConsumers.forEach((consumer, errorList) ->
+                                        {
+                                            if (errorList.contains(foundError))
+                                            {
+                                                consumer.consume(foundError);
+                                                errorWasConsumed = true;
+                                            }
+                                    });
+
+                                    if (!errorWasConsumed)
+                                    {
+                                        systemNotificationManager.processErrorPacketFromPrinter(foundError, printer);
+                                    }
+                                });
+
+                        steno.trace(ackResponse.toString());
+                    }
                     break;
 
                 case STATUS_RESPONSE:

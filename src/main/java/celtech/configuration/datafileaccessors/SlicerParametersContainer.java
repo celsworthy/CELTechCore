@@ -102,6 +102,7 @@ public class SlicerParametersContainer
                 } catch (IOException ex)
                 {
                     steno.error("Error reading profile " + profileName);
+                    ex.printStackTrace();
                 }
             } else
             {

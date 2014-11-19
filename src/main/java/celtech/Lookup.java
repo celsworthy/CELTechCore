@@ -12,12 +12,18 @@ import celtech.configuration.datafileaccessors.SlicerMappingsContainer;
 import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.SlicerMappings;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.gcodetranslator.GCodeOutputWriter;
+import celtech.gcodetranslator.GCodeOutputWriterFactory;
+import celtech.gcodetranslator.LiveGCodeOutputWriter;
 import celtech.printerControl.model.Printer;
 import celtech.utils.PrinterListChangesNotifier;
 import celtech.utils.tasks.LiveTaskExecutor;
 import celtech.utils.tasks.TaskExecutor;
+import java.io.IOException;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -28,10 +34,12 @@ import libertysystems.stenographer.StenographerFactory;
 
 /**
  * This class functions as the global service registry for AutoMaker.
+ *
  * @author tony
  */
 public class Lookup
 {
+
     private static Lookup instance;
     private ApplicationEnvironment applicationEnvironment;
     private TaskExecutor taskExecutor;
@@ -44,12 +52,13 @@ public class Lookup
     private static SlicerParametersFile slicerParameters;
     private static final ObjectProperty<Printer> currentlySelectedPrinterProperty = new SimpleObjectProperty<>();
     private static Languages languages = new Languages();
+    private static GCodeOutputWriterFactory<GCodeOutputWriter> postProcessorGCodeOutputWriterFactory;
 
     public static Languages getLanguages()
     {
         return languages;
     }
-    
+
     /**
      * @return the applicationEnvironment
      */
@@ -74,12 +83,14 @@ public class Lookup
     private Lookup()
     {
         userPreferences = new UserPreferences(UserPreferenceContainer.getUserPreferenceFile());
-        
+
         Locale appLocale;
         String languageTag = userPreferences.getLanguageTag();
-        if (languageTag == null || languageTag.length() == 0) {
+        if (languageTag == null || languageTag.length() == 0)
+        {
             appLocale = Locale.getDefault();
-        } else {
+        } else
+        {
             appLocale = Locale.forLanguageTag(languageTag);
         }
         ResourceBundle i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData",
@@ -89,8 +100,10 @@ public class Lookup
         systemNotificationHandler = new SystemNotificationManagerJavaFX();
         steno.info("Detected locale - " + appLocale.toLanguageTag());
         printerListChangesNotifier = new PrinterListChangesNotifier(connectedPrinters);
-        
+
         slicerMappings = SlicerMappingsContainer.getSlicerMappings();
+
+        setPostProcessorOutputWriterFactory(LiveGCodeOutputWriter :: new);
     }
 
     public static void initialise()
@@ -163,5 +176,15 @@ public class Lookup
     public static SlicerMappings getSlicerMappings()
     {
         return slicerMappings;
+    }
+
+    public static GCodeOutputWriterFactory getPostProcessorOutputWriterFactory()
+    {
+        return postProcessorGCodeOutputWriterFactory;
+    }
+
+    public static void setPostProcessorOutputWriterFactory(GCodeOutputWriterFactory<GCodeOutputWriter> factory)
+    {
+        postProcessorGCodeOutputWriterFactory = factory;
     }
 }

@@ -9,6 +9,7 @@ import celtech.coreUI.components.ProgressDialog;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
+import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.firmware.FirmwareLoadResult;
@@ -123,7 +124,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     }
 
     @Override
-    public void processErrorPacketFromPrinter(AckResponse response, Printer printer)
+    public void processErrorPacketFromPrinter(FirmwareError error, Printer printer)
     {
         if (clearOnly == null)
         {
@@ -135,8 +136,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
-            if (response.isError()
-                && !errorDialogOnDisplay)
+            if (!errorDialogOnDisplay)
             {
                 errorDialogOnDisplay = true;
 
@@ -151,13 +151,13 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                         abortJob
                     );
                     printerErrorDialog.setTitle(Lookup.i18n("dialogs.error.errorEncountered"));
-                    printerErrorDialog.setContentText(response.getErrorsAsString());
+                    printerErrorDialog.setContentText(error.getLocalisedErrorText());
                     errorHandlingResponse = printerErrorDialog.showAndWait();
                 } else
                 {
                     CommandLinksDialog printerErrorDialog = new CommandLinksDialog(clearOnlyDefault, abortJob);
                     printerErrorDialog.setTitle(Lookup.i18n("dialogs.error.errorEncountered"));
-                    printerErrorDialog.setContentText(response.getErrorsAsString());
+                    printerErrorDialog.setContentText(error.getLocalisedErrorText());
                     errorHandlingResponse = printerErrorDialog.showAndWait();
                 }
 

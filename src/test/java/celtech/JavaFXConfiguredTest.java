@@ -6,6 +6,7 @@ package celtech;
 import celtech.appManager.TestSystemNotificationManager;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
+import celtech.gcodetranslator.TestGCodeOutputWriter;
 import celtech.utils.tasks.TestTaskExecutor;
 import java.io.File;
 import java.net.URL;
@@ -54,6 +55,8 @@ public class JavaFXConfiguredTest
 
         Lookup.setTaskExecutor(new TestTaskExecutor());
         Lookup.setSystemNotificationHandler(new TestSystemNotificationManager());
+        
+        Lookup.setPostProcessorOutputWriterFactory(TestGCodeOutputWriter :: new);
     }
 
 }

@@ -11,6 +11,7 @@ import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
+import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.comms.commands.rx.ListFilesResponse;
@@ -18,6 +19,7 @@ import celtech.printerControl.comms.commands.rx.PrinterIDResponse;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
+import celtech.printerControl.comms.events.ErrorConsumer;
 import celtech.printerControl.model.Extruder;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.PrintEngine;
@@ -33,6 +35,7 @@ import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.tasks.TaskResponder;
+import java.util.ArrayList;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -669,5 +672,17 @@ class TestPrinter implements Printer
     public ObservableMap<Integer, Reel> reelsProperty()
     {
         return reelsProperty;
+    }
+
+    @Override
+    public void registerErrorConsumer(ErrorConsumer errorConsumer, ArrayList<FirmwareError> errorsOfInterest)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void deregisterErrorConsumer(ErrorConsumer errorConsumer)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
