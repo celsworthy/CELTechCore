@@ -50,6 +50,12 @@ public class MyMiniFactoryLoaderController implements Initializable
     private GraphicButton addToProjectButton;
 
     @FXML
+    private GraphicButton forwardButton;
+
+    @FXML
+    private GraphicButton backwardButton;
+
+    @FXML
     void cancelPressed(ActionEvent event)
     {
         ApplicationStatus.getInstance().modeProperty().set(ApplicationMode.LAYOUT);
@@ -60,6 +66,13 @@ public class MyMiniFactoryLoaderController implements Initializable
     {
         JSObject history = (JSObject) webEngine.executeScript("history");
         history.call("back");
+    }
+
+    @FXML
+    void forwardPressed(ActionEvent event)
+    {
+        JSObject history = (JSObject) webEngine.executeScript("history");
+        history.call("forward");
     }
 
     @FXML
@@ -101,29 +114,29 @@ public class MyMiniFactoryLoaderController implements Initializable
                     case RUNNING:
                         fileDownloadLocation.set("");
                         spinner.startSpinning();
-                        steno.info("running");
                         break;
                     case SUCCEEDED:
                         fileDownloadLocation.set("");
                         spinner.stopSpinning();
-                        steno.info("loaded");
-                        Object fileLinkFunction = webEngine.executeScript(
-                            "window.autoMakerGetFileLink");
+                        Object fileLinkFunction = webEngine
+                        .executeScript("window.autoMakerGetFileLink");
                         if (fileLinkFunction instanceof JSObject)
                         {
-                            fileDownloadLocation.set((String) webEngine.executeScript(
-                                    "window.autoMakerGetFileLink()"));
+                            fileDownloadLocation.set((String) webEngine
+                                .executeScript("window.autoMakerGetFileLink()"));
                         }
+                        boolean okForBackwards = webEngine.getLocation().matches(".*\\/object\\/.*");
+                        boolean okForForwards = !okForBackwards && webEngine.getHistory().getEntries().size() > 0;
+                        backwardButton.disableProperty().set(!okForBackwards);
+                        forwardButton.disableProperty().set(!okForForwards);
                         break;
                     case CANCELLED:
                         fileDownloadLocation.set("");
                         spinner.stopSpinning();
-                        steno.info("cancelled");
                         break;
                     case FAILED:
                         fileDownloadLocation.set("");
                         spinner.stopSpinning();
-                        steno.info("failed");
                         break;
                 }
             });
