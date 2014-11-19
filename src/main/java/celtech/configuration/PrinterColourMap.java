@@ -5,6 +5,7 @@
  */
 package celtech.configuration;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import javafx.scene.paint.Color;
@@ -15,8 +16,11 @@ import javafx.scene.paint.Color;
  */
 public class PrinterColourMap
 {
+
     private static PrinterColourMap instance = null;
     private static HashMap<Color, Color> colourMap = new HashMap<>();
+    private static ArrayList<Color> printerColours = new ArrayList<>();
+    private static ArrayList<Color> displayColours = new ArrayList<>();
 
     private PrinterColourMap()
     {
@@ -39,6 +43,9 @@ public class PrinterColourMap
         colourMap.put(Color.web("#FF0000"), Color.web("#FF0000"));
         colourMap.put(Color.web("#FF4600"), Color.web("#FF7F00"));
         colourMap.put(Color.web("#FFC800"), Color.web("#FFFF00"));
+        
+        printerColours = new ArrayList<>(colourMap.keySet());
+        displayColours = new ArrayList<>(colourMap.values());
     }
 
     /**
@@ -83,5 +90,15 @@ public class PrinterColourMap
             }
         }
         return printerColour;
+    }
+
+    public ArrayList<Color> getPrinterColours()
+    {
+        return printerColours;
+    }
+
+    public ArrayList<Color> getDisplayColours()
+    {
+        return displayColours;
     }
 }
