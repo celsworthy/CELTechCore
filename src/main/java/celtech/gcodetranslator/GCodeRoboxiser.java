@@ -1585,7 +1585,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
                                 if (nozzleCloseMidpointIndex == -1)
                                 {
-                                    nozzleEvent.setComment(event.getComment() + " Normal close");
+                                    String commentToOutput = ((event.getComment() == null) ? "" : event.getComment()) + " Normal close";
+                                    nozzleEvent.setComment(commentToOutput);
                                     currentNozzlePosition = currentNozzlePosition
                                         - (nozzleStartPosition * (event.getE()
                                         / nozzleCloseOverVolume));
@@ -1860,7 +1861,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
                 if (closestEventIndex < 0)
                 {
-                    steno.warning("Couldn't find closest point to end of line when analysing inward wipe - defaulting to reverse");
+                    steno.warning("Couldn't find closest point to end of line when analysing inward wipe - defaulting to reverse. Got up to line " + extrusionBuffer.get(extrusionBuffer.size() - 1).getLinesSoFar());
                     finalExtrusionWasPerimeter = false;
                 } else
                 {
@@ -1945,6 +1946,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
         if (minimumIndexToCopyFrom >= 0)
         {
+            boolean startMessageOutput = false;
+            
             while (cumulativeExtrusionVolume < targetVolume
                 && indexToCopyFrom <= modifiedFinalExtrusionEventIndex
                 && indexToCopyFrom >= minimumIndexToCopyFrom + 1)
@@ -2009,7 +2012,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                         eventToInsert.setD(eventToCopy.getD());
                         eventToInsert.setX(eventToCopy.getX());
                         eventToInsert.setY(eventToCopy.getY());
-                        eventToInsert.setComment(wipeTypeComment + " start");
+                        eventToInsert.setComment(wipeTypeComment + ((startMessageOutput == false) ? " start" : " in progress"));
+                        startMessageOutput = true;
                         eventToInsert.setFeedRate(wipeFeedRate_mmPerMin);
 
                         extrusionBuffer.add(insertedEventIndex, eventToInsert);
