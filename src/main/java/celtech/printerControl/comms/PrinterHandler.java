@@ -51,6 +51,7 @@ import javafx.event.EventHandler;
 import javafx.scene.paint.Color;
 import jssc.SerialPort;
 import jssc.SerialPortException;
+import libertysystems.configuration.ConfigItemIsAnArray;
 import libertysystems.configuration.ConfigNotLoadedException;
 import libertysystems.configuration.Configuration;
 import libertysystems.stenographer.Stenographer;
@@ -88,7 +89,8 @@ public class PrinterHandler extends Thread
     private ProgressDialog firmwareUpdateProgress = null;
     private final FirmwareLoadService firmwareLoadService = new FirmwareLoadService();
     private ResourceBundle languageBundle = null;
-    private int requiredFirmwareVersion = 0;
+    private String requiredFirmwareVersionString = "";
+    private float requiredFirmwareVersion = 0;
 
     private PrinterIDDialog printerIDDialog = null;
     private boolean printerIDDialogWillShow = false;
@@ -123,8 +125,16 @@ public class PrinterHandler extends Thread
         try
         {
             Configuration applicationConfiguration = Configuration.getInstance();
-            requiredFirmwareVersion = applicationConfiguration.getInt(
-                ApplicationConfiguration.applicationConfigComponent, "requiredFirmwareVersion");
+
+            try
+            {
+                requiredFirmwareVersionString = applicationConfiguration.getString(
+                    ApplicationConfiguration.applicationConfigComponent, "requiredFirmwareVersion").trim();
+                requiredFirmwareVersion = Float.valueOf(requiredFirmwareVersionString);
+            } catch (ConfigItemIsAnArray ex)
+            {
+                steno.error("Firmware version was an array... can't interpret firmware version");
+            }
         } catch (ConfigNotLoadedException ex)
         {
             steno.error("Couldn't load configuration - will not be able to check firmware version");
@@ -306,14 +316,14 @@ public class PrinterHandler extends Thread
                                 steno.info("Firmware v " + fwResponse.getFirmwareRevision()
                                     + " returned");
 
-                                if (fwResponse.getFirmwareRevisionInt() > requiredFirmwareVersion)
+                                if (fwResponse.getFirmwareRevisionFloat() > requiredFirmwareVersion)
                                 {
                                     //The firmware version is higher than that associated with AutoMaker
                                     // Tell the user to upgrade
 
                                     steno.warning("Firmware version is "
-                                        + fwResponse.getFirmwareRevisionInt() + " and should be "
-                                        + requiredFirmwareVersion);
+                                        + fwResponse.getFirmwareRevisionString() + " and should be "
+                                        + requiredFirmwareVersionString);
 
                                     firmwareCheckInProgress = true;
                                     Platform.runLater(new Runnable()
@@ -326,10 +336,10 @@ public class PrinterHandler extends Thread
                                                     "dialogs.firmwareVersionTooLowTitle"))
                                                 .message(languageBundle.getString(
                                                         "dialogs.firmwareVersionError1")
-                                                    + fwResponse.getFirmwareRevisionInt()
+                                                    + fwResponse.getFirmwareRevisionString()
                                                     + languageBundle.getString(
                                                         "dialogs.firmwareVersionError2")
-                                                    + requiredFirmwareVersion + ".\n"
+                                                    + requiredFirmwareVersionString + ".\n"
                                                     + languageBundle.getString(
                                                         "dialogs.firmwareVersionError3"))
                                                 .masthead(null)
@@ -343,7 +353,7 @@ public class PrinterHandler extends Thread
                                                 firmwareLoadService.setPrinterToUse(printerToUse);
                                                 firmwareLoadService.setFirmwareFileToLoad(
                                                     ApplicationConfiguration.getCommonApplicationDirectory()
-                                                    + "robox_r" + requiredFirmwareVersion + ".bin");
+                                                    + "robox_r" + requiredFirmwareVersionString + ".bin");
                                                 firmwareLoadService.start();
                                             } else if (upgradeApplicationResponse
                                                 == firmwareDowngradeNotOK)
@@ -365,13 +375,13 @@ public class PrinterHandler extends Thread
                                             }
                                         }
                                     });
-                                } else if (fwResponse.getFirmwareRevisionInt()
+                                } else if (fwResponse.getFirmwareRevisionFloat()
                                     < requiredFirmwareVersion)
                                 {
                                     firmwareCheckInProgress = true;
                                     steno.warning("Firmware version is "
-                                        + fwResponse.getFirmwareRevisionInt() + " and should be "
-                                        + requiredFirmwareVersion);
+                                        + fwResponse.getFirmwareRevisionString() + " and should be "
+                                        + requiredFirmwareVersionString);
 
                                     Platform.runLater(new Runnable()
                                     {
@@ -384,10 +394,10 @@ public class PrinterHandler extends Thread
                                                     "dialogs.firmwareUpgradeTitle"))
                                                 .message(languageBundle.getString(
                                                         "dialogs.firmwareVersionError1")
-                                                    + fwResponse.getFirmwareRevisionInt()
+                                                    + fwResponse.getFirmwareRevisionString()
                                                     + languageBundle.getString(
                                                         "dialogs.firmwareVersionError2")
-                                                    + requiredFirmwareVersion + ".\n"
+                                                    + requiredFirmwareVersionString + ".\n"
                                                     + languageBundle.getString(
                                                         "dialogs.firmwareVersionError3"))
                                                 .masthead(null)
@@ -401,7 +411,7 @@ public class PrinterHandler extends Thread
                                                 firmwareLoadService.setPrinterToUse(printerToUse);
                                                 firmwareLoadService.setFirmwareFileToLoad(
                                                     ApplicationConfiguration.getCommonApplicationDirectory()
-                                                    + "robox_r" + requiredFirmwareVersion + ".bin");
+                                                    + "robox_r" + requiredFirmwareVersionString + ".bin");
                                                 firmwareLoadService.start();
                                             } else if (upgradeApplicationResponse
                                                 == firmwareUpgradeNotOK)
@@ -655,12 +665,8 @@ public class PrinterHandler extends Thread
     {
         RoboxRxPacket receivedPacket = null;
 
-        if (commsState == RoboxCommsState.CONNECTED || 
-            commsState == RoboxCommsState.CHECKING_FIRMWARE ||
-            commsState == RoboxCommsState.CHECKING_HEAD ||
-            commsState == RoboxCommsState.FORMATTING_HEAD ||
-            commsState == RoboxCommsState.POST ||
-            commsState == RoboxCommsState.CHECKING_ID && serialPort != null)
+        if (commsState == RoboxCommsState.CONNECTED || commsState == RoboxCommsState.CHECKING_FIRMWARE || commsState == RoboxCommsState.CHECKING_HEAD || commsState == RoboxCommsState.FORMATTING_HEAD
+            || commsState == RoboxCommsState.POST || commsState == RoboxCommsState.CHECKING_ID && serialPort != null)
         {
             try
             {
@@ -861,8 +867,7 @@ public class PrinterHandler extends Thread
     }
 
     /**
-     * Check the head and if it is unformatted then offer to format it. If it is not programmed then
-     * offer to reset it.
+     * Check the head and if it is unformatted then offer to format it. If it is not programmed then offer to reset it.
      */
     private boolean checkHead()
     {

@@ -16,7 +16,8 @@ public class FirmwareResponse extends RoboxRxPacket
     private final String charsetToUse = "US-ASCII";
     private String firmwareRevision = null;
     private final int firmwareRevisionBytes = 8;
-    private int firmwareRevisionInt = 0;
+    private float firmwareRevisionFloat = 0;
+    private String firmwareRevisionString = "";
 
     /**
      *
@@ -31,9 +32,14 @@ public class FirmwareResponse extends RoboxRxPacket
      *
      * @return
      */
-    public int getFirmwareRevisionInt()
+    public float getFirmwareRevisionFloat()
     {
-        return firmwareRevisionInt;
+        return firmwareRevisionFloat;
+    }
+    
+    public String getFirmwareRevisionString()
+    {
+       return firmwareRevisionString; 
     }
 
     /**
@@ -60,8 +66,8 @@ public class FirmwareResponse extends RoboxRxPacket
             this.firmwareRevision = new String(byteData, byteOffset, firmwareRevisionBytes, charsetToUse);
             byteOffset += firmwareRevisionBytes;
 
-            //TODO hack related to bug 19 - remove once this is fixed.
-            this.firmwareRevisionInt = Integer.valueOf(firmwareRevision.substring(1,4).trim());
+            this.firmwareRevisionString = firmwareRevision.trim();
+            this.firmwareRevisionFloat = Float.valueOf(firmwareRevision.trim().substring(1));
 
             success = true;
         } catch (UnsupportedEncodingException ex)
