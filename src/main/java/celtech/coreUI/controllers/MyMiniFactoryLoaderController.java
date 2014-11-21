@@ -7,7 +7,19 @@ import celtech.coreUI.components.Spinner;
 import celtech.coreUI.components.buttons.GraphicButton;
 import celtech.utils.MyMiniFactoryLoadResult;
 import celtech.utils.MyMiniFactoryLoader;
+import celtech.web.AllCookiePolicy;
+import celtech.web.CookieContainer;
+import celtech.web.PersistentCookieStore;
+import java.io.IOException;
+import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
+import java.net.CookieStore;
+import java.net.HttpCookie;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -42,6 +54,9 @@ public class MyMiniFactoryLoaderController implements Initializable
     private Spinner spinner = null;
 
     private final StringProperty fileDownloadLocation = new SimpleStringProperty("");
+
+    private final String myMiniFactoryURLString = "http://cel-robox.myminifactory.com";
+    private boolean forwardsPossible = false;
 
     @FXML
     private VBox webContentContainer;
@@ -92,11 +107,43 @@ public class MyMiniFactoryLoaderController implements Initializable
         addToProjectButton.disableProperty().bind(Bindings.equal("", fileDownloadLocation));
 
         loadWebData();
-
     }
 
     public void loadWebData()
     {
+        CookieStore persistentStore = new PersistentCookieStore();
+        CookiePolicy policy = new AllCookiePolicy();
+        CookieManager handler = new CookieManager(persistentStore, policy);
+        CookieHandler.setDefault(handler);
+
+        boolean firstTime = true;
+
+        //Set up the mmf cookie the first time we're loading the page
+//        if (firstTime)
+//        {
+//            try
+//            {
+//                URI mmfURI = new URI(myMiniFactoryURLString);
+//                List<HttpCookie> cookieList = persistentStore.get(mmfURI);
+//                cookieList.stream().forEach(cookie
+//                    ->
+//                    {
+//                        try
+//                        {
+//                            CookieHandler.getDefault().put(mmfURI, CookieContainer.cookieToHeaderMap(cookie));
+//                        }
+//                        catch (IOException ex)
+//                        {
+//                            steno.error("Couldn't process MMF element");
+//                        }
+//                    });
+//            } catch (URISyntaxException ex)
+//            {
+//                steno.error("Error creating MMF URI");
+//            }
+//            firstTime = !firstTime;
+//        }
+
         webContentContainer.getChildren().clear();
 
         WebView webView = new WebView();
@@ -126,7 +173,8 @@ public class MyMiniFactoryLoaderController implements Initializable
                                 .executeScript("window.autoMakerGetFileLink()"));
                         }
                         boolean okForBackwards = webEngine.getLocation().matches(".*\\/object\\/.*");
-                        boolean okForForwards = !okForBackwards && webEngine.getHistory().getEntries().size() > 0;
+                        forwardsPossible |= okForBackwards;
+                        boolean okForForwards = !okForBackwards && forwardsPossible;
                         backwardButton.disableProperty().set(!okForBackwards);
                         forwardButton.disableProperty().set(!okForForwards);
                         break;
@@ -141,7 +189,8 @@ public class MyMiniFactoryLoaderController implements Initializable
                 }
             });
         webContentContainer.getChildren().addAll(webView);
-        webEngine.load("http://cel-robox.myminifactory.com");
+
+        webEngine.load(myMiniFactoryURLString);
     }
 
     private boolean alreadyDownloading = false;

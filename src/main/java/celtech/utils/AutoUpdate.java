@@ -76,72 +76,75 @@ public class AutoUpdate extends Thread
             steno.warning("AutoUpdate sleep was interrupted");
         }
 
-        while (strikes < 1 && keepRunning)
-        {
-            int status = checkForUpdates();
-
-            switch (status)
-            {
-                case UPGRADE_NOT_REQUIRED:
-                    Platform.runLater(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            Notifier.showInformationNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateApplicationNotRequired") + applicationName);
-                        }
-                    });
-                    keepRunning = false;
+                                 keepRunning = false;
                     completionListener.autoUpdateComplete(false);
-                    break;
-                case UPGRADE_NOT_AVAILABLE_FOR_THIS_RELEASE:
-                    Platform.runLater(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            Notifier.showInformationNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateApplicationNotAvailableForThisRelease")
-                                                                 + applicationName);
-                        }
-                    });
-                    keepRunning = false;
-                    completionListener.autoUpdateComplete(false);
-                    break;
-                case UPGRADE_REQUIRED:
 
-                    boolean upgradeApplication = Lookup.getSystemNotificationHandler().showApplicationUpgradeDialog(applicationName);
-                    if (upgradeApplication)
-                    {
-                        //Run the autoupdater in the background in download mode
-                        startUpdate();
-                        completionListener.autoUpdateComplete(true);
-                    } else
-                    {
-                        completionListener.autoUpdateComplete(false);
-                    }
-                    keepRunning = false;
-                    break;
-                case ERROR:
-                    Platform.runLater(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            Notifier.showErrorNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateFailedToContact"));
-                        }
-                    });
-                    try
-                    {
-                        this.sleep(5000);
-                    } catch (InterruptedException ex)
-                    {
-                        steno.warning("AutoUpdate sleep was interrupted");
-                    }
-
-                    strikes++;
-                    break;
-            }
-        }
+//        while (strikes < 1 && keepRunning)
+//        {
+//            int status = checkForUpdates();
+//
+//            switch (status)
+//            {
+//                case UPGRADE_NOT_REQUIRED:
+//                    Platform.runLater(new Runnable()
+//                    {
+//                        @Override
+//                        public void run()
+//                        {
+//                            Notifier.showInformationNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateApplicationNotRequired") + applicationName);
+//                        }
+//                    });
+//                    keepRunning = false;
+//                    completionListener.autoUpdateComplete(false);
+//                    break;
+//                case UPGRADE_NOT_AVAILABLE_FOR_THIS_RELEASE:
+//                    Platform.runLater(new Runnable()
+//                    {
+//                        @Override
+//                        public void run()
+//                        {
+//                            Notifier.showInformationNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateApplicationNotAvailableForThisRelease")
+//                                                                 + applicationName);
+//                        }
+//                    });
+//                    keepRunning = false;
+//                    completionListener.autoUpdateComplete(false);
+//                    break;
+//                case UPGRADE_REQUIRED:
+//
+//                    boolean upgradeApplication = Lookup.getSystemNotificationHandler().showApplicationUpgradeDialog(applicationName);
+//                    if (upgradeApplication)
+//                    {
+//                        //Run the autoupdater in the background in download mode
+//                        startUpdate();
+//                        completionListener.autoUpdateComplete(true);
+//                    } else
+//                    {
+//                        completionListener.autoUpdateComplete(false);
+//                    }
+//                    keepRunning = false;
+//                    break;
+//                case ERROR:
+//                    Platform.runLater(new Runnable()
+//                    {
+//                        @Override
+//                        public void run()
+//                        {
+//                            Notifier.showErrorNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateFailedToContact"));
+//                        }
+//                    });
+//                    try
+//                    {
+//                        this.sleep(5000);
+//                    } catch (InterruptedException ex)
+//                    {
+//                        steno.warning("AutoUpdate sleep was interrupted");
+//                    }
+//
+//                    strikes++;
+//                    break;
+//            }
+//        }
 
         if (keepRunning)
         {

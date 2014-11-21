@@ -1,10 +1,19 @@
 package celtech.web;
 
+import celtech.configuration.ApplicationConfiguration;
+import celtech.crypto.CryptoFileStore;
+import java.io.IOException;
+import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookieStore;
 import java.net.HttpCookie;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
+import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  *
@@ -12,17 +21,45 @@ import java.util.List;
  */
 public class PersistentCookieStore implements CookieStore, Runnable
 {
-    CookieStore store;
+
+    private final Stenographer steno = StenographerFactory.getStenographer(PersistentCookieStore.class.getName());
+    private final String filename = ".nothing.dat";
+    private final CryptoFileStore cryptoFileStore;
+    private ObjectMapper jsonMapper = new ObjectMapper();
+    private CookieStore store;
 
     public PersistentCookieStore()
     {
         // get the default in memory cookie store
         store = new CookieManager().getCookieStore();
 
-        // todo: read in cookies from persistant storage
-        // and add them store
-        
-        
+        cryptoFileStore = new CryptoFileStore(ApplicationConfiguration.getApplicationStorageDirectory() + filename);
+        steno.info("Reading cookie store");
+        String encryptedCookieData = cryptoFileStore.readFile();
+
+        if (encryptedCookieData != null)
+        {
+            try
+            {
+                List<CookieContainer> cookieContainers = jsonMapper.readValue(encryptedCookieData, jsonMapper.getTypeFactory().constructCollectionType(List.class, CookieContainer.class));
+
+                cookieContainers.stream().forEach(cookieContainer ->
+                {
+                    try
+                    {
+                        URI uri = new URI(cookieContainer.getUri());
+                        cookieContainer.revealTheCookies().stream().forEach(cookie -> store.add(uri, cookie));
+                    } catch (URISyntaxException ex)
+                    {
+                        steno.error("Error reading cache");
+                    }
+                });
+            } catch (IOException ex)
+            {
+                steno.error("Error reading cached data");
+            }
+        }
+
         // add a shutdown hook to write out the in memory cookies
         Runtime.getRuntime().addShutdownHook(new Thread(this));
     }
@@ -30,7 +67,24 @@ public class PersistentCookieStore implements CookieStore, Runnable
     @Override
     public void run()
     {
-        // todo: write cookies in store to persistent storage
+        List<CookieContainer> cookieContainers = new ArrayList<>();
+
+        store.getURIs()
+            .stream()
+            .forEach((uri) ->
+                {
+                    cookieContainers.add(new CookieContainer(uri.toString(), store.getCookies()));
+            });
+
+        try
+        {
+            String dataToEncrypt = jsonMapper.writeValueAsString(cookieContainers);
+            steno.info("Writing cookie store");
+            cryptoFileStore.writeFile(dataToEncrypt);
+        } catch (IOException ex)
+        {
+            steno.error("Error caching data");
+        }
     }
 
     @Override

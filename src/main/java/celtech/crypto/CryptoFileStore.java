@@ -52,6 +52,7 @@ public class CryptoFileStore
     public CryptoFileStore(String storeFileName)
     {
         this.storeFileName = storeFileName;
+        this.storeFile = new File(storeFileName);
         salt = salt + storeFileName;
 
         byte ivbytes[] =
@@ -68,15 +69,18 @@ public class CryptoFileStore
     {
         String decryptedText = null;
 
-        try
+        if (storeFile.exists())
         {
-            String encryptedBase64Text = FileUtils.readFileToString(storeFile, "UTF-8");
+            try
+            {
+                String encryptedBase64Text = FileUtils.readFileToString(storeFile, "UTF-8");
 
-            decryptedText = decrypt(encryptedBase64Text);
-        } catch (IOException ex)
-        {
-            steno.error("Error decrypting file " + storeFileName);
-            ex.printStackTrace();
+                decryptedText = decrypt(encryptedBase64Text);
+            } catch (IOException ex)
+            {
+                steno.error("Error decrypting file " + storeFileName);
+                ex.printStackTrace();
+            }
         }
 
         return decryptedText;
@@ -162,6 +166,7 @@ public class CryptoFileStore
             try
             {
                 decryptedTextBytes = cipher.doFinal(encryptedTextBytes);
+                decryptedText = new String(decryptedTextBytes);
             } catch (IllegalBlockSizeException e)
             {
                 e.printStackTrace();
@@ -169,8 +174,6 @@ public class CryptoFileStore
             {
                 e.printStackTrace();
             }
-
-            decryptedText = new String(decryptedTextBytes);
         } catch (InvalidAlgorithmParameterException | InvalidKeyException | InvalidKeySpecException | NoSuchAlgorithmException | NoSuchPaddingException | UnsupportedEncodingException ex)
         {
             steno.error("Error decrypting");
