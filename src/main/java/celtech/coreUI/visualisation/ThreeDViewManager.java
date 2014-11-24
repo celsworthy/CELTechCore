@@ -273,7 +273,7 @@ public class ThreeDViewManager
 
             Point3D pickedScenePoint = intersectedNode.localToScene(pickedPoint);
             Point3D pickedBedTranslateXformPoint = bedTranslateXform.sceneToLocal(pickedScenePoint);
-            
+
             translationDragPlane.setTranslateY(pickedBedTranslateXformPoint.getY());
             Point3D pickedDragPlanePoint = translationDragPlane.sceneToLocal(pickedScenePoint);
             lastDragPosition = pickedDragPlanePoint;
@@ -658,7 +658,6 @@ public class ThreeDViewManager
 //
 ////        autoScalingGroup.getChildren().addAll(axisGroup);
 //    }
-
     /**
      *
      * @param modelContainer
@@ -1044,6 +1043,8 @@ public class ThreeDViewManager
         {
             ModelContainer modelContainer = (ModelContainer) intersectedNode.getParent();
             modelContainer.snapToGround(faceNumber);
+            collideModels();
+            DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
         }
         layoutSubmode.set(LayoutSubmode.SELECT);
     }
