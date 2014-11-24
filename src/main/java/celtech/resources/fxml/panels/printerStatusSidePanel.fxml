@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import celtech.coreUI.components.material.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.*?>
@@ -10,6 +9,8 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.text.*?>
+<?import celtech.coreUI.components.*?>
+<?import celtech.coreUI.components.material.*?>
 <?scenebuilder-preview-i18n-resource ../../i18n/LanguageData.properties?>
 <?scenebuilder-stylesheet ../../css/AutoMaker.css?>
 
@@ -17,7 +18,7 @@
     <children>
         <AnchorPane minHeight="750.0">
             <children>
-                <VBox id="StatusPanel" alignment="TOP_CENTER" layoutY="41.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="-1.0" spacing="20.0" styleClass="sidePanel" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" HBox.hgrow="ALWAYS">
+                <VBox id="StatusPanel" layoutY="41.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="-1.0" styleClass="sidePanel" AnchorPane.topAnchor="0.0" HBox.hgrow="ALWAYS">
                     <children>
                         <HBox alignment="TOP_CENTER" VBox.vgrow="NEVER">
                             <children>
@@ -112,6 +113,7 @@
                                 </Label>
                             </children>
                         </HBox>
+                        <Pane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="20.0" />
                         <GridPane fx:id="printerStatusGrid" hgap="20.0" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" translateX="20.0">
                             <columnConstraints>
                                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -121,14 +123,15 @@
                                 <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="TOP" vgrow="SOMETIMES" />
                             </rowConstraints>
                         </GridPane>
-                        <VBox fx:id="materialContainer" alignment="CENTER" spacing="10.0">
+                        <Pane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="20.0" />
+                        <HBox fx:id="materialContainer1" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="statusPanelChild" translateX="20.0">
                             <children>
-                                <VBox alignment="CENTER" fillWidth="false" spacing="5.0">
-                                    <children>
-                                        <MaterialComponent fx:id="material1" translateX="10.0" />
-                                        <HBox fx:id="speedSlider1HBox" alignment="TOP_CENTER">
+                                <MaterialComponent fx:id="material1" translateX="10.0" />
+                            </children>
+                        </HBox>
+                        <HBox fx:id="speedSlider1HBox">
                                             <children>
-                                                <Label text="%printerStatus.printSpeedMultiplierLabel" textAlignment="RIGHT" />
+                                                <Label layoutX="10.0" layoutY="10.0" text="%printerStatus.printSpeedMultiplierLabel" textAlignment="RIGHT" />
                                                 <Slider fx:id="speedMultiplierSlider1" blockIncrement="0.1" layoutX="51.0" layoutY="295.30000019073486" majorTickUnit="0.5" max="1.5" min="0.5" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="1.0">
                                                     <padding>
                                                         <Insets left="20.0" right="20.0" />
@@ -136,12 +139,12 @@
                                                 </Slider>
                                             </children>
                                         </HBox>
-                                    </children>
-                                </VBox>
-                                <VBox alignment="CENTER" fillWidth="false" spacing="5.0">
-                                    <children>
-                                        <MaterialComponent fx:id="material2" translateX="10.0" />
-                                        <HBox fx:id="speedSlider2HBox">
+                        <HBox fx:id="materialContainer2" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="statusPanelChild" translateX="20.0">
+                            <children>
+                                <MaterialComponent fx:id="material2" translateX="10.0" />
+                            </children>
+                        </HBox>       
+                        <HBox fx:id="speedSlider2HBox">
                                             <children>
                                                 <Label layoutX="10.0" layoutY="10.0" text="%printerStatus.printSpeedMultiplierLabel" textAlignment="RIGHT" />
                                                 <Slider fx:id="speedMultiplierSlider2" blockIncrement="0.1" layoutX="51.0" layoutY="295.30000019073486" majorTickUnit="0.5" max="1.5" min="0.5" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="1.0">
@@ -150,8 +153,19 @@
                                                     </padding>
                                                 </Slider>
                                             </children>
-                                        </HBox>
-                                    </children>
+                                        </HBox>                 
+                        <VBox fx:id="temperatureVBox" alignment="TOP_CENTER" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" styleClass="sidePanelVBox">
+                            <BorderPane.margin>
+                                <Insets top="5.0" />
+                            </BorderPane.margin>
+                        </VBox>
+             
+                        <VBox alignment="TOP_CENTER" fillWidth="true" BorderPane.alignment="CENTER">
+                            <children>
+                                <VBox prefWidth="300.0">
+                                    <VBox.margin>
+                                        <Insets />
+                                    </VBox.margin>
                                 </VBox>
                             </children>
                         </VBox>
@@ -186,23 +200,20 @@
                     <children>
                         <Text fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="temperatureChartLegend" text="%printerStatus.temperatureGraphKey" translateX="15.0" />
                         <Text fx:id="legendNozzle" strokeType="OUTSIDE" strokeWidth="0.0" text="● Nozzle" translateX="30.0">
-                            <styleClass>
-                                <String fx:value="graph-red" />
-                                <String fx:value="temperatureChartLegend" />
-                            </styleClass>
-                        </Text>
+                     <styleClass>
+                        <String fx:value="graph-red" />
+                        <String fx:value="temperatureChartLegend" />
+                     </styleClass></Text>
                         <Text fx:id="legendBed" strokeType="OUTSIDE" strokeWidth="0.0" text="● Bed" translateX="60.0">
-                            <styleClass>
-                                <String fx:value="graph-yellow" />
-                                <String fx:value="temperatureChartLegend" />
-                            </styleClass>
-                        </Text>
+                     <styleClass>
+                        <String fx:value="graph-yellow" />
+                        <String fx:value="temperatureChartLegend" />
+                     </styleClass></Text>
                         <Text fx:id="legendAmbient" strokeType="OUTSIDE" strokeWidth="0.0" text="● Ambient" translateX="95.0">
-                            <styleClass>
-                                <String fx:value="graph-green" />
-                                <String fx:value="temperatureChartLegend" />
-                            </styleClass>
-                        </Text>
+                     <styleClass>
+                        <String fx:value="graph-green" />
+                        <String fx:value="temperatureChartLegend" />
+                     </styleClass></Text>
                     </children>
                 </HBox>
             </children>
