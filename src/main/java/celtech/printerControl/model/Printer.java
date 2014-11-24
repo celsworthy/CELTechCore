@@ -368,7 +368,7 @@ public interface Printer extends RoboxResponseConsumer
      * @return
      * @throws RoboxCommsException
      */
-    public boolean transmitUpdateFirmware(final String firmwareID) throws RoboxCommsException;
+    public boolean transmitUpdateFirmware(final String firmwareID) throws PrinterException;
 
     /**
      *
