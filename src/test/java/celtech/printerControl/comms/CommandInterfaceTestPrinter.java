@@ -456,7 +456,7 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public boolean transmitUpdateFirmware(String firmwareID) throws RoboxCommsException
+    public boolean transmitUpdateFirmware(String firmwareID) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

@@ -77,9 +77,7 @@ public class FirmwareLoadTask extends Task<FirmwareLoadResult>
                 if (!isCancelled())
                 {
                     printerToUpdate.transmitUpdateFirmware(firmwareID);
-                    FirmwareResponse firmwareResponse = printerToUpdate.readFirmwareVersion();
                     returnValue.setStatus(FirmwareLoadResult.SUCCESS);
-                    returnValue.setResponse(firmwareResponse);
                 }
             }
         } catch (SDCardErrorException ex)
