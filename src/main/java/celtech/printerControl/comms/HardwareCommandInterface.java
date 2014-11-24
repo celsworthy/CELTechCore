@@ -89,7 +89,7 @@ public class HardwareCommandInterface extends CommandInterface
     @Override
     public synchronized RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite) throws RoboxCommsException
     {
-        steno.trace("Command Interface was asked to send " + messageToWrite.getPacketType());
+        steno.debug("Command Interface was asked to send " + messageToWrite.getPacketType());
         RoboxRxPacket receivedPacket = null;
 
         if (commsState == RoboxCommsState.CONNECTED
