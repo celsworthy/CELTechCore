@@ -35,7 +35,7 @@ public enum NozzleOffsetCalibrationState
     /**
      *
      */
-    PROBING("calibrationPanel.moveThePaperMessage"),
+    PROBING("calibrationPanel.moveThePaperInstruction"),
     /**
      *
      */

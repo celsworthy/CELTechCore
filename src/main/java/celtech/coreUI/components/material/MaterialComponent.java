@@ -66,7 +66,7 @@ public class MaterialComponent extends AnchorPane
         double crossSectionM2 = Math.PI * filamentDiameter * filamentDiameter / 4d * 1e-6;
         double remainingWeightG = remainingLengthMeters * crossSectionM2 * densityKGM2 * 1000d;
         String remaining = ((int) remainingLengthMeters) + "m / " + ((int) remainingWeightG)
-            + "g remaining";
+            + "g " + Lookup.i18n("materialComponent.remaining");
 
         showDetails(numberMaterial, remaining, materialColourString, colour);
     }

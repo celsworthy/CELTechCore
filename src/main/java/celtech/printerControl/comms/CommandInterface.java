@@ -15,8 +15,6 @@ import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.concurrent.WorkerStateEvent;
 import jssc.SerialPort;
 import libertysystems.configuration.ConfigNotLoadedException;
@@ -186,7 +184,7 @@ public abstract class CommandInterface extends Thread
                         }
                     } catch (PrinterException ex)
                     {
-                        steno.error("Exception whilst checking firmware version");
+                        steno.error("Exception whilst checking firmware version: " + ex);
                         disconnectSerialPort();
                     }
                     break;

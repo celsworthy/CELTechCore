@@ -17,7 +17,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
-import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -32,7 +31,6 @@ import javafx.scene.control.Slider;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -49,6 +47,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private final Stenographer steno = StenographerFactory.getStenographer(
         PrinterStatusSidePanelController.class.getName());
 
+    private final String DOT_GRAPHIC = "● ";
+    
     @FXML
     private MaterialComponent material1;
 
@@ -56,7 +56,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private MaterialComponent material2;
 
     @FXML
-    private VBox materialContainer;
+    private HBox materialContainer1;
+    
+    @FXML
+    private HBox materialContainer2;    
 
     @FXML
     private HBox temperatureChartXLabels;
@@ -188,9 +191,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         temperatureChart.setVisible(false);
 
-        legendNozzle.setText("● " + Lookup.i18n("printerStatus.temperatureGraphNozzleLabel"));
-        legendBed.setText("● " + Lookup.i18n("printerStatus.temperatureGraphBedLabel"));
-        legendAmbient.setText("● " + Lookup.i18n("printerStatus.temperatureGraphAmbientLabel"));
+        legendNozzle.setText(DOT_GRAPHIC + Lookup.i18n("printerStatus.temperatureGraphNozzleLabel"));
+        legendBed.setText(DOT_GRAPHIC + Lookup.i18n("printerStatus.temperatureGraphBedLabel"));
+        legendAmbient.setText(DOT_GRAPHIC + Lookup.i18n("printerStatus.temperatureGraphAmbientLabel"));
     }
 
     private void initialisePrinterStatusGrid()
@@ -436,7 +439,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         speedSlider1HBox.visibleProperty().bind(printer.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING));
         speedMultiplierSlider1.valueProperty().addListener(speedMultiplierListener);
 
-        material2.visibleProperty().bind(printer.getPrinterAncillarySystems().dualReelAdaptorPresentProperty());
+        materialContainer2.visibleProperty().bind(printer.getPrinterAncillarySystems().dualReelAdaptorPresentProperty());
+//        material2.visibleProperty().bind(printer.getPrinterAncillarySystems().dualReelAdaptorPresentProperty());
 //                speedSlider1HBox.visibleProperty().bind(printer.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING));
 //        speedMultiplierSlider1.valueProperty().addListener(speedMultiplierListener);
     }
@@ -462,7 +466,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         speedSlider1HBox.setVisible(false);
         speedMultiplierSlider1.valueProperty().removeListener(speedMultiplierListener);
         
-        material2.visibleProperty().unbind();
+        materialContainer2.visibleProperty().unbind();
     }
 
     private ChangeListener<Object> reelListener;
@@ -516,12 +520,13 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
      */
     private void updateReelMaterial(int reelNumber, Reel reel)
     {
+        MaterialComponent materialComponent = reelNumber == 0 ? material1 : material2;
         if (reel == null)
         {
-            material1.showFilamentNotLoaded();
+            materialComponent.showFilamentNotLoaded();
         } else
         {
-            material1.setMaterial(reelNumber, reel.materialProperty().get(),
+            materialComponent.setMaterial(reelNumber, reel.materialProperty().get(),
                                   reel.friendlyFilamentNameProperty().get(),
                                   reel.displayColourProperty().get(),
                                   reel.remainingFilamentProperty().get(),
@@ -536,7 +541,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         temperatureChart.setVisible(visible);
         temperatureChartXLabels.setVisible(visible);
-        materialContainer.setVisible(visible);
+        materialContainer1.setVisible(visible);
+//        materialContainer2.setVisible(visible);
 
         legendContainer.setVisible(visible);
     }
