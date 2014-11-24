@@ -506,6 +506,16 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 {
                     if (newTab == addPageTab)
                     {
+                        if (applicationStatus.getMode() != ApplicationMode.LAYOUT)
+                        {
+                            applicationStatus.setMode(ApplicationMode.LAYOUT);
+                        }
+
+                        if (lastTab instanceof ProjectTab)
+                        {
+                            ((ProjectTab) lastTab).setMode(ApplicationMode.LAYOUT);
+                        }
+
                         createAndAddNewProjectTab();
                     } else if (newTab instanceof ProjectTab)
                     {
