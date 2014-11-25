@@ -4,12 +4,19 @@
 package celtech.printerControl.model.calibration;
 
 import celtech.JavaFXConfiguredTest;
+import celtech.printerControl.model.calibration.StateTransitionManager.GUIName;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import javafx.beans.value.ObservableValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -29,91 +36,92 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
     @Before
     public void setUp()
     {
+        super.setUp();
         TestActions actions = new TestActions();
         Transitions transitions = new TestTransitions(actions);
         manager = new TestStateTransitionManager(transitions, actions);
 
     }
 
-//    @Test
-//    public void testSetAndGetTransitions()
-//    {
-//        Set<StateTransition> allowedTransitions = manager.getTransitions();
-//        assertEquals(1, allowedTransitions.size());
-//        assertEquals(GUIName.NEXT, allowedTransitions.iterator().next().guiName);
-//    }
-//
-//    @Test
-//    public void testFollowTransitionFromIdleByNext()
-//    {
-//        manager.followTransition(GUIName.NEXT);
-//        assertEquals(TestState.PRINT_CIRCLE, manager.stateGUITProperty().get());
-//        assertEquals(10, manager.getX());
-//    }
-//
-//    @Test
-//    public void testFollow2TransitionsFromIdleToGetYOffset()
-//    {
-//        manager.followTransition(GUIName.NEXT);
-//        manager.followTransition(GUIName.NEXT);
-//        assertEquals(TestState.GET_Y_OFFSET, manager.stateGUITProperty().get());
-//        assertEquals(11, manager.getX());
-//    }
-//
-//    @Test
-//    public void testFollow2TransitionsFromIdleToPrintCircleToFailed()
-//    {
-//        manager.followTransition(GUIName.NEXT);
-//        manager.followTransition(GUIName.CANCEL);
-//        assertEquals(TestState.FAILED, manager.stateGUITProperty().get());
-//        assertEquals(10, manager.getX());
-//        assertTrue(manager.isCancelled());
-//    }
-//
-//    @Test
-//    public void testFailedTransitionsEndsInFailedState()
-//    {
-//        manager.followTransition(GUIName.NEXT);
-//        manager.followTransition(GUIName.COMPLETE);
-//        assertEquals(TestState.FAILED, manager.stateGUITProperty().get());
-//        assertEquals(22, manager.getX());
-//    }
-//
-//    @Test
-//    public void testCancelledTransitionsEndsInCancelledState()
-//    {
-//        manager.followTransition(GUIName.NEXT);
-//        manager.followTransition(GUIName.UP);
-//        assertEquals(TestState.CANCELLED, manager.stateGUITProperty().get());
-//        assertEquals(22, manager.getX());
-//    }
-//
-//    @Test
-//    public void testStateListenerCorrectlyUpdated()
-//    {
-//        final List<TestState> states = new ArrayList<>();
-//
-//        manager.stateGUITProperty().addListener(
-//            (ObservableValue observable, Object oldValue, Object newValue) ->
-//            {
-//                states.add((TestState) newValue);
-//            });
-//
-//        manager.followTransition(GUIName.NEXT);
-//        manager.followTransition(GUIName.NEXT);
-//        assertEquals(2, states.size());
-//        assertEquals(TestState.PRINT_CIRCLE, states.get(0));
-//        assertEquals(TestState.GET_Y_OFFSET, states.get(1));
-//    }
-//
-//    @Test
-//    public void testArrivalActionPerformed()
-//    {
-//        manager.followTransition(GUIName.NEXT);
-//        manager.followTransition(GUIName.NEXT);
-//        manager.followTransition(GUIName.NEXT);
-//        assertEquals(43, manager.getX());
-//    }
+    @Test
+    public void testSetAndGetTransitions()
+    {
+        Set<StateTransition> allowedTransitions = manager.getTransitions();
+        assertEquals(1, allowedTransitions.size());
+        assertEquals(GUIName.NEXT, allowedTransitions.iterator().next().guiName);
+    }
+
+    @Test
+    public void testFollowTransitionFromIdleByNext()
+    {
+        manager.followTransition(GUIName.NEXT);
+        assertEquals(TestState.PRINT_CIRCLE, manager.stateGUITProperty().get());
+        assertEquals(10, manager.getX());
+    }
+
+    @Test
+    public void testFollow2TransitionsFromIdleToGetYOffset()
+    {
+        manager.followTransition(GUIName.NEXT);
+        manager.followTransition(GUIName.NEXT);
+        assertEquals(TestState.GET_Y_OFFSET, manager.stateGUITProperty().get());
+        assertEquals(11, manager.getX());
+    }
+
+    @Test
+    public void testFollow2TransitionsFromIdleToPrintCircleToFailed()
+    {
+        manager.followTransition(GUIName.NEXT);
+        manager.followTransition(GUIName.CANCEL);
+        assertEquals(TestState.FAILED, manager.stateGUITProperty().get());
+        assertEquals(10, manager.getX());
+        assertTrue(manager.isCancelled());
+    }
+
+    @Test
+    public void testFailedTransitionsEndsInFailedState()
+    {
+        manager.followTransition(GUIName.NEXT);
+        manager.followTransition(GUIName.COMPLETE);
+        assertEquals(TestState.FAILED, manager.stateGUITProperty().get());
+        assertEquals(22, manager.getX());
+    }
+
+    @Test
+    public void testCancelledTransitionsEndsInCancelledState()
+    {
+        manager.followTransition(GUIName.NEXT);
+        manager.followTransition(GUIName.UP);
+        assertEquals(TestState.CANCELLED, manager.stateGUITProperty().get());
+        assertEquals(22, manager.getX());
+    }
+
+    @Test
+    public void testStateListenerCorrectlyUpdated()
+    {
+        final List<TestState> states = new ArrayList<>();
+
+        manager.stateGUITProperty().addListener(
+            (ObservableValue observable, Object oldValue, Object newValue) ->
+            {
+                states.add((TestState) newValue);
+            });
+
+        manager.followTransition(GUIName.NEXT);
+        manager.followTransition(GUIName.NEXT);
+        assertEquals(2, states.size());
+        assertEquals(TestState.PRINT_CIRCLE, states.get(0));
+        assertEquals(TestState.GET_Y_OFFSET, states.get(1));
+    }
+
+    @Test
+    public void testArrivalActionPerformed()
+    {
+        manager.followTransition(GUIName.NEXT);
+        manager.followTransition(GUIName.NEXT);
+        manager.followTransition(GUIName.NEXT);
+        assertEquals(43, manager.getX());
+    }
 
     static class TestActions
     {

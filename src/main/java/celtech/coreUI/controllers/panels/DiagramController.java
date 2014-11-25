@@ -33,12 +33,7 @@ class DiagramController implements Initializable
     private final Stenographer steno = StenographerFactory.getStenographer(
         DiagramController.class.getName());
 
-    private final StateTransitionManager stateTransitionManager;
-
-    public DiagramController(StateTransitionManager stateTransitionManager)
-    {
-        this.stateTransitionManager = stateTransitionManager;
-    }
+    private StateTransitionManager stateTransitionManager;
 
     @FXML
     private TextField xOffsetA;
@@ -86,10 +81,23 @@ class DiagramController implements Initializable
     private HBox incorrectAlignmentContainer;
 
     @FXML
-    private Button buttonB;
-
-    @FXML
     private Button buttonA;
+    
+    public void setStateTransitionManager(StateTransitionManager stateTransitionManager)
+    {
+        this.stateTransitionManager = stateTransitionManager;
+        steno.debug("calibrationTextField is " + calibrationTextField);
+        if (stateTransitionManager instanceof NozzleHeightStateTransitionManager)
+        {
+            ReadOnlyDoubleProperty zcoProperty
+                = ((NozzleHeightStateTransitionManager) stateTransitionManager).getZcoProperty();
+            if (calibrationTextField != null)
+            {
+                calibrationTextField.setText(String.format("%1.2f", zcoProperty.get()));
+            }
+            setupZCoListener(zcoProperty);
+        }        
+    }       
 
     @FXML
     void buttonAAction(ActionEvent event)
@@ -114,35 +122,32 @@ class DiagramController implements Initializable
     {
         stateTransitionManager.followTransition(StateTransitionManager.GUIName.DOWN);
     }
+    
+    ChangeListener<Number> zcoListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+    {
+        steno.debug("zco listener fired");
+        if (calibrationTextField != null)
+        {
+            steno.debug("set zco text to " + String.format("%1.2f", newValue));
+            calibrationTextField.setText(String.format("%1.2f", newValue));
+            if (newValue.floatValue() <= 0f)
+            {
+                buttonA.setDisable(true);
+            } else
+            {
+                buttonA.setDisable(false);
+            }
+        }
+    };
 
     protected void setupZCoListener(ReadOnlyDoubleProperty zcoProperty)
     {
-        
+        zcoProperty.removeListener(zcoListener);
         if (calibrationTextField != null)
         {
             steno.debug("add zco listener");
             calibrationTextField.setText(String.format("%1.2f", zcoProperty.get()));
-            zcoProperty.addListener(new ChangeListener<Number>()
-            {
-                @Override
-                public void changed(
-                    ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
-                {
-                    steno.debug("zco listener fired");
-                    if (calibrationTextField != null)
-                    {
-                        steno.debug("set zco text to " + String.format("%1.2f", newValue));
-                        calibrationTextField.setText(String.format("%1.2f", newValue));
-                        if (newValue.floatValue() <= 0f)
-                        {
-                            buttonA.setDisable(true);
-                        } else
-                        {
-                            buttonA.setDisable(false);
-                        }
-                    }
-                }
-            });
+            zcoProperty.addListener(zcoListener);
         }
     }
 
@@ -150,17 +155,6 @@ class DiagramController implements Initializable
     public void initialize(URL location, ResourceBundle resources)
     {
         setupOffsetCombos();
-        steno.debug("calibrationTextField is " + calibrationTextField);
-        if (stateTransitionManager instanceof NozzleHeightStateTransitionManager)
-        {
-            ReadOnlyDoubleProperty zcoProperty
-                = ((NozzleHeightStateTransitionManager) stateTransitionManager).getZcoProperty();
-            if (calibrationTextField != null)
-            {
-                calibrationTextField.setText(String.format("%1.2f", zcoProperty.get()));
-            }
-            setupZCoListener(zcoProperty);
-        }
     }
 
     private void setupOffsetCombos()

@@ -130,6 +130,7 @@ public class StateTransitionManager<StateType>
      */
     private void setState(StateType state)
     {
+        System.out.println("Set State to " + state + " for " + this);
         this.state.set(state);
         processArrivedAtState(state);
         followAutoTransitionIfPresent(state);
@@ -193,14 +194,14 @@ public class StateTransitionManager<StateType>
 
         StateTransition<StateType> stateTransition = getTransitionForGUIName(guiName);
 
-        steno.debug("Follow transition " + guiName + " " + stateTransition.fromState + " "
-            + stateTransition.toState);
-
         if (stateTransition == null)
         {
             throw new RuntimeException("No transition found from state " + state.get()
-                + " for action " + guiName);
+                + " for action " + guiName + " for " + this) ;
         }
+        
+        steno.debug("Follow transition " + guiName + " " + stateTransition.fromState + " "
+            + stateTransition.toState);        
 
         if (stateTransition.action == null)
         {

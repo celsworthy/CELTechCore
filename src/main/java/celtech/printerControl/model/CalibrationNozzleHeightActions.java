@@ -163,6 +163,7 @@ public class CalibrationNozzleHeightActions
         int testCounter = 0;
         boolean testFinished = false;
 
+
         while (testCounter < 3 && !testFinished)
         {
             for (int i = 0; i < 3; i++)
