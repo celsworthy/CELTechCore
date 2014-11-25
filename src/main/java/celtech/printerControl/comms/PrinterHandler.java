@@ -252,52 +252,13 @@ public class PrinterHandler extends Thread
                     if (printerCommsOpen)
                     {
                         steno.debug("Connected to Robox on " + portName);
-                        commsState = RoboxCommsState.CHECKING_HEAD;
+                        commsState = RoboxCommsState.CHECKING_FIRMWARE;
                     } else
                     {
                         steno.debug("Failed to connect to Robox on " + portName);
                         controlInterface.failedToConnect(portName);
                         keepRunning = false;
                     }
-                    break;
-
-                case CHECKING_HEAD:
-                    boolean doFormatHead = checkHead();
-                    if (doFormatHead)
-                    {
-                        commsState = RoboxCommsState.FORMATTING_HEAD;
-                    } else
-                    {
-                        commsState = RoboxCommsState.CHECKING_FIRMWARE;
-                    }
-                    break;
-
-                case FORMATTING_HEAD:
-                    try
-                    {
-                        formatHead();
-                    } catch (RoboxCommsException ex)
-                    {
-                        steno.error("Error formatting head in POST " + ex.getMessage());
-                    }
-                    commsState = RoboxCommsState.CHECKING_FIRMWARE;
-                    break;
-
-                case POST:
-                    try
-                    {
-                        StatusResponse response = (StatusResponse) writeToPrinter(
-                            RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.STATUS_REQUEST));
-
-                        controlInterface.publishEvent(portName, new RoboxEvent(
-                                                      RoboxEventType.PRINTER_STATUS_UPDATE, response));
-                        commsState = RoboxCommsState.CHECKING_FIRMWARE;
-                    } catch (RoboxCommsException ex)
-                    {
-                        steno.error("Error whilst carrying out firmware POST");
-                        disconnectSerialPort();
-                    }
-
                     break;
 
                 case CHECKING_FIRMWARE:
@@ -665,8 +626,7 @@ public class PrinterHandler extends Thread
     {
         RoboxRxPacket receivedPacket = null;
 
-        if (commsState == RoboxCommsState.CONNECTED || commsState == RoboxCommsState.CHECKING_FIRMWARE || commsState == RoboxCommsState.CHECKING_HEAD || commsState == RoboxCommsState.FORMATTING_HEAD
-            || commsState == RoboxCommsState.POST || commsState == RoboxCommsState.CHECKING_ID && serialPort != null)
+        if (commsState == RoboxCommsState.CONNECTED || commsState == RoboxCommsState.CHECKING_FIRMWARE || commsState == RoboxCommsState.CHECKING_ID && serialPort != null)
         {
             try
             {
