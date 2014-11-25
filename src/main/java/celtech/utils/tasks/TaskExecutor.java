@@ -8,6 +8,11 @@ import java.util.concurrent.Callable;
  */
 public interface TaskExecutor
 {
+    
+    public interface NoArgsConsumer {
+        void run() throws Exception;
+    }
+    
     public void respondOnGUIThread(TaskResponder responder, boolean success, String message);
     public void respondOnGUIThread(TaskResponder responder, boolean success, String message, Object returnedObject);
     public void respondOnCurrentThread(TaskResponder responder, boolean success, String message);
@@ -18,6 +23,6 @@ public interface TaskExecutor
      * cancelled handlers. The cancelled handler is called if the action returns false,
      * the failure handler is called if the action raises an exception.
      */
-    public void runAsTask(Callable<Boolean> action, Runnable successHandler,
-        Runnable failureHandler, Runnable cancelledHandler, String taskName);
+    public void runAsTask(NoArgsConsumer action, NoArgsConsumer successHandler,
+        NoArgsConsumer failureHandler, String taskName);
 }

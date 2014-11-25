@@ -32,11 +32,11 @@ public class CalibrationNozzleHeightTransitions implements Transitions
         arrivals = new HashMap<>();
         
         arrivals.put(NozzleOffsetCalibrationState.FINISHED, 
-                     new ArrivalAction<>(()->{return actions.doFinishedAction();},
+                     new ArrivalAction<>(()->{actions.doFinishedAction();},
                          NozzleOffsetCalibrationState.FAILED));
         
         arrivals.put(NozzleOffsetCalibrationState.FAILED, 
-                     new ArrivalAction<>(()->{return actions.doFailedAction();},
+                     new ArrivalAction<>(()->{actions.doFailedAction();},
                          NozzleOffsetCalibrationState.FAILED));        
         
         transitions = new HashSet<>();
@@ -57,9 +57,9 @@ public class CalibrationNozzleHeightTransitions implements Transitions
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.HEATING,
                                             StateTransitionManager.GUIName.AUTO,
                                             NozzleOffsetCalibrationState.HEAD_CLEAN_CHECK,
-                                            (Callable) () ->
+                                            () ->
                                             {
-                                                return actions.doInitialiseAndHeatBedAction();
+                                                actions.doInitialiseAndHeatBedAction();
                                             },
                                             NozzleOffsetCalibrationState.FAILED));
 
@@ -73,9 +73,9 @@ public class CalibrationNozzleHeightTransitions implements Transitions
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.MEASURE_Z_DIFFERENCE,
                                             StateTransitionManager.GUIName.AUTO,
                                             NozzleOffsetCalibrationState.INSERT_PAPER,
-                                            (Callable) () ->
+                                            () ->
                                             {
-                                                return actions.doMeasureZDifferenceAction();
+                                                actions.doMeasureZDifferenceAction();
                                             },
                                             NozzleOffsetCalibrationState.FAILED));
 
@@ -83,9 +83,9 @@ public class CalibrationNozzleHeightTransitions implements Transitions
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.INSERT_PAPER,
                                             StateTransitionManager.GUIName.NEXT,
                                             NozzleOffsetCalibrationState.PROBING,
-                                            (Callable) () ->
+                                            () ->
                                             {
-                                                return actions.doHomeZAction();
+                                                actions.doHomeZAction();
                                             },
                                             NozzleOffsetCalibrationState.FAILED));
 
@@ -94,18 +94,18 @@ public class CalibrationNozzleHeightTransitions implements Transitions
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.PROBING,
                                             StateTransitionManager.GUIName.NEXT,
                                             NozzleOffsetCalibrationState.LIFT_HEAD,
-                                            (Callable) () ->
+                                            () ->
                                             {
-                                                return actions.doLiftHeadAction();
+                                                actions.doLiftHeadAction();
                                             },
                                             NozzleOffsetCalibrationState.FAILED));
         
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.PROBING,
                                             StateTransitionManager.GUIName.UP,
                                             NozzleOffsetCalibrationState.INCREMENT_Z,
-                                            (Callable) () ->
+                                            () ->
                                             {
-                                                return actions.doIncrementZAction();
+                                                actions.doIncrementZAction();
                                             },
                                             NozzleOffsetCalibrationState.FAILED));
         
@@ -118,9 +118,9 @@ public class CalibrationNozzleHeightTransitions implements Transitions
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.PROBING,
                                             StateTransitionManager.GUIName.DOWN,
                                             NozzleOffsetCalibrationState.DECREMENT_Z,
-                                            (Callable) () ->
+                                            () ->
                                             {
-                                                return actions.doDecrementZAction();
+                                                actions.doDecrementZAction();
                                             },
                                             NozzleOffsetCalibrationState.FAILED));
         
@@ -143,9 +143,9 @@ public class CalibrationNozzleHeightTransitions implements Transitions
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.REPLACE_PEI_BED,
                                             StateTransitionManager.GUIName.NEXT,
                                             NozzleOffsetCalibrationState.FINISHED,
-                                            (Callable) () ->
+                                            () ->
                                             {
-                                                return actions.doFinishedAction();
+                                                actions.doFinishedAction();
                                             },
                                             NozzleOffsetCalibrationState.FAILED));
 

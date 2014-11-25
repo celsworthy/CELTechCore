@@ -54,7 +54,7 @@ public class CalibrationNozzleHeightActions
             });
     }
 
-    public boolean doInitialiseAndHeatBedAction() throws InterruptedException, PrinterException, RoboxCommsException
+    public void doInitialiseAndHeatBedAction() throws InterruptedException, PrinterException, RoboxCommsException
     {
         boolean success = false;
 
@@ -69,7 +69,6 @@ public class CalibrationNozzleHeightActions
 
         clearZOffsetsOnHead();
         success = heatBed(success);
-        return success;
 
     }
 
@@ -138,21 +137,19 @@ public class CalibrationNozzleHeightActions
         return success;
     }
 
-    public boolean doHomeZAction()
+    public void doHomeZAction()
     {
         printer.homeZ();
-        return true;
     }
 
-    public boolean doLiftHeadAction() throws PrinterException
+    public void doLiftHeadAction() throws PrinterException
     {
         printer.switchToAbsoluteMoveMode();
         printer.goToZPosition(30);
 //        printer.goToOpenDoorPosition(null);
-        return true;
     }
 
-    public boolean doMeasureZDifferenceAction() throws PrinterException, CalibrationException
+    public void doMeasureZDifferenceAction() throws PrinterException, CalibrationException
     {
         boolean success = false;
 
@@ -170,7 +167,7 @@ public class CalibrationNozzleHeightActions
             {
                 if (cancellable.cancelled)
                 {
-                    return false;
+                    return;
                 }
                 printer.selectNozzle(0);
                 PrinterUtils.waitOnBusy(printer, cancellable);
@@ -233,43 +230,38 @@ public class CalibrationNozzleHeightActions
         {
             throw new CalibrationException("ZCO could not be established");
         }
-        return true;
     }
 
-    public boolean doIncrementZAction()
+    public void doIncrementZAction()
     {
         zco.set(zco.get() + 0.05);
         printer.goToZPosition(zco.get());
-        return true;
     }
 
-    public boolean doDecrementZAction()
+    public void doDecrementZAction()
     {
         zco.set(zco.get() - 0.05);
         if (zco.get() < 0) {
             zco.set(0);
         }
         printer.goToZPosition(zco.get());
-        return true;
     }
 
-    public boolean doFinishedAction() throws PrinterException, RoboxCommsException
+    public void doFinishedAction() throws PrinterException, RoboxCommsException
     {
         saveSettings();
         switchHeaterOffAndRaiseHead();
         printer.setPrinterStatus(PrinterStatus.IDLE);
-        return true;
     }
 
-    public boolean doFailedAction() throws PrinterException, RoboxCommsException
+    public void doFailedAction() throws PrinterException, RoboxCommsException
     {
         restoreHeadData();
         switchHeaterOffAndRaiseHead();
         printer.setPrinterStatus(PrinterStatus.IDLE);
-        return true;
     }
 
-    public boolean cancel() throws PrinterException, RoboxCommsException
+    public void cancel() throws PrinterException, RoboxCommsException
     {
         cancellable.cancelled = true;
         try
@@ -280,7 +272,7 @@ public class CalibrationNozzleHeightActions
         {
             steno.info("interrupted during wait of cancel");
         }
-        return doFailedAction();
+        doFailedAction();
     }
 
     private void switchHeaterOffAndRaiseHead() throws PrinterException
@@ -313,7 +305,7 @@ public class CalibrationNozzleHeightActions
         }
     }
 
-    public boolean saveSettings() throws RoboxCommsException
+    public void saveSettings() throws RoboxCommsException
     {
         steno.info("zDifference is " + zDifference);
         steno.info("zco is " + zDifference);
@@ -332,7 +324,6 @@ public class CalibrationNozzleHeightActions
                                         savedHeadData.getNozzle2BOffset(),
                                         savedHeadData.getLastFilamentTemperature(),
                                         savedHeadData.getHeadHours());
-        return true;
     }
 
     public ReadOnlyDoubleProperty getZcoGUITProperty()

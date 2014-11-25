@@ -2,6 +2,8 @@ package celtech.utils.tasks;
 
 import celtech.printerControl.model.HardwarePrinter;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -67,27 +69,27 @@ public class LiveTaskExecutor implements TaskExecutor
     }
 
     @Override
-    public void runAsTask(Callable<Boolean> action, Runnable successHandler,
-        Runnable failureHandler, Runnable cancelledHandler, String taskName)
+    public void runAsTask(NoArgsConsumer action, NoArgsConsumer successHandler,
+        NoArgsConsumer failureHandler, String taskName)
     {
-
         Runnable runTask = () ->
         {
             try
             {
-                Boolean result = action.call();
-                if (result)
-                {
-                    successHandler.run();
-                } else
-                {
-                    cancelledHandler.run();
-                }
+                action.run();
+                successHandler.run();
+            
             } catch (Exception ex)
             {
                 ex.printStackTrace();
                 steno.error("Failure running task: " + ex);
-                failureHandler.run();
+                try
+                {
+                    failureHandler.run();
+                } catch (Exception ex1)
+                {
+                     steno.error("Error running failure handler!: " + ex);
+                }
             }
         };
         Thread taskThread = new Thread(runTask);
