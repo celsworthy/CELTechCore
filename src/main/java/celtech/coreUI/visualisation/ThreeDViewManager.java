@@ -113,7 +113,8 @@ public class ThreeDViewManager
 //    private final Rotate rotateCameraAroundYAxis = new Rotate(0, MathUtils.yAxis);
 //    private final Rotate rotateCameraAroundZAxis = new Rotate(0, MathUtils.zAxis);
 //    private final Translate translateCamera = new Translate();
-    private final DoubleProperty cameraDistance = new SimpleDoubleProperty(-350);
+    private final static double initialCameraDistance = -350;
+    private final DoubleProperty cameraDistance = new SimpleDoubleProperty(initialCameraDistance);
     private final DoubleProperty demandedCameraRotationX = new SimpleDoubleProperty(0);
     private final DoubleProperty demandedCameraRotationY = new SimpleDoubleProperty(0);
 
@@ -1041,7 +1042,7 @@ public class ThreeDViewManager
     {
         if (intersectedNode instanceof MeshView)
         {
-            ModelContainer modelContainer = (ModelContainer) intersectedNode.getParent();
+            ModelContainer modelContainer = (ModelContainer) intersectedNode.getParent().getParent();
             modelContainer.snapToGround(faceNumber);
             collideModels();
             DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
