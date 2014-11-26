@@ -1571,12 +1571,4 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return preferredRotationY;
     }
-
-    public void cameraScaleChange(double newScale)
-    {
-        if (selectionHighlighter != null)
-        {
-            selectionHighlighter.cameraScaleChange(newScale);
-        }
-    }
 }
