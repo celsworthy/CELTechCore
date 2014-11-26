@@ -11,9 +11,11 @@ import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
+import celtech.printerControl.comms.commands.rx.GCodeDataResponse;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.services.ControllableService;
 import celtech.utils.PrinterUtils;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -102,80 +104,103 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
                 break;
 
             case MEASURE_Z_DIFFERENCE:
-                float[] zDifferenceMeasurement = new float[3];
+                // Do 10 z probes on T0
+                boolean logToTranscript = false;
+                final int numberOfProbeAccuracyTests = 10;
+                final int numberOfNozzleHeightDifferenceTests = 11;
 
-                try
+//                for (int startingNozzle = 0; startingNozzle <= 1; startingNozzle++)
+//                {
+//                    steno.info("T" + startingNozzle + " probe accuracy test");
+//                    printerToUse.transmitDirectGCode("T" + startingNozzle, logToTranscript);
+//                    PrinterUtils.waitOnBusy(printerToUse, this);
+//                    printerToUse.transmitDirectGCode("G28 Z", logToTranscript);
+//                    PrinterUtils.waitOnBusy(printerToUse, this);
+//                    printerToUse.transmitDirectGCode("G0 Z5", logToTranscript);
+//                    PrinterUtils.waitOnBusy(printerToUse, this);
+//
+//                    for (int testCount = 0; testCount < numberOfProbeAccuracyTests; testCount++)
+//                    {
+//                        printerToUse.transmitDirectGCode("G28 Z?", logToTranscript);
+//                        PrinterUtils.waitOnBusy(printerToUse, this);
+//                        String measurementString = printerToUse.transmitDirectGCode("M113", logToTranscript);
+//                        measurementString = measurementString.replaceFirst("Zdelta:", "").replaceFirst("\nok", "");
+//                        steno.info("Delta " + testCount + ": " + measurementString);
+//                    }
+//                }
+                steno.info("Nozzle height difference test");
+                printerToUse.transmitDirectGCode("T0", logToTranscript);
+                PrinterUtils.waitOnBusy(printerToUse, this);
+
+                // Level the gantry - manual rather than using the macro
+                printerToUse.transmitDirectGCode("G0 X30 Y75", logToTranscript);
+                PrinterUtils.waitOnBusy(printerToUse, this);
+                printerToUse.transmitDirectGCode("G28 Z", logToTranscript);
+                PrinterUtils.waitOnBusy(printerToUse, this);
+                printerToUse.transmitDirectGCode("G0 Z5", logToTranscript);
+                PrinterUtils.waitOnBusy(printerToUse, this);
+                printerToUse.transmitDirectGCode("G0 X190 Y75", logToTranscript);
+                PrinterUtils.waitOnBusy(printerToUse, this);
+                printerToUse.transmitDirectGCode("G28 Z", logToTranscript);
+                PrinterUtils.waitOnBusy(printerToUse, this);
+                printerToUse.transmitDirectGCode("G0 Z5", logToTranscript);
+                PrinterUtils.waitOnBusy(printerToUse, this);
+                printerToUse.transmitDirectGCode("G38", logToTranscript);
+                PrinterUtils.waitOnBusy(printerToUse, this);
+                printerToUse.transmitDirectGCode("G0 X105 Y75", logToTranscript);
+                PrinterUtils.waitOnBusy(printerToUse, this);
+
+                PrinterUtils.waitOnBusy(printerToUse, this);
+                printerToUse.transmitDirectGCode("G28 Z", logToTranscript);
+                PrinterUtils.waitOnBusy(printerToUse, this);
+                printerToUse.transmitDirectGCode("G0 Z5", logToTranscript);
+                PrinterUtils.waitOnBusy(printerToUse, this);
+
+                ArrayList<Float> t0Deltas = new ArrayList<>();
+                t0Deltas.add(0f);
+                ArrayList<Float> t1Deltas = new ArrayList<>();
+
+                boolean flipFlop = false;
+                for (int testCount = 0; testCount < numberOfNozzleHeightDifferenceTests; testCount++)
                 {
-                    float sumOfZDifferences = 0;
-                    boolean failed = false;
-                    int testCounter = 0;
-                    boolean testFinished = false;
+                    int nozzleFrom = ((flipFlop == false) ? 0 : 1);
+                    int nozzleTo = ((flipFlop == false) ? 1 : 0);
 
-                    while (testCounter < 3 && !testFinished && isCancelled() == false)
-                    {
-                        for (int i = 0; i < 3; i++)
-                        {
-                            printerToUse.transmitDirectGCode("T0", false);
-                            PrinterUtils.waitOnBusy(printerToUse, this);
-                            printerToUse.transmitDirectGCode("G28 Z", false);
-                            PrinterUtils.waitOnBusy(printerToUse, this);
-                            printerToUse.transmitDirectGCode("G0 Z5", false);
-                            PrinterUtils.waitOnBusy(printerToUse, this);
-                            printerToUse.transmitDirectGCode("T1", false);
-                            PrinterUtils.waitOnBusy(printerToUse, this);
-                            printerToUse.transmitDirectGCode("G28 Z?", false);
-                            PrinterUtils.waitOnBusy(printerToUse, this);
-                            printerToUse.transmitDirectGCode("G0 Z5", false);
-                            PrinterUtils.waitOnBusy(printerToUse, this);
-                            String measurementString = printerToUse.transmitDirectGCode("M113", false);
-                            measurementString = measurementString.replaceFirst("Zdelta:", "").replaceFirst("\nok", "");
-                            try
-                            {
-                                zDifferenceMeasurement[i] = Float.valueOf(measurementString);
-
-                                if (i > 0)
-                                {
-                                    if (Math.abs(zDifferenceMeasurement[i] - zDifferenceMeasurement[i - 1]) > 0.02)
-                                    {
-                                        failed = true;
-                                        break;
-                                    }
-                                }
-                                sumOfZDifferences += zDifferenceMeasurement[i];
-                                steno.info("Z Offset measurement " + i + " was " + zDifferenceMeasurement[i]);
-                            } catch (NumberFormatException ex)
-                            {
-                                steno.error("Failed to convert z offset measurement from Robox - " + measurementString);
-                                failed = true;
-                                break;
-                            }
-                        }
-
-                        if (failed == false)
-                        {
-                            returnFloat = sumOfZDifferences / 3;
-
-                            steno.info("Average Z Offset was " + returnFloat);
-
-                            success = true;
-                            testFinished = true;
-                        } else
-                        {
-                            sumOfZDifferences = 0;
-                            zDifferenceMeasurement = new float[3];
-                            failed = false;
-                        }
-
-                        testCounter++;
-                    }
-
-                    printerToUse.transmitDirectGCode("T0", false);
+                    printerToUse.transmitDirectGCode("T" + nozzleTo, logToTranscript);
                     PrinterUtils.waitOnBusy(printerToUse, this);
+                    printerToUse.transmitDirectGCode("G28 Z?", logToTranscript);
+                    PrinterUtils.waitOnBusy(printerToUse, this);
+                    String measurementString = printerToUse.transmitDirectGCode("M113", logToTranscript);
+                    measurementString = measurementString.replaceFirst("Zdelta:", "").replaceFirst("\nok", "");
+                    float deltaValue = Float.valueOf(measurementString.trim());
 
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Error in nozzle offset calibration - mode=" + desiredState.name());
+                    if (nozzleTo == 0)
+                    {
+                        t0Deltas.add(deltaValue);
+                    } else
+                    {
+                        t1Deltas.add(deltaValue);
+                    }
+                    steno.info("Delta from " + nozzleFrom + " to " + nozzleTo + " -> " + deltaValue);
+                    flipFlop = !flipFlop;
                 }
+                
+                printerToUse.transmitDirectGCode("T0", logToTranscript);
+                
+                float sumOfDeltas = 0;
+                int numberOfSamples = ((numberOfNozzleHeightDifferenceTests + 1) / 2);
+                
+                for (int deltaCount = 0; deltaCount < numberOfSamples; deltaCount++)
+                {
+                    sumOfDeltas += t1Deltas.get(deltaCount) - t0Deltas.get(deltaCount);
+                }
+
+                float averageDifference = sumOfDeltas / numberOfSamples;
+                returnFloat = averageDifference;
+
+                steno.info("Average Z Offset was " + returnFloat);
+                success = true;
+
                 break;
         }
 
@@ -216,7 +241,7 @@ public class CalibrateNozzleOffsetTask extends Task<NozzleOffsetCalibrationStepR
         {
             steno.error("Error in needle valve priming - mode=" + desiredState.name());
         }
-        
+
         return success;
     }
 
