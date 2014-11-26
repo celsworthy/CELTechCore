@@ -33,8 +33,7 @@ public class StateTransition<T>
      */
     final StateTransitionManager.GUIName guiName;
     /**
-     * If an action is declared then it must return a boolean. a return value of true
-     * indicates the action succeeded, false indicates the action was cancelled. To indicate
+     * If an action is declared then it takes no arguments and returns void. To indicate
      * a failure an exception should be raised.
      */
     final TaskExecutor.NoArgsConsumer action;

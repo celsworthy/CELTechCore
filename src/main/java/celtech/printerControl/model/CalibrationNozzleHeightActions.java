@@ -56,7 +56,6 @@ public class CalibrationNozzleHeightActions
 
     public void doInitialiseAndHeatBedAction() throws InterruptedException, PrinterException, RoboxCommsException
     {
-        boolean success = false;
 
         zco.set(0);
 
@@ -68,7 +67,7 @@ public class CalibrationNozzleHeightActions
 //        zDifference = savedHeadData.getNozzle2ZOffset() - savedHeadData.getNozzle1ZOffset();
 
         clearZOffsetsOnHead();
-        success = heatBed(success);
+        heatBed();
 
     }
 
@@ -96,7 +95,7 @@ public class CalibrationNozzleHeightActions
                                         savedHeadData.getHeadHours());
     }
 
-    private boolean heatBed(boolean success) throws InterruptedException, PrinterException
+    private void heatBed() throws InterruptedException, PrinterException
     {
         printer.goToTargetNozzleTemperature();
         printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("Home_all"), true);
@@ -125,16 +124,14 @@ public class CalibrationNozzleHeightActions
             if (PrinterUtils.waitOnBusy(printer, cancellable) == false)
             {
                 printer.switchOnHeadLEDs();
-                success = true;
             } else
             {
-                return false;
+                return;
             }
         } else
         {
-            return false;
+            return;
         }
-        return success;
     }
 
     public void doHomeZAction()

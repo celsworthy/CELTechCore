@@ -1,7 +1,5 @@
 package celtech.utils.tasks;
 
-import java.util.concurrent.Callable;
-
 /**
  *
  * @author Ian
@@ -9,6 +7,9 @@ import java.util.concurrent.Callable;
 public interface TaskExecutor
 {
     
+    /**
+     * A point interface (ie only one method) that takes no arguments and returns void.
+     */
     public interface NoArgsConsumer {
         void run() throws Exception;
     }
@@ -19,9 +20,11 @@ public interface TaskExecutor
     public void runOnGUIThread(Runnable runnable);
 
     /**
-     * Run the given action in a JavaFX task, using the given success,  failure and
-     * cancelled handlers. The cancelled handler is called if the action returns false,
-     * the failure handler is called if the action raises an exception.
+     * Run the given action in a background thread, using the given success and failure handlers.
+     * @param action The function to call that performs the action.
+     * @param successHandler This will be run if the function succeeds (i.e. does not raise an Exception).
+     * @param failureHandler This will be run if the function fails (i.e. raises an Exception).
+     * @param taskName The name of the task, which is used as the name of the thread
      */
     public void runAsTask(NoArgsConsumer action, NoArgsConsumer successHandler,
         NoArgsConsumer failureHandler, String taskName);

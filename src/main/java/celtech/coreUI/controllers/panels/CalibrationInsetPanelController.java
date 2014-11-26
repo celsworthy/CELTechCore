@@ -329,8 +329,6 @@ public class CalibrationInsetPanelController implements Initializable,
             loader.setController(diagramController);
             loadedDiagramNode = loader.load();
 
-            nameToNodeCache.put(diagramName, loadedDiagramNode);
-
             Bounds bounds = getBoundsOfNotYetDisplayedNode(loadedDiagramNode);
             steno.debug("diagram bounds are " + bounds);
             nodeToBoundsCache.put(loadedDiagramNode, bounds);
@@ -341,7 +339,7 @@ public class CalibrationInsetPanelController implements Initializable,
             ex.printStackTrace();
             steno.error("Could not load diagram: " + diagramName);
         }
-        return nameToNodeCache.get(diagramName);
+        return loadedDiagramNode;
 
     }
 
