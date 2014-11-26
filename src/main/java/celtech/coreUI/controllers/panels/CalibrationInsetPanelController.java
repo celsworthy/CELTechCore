@@ -1,6 +1,7 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
+import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.components.VerticalMenu;
@@ -166,7 +167,7 @@ public class CalibrationInsetPanelController implements Initializable,
     void backToStatusAction(ActionEvent event)
     {
         stateManager.followTransition(StateTransitionManager.GUIName.BACK);
-        ApplicationStatus.getInstance().returnToLastMode();
+//        ApplicationStatus.getInstance().returnToLastMode();
         setCalibrationMode(CalibrationMode.CHOICE);
     }
 
@@ -181,7 +182,7 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         if (calibrationMode == CalibrationMode.CHOICE)
         {
-            ApplicationStatus.getInstance().returnToLastMode();
+            ApplicationStatus.getInstance().setMode(ApplicationMode.STATUS);
         } else
         {
             try
@@ -203,7 +204,7 @@ public class CalibrationInsetPanelController implements Initializable,
 
     public void cancelCalibrationAction()
     {
-        ApplicationStatus.getInstance().returnToLastMode();
+//        ApplicationStatus.getInstance().returnToLastMode();
         setCalibrationMode(CalibrationMode.CHOICE);
     }
 
@@ -223,6 +224,7 @@ public class CalibrationInsetPanelController implements Initializable,
         {
             diagramNode.setVisible(false);
         }
+        stepNumber.setText("");
     }
 
     @Override

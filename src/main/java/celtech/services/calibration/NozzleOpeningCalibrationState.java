@@ -9,66 +9,42 @@ import celtech.coreUI.DisplayManager;
 public enum NozzleOpeningCalibrationState
 {
 
-    /**
-     *
-     */
     IDLE("calibrationPanel.readyToBeginNozzleOpeningCalibration"),
-    /**
-     *
-     */
+
     HEATING("calibrationPanel.heating"),
-    /**
-     *
-     */
+
     NO_MATERIAL_CHECK("calibrationPanel.valvesClosedNoMaterial"),
-    /**
-     *
-     */
+    
+    T0_EXTRUDING("calibrationPanel.isMaterialExtrudingNozzle0"),
+    
+    T1_EXTRUDING("calibrationPanel.isMaterialExtrudingNozzle1"),
+    
+    HEAD_CLEAN_CHECK_AFTER_EXTRUDE("calibrationPanel.ensureHeadIsCleanBMessage"),
+
     PRE_CALIBRATION_PRIMING_FINE("calibrationPanel.primingNozzle"),
-    /**
-     *
-     */
+
     CALIBRATE_FINE_NOZZLE("calibrationPanel.calibrationCommencedMessageFine"),
     
     INCREMENT_FINE_NOZZLE_POSITION(""),
-    
-    /**
-     *
-     */
-    HEAD_CLEAN_CHECK_FINE_NOZZLE("calibrationPanel.ensureHeadIsCleanBMessage"),
-    /**
-     *
-     */
+
     PRE_CALIBRATION_PRIMING_FILL("calibrationPanel.primingNozzle"),
-    /**
-     *
-     */
+
     CALIBRATE_FILL_NOZZLE("calibrationPanel.calibrationCommencedMessageFill"),
     
     INCREMENT_FILL_NOZZLE_POSITION(""),
-    /**
-     *
-     */
+
     HEAD_CLEAN_CHECK_FILL_NOZZLE("calibrationPanel.ensureHeadIsCleanBMessage"),
-    /**
-     *
-     */
+
     CONFIRM_NO_MATERIAL("calibrationPanel.valvesClosedNoMaterialPostCalibration"),
-    /**
-     *
-     */
-    CONFIRM_MATERIAL_EXTRUDING("calibrationPanel.valvesOpenMaterialExtruding"),
-    /**
-     *
-     */
+
+//    CONFIRM_MATERIAL_EXTRUDING("calibrationPanel.valvesOpenMaterialExtruding"),
+
     FINISHED("calibrationPanel.calibrationSucceededMessage"),
     
     CANCELLED(""),
     
     DONE(""),
-    /**
-     *
-     */
+
     FAILED("calibrationPanel.nozzleCalibrationFailed");
 
     private String stepTitleResource = null;
@@ -78,34 +54,6 @@ public enum NozzleOpeningCalibrationState
         this.stepTitleResource = stepTitleResource;
     }
 
-    /**
-     *
-     * @return
-     */
-    public NozzleOpeningCalibrationState getNextState()
-    {
-        NozzleOpeningCalibrationState returnState = null;
-
-        NozzleOpeningCalibrationState[] values = NozzleOpeningCalibrationState.values();
-
-        if (this != FINISHED && this != FAILED)
-        {
-            for (int i = 0; i < values.length; i++)
-            {
-                if (values[i] == this)
-                {
-                    returnState = values[i + 1];
-                }
-            }
-        }
-
-        return returnState;
-    }
-
-    /**
-     *
-     * @return
-     */
     public String getStepTitle()
     {
         if (stepTitleResource == null)

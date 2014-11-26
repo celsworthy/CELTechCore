@@ -38,19 +38,19 @@ public class CalibrationXAndYActions
     {
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT);
         savedHeadData = printer.readHeadEEPROM();
-//        Thread.sleep(3000);
+        Thread.sleep(3000);
 //        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
-        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_XY_offset_roboxised"), true);
-        PrinterUtils.waitOnMacroFinished(printer, cancellable);
+//        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_XY_offset_roboxised"), true);
+//        PrinterUtils.waitOnMacroFinished(printer, cancellable);
     }
 
     public void doSaveSettingsAndPrintCircle() throws PrinterException, InterruptedException
     {
         saveSettings();
-//        Thread.sleep(3000);
+        Thread.sleep(3000);
 //        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
-        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_XY_offset_roboxised"), true);
-        PrinterUtils.waitOnMacroFinished(printer, cancellable);
+//        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_XY_offset_roboxised"), true);
+//        PrinterUtils.waitOnMacroFinished(printer, cancellable);
     }
 
     public void doFinishedAction() throws PrinterException
@@ -79,7 +79,13 @@ public class CalibrationXAndYActions
         {
             steno.info("interrupted during wait of cancel");
         }
-        printer.cancel(null);
+        try
+        {
+            printer.cancel(null);
+        } catch (PrinterException ex)
+        {
+            steno.error("Cannot cancel print: " + ex);
+        }
         doFailedAction();
     }
 

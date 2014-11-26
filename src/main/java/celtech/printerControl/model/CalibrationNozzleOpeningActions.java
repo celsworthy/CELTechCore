@@ -7,9 +7,13 @@ import celtech.configuration.HeaterMode;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
+import celtech.printerControl.comms.events.ErrorConsumer;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
+import java.util.ArrayList;
+import java.util.List;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -17,7 +21,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author tony
  */
-public class CalibrationNozzleOpeningActions
+public class CalibrationNozzleOpeningActions implements ErrorConsumer
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -32,6 +36,7 @@ public class CalibrationNozzleOpeningActions
     private float nozzlePosition = 0;
 
     private final Cancellable cancellable = new Cancellable();
+    private boolean errorsConsumed = false;
 
     public CalibrationNozzleOpeningActions(Printer printer)
     {
@@ -39,8 +44,12 @@ public class CalibrationNozzleOpeningActions
         cancellable.cancelled = false;
     }
 
-    public void doHeatingAction() throws RoboxCommsException, PrinterException, InterruptedException
+    public void doHeatingAction() throws RoboxCommsException, PrinterException, InterruptedException, CalibrationException
     {
+        List<FirmwareError> errors = new ArrayList<>();
+        errors.add(FirmwareError.ALL_ERRORS);
+        printer.registerErrorConsumer(this, errors);
+        errorsConsumed = false;
         printer.inhibitHeadIntegrityChecks(true);
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_OPENING);
 
@@ -94,26 +103,33 @@ public class CalibrationNozzleOpeningActions
                             .nozzleTargetTemperatureProperty().get(), 5, 300, cancellable);
                     }
                     printer.switchOnHeadLEDs();
-                } else
-                {
-                    return;
-                }
-            } else
-            {
-                return;
-            }
-
-        } else
-        {
-            return;
+                } 
+            } 
         }
-        return;
+        printer.deregisterErrorConsumer(this);
+        if (errorsConsumed) {
+            throw new CalibrationException("Firmware errors were detected");
+        }
     }
 
     public void doNoMaterialCheckAction()
     {
         extrudeUntilStall(0);
     }
+    
+    public void doT0Extrusion() throws PrinterException {
+        printer.selectNozzle(0);
+        printer.openNozzleFully();
+        printer.sendRawGCode("G1 E10 F300", false);
+        PrinterUtils.waitOnBusy(printer, cancellable);
+    }
+    
+    public void doT1Extrusion() throws PrinterException {
+        printer.selectNozzle(1);
+        printer.openNozzleFully();
+        printer.sendRawGCode("G1 E10 F600", false);
+        PrinterUtils.waitOnBusy(printer, cancellable);
+    }      
 
     public void doPreCalibrationPrimingFine() throws RoboxCommsException
     {
@@ -136,7 +152,7 @@ public class CalibrationNozzleOpeningActions
                                         savedHeadData.getHeadHours());
         extrudeUntilStall(0);
     }
-
+    
     public void doCalibrateFineNozzle()
     {
         printer.gotoNozzlePosition(nozzlePosition);
@@ -192,12 +208,20 @@ public class CalibrationNozzleOpeningActions
         return true;
     }
 
-    public void doConfirmNoMaterialAction()
+    public void doConfirmNoMaterialAction()throws PrinterException, RoboxCommsException, InterruptedException
     {
+        // set to just about to be open
+        saveSettings();
+        printer.closeNozzleFully();
+        printer.selectNozzle(0);
+        extrudeUntilStall(0);
+        Thread.sleep(3000);
+        printer.selectNozzle(1);
+        // 
         nozzlePosition = 0;
     }
 
-    public void doConfirmMaterialExtrudingAction() throws PrinterException
+    public void doConfirmMaterialExtrudingAction() throws PrinterException 
     {
         printer.selectNozzle(0);
         printer.openNozzleFully();
@@ -310,6 +334,12 @@ public class CalibrationNozzleOpeningActions
         {
             steno.error("Error in needle valve priming");
         }
+    }
+
+    @Override
+    public void consume(FirmwareError error)
+    {
+        errorsConsumed = true;
     }
 
 }

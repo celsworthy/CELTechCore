@@ -73,54 +73,52 @@ public class CalibrationNozzleHeightGUI
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzleheight",
                                        "Nozzle Height Illustrations_Step 1 and 5.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 9", 1));
                 break;
             case INITIALISING:
                 controller.calibrationMenu.disableNonSelectedItems();
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 2.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 9", 2));
+                controller.stepNumber.setText(String.format("Step %s of 7", 1));
                 break;
             case HEATING:
                 controller.showSpinner();
                 controller.setCalibrationProgressVisible(
                     CalibrationInsetPanelController.ProgressVisibility.TEMP);
                 controller.calibrationStatus.setText(state.getStepTitle());
-                controller.stepNumber.setText(String.format("Step %s of 9", 3));
+                controller.stepNumber.setText(String.format("Step %s of 7", 2));
                 break;
             case HEAD_CLEAN_CHECK:
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 4.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 9", 4));
+                controller.stepNumber.setText(String.format("Step %s of 7", 3));
                 break;
             case MEASURE_Z_DIFFERENCE:
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzleheight",
                                        "Nozzle Height Illustrations_Step 1 and 5.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 9", 5));
+                controller.stepNumber.setText(String.format("Step %s of 7", 4));
                 break;
             case INSERT_PAPER:
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 6.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 9", 6));
+                controller.stepNumber.setText(String.format("Step %s of 7", 5));
                 break;
             case PROBING:
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 7.fxml",
                                        false);
-                controller.stepNumber.setText(String.format("Step %s of 9", 7));
+                controller.stepNumber.setText(String.format("Step %s of 7", 6));
                 break;
             case LIFT_HEAD:
                 break;
             case REPLACE_PEI_BED:
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 8.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 9", 8));
+                controller.stepNumber.setText(String.format("Step %s of 7", 7));
                 break;
             case FINISHED:
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 9.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 9", 9));
                 break;
             case FAILED:
                 controller.calibrationStatus.setText(state.getStepTitle());
@@ -135,7 +133,6 @@ public class CalibrationNozzleHeightGUI
         namesToButtons.put(GUIName.YES, controller.buttonA);
         namesToButtons.put(GUIName.NO, controller.buttonB);
         namesToButtons.put(GUIName.NEXT, controller.nextButton);
-        namesToButtons.put(GUIName.CANCEL, controller.cancelCalibrationButton);
         namesToButtons.put(GUIName.RETRY, controller.retryPrintButton);
         namesToButtons.put(GUIName.START, controller.startCalibrationButton);
         namesToButtons.put(GUIName.BACK, controller.backToStatus);
