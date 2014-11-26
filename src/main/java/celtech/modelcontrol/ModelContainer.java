@@ -93,6 +93,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private Translate transformMoveToPreferred;
     private Translate transformBedCentre;
 
+    private Group meshGroup = new Group();
+
     static int SNAP_FACE_INDEX_NOT_SELECTED = -1;
     /**
      * The index of the face that the user has requested face the bed.
@@ -118,6 +120,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public ModelContainer()
     {
         super();
+        this.getChildren().add(meshGroup);
     }
 
     /**
@@ -128,8 +131,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public ModelContainer(String name, MeshView meshToAdd)
     {
         super();
+        this.getChildren().add(meshGroup);
         modelContentsType = ModelContentsEnumeration.MESH;
-        getChildren().add(meshToAdd);
+        meshGroup.getChildren().add(meshToAdd);
         numberOfMeshes = 1;
         initialise(name);
         initialiseTransforms();
@@ -143,8 +147,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public ModelContainer(String name, ArrayList<MeshView> meshes)
     {
         super();
+        this.getChildren().add(meshGroup);
         modelContentsType = ModelContentsEnumeration.MESH;
-        getChildren().addAll(meshes);
+        meshGroup.getChildren().addAll(meshes);
         numberOfMeshes = meshes.size();
         initialise(name);
         initialiseTransforms();
@@ -159,6 +164,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public ModelContainer(String name, GCodeMeshData gcodeMeshData, ArrayList<String> fileLines)
     {
         super();
+        this.getChildren().add(meshGroup);
         modelContentsType = ModelContentsEnumeration.GCODE;
         numberOfMeshes = 0;
         initialise(name);
@@ -217,8 +223,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         getTransforms().addAll(transformSnapToGroundYAdjust, transformMoveToPreferred,
                                transformMoveToCentre, transformBedCentre,
-                               transformRotateYPreferred, transformRotateSnapToGround,
-                               transformScalePreferred);
+                               transformRotateYPreferred, transformRotateSnapToGround);
+        meshGroup.getTransforms().addAll(transformScalePreferred);
 
         originalModelBounds = calculateBounds();
 
@@ -353,8 +359,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * This method checks if the model is off the print bed and if so it adjusts the
-     * transformMoveToPreferred to bring it back to the nearest edge of the bed.
+     * This method checks if the model is off the print bed and if so it adjusts the transformMoveToPreferred to bring it back to the nearest edge of the bed.
      */
     private void keepOnBedXZ()
     {
@@ -489,7 +494,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             }
         } else
         {
-            for (Node node : ((Group) (getChildrenUnmodifiable().get(0))).getChildrenUnmodifiable())
+            for (Node node : ((Group) (meshGroup.getChildrenUnmodifiable().get(0))).getChildrenUnmodifiable())
             {
                 if (node instanceof MeshView)
                 {
@@ -654,7 +659,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         {
             out.writeInt(numberOfMeshes);
 
-            for (Node node : getChildren())
+            for (Node node : meshGroup.getChildren())
             {
                 if (node instanceof MeshView)
                 {
@@ -691,6 +696,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         throws IOException, ClassNotFoundException
     {
         String modelName = in.readUTF();
+        meshGroup = new Group();
+        getChildren().add(meshGroup);
 
         modelContentsType = (ModelContentsEnumeration) in.readObject();
 
@@ -720,7 +727,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 newMesh.setCullFace(CullFace.BACK);
                 newMesh.setId(modelName + "_mesh");
 
-                getChildren().add(newMesh);
+                meshGroup.getChildren().add(newMesh);
             }
 
         } else
@@ -753,7 +760,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         if (storedSnapFaceIndex != SNAP_FACE_INDEX_NOT_SELECTED)
         {
             snapToGround(storedSnapFaceIndex);
-        } else {
+        } else
+        {
             snapFaceIndex = SNAP_FACE_INDEX_NOT_SELECTED;
         }
 
@@ -772,9 +780,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public MeshView getMeshView()
     {
-        if (getChildrenUnmodifiable().get(0) instanceof MeshView)
+        if (meshGroup.getChildrenUnmodifiable().get(0) instanceof MeshView)
         {
-            return (MeshView) (getChildrenUnmodifiable().get(0));
+            return (MeshView) (meshGroup.getChildrenUnmodifiable().get(0));
         } else
         {
             return null;
@@ -789,7 +797,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         if (modelContentsType == ModelContentsEnumeration.MESH)
         {
-            return getChildren();
+            return meshGroup.getChildren();
         } else
         {
             return null;
@@ -1114,20 +1122,19 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * Calculate max/min X,Y,Z before the transforms have been applied (ie the original model
-     * dimensions before any transforms).
+     * Calculate max/min X,Y,Z before the transforms have been applied (ie the original model dimensions before any transforms).
      */
     private ModelBounds calculateBounds()
     {
         TriangleMesh mesh = (TriangleMesh) getMeshView().getMesh();
         ObservableFloatArray originalPoints = mesh.getPoints();
 
-        double minX = 1e99;
-        double minY = 1e99;
-        double minZ = 1e99;
-        double maxX = -1e99;
-        double maxY = -1e99;
-        double maxZ = -1e99;
+        double minX = Double.MAX_VALUE;
+        double minY = Double.MAX_VALUE;
+        double minZ = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE;
+        double maxY = -Double.MAX_VALUE;
+        double maxZ = -Double.MAX_VALUE;
 
         for (int pointOffset = 0; pointOffset < originalPoints.size(); pointOffset += 3)
         {
@@ -1165,12 +1172,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         TriangleMesh mesh = (TriangleMesh) getMeshView().getMesh();
         ObservableFloatArray originalPoints = mesh.getPoints();
 
-        double minX = 999;
-        double minY = 999;
-        double minZ = 999;
-        double maxX = -999;
-        double maxY = -999;
-        double maxZ = -999;
+        double minX = Double.MAX_VALUE;
+        double minY = Double.MAX_VALUE;
+        double minZ = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE;
+        double maxY = -Double.MAX_VALUE;
+        double maxZ = -Double.MAX_VALUE;
 
         for (int pointOffset = 0; pointOffset < originalPoints.size(); pointOffset += 3)
         {
@@ -1178,7 +1185,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             float yPos = originalPoints.get(pointOffset + 1);
             float zPos = originalPoints.get(pointOffset + 2);
 
-            Point3D pointInParent = localToParent(xPos, yPos, zPos);
+            Point3D pointInParent = localToParent(meshGroup.localToParent(xPos, yPos, zPos));
 
             minX = Math.min(pointInParent.getX(), minX);
             minY = Math.min(pointInParent.getY(), minY);
@@ -1435,33 +1442,36 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     @Override
-    public double getHeight()
+    public double getOriginalHeight()
     {
         return getLocalBounds().getHeight();
     }
 
+    @Override
     public double getScaledHeight()
     {
         return getLocalBounds().getHeight() * preferredScale.get();
     }
 
     @Override
-    public double getDepth()
+    public double getOriginalDepth()
     {
         return getLocalBounds().getDepth();
     }
 
+    @Override
     public double getScaledDepth()
     {
         return getLocalBounds().getDepth() * preferredScale.get();
     }
 
     @Override
-    public double getWidth()
+    public double getOriginalWidth()
     {
         return getLocalBounds().getWidth();
     }
 
+    @Override
     public double getScaledWidth()
     {
         return getLocalBounds().getWidth() * preferredScale.get();
@@ -1510,8 +1520,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * This method must be called at the end of any operation that changes one or more of the
-     * transforms.
+     * This method must be called at the end of any operation that changes one or more of the transforms.
      */
     private void notifyShapeChange()
     {

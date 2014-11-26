@@ -79,9 +79,9 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
     @Override
     public void shapeChanged(ShapeProvider shapeProvider)
     {
-        double halfWidth = shapeProvider.getWidth() / 2;
-        double halfDepth = shapeProvider.getDepth() / 2;
-        double halfHeight = shapeProvider.getHeight() / 2;
+        double halfWidth = shapeProvider.getScaledWidth() / 2;
+        double halfDepth = shapeProvider.getScaledDepth() / 2;
+        double halfHeight = shapeProvider.getScaledHeight() / 2;
         double minX = shapeProvider.getCentreX() - halfWidth;
         double maxX = shapeProvider.getCentreX() + halfWidth;
         double minZ = shapeProvider.getCentreZ() - halfDepth;
