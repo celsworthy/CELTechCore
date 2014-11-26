@@ -140,7 +140,11 @@ public interface Printer extends RoboxResponseConsumer
 
     public void goToZPosition(double position);
 
+    public void goToXYPosition(double xPosition, double yPosition);
+
     public void homeZ();
+
+    public void levelGantry();
 
     /**
      *
@@ -432,7 +436,7 @@ public interface Printer extends RoboxResponseConsumer
 
     public void probeBed();
 
-    public String getZDelta() throws PrinterException;
+    public float getZDelta() throws PrinterException;
 
     /**
      *

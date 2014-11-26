@@ -1758,6 +1758,18 @@ public final class HardwarePrinter implements Printer
     }
 
     @Override
+    public void levelGantry()
+    {
+        try
+        {
+            transmitDirectGCode("G38", false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error when sending level gantry command");
+        }
+    }
+
+    @Override
     public void goToZPosition(double position)
     {
         try
@@ -1766,6 +1778,18 @@ public final class HardwarePrinter implements Printer
         } catch (RoboxCommsException ex)
         {
             steno.error("Error when sending z position command");
+        }
+    }
+
+    @Override
+    public void goToXYPosition(double xPosition, double yPosition)
+    {
+        try
+        {
+            transmitDirectGCode("G0 X" + threeDPformatter.format(xPosition) + " Y" + threeDPformatter.format(yPosition), false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error when sending x y position command");
         }
     }
 
@@ -2075,19 +2099,29 @@ public final class HardwarePrinter implements Printer
     }
 
     @Override
-    public String getZDelta() throws PrinterException
+    public float getZDelta() throws PrinterException
     {
+        float deltaValue = 0;
+        String measurementString = null;
+
         try
         {
             String response = transmitDirectGCode("M113", false);
-            String measurementString = response.replaceFirst("Zdelta:", "").replaceFirst(
-                "\nok", "");
-            return measurementString;
+            measurementString = response.replaceFirst("Zdelta:", "").replaceFirst(
+                "\nok", "").trim();
+            deltaValue = Float.valueOf(measurementString.trim());
+
         } catch (RoboxCommsException ex)
         {
             steno.error("Error sending get Z delta");
             throw new PrinterException("Error sending get Z delta");
+        } catch (NumberFormatException ex)
+        {
+            steno.error("Couldn't parse measurement string: " + measurementString);
+            throw new PrinterException("Measurement string: " + measurementString + " : could not be parsed");
         }
+
+        return deltaValue;
     }
 
     @Override

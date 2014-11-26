@@ -14,6 +14,7 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
+import java.util.ArrayList;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -66,7 +67,6 @@ public class CalibrationNozzleHeightActions
 
 //        zco.set(0.5 * (savedHeadData.getNozzle1ZOffset() + savedHeadData.getNozzle2ZOffset()));
 //        zDifference = savedHeadData.getNozzle2ZOffset() - savedHeadData.getNozzle1ZOffset();
-
         clearZOffsetsOnHead();
         success = heatBed(success);
         return success;
@@ -156,75 +156,74 @@ public class CalibrationNozzleHeightActions
     {
         boolean success = false;
 
-        float[] zDifferenceMeasurement = new float[3];
+        final int numberOfNozzleHeightDifferenceTests = 11;
 
-        float sumOfZDifferences = 0;
-        boolean failed = false;
-        int testCounter = 0;
-        boolean testFinished = false;
+        steno.info("Nozzle height difference test");
+        printer.selectNozzle(0);
 
-        while (testCounter < 3 && !testFinished)
+        // Level the gantry - manual rather than using the macro
+        printer.goToXYPosition(30.0, 75.0);
+        PrinterUtils.waitOnBusy(printer, cancellable);
+        printer.homeZ();
+        PrinterUtils.waitOnBusy(printer, cancellable);
+        printer.goToZPosition(5.0);
+        PrinterUtils.waitOnBusy(printer, cancellable);
+        printer.goToXYPosition(190.0, 75.0);
+        PrinterUtils.waitOnBusy(printer, cancellable);
+        printer.homeZ();
+        PrinterUtils.waitOnBusy(printer, cancellable);
+        printer.goToZPosition(5.0);
+        PrinterUtils.waitOnBusy(printer, cancellable);
+        printer.levelGantry();
+        PrinterUtils.waitOnBusy(printer, cancellable);
+        printer.goToXYPosition(105.0, 75.0);
+        PrinterUtils.waitOnBusy(printer, cancellable);
+
+        printer.homeZ();
+        PrinterUtils.waitOnBusy(printer, cancellable);
+        printer.goToZPosition(5.0);
+        PrinterUtils.waitOnBusy(printer, cancellable);
+
+        ArrayList<Float> t0Deltas = new ArrayList<>();
+        t0Deltas.add(0f);
+        ArrayList<Float> t1Deltas = new ArrayList<>();
+
+        boolean flipFlop = false;
+        for (int testCount = 0; testCount < numberOfNozzleHeightDifferenceTests; testCount++)
         {
-            for (int i = 0; i < 3; i++)
+            int nozzleFrom = ((flipFlop == false) ? 0 : 1);
+            int nozzleTo = ((flipFlop == false) ? 1 : 0);
+
+            printer.selectNozzle(nozzleTo);
+            PrinterUtils.waitOnBusy(printer, cancellable);
+            printer.probeBed();
+            PrinterUtils.waitOnBusy(printer, cancellable);
+            float deltaValue = printer.getZDelta();
+
+            if (nozzleTo == 0)
             {
-                if (cancellable.cancelled)
-                {
-                    return false;
-                }
-                printer.selectNozzle(0);
-                PrinterUtils.waitOnBusy(printer, cancellable);
-                printer.homeZ();
-                PrinterUtils.waitOnBusy(printer, cancellable);
-                printer.goToZPosition(5);
-                PrinterUtils.waitOnBusy(printer, cancellable);
-                printer.selectNozzle(1);
-                PrinterUtils.waitOnBusy(printer, cancellable);
-                printer.probeBed();
-                PrinterUtils.waitOnBusy(printer, cancellable);
-                printer.goToZPosition(5);
-                PrinterUtils.waitOnBusy(printer, cancellable);
-                String measurementString = printer.getZDelta();
-                try
-                {
-                    zDifferenceMeasurement[i] = Float.valueOf(measurementString);
-
-                    if (i > 0)
-                    {
-                        if (Math.abs(zDifferenceMeasurement[i] - zDifferenceMeasurement[i - 1])
-                            > 0.02)
-                        {
-                            failed = true;
-                            break;
-                        }
-                    }
-                    sumOfZDifferences += zDifferenceMeasurement[i];
-                    steno.info("Z Offset measurement " + i + " was " + zDifferenceMeasurement[i]);
-                } catch (NumberFormatException ex)
-                {
-                    steno.error("Failed to convert z offset measurement from Robox - "
-                        + measurementString);
-                    failed = true;
-                    break;
-                }
-            }
-
-            if (failed == false)
-            {
-                zDifference = sumOfZDifferences / 3;
-
-                steno.info("Average Z Offset was " + zDifference);
-
-                success = true;
-                testFinished = true;
+                t0Deltas.add(deltaValue);
             } else
             {
-                sumOfZDifferences = 0;
-                zDifferenceMeasurement = new float[3];
-                failed = false;
+                t1Deltas.add(deltaValue);
             }
-
-            testCounter++;
+            steno.info("Delta from " + nozzleFrom + " to " + nozzleTo + " -> " + deltaValue);
+            flipFlop = !flipFlop;
         }
+
+        printer.selectNozzle(0);
+
+        float sumOfDeltas = 0;
+        int numberOfSamples = ((numberOfNozzleHeightDifferenceTests + 1) / 2);
+
+        for (int deltaCount = 0; deltaCount < numberOfSamples; deltaCount++)
+        {
+            sumOfDeltas += t1Deltas.get(deltaCount) - t0Deltas.get(deltaCount);
+        }
+
+        zDifference = sumOfDeltas / numberOfSamples;
+        success = true;
+        steno.info("Average Z Offset was " + zDifference);
 
         printer.selectNozzle(0);
         PrinterUtils.waitOnBusy(printer, cancellable);
@@ -232,7 +231,7 @@ public class CalibrationNozzleHeightActions
         {
             throw new CalibrationException("ZCO could not be established");
         }
-        return true;
+        return success;
     }
 
     public boolean doIncrementZAction()
@@ -245,7 +244,8 @@ public class CalibrationNozzleHeightActions
     public boolean doDecrementZAction()
     {
         zco.set(zco.get() - 0.05);
-        if (zco.get() < 0) {
+        if (zco.get() < 0)
+        {
             zco.set(0);
         }
         printer.goToZPosition(zco.get());
