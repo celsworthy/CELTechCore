@@ -55,9 +55,8 @@ public class CalibrationNozzleHeightActions
             });
     }
 
-    public boolean doInitialiseAndHeatBedAction() throws InterruptedException, PrinterException, RoboxCommsException
+    public void doInitialiseAndHeatBedAction() throws InterruptedException, PrinterException, RoboxCommsException
     {
-        boolean success = false;
 
         zco.set(0);
 
@@ -68,8 +67,7 @@ public class CalibrationNozzleHeightActions
 //        zco.set(0.5 * (savedHeadData.getNozzle1ZOffset() + savedHeadData.getNozzle2ZOffset()));
 //        zDifference = savedHeadData.getNozzle2ZOffset() - savedHeadData.getNozzle1ZOffset();
         clearZOffsetsOnHead();
-        success = heatBed(success);
-        return success;
+        heatBed();
 
     }
 
@@ -97,7 +95,7 @@ public class CalibrationNozzleHeightActions
                                         savedHeadData.getHeadHours());
     }
 
-    private boolean heatBed(boolean success) throws InterruptedException, PrinterException
+    private void heatBed() throws InterruptedException, PrinterException
     {
         printer.goToTargetNozzleTemperature();
         printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("Home_all"), true);
@@ -126,33 +124,29 @@ public class CalibrationNozzleHeightActions
             if (PrinterUtils.waitOnBusy(printer, cancellable) == false)
             {
                 printer.switchOnHeadLEDs();
-                success = true;
             } else
             {
-                return false;
+                return;
             }
         } else
         {
-            return false;
+            return;
         }
-        return success;
     }
 
-    public boolean doHomeZAction()
+    public void doHomeZAction()
     {
         printer.homeZ();
-        return true;
     }
 
-    public boolean doLiftHeadAction() throws PrinterException
+    public void doLiftHeadAction() throws PrinterException
     {
         printer.switchToAbsoluteMoveMode();
         printer.goToZPosition(30);
 //        printer.goToOpenDoorPosition(null);
-        return true;
     }
 
-    public boolean doMeasureZDifferenceAction() throws PrinterException, CalibrationException
+    public void doMeasureZDifferenceAction() throws PrinterException, CalibrationException
     {
         boolean success = false;
 
@@ -231,17 +225,15 @@ public class CalibrationNozzleHeightActions
         {
             throw new CalibrationException("ZCO could not be established");
         }
-        return success;
     }
 
-    public boolean doIncrementZAction()
+    public void doIncrementZAction()
     {
         zco.set(zco.get() + 0.05);
         printer.goToZPosition(zco.get());
-        return true;
     }
 
-    public boolean doDecrementZAction()
+    public void doDecrementZAction()
     {
         zco.set(zco.get() - 0.05);
         if (zco.get() < 0)
@@ -249,26 +241,23 @@ public class CalibrationNozzleHeightActions
             zco.set(0);
         }
         printer.goToZPosition(zco.get());
-        return true;
     }
 
-    public boolean doFinishedAction() throws PrinterException, RoboxCommsException
+    public void doFinishedAction() throws PrinterException, RoboxCommsException
     {
         saveSettings();
         switchHeaterOffAndRaiseHead();
         printer.setPrinterStatus(PrinterStatus.IDLE);
-        return true;
     }
 
-    public boolean doFailedAction() throws PrinterException, RoboxCommsException
+    public void doFailedAction() throws PrinterException, RoboxCommsException
     {
         restoreHeadData();
         switchHeaterOffAndRaiseHead();
         printer.setPrinterStatus(PrinterStatus.IDLE);
-        return true;
     }
 
-    public boolean cancel() throws PrinterException, RoboxCommsException
+    public void cancel() throws PrinterException, RoboxCommsException
     {
         cancellable.cancelled = true;
         try
@@ -279,7 +268,7 @@ public class CalibrationNozzleHeightActions
         {
             steno.info("interrupted during wait of cancel");
         }
-        return doFailedAction();
+        doFailedAction();
     }
 
     private void switchHeaterOffAndRaiseHead() throws PrinterException
@@ -312,7 +301,7 @@ public class CalibrationNozzleHeightActions
         }
     }
 
-    public boolean saveSettings() throws RoboxCommsException
+    public void saveSettings() throws RoboxCommsException
     {
         steno.info("zDifference is " + zDifference);
         steno.info("zco is " + zDifference);
@@ -331,7 +320,6 @@ public class CalibrationNozzleHeightActions
                                         savedHeadData.getNozzle2BOffset(),
                                         savedHeadData.getLastFilamentTemperature(),
                                         savedHeadData.getHeadHours());
-        return true;
     }
 
     public ReadOnlyDoubleProperty getZcoGUITProperty()

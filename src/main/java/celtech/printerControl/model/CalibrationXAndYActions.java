@@ -34,7 +34,7 @@ public class CalibrationXAndYActions
         cancellable.cancelled = false;
     }
 
-    public boolean doSaveHeadAndPrintPattern() throws PrinterException, RoboxCommsException, InterruptedException
+    public void doSaveHeadAndPrintPattern() throws PrinterException, RoboxCommsException, InterruptedException
     {
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT);
         savedHeadData = printer.readHeadEEPROM();
@@ -42,37 +42,33 @@ public class CalibrationXAndYActions
 //        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
         printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_XY_offset_roboxised"), true);
         PrinterUtils.waitOnMacroFinished(printer, cancellable);
-        return !cancellable.cancelled;
     }
 
-    public boolean doSaveSettingsAndPrintCircle() throws PrinterException, InterruptedException
+    public void doSaveSettingsAndPrintCircle() throws PrinterException, InterruptedException
     {
         saveSettings();
 //        Thread.sleep(3000);
 //        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
         printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_XY_offset_roboxised"), true);
         PrinterUtils.waitOnMacroFinished(printer, cancellable);
-        return !cancellable.cancelled;
     }
 
-    public boolean doFinishedAction() throws PrinterException
+    public void doFinishedAction() throws PrinterException
     {
 
         saveSettings();
         switchHeaterOffAndRaiseHead();
         printer.setPrinterStatus(PrinterStatus.IDLE);
-        return true;
     }
 
-    public boolean doFailedAction() throws PrinterException, RoboxCommsException
+    public void doFailedAction() throws PrinterException, RoboxCommsException
     {
         restoreHeadData();
         switchHeaterOffAndRaiseHead();
         printer.setPrinterStatus(PrinterStatus.IDLE);
-        return true;
     }
 
-    public boolean cancel() throws PrinterException, RoboxCommsException
+    public void cancel() throws PrinterException, RoboxCommsException
     {
         cancellable.cancelled = true;
         try
@@ -85,7 +81,6 @@ public class CalibrationXAndYActions
         }
         printer.cancel(null);
         doFailedAction();
-        return true;
     }
 
     private void switchHeaterOffAndRaiseHead() throws PrinterException

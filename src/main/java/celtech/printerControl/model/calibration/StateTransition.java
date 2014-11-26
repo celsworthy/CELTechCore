@@ -4,7 +4,7 @@
 package celtech.printerControl.model.calibration;
 
 import celtech.printerControl.model.calibration.StateTransitionManager.GUIName;
-import java.util.concurrent.Callable;
+import celtech.utils.tasks.TaskExecutor;
 
 /**
  * StateTransition represents a transition from the fromState to the toState. The toState is reached
@@ -33,14 +33,13 @@ public class StateTransition<T>
      */
     final StateTransitionManager.GUIName guiName;
     /**
-     * If an action is declared then it must return a boolean. a return value of true
-     * indicates the action succeeded, false indicates the action was cancelled. To indicate
+     * If an action is declared then it takes no arguments and returns void. To indicate
      * a failure an exception should be raised.
      */
-    final Callable<Boolean> action;
+    final TaskExecutor.NoArgsConsumer action;
 
     public StateTransition(T fromState, StateTransitionManager.GUIName guiName, 
-        T toState, Callable action, T failedState)
+        T toState, TaskExecutor.NoArgsConsumer action, T failedState)
     {
         this.fromState = fromState;
         this.toState = toState;

@@ -494,7 +494,7 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public String getZDelta() throws PrinterException
+    public float getZDelta() throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -631,6 +631,18 @@ public class CommandInterfaceTestPrinter implements Printer
 
     @Override
     public void deregisterErrorConsumer(ErrorConsumer errorConsumer)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void goToXYPosition(double xPosition, double yPosition)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void levelGantry()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
