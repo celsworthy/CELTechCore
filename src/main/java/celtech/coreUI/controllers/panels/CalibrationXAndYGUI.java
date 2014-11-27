@@ -67,14 +67,15 @@ public class CalibrationXAndYGUI
     public void setState(CalibrationXAndYState state)
     {
         steno.info("GUI going to state " + state);
+        controller.calibrationStatus.setText(state.getStepTitle());
         showAppropriateButtons(state);
+        if (state.getDiagramFXMLFileName().isPresent()) {
+            controller.showDiagram(state.getDiagramFXMLFileName().get());
+        }
+        int stepNo = 0;
         switch (state)
         {
             case IDLE:
-            case CANCELLED:
-                controller.calibrationStatus.setText(state.getStepTitle());
-                controller.showDiagram("nozzlealignment",
-                                       "Nozzle Alignment Illustrations_Step 1.fxml");
                 break;
 //            case HEATING:
 //                controller.hideAllInputControlsExceptStepNumber();
@@ -90,38 +91,27 @@ public class CalibrationXAndYGUI
                 controller.showSpinner();
                 controller.setCalibrationProgressVisible(
                     CalibrationInsetPanelController.ProgressVisibility.PRINT);
-                controller.calibrationStatus.setText(state.getStepTitle());
-                controller.stepNumber.setText(String.format("Step %s of 4", 1));
+                stepNo = 1;
                 break;
             case GET_Y_OFFSET:
-                controller.calibrationStatus.setText(state.getStepTitle());
-                controller.showDiagram("nozzlealignment",
-                                       "Nozzle Alignment Illustrations_Step 4.fxml", false);
-                controller.stepNumber.setText(String.format("Step %s of 4", 2));
+                stepNo = 2;
                 break;
             case PRINT_CIRCLE:
                 controller.showSpinner();
                 controller.setCalibrationProgressVisible(
                     CalibrationInsetPanelController.ProgressVisibility.PRINT);
-                controller.calibrationStatus.setText(state.getStepTitle());
-                controller.stepNumber.setText(String.format("Step %s of 4", 3));
+                stepNo = 3;
                 break;
             case PRINT_CIRCLE_CHECK:
-                controller.showDiagram("nozzlealignment",
-                                       "Nozzle Alignment Illustrations_Step 5.fxml");
-                controller.calibrationStatus.setText(state.getStepTitle());
-                controller.stepNumber.setText(String.format("Step %s of 4", 4));
+                stepNo = 4;
                 break;
             case FINISHED:
-                controller.calibrationStatus.setText(state.getStepTitle());
-                controller.showDiagram("nozzlealignment",
-                                       "Nozzle Alignment Illustrations_Step 6.fxml");
                 break;
             case FAILED:
-                controller.calibrationStatus.setText(state.getStepTitle());
-                controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Failure.fxml");
-                controller.stepNumber.setText("");
                 break;
+        }
+         if (stepNo != 0) {
+             controller.stepNumber.setText(String.format("Step %s of 4", stepNo));
         }
     }
 

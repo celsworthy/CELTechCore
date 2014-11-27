@@ -23,7 +23,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -318,12 +317,9 @@ public class CalibrationInsetPanelController implements Initializable,
      * @param diagramName
      * @return
      */
-    private Node getDiagramNode(String section, String diagramName)
+    private Node getDiagramNode(URL fxmlFileName)
     {
         Pane loadedDiagramNode = null;
-        URL fxmlFileName = getClass().getResource(
-            ApplicationConfiguration.fxmlDiagramsResourcePath
-            + section + "/" + diagramName);
         try
         {
             FXMLLoader loader = new FXMLLoader(fxmlFileName, resources);
@@ -339,7 +335,7 @@ public class CalibrationInsetPanelController implements Initializable,
         } catch (IOException ex)
         {
             ex.printStackTrace();
-            steno.error("Could not load diagram: " + diagramName);
+            steno.error("Could not load diagram: " + fxmlFileName);
         }
         return loadedDiagramNode;
 
@@ -356,14 +352,14 @@ public class CalibrationInsetPanelController implements Initializable,
         return bounds;
     }
 
-    protected void showDiagram(String section, String diagramName)
+    protected void showDiagram(URL fxmlLocation)
     {
-        showDiagram(section, diagramName, true);
+        showDiagram(fxmlLocation, true);
     }
 
-    protected void showDiagram(String section, String diagramName, boolean transparent)
+    protected void showDiagram(URL fxmlLocation, boolean transparent)
     {
-        diagramNode = (Pane) getDiagramNode(section, diagramName);
+        diagramNode = (Pane) getDiagramNode(fxmlLocation);
         if (diagramNode == null)
         {
             return;

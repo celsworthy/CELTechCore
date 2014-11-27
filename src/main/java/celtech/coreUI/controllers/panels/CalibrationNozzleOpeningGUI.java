@@ -67,15 +67,15 @@ public class CalibrationNozzleOpeningGUI
     public void setState(NozzleOpeningCalibrationState state)
     {
         steno.info("GUI going to state " + state);
-        if (! state.getStepTitle().equals("")) {
-            controller.calibrationStatus.setText(state.getStepTitle());
-        }    
+        controller.calibrationStatus.setText(state.getStepTitle());
         showAppropriateButtons(state);
+        if (state.getDiagramFXMLFileName().isPresent()) {
+            controller.showDiagram(state.getDiagramFXMLFileName().get());
+        }
         int stepNo = 0;
         switch (state)
         {
          case IDLE:
-                controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Step 1.fxml");
                 break;
             case HEATING:
                 controller.showSpinner();
@@ -87,7 +87,6 @@ public class CalibrationNozzleOpeningGUI
             case NO_MATERIAL_CHECK:
                 controller.buttonA.setText("Yes");
                 controller.buttonB.setText("No");
-                controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Step 3.fxml");
                 stepNo = 2;
                 break;
             case T0_EXTRUDING: 
@@ -101,7 +100,6 @@ public class CalibrationNozzleOpeningGUI
                 stepNo = 4;
                 break;
             case HEAD_CLEAN_CHECK_AFTER_EXTRUDE:
-                controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Step 5 and 7.fxml");
                 stepNo = 5;
                 break;                
             case PRE_CALIBRATION_PRIMING_FINE:
@@ -109,23 +107,19 @@ public class CalibrationNozzleOpeningGUI
             case CALIBRATE_FINE_NOZZLE:
                 controller.buttonA.setText("Flowing");
                 controller.buttonB.setText("Not flowing");
-                controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Step 4.fxml");
                 stepNo = 6;
                 break;
             case CALIBRATE_FILL_NOZZLE:
                 controller.buttonA.setText("Flowing");
                 controller.buttonB.setText("Not flowing");
-                controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Step 6.fxml");
                 stepNo = 7;
                 break;
             case HEAD_CLEAN_CHECK_FILL_NOZZLE:
-                controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Step 5 and 7.fxml");
                 stepNo = 8;
                 break;
             case CONFIRM_NO_MATERIAL:
                 controller.buttonA.setText("No");
                 controller.buttonB.setText("Yes");
-                controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Step 8.fxml");
                 stepNo = 9;
                 break;
 //            case CONFIRM_MATERIAL_EXTRUDING:
@@ -136,10 +130,8 @@ public class CalibrationNozzleOpeningGUI
 //                stepNo = 9;
 //                break;
             case FINISHED:
-                controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Step 10.fxml");
                 break;
             case FAILED:
-                controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Failure.fxml");
                 break;
         }
         if (stepNo != 0) {

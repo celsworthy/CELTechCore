@@ -1,6 +1,9 @@
 package celtech.services.calibration;
 
+import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
+import java.net.URL;
+import java.util.Optional;
 
 /**
  *
@@ -8,99 +11,47 @@ import celtech.coreUI.DisplayManager;
  */
 public enum NozzleOffsetCalibrationState
 {
-    /**
-     *
-     */
-    IDLE("calibrationPanel.readyToBeginNozzleOffsetCalibration"),
-    /**
-     *
-     */
-    INITIALISING("calibrationPanel.initialisingOffset"),    
-    /**
-     *
-     */
-    HEATING("calibrationPanel.heating"),
-    /**
-     *
-     */
-    HEAD_CLEAN_CHECK("calibrationPanel.headCleanCheck"),
-    /**
-     *
-     */
-    MEASURE_Z_DIFFERENCE("calibrationPanel.measuringZOffset"),
-    /**
-     *
-     */
-    INSERT_PAPER("calibrationPanel.insertPieceOfPaper"),
-    /**
-     *
-     */
-    PROBING("calibrationPanel.moveThePaperInstruction"),
-    /**
-     *
-     */
-    INCREMENT_Z(""),
-    
-    DECREMENT_Z(""),
-    
-    
-    LIFT_HEAD(""),
-    /**
-     *
-     */    
-    REPLACE_PEI_BED("calibrationPanel.replacePEIBed"),
-    /**
-     *
-     */    
-    FINISHED("calibrationPanel.calibrationSucceededMessage"),
-    /**
-     *
-     */
-    FAILED("calibrationPanel.nozzleCalibrationFailed"),
-    
-    CANCELLED(""),
-    
-    DONE(""),
-    /**
-     *
-     */
-    NUDGE_MODE(null);
+
+    IDLE("calibrationPanel.readyToBeginNozzleOffsetCalibration",
+         "Nozzle Height Illustrations_Step 1 and 5.fxml"),
+    INITIALISING("calibrationPanel.initialisingOffset", "Nozzle Height Illustrations_Step 2.fxml"),
+    HEATING("calibrationPanel.heating", ""),
+    HEAD_CLEAN_CHECK("calibrationPanel.headCleanCheck", "Nozzle Height Illustrations_Step 4.fxml"),
+    MEASURE_Z_DIFFERENCE("calibrationPanel.measuringZOffset",
+                         "Nozzle Height Illustrations_Step 1 and 5.fxml"),
+    INSERT_PAPER("calibrationPanel.insertPieceOfPaper", "Nozzle Height Illustrations_Step 6.fxml"),
+    PROBING("calibrationPanel.moveThePaperInstruction", "Nozzle Height Illustrations_Step 7.fxml"),
+    INCREMENT_Z("", ""),
+    DECREMENT_Z("", ""),
+    LIFT_HEAD("", ""),
+    REPLACE_PEI_BED("calibrationPanel.replacePEIBed", "Nozzle Height Illustrations_Step 8.fxml"),
+    FINISHED("calibrationPanel.calibrationSucceededMessage",
+             "Nozzle Height Illustrations_Step 9.fxml"),
+    FAILED("calibrationPanel.nozzleCalibrationFailed", "Nozzle Height Illustrations_Failure.fxml"),
+    CANCELLED("", ""),
+    DONE("", "");
 
     private String stepTitleResource = null;
+    private String diagramName;
 
-    private NozzleOffsetCalibrationState(String stepTitleResource)
+    private NozzleOffsetCalibrationState(String stepTitleResource, String diagramName)
     {
         this.stepTitleResource = stepTitleResource;
+        this.diagramName = diagramName;
     }
 
-    /**
-     *
-     * @return
-     */
-    public NozzleOffsetCalibrationState getNextState()
+    public Optional<URL> getDiagramFXMLFileName()
     {
-        NozzleOffsetCalibrationState returnState = null;
-
-        NozzleOffsetCalibrationState[] values = NozzleOffsetCalibrationState.values();
-
-        if (this != FINISHED && this != FAILED)
+        if (diagramName.equals(""))
         {
-            for (int i = 0; i < values.length; i++)
-            {
-                if (values[i] == this)
-                {
-                    returnState = values[i + 1];
-                }
-            }
+            return Optional.empty();
         }
+        return Optional.of(getClass().getResource(
+            ApplicationConfiguration.fxmlDiagramsResourcePath
+            + "nozzleheight" + "/" + diagramName));
 
-        return returnState;
     }
 
-    /**
-     *
-     * @return
-     */
     public String getStepTitle()
     {
         if (stepTitleResource == null)
@@ -112,11 +63,6 @@ public enum NozzleOffsetCalibrationState
         }
     }
 
-    /**
-     *
-     * @param suffix
-     * @return
-     */
     public String getStepTitle(String suffix)
     {
         if (stepTitleResource == null)
@@ -127,7 +73,5 @@ public enum NozzleOffsetCalibrationState
             return DisplayManager.getLanguageBundle().getString(stepTitleResource + suffix);
         }
     }
-
- 
 
 }
