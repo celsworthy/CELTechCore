@@ -31,8 +31,8 @@ public enum NozzleOffsetCalibrationState
     CANCELLED("", ""),
     DONE("", "");
 
-    private String stepTitleResource = null;
-    private String diagramName;
+    private final String stepTitleResource;
+    private final String diagramName;
 
     private NozzleOffsetCalibrationState(String stepTitleResource, String diagramName)
     {
@@ -62,16 +62,4 @@ public enum NozzleOffsetCalibrationState
             return DisplayManager.getLanguageBundle().getString(stepTitleResource);
         }
     }
-
-    public String getStepTitle(String suffix)
-    {
-        if (stepTitleResource == null)
-        {
-            return "";
-        } else
-        {
-            return DisplayManager.getLanguageBundle().getString(stepTitleResource + suffix);
-        }
-    }
-
 }

@@ -253,17 +253,18 @@ public class CalibrationNozzleOpeningTransitions implements Transitions
 //            StateTransitionManager.GUIName.B_BUTTON,
 //            NozzleOpeningCalibrationState.FAILED,
 //            NozzleOpeningCalibrationState.FAILED));
-//        // FINISHED
-//        transitions.add(new StateTransition(NozzleOpeningCalibrationState.FINISHED,
-//                                            StateTransitionManager.GUIName.BACK,
-//                                            NozzleOpeningCalibrationState.DONE,
-//                                            NozzleOpeningCalibrationState.FAILED));
-//
-//        // FAILED
-//        transitions.add(new StateTransition(NozzleOpeningCalibrationState.FAILED,
-//                                            StateTransitionManager.GUIName.BACK,
-//                                            NozzleOpeningCalibrationState.DONE,
-//                                            NozzleOpeningCalibrationState.DONE));
+        
+        // FINISHED
+        transitions.add(new StateTransition(NozzleOpeningCalibrationState.FINISHED,
+                                            StateTransitionManager.GUIName.BACK,
+                                            NozzleOpeningCalibrationState.DONE,
+                                            NozzleOpeningCalibrationState.FAILED));
+
+        // FAILED
+        transitions.add(new StateTransition(NozzleOpeningCalibrationState.FAILED,
+                                            StateTransitionManager.GUIName.BACK,
+                                            NozzleOpeningCalibrationState.DONE,
+                                            NozzleOpeningCalibrationState.DONE));
     }
 
     @Override
