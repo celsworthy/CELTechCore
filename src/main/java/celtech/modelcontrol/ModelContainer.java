@@ -1573,4 +1573,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return preferredRotationY;
     }
+
+    public Point3D transformMeshToRealWorldCoordinates(float vertexX, float vertexY, float vertexZ)
+    {
+        return localToParent(meshGroup.localToParent(vertexX, vertexY, vertexZ));
+    }
 }

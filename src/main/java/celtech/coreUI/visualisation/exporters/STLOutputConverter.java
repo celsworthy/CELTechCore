@@ -85,8 +85,6 @@ public class STLOutputConverter
 //                Transform worldTrans = printable.getWorldTransform();
 
                 MeshView meshview = printable.getMeshView();
-                Transform toParent = printable.getLocalToParentTransform();
-                Transform toScene = printable.getLocalToSceneTransform();
   
                 TriangleMesh triangles = (TriangleMesh)meshview.getMesh();
                 
@@ -154,10 +152,8 @@ public class STLOutputConverter
 //                        worldTrans.transformVector(vertex, transformedVertex);
 //                        steno.info("Vertex was " + vertexNum + " x " + vertexX + " y " + vertexY + " z " + vertexZ);
 
-                        Point3D parentVertex = toParent.transform(vertexX, vertexY, vertexZ);
+                        Point3D parentVertex = printable.transformMeshToRealWorldCoordinates(vertexX, vertexY, vertexZ);
 //                        steno.info("parent v " + parentVertex);
-                        Point3D transformedVertex = toScene.transform(parentVertex);
-//                        steno.info("scene v " + transformedVertex);
 
 
                         outputArray[(facetNum * 12) + (vertexNum * 3) + 3] = (float)parentVertex.getX();
