@@ -4,6 +4,7 @@
 package celtech.printerControl.model.calibration;
 
 import celtech.Lookup;
+import celtech.utils.tasks.TaskExecutor;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -130,6 +131,7 @@ public class StateTransitionManager<StateType>
      */
     private void setState(StateType state)
     {
+        System.out.println("Set State to " + state + " for " + this);
         this.state.set(state);
         processArrivedAtState(state);
         followAutoTransitionIfPresent(state);
@@ -143,25 +145,19 @@ public class StateTransitionManager<StateType>
 
             ArrivalAction<StateType> arrival = arrivals.get(state);
 
-            Runnable nullAction = () ->
+            TaskExecutor.NoArgsConsumer nullAction = () ->
             {
             };
 
-            Runnable gotToFailedState = () ->
+            TaskExecutor.NoArgsConsumer gotToFailedState = () ->
             {
                 setState(arrival.failedState);
-            };
-
-            // Currently can't cancel an 'arrivedAt' action
-            Runnable whenCancelled = () ->
-            {
             };
 
             String taskName = String.format("State arrival at %s", state);
 
             Lookup.getTaskExecutor().runAsTask(arrival.action, nullAction,
-                                               gotToFailedState, whenCancelled,
-                                               taskName);
+                                               gotToFailedState, taskName);
         }
     }
 
@@ -193,14 +189,14 @@ public class StateTransitionManager<StateType>
 
         StateTransition<StateType> stateTransition = getTransitionForGUIName(guiName);
 
-        steno.debug("Follow transition " + guiName + " " + stateTransition.fromState + " "
-            + stateTransition.toState);
-
         if (stateTransition == null)
         {
             throw new RuntimeException("No transition found from state " + state.get()
-                + " for action " + guiName);
+                + " for action " + guiName + " for " + this) ;
         }
+        
+        steno.debug("Follow transition " + guiName + " " + stateTransition.fromState + " "
+            + stateTransition.toState);        
 
         if (stateTransition.action == null)
         {
@@ -209,7 +205,7 @@ public class StateTransitionManager<StateType>
         } else
         {
 
-            Runnable goToNextState = () ->
+            TaskExecutor.NoArgsConsumer goToNextState = () ->
             {
                 if (!cancelCalled)
                 {
@@ -217,35 +213,19 @@ public class StateTransitionManager<StateType>
                 }
             };
 
-            Runnable gotToFailedState = () ->
+            TaskExecutor.NoArgsConsumer gotToFailedState = () ->
             {
                  if (!cancelCalled)
                 {
                     setState(stateTransition.transitionFailedState);
                 }
             };
-
-            // TODO: XXX the notion of whenCancelled is no longer required. Actions no longer
-            // need to return true or false. Only way to cancel is through cancel() call,
-            // not a state transition.
-            Runnable whenCancelled = () ->
-            {
-                try
-                {
-                    setState(cancelledState);
-                } catch (Exception ex)
-                {
-                    ex.printStackTrace();
-                    steno.error("Error processing cancelled action " + ex);
-                }
-            };
-
+            
             String taskName = String.format("State transition from %s to %s",
                                             stateTransition.fromState, stateTransition.toState);
 
             Lookup.getTaskExecutor().runAsTask(stateTransition.action, goToNextState,
-                                               gotToFailedState, whenCancelled,
-                                               taskName);
+                                               gotToFailedState, taskName);
         }
     }
 

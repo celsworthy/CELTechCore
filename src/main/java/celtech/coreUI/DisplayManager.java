@@ -406,7 +406,17 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 {
                     if (newTab == addPageTab)
                     {
+                        if (lastTab instanceof ProjectTab)
+                        {
+                            ((ProjectTab) lastTab).setMode(ApplicationMode.LAYOUT);
+                        }
+
                         createAndAddNewProjectTab();
+
+                        if (applicationStatus.getMode() != ApplicationMode.LAYOUT)
+                        {
+                            applicationStatus.setMode(ApplicationMode.LAYOUT);
+                        }
                     } else if (newTab instanceof ProjectTab)
                     {
                         if (applicationStatus.getMode() != ApplicationMode.LAYOUT)
@@ -478,7 +488,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                           ApplicationConfiguration.DEFAULT_HEIGHT);
 
         scene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
-        
+
         captureHiddenKeys();
 
         // Camera required to allow 2D shapes to be rotated in 3D in the '2D' UI
@@ -515,11 +525,11 @@ public class DisplayManager implements EventHandler<KeyEvent>
             insetPanelControllers.put(mode, null);
             steno.warning("Couldn't load inset panel for mode:" + mode + ". " + ex.getMessage());
         }
-        
+
         SidePanelManager sidePanelController = null;
         HBox sidePanel = null;
         boolean sidePanelLoadedOK = false;
-        
+
         if (sidePanelControllerCache.containsKey(mode.getSidePanelFXMLName()) == false)
         {
             try
@@ -548,17 +558,17 @@ public class DisplayManager implements EventHandler<KeyEvent>
             sidePanel = sidePanelCache.get(mode.getSidePanelFXMLName());
             sidePanelLoadedOK = true;
         }
-        
+
         if (sidePanelLoadedOK)
         {
             sidePanels.put(mode, sidePanel);
             sidePanelControllers.put(mode, sidePanelController);
         }
-        
+
         Initializable slideOutController = null;
         HBox slideOut = null;
         boolean slideoutPanelLoadedOK = false;
-        
+
         if (slideoutPanelControllerCache.containsKey(mode.getSlideOutFXMLName()) == false)
         {
             try
@@ -584,7 +594,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             slideOutController = slideoutPanelControllerCache.get(mode.getSlideOutFXMLName());
             slideOut = slideoutPanelCache.get(mode.getSlideOutFXMLName());
         }
-        
+
         if (slideoutPanelLoadedOK)
         {
             slideOutPanels.put(mode, slideOut);
@@ -594,8 +604,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private void addTopMenuStripController()
     {
-            HBox topMenuStrip = new TopMenuStrip();
-            rhPanel.getChildren().add(topMenuStrip);
+        HBox topMenuStrip = new TopMenuStrip();
+        rhPanel.getChildren().add(topMenuStrip);
     }
 
     private ProjectTab createAndAddNewProjectTab()

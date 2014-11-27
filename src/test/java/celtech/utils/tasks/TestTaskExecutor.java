@@ -1,6 +1,8 @@
 package celtech.utils.tasks;
 
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -19,7 +21,8 @@ public class TestTaskExecutor implements TaskExecutor
     }
 
     @Override
-    public void respondOnGUIThread(TaskResponder responder, boolean success, String message, Object returnedObject)
+    public void respondOnGUIThread(TaskResponder responder, boolean success, String message,
+        Object returnedObject)
     {
         TaskResponse taskResponse = new TaskResponse(message);
         taskResponse.setSucceeded(success);
@@ -27,7 +30,7 @@ public class TestTaskExecutor implements TaskExecutor
 
         responder.taskEnded(taskResponse);
     }
-    
+
     @Override
     public void respondOnCurrentThread(TaskResponder responder, boolean success, String message)
     {
@@ -44,8 +47,24 @@ public class TestTaskExecutor implements TaskExecutor
     }
 
     @Override
-    public void runAsTask(Callable<Boolean> action, Runnable successHandler, Runnable failureHandler, Runnable cancelledHandler, String taskName)
+    public void runAsTask(NoArgsConsumer action, NoArgsConsumer successHandler,
+        NoArgsConsumer failureHandler, String taskName)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try
+        {
+            action.run();
+            successHandler.run();
+
+        } catch (Exception ex)
+        {
+            ex.printStackTrace();
+            try
+            {
+                failureHandler.run();
+            } catch (Exception ex1)
+            {
+                ex.printStackTrace();
+            }
+        }
     }
 }

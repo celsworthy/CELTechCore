@@ -25,7 +25,7 @@ import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.AxisSpecifier;
 import celtech.utils.tasks.TaskResponder;
-import java.util.ArrayList;
+import java.util.List;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -140,7 +140,11 @@ public interface Printer extends RoboxResponseConsumer
 
     public void goToZPosition(double position);
 
+    public void goToXYPosition(double xPosition, double yPosition);
+
     public void homeZ();
+
+    public void levelGantry();
 
     /**
      *
@@ -433,7 +437,7 @@ public interface Printer extends RoboxResponseConsumer
 
     public void probeBed();
 
-    public String getZDelta() throws PrinterException;
+    public float getZDelta() throws PrinterException;
 
     /**
      *
@@ -457,8 +461,8 @@ public interface Printer extends RoboxResponseConsumer
     public void inhibitHeadIntegrityChecks(boolean inhibit);
 
     public void changeFeedRateMultiplierDuringPrint(double feedRate) throws PrinterException;
-
-    public void registerErrorConsumer(ErrorConsumer errorConsumer, ArrayList<FirmwareError> errorsOfInterest);
-
+    
+    public void registerErrorConsumer(ErrorConsumer errorConsumer, List<FirmwareError> errorsOfInterest);
+    
     public void deregisterErrorConsumer(ErrorConsumer errorConsumer);
 }

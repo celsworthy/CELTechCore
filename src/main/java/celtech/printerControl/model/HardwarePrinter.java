@@ -34,7 +34,6 @@ import static celtech.printerControl.comms.commands.rx.RxPacketTypeEnum.PRINTER_
 import static celtech.printerControl.comms.commands.rx.RxPacketTypeEnum.STATUS_RESPONSE;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.comms.commands.tx.FormatHeadEEPROM;
-import celtech.printerControl.comms.commands.tx.FormatReel0EEPROM;
 import celtech.printerControl.comms.commands.tx.ListFiles;
 import celtech.printerControl.comms.commands.tx.PausePrint;
 import celtech.printerControl.comms.commands.tx.QueryFirmwareVersion;
@@ -70,12 +69,10 @@ import celtech.utils.tasks.TaskResponder;
 import celtech.utils.tasks.TaskResponse;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.Predicate;
+import java.util.WeakHashMap;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
@@ -183,7 +180,7 @@ public final class HardwarePrinter implements Printer
     /*
      * Error handling
      */
-    private final Map<ErrorConsumer, ArrayList<FirmwareError>> errorConsumers = new HashMap<>();
+    private final Map<ErrorConsumer, List<FirmwareError>> errorConsumers = new WeakHashMap<>();
 
     public HardwarePrinter(PrinterStatusConsumer printerStatusConsumer,
         CommandInterface commandInterface)
@@ -1761,6 +1758,18 @@ public final class HardwarePrinter implements Printer
     }
 
     @Override
+    public void levelGantry()
+    {
+        try
+        {
+            transmitDirectGCode("G38", false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error when sending level gantry command");
+        }
+    }
+
+    @Override
     public void goToZPosition(double position)
     {
         try
@@ -1769,6 +1778,18 @@ public final class HardwarePrinter implements Printer
         } catch (RoboxCommsException ex)
         {
             steno.error("Error when sending z position command");
+        }
+    }
+
+    @Override
+    public void goToXYPosition(double xPosition, double yPosition)
+    {
+        try
+        {
+            transmitDirectGCode("G0 X" + threeDPformatter.format(xPosition) + " Y" + threeDPformatter.format(yPosition), false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error when sending x y position command");
         }
     }
 
@@ -2078,19 +2099,29 @@ public final class HardwarePrinter implements Printer
     }
 
     @Override
-    public String getZDelta() throws PrinterException
+    public float getZDelta() throws PrinterException
     {
+        float deltaValue = 0;
+        String measurementString = null;
+
         try
         {
             String response = transmitDirectGCode("M113", false);
-            String measurementString = response.replaceFirst("Zdelta:", "").replaceFirst(
-                "\nok", "");
-            return measurementString;
+            measurementString = response.replaceFirst("Zdelta:", "").replaceFirst(
+                "\nok", "").trim();
+            deltaValue = Float.valueOf(measurementString.trim());
+
         } catch (RoboxCommsException ex)
         {
             steno.error("Error sending get Z delta");
             throw new PrinterException("Error sending get Z delta");
+        } catch (NumberFormatException ex)
+        {
+            steno.error("Couldn't parse measurement string: " + measurementString);
+            throw new PrinterException("Measurement string: " + measurementString + " : could not be parsed");
         }
+
+        return deltaValue;
     }
 
     @Override
@@ -2162,7 +2193,7 @@ public final class HardwarePrinter implements Printer
     }
 
     @Override
-    public void registerErrorConsumer(ErrorConsumer errorConsumer, ArrayList<FirmwareError> errorsOfInterest)
+    public void registerErrorConsumer(ErrorConsumer errorConsumer, List<FirmwareError> errorsOfInterest)
     {
         errorConsumers.put(errorConsumer, errorsOfInterest);
     }
@@ -2205,7 +2236,7 @@ public final class HardwarePrinter implements Printer
                                     errorWasConsumed = false;
                                     errorConsumers.forEach((consumer, errorList) ->
                                         {
-                                            if (errorList.contains(foundError))
+                                            if (errorList.contains(foundError) || errorList.contains(FirmwareError.ALL_ERRORS))
                                             {
                                                 consumer.consume(foundError);
                                                 errorWasConsumed = true;

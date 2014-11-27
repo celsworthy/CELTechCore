@@ -113,7 +113,8 @@ public class ThreeDViewManager
 //    private final Rotate rotateCameraAroundYAxis = new Rotate(0, MathUtils.yAxis);
 //    private final Rotate rotateCameraAroundZAxis = new Rotate(0, MathUtils.zAxis);
 //    private final Translate translateCamera = new Translate();
-    private final DoubleProperty cameraDistance = new SimpleDoubleProperty(-350);
+    private final static double initialCameraDistance = -350;
+    private final DoubleProperty cameraDistance = new SimpleDoubleProperty(initialCameraDistance);
     private final DoubleProperty demandedCameraRotationX = new SimpleDoubleProperty(0);
     private final DoubleProperty demandedCameraRotationY = new SimpleDoubleProperty(0);
 
@@ -268,12 +269,14 @@ public class ThreeDViewManager
             {
                 int faceNumber = pickResult.getIntersectedFace();
                 snapToGround(intersectedNode, faceNumber);
+                collideModels();
+                DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
                 return;
             }
 
             Point3D pickedScenePoint = intersectedNode.localToScene(pickedPoint);
             Point3D pickedBedTranslateXformPoint = bedTranslateXform.sceneToLocal(pickedScenePoint);
-            
+
             translationDragPlane.setTranslateY(pickedBedTranslateXformPoint.getY());
             Point3D pickedDragPlanePoint = translationDragPlane.sceneToLocal(pickedScenePoint);
             lastDragPosition = pickedDragPlanePoint;
@@ -658,7 +661,6 @@ public class ThreeDViewManager
 //
 ////        autoScalingGroup.getChildren().addAll(axisGroup);
 //    }
-
     /**
      *
      * @param modelContainer
@@ -1042,7 +1044,7 @@ public class ThreeDViewManager
     {
         if (intersectedNode instanceof MeshView)
         {
-            ModelContainer modelContainer = (ModelContainer) intersectedNode.getParent();
+            ModelContainer modelContainer = (ModelContainer) intersectedNode.getParent().getParent();
             modelContainer.snapToGround(faceNumber);
         }
         layoutSubmode.set(LayoutSubmode.SELECT);

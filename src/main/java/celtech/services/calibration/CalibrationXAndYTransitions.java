@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 /**
  *
@@ -35,14 +34,14 @@ public class CalibrationXAndYTransitions implements Transitions
         arrivals.put(CalibrationXAndYState.FINISHED,
                      new ArrivalAction<>(() ->
                          {
-                             return actions.doFinishedAction();
+                             actions.doFinishedAction();
                      },
                                          CalibrationXAndYState.FAILED));
 
         arrivals.put(CalibrationXAndYState.FAILED,
                      new ArrivalAction<>(() ->
                          {
-                             return actions.doFailedAction();
+                             actions.doFailedAction();
                      },
                                          CalibrationXAndYState.FAILED));
 
@@ -56,9 +55,9 @@ public class CalibrationXAndYTransitions implements Transitions
         transitions.add(new StateTransition(CalibrationXAndYState.PRINT_PATTERN,
                                             StateTransitionManager.GUIName.AUTO,
                                             CalibrationXAndYState.GET_Y_OFFSET,
-                                            (Callable) () ->
+                                            () ->
                                             {
-                                                return actions.doSaveHeadAndPrintPattern();
+                                                actions.doSaveHeadAndPrintPattern();
                                             },
                                             CalibrationXAndYState.FAILED));
 
@@ -77,9 +76,9 @@ public class CalibrationXAndYTransitions implements Transitions
         transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE,
                                             StateTransitionManager.GUIName.AUTO,
                                             CalibrationXAndYState.PRINT_CIRCLE_CHECK,
-                                            (Callable) () ->
+                                            () ->
                                             {
-                                                return actions.doSaveSettingsAndPrintCircle();
+                                                actions.doSaveSettingsAndPrintCircle();
                                             },
                                             CalibrationXAndYState.FAILED));
 
@@ -90,16 +89,16 @@ public class CalibrationXAndYTransitions implements Transitions
                                             CalibrationXAndYState.FAILED));
 
         // FINISHED
-        transitions.add(new StateTransition(CalibrationXAndYState.FINISHED,
-                                            StateTransitionManager.GUIName.BACK,
-                                            CalibrationXAndYState.DONE,
-                                            CalibrationXAndYState.FAILED));
-
-        // FAILED
-        transitions.add(new StateTransition(CalibrationXAndYState.FAILED,
-                                            StateTransitionManager.GUIName.BACK,
-                                            CalibrationXAndYState.DONE,
-                                            CalibrationXAndYState.DONE));
+//        transitions.add(new StateTransition(CalibrationXAndYState.FINISHED,
+//                                            StateTransitionManager.GUIName.BACK,
+//                                            CalibrationXAndYState.DONE,
+//                                            CalibrationXAndYState.FAILED));
+//
+//        // FAILED
+//        transitions.add(new StateTransition(CalibrationXAndYState.FAILED,
+//                                            StateTransitionManager.GUIName.BACK,
+//                                            CalibrationXAndYState.DONE,
+//                                            CalibrationXAndYState.DONE));
 
     }
 

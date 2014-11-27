@@ -4,13 +4,14 @@
 package celtech.printerControl.model.calibration;
 
 import celtech.printerControl.model.calibration.StateTransitionManager.GUIName;
-import java.util.concurrent.Callable;
+import celtech.utils.tasks.TaskExecutor;
 
 /**
- * StateTransition represents a transition from the fromState to the toState. The toState is reached
- * after the action is called, if it was set. If the action fails then the transition goes to
- * the transitionFailedState. If the guiName is AUTO is then the transition is run automatically
- * whenever the fromState is reached.
+ * StateTransition represents a transition from the fromState to the toState. If the action has not been
+ * set then the toState is reached either directly. If no action was set then it is called and the
+ * toState is reached if the action did not fail (throw an exception). If the action fails (throws
+ * an exception) then the transition goes to the transitionFailedState.
+ * If the guiName is AUTO then the transition is run automatically whenever the fromState is reached.
  * @author tony
  */
 public class StateTransition<T>
@@ -33,14 +34,13 @@ public class StateTransition<T>
      */
     final StateTransitionManager.GUIName guiName;
     /**
-     * If an action is declared then it must return a boolean. a return value of true
-     * indicates the action succeeded, false indicates the action was cancelled. To indicate
+     * If an action is declared then it takes no arguments and returns void. To indicate
      * a failure an exception should be raised.
      */
-    final Callable<Boolean> action;
+    final TaskExecutor.NoArgsConsumer action;
 
     public StateTransition(T fromState, StateTransitionManager.GUIName guiName, 
-        T toState, Callable action, T failedState)
+        T toState, TaskExecutor.NoArgsConsumer action, T failedState)
     {
         this.fromState = fromState;
         this.toState = toState;

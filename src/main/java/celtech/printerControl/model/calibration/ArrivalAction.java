@@ -3,6 +3,7 @@
  */
 package celtech.printerControl.model.calibration;
 
+import celtech.utils.tasks.TaskExecutor;
 import java.util.concurrent.Callable;
 
 /**
@@ -18,13 +19,13 @@ public class ArrivalAction<StateType>
      * false indicates the action was cancelled. To indicate a failure the action must throw an
      * exception.
      */
-    final Callable<Boolean> action;
+    final TaskExecutor.NoArgsConsumer action;
     /**
      * The state to go to if this actions fails (ie an exception is thrown by the {@link #action}).
      */
     StateType failedState;
 
-    public ArrivalAction(Callable<Boolean> action, StateType failedState)
+    public ArrivalAction(TaskExecutor.NoArgsConsumer action, StateType failedState)
     {
         this.action = action;
         this.failedState = failedState;

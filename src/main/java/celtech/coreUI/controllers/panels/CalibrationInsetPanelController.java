@@ -1,6 +1,7 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
+import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.components.VerticalMenu;
@@ -22,7 +23,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -165,9 +165,14 @@ public class CalibrationInsetPanelController implements Initializable,
     @FXML
     void backToStatusAction(ActionEvent event)
     {
-        stateManager.followTransition(StateTransitionManager.GUIName.BACK);
-        ApplicationStatus.getInstance().returnToLastMode();
-        setCalibrationMode(CalibrationMode.CHOICE);
+        if (calibrationMode == CalibrationMode.CHOICE)
+        {
+            ApplicationStatus.getInstance().setMode(ApplicationMode.STATUS);
+        } else
+        {
+            stateManager.followTransition(StateTransitionManager.GUIName.BACK);
+            setCalibrationMode(CalibrationMode.CHOICE);
+        }
     }
 
     @FXML
@@ -179,20 +184,14 @@ public class CalibrationInsetPanelController implements Initializable,
     @FXML
     void cancelCalibration(ActionEvent event)
     {
-        if (calibrationMode == CalibrationMode.CHOICE)
+        try
         {
-            ApplicationStatus.getInstance().returnToLastMode();
-        } else
+            stateManager.cancel();
+        } catch (Exception ex)
         {
-            try
-            {
-                stateManager.cancel();
-            } catch (Exception ex)
-            {
-                steno.error("Error cancelling calibration: " + ex);
-            }
-            cancelCalibrationAction();
+            steno.error("Error cancelling calibration: " + ex);
         }
+        cancelCalibrationAction();
     }
 
     @FXML
@@ -203,7 +202,6 @@ public class CalibrationInsetPanelController implements Initializable,
 
     public void cancelCalibrationAction()
     {
-        ApplicationStatus.getInstance().returnToLastMode();
         setCalibrationMode(CalibrationMode.CHOICE);
     }
 
@@ -223,6 +221,7 @@ public class CalibrationInsetPanelController implements Initializable,
         {
             diagramNode.setVisible(false);
         }
+        stepNumber.setText("");
     }
 
     @Override
@@ -248,14 +247,12 @@ public class CalibrationInsetPanelController implements Initializable,
         topPane.widthProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-//                resizeDiagram();
                 resizeTopBorderPane();
             });
 
         topPane.heightProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-//                resizeDiagram();
                 resizeTopBorderPane();
             });
 
@@ -268,7 +265,6 @@ public class CalibrationInsetPanelController implements Initializable,
         diagramContainer.heightProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-//                steno.debug("new height is " + newValue);
                 resizeDiagram();
             });
 
@@ -283,38 +279,30 @@ public class CalibrationInsetPanelController implements Initializable,
 
         double diagramWidth = nodeToBoundsCache.get(diagramNode).getWidth();
         double diagramHeight = nodeToBoundsCache.get(diagramNode).getHeight();
-        
-        steno.debug("diagram width, height is " + diagramWidth + " " + diagramHeight);
 
         double availableWidth = diagramContainer.getWidth();
         double availableHeight = diagramContainer.getHeight();
-        
-        steno.debug("got actual height of " + availableHeight);
 
         double requiredScaleHeight = availableHeight / diagramHeight * 0.95;
         double requiredScaleWidth = availableWidth / diagramWidth * 0.95;
         double requiredScale = Math.min(requiredScaleHeight, requiredScaleWidth);
         requiredScale = Math.min(requiredScale, 1.3d);
         diagramController.setScale(requiredScale, diagramNode);
-        
+
         diagramNode.setPrefWidth(0);
-        diagramNode.setPrefHeight(0);    
-        
+        diagramNode.setPrefHeight(0);
+
         double scaledDiagramWidth = diagramWidth * requiredScale;
         double scaledDiagramHeight = diagramHeight * requiredScale;
-        
-        steno.debug("scaled width, height is " + scaledDiagramWidth + " " + scaledDiagramHeight);
 
         double xTranslate = 0;
         double yTranslate = 0;
 //        
         xTranslate = -scaledDiagramWidth / 2;
         yTranslate -= availableHeight / 2.0;
-        
+
         diagramNode.setTranslateX(xTranslate);
         diagramNode.setTranslateY(yTranslate);
-
-        steno.debug("scale by " + requiredScale);
 
     }
 
@@ -324,34 +312,28 @@ public class CalibrationInsetPanelController implements Initializable,
      * @param diagramName
      * @return
      */
-    private Node getDiagramNode(String section, String diagramName)
+    private Node getDiagramNode(URL fxmlFileName)
     {
         Pane loadedDiagramNode = null;
-        if (!nameToNodeCache.containsKey(diagramName))
+        try
         {
-            URL fxmlFileName = getClass().getResource(
-                ApplicationConfiguration.fxmlDiagramsResourcePath
-                + section + "/" + diagramName);
-            try
-            {
-                FXMLLoader loader = new FXMLLoader(fxmlFileName, resources);
-                diagramController = new DiagramController(stateManager);
-                loader.setController(diagramController);
-                loadedDiagramNode = loader.load();
-                
-                nameToNodeCache.put(diagramName, loadedDiagramNode);
-                
-                Bounds bounds = getBoundsOfNotYetDisplayedNode(loadedDiagramNode);
-                steno.debug("diagram bounds are " + bounds);
-                nodeToBoundsCache.put(loadedDiagramNode, bounds);
-                
-            } catch (IOException ex)
-            {
-                ex.printStackTrace();
-                steno.error("Could not load diagram: " + diagramName);
-            }
+            FXMLLoader loader = new FXMLLoader(fxmlFileName, resources);
+            diagramController = new DiagramController();
+            loader.setController(diagramController);
+            loadedDiagramNode = loader.load();
+
+            Bounds bounds = getBoundsOfNotYetDisplayedNode(loadedDiagramNode);
+            steno.debug("diagram bounds are " + bounds);
+            nodeToBoundsCache.put(loadedDiagramNode, bounds);
+            diagramController.setStateTransitionManager(stateManager);
+
+        } catch (IOException ex)
+        {
+            ex.printStackTrace();
+            steno.error("Could not load diagram: " + fxmlFileName);
         }
-        return nameToNodeCache.get(diagramName);
+        return loadedDiagramNode;
+
     }
 
     private Bounds getBoundsOfNotYetDisplayedNode(Pane loadedDiagramNode)
@@ -365,26 +347,26 @@ public class CalibrationInsetPanelController implements Initializable,
         return bounds;
     }
 
-    protected void showDiagram(String section, String diagramName)
+    protected void showDiagram(URL fxmlLocation)
     {
-        showDiagram(section, diagramName, true);
+        showDiagram(fxmlLocation, true);
     }
 
-    protected void showDiagram(String section, String diagramName, boolean transparent)
+    protected void showDiagram(URL fxmlLocation, boolean transparent)
     {
-        diagramNode = (Pane) getDiagramNode(section, diagramName);
+        diagramNode = (Pane) getDiagramNode(fxmlLocation);
         if (diagramNode == null)
         {
             return;
         }
-        
+
         diagramContainer.getChildren().clear();
         diagramContainer.getChildren().add(diagramNode);
 
         diagramNode.setMouseTransparent(transparent);
-        
+
         resizeDiagram();
-        
+
         diagramNode.setVisible(true);
     }
 
@@ -582,8 +564,8 @@ public class CalibrationInsetPanelController implements Initializable,
         calibrationMenu.reset();
         hideAllInputControlsExceptStepNumber();
         stepNumber.setVisible(false);
-        backToStatus.setVisible(false);
-        cancelCalibrationButton.setVisible(true);
+        backToStatus.setVisible(true);
+        cancelCalibrationButton.setVisible(false);
     }
 
     private void setupProgressBars()

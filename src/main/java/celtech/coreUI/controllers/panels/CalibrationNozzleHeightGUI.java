@@ -34,7 +34,7 @@ public class CalibrationNozzleHeightGUI
     {
         this.controller = controller;
         this.stateManager = stateManager;
-        
+
         stateManager.stateGUITProperty().addListener(new ChangeListener()
         {
             @Override
@@ -49,7 +49,11 @@ public class CalibrationNozzleHeightGUI
     private void showAppropriateButtons(NozzleOffsetCalibrationState state)
     {
         controller.hideAllInputControlsExceptStepNumber();
-        controller.cancelCalibrationButton.setVisible(true);
+        if (state != NozzleOffsetCalibrationState.FAILED && state
+            != NozzleOffsetCalibrationState.FINISHED)
+        {
+            controller.cancelCalibrationButton.setVisible(true);
+        }
         for (StateTransition<NozzleOffsetCalibrationState> allowedTransition : this.stateManager.getTransitions())
         {
             if (namesToButtons.containsKey(allowedTransition.getGUIName()))
@@ -62,63 +66,53 @@ public class CalibrationNozzleHeightGUI
     public void setState(NozzleOffsetCalibrationState state)
     {
         steno.info("GUI going to state " + state);
+        controller.calibrationStatus.setText(state.getStepTitle());
         showAppropriateButtons(state);
+        if (! state.equals(NozzleOffsetCalibrationState.PROBING) && state.getDiagramFXMLFileName().isPresent()) {
+            controller.showDiagram(state.getDiagramFXMLFileName().get());
+        }
+        int stepNo = 0;
         switch (state)
         {
-         case IDLE:
-                controller.calibrationStatus.setText(state.getStepTitle());
-                controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 1 and 5.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 9", 1));
+            case IDLE:
                 break;
             case INITIALISING:
                 controller.calibrationMenu.disableNonSelectedItems();
-                controller.calibrationStatus.setText(state.getStepTitle());
-                controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 2.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 9", 2));
+                stepNo = 1;
                 break;
             case HEATING:
                 controller.showSpinner();
-                controller.setCalibrationProgressVisible(CalibrationInsetPanelController.ProgressVisibility.TEMP);
-                controller.calibrationStatus.setText(state.getStepTitle());
-                controller.stepNumber.setText(String.format("Step %s of 9", 3));
+                controller.setCalibrationProgressVisible(
+                    CalibrationInsetPanelController.ProgressVisibility.TEMP);
+                stepNo = 2;
                 break;
             case HEAD_CLEAN_CHECK:
-                controller.calibrationStatus.setText(state.getStepTitle());
-                controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 4.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 9", 4));
+                stepNo = 3;
                 break;
             case MEASURE_Z_DIFFERENCE:
-                controller.calibrationStatus.setText(state.getStepTitle());
-                controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 1 and 5.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 9", 5));
+                stepNo = 4;
                 break;
             case INSERT_PAPER:
-                controller.calibrationStatus.setText(state.getStepTitle());
-                controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 6.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 9", 6));
+                stepNo = 5;
                 break;
             case PROBING:
-                controller.calibrationStatus.setText(state.getStepTitle());
-                controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 7.fxml", false); 
-                controller.stepNumber.setText(String.format("Step %s of 9", 7));
+                controller.showDiagram(state.getDiagramFXMLFileName().get(), false);
+                stepNo = 6;
                 break;
             case LIFT_HEAD:
                 break;
             case REPLACE_PEI_BED:
-                controller.calibrationStatus.setText(state.getStepTitle());
-                controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 8.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 9", 8));
+                stepNo = 7;
                 break;
             case FINISHED:
-                controller.calibrationStatus.setText(state.getStepTitle());
-                controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Step 9.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 9", 9));
+                controller.calibrationMenu.enableNonSelectedItems();
                 break;
             case FAILED:
-                controller.calibrationStatus.setText(state.getStepTitle());
-                controller.showDiagram("nozzleheight", "Nozzle Height Illustrations_Failure.fxml");
-                controller.stepNumber.setText("");
+                controller.calibrationMenu.enableNonSelectedItems();
                 break;
+        }
+         if (stepNo != 0) {
+             controller.stepNumber.setText(String.format("Step %s of 7", stepNo));
         }
     }
 
@@ -127,7 +121,6 @@ public class CalibrationNozzleHeightGUI
         namesToButtons.put(GUIName.YES, controller.buttonA);
         namesToButtons.put(GUIName.NO, controller.buttonB);
         namesToButtons.put(GUIName.NEXT, controller.nextButton);
-        namesToButtons.put(GUIName.CANCEL, controller.cancelCalibrationButton);
         namesToButtons.put(GUIName.RETRY, controller.retryPrintButton);
         namesToButtons.put(GUIName.START, controller.startCalibrationButton);
         namesToButtons.put(GUIName.BACK, controller.backToStatus);
