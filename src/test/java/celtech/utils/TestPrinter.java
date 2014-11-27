@@ -649,8 +649,8 @@ class TestPrinter implements Printer
     }
 
     @Override
-    public void transmitSetFilamentInfo(double filamentDiameterE, double filamentMultiplierE, double feedRateMultiplierE, double filamentDiameterD, double filamentMultiplierD,
-        double feedRateMultiplierD) throws RoboxCommsException
+    public void transmitSetFilamentInfo(double filamentDiameterE, double filamentMultiplierE, double filamentDiameterD, double filamentMultiplierD,
+        double feedRateMultiplier) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

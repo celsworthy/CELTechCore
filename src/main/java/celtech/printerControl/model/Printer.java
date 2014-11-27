@@ -329,14 +329,15 @@ public interface Printer extends RoboxResponseConsumer
      *
      * @param filamentDiameterE
      * @param filamentMultiplierE
-     * @param feedRateMultiplierE
      * @param filamentDiameterD
      * @param filamentMultiplierD
-     * @param feedRateMultiplierD
+     * @param feedRateMultiplier
      * @throws RoboxCommsException
      */
-    public void transmitSetFilamentInfo(double filamentDiameterE, double filamentMultiplierE, double feedRateMultiplierE,
-                                        double filamentDiameterD, double filamentMultiplierD, double feedRateMultiplierD) throws RoboxCommsException;
+    public void transmitSetFilamentInfo(
+        double filamentDiameterE, double filamentMultiplierE,
+        double filamentDiameterD, double filamentMultiplierD,
+        double feedRateMultiplier) throws RoboxCommsException;
 
     /*
      * Higher level controls
@@ -353,8 +354,8 @@ public interface Printer extends RoboxResponseConsumer
      * @throws RoboxCommsException
      */
     public void transmitSetTemperatures(double nozzle0FirstLayerTarget, double nozzle0Target,
-                                        double nozzle1FirstLayerTarget, double nozzle1Target,
-                                        double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException;
+        double nozzle1FirstLayerTarget, double nozzle1Target,
+        double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException;
 
     /**
      *
@@ -456,8 +457,8 @@ public interface Printer extends RoboxResponseConsumer
     public void inhibitHeadIntegrityChecks(boolean inhibit);
 
     public void changeFeedRateMultiplierDuringPrint(double feedRate) throws PrinterException;
-    
+
     public void registerErrorConsumer(ErrorConsumer errorConsumer, ArrayList<FirmwareError> errorsOfInterest);
-    
+
     public void deregisterErrorConsumer(ErrorConsumer errorConsumer);
 }

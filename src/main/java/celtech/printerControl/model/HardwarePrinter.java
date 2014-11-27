@@ -75,6 +75,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Predicate;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
@@ -173,6 +174,11 @@ public final class HardwarePrinter implements Printer
     protected final StringProperty printJobID = new SimpleStringProperty("");
 
     private PrintEngine printEngine;
+    
+    private final String firstExtruderLetter = "E";
+    private final int firstExtruderNumber = 0;
+    private final String secondExtruderLetter = "D";
+    private final int secondExtruderNumber = 1;
 
     /*
      * Error handling
@@ -185,12 +191,12 @@ public final class HardwarePrinter implements Printer
         this.printerStatusConsumer = printerStatusConsumer;
         this.commandInterface = commandInterface;
 
-        extruders.add(new Extruder("E"));
-        extruders.add(new Extruder("D"));
+        extruders.add(firstExtruderNumber, new Extruder(firstExtruderLetter));
+        extruders.add(secondExtruderNumber, new Extruder(secondExtruderLetter));
 
         canPrint.bind(head.isNotNull()
             .and(printerStatus.isEqualTo(PrinterStatus.IDLE))
-            .and(extruders.get(0).filamentLoaded.or(extruders.get(1).filamentLoaded)));
+            .and(extruders.get(firstExtruderNumber).filamentLoaded.or(extruders.get(secondExtruderNumber).filamentLoaded)));
         canCancel.bind(
             printerStatus.isEqualTo(PrinterStatus.PAUSED)
             .or(printerStatus.isEqualTo(PrinterStatus.PAUSING))
@@ -1255,26 +1261,24 @@ public final class HardwarePrinter implements Printer
      *
      * @param filamentDiameterE
      * @param filamentMultiplierE
-     * @param feedRateMultiplierE
      * @param filamentDiameterD
      * @param filamentMultiplierD
-     * @param feedRateMultiplierD
+     * @param feedRateMultiplier
      * @throws RoboxCommsException
      */
     @Override
     public void transmitSetFilamentInfo(
         double filamentDiameterE,
         double filamentMultiplierE,
-        double feedRateMultiplierE,
         double filamentDiameterD,
         double filamentMultiplierD,
-        double feedRateMultiplierD) throws RoboxCommsException
+        double feedRateMultiplier) throws RoboxCommsException
     {
         SetFilamentInfo setFilamentInfo = (SetFilamentInfo) RoboxTxPacketFactory.createPacket(
             TxPacketTypeEnum.SET_FILAMENT_INFO);
-        //TODO change this to support multiple nozzle heaters
-        setFilamentInfo.setFilamentInfo(filamentDiameterE, filamentMultiplierE, feedRateMultiplierE,
-                                        filamentDiameterD, filamentMultiplierD, feedRateMultiplierD);
+        setFilamentInfo.setFilamentInfo(filamentDiameterE, filamentMultiplierE,
+                                        filamentDiameterD, filamentMultiplierD,
+                                        feedRateMultiplier);
         commandInterface.writeToPrinter(setFilamentInfo);
     }
 
@@ -1440,7 +1444,6 @@ public final class HardwarePrinter implements Printer
                                         filament.getAmbientTemperature());
                 transmitSetFilamentInfo(filament.getDiameter(),
                                         filament.getFilamentMultiplier(),
-                                        filament.getFeedRateMultiplier(),
                                         filament.getDiameter(),
                                         filament.getFilamentMultiplier(),
                                         filament.getFeedRateMultiplier());
@@ -2245,6 +2248,7 @@ public final class HardwarePrinter implements Printer
                     printerAncillarySystems.bAxisHome.set(statusResponse.isNozzleSwitchStatus());
                     printerAncillarySystems.lidOpen.set(statusResponse.isLidSwitchStatus());
                     printerAncillarySystems.reelButton.set(statusResponse.isReelButtonStatus());
+                    printerAncillarySystems.feedRateMultiplier.set(statusResponse.getFeedRateMultiplier());
                     printerAncillarySystems.whyAreWeWaitingProperty.set(
                         statusResponse.getWhyAreWeWaitingState());
                     printerAncillarySystems.updateGraphData();
@@ -2258,12 +2262,16 @@ public final class HardwarePrinter implements Printer
                      * Extruders
                      */
                     //TODO configure properly for multiple extruders
-                    extruders.get(0).filamentLoaded.set(statusResponse.isFilament1SwitchStatus());
-                    extruders.get(0).indexWheelState.set(statusResponse.isEIndexStatus());
-                    extruders.get(0).isFitted.set(statusResponse.isExtruderEPresent());
-                    extruders.get(1).filamentLoaded.set(statusResponse.isFilament2SwitchStatus());
-                    extruders.get(1).indexWheelState.set(statusResponse.isDIndexStatus());
-                    extruders.get(1).isFitted.set(statusResponse.isExtruderDPresent());
+                    extruders.get(firstExtruderNumber).filamentLoaded.set(statusResponse.isFilament1SwitchStatus());
+                    extruders.get(firstExtruderNumber).indexWheelState.set(statusResponse.isEIndexStatus());
+                    extruders.get(firstExtruderNumber).isFitted.set(statusResponse.isExtruderEPresent());
+                    extruders.get(firstExtruderNumber).filamentDiameter.set(statusResponse.getEFilamentDiameter());
+                    extruders.get(firstExtruderNumber).extrusionMultiplier.set(statusResponse.getEFilamentMultiplier());
+                    extruders.get(secondExtruderNumber).filamentLoaded.set(statusResponse.isFilament2SwitchStatus());
+                    extruders.get(secondExtruderNumber).indexWheelState.set(statusResponse.isDIndexStatus());
+                    extruders.get(secondExtruderNumber).isFitted.set(statusResponse.isExtruderDPresent());
+                    extruders.get(secondExtruderNumber).filamentDiameter.set(statusResponse.getDFilamentDiameter());
+                    extruders.get(secondExtruderNumber).extrusionMultiplier.set(statusResponse.getDFilamentMultiplier());
 
                     if (pauseStatus.get() != statusResponse.getPauseStatus()
                         && statusResponse.getPauseStatus() == PauseStatus.PAUSED)
@@ -2579,10 +2587,17 @@ public final class HardwarePrinter implements Printer
             throw new PrinterException("Cannot change feed rate unless printing is in progress");
         }
 
+        // Get the current values
+        float eFilamentDiameter = extruders.get(firstExtruderNumber).filamentDiameter.get();
+        float eExtrusionMultiplier = extruders.get(firstExtruderNumber).extrusionMultiplier.get();
+        float dFilamentDiameter = extruders.get(secondExtruderNumber).filamentDiameter.get();
+        float dExtrusionMultiplier = extruders.get(secondExtruderNumber).extrusionMultiplier.get();
+        
         try
         {
-            transmitSetFilamentInfo(1.75, 1.0, feedRate,
-                                    1.75, 1.0, feedRate);
+            transmitSetFilamentInfo(eFilamentDiameter, eExtrusionMultiplier,
+                                    dFilamentDiameter, dExtrusionMultiplier,
+                                    feedRate);
         } catch (RoboxCommsException ex)
         {
             steno.error("Comms exception when settings feed rate during print");
