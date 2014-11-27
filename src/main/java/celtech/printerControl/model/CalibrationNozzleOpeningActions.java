@@ -3,6 +3,7 @@
  */
 package celtech.printerControl.model;
 
+import celtech.Lookup;
 import celtech.configuration.HeaterMode;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.GCodeMacros;
@@ -14,6 +15,10 @@ import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.beans.property.FloatProperty;
+import javafx.beans.property.ReadOnlyFloatProperty;
+import javafx.beans.property.SimpleFloatProperty;
+import javafx.beans.value.ObservableValue;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -33,7 +38,8 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
     private final float bOffsetStartingValue = 0.8f;
     private float nozzle0BOffset = 0;
     private float nozzle1BOffset = 0;
-    private float nozzlePosition = 0;
+    private final FloatProperty nozzlePosition = new SimpleFloatProperty();
+    private final FloatProperty bPositionGUIT = new SimpleFloatProperty();
 
     private final Cancellable cancellable = new Cancellable();
     private boolean errorsConsumed = false;
@@ -42,6 +48,16 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
     {
         this.printer = printer;
         cancellable.cancelled = false;
+        nozzlePosition.addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                Lookup.getTaskExecutor().runOnGUIThread(() ->
+                    {
+                        // bPositionGUIT mirrors nozzlePosition but is only changed on the GUI Thread
+                        steno.debug("set bPositionGUIT to " + nozzlePosition.get());
+                        bPositionGUIT.set(nozzlePosition.get());
+                });
+            });
     }
 
     public void doHeatingAction() throws RoboxCommsException, PrinterException, InterruptedException, CalibrationException
@@ -133,7 +149,7 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
 
     public void doPreCalibrationPrimingFine() throws RoboxCommsException
     {
-        nozzlePosition = 0;
+        nozzlePosition.set(0);
 
         printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                                         savedHeadData.getUniqueID(),
@@ -155,48 +171,48 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
     
     public void doCalibrateFineNozzle()
     {
-        printer.gotoNozzlePosition(nozzlePosition);
+        printer.gotoNozzlePosition(nozzlePosition.get());
     }
 
     public void doIncrementFineNozzlePosition() throws CalibrationException
     {
-        nozzlePosition += 0.05;
-        steno.info("(FINE) nozzle position set to " + nozzlePosition);
-        if (nozzlePosition >= 2f)
+        nozzlePosition.set(nozzlePosition.get() + 0.05f);
+        steno.info("(FINE) nozzle position set to " + nozzlePosition.get());
+        if (nozzlePosition.get() >= 2f)
         {
             throw new CalibrationException("Nozzle position beyond limit");
         }
-        printer.gotoNozzlePosition(nozzlePosition);
+        printer.gotoNozzlePosition(nozzlePosition.get());
     }
 
     public void doIncrementFillNozzlePosition() throws CalibrationException
     {
-        nozzlePosition += 0.05;
+        nozzlePosition.set(nozzlePosition.get() + 0.05f);
         steno.info("(FILL) nozzle position set to " + nozzlePosition);
-        if (nozzlePosition >= 2f)
+        if (nozzlePosition.get() >= 2f)
         {
             throw new CalibrationException("Nozzle position beyond limit");
         }
-        printer.gotoNozzlePosition(nozzlePosition);
+        printer.gotoNozzlePosition(nozzlePosition.get());
     }
 
     public void doPreCalibrationPrimingFill() throws RoboxCommsException
     {
-        nozzlePosition = 0;
+        nozzlePosition.set(0);
         extrudeUntilStall(1);
     }
 
     public void doCalibrateFillNozzle()
     {
-        printer.gotoNozzlePosition(nozzlePosition);
+        printer.gotoNozzlePosition(nozzlePosition.get());
     }
 
     public void doFinaliseCalibrateFineNozzle() throws PrinterException
     {
         printer.closeNozzleFully();
         // calculate offset
-        steno.info("(FINE) finalise nozzle position set at " + nozzlePosition);
-        nozzle0BOffset = bOffsetStartingValue - 0.1f + nozzlePosition;
+        steno.info("(FINE) finalise nozzle position set at " + nozzlePosition.get());
+        nozzle0BOffset = bOffsetStartingValue - 0.1f + nozzlePosition.get();
     }
 
     public boolean doFinaliseCalibrateFillNozzle() throws PrinterException
@@ -204,7 +220,7 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
         printer.closeNozzleFully();
         // calculate offset
         steno.info("(FILL) finalise nozzle position set at " + nozzlePosition);
-        nozzle1BOffset = -bOffsetStartingValue + 0.1f - nozzlePosition;
+        nozzle1BOffset = -bOffsetStartingValue + 0.1f - nozzlePosition.get();
         return true;
     }
 
@@ -218,7 +234,7 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
         Thread.sleep(3000);
         printer.selectNozzle(1);
         // 
-        nozzlePosition = 0;
+        nozzlePosition.set(0);
     }
 
     public void doConfirmMaterialExtrudingAction() throws PrinterException 
@@ -340,6 +356,11 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
     public void consume(FirmwareError error)
     {
         errorsConsumed = true;
+    }
+
+    public ReadOnlyFloatProperty getBPositionGUITProperty()
+    {
+        return bPositionGUIT;
     }
 
 }

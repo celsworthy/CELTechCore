@@ -2186,7 +2186,7 @@ public final class HardwarePrinter implements Printer
             actions);
         NozzleOpeningStateTransitionManager calibrationOpeningManager
             = new NozzleOpeningStateTransitionManager(
-                calibrationNozzleOpeningTransitions);
+                calibrationNozzleOpeningTransitions, actions);
         return calibrationOpeningManager;
     }
 
