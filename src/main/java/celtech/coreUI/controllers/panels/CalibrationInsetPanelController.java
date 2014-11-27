@@ -165,9 +165,14 @@ public class CalibrationInsetPanelController implements Initializable,
     @FXML
     void backToStatusAction(ActionEvent event)
     {
-        stateManager.followTransition(StateTransitionManager.GUIName.BACK);
-//        ApplicationStatus.getInstance().returnToLastMode();
-        setCalibrationMode(CalibrationMode.CHOICE);
+        if (calibrationMode == CalibrationMode.CHOICE)
+        {
+            ApplicationStatus.getInstance().setMode(ApplicationMode.STATUS);
+        } else
+        {
+            stateManager.followTransition(StateTransitionManager.GUIName.BACK);
+            setCalibrationMode(CalibrationMode.CHOICE);
+        }
     }
 
     @FXML
@@ -179,20 +184,14 @@ public class CalibrationInsetPanelController implements Initializable,
     @FXML
     void cancelCalibration(ActionEvent event)
     {
-        if (calibrationMode == CalibrationMode.CHOICE)
+        try
         {
-            ApplicationStatus.getInstance().setMode(ApplicationMode.STATUS);
-        } else
+            stateManager.cancel();
+        } catch (Exception ex)
         {
-            try
-            {
-                stateManager.cancel();
-            } catch (Exception ex)
-            {
-                steno.error("Error cancelling calibration: " + ex);
-            }
-            cancelCalibrationAction();
+            steno.error("Error cancelling calibration: " + ex);
         }
+        cancelCalibrationAction();
     }
 
     @FXML
@@ -203,7 +202,6 @@ public class CalibrationInsetPanelController implements Initializable,
 
     public void cancelCalibrationAction()
     {
-//        ApplicationStatus.getInstance().returnToLastMode();
         setCalibrationMode(CalibrationMode.CHOICE);
     }
 
@@ -249,14 +247,12 @@ public class CalibrationInsetPanelController implements Initializable,
         topPane.widthProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-//                resizeDiagram();
                 resizeTopBorderPane();
             });
 
         topPane.heightProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-//                resizeDiagram();
                 resizeTopBorderPane();
             });
 
@@ -269,7 +265,6 @@ public class CalibrationInsetPanelController implements Initializable,
         diagramContainer.heightProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-//                steno.debug("new height is " + newValue);
                 resizeDiagram();
             });
 
@@ -569,8 +564,8 @@ public class CalibrationInsetPanelController implements Initializable,
         calibrationMenu.reset();
         hideAllInputControlsExceptStepNumber();
         stepNumber.setVisible(false);
-        backToStatus.setVisible(false);
-        cancelCalibrationButton.setVisible(true);
+        backToStatus.setVisible(true);
+        cancelCalibrationButton.setVisible(false);
     }
 
     private void setupProgressBars()

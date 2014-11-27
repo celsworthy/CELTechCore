@@ -34,7 +34,7 @@ public class CalibrationNozzleOpeningGUI
     {
         this.controller = controller;
         this.stateManager = stateManager;
-        
+
         stateManager.stateGUITProperty().addListener(new ChangeListener()
         {
 
@@ -69,13 +69,14 @@ public class CalibrationNozzleOpeningGUI
         steno.info("GUI going to state " + state);
         controller.calibrationStatus.setText(state.getStepTitle());
         showAppropriateButtons(state);
-        if (state.getDiagramFXMLFileName().isPresent()) {
+        if (state.getDiagramFXMLFileName().isPresent())
+        {
             controller.showDiagram(state.getDiagramFXMLFileName().get());
         }
         int stepNo = 0;
         switch (state)
         {
-         case IDLE:
+            case IDLE:
                 break;
             case HEATING:
                 controller.showSpinner();
@@ -89,7 +90,7 @@ public class CalibrationNozzleOpeningGUI
                 controller.buttonB.setText("No");
                 stepNo = 2;
                 break;
-            case T0_EXTRUDING: 
+            case T0_EXTRUDING:
                 controller.buttonA.setText("Yes");
                 controller.buttonB.setText("No");
                 stepNo = 3;
@@ -101,7 +102,7 @@ public class CalibrationNozzleOpeningGUI
                 break;
             case HEAD_CLEAN_CHECK_AFTER_EXTRUDE:
                 stepNo = 5;
-                break;                
+                break;
             case PRE_CALIBRATION_PRIMING_FINE:
                 break;
             case CALIBRATE_FINE_NOZZLE:
@@ -130,12 +131,15 @@ public class CalibrationNozzleOpeningGUI
 //                stepNo = 9;
 //                break;
             case FINISHED:
+                controller.calibrationMenu.enableNonSelectedItems();
                 break;
             case FAILED:
+                controller.calibrationMenu.enableNonSelectedItems();
                 break;
         }
-        if (stepNo != 0) {
-             controller.stepNumber.setText(String.format("Step %s of 9", stepNo));
+        if (stepNo != 0)
+        {
+            controller.stepNumber.setText(String.format("Step %s of 9", stepNo));
         }
     }
 

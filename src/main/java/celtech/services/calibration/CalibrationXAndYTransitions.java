@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 /**
  *
@@ -90,16 +89,16 @@ public class CalibrationXAndYTransitions implements Transitions
                                             CalibrationXAndYState.FAILED));
 
         // FINISHED
-        transitions.add(new StateTransition(CalibrationXAndYState.FINISHED,
-                                            StateTransitionManager.GUIName.BACK,
-                                            CalibrationXAndYState.DONE,
-                                            CalibrationXAndYState.FAILED));
-
-        // FAILED
-        transitions.add(new StateTransition(CalibrationXAndYState.FAILED,
-                                            StateTransitionManager.GUIName.BACK,
-                                            CalibrationXAndYState.DONE,
-                                            CalibrationXAndYState.DONE));
+//        transitions.add(new StateTransition(CalibrationXAndYState.FINISHED,
+//                                            StateTransitionManager.GUIName.BACK,
+//                                            CalibrationXAndYState.DONE,
+//                                            CalibrationXAndYState.FAILED));
+//
+//        // FAILED
+//        transitions.add(new StateTransition(CalibrationXAndYState.FAILED,
+//                                            StateTransitionManager.GUIName.BACK,
+//                                            CalibrationXAndYState.DONE,
+//                                            CalibrationXAndYState.DONE));
 
     }
 

@@ -105,8 +105,10 @@ public class CalibrationNozzleHeightGUI
                 stepNo = 7;
                 break;
             case FINISHED:
+                controller.calibrationMenu.enableNonSelectedItems();
                 break;
             case FAILED:
+                controller.calibrationMenu.enableNonSelectedItems();
                 break;
         }
          if (stepNo != 0) {

@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 /**
  *
@@ -151,19 +150,19 @@ public class CalibrationNozzleHeightTransitions implements Transitions
 
         
         
-        // FINISHED
-        transitions.add(new StateTransition(NozzleOffsetCalibrationState.FINISHED,
-                                            StateTransitionManager.GUIName.BACK,
-                                            NozzleOffsetCalibrationState.DONE,
-                                            NozzleOffsetCalibrationState.FAILED));
-
-
-        
-        // FAILED
-        transitions.add(new StateTransition(NozzleOffsetCalibrationState.FAILED,
-                                            StateTransitionManager.GUIName.BACK,
-                                            NozzleOffsetCalibrationState.DONE,
-                                            NozzleOffsetCalibrationState.DONE));        
+//        // FINISHED
+//        transitions.add(new StateTransition(NozzleOffsetCalibrationState.FINISHED,
+//                                            StateTransitionManager.GUIName.BACK,
+//                                            NozzleOffsetCalibrationState.DONE,
+//                                            NozzleOffsetCalibrationState.FAILED));
+//
+//
+//        
+//        // FAILED
+//        transitions.add(new StateTransition(NozzleOffsetCalibrationState.FAILED,
+//                                            StateTransitionManager.GUIName.BACK,
+//                                            NozzleOffsetCalibrationState.DONE,
+//                                            NozzleOffsetCalibrationState.DONE));        
 
     }
 

@@ -33,6 +33,7 @@ import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.AxisSpecifier;
 import celtech.utils.tasks.TaskResponder;
 import java.util.ArrayList;
+import java.util.List;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -624,7 +625,7 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void registerErrorConsumer(ErrorConsumer errorConsumer, ArrayList<FirmwareError> errorsOfInterest)
+    public void registerErrorConsumer(ErrorConsumer errorConsumer, List<FirmwareError> errorsOfInterest)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -646,4 +647,5 @@ public class CommandInterfaceTestPrinter implements Printer
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
 }
