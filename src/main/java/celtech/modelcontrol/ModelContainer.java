@@ -1091,11 +1091,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     private void checkOffBed()
     {
-        Bounds bounds = getBoundsInParent();
+        ModelBounds bounds = getTransformedBounds();
         if (bounds.getMinX() < 0
             || bounds.getMaxX() > printBed.getPrintVolumeMaximums().getX()
             || bounds.getMinZ() < 0
-            || bounds.getMaxZ() > printBed.getPrintVolumeMaximums().getZ())
+            || bounds.getMaxZ() > printBed.getPrintVolumeMaximums().getZ()
+            || bounds.getMaxY() > 0
+            || bounds.getMinY() < printBed.getPrintVolumeMinimums().getY())
         {
             isOffBed.set(true);
         } else
