@@ -56,7 +56,8 @@ public enum FirmwareError
      ERROR_REEL1_EEPROM("error.ERROR_REEL1_EEPROM", 19),
      ERROR_HEAD_POWER_EEPROM("error.ERROR_HEAD_POWER_EEPROM", 20),
      ERROR_HEAD_POWER_OVERTEMP("error.ERROR_HEAD_POWER_OVERTEMP", 21),
-     ERROR_UNKNOWN("error.ERROR_UNKNOWN", -1);
+     ERROR_UNKNOWN("error.ERROR_UNKNOWN", -1),
+     ALL_ERRORS("", -99);
 
      private String errorText;
      private int bytePosition;

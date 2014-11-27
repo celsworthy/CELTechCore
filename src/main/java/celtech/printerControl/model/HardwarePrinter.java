@@ -34,7 +34,6 @@ import static celtech.printerControl.comms.commands.rx.RxPacketTypeEnum.PRINTER_
 import static celtech.printerControl.comms.commands.rx.RxPacketTypeEnum.STATUS_RESPONSE;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.comms.commands.tx.FormatHeadEEPROM;
-import celtech.printerControl.comms.commands.tx.FormatReel0EEPROM;
 import celtech.printerControl.comms.commands.tx.ListFiles;
 import celtech.printerControl.comms.commands.tx.PausePrint;
 import celtech.printerControl.comms.commands.tx.QueryFirmwareVersion;
@@ -70,11 +69,10 @@ import celtech.utils.tasks.TaskResponder;
 import celtech.utils.tasks.TaskResponse;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.WeakHashMap;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
@@ -177,7 +175,7 @@ public final class HardwarePrinter implements Printer
     /*
      * Error handling
      */
-    private final Map<ErrorConsumer, ArrayList<FirmwareError>> errorConsumers = new HashMap<>();
+    private final Map<ErrorConsumer, List<FirmwareError>> errorConsumers = new WeakHashMap<>();
 
     public HardwarePrinter(PrinterStatusConsumer printerStatusConsumer,
         CommandInterface commandInterface)
@@ -2193,7 +2191,7 @@ public final class HardwarePrinter implements Printer
     }
 
     @Override
-    public void registerErrorConsumer(ErrorConsumer errorConsumer, ArrayList<FirmwareError> errorsOfInterest)
+    public void registerErrorConsumer(ErrorConsumer errorConsumer, List<FirmwareError> errorsOfInterest)
     {
         errorConsumers.put(errorConsumer, errorsOfInterest);
     }
@@ -2236,7 +2234,7 @@ public final class HardwarePrinter implements Printer
                                     errorWasConsumed = false;
                                     errorConsumers.forEach((consumer, errorList) ->
                                         {
-                                            if (errorList.contains(foundError))
+                                            if (errorList.contains(foundError) || errorList.contains(FirmwareError.ALL_ERRORS))
                                             {
                                                 consumer.consume(foundError);
                                                 errorWasConsumed = true;

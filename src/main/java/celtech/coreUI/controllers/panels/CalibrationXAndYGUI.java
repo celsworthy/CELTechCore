@@ -50,7 +50,11 @@ public class CalibrationXAndYGUI
     private void showAppropriateButtons(CalibrationXAndYState state)
     {
         controller.hideAllInputControlsExceptStepNumber();
-        controller.cancelCalibrationButton.setVisible(true);
+        if (state != CalibrationXAndYState.FAILED && state
+            != CalibrationXAndYState.FINISHED)
+        {
+            controller.cancelCalibrationButton.setVisible(true);
+        }
         for (StateTransition<CalibrationXAndYState> allowedTransition : this.stateManager.getTransitions())
         {
             if (namesToButtons.containsKey(allowedTransition.getGUIName()))
@@ -71,7 +75,6 @@ public class CalibrationXAndYGUI
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzlealignment",
                                        "Nozzle Alignment Illustrations_Step 1.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 6", 1));
                 break;
 //            case HEATING:
 //                controller.hideAllInputControlsExceptStepNumber();
@@ -88,32 +91,31 @@ public class CalibrationXAndYGUI
                 controller.setCalibrationProgressVisible(
                     CalibrationInsetPanelController.ProgressVisibility.PRINT);
                 controller.calibrationStatus.setText(state.getStepTitle());
-                controller.stepNumber.setText(String.format("Step %s of 6", 2));
+                controller.stepNumber.setText(String.format("Step %s of 4", 1));
                 break;
             case GET_Y_OFFSET:
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzlealignment",
                                        "Nozzle Alignment Illustrations_Step 4.fxml", false);
-                controller.stepNumber.setText(String.format("Step %s of 6", 3));
+                controller.stepNumber.setText(String.format("Step %s of 4", 2));
                 break;
             case PRINT_CIRCLE:
                 controller.showSpinner();
                 controller.setCalibrationProgressVisible(
                     CalibrationInsetPanelController.ProgressVisibility.PRINT);
                 controller.calibrationStatus.setText(state.getStepTitle());
-                controller.stepNumber.setText(String.format("Step %s of 6", 4));
+                controller.stepNumber.setText(String.format("Step %s of 4", 3));
                 break;
             case PRINT_CIRCLE_CHECK:
                 controller.showDiagram("nozzlealignment",
                                        "Nozzle Alignment Illustrations_Step 5.fxml");
                 controller.calibrationStatus.setText(state.getStepTitle());
-                controller.stepNumber.setText(String.format("Step %s of 6", 5));
+                controller.stepNumber.setText(String.format("Step %s of 4", 4));
                 break;
             case FINISHED:
                 controller.calibrationStatus.setText(state.getStepTitle());
                 controller.showDiagram("nozzlealignment",
                                        "Nozzle Alignment Illustrations_Step 6.fxml");
-                controller.stepNumber.setText(String.format("Step %s of 6", 6));
                 break;
             case FAILED:
                 controller.calibrationStatus.setText(state.getStepTitle());
@@ -128,7 +130,6 @@ public class CalibrationXAndYGUI
         namesToButtons.put(GUIName.YES, controller.buttonA);
         namesToButtons.put(GUIName.NO, controller.buttonB);
         namesToButtons.put(GUIName.NEXT, controller.nextButton);
-        namesToButtons.put(GUIName.CANCEL, controller.cancelCalibrationButton);
         namesToButtons.put(GUIName.RETRY, controller.retryPrintButton);
         namesToButtons.put(GUIName.START, controller.startCalibrationButton);
         namesToButtons.put(GUIName.BACK, controller.backToStatus);

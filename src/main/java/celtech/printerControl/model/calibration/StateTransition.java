@@ -7,10 +7,11 @@ import celtech.printerControl.model.calibration.StateTransitionManager.GUIName;
 import celtech.utils.tasks.TaskExecutor;
 
 /**
- * StateTransition represents a transition from the fromState to the toState. The toState is reached
- * after the action is called, if it was set. If the action fails then the transition goes to
- * the transitionFailedState. If the guiName is AUTO is then the transition is run automatically
- * whenever the fromState is reached.
+ * StateTransition represents a transition from the fromState to the toState. If the action has not been
+ * set then the toState is reached either directly. If no action was set then it is called and the
+ * toState is reached if the action did not fail (throw an exception). If the action fails (throws
+ * an exception) then the transition goes to the transitionFailedState.
+ * If the guiName is AUTO then the transition is run automatically whenever the fromState is reached.
  * @author tony
  */
 public class StateTransition<T>
