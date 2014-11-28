@@ -31,7 +31,7 @@ public enum NozzleOpeningCalibrationState
 
     PRE_CALIBRATION_PRIMING_FILL("calibrationPanel.primingNozzle", ""),
 
-    CALIBRATE_FILL_NOZZLE("calibrationPanel.calibrationCommencedMessageFill", "Nozzle Opening Illustrations_Step 6.fxml"),
+    CALIBRATE_FILL_NOZZLE("calibrationPanel.calibrationCommencedMessageFill", "Nozzle Opening Illustrations_Step 6A.fxml"),
     
     INCREMENT_FILL_NOZZLE_POSITION("", ""),
 
