@@ -32,13 +32,14 @@ public class SetFilamentInfo extends RoboxTxPacket
      *
      * @param filamentDiameterE
      * @param filamentMultiplierE
-     * @param feedRateMultiplierE
      * @param filamentDiameterD
      * @param filamentMultiplierD
-     * @param feedRateMultiplierD
+     * @param feedRateMultiplier
      */
-    public void setFilamentInfo(double filamentDiameterE, double filamentMultiplierE, double feedRateMultiplierE,
-        double filamentDiameterD, double filamentMultiplierD, double feedRateMultiplierD)
+    public void setFilamentInfo(
+        double filamentDiameterE, double filamentMultiplierE,
+        double filamentDiameterD, double filamentMultiplierD,
+        double feedRateMultiplier)
     {
         StringBuilder payload = new StringBuilder();
 
@@ -46,10 +47,9 @@ public class SetFilamentInfo extends RoboxTxPacket
 
         payload.append(decimalFloatFormatter.format(filamentDiameterE));
         payload.append(decimalFloatFormatter.format(filamentMultiplierE));
-        payload.append(decimalFloatFormatter.format(feedRateMultiplierE));
         payload.append(decimalFloatFormatter.format(filamentDiameterD));
         payload.append(decimalFloatFormatter.format(filamentMultiplierD));
-        payload.append(decimalFloatFormatter.format(feedRateMultiplierD));
+        payload.append(decimalFloatFormatter.format(feedRateMultiplier));
 
         this.setMessagePayload(payload.toString());
     }

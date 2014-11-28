@@ -521,7 +521,7 @@ public class StatusResponse extends RoboxRxPacket
      *
      * @return
      */
-    public float getFilamentDiameter()
+    public float getEFilamentDiameter()
     {
         return EFilamentDiameter;
     }
@@ -530,9 +530,27 @@ public class StatusResponse extends RoboxRxPacket
      *
      * @return
      */
-    public float getFilamentMultiplier()
+    public float getEFilamentMultiplier()
     {
         return EFilamentMultiplier;
+    }
+    
+        /**
+     *
+     * @return
+     */
+    public float getDFilamentDiameter()
+    {
+        return DFilamentDiameter;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public float getDFilamentMultiplier()
+    {
+        return DFilamentMultiplier;
     }
 
     /**
@@ -1295,6 +1313,16 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append("Dual reel adaptor present: " + isDualReelAdaptorPresent());
         outputString.append("\n");
         outputString.append("SD card present: " + isSDCardPresent());
+        outputString.append("\n");
+        outputString.append("E Filament diameter: " + EFilamentDiameter);
+        outputString.append("\n");
+        outputString.append("D Filament diameter: " + DFilamentDiameter);
+        outputString.append("\n");
+        outputString.append("E Filament multiplier: " + EFilamentMultiplier);
+        outputString.append("\n");
+        outputString.append("D Filament multiplier: " + DFilamentMultiplier);
+        outputString.append("\n");
+        outputString.append("Feed rate multiplier: " + feedRateMultiplier);
         outputString.append("\n");
         outputString.append(">>>>>>>>>>\n");
 

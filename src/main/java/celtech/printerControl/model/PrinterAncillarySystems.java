@@ -10,12 +10,15 @@ import celtech.configuration.HeaterMode;
 import celtech.configuration.WhyAreWeWaitingState;
 import java.util.ArrayList;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyFloatProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.chart.LineChart;
@@ -38,6 +41,7 @@ public class PrinterAncillarySystems
     protected final BooleanProperty bAxisHome = new SimpleBooleanProperty(false);
     protected final BooleanProperty lidOpen = new SimpleBooleanProperty(false);
     protected final BooleanProperty dualReelAdaptorPresent = new SimpleBooleanProperty(false);
+    protected final FloatProperty feedRateMultiplier = new SimpleFloatProperty(0);
 
     protected final ObjectProperty<HeaterMode> bedHeaterMode = new SimpleObjectProperty<>(HeaterMode.OFF);
     protected final IntegerProperty ambientTemperature = new SimpleIntegerProperty(0);
@@ -122,6 +126,11 @@ public class PrinterAncillarySystems
     public ReadOnlyBooleanProperty dualReelAdaptorPresentProperty()
     {
         return dualReelAdaptorPresent;
+    }
+      
+    public ReadOnlyFloatProperty feedRateMultiplierProperty()
+    {
+        return feedRateMultiplier;
     }
     
     public ReadOnlyObjectProperty<HeaterMode> bedHeaterModeProperty()

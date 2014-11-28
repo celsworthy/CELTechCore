@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.modelcontrol;
 
 import celtech.configuration.PrintBed;
@@ -1573,4 +1568,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return preferredRotationY;
     }
 
+    public Point3D transformMeshToRealWorldCoordinates(float vertexX, float vertexY, float vertexZ)
+    {
+        return localToParent(meshGroup.localToParent(vertexX, vertexY, vertexZ));
+    }
 }
