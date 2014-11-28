@@ -300,7 +300,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
             } else if (messageData.startsWith("M113"))
             {
                 // ZDelta
-                gcodeResponse.setMessagePayload("Zdelta:0.01ok");
+                gcodeResponse.populatePacket("0000eZdelta:0.01\nok".getBytes());
             }
 
             response = (RoboxRxPacket) gcodeResponse;
