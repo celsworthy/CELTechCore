@@ -128,6 +128,7 @@ public final class HardwarePrinter implements Printer
     private final BooleanProperty canCancel = new SimpleBooleanProperty(false);
     private final BooleanProperty canOpenDoor = new SimpleBooleanProperty(false);
     private final BooleanProperty canCalibrateHead = new SimpleBooleanProperty(false);
+    private final BooleanProperty canSetFilamentInfo = new SimpleBooleanProperty(false);
 
     private boolean headIntegrityChecksInhibited = false;
 
@@ -171,7 +172,7 @@ public final class HardwarePrinter implements Printer
     protected final StringProperty printJobID = new SimpleStringProperty("");
 
     private PrintEngine printEngine;
-    
+
     private final String firstExtruderLetter = "E";
     private final int firstExtruderNumber = 0;
     private final String secondExtruderLetter = "D";
@@ -208,6 +209,8 @@ public final class HardwarePrinter implements Printer
             .or(printerStatus.isEqualTo(PrinterStatus.RESUMING)));
         canCalibrateHead.bind(head.isNotNull()
             .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
+        canSetFilamentInfo.bind(printerStatus.isEqualTo(PrinterStatus.SENDING_TO_PRINTER)
+            .or(printerStatus.isEqualTo(PrinterStatus.PRINTING)));
 
         threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
         threeDPformatter.setMaximumFractionDigits(3);
@@ -1252,6 +1255,15 @@ public final class HardwarePrinter implements Printer
                                         nozzle1FirstLayerTarget, nozzle1Target, bedFirstLayerTarget,
                                         bedTarget, ambientTarget);
         commandInterface.writeToPrinter(setTemperatures);
+    }
+
+    /**
+     * @return
+     */
+    @Override
+    public ReadOnlyBooleanProperty canChangeFilamentInfoProperty()
+    {
+        return canSetFilamentInfo;
     }
 
     /**
@@ -2623,7 +2635,7 @@ public final class HardwarePrinter implements Printer
         float eExtrusionMultiplier = extruders.get(firstExtruderNumber).extrusionMultiplier.get();
         float dFilamentDiameter = extruders.get(secondExtruderNumber).filamentDiameter.get();
         float dExtrusionMultiplier = extruders.get(secondExtruderNumber).extrusionMultiplier.get();
-        
+
         try
         {
             transmitSetFilamentInfo(eFilamentDiameter, eExtrusionMultiplier,

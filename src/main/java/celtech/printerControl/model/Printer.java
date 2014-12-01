@@ -91,6 +91,26 @@ public interface Printer extends RoboxResponseConsumer
     public ObservableList<Extruder> extrudersProperty();
 
     /**
+     * Filament Info change
+     * @return 
+     */
+    public ReadOnlyBooleanProperty canChangeFilamentInfoProperty();
+
+    /**
+     *
+     * @param filamentDiameterE
+     * @param filamentMultiplierE
+     * @param filamentDiameterD
+     * @param filamentMultiplierD
+     * @param feedRateMultiplier
+     * @throws RoboxCommsException
+     */
+    public void transmitSetFilamentInfo(
+        double filamentDiameterE, double filamentMultiplierE,
+        double filamentDiameterD, double filamentMultiplierD,
+        double feedRateMultiplier) throws RoboxCommsException;
+
+    /**
      *
      * @return @throws celtech.printerControl.model.PrinterException
      */
@@ -329,20 +349,6 @@ public interface Printer extends RoboxResponseConsumer
      */
     public void transmitResetErrors() throws RoboxCommsException;
 
-    /**
-     *
-     * @param filamentDiameterE
-     * @param filamentMultiplierE
-     * @param filamentDiameterD
-     * @param filamentMultiplierD
-     * @param feedRateMultiplier
-     * @throws RoboxCommsException
-     */
-    public void transmitSetFilamentInfo(
-        double filamentDiameterE, double filamentMultiplierE,
-        double filamentDiameterD, double filamentMultiplierD,
-        double feedRateMultiplier) throws RoboxCommsException;
-
     /*
      * Higher level controls
      */
@@ -461,8 +467,8 @@ public interface Printer extends RoboxResponseConsumer
     public void inhibitHeadIntegrityChecks(boolean inhibit);
 
     public void changeFeedRateMultiplierDuringPrint(double feedRate) throws PrinterException;
-    
+
     public void registerErrorConsumer(ErrorConsumer errorConsumer, List<FirmwareError> errorsOfInterest);
-    
+
     public void deregisterErrorConsumer(ErrorConsumer errorConsumer);
 }

@@ -48,7 +48,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         PrinterStatusSidePanelController.class.getName());
 
     private final String DOT_GRAPHIC = "● ";
-    
+
     @FXML
     private MaterialComponent material1;
 
@@ -57,9 +57,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     @FXML
     private HBox materialContainer1;
-    
+
     @FXML
-    private HBox materialContainer2;    
+    private HBox materialContainer2;
 
     @FXML
     private HBox temperatureChartXLabels;
@@ -88,16 +88,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private Text legendAmbient;
 
     @FXML
-    private Slider speedMultiplierSlider1;
+    private Slider speedMultiplierSlider;
 
     @FXML
-    private HBox speedSlider1HBox;
-
-    @FXML
-    private Slider speedMultiplierSlider2;
-
-    @FXML
-    private HBox speedSlider2HBox;
+    private HBox speedSliderHBox;
 
     private PrinterIDDialog printerIDDialog = null;
 
@@ -151,6 +145,16 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         }
     };
 
+    private final ChangeListener<Number> feedRateChangeListener = new ChangeListener<Number>()
+    {
+        @Override
+        public void changed(
+            ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+        {
+            speedMultiplierSlider.setValue(newValue.doubleValue());
+        }
+    };
+
     /**
      * Initializes the controller class.
      *
@@ -165,8 +169,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         printerIDDialog = new PrinterIDDialog();
 
         material2.setVisible(false);
-        speedSlider1HBox.setVisible(false);
-        speedSlider2HBox.setVisible(false);
+        speedSliderHBox.setVisible(false);
 
         initialiseTemperatureChart();
         initialisePrinterStatusGrid();
@@ -436,13 +439,12 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         chartManager.setBedHeaterModeProperty(ancillarySystems.bedHeaterModeProperty());
         chartManager.setTargetBedTemperatureProperty(ancillarySystems.bedTargetTemperatureProperty());
 
-        speedSlider1HBox.visibleProperty().bind(printer.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING));
-        speedMultiplierSlider1.valueProperty().addListener(speedMultiplierListener);
+        speedSliderHBox.visibleProperty().bind(printer.canChangeFilamentInfoProperty());
+        speedMultiplierSlider.valueProperty().addListener(speedMultiplierListener);
 
         materialContainer2.visibleProperty().bind(printer.getPrinterAncillarySystems().dualReelAdaptorPresentProperty());
-//        material2.visibleProperty().bind(printer.getPrinterAncillarySystems().dualReelAdaptorPresentProperty());
-//                speedSlider1HBox.visibleProperty().bind(printer.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING));
-//        speedMultiplierSlider1.valueProperty().addListener(speedMultiplierListener);
+        
+        printer.getPrinterAncillarySystems().feedRateMultiplierProperty().addListener(feedRateChangeListener);
     }
 
     private void unbindPrinter(Printer printer)
@@ -462,11 +464,13 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         chartManager.clearBedData();
         currentAmbientTemperatureHistory = null;
 
-        speedSlider1HBox.visibleProperty().unbind();
-        speedSlider1HBox.setVisible(false);
-        speedMultiplierSlider1.valueProperty().removeListener(speedMultiplierListener);
-        
+        speedSliderHBox.visibleProperty().unbind();
+        speedSliderHBox.setVisible(false);
+        speedMultiplierSlider.valueProperty().removeListener(speedMultiplierListener);
+
         materialContainer2.visibleProperty().unbind();
+
+        printer.getPrinterAncillarySystems().feedRateMultiplierProperty().removeListener(feedRateChangeListener);
     }
 
     private ChangeListener<Object> reelListener;
@@ -527,10 +531,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         } else
         {
             materialComponent.setMaterial(reelNumber, reel.materialProperty().get(),
-                                  reel.friendlyFilamentNameProperty().get(),
-                                  reel.displayColourProperty().get(),
-                                  reel.remainingFilamentProperty().get(),
-                                  reel.diameterProperty().get());
+                                          reel.friendlyFilamentNameProperty().get(),
+                                          reel.displayColourProperty().get(),
+                                          reel.remainingFilamentProperty().get(),
+                                          reel.diameterProperty().get());
         }
 //            material1.showReelNotFormatted();
     }
