@@ -97,9 +97,6 @@ public class MaintenancePanelController implements Initializable
     private GCodeMacroButton SpeedTestButton;
 
     @FXML
-    private Button sendGCodeStreamGCodeMacroButton;
-
-    @FXML
     private GCodeMacroButton XTestButton;
 
     @FXML
@@ -192,28 +189,6 @@ public class MaintenancePanelController implements Initializable
         } catch (PrinterException ex)
         {
             steno.error("Error reading firmware version");
-        }
-    }
-
-    @FXML
-    void sendGCodeStream(ActionEvent event)
-    {
-        gcodeFileChooser.setInitialFileName("Untitled");
-
-        gcodeFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(DirectoryMemoryProperty.MACRO)));
-
-        final File file = gcodeFileChooser.showOpenDialog(container.getScene().getWindow());
-        if (file != null)
-        {
-            if (connectedPrinter.printerStatusProperty().get() == PrinterStatus.IDLE)
-            {
-                gcodePrintService.reset();
-                gcodePrintService.setPrintUsingSDCard(false);
-                gcodePrintService.setPrinterToUse(connectedPrinter);
-                gcodePrintService.setModelFileToPrint(file.getAbsolutePath());
-                gcodePrintService.start();
-            }
-            ApplicationConfiguration.setLastDirectory(DirectoryMemoryProperty.MACRO, file.getParentFile().getAbsolutePath());
         }
     }
 
@@ -368,8 +343,6 @@ public class MaintenancePanelController implements Initializable
         EjectStuckMaterialButton.setDisable(noFilamentOrPrintingdisabled);
 
         SpeedTestButton.setDisable(printingdisabled);
-
-        sendGCodeStreamGCodeMacroButton.setDisable(printingdisabled);
 
         XTestButton.setDisable(printingdisabled);
 
