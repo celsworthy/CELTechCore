@@ -108,7 +108,7 @@
         <dependency>
             <groupId>org.jfxtras</groupId>
             <artifactId>jfxtras-controls</artifactId>
-            <version>8.0-r1</version>
+            <version>8.0-r3</version>
         </dependency>
         <dependency>
             <groupId>com.github.junrar</groupId>
@@ -120,11 +120,11 @@
             <artifactId>commons-compress</artifactId>
             <version>1.8</version>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv</artifactId>
             <version>0.8</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
