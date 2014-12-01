@@ -7,6 +7,7 @@ import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.AmbientLEDState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.JogButton;
+import celtech.coreUI.visualisation.threed.StaticModelOverlay;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
@@ -24,7 +25,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -34,7 +34,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -59,6 +59,7 @@ public class PrinterStatusPageController implements Initializable
     private ChangeListener<Color> printerColourChangeListener = null;
     private ChangeListener<PrinterStatus> printerStatusChangeListener = null;
     private ChangeListener<PauseStatus> pauseStatusChangeListener = null;
+    private StaticModelOverlay staticModelOverlay = null;
 
     private String transferringDataString = null;
 
@@ -237,6 +238,9 @@ public class PrinterStatusPageController implements Initializable
 
     @FXML
     private Group temperatureWarning;
+
+    @FXML
+    private AnchorPane container;
 
     private Node[] advancedControls = null;
 
@@ -756,6 +760,9 @@ public class PrinterStatusPageController implements Initializable
                     lastSelectedPrinter = selectedPrinter;
                 }
             });
+
+//        staticModelOverlay = new StaticModelOverlay(statusPane.getWidth(), statusPane.getHeight());
+//        statusPane.getChildren().add(staticModelOverlay.getSubScene());
     }
 
     private void setAdvancedControlsVisibility(boolean visible)
@@ -802,6 +809,7 @@ public class PrinterStatusPageController implements Initializable
                 case PRINTING:
                     showProgressGroup.set(true);
                     setAdvancedControlsVisibility(false);
+//                    staticModelOverlay.showModelForPrintJob(lastSelectedPrinter.printJobIDProperty().get());
                     break;
                 case SLICING:
                 case POST_PROCESSING:
