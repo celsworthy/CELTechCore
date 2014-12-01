@@ -157,10 +157,8 @@ class DiagramController implements Initializable
 
     ChangeListener<Number> bPositionListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
-        steno.debug("bPosition listener fired");
         if (BPosition != null)
         {
-            steno.debug("set bPosition text to " + String.format("%1.2f", newValue));
             BPosition.setText(String.format("%1.2f", newValue));
         }
     };
@@ -283,6 +281,11 @@ class DiagramController implements Initializable
             fineNozzleLbl.setScaleY(invertedScale);
             fillNozzleLbl.setScaleX(invertedScale);
             fillNozzleLbl.setScaleY(invertedScale);
+        }
+        
+        if (BPosition != null) {
+            BPosition.setScaleX(invertedScale);
+            BPosition.setScaleY(invertedScale);
         }
     }
 
