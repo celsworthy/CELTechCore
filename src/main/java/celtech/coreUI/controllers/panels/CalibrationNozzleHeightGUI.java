@@ -49,8 +49,7 @@ public class CalibrationNozzleHeightGUI
     private void showAppropriateButtons(NozzleOffsetCalibrationState state)
     {
         controller.hideAllInputControlsExceptStepNumber();
-        if (state != NozzleOffsetCalibrationState.IDLE && state != NozzleOffsetCalibrationState.FAILED && state
-            != NozzleOffsetCalibrationState.FINISHED)
+        if (state.showCancelButton())
         {
             controller.cancelCalibrationButton.setVisible(true);
         }
@@ -68,7 +67,7 @@ public class CalibrationNozzleHeightGUI
         steno.info("GUI going to state " + state);
         controller.calibrationStatus.setText(state.getStepTitle());
         showAppropriateButtons(state);
-        if (! state.equals(NozzleOffsetCalibrationState.PROBING) && state.getDiagramFXMLFileName().isPresent()) {
+        if (state.getDiagramFXMLFileName().isPresent()) {
             controller.showDiagram(state.getDiagramFXMLFileName().get());
         }
         int stepNo = 0;
@@ -96,7 +95,6 @@ public class CalibrationNozzleHeightGUI
                 stepNo = 5;
                 break;
             case PROBING:
-                controller.showDiagram(state.getDiagramFXMLFileName().get(), false);
                 stepNo = 6;
                 break;
             case LIFT_HEAD:

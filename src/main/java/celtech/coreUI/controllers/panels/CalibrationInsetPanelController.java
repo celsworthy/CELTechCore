@@ -293,7 +293,6 @@ public class CalibrationInsetPanelController implements Initializable,
         diagramNode.setPrefHeight(0);
 
         double scaledDiagramWidth = diagramWidth * requiredScale;
-        double scaledDiagramHeight = diagramHeight * requiredScale;
 
         double xTranslate = 0;
         double yTranslate = 0;
@@ -349,11 +348,6 @@ public class CalibrationInsetPanelController implements Initializable,
 
     protected void showDiagram(URL fxmlLocation)
     {
-        showDiagram(fxmlLocation, true);
-    }
-
-    protected void showDiagram(URL fxmlLocation, boolean transparent)
-    {
         diagramNode = (Pane) getDiagramNode(fxmlLocation);
         if (diagramNode == null)
         {
@@ -362,8 +356,6 @@ public class CalibrationInsetPanelController implements Initializable,
 
         diagramContainer.getChildren().clear();
         diagramContainer.getChildren().add(diagramNode);
-
-        diagramNode.setMouseTransparent(transparent);
 
         resizeDiagram();
 
