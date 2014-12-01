@@ -49,7 +49,7 @@ public class CalibrationNozzleHeightGUI
     private void showAppropriateButtons(NozzleOffsetCalibrationState state)
     {
         controller.hideAllInputControlsExceptStepNumber();
-        if (state != NozzleOffsetCalibrationState.FAILED && state
+        if (state != NozzleOffsetCalibrationState.IDLE && state != NozzleOffsetCalibrationState.FAILED && state
             != NozzleOffsetCalibrationState.FINISHED)
         {
             controller.cancelCalibrationButton.setVisible(true);

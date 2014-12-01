@@ -46,6 +46,11 @@ public class CalibrationNozzleHeightTransitions implements Transitions
                                             NozzleOffsetCalibrationState.INITIALISING,
                                             NozzleOffsetCalibrationState.FAILED));
         
+        transitions.add(new StateTransition(NozzleOffsetCalibrationState.IDLE,
+                                            StateTransitionManager.GUIName.BACK,
+                                            NozzleOffsetCalibrationState.DONE,
+                                            NozzleOffsetCalibrationState.FAILED));    
+        
         // INITIALISING
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.INITIALISING,
                                             StateTransitionManager.GUIName.NEXT,

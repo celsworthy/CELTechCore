@@ -91,6 +91,11 @@ public class CalibrationNozzleOpeningTransitions implements Transitions
                                             StateTransitionManager.GUIName.START,
                                             NozzleOpeningCalibrationState.HEATING,
                                             NozzleOpeningCalibrationState.FAILED));
+        
+        transitions.add(new StateTransition(NozzleOpeningCalibrationState.IDLE,
+                                            StateTransitionManager.GUIName.BACK,
+                                            NozzleOpeningCalibrationState.DONE,
+                                            NozzleOpeningCalibrationState.FAILED));        
 
         // HEATING
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.HEATING,

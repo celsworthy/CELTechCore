@@ -50,7 +50,7 @@ public class CalibrationXAndYGUI
     private void showAppropriateButtons(CalibrationXAndYState state)
     {
         controller.hideAllInputControlsExceptStepNumber();
-        if (state != CalibrationXAndYState.FAILED && state
+        if (state != CalibrationXAndYState.IDLE && state != CalibrationXAndYState.FAILED && state
             != CalibrationXAndYState.FINISHED)
         {
             controller.cancelCalibrationButton.setVisible(true);
