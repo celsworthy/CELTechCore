@@ -1203,21 +1203,6 @@ table-view .column-header-background {
 }*/
 
 /*
- * Sliders
- */
-.slider .axis {
-    -fx-tick-label-font: 13px 'Source Sans Pro Regular'; 
-}
-
-.slider .axis:bottom {
-    -fx-tick-label-fill: white;
-}
-
-/*.slider {
-    -fx-font-size: 12pt;
-}*/
-
-/*
  * 3D gizmo
  */
 
@@ -1262,8 +1247,8 @@ table-view .column-header-background {
     -fx-text-fill: highlight_colour;
     -fx-pref-height: 60;
     -fx-font-size: 36px;
-/*    -fx-scale-x: 1.7;
-    -fx-scale-y: 1.7;*/
+    /*    -fx-scale-x: 1.7;
+        -fx-scale-y: 1.7;*/
 }
 
 .slideOutPanel, .slideOutPanel .tab-pane{
@@ -1596,15 +1581,25 @@ table-view .column-header-background {
     -fx-opacity: -fx-disabled-opacity;
 }
 
-
 /*******************************************************************************
- *                                                                             *
- * Slider                                                                      *
- *                                                                             *
- ******************************************************************************/
-
+* *
+* Slider *
+* *
+******************************************************************************/
 .slider {
     -fx-skin: "jfxtras.styles.jmetro8.FilledSliderSkin";
+}
+
+.slider .axis {
+    -fx-tick-label-font: 13px 'Source Sans Pro Regular'; 
+}
+
+.slider .axis:bottom {
+    -fx-tick-label-fill: white;
+}
+
+.slider {
+    -fx-font-size: 12pt;
 }
 
 .slider .thumb {
@@ -1612,29 +1607,24 @@ table-view .column-header-background {
     -fx-background-insets: 0;
     -fx-background-radius: 0em;
     -fx-padding: 0.333333em; /* 4 */
-
     -fx-effect: null;
 }
 .slider:focused .thumb {
     -fx-background-radius: 0em;
 }
-
 .slider .track {
     -fx-background-color: #6c6c6c;
     -fx-background-insets: 0;
     -fx-background-radius: 0;
     -fx-padding: 0.333333em; /* This value must be equal to ".slider .thumb" padding */
 }
-
 .slider .fill {
     -fx-background-color: #008287;
     -fx-padding: 0.333333em; /* This value must be equal to ".slider .thumb" padding */
 }
-
 .slider .fill:hover {
     -fx-background-color: #219297;
 }
-
 .slider .fill:pressed {
     -fx-background-color: #25bbc4;
 }
@@ -1961,7 +1951,7 @@ table-view .column-header-background {
 .preferenceControl {
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 22px;
-    
+
 }
 
 /**

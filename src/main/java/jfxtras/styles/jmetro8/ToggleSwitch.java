@@ -1,5 +1,6 @@
 package jfxtras.styles.jmetro8;
 
+import com.sun.javafx.scene.accessibility.Attribute;
 import javafx.beans.property.*;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
@@ -64,6 +65,7 @@ public class ToggleSwitch extends Labeled {
                 @Override protected void invalidated() {
                     final Boolean v = get();
                     pseudoClassStateChanged(PSEUDO_CLASS_SELECTED, v);
+//                    accSendNotification(Attribute.SELECTED);
                 }
 
                 @Override

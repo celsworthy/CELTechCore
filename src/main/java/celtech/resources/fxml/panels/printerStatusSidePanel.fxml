@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import celtech.coreUI.components.material.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.*?>
@@ -9,8 +10,6 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.text.*?>
-<?import celtech.coreUI.components.*?>
-<?import celtech.coreUI.components.material.*?>
 <?scenebuilder-preview-i18n-resource ../../i18n/LanguageData.properties?>
 <?scenebuilder-stylesheet ../../css/AutoMaker.css?>
 
@@ -129,22 +128,25 @@
                                 <MaterialComponent fx:id="material1" translateX="10.0" />
                             </children>
                         </HBox>
-                        <HBox fx:id="speedSlider1HBox">
+                        <HBox fx:id="speedSlider1HBox" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" translateX="20.0">
                                             <children>
-                                                <Label layoutX="10.0" layoutY="10.0" text="%printerStatus.printSpeedMultiplierLabel" textAlignment="RIGHT" />
-                                                <Slider fx:id="speedMultiplierSlider1" blockIncrement="0.1" layoutX="51.0" layoutY="295.30000019073486" majorTickUnit="0.5" max="1.5" min="0.5" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="1.0">
+                                                <Label text="%printerStatus.printSpeedMultiplierLabel" textAlignment="RIGHT" />
+                                                <Slider fx:id="speedMultiplierSlider1" blockIncrement="0.1" majorTickUnit="0.5" max="1.5" min="0.5" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="1.0">
                                                     <padding>
                                                         <Insets left="20.0" right="20.0" />
                                                     </padding>
                                                 </Slider>
                                             </children>
+<padding>
+<Insets top="5.0" />
+</padding>
                                         </HBox>
                         <HBox fx:id="materialContainer2" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="statusPanelChild" translateX="20.0">
                             <children>
                                 <MaterialComponent fx:id="material2" translateX="10.0" />
                             </children>
                         </HBox>       
-                        <HBox fx:id="speedSlider2HBox">
+                        <HBox fx:id="speedSlider2HBox" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" translateX="20.0">
                                             <children>
                                                 <Label layoutX="10.0" layoutY="10.0" text="%printerStatus.printSpeedMultiplierLabel" textAlignment="RIGHT" />
                                                 <Slider fx:id="speedMultiplierSlider2" blockIncrement="0.1" layoutX="51.0" layoutY="295.30000019073486" majorTickUnit="0.5" max="1.5" min="0.5" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="1.0">
@@ -153,6 +155,9 @@
                                                     </padding>
                                                 </Slider>
                                             </children>
+<padding>
+<Insets top="5.0" />
+</padding>
                                         </HBox>                 
                         <VBox fx:id="temperatureVBox" alignment="TOP_CENTER" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" styleClass="sidePanelVBox">
                             <BorderPane.margin>
