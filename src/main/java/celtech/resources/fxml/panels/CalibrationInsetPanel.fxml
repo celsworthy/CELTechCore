@@ -90,9 +90,14 @@
                             <children>
                                 <HBox alignment="CENTER_LEFT" pickOnBounds="false">
                                     <children>
-                                        <GraphicButton fx:id="cancelCalibrationButton" fxmlFileName="cancelButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#cancelCalibration" text="%calibrationPanel.cancelCalibration">
+                              <StackPane>
+                                 <children>
+                                              <GraphicButton fx:id="cancelCalibrationButton" fxmlFileName="cancelButton" mnemonicParsing="false" onAction="#cancelCalibration" text="%calibrationPanel.cancelCalibration">
                                            
                                         </GraphicButton>
+                                              <GraphicButton fx:id="backToStatus" fxmlFileName="backwardButton" mnemonicParsing="false" onAction="#backToStatusAction" text="Back To Status" />
+                                 </children>
+                              </StackPane>
                                         <GraphicButton fx:id="retryPrintButton" fxmlFileName="retryButton" mnemonicParsing="false" onAction="#retryCalibration" text="%calibrationPanel.retryCalibration">
                                             
                                         </GraphicButton>
@@ -101,7 +106,6 @@
                                 <StackPane alignment="CENTER_RIGHT" maxHeight="-Infinity" pickOnBounds="false">
                                     <children>
                                         <GraphicButton fx:id="startCalibrationButton" fxmlFileName="startButton" layoutX="5.0" mnemonicParsing="false" onAction="#startCalibration" text="%calibrationPanel.startCalibration" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
-                                        <GraphicButton fx:id="backToStatus" fxmlFileName="backwardButton" mnemonicParsing="false" onAction="#backToStatusAction" text="Back To Status" />
                                         <GraphicButton id="nextButton" fx:id="nextButton" fxmlFileName="nextButton" mnemonicParsing="false" onAction="#nextButtonAction" text="Next" />
                                     </children>
                            <StackPane.margin>
@@ -112,9 +116,6 @@
                             <BorderPane.margin>
                                 <Insets />
                             </BorderPane.margin>
-                            <padding>
-                                <Insets left="30.0" />
-                            </padding>
                         </StackPane>
                     </children>
                     <padding>

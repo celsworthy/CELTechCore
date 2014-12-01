@@ -4,11 +4,13 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
+import celtech.printerControl.model.calibration.NozzleOpeningStateTransitionManager;
 import celtech.printerControl.model.calibration.StateTransitionManager;
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.ReadOnlyFloatProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -55,6 +57,9 @@ class DiagramController implements Initializable
 
     @FXML
     private TextField fillNozzleLbl;
+    
+    @FXML
+    private TextField BPosition;    
 
     @FXML
     private HBox xOffsetComboContainer;
@@ -86,7 +91,7 @@ class DiagramController implements Initializable
     public void setStateTransitionManager(StateTransitionManager stateTransitionManager)
     {
         this.stateTransitionManager = stateTransitionManager;
-        steno.debug("calibrationTextField is " + calibrationTextField);
+
         if (stateTransitionManager instanceof NozzleHeightStateTransitionManager)
         {
             ReadOnlyDoubleProperty zcoProperty
@@ -96,7 +101,17 @@ class DiagramController implements Initializable
                 calibrationTextField.setText(String.format("%1.2f", zcoProperty.get()));
             }
             setupZCoListener(zcoProperty);
-        }        
+        }      
+        if (stateTransitionManager instanceof NozzleOpeningStateTransitionManager)
+        {
+            ReadOnlyFloatProperty bPositionProperty
+                = ((NozzleOpeningStateTransitionManager) stateTransitionManager).getBPositionProperty();
+            if (BPosition != null)
+            {
+                BPosition.setText(String.format("%1.2f", bPositionProperty.get()));
+            }
+            setupBPositionListener(bPositionProperty);
+        }       
     }       
 
     @FXML
@@ -139,6 +154,16 @@ class DiagramController implements Initializable
             }
         }
     };
+    
+    ChangeListener<Number> bPositionListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+    {
+        steno.debug("bPosition listener fired");
+        if (BPosition != null)
+        {
+            steno.debug("set bPosition text to " + String.format("%1.2f", newValue));
+            BPosition.setText(String.format("%1.2f", newValue));
+        }
+    };    
 
     protected void setupZCoListener(ReadOnlyDoubleProperty zcoProperty)
     {
@@ -150,6 +175,17 @@ class DiagramController implements Initializable
             zcoProperty.addListener(zcoListener);
         }
     }
+    
+    protected void setupBPositionListener(ReadOnlyFloatProperty bPositionProperty)
+    {
+        bPositionProperty.removeListener(bPositionListener);
+        if (BPosition != null)
+        {
+            steno.debug("add zco listener");
+            BPosition.setText(String.format("%1.2f", bPositionProperty.get()));
+            bPositionProperty.addListener(bPositionListener);
+        }
+    }    
 
     @Override
     public void initialize(URL location, ResourceBundle resources)

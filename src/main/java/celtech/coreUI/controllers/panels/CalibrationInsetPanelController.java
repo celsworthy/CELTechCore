@@ -171,7 +171,7 @@ public class CalibrationInsetPanelController implements Initializable,
         } else
         {
             stateManager.followTransition(StateTransitionManager.GUIName.BACK);
-            setCalibrationMode(CalibrationMode.CHOICE);
+            ApplicationStatus.getInstance().setMode(ApplicationMode.STATUS);
         }
     }
 

@@ -1709,6 +1709,12 @@ table-view .column-header-background {
     -fx-background-color: light_grey;
 }
 
+.calibrationInfoField {
+    -fx-background-color: white;
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 22px;
+}
+
 .calibrationButtonsAB {
     -fx-background-color: light_grey;
     -fx-border-color: white;

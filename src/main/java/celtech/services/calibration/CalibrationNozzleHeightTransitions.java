@@ -46,6 +46,11 @@ public class CalibrationNozzleHeightTransitions implements Transitions
                                             NozzleOffsetCalibrationState.INITIALISING,
                                             NozzleOffsetCalibrationState.FAILED));
         
+        transitions.add(new StateTransition(NozzleOffsetCalibrationState.IDLE,
+                                            StateTransitionManager.GUIName.BACK,
+                                            NozzleOffsetCalibrationState.DONE,
+                                            NozzleOffsetCalibrationState.FAILED));    
+        
         // INITIALISING
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.INITIALISING,
                                             StateTransitionManager.GUIName.NEXT,
@@ -150,19 +155,19 @@ public class CalibrationNozzleHeightTransitions implements Transitions
 
         
         
-//        // FINISHED
-//        transitions.add(new StateTransition(NozzleOffsetCalibrationState.FINISHED,
-//                                            StateTransitionManager.GUIName.BACK,
-//                                            NozzleOffsetCalibrationState.DONE,
-//                                            NozzleOffsetCalibrationState.FAILED));
-//
-//
-//        
-//        // FAILED
-//        transitions.add(new StateTransition(NozzleOffsetCalibrationState.FAILED,
-//                                            StateTransitionManager.GUIName.BACK,
-//                                            NozzleOffsetCalibrationState.DONE,
-//                                            NozzleOffsetCalibrationState.DONE));        
+        // FINISHED
+        transitions.add(new StateTransition(NozzleOffsetCalibrationState.FINISHED,
+                                            StateTransitionManager.GUIName.BACK,
+                                            NozzleOffsetCalibrationState.DONE,
+                                            NozzleOffsetCalibrationState.FAILED));
+
+
+        
+        // FAILED
+        transitions.add(new StateTransition(NozzleOffsetCalibrationState.FAILED,
+                                            StateTransitionManager.GUIName.BACK,
+                                            NozzleOffsetCalibrationState.DONE,
+                                            NozzleOffsetCalibrationState.DONE));        
 
     }
 

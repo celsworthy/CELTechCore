@@ -17,21 +17,21 @@ public enum NozzleOpeningCalibrationState
 
     NO_MATERIAL_CHECK("calibrationPanel.valvesClosedNoMaterial", "Nozzle Opening Illustrations_Step 3.fxml"),
     
-    T0_EXTRUDING("calibrationPanel.isMaterialExtrudingNozzle0", ""),
+    T0_EXTRUDING("calibrationPanel.isMaterialExtrudingNozzle0", "Nozzle Opening Illustrations_Step 4.fxml"),
     
-    T1_EXTRUDING("calibrationPanel.isMaterialExtrudingNozzle1", ""),
+    T1_EXTRUDING("calibrationPanel.isMaterialExtrudingNozzle1", "Nozzle Opening Illustrations_Step 6.fxml"),
     
     HEAD_CLEAN_CHECK_AFTER_EXTRUDE("calibrationPanel.ensureHeadIsCleanBMessage", "Nozzle Opening Illustrations_Step 5 and 7.fxml"),
 
     PRE_CALIBRATION_PRIMING_FINE("calibrationPanel.primingNozzle", ""),
 
-    CALIBRATE_FINE_NOZZLE("calibrationPanel.calibrationCommencedMessageFine", "Nozzle Opening Illustrations_Step 4.fxml"),
+    CALIBRATE_FINE_NOZZLE("calibrationPanel.calibrationCommencedMessageFine", "Nozzle Opening Illustrations_Step 4A.fxml"),
     
     INCREMENT_FINE_NOZZLE_POSITION("", ""),
 
     PRE_CALIBRATION_PRIMING_FILL("calibrationPanel.primingNozzle", ""),
 
-    CALIBRATE_FILL_NOZZLE("calibrationPanel.calibrationCommencedMessageFill", "Nozzle Opening Illustrations_Step 6.fxml"),
+    CALIBRATE_FILL_NOZZLE("calibrationPanel.calibrationCommencedMessageFill", "Nozzle Opening Illustrations_Step 6A.fxml"),
     
     INCREMENT_FILL_NOZZLE_POSITION("", ""),
 

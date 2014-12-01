@@ -64,8 +64,6 @@ public class CalibrationNozzleHeightActions
 
         savedHeadData = printer.readHeadEEPROM();
 
-//        zco.set(0.5 * (savedHeadData.getNozzle1ZOffset() + savedHeadData.getNozzle2ZOffset()));
-//        zDifference = savedHeadData.getNozzle2ZOffset() - savedHeadData.getNozzle1ZOffset();
         clearZOffsetsOnHead();
         heatBed();
 

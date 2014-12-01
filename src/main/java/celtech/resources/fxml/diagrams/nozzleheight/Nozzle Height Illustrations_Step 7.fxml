@@ -13976,7 +13976,7 @@
                         </Polygon>
                      </graphic>
                   </Button>
-                  <TextField id="calibrationTextField" fx:id="calibrationTextField" layoutX="371.0" layoutY="120.0" prefHeight="16.0" prefWidth="66.0" scaleX="1.5" scaleY="1.5" />
+                  <TextField id="calibrationTextField" fx:id="calibrationTextField" alignment="CENTER" layoutX="371.0" layoutY="120.0" prefHeight="16.0" prefWidth="66.0" scaleX="1.5" scaleY="1.5" />
              </children>
           </Pane>
         </children>

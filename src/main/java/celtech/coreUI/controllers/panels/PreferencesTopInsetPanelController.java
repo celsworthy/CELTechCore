@@ -199,7 +199,7 @@ public class PreferencesTopInsetPanelController implements Initializable
         };
 
         preferences.add(slicerTypePref);
-        preferences.add(overrideSafetyPref);
+//        preferences.add(overrideSafetyPref);
 
         return preferences;
     }

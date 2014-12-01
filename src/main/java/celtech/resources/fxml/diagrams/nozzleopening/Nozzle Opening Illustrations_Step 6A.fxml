@@ -1997,5 +1997,6 @@
           </Pane>
         </children>
      </Pane>
+      <TextField fx:id="BPosition" alignment="CENTER" layoutX="32.0" layoutY="358.0" prefColumnCount="6" styleClass="calibrationInfoField" />
    </children>
 </Pane>

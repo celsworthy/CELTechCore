@@ -50,6 +50,11 @@ public class CalibrationXAndYTransitions implements Transitions
                                             StateTransitionManager.GUIName.START,
                                             CalibrationXAndYState.PRINT_PATTERN,
                                             CalibrationXAndYState.FAILED));
+        
+        transitions.add(new StateTransition(CalibrationXAndYState.IDLE,
+                                            StateTransitionManager.GUIName.BACK,
+                                            CalibrationXAndYState.DONE,
+                                            CalibrationXAndYState.FAILED));        
 
         // PRINT PATTERN
         transitions.add(new StateTransition(CalibrationXAndYState.PRINT_PATTERN,
@@ -89,16 +94,16 @@ public class CalibrationXAndYTransitions implements Transitions
                                             CalibrationXAndYState.FAILED));
 
         // FINISHED
-//        transitions.add(new StateTransition(CalibrationXAndYState.FINISHED,
-//                                            StateTransitionManager.GUIName.BACK,
-//                                            CalibrationXAndYState.DONE,
-//                                            CalibrationXAndYState.FAILED));
-//
-//        // FAILED
-//        transitions.add(new StateTransition(CalibrationXAndYState.FAILED,
-//                                            StateTransitionManager.GUIName.BACK,
-//                                            CalibrationXAndYState.DONE,
-//                                            CalibrationXAndYState.DONE));
+        transitions.add(new StateTransition(CalibrationXAndYState.FINISHED,
+                                            StateTransitionManager.GUIName.BACK,
+                                            CalibrationXAndYState.DONE,
+                                            CalibrationXAndYState.FAILED));
+
+        // FAILED
+        transitions.add(new StateTransition(CalibrationXAndYState.FAILED,
+                                            StateTransitionManager.GUIName.BACK,
+                                            CalibrationXAndYState.DONE,
+                                            CalibrationXAndYState.DONE));
 
     }
 
