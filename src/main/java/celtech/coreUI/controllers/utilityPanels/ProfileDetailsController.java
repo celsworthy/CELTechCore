@@ -989,6 +989,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         settingsToUpdate.setSupportInterfaceNozzle(supportInterfaceNozzleChoice.getSelectionModel().getSelectedIndex());
 
         //Support tab
+        settingsToUpdate.setGenerateSupportMaterial(supportMaterialEnabled.isSelected());
         settingsToUpdate.setSupportInterfaceNozzle(supportInterfaceNozzleChoice.getSelectionModel().getSelectedIndex());
         settingsToUpdate.setSupportOverhangThreshold_degrees(supportOverhangThreshold.intValueProperty().get());
         settingsToUpdate.setForcedSupportForFirstNLayers(forcedSupportLayers.intValueProperty().get());
