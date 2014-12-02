@@ -78,6 +78,7 @@ public class SlicerTask extends Task<SliceResult>
         String configLoadCommand = "";
         String combinedConfigSection = "";
         String verboseOutputCommand = "";
+        String progressOutputCommand = "";
         
         if (settings.getSlicerOverride() != null)
         {
@@ -99,6 +100,7 @@ public class SlicerTask extends Task<SliceResult>
                 linuxSlicerCommand = "Cura/CuraEngine";
                 verboseOutputCommand = "-v";
                 configLoadCommand = "-c";
+                progressOutputCommand = "-p";
                 combinedConfigSection = configLoadCommand + " " + configFile;
                 break;
         }
@@ -118,6 +120,8 @@ public class SlicerTask extends Task<SliceResult>
                     + " "
                     + verboseOutputCommand
                     + " "
+                    + progressOutputCommand
+                    + " "
                     + combinedConfigSection
                     + " -o "
                     + tempGcodeFilename
@@ -136,6 +140,8 @@ public class SlicerTask extends Task<SliceResult>
                     + " "
                     + verboseOutputCommand
                     + " "
+                    + progressOutputCommand
+                    + " "
                     + combinedConfigSection
                     + " -o "
                     + tempGcodeFilename
@@ -146,6 +152,7 @@ public class SlicerTask extends Task<SliceResult>
             case MAC:
                 commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + macSlicerCommand);
                 commands.add(verboseOutputCommand);
+                commands.add(progressOutputCommand);
                 commands.add(configLoadCommand);
                 commands.add(configFile);
                 commands.add("-o");
@@ -156,6 +163,7 @@ public class SlicerTask extends Task<SliceResult>
             case LINUX_X64:
                 commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + linuxSlicerCommand);
                 commands.add(verboseOutputCommand);
+                commands.add(progressOutputCommand);
                 commands.add(configLoadCommand);
                 commands.add(configFile);
                 commands.add("-o");
@@ -180,10 +188,10 @@ public class SlicerTask extends Task<SliceResult>
             {
                 slicerProcess = slicerProcessBuilder.start();
                 // any error message?
-                StreamGobbler errorGobbler = new StreamGobbler(slicerProcess.getErrorStream(), "ERROR");
+                SlicerOutputGobbler errorGobbler = new SlicerOutputGobbler(this, slicerProcess.getErrorStream(), "ERROR", slicerType);
 
                 // any output?
-                SlicerOutputGobbler outputGobbler = new SlicerOutputGobbler(this, slicerProcess.getInputStream(), "OUTPUT");
+                SlicerOutputGobbler outputGobbler = new SlicerOutputGobbler(this, slicerProcess.getInputStream(), "OUTPUT", slicerType);
 
                 // kick them off
                 errorGobbler.start();
