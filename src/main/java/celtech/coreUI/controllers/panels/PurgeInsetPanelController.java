@@ -125,6 +125,8 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
 
         if (project != null && purgeCompletedOK)
         {
+            final Project projectCopy = project;
+            
             Platform.runLater(new Runnable()
             {
                 @Override
@@ -136,7 +138,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                         .masthead(null)
                         .message(DisplayManager.getLanguageBundle().getString("dialogs.clearBedInstruction"))
                         .showWarning();
-                    printerToUse.printProject(project, filament, printQuality, settings);
+                    printerToUse.printProject(projectCopy, filament, printQuality, settings);
                 }
             });
 

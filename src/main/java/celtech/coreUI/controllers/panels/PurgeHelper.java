@@ -191,6 +191,7 @@ public class PurgeHelper
                                                                                    savedHeadData.getNozzle2BOffset(),
                                                                                    reelNozzleTemperature,
                                                                                    savedHeadData.getHeadHours());
+                    printerToUse.transmitReadHeadEEPROM();
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in purge - mode=" + state.name());
