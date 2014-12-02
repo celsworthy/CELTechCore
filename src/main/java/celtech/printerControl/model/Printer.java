@@ -153,6 +153,8 @@ public interface Printer extends RoboxResponseConsumer
     public PrinterIdentity getPrinterIdentity();
 
     public void goToOpenDoorPosition(TaskResponder responder) throws PrinterException;
+    
+    public void goToOpenDoorPositionDontWait(TaskResponder responder) throws PrinterException;
 
     public void goToTargetBedTemperature();
 

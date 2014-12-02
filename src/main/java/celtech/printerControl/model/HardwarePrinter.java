@@ -1541,6 +1541,48 @@ public final class HardwarePrinter implements Printer
 
         return success;
     }
+    
+    @Override
+    public void goToOpenDoorPositionDontWait(TaskResponder responder) throws PrinterException
+    {
+        if (!canOpenDoor.get())
+        {
+            throw new PrintActionUnavailableException("Door open not available");
+        }
+
+        setPrinterStatus(PrinterStatus.OPENING_DOOR);
+
+        final Cancellable cancellable = new Cancellable();
+
+        new Thread(() ->
+        {
+            boolean success = doOpenLidActivityDontWait(cancellable);
+
+            if (responder != null)
+            {
+                Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Door open don't wait");
+            }
+
+            setPrinterStatus(PrinterStatus.IDLE);
+
+        }, "Opening door don't wait").start();
+    }
+
+    private boolean doOpenLidActivityDontWait(Cancellable cancellable)
+    {
+        boolean success = false;
+        try
+        {
+            transmitDirectGCode(GCodeConstants.goToOpenDoorPositionDontWait, false);
+            PrinterUtils.waitOnBusy(this, cancellable);
+            success = true;
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error when moving sending open door command");
+        }
+
+        return success;
+    }
 
     @Override
     public void updatePrinterName(String chosenPrinterName) throws PrinterException

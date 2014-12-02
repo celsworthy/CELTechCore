@@ -1980,3 +1980,9 @@ table-view .column-header-background {
 #registrationTitle {
     -fx-font-size: 32px;
 }
+
+
+.notification-bar .text {
+    -fx-font-size: 16px;
+    -fx-font-family: 'Source Sans Pro Regular';
+}
