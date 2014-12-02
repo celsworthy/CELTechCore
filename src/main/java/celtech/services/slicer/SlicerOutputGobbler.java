@@ -92,6 +92,23 @@ class SlicerOutputGobbler extends Thread
                         {
                             String task = lineParts[1];
                             int progressInt = Integer.valueOf(lineParts[2]);
+                            
+                            if (task.equalsIgnoreCase("inset"))
+                            {
+                                progressInt = (int)(((double)progressInt / 100) * 25);
+                            }
+                            else if (task.equalsIgnoreCase("skin"))
+                            {
+                                progressInt = (int)(((double)progressInt / 100) * 25) + 25;                                
+                            }
+                            else if (task.equalsIgnoreCase("export"))
+                            {
+                                progressInt = (int)(((double)progressInt / 100) * 49) + 50;                                
+                            }
+                            else if (task.equalsIgnoreCase("process"))
+                            {
+                                progressInt = (int)(((double)progressInt / 100) * 1) + 99;                                
+                            }
                             setLoadProgress(task, progressInt);
                         }
                     }
