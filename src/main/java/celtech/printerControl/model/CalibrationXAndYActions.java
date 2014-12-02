@@ -43,18 +43,18 @@ public class CalibrationXAndYActions
     public void doPrintPattern() throws PrinterException, RoboxCommsException, InterruptedException
     {
         Thread.sleep(3000);
-        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
+//        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
 //        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_XY_offset_roboxised"), true);
-        PrinterUtils.waitOnMacroFinished(printer, cancellable);
+//        PrinterUtils.waitOnMacroFinished(printer, cancellable);
     }
 
     public void doSaveSettingsAndPrintCircle() throws PrinterException, InterruptedException
     {
         saveSettings();
-//        Thread.sleep(3000);
-        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
+        Thread.sleep(3000);
+//        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
 //        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_XY_offset_roboxised"), true);
-        PrinterUtils.waitOnMacroFinished(printer, cancellable);
+//        PrinterUtils.waitOnMacroFinished(printer, cancellable);
     }
 
     public void doFinishedAction() throws PrinterException

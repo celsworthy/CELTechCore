@@ -8,7 +8,6 @@ import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
@@ -411,6 +410,12 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     firmwareUpgradeOK,
                     firmwareUpgradeNotOK
                 );
+                
+//                firmwareUpgradeDialog.getDialogPane().getStylesheets().add(ApplicationConfiguration.getDialogsCSSFile());
+//                firmwareUpgradeDialog.getDialogPane().getStyleClass().add("dialog-commands");
+//                firmwareUpgradeDialog.getDialogPane().setStyle("-fx-wrap-text: true; -fx-font-size: 13px; -fx-font-family: 'Source Sans Pro Regular';");
+//                firmwareUpgradeDialog.getDialogPane().setStyle(
+//                    ".dialog > .dialog-pane > .button-bar { -fx-font-size: 0.5em;} .dialog:header > .dialog-pane .header-panel .label {-fx-font-family: 'Source Sans Pro Regular'; -fx-font-size: 0.5em; -fx-wrap-text: true;}");
                 firmwareUpgradeDialog.setTitle(Lookup.i18n("dialogs.firmwareUpgradeTitle"));
                 firmwareUpgradeDialog.setContentText(Lookup.i18n("dialogs.firmwareVersionError1")
                     + actualFirmwareVersion

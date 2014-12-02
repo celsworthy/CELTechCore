@@ -1360,7 +1360,7 @@ table-view .column-header-background {
  * Standard dialogues
  */
 
-.modal-dialogue{
+modal-dialogue{
     -fx-background-color: mid_grey;
 }
 
@@ -1981,8 +1981,16 @@ table-view .column-header-background {
     -fx-font-size: 32px;
 }
 
+/**
+* The notification bar that appears at the bottom right,
+* see notificationpopup.css from NotificationBar.java jar
+*/ 
 
 .notification-bar .text {
-    -fx-font-size: 16px;
+    -fx-font-size: 14px;
     -fx-font-family: 'Source Sans Pro Regular';
+}
+
+.notification-bar .label {
+    -fx-wrap-text: true;
 }
