@@ -192,6 +192,12 @@ public final class HardwarePrinter implements Printer
         extruders.add(firstExtruderNumber, new Extruder(firstExtruderLetter));
         extruders.add(secondExtruderNumber, new Extruder(secondExtruderLetter));
 
+        extruders.stream().forEach(extruder -> extruder.canEject
+            .bind(printerStatus
+                .isEqualTo(PrinterStatus.IDLE)
+                .and(extruder.isFitted)
+                .and(extruder.filamentLoaded)));
+
         canPrint.bind(head.isNotNull()
             .and(printerStatus.isEqualTo(PrinterStatus.IDLE))
             .and(extruders.get(firstExtruderNumber).filamentLoaded.or(extruders.get(secondExtruderNumber).filamentLoaded)));
@@ -1858,7 +1864,7 @@ public final class HardwarePrinter implements Printer
     @Override
     public void ejectFilament(int extruderNumber, TaskResponder responder) throws PrinterException
     {
-        if (extruderNumber >= extruders.size())
+        if (!extruders.get(extruderNumber).isFitted.get())
         {
             throw new PrintActionUnavailableException("Extruder " + extruderNumber
                 + " is not present");

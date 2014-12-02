@@ -48,6 +48,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
 
     private Stenographer steno = StenographerFactory.getStenographer(DummyPrinterCommandInterface.class.getName());
 
+    private final String defaultRoboxAttachCommand = "DEFAULT";
     private final String attachHeadCommand = "ATTACH HEAD ";
     private final String detachHeadCommand = "DETACH HEAD";
     private final String attachReelCommand = "ATTACH REEL ";
@@ -160,41 +161,23 @@ public class DummyPrinterCommandInterface extends CommandInterface
             GCodeDataResponse gcodeResponse = (GCodeDataResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.GCODE_RESPONSE);
 
             String messageData = request.getMessageData().trim();
-            if (messageData.startsWith(attachHeadCommand))
+            if (messageData.startsWith(defaultRoboxAttachCommand))
+            {
+                gcodeResponse.setMessagePayload("Adding single material head, 1 extruder loaded with orange PLA to dummy printer");
+                attachExtruder(0);
+                attachHead("RBX01-SM");
+                attachReel("RBX-PLA-OR022", 0);
+                currentStatus.setFilament1SwitchStatus(true);
+            } else if (messageData.startsWith(attachHeadCommand))
             {
                 String headName = messageData.replaceAll(attachHeadCommand, "");
-                HeadFile headData = HeadContainer.getHeadByID(headName);
-
-                if (headData != null)
+                boolean headAttached = attachHead(headName);
+                if (headAttached)
                 {
-                    currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
-                    attachedHead = new Head(headData);
                     gcodeResponse.setMessagePayload("Adding head " + headName + " to dummy printer");
-                } else if (headName.equalsIgnoreCase("BLANK"))
-                {
-                    currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
-                    attachedHead = new Head();
-                    gcodeResponse.setMessagePayload("Adding blank head to dummy printer");
-                } else if (headName.equalsIgnoreCase("UNFORMATTED"))
-                {
-                    currentStatus.setHeadEEPROMState(EEPROMState.NOT_PROGRAMMED);
-                    attachedHead = new Head();
-                    gcodeResponse.setMessagePayload("Adding unformatted head to dummy printer");
-                } else if (headName.equalsIgnoreCase("BADTYPE"))
-                {
-                    currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
-                    attachedHead = new Head();
-                    attachedHead.typeCodeProperty().set("WRONG");
-                    gcodeResponse.setMessagePayload("Adding head with invalid type code to dummy printer");
-                } else if (headName.equalsIgnoreCase("UNREAL"))
-                {
-                    currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
-                    attachedHead = new Head();
-                    attachedHead.typeCodeProperty().set("RBX01-??");
-                    gcodeResponse.setMessagePayload("Adding head with valid but unknown type code to dummy printer");
                 } else
                 {
-                    gcodeResponse.setMessagePayload("Didn't recognise head name - " + headName);
+                    gcodeResponse.setMessagePayload("Couldn't add head " + headName + " to dummy printer");
                 }
             } else if (messageData.startsWith(detachHeadCommand))
             {
@@ -204,49 +187,28 @@ public class DummyPrinterCommandInterface extends CommandInterface
                 RoboxCommsManager.getInstance().removeDummyPrinter(portName);
             } else if (messageData.startsWith(attachReelCommand))
             {
-                String[] attachReelElements = messageData.replaceAll(attachReelCommand, "").trim().split(" ");
+                boolean attachSuccess = false;
+                String filamentName = "";
 
+                String[] attachReelElements = messageData.replaceAll(attachReelCommand, "").trim().split(" ");
                 if (attachReelElements.length == 2)
                 {
-                    String filamentName = attachReelElements[0];
+                    filamentName = attachReelElements[0];
                     int reelNumber = Integer.valueOf(attachReelElements[1]);
+                    attachSuccess = attachReel(filamentName, reelNumber);
+                }
 
-                    Filament filament = FilamentContainer.getFilamentByID(filamentName);
-                    if (filament != null)
-                    {
-                        switch (reelNumber)
-                        {
-                            case 0:
-                                currentStatus.setReel0EEPROMState(EEPROMState.PROGRAMMED);
-                                break;
-                            case 1:
-                                currentStatus.setReel1EEPROMState(EEPROMState.PROGRAMMED);
-                                break;
-                        }
-                        attachedReels[reelNumber] = new Reel();
-                        attachedReels[reelNumber].updateContents(filament);
-                        gcodeResponse.setMessagePayload("Adding reel " + filamentName + " to dummy printer");
-                    } else
-                    {
-                        gcodeResponse.setMessagePayload("Didn't recognise filament name - " + filamentName);
-                    }
+                if (attachSuccess)
+                {
+                    gcodeResponse.setMessagePayload("Adding reel " + filamentName + " to dummy printer");
                 } else
                 {
-                    gcodeResponse.setMessagePayload("Wrong number of arguments");
+                    gcodeResponse.setMessagePayload("Couldn't attach reel - " + filamentName);
                 }
             } else if (messageData.equalsIgnoreCase(detachReelCommand))
             {
                 int reelNumber = Integer.valueOf(messageData.replaceAll(attachHeadCommand, "").trim());
-                switch (reelNumber)
-                {
-                    case 0:
-                        currentStatus.setReel0EEPROMState(EEPROMState.NOT_PRESENT);
-                        break;
-                    case 1:
-                        currentStatus.setReel1EEPROMState(EEPROMState.NOT_PRESENT);
-                        break;
-                }
-                attachedReels[reelNumber] = null;
+                detachReel(reelNumber);
             } else if (messageData.startsWith(goToPrintLineCommand))
             {
                 String printJobLineNumberString = messageData.replaceAll(goToPrintLineCommand, "");
@@ -260,9 +222,11 @@ public class DummyPrinterCommandInterface extends CommandInterface
                 switch (extruderNumberString)
                 {
                     case "0":
+                        attachExtruder(0);
                         currentStatus.setFilament1SwitchStatus(true);
                         break;
                     case "1":
+                        attachExtruder(1);
                         currentStatus.setFilament2SwitchStatus(true);
                         break;
                 }
@@ -371,6 +335,44 @@ public class DummyPrinterCommandInterface extends CommandInterface
         return response;
     }
 
+    private void detachReel(int reelNumber)
+    {
+        switch (reelNumber)
+        {
+            case 0:
+                currentStatus.setReel0EEPROMState(EEPROMState.NOT_PRESENT);
+                break;
+            case 1:
+                currentStatus.setReel1EEPROMState(EEPROMState.NOT_PRESENT);
+                break;
+        }
+        attachedReels[reelNumber] = null;
+    }
+
+    private boolean attachReel(String filamentName, int reelNumber) throws NumberFormatException
+    {
+        boolean success = false;
+
+        Filament filament = FilamentContainer.getFilamentByID(filamentName);
+        if (filament != null && reelNumber >= 0 && reelNumber <= 2)
+        {
+            switch (reelNumber)
+            {
+                case 0:
+                    currentStatus.setReel0EEPROMState(EEPROMState.PROGRAMMED);
+                    break;
+                case 1:
+                    currentStatus.setReel1EEPROMState(EEPROMState.PROGRAMMED);
+                    break;
+            }
+            attachedReels[reelNumber] = new Reel();
+            attachedReels[reelNumber].updateContents(filament);
+            success = true;
+        }
+
+        return success;
+    }
+
     @Override
     protected boolean connectToPrinter(String commsPortName)
     {
@@ -382,6 +384,83 @@ public class DummyPrinterCommandInterface extends CommandInterface
     protected void disconnectSerialPort()
     {
         steno.info("Dummy printer disconnected");
+    }
+
+    private boolean attachHead(String headName)
+    {
+        boolean success = false;
+        HeadFile headData = HeadContainer.getHeadByID(headName);
+
+        if (headData != null)
+        {
+            currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
+            attachedHead = new Head(headData);
+            success = true;
+        } else if (headName.equalsIgnoreCase("BLANK"))
+        {
+            currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
+            attachedHead = new Head();
+            success = true;
+        } else if (headName.equalsIgnoreCase("UNFORMATTED"))
+        {
+            currentStatus.setHeadEEPROMState(EEPROMState.NOT_PROGRAMMED);
+            attachedHead = new Head();
+            success = true;
+        } else if (headName.equalsIgnoreCase("BADTYPE"))
+        {
+            currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
+            attachedHead = new Head();
+            attachedHead.typeCodeProperty().set("WRONG");
+            success = true;
+        } else if (headName.equalsIgnoreCase("UNREAL"))
+        {
+            currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
+            attachedHead = new Head();
+            attachedHead.typeCodeProperty().set("RBX01-??");
+            success = true;
+        }
+
+        return success;
+    }
+
+    private boolean attachExtruder(int extruderNumber)
+    {
+        boolean success = false;
+
+        switch (extruderNumber)
+        {
+            case 0:
+                currentStatus.setExtruderEPresent(true);
+                success = true;
+                break;
+            case 1:
+                currentStatus.setExtruderDPresent(true);
+                success = true;
+                break;
+            default:
+        }
+
+        return success;
+    }
+
+    private boolean detachExtruder(int extruderNumber)
+    {
+        boolean success = false;
+
+        switch (extruderNumber)
+        {
+            case 0:
+                currentStatus.setExtruderEPresent(false);
+                success = true;
+                break;
+            case 1:
+                currentStatus.setExtruderDPresent(false);
+                success = true;
+                break;
+            default:
+        }
+
+        return success;
     }
 
     private void setPrintLine(int printLineNumber)

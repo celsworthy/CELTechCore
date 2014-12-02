@@ -727,9 +727,7 @@ public class PrinterStatusPageController implements Initializable
 
                         //TODO modify for multiple extruders
                         ejectReelButton.visibleProperty().bind(
-                            selectedPrinter.extrudersProperty().get(0).filamentLoadedProperty()
-                            .and(selectedPrinter.printerStatusProperty()
-                                .isNotEqualTo(PrinterStatus.PRINTING)));
+                            selectedPrinter.extrudersProperty().get(0).canEjectProperty());
 
                         unlockLidButton.setVisible(true);
                         unlockLidButton.disableProperty().bind(
