@@ -217,6 +217,15 @@ public final class HardwarePrinter implements Printer
             .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
         canSetFilamentInfo.bind(printerStatus.isEqualTo(PrinterStatus.SENDING_TO_PRINTER)
             .or(printerStatus.isEqualTo(PrinterStatus.PRINTING)));
+        
+        canRemoveHead.bind(printerStatus.isEqualTo(PrinterStatus.IDLE));
+        
+        canPurgeHead.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
+            .and(extruders.get(firstExtruderNumber).filamentLoaded.or(extruders.get(secondExtruderNumber).filamentLoaded)));
+
+        canOpenDoor.bind(printerStatus.isEqualTo(PrinterStatus.IDLE));
+        
+        canResume.bind(printerStatus.isEqualTo(PrinterStatus.PAUSED));
 
         threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
         threeDPformatter.setMaximumFractionDigits(3);
@@ -241,9 +250,6 @@ public final class HardwarePrinter implements Printer
             {
                 case IDLE:
                     lastStateBeforePause = null;
-                    canRemoveHead.set(true);
-                    canPurgeHead.set(true);
-                    canResume.set(false);
                     printEngine.goToIdle();
                     break;
                 case REMOVING_HEAD:
@@ -252,38 +258,20 @@ public final class HardwarePrinter implements Printer
                     canResume.set(false);
                     break;
                 case PURGING_HEAD:
-                    canRemoveHead.set(false);
-                    canPurgeHead.set(false);
-                    canResume.set(false);
                     break;
                 case SLICING:
-                    canRemoveHead.set(false);
-                    canPurgeHead.set(false);
-                    canResume.set(false);
                     printEngine.goToSlicing();
                     break;
                 case POST_PROCESSING:
-                    canRemoveHead.set(false);
-                    canPurgeHead.set(false);
-                    canResume.set(false);
                     printEngine.goToPostProcessing();
                     break;
                 case SENDING_TO_PRINTER:
-                    canRemoveHead.set(false);
-                    canPurgeHead.set(false);
-                    canResume.set(false);
                     printEngine.goToSendingToPrinter();
                     break;
                 case PAUSED:
-                    canRemoveHead.set(false);
-                    canPurgeHead.set(false);
-                    canResume.set(true);
                     printEngine.goToPause();
                     break;
                 case PRINTING:
-                    canRemoveHead.set(false);
-                    canPurgeHead.set(false);
-                    canResume.set(false);
                     printEngine.goToPrinting();
                     break;
                 case EXECUTING_MACRO:

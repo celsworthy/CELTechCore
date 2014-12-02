@@ -312,19 +312,42 @@ public class PrinterStatusPageController implements Initializable
     @FXML
     void unlockLid(ActionEvent event)
     {
+        boolean goAheadAndOpenTheDoor = false;
+
         if (printerToUse.getPrinterAncillarySystems().bedTemperatureProperty().get() > 60)
         {
-            boolean goAheadAndOpenTheDoor = Lookup.getSystemNotificationHandler().showOpenDoorDialog();
-
-            if (goAheadAndOpenTheDoor)
+            if (Lookup.getUserPreferences().isOverrideSafeties() == true)
             {
                 try
                 {
-                    printerToUse.goToOpenDoorPosition(null);
+                    printerToUse.goToOpenDoorPositionDontWait(null);
                 } catch (PrinterException ex)
                 {
                     steno.error("Error opening door " + ex.getMessage());
                 }
+            } else
+            {
+                goAheadAndOpenTheDoor = Lookup.getSystemNotificationHandler().showOpenDoorDialog();
+
+                if (goAheadAndOpenTheDoor)
+                {
+                    try
+                    {
+                        printerToUse.goToOpenDoorPosition(null);
+                    } catch (PrinterException ex)
+                    {
+                        steno.error("Error opening door " + ex.getMessage());
+                    }
+                }
+            }
+        } else
+        {
+            try
+            {
+                printerToUse.goToOpenDoorPosition(null);
+            } catch (PrinterException ex)
+            {
+                steno.error("Error opening door " + ex.getMessage());
             }
         }
     }
