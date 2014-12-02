@@ -65,7 +65,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     private GCodeFileParser gcodeParser = new GCodeFileParser();
 
     private Pattern passThroughPattern = Pattern.compile(
-        "\\b(?:M106 S[0-9.]+|M107|G[0-9]{2,}|M[0-9]{2,}|G28 [XYZ]+[0-9]*)(?:[\\s]*;.*)?");
+        "\\b(?:M106 S[0-9.]+|M107|G[0-9]{1,}.*|M[0-9]{2,})(?:[\\s]*;.*)?");
     private Matcher passThroughMatcher = null;
 
     private Pattern removePattern = Pattern.compile(

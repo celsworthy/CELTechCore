@@ -94,7 +94,6 @@ public class GCodeFileParser
                 String comment = null;
 
                 boolean invalidLine = false;
-                boolean passthroughLine = false;
 
                 boolean xPresent = false;
                 double xValue = 0.0;
@@ -112,6 +111,7 @@ public class GCodeFileParser
                 double fValue = 0.0;
 
                 boolean gPresent = false;
+                boolean gCodeEvent = false;
                 int gValue = 0;
 
                 boolean mPresent = false;
@@ -146,7 +146,13 @@ public class GCodeFileParser
                             {
                                 case 'G':
                                     gValue = Integer.valueOf(value);
-                                    gPresent = true;
+                                    if (gValue > 1)
+                                    {
+                                        gCodeEvent = true;
+                                    } else
+                                    {
+                                        gPresent = true;
+                                    }
                                     break;
                                 case 'M':
                                     mPresent = true;
@@ -180,6 +186,11 @@ public class GCodeFileParser
                                     fPresent = true;
                                     fValue = Double.valueOf(value);
                                     break;
+                            }
+
+                            if (gCodeEvent)
+                            {
+                                break;
                             }
                         } else
                         {
@@ -391,7 +402,7 @@ public class GCodeFileParser
                     }
 
                     eventToOutput = event;
-                } else if (comment != null && !passthroughLine)
+                } else if (comment != null && !gCodeEvent)
                 {
                     if (slicerType == SlicerType.Cura)
                     {
