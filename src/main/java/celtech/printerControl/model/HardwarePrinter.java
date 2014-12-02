@@ -253,9 +253,6 @@ public final class HardwarePrinter implements Printer
                     printEngine.goToIdle();
                     break;
                 case REMOVING_HEAD:
-                    canRemoveHead.set(false);
-                    canPurgeHead.set(false);
-                    canResume.set(false);
                     break;
                 case PURGING_HEAD:
                     break;
