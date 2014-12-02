@@ -50,8 +50,7 @@ public class CalibrationNozzleOpeningGUI
     private void showAppropriateButtons(NozzleOpeningCalibrationState state)
     {
         controller.hideAllInputControlsExceptStepNumber();
-        if (state != NozzleOpeningCalibrationState.IDLE && state != NozzleOpeningCalibrationState.FAILED && state
-            != NozzleOpeningCalibrationState.FINISHED)
+        if (state.showCancelButton())
         {
             controller.cancelCalibrationButton.setVisible(true);
         }

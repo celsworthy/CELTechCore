@@ -49,12 +49,16 @@ public class CalibrationXAndYTransitions implements Transitions
         transitions.add(new StateTransition(CalibrationXAndYState.IDLE,
                                             StateTransitionManager.GUIName.START,
                                             CalibrationXAndYState.PRINT_PATTERN,
+                                            () ->
+                                            {
+                                                actions.doSaveHead();
+                                            },
                                             CalibrationXAndYState.FAILED));
-        
+
         transitions.add(new StateTransition(CalibrationXAndYState.IDLE,
                                             StateTransitionManager.GUIName.BACK,
                                             CalibrationXAndYState.DONE,
-                                            CalibrationXAndYState.FAILED));        
+                                            CalibrationXAndYState.FAILED));
 
         // PRINT PATTERN
         transitions.add(new StateTransition(CalibrationXAndYState.PRINT_PATTERN,
@@ -62,7 +66,7 @@ public class CalibrationXAndYTransitions implements Transitions
                                             CalibrationXAndYState.GET_Y_OFFSET,
                                             () ->
                                             {
-                                                actions.doSaveHeadAndPrintPattern();
+                                                actions.doPrintPattern();
                                             },
                                             CalibrationXAndYState.FAILED));
 
@@ -70,11 +74,6 @@ public class CalibrationXAndYTransitions implements Transitions
         transitions.add(new StateTransition(CalibrationXAndYState.GET_Y_OFFSET,
                                             StateTransitionManager.GUIName.NEXT,
                                             CalibrationXAndYState.PRINT_CIRCLE,
-                                            CalibrationXAndYState.FAILED));
-
-        transitions.add(new StateTransition(CalibrationXAndYState.GET_Y_OFFSET,
-                                            StateTransitionManager.GUIName.RETRY,
-                                            CalibrationXAndYState.PRINT_PATTERN,
                                             CalibrationXAndYState.FAILED));
 
         // PRINT CIRCLE
@@ -91,6 +90,11 @@ public class CalibrationXAndYTransitions implements Transitions
         transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE_CHECK,
                                             StateTransitionManager.GUIName.NEXT,
                                             CalibrationXAndYState.FINISHED,
+                                            CalibrationXAndYState.FAILED));
+
+        transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE_CHECK,
+                                            StateTransitionManager.GUIName.RETRY,
+                                            CalibrationXAndYState.PRINT_PATTERN,
                                             CalibrationXAndYState.FAILED));
 
         // FINISHED

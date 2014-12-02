@@ -58,6 +58,13 @@ public enum NozzleOpeningCalibrationState
         this.diagramName = diagramName;
     }
     
+     /**
+     * Return if the cancel button should be show for this state.
+     */
+    public boolean showCancelButton() {
+        return (this != IDLE && this != FAILED && this != FINISHED);
+    }    
+    
     public Optional<URL> getDiagramFXMLFileName() {
         if (diagramName.equals(""))
         {

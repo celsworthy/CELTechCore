@@ -1919,6 +1919,7 @@
                         <Line endX="53.822" endY="275.189" startX="87.766" startY="275.189" stroke="#FFFFFF" />
                         <Line endX="108.32" endY="274.113" startX="142.08" startY="270.565" stroke="#FFFFFF" />
                         <Line endX="53.822" endY="272.551" startX="53.822" startY="275.189" stroke="#FFFFFF" />
+                  <TextField fx:id="BPosition" alignment="CENTER" editable="false" layoutX="30.0" layoutY="370.0" prefColumnCount="6" styleClass="calibrationInfoField" />
                     </children>
                 </Pane>
                 <Pane>
@@ -1998,6 +1999,5 @@
                 </Pane>
             </children>
         </Pane>
-      <TextField fx:id="BPosition" alignment="CENTER" editable="false" layoutX="32.0" layoutY="400.0" prefColumnCount="6" styleClass="calibrationInfoField" />
     </children>
 </Pane>

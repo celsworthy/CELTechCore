@@ -57,9 +57,9 @@ class DiagramController implements Initializable
 
     @FXML
     private TextField fillNozzleLbl;
-    
+
     @FXML
-    private TextField BPosition;    
+    private TextField BPosition;
 
     @FXML
     private HBox xOffsetComboContainer;
@@ -87,7 +87,7 @@ class DiagramController implements Initializable
 
     @FXML
     private Button buttonA;
-    
+
     public void setStateTransitionManager(StateTransitionManager stateTransitionManager)
     {
         this.stateTransitionManager = stateTransitionManager;
@@ -101,7 +101,7 @@ class DiagramController implements Initializable
                 calibrationTextField.setText(String.format("%1.2f", zcoProperty.get()));
             }
             setupZCoListener(zcoProperty);
-        }      
+        }
         if (stateTransitionManager instanceof NozzleOpeningStateTransitionManager)
         {
             ReadOnlyFloatProperty bPositionProperty
@@ -111,8 +111,8 @@ class DiagramController implements Initializable
                 BPosition.setText(String.format("%1.2f", bPositionProperty.get()));
             }
             setupBPositionListener(bPositionProperty);
-        }       
-    }       
+        }
+    }
 
     @FXML
     void buttonAAction(ActionEvent event)
@@ -137,7 +137,7 @@ class DiagramController implements Initializable
     {
         stateTransitionManager.followTransition(StateTransitionManager.GUIName.DOWN);
     }
-    
+
     ChangeListener<Number> zcoListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
         steno.debug("zco listener fired");
@@ -154,16 +154,14 @@ class DiagramController implements Initializable
             }
         }
     };
-    
+
     ChangeListener<Number> bPositionListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
-        steno.debug("bPosition listener fired");
         if (BPosition != null)
         {
-            steno.debug("set bPosition text to " + String.format("%1.2f", newValue));
             BPosition.setText(String.format("%1.2f", newValue));
         }
-    };    
+    };
 
     protected void setupZCoListener(ReadOnlyDoubleProperty zcoProperty)
     {
@@ -175,7 +173,7 @@ class DiagramController implements Initializable
             zcoProperty.addListener(zcoListener);
         }
     }
-    
+
     protected void setupBPositionListener(ReadOnlyFloatProperty bPositionProperty)
     {
         bPositionProperty.removeListener(bPositionListener);
@@ -185,7 +183,7 @@ class DiagramController implements Initializable
             BPosition.setText(String.format("%1.2f", bPositionProperty.get()));
             bPositionProperty.addListener(bPositionListener);
         }
-    }    
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
@@ -223,13 +221,21 @@ class DiagramController implements Initializable
             cmbXOffset.valueProperty().addListener(
                 (ObservableValue observable, Object oldValue, Object newValue) ->
                 {
-                    ((XAndYStateTransitionManager) stateTransitionManager).setXOffset(newValue.toString());
+                    if (stateTransitionManager != null)
+                    {
+                        ((XAndYStateTransitionManager) stateTransitionManager).setXOffset(
+                            newValue.toString());
+                    }
                 });
 
             cmbYOffset.valueProperty().addListener(
                 (ObservableValue observable, Object oldValue, Object newValue) ->
                 {
-                    ((XAndYStateTransitionManager) stateTransitionManager).setYOffset(Integer.parseInt(newValue.toString()));
+                    if (stateTransitionManager != null)
+                    {
+                        ((XAndYStateTransitionManager) stateTransitionManager).setYOffset(
+                            Integer.parseInt(newValue.toString()));
+                    }
                 });
 
             cmbXOffset.setValue("F");
@@ -275,6 +281,11 @@ class DiagramController implements Initializable
             fineNozzleLbl.setScaleY(invertedScale);
             fillNozzleLbl.setScaleX(invertedScale);
             fillNozzleLbl.setScaleY(invertedScale);
+        }
+        
+        if (BPosition != null) {
+            BPosition.setScaleX(invertedScale);
+            BPosition.setScaleY(invertedScale);
         }
     }
 
