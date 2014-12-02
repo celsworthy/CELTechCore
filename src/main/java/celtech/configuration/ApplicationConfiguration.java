@@ -101,6 +101,8 @@ public class ApplicationConfiguration
      *
      */
     private static final String mainCSSFile = cssResourcePath + "JMetroDarkTheme.css";
+    
+    private static final String dialogsCSSFile = cssResourcePath + "dialogsOverride.css";
 
     /**
      *
@@ -1121,6 +1123,11 @@ public class ApplicationConfiguration
     {
         return ApplicationConfiguration.class.getResource(mainCSSFile).toExternalForm();
     }
+    
+    public static String getDialogsCSSFile()
+    {
+        return ApplicationConfiguration.class.getResource(dialogsCSSFile).toExternalForm();
+    }    
     
      /**
      *
