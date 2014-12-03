@@ -36,7 +36,9 @@ class ChartManager
         ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 5, 0);
     
     private ReadOnlyIntegerProperty nozzleTargetTemperatureProperty;
+    private ReadOnlyIntegerProperty nozzleFirstLayerTargetTemperatureProperty;
     private ReadOnlyIntegerProperty bedTargetTemperatureProperty;
+    private ReadOnlyIntegerProperty bedFirstLayerTargetTemperatureProperty;
     private ReadOnlyIntegerProperty ambientTargetTemperatureProperty;
     private ReadOnlyObjectProperty<HeaterMode> bedHeaterModeProperty;
     private ReadOnlyObjectProperty<HeaterMode> nozzleHeaterModeProperty;
@@ -132,6 +134,24 @@ class ChartManager
         updateBedTargetPoint();
     }
     
+    ChangeListener<Number> bedFirstLayerTargetTemperatureListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+    {
+        updateBedTargetPoint();
+    };    
+    
+    void setTargetBedFirstLayerTemperatureProperty(
+        ReadOnlyIntegerProperty bedFirstLayerTargetTemperatureProperty)
+    {
+        if (this.bedFirstLayerTargetTemperatureProperty != null)
+        {
+            this.bedFirstLayerTargetTemperatureProperty.removeListener(bedTargetTemperatureListener);
+        }
+        this.bedFirstLayerTargetTemperatureProperty = bedFirstLayerTargetTemperatureProperty;
+        
+        bedFirstLayerTargetTemperatureProperty.addListener(bedFirstLayerTargetTemperatureListener);
+        updateBedTargetPoint();
+    }    
+    
     ChangeListener<HeaterMode> bedHeaterModeListener = (ObservableValue<? extends HeaterMode> observable, HeaterMode oldValue, HeaterMode newValue) ->
     {
         updateBedTargetPoint();
@@ -153,7 +173,10 @@ class ChartManager
         if (bedHeaterModeProperty.get() == HeaterMode.OFF)
         {
             bedTargetPoint.setYValue(0);
-        } else
+        } else if (bedHeaterModeProperty.get() == HeaterMode.FIRST_LAYER)
+        {
+            bedTargetPoint.setYValue(bedFirstLayerTargetTemperatureProperty.get());
+        } else if (bedHeaterModeProperty.get() == HeaterMode.NORMAL)
         {
             bedTargetPoint.setYValue(bedTargetTemperatureProperty.get());
         }
@@ -192,15 +215,37 @@ class ChartManager
 
     }   
     
+    ChangeListener<Number> nozzleFirstLayerTargetTemperatureListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+    {
+        updateNozzleTargetPoint();
+    };
+
+    void setTargetFirstLayerNozzleTemperatureProperty(ReadOnlyIntegerProperty nozzleFirstLayerTargetTemperatureProperty)
+    {
+        if (this.nozzleFirstLayerTargetTemperatureProperty != null)
+        {
+            this.nozzleFirstLayerTargetTemperatureProperty.removeListener(nozzleFirstLayerTargetTemperatureListener);
+        }
+        this.nozzleFirstLayerTargetTemperatureProperty = nozzleFirstLayerTargetTemperatureProperty;
+        nozzleFirstLayerTargetTemperatureProperty.addListener(nozzleFirstLayerTargetTemperatureListener);
+        updateNozzleTargetPoint();
+
+    }       
+    
     private void updateNozzleTargetPoint()
     {
-        if (nozzleHeaterModeProperty == null || nozzleTargetTemperatureProperty == null) {
+        if (nozzleHeaterModeProperty == null || nozzleTargetTemperatureProperty == null ||
+            nozzleFirstLayerTargetTemperatureProperty == null) {
             return;
         }
         if (nozzleHeaterModeProperty.get() == HeaterMode.OFF)
         {
             nozzleTargetPoint.setYValue(0);
-        } else
+        } else if (nozzleHeaterModeProperty.get() == HeaterMode.FIRST_LAYER)
+        {
+            nozzleTargetPoint.setYValue(nozzleFirstLayerTargetTemperatureProperty.get());
+        }
+        else
         {
             nozzleTargetPoint.setYValue(nozzleTargetTemperatureProperty.get());
         }

@@ -438,6 +438,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             ancillarySystems.ambientTargetTemperatureProperty());
         chartManager.setBedHeaterModeProperty(ancillarySystems.bedHeaterModeProperty());
         chartManager.setTargetBedTemperatureProperty(ancillarySystems.bedTargetTemperatureProperty());
+        chartManager.setTargetBedFirstLayerTemperatureProperty(ancillarySystems.bedFirstLayerTargetTemperatureProperty());
 
         speedSliderHBox.visibleProperty().bind(printer.canChangeFilamentInfoProperty());
         speedMultiplierSlider.valueProperty().addListener(speedMultiplierListener);
@@ -516,6 +517,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         chartManager.setNozzleData(head.getNozzleHeaters().get(0).getNozzleTemperatureHistory());
         chartManager.setTargetNozzleTemperatureProperty(
             head.getNozzleHeaters().get(0).nozzleTargetTemperatureProperty());
+        chartManager.setTargetFirstLayerNozzleTemperatureProperty(
+            head.getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty());
         chartManager.setNozzleHeaterModeProperty(head.getNozzleHeaters().get(0).heaterModeProperty());
     }
 
