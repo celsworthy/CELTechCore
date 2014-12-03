@@ -22,21 +22,13 @@ public interface SystemNotificationManager
     void showErrorNotification(String title, String message);
 
     /**
-     *
-     * @param requiredFirmwareVersion
-     * @param actualFirmwareVersion
-     * @return True if the user has agreed to downgrade, otherwise false
-     */
-    boolean askUserToDowngradeFirmware(int requiredFirmwareVersion, int actualFirmwareVersion);
-
-    /**
      * Returns 0 for no downgrade and 1 for downgrade
      *
      * @param requiredFirmwareVersion
      * @param actualFirmwareVersion
      * @return True if the user has agreed to upgrade, otherwise false
      */
-    boolean askUserToUpgradeFirmware(int requiredFirmwareVersion, int actualFirmwareVersion);
+    boolean askUserToUpdateFirmware(int requiredFirmwareVersion, int actualFirmwareVersion);
 
     void processErrorPacketFromPrinter(FirmwareError error, Printer printer);
 

@@ -42,33 +42,35 @@ public class CalibrationXAndYActions
 
     public void doPrintPattern() throws PrinterException, RoboxCommsException, InterruptedException
     {
-        Thread.sleep(3000);
+//        Thread.sleep(3000);
 //        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
-//        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_XY_offset_roboxised"), true);
-//        PrinterUtils.waitOnMacroFinished(printer, cancellable);
+        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-1_roboxised"), true);
+        PrinterUtils.waitOnMacroFinished(printer, cancellable);
+        // keep bed temp up to keep remaining part on the bed
+        printer.goToTargetBedTemperature();
     }
 
     public void doSaveSettingsAndPrintCircle() throws PrinterException, InterruptedException
     {
         saveSettings();
-        Thread.sleep(3000);
+//        Thread.sleep(3000);
 //        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
-//        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_XY_offset_roboxised"), true);
-//        PrinterUtils.waitOnMacroFinished(printer, cancellable);
+        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-2_roboxised"), true);
+        PrinterUtils.waitOnMacroFinished(printer, cancellable);
     }
 
     public void doFinishedAction() throws PrinterException
     {
 
         saveSettings();
-        switchHeaterOffAndRaiseHead();
+        switchHeatersOffAndRaiseHead();
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
     public void doFailedAction() throws PrinterException, RoboxCommsException
     {
         restoreHeadData();
-        switchHeaterOffAndRaiseHead();
+        switchHeatersOffAndRaiseHead();
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
@@ -93,8 +95,9 @@ public class CalibrationXAndYActions
         doFailedAction();
     }
 
-    private void switchHeaterOffAndRaiseHead() throws PrinterException
+    private void switchHeatersOffAndRaiseHead() throws PrinterException
     {
+        printer.switchBedHeaterOff();
         printer.switchAllNozzleHeatersOff();
         printer.switchOffHeadLEDs();
         printer.switchToAbsoluteMoveMode();

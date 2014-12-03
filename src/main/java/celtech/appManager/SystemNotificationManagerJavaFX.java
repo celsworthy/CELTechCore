@@ -53,10 +53,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     /*
      * Firmware upgrade dialog
      */
-    protected CommandLinksDialog.CommandLinksButtonType firmwareUpgradeOK = null;
-    protected CommandLinksDialog.CommandLinksButtonType firmwareUpgradeNotOK = null;
-    protected CommandLinksDialog.CommandLinksButtonType firmwareDowngradeOK = null;
-    protected CommandLinksDialog.CommandLinksButtonType firmwareDowngradeNotOK = null;
+    protected CommandLinksDialog.CommandLinksButtonType firmwareUpdateOK = null;
+    protected CommandLinksDialog.CommandLinksButtonType firmwareUpdateNotOK = null;
 
     /*
      * Firmware upgrade progress
@@ -308,77 +306,22 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         switch (result.getStatus())
         {
             case FirmwareLoadResult.SDCARD_ERROR:
-                showErrorNotification(Lookup.i18n("dialogs.firmwareUpgradeFailedTitle"),
+                showErrorNotification(Lookup.i18n("dialogs.firmwareUpdateFailedTitle"),
                                       Lookup.i18n("dialogs.sdCardError"));
                 break;
             case FirmwareLoadResult.FILE_ERROR:
-                showErrorNotification(Lookup.i18n("dialogs.firmwareUpgradeFailedTitle"),
+                showErrorNotification(Lookup.i18n("dialogs.firmwareUpdateFailedTitle"),
                                       Lookup.i18n("dialogs.firmwareFileError"));
                 break;
             case FirmwareLoadResult.OTHER_ERROR:
-                showErrorNotification(Lookup.i18n("dialogs.firmwareUpgradeFailedTitle"),
-                                      Lookup.i18n("dialogs.firmwareUpgradeFailedMessage"));
+                showErrorNotification(Lookup.i18n("dialogs.firmwareUpdateFailedTitle"),
+                                      Lookup.i18n("dialogs.firmwareUpdateFailedMessage"));
                 break;
             case FirmwareLoadResult.SUCCESS:
-                showInformationNotification(Lookup.i18n("dialogs.firmwareUpgradeSuccessTitle"),
-                                            Lookup.i18n("dialogs.firmwareUpgradeSuccessMessage"));
+                showInformationNotification(Lookup.i18n("dialogs.firmwareUpdateSuccessTitle"),
+                                            Lookup.i18n("dialogs.firmwareUpdateSuccessMessage"));
                 break;
         }
-    }
-
-    /**
-     *
-     * @param requiredFirmwareVersion
-     * @param actualFirmwareVersion
-     * @return True if the user has agreed to downgrade, otherwise false
-     */
-    @Override
-    public boolean askUserToDowngradeFirmware(int requiredFirmwareVersion, int actualFirmwareVersion)
-    {
-        if (firmwareDowngradeOK == null)
-        {
-            firmwareDowngradeOK = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.firmwareDowngradeOKTitle"),
-                                                                                Lookup.i18n("dialogs.firmwareUpgradeOKMessage"),
-                                                                                true);
-            firmwareDowngradeNotOK = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.firmwareDowngradeNotOKTitle"),
-                                                                                   Lookup.i18n("dialogs.firmwareUpgradeNotOKMessage"),
-                                                                                   false);
-        }
-
-        Callable<Boolean> askUserToDowngradeDialog = new Callable()
-        {
-            @Override
-            public Boolean call() throws Exception
-            {
-                CommandLinksDialog firmwareDowngradeDialog = new CommandLinksDialog(
-                    firmwareDowngradeOK,
-                    firmwareDowngradeNotOK
-                );
-                firmwareDowngradeDialog.setTitle(Lookup.i18n("dialogs.firmwareVersionTooLowTitle"));
-                firmwareDowngradeDialog.setContentText(Lookup.i18n(
-                    "dialogs.firmwareVersionError1")
-                    + actualFirmwareVersion
-                    + Lookup.i18n(
-                        "dialogs.firmwareVersionError2")
-                    + requiredFirmwareVersion + ".\n"
-                    + Lookup.i18n(
-                        "dialogs.firmwareVersionError3"));
-                Optional<ButtonType> firmwareDowngradeResponse = firmwareDowngradeDialog.showAndWait();
-
-                return firmwareDowngradeResponse.get() == firmwareDowngradeOK.getButtonType();
-            }
-        };
-        FutureTask<Boolean> askUserToUpgradeTask = new FutureTask<>(askUserToDowngradeDialog);
-        Lookup.getTaskExecutor().runOnGUIThread(askUserToUpgradeTask);
-        try
-        {
-            return askUserToUpgradeTask.get();
-        } catch (InterruptedException | ExecutionException ex)
-        {
-            steno.error("Error during firmware upgrade query");
-            return false;
-        }
-
     }
 
     /**
@@ -386,18 +329,18 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
      *
      * @param requiredFirmwareVersion
      * @param actualFirmwareVersion
-     * @return True if the user has agreed to upgrade, otherwise false
+     * @return True if the user has agreed to update, otherwise false
      */
     @Override
-    public boolean askUserToUpgradeFirmware(int requiredFirmwareVersion, int actualFirmwareVersion)
+    public boolean askUserToUpdateFirmware(int requiredFirmwareVersion, int actualFirmwareVersion)
     {
-        if (firmwareUpgradeOK == null)
+        if (firmwareUpdateOK == null)
         {
-            firmwareUpgradeOK = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.firmwareUpgradeOKTitle"),
-                                                                              Lookup.i18n("dialogs.firmwareUpgradeOKMessage"),
+            firmwareUpdateOK = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.firmwareUpdateOKTitle"),
+                                                                              Lookup.i18n("dialogs.firmwareUpdateOKMessage"),
                                                                               true);
-            firmwareUpgradeNotOK = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.firmwareUpgradeNotOKTitle"),
-                                                                                 Lookup.i18n("dialogs.firmwareUpgradeNotOKMessage"),
+            firmwareUpdateNotOK = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.firmwareUpdateNotOKTitle"),
+                                                                                 Lookup.i18n("dialogs.firmwareUpdateNotOKMessage"),
                                                                                  false);
         }
 
@@ -406,25 +349,19 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             @Override
             public Boolean call() throws Exception
             {
-                CommandLinksDialog firmwareUpgradeDialog = new CommandLinksDialog(
-                    firmwareUpgradeOK,
-                    firmwareUpgradeNotOK
+                CommandLinksDialog firmwareUpdateDialog = new CommandLinksDialog(
+                    firmwareUpdateOK,
+                    firmwareUpdateNotOK
                 );
                 
 //                firmwareUpgradeDialog.getDialogPane().getStylesheets().add(ApplicationConfiguration.getDialogsCSSFile());
 //                firmwareUpgradeDialog.getDialogPane().getStyleClass().add("dialog-commands");
-//                firmwareUpgradeDialog.getDialogPane().setStyle("-fx-wrap-text: true; -fx-font-size: 13px; -fx-font-family: 'Source Sans Pro Regular';");
-//                firmwareUpgradeDialog.getDialogPane().setStyle(
-//                    ".dialog > .dialog-pane > .button-bar { -fx-font-size: 0.5em;} .dialog:header > .dialog-pane .header-panel .label {-fx-font-family: 'Source Sans Pro Regular'; -fx-font-size: 0.5em; -fx-wrap-text: true;}");
-                firmwareUpgradeDialog.setTitle(Lookup.i18n("dialogs.firmwareUpgradeTitle"));
-                firmwareUpgradeDialog.setContentText(Lookup.i18n("dialogs.firmwareVersionError1")
-                    + actualFirmwareVersion
-                    + Lookup.i18n("dialogs.firmwareVersionError2")
-                    + requiredFirmwareVersion + ".\n"
-                    + Lookup.i18n("dialogs.firmwareVersionError3"));
-                Optional<ButtonType> firmwareUpgradeResponse = firmwareUpgradeDialog.showAndWait();
+                firmwareUpdateDialog.getDialogPane().setStyle("-fx-wrap-text: true; -fx-font-size: 13px; -fx-font-family: 'Source Sans Pro Regular';");
+                firmwareUpdateDialog.setTitle(Lookup.i18n("dialogs.firmwareUpdateTitle"));
+                firmwareUpdateDialog.setContentText(Lookup.i18n("dialogs.firmwareUpdateError"));
+                Optional<ButtonType> firmwareUpgradeResponse = firmwareUpdateDialog.showAndWait();
 
-                return firmwareUpgradeResponse.get() == firmwareUpgradeOK.getButtonType();
+                return firmwareUpgradeResponse.get() == firmwareUpdateOK.getButtonType();
             }
         };
         FutureTask<Boolean> askUserToUpgradeTask = new FutureTask<>(askUserToUpgradeDialog);

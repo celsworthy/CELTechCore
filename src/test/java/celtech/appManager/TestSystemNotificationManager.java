@@ -22,7 +22,7 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     }
 
     @Override
-    public boolean askUserToUpgradeFirmware(int requiredFirmwareVersion, int actualFirmwareVersion)
+    public boolean askUserToUpdateFirmware(int requiredFirmwareVersion, int actualFirmwareVersion)
     {
         return false;
     }

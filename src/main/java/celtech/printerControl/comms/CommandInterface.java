@@ -150,28 +150,16 @@ public abstract class CommandInterface extends Thread
                     {
                         firmwareResponse = printerToUse.readFirmwareVersion();
 
-                        if (firmwareResponse.getFirmwareRevisionInt() > requiredFirmwareVersion)
+                       if (firmwareResponse.getFirmwareRevisionInt() != requiredFirmwareVersion)
                         {
-                            //The firmware version is higher than that associated with AutoMaker
-                            // Tell the user to downgrade
+                            // The firmware version is different to that associated with AutoMaker
+                            // Tell the user to update
 
                             steno.warning("Firmware version is "
                                 + firmwareResponse.getFirmwareRevisionInt() + " and should be "
                                 + requiredFirmwareVersion);
 
-                            loadRequiredFirmware = Lookup.getSystemNotificationHandler().askUserToDowngradeFirmware(
-                                requiredFirmwareVersion, firmwareResponse.getFirmwareRevisionInt());
-                        } else if (firmwareResponse.getFirmwareRevisionInt()
-                            < requiredFirmwareVersion)
-                        {
-                            //The firmware version is lower than that associated with AutoMaker
-                            // Tell the user to upgrade
-
-                            steno.warning("Firmware version is "
-                                + firmwareResponse.getFirmwareRevisionInt() + " and should be "
-                                + requiredFirmwareVersion);
-
-                            loadRequiredFirmware = Lookup.getSystemNotificationHandler().askUserToUpgradeFirmware(
+                            loadRequiredFirmware = Lookup.getSystemNotificationHandler().askUserToUpdateFirmware(
                                 requiredFirmwareVersion, firmwareResponse.getFirmwareRevisionInt());
                         }
                         if (loadRequiredFirmware)
