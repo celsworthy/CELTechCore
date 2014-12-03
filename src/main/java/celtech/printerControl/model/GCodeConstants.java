@@ -180,5 +180,5 @@ public class GCodeConstants
     /**
      * Don't wait for safe temp before opening door.
      */
-    protected static final String goToOpenDoorPositionDontWait = "G37";
+    protected static final String goToOpenDoorPositionDontWait = "G37 S";
 }

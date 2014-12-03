@@ -245,7 +245,6 @@ public class CalibrationNozzleHeightActions
     {
         saveSettings();
         switchHeaterOffAndRaiseHead();
-        bringBedToFront();
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
@@ -253,7 +252,7 @@ public class CalibrationNozzleHeightActions
     {
         restoreHeadData();
         switchHeaterOffAndRaiseHead();
-        bringBedToFront();
+        doBringBedToFront();
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
@@ -327,8 +326,8 @@ public class CalibrationNozzleHeightActions
         return zcoGUIT;
     }
 
-    private void bringBedToFront() throws PrinterException
+    public void doBringBedToFront() throws PrinterException
     {
-        printer.goToOpenDoorPosition(null);
+        printer.goToOpenDoorPositionDontWait(null);
     }
 }
