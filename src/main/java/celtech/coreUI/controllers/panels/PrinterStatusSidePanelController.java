@@ -5,7 +5,6 @@ import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.components.printerstatus.PrinterComponent;
-import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.PrinterAncillarySystems;
@@ -27,11 +26,11 @@ import javafx.geometry.Side;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -46,8 +45,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         PrinterStatusSidePanelController.class.getName());
-
-    private final String DOT_GRAPHIC = "● ";
 
     @FXML
     private MaterialComponent material1;
@@ -65,7 +62,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private HBox temperatureChartXLabels;
 
     @FXML
-    private HBox legendContainer;
+    private GridPane legendContainer;
 
     @FXML
     protected LineChart<Number, Number> temperatureChart;
@@ -79,13 +76,13 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private NumberAxis timeAxis;
 
     @FXML
-    private Text legendNozzle;
+    private Label legendNozzle;
 
     @FXML
-    private Text legendBed;
+    private Label legendBed;
 
     @FXML
-    private Text legendAmbient;
+    private Label legendAmbient;
 
     @FXML
     private Slider speedMultiplierSlider;
@@ -193,10 +190,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         temperatureChart.setLegendSide(Side.RIGHT);
 
         temperatureChart.setVisible(false);
-
-        legendNozzle.setText(DOT_GRAPHIC + Lookup.i18n("printerStatus.temperatureGraphNozzleLabel"));
-        legendBed.setText(DOT_GRAPHIC + Lookup.i18n("printerStatus.temperatureGraphBedLabel"));
-        legendAmbient.setText(DOT_GRAPHIC + Lookup.i18n("printerStatus.temperatureGraphAmbientLabel"));
     }
 
     private void initialisePrinterStatusGrid()
@@ -430,9 +423,13 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     {
         PrinterAncillarySystems ancillarySystems = printer.getPrinterAncillarySystems();
         currentAmbientTemperatureHistory = ancillarySystems.getAmbientTemperatureHistory();
+        
+        chartManager.setLegendLabels(legendNozzle, legendBed, legendAmbient);
 
         chartManager.setAmbientData(ancillarySystems.getAmbientTemperatureHistory());
         chartManager.setBedData(ancillarySystems.getBedTemperatureHistory());
+        chartManager.setAmbientTemperatureProperty(ancillarySystems.ambientTemperatureProperty());
+        chartManager.setBedTemperatureProperty(ancillarySystems.bedTemperatureProperty());
 
         chartManager.setTargetAmbientTemperatureProperty(
             ancillarySystems.ambientTargetTemperatureProperty());
@@ -463,6 +460,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         chartManager.clearAmbientData();
         chartManager.clearBedData();
+        chartManager.clearLegendLabels();
         currentAmbientTemperatureHistory = null;
 
         speedSliderHBox.visibleProperty().unbind();
@@ -514,6 +512,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         head.getNozzleHeaters().get(0).getNozzleTemperatureHistory().getData().addListener(
             graphDataPointChangeListener);
 
+        chartManager.setNozzleTemperatureProperty(head.getNozzleHeaters().get(0).nozzleTemperatureProperty());
         chartManager.setNozzleData(head.getNozzleHeaters().get(0).getNozzleTemperatureHistory());
         chartManager.setTargetNozzleTemperatureProperty(
             head.getNozzleHeaters().get(0).nozzleTargetTemperatureProperty());
