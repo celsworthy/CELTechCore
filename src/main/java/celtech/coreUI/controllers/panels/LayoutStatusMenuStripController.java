@@ -13,19 +13,17 @@ import celtech.configuration.DirectoryMemoryProperty;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.components.ProjectTab;
-import celtech.coreUI.components.buttons.GraphicToggleButton;
-import celtech.coreUI.controllers.MyMiniFactoryLoaderController;
+import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
+import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.printerControl.model.Printer;
 import celtech.utils.PrinterUtils;
 import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -33,10 +31,8 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -56,16 +52,16 @@ public class LayoutStatusMenuStripController
     private PrinterUtils printerUtils = null;
     
     @FXML
-    private Button backwardButton;
+    private GraphicButtonWithLabel backwardButton;
     
     @FXML
-    private Button calibrateButton;    
+    private GraphicButtonWithLabel calibrateButton;    
 
     @FXML
-    private Button forwardButton;
+    private GraphicButtonWithLabel forwardButton;
 
     @FXML
-    private Button printButton;
+    private GraphicButtonWithLabel printButton;
 
     @FXML
     private HBox layoutButtonHBox;
@@ -74,19 +70,19 @@ public class LayoutStatusMenuStripController
     private HBox statusButtonHBox;      
 
     @FXML
-    private Button addModelButton;
+    private GraphicButtonWithLabel addModelButton;
 
     @FXML
-    private Button deleteModelButton;
+    private GraphicButtonWithLabel deleteModelButton;
 
     @FXML
-    private Button duplicateModelButton;
+    private GraphicButtonWithLabel duplicateModelButton;
 
     @FXML
-    private Button distributeModelsButton;
+    private GraphicButtonWithLabel distributeModelsButton;
 
     @FXML
-    private GraphicToggleButton snapToGroundButton;
+    private GraphicToggleButtonWithLabel snapToGroundButton;
 
     @FXML
     void forwardPressed(ActionEvent event)
@@ -223,7 +219,7 @@ public class LayoutStatusMenuStripController
     }
 
     @FXML
-    void addMyMiniFactoryModel(ActionEvent event)
+    void addCloudModel(ActionEvent event)
     {
         applicationStatus.modeProperty().set(ApplicationMode.MY_MINI_FACTORY);
 //            miniFactoryController.loadWebData();

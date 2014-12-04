@@ -641,7 +641,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
 //        viewControl.addGCodeParts(gCodeParts);
     }
 
-    /* 
+    /*  
      * GCode display controls
      */
     /**
