@@ -19,8 +19,8 @@
             <right>
                 <HBox alignment="CENTER">
                     <children>
-                        <GraphicButton fx:id="backwardButton" fxmlFileName="backwardButton" onAction="#backwardPressed" />
-                        <GraphicButton fx:id="forwardButton" fxmlFileName="forwardButton" onAction="#forwardPressed" />
+                        <GraphicButtonWithLabel fx:id="backwardButton" fxmlFileName="backwardButton" onAction="#backwardPressed" labelText="%buttonText.back" />
+                        <GraphicButtonWithLabel fx:id="forwardButton" fxmlFileName="forwardButton" onAction="#forwardPressed" labelText="%buttonText.next" />
                     </children>
                     <BorderPane.margin>
                         <Insets right="10.0" />
@@ -30,7 +30,7 @@
             <left>
                 <HBox alignment="CENTER" spacing="5">
                     <children>
-                        <GraphicButton fx:id="cancelButton" fxmlFileName="cancelButton" onAction="#cancelPressed" />
+                        <GraphicButtonWithLabel fx:id="cancelButton" fxmlFileName="cancelButton" onAction="#cancelPressed" labelText="%buttonText.cancel"/>
                     </children>
                     <BorderPane.margin>
                         <Insets left="40.0" />
@@ -40,7 +40,7 @@
             <center>
                 <HBox alignment="CENTER">
                     <children>
-                        <GraphicButton fx:id="addToProjectButton" fxmlFileName="addToProjectButton" onAction="#addToProjectPressed" />
+                        <GraphicButtonWithLabel fx:id="addToProjectButton" fxmlFileName="addToProjectButton" onAction="#addToProjectPressed" labelText="%buttonText.addToProject"/>
                     </children>
                     <BorderPane.margin>
                         <Insets right="10.0" />

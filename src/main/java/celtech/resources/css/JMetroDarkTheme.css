@@ -188,6 +188,11 @@
 /*
  * Borderless button (typically round)
  */
+.graphic-button-label
+{
+    -fx-font-size: 11pt;
+}
+
 .graphic-button {
     -fx-background-color: transparent;
     -fx-padding: -0 -0 -0 -0;
@@ -208,7 +213,6 @@
     -fx-font-weight: bold;
     -fx-font-size: 1.1em;
     -fx-border-color: transparent;
-    -fx-content-display: graphic-only;
     -fx-opacity: 0.4;
 }
 
@@ -219,8 +223,6 @@
     -fx-background-radius: 30;
     -fx-font-weight: bold;
     -fx-font-size: 1.1em;
-    /*-fx-effect: innershadow (three-pass-box, dark_grey, 10, 0, 0, 0);*/
-    /*-fx-border-width: 0;*/
     -fx-opacity: 1.0;
 }
 
@@ -231,13 +233,10 @@
     -fx-font-weight: bold;
     -fx-font-size: 1.1em;
     -fx-background-insets: 2,2 2 2 2, 2 2 2 2, 2 2 2 2;
-    /*-fx-border-width: 0;*/
-    /*-fx-effect: dropshadow(three-pass-box, #ffffff, 10, 0, 0, 0);*/
 }
 .graphic-button:focused {
     -fx-background-insets: 2,2 2 2 2, 2 2 2 2, 2 2 2 2;
     -fx-border-color: transparent;
-    /*-fx-border-width: 0;*/
 }
 
 .toggle-button:selected {

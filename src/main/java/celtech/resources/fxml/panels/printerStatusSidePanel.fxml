@@ -129,18 +129,18 @@
                             </children>
                         </HBox>
                         <HBox fx:id="speedSliderHBox" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" translateX="20.0">
-                                            <children>
-                                                <Label text="%printerStatus.printSpeedMultiplierLabel" textAlignment="RIGHT" />
-                                                <Slider fx:id="speedMultiplierSlider" blockIncrement="0.1" majorTickUnit="0.5" max="1.5" min="0.5" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="1.0">
-                                                    <padding>
-                                                        <Insets left="20.0" right="20.0" />
-                                                    </padding>
-                                                </Slider>
-                                            </children>
-<padding>
-<Insets top="5.0" />
-</padding>
-                                        </HBox>
+                            <children>
+                                <Label text="%printerStatus.printSpeedMultiplierLabel" textAlignment="RIGHT" />
+                                <Slider fx:id="speedMultiplierSlider" blockIncrement="0.1" majorTickUnit="0.5" max="1.5" min="0.5" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="1.0">
+                                    <padding>
+                                        <Insets left="20.0" right="20.0" />
+                                    </padding>
+                                </Slider>
+                            </children>
+                            <padding>
+                                <Insets top="5.0" />
+                            </padding>
+                        </HBox>
                         <HBox fx:id="materialContainer2" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="statusPanelChild" translateX="20.0">
                             <children>
                                 <MaterialComponent fx:id="material2" translateX="10.0" />
@@ -188,6 +188,31 @@
                         </Text>
                     </children>
                 </HBox>
+<<<<<<< HEAD
+                <HBox fx:id="legendContainer" prefHeight="20.0" prefWidth="260.0" style="-fx-background-color: dark_grey;" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0">
+                    <children>
+                        <Text fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="temperatureChartLegend" text="%printerStatus.temperatureGraphKey" translateX="15.0" />
+                        <Text fx:id="legendNozzle" strokeType="OUTSIDE" strokeWidth="0.0" text="● Nozzle" translateX="30.0">
+                            <styleClass>
+                                <String fx:value="graph-red" />
+                                <String fx:value="temperatureChartLegend" />
+                            </styleClass>
+                        </Text>
+                        <Text fx:id="legendBed" strokeType="OUTSIDE" strokeWidth="0.0" text="● Bed" translateX="60.0">
+                            <styleClass>
+                                <String fx:value="graph-yellow" />
+                                <String fx:value="temperatureChartLegend" />
+                            </styleClass>
+                        </Text>
+                        <Text fx:id="legendAmbient" strokeType="OUTSIDE" strokeWidth="0.0" text="● Ambient" translateX="95.0">
+                            <styleClass>
+                                <String fx:value="graph-green" />
+                                <String fx:value="temperatureChartLegend" />
+                            </styleClass>
+                        </Text>
+                    </children>
+                </HBox>
+=======
             <GridPane fx:id="legendContainer" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="23.0" AnchorPane.rightAnchor="0.0">
                <columnConstraints>
                   <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="33.0" />
@@ -218,6 +243,7 @@
                   </Label>
                </children>
             </GridPane>
+>>>>>>> 8c7234753efc894deeb89e0dae1cf561cad2635b
             </children>
         </AnchorPane>
     </children>

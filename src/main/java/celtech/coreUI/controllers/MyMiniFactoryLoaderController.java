@@ -4,6 +4,7 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.buttons.GraphicButton;
+import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.utils.MyMiniFactoryLoadResult;
 import celtech.utils.MyMiniFactoryLoader;
 import celtech.web.AllCookiePolicy;
@@ -53,13 +54,13 @@ public class MyMiniFactoryLoaderController implements Initializable
     private VBox webContentContainer;
 
     @FXML
-    private GraphicButton addToProjectButton;
+    private GraphicButtonWithLabel addToProjectButton;
 
     @FXML
-    private GraphicButton forwardButton;
+    private GraphicButtonWithLabel forwardButton;
 
     @FXML
-    private GraphicButton backwardButton;
+    private GraphicButtonWithLabel backwardButton;
 
     @FXML
     void cancelPressed(ActionEvent event)

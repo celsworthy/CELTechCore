@@ -906,11 +906,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
-    public Locale getUsersLocale()
-    {
-        return usersLocale;
-    }
-
     public PurgeInsetPanelController getPurgeInsetPanelController()
     {
         return (PurgeInsetPanelController) insetPanelControllers.get(ApplicationMode.PURGE);

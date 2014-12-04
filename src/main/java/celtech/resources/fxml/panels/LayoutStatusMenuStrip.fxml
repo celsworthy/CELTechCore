@@ -1,28 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import celtech.coreUI.components.buttons.*?>
-<?import celtech.coreUI.components.buttons.* ?>
 <?import java.lang.*?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.paint.*?>
-<?import javafx.scene.shape.*?>
 
 <BorderPane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="90.0" styleClass="menubar" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.LayoutStatusMenuStripController">
     <right>
         <StackPane>
             <children>
-                <GraphicButton fx:id="forwardButton" fxmlFileName="forwardButton" onAction="#forwardPressed" />
-                <GraphicButton fx:id="printButton" fxmlFileName="printButton" onAction="#printPressed" />
+                <GraphicButtonWithLabel fx:id="forwardButton" fxmlFileName="forwardButton" onAction="#forwardPressed" labelText="%buttonText.toSettings" />
+                <GraphicButtonWithLabel fx:id="printButton" fxmlFileName="printButton" onAction="#printPressed" labelText="%buttonText.make" />
             </children>
         </StackPane>
     </right>
     <left>
       <HBox alignment="CENTER">
          <children>
-              <GraphicButton fx:id="backwardButton" fxmlFileName="backwardButton" onAction="#backwardPressed" />
+              <GraphicButtonWithLabel fx:id="backwardButton" fxmlFileName="backwardButton" onAction="#backwardPressed" labelText="%buttonText.backToStatus" />
          </children>
       </HBox>
     </left>
@@ -33,18 +27,18 @@
                     <children>
                         <HBox fx:id="statusButtonHBox" alignment="CENTER">
                             <children>
-                                <GraphicButton fx:id="calibrateButton" fxmlFileName="calibrateButton" onAction="#calibrate" />
+                                <GraphicButtonWithLabel fx:id="calibrateButton" fxmlFileName="calibrateButton" onAction="#calibrate" labelText="%buttonText.calibrate" />
                                 <GraphicButton fx:id="registrationButton" fxmlFileName="helpButton" onAction="#register" />
                             </children>
                         </HBox>
                         <HBox fx:id="layoutButtonHBox" alignment="CENTER">
                             <children>
-                                <GraphicButton fx:id="addModelButton" fxmlFileName="addToProjectButton" onAction="#addModel" />
-                                <GraphicButton fx:id="addmyMiniFactoryButton" fxmlFileName="loadMyMiniFactoryButton" onAction="#addMyMiniFactoryModel" />
-                                <GraphicButton fx:id="deleteModelButton" fxmlFileName="deleteModelButton" onAction="#deleteModel" />
-                                <GraphicButton fx:id="duplicateModelButton" fxmlFileName="copyModelButton" onAction="#copyModel" />
-                                <GraphicToggleButton id="snapToGroundButton" fx:id="snapToGroundButton" fxmlFileName="snapToGroundButton" onAction="#snapToGround" />
-                                <GraphicButton fx:id="distributeModelsButton" fxmlFileName="layoutModelButton" onAction="#autoLayoutModels" />
+                                <GraphicButtonWithLabel fx:id="addModelButton" fxmlFileName="addToProjectButton" onAction="#addModel" labelText="%buttonText.addModel" />
+                                <GraphicButtonWithLabel fx:id="addCloudModelButton" fxmlFileName="addCloudModelToProjectButton" onAction="#addCloudModel" labelText="%buttonText.addModelFromCloud" />
+                                <GraphicButtonWithLabel fx:id="deleteModelButton" fxmlFileName="deleteModelButton" onAction="#deleteModel" labelText="%buttonText.removeModel" />
+                                <GraphicButtonWithLabel fx:id="duplicateModelButton" fxmlFileName="copyModelButton" onAction="#copyModel" labelText="%buttonText.duplicateModel" />
+                                <GraphicToggleButtonWithLabel id="snapToGroundButton" fx:id="snapToGroundButton" fxmlFileName="snapToGroundButton" onAction="#snapToGround" labelText="%buttonText.layFlat" />
+                                <GraphicButtonWithLabel fx:id="distributeModelsButton" fxmlFileName="layoutModelButton" onAction="#autoLayoutModels" labelText="%buttonText.autoLayout" />
                             </children>
                         </HBox>
                     </children>
