@@ -52,8 +52,6 @@ public class MyMiniFactoryLoaderController implements Initializable
 
     private WebEngine webEngine = null;
 
-    private Spinner spinner = null;
-
     private final StringProperty fileDownloadLocation = new SimpleStringProperty("");
 
     private final String myMiniFactoryURLString = "http://cel-robox.myminifactory.com";
@@ -103,8 +101,6 @@ public class MyMiniFactoryLoaderController implements Initializable
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        spinner = new Spinner();
-
         addToProjectButton.disableProperty().bind(Bindings.equal("", fileDownloadLocation));
 
         loadWebData();
@@ -150,7 +146,7 @@ public class MyMiniFactoryLoaderController implements Initializable
         WebView webView = new WebView();
         VBox.setVgrow(webView, Priority.ALWAYS);
 
-        spinner.startSpinning();
+        DisplayManager.getInstance().startSpinning(webContentContainer);
 
         webEngine = webView.getEngine();
 
@@ -161,11 +157,11 @@ public class MyMiniFactoryLoaderController implements Initializable
                 {
                     case RUNNING:
                         fileDownloadLocation.set("");
-                        spinner.startSpinning();
+                        DisplayManager.getInstance().startSpinning(webContentContainer);
                         break;
                     case SUCCEEDED:
                         fileDownloadLocation.set("");
-                        spinner.stopSpinning();
+                        DisplayManager.getInstance().stopSpinning();
                         Object fileLinkFunction = webEngine
                         .executeScript("window.autoMakerGetFileLink");
                         if (fileLinkFunction instanceof JSObject)
@@ -181,11 +177,11 @@ public class MyMiniFactoryLoaderController implements Initializable
                         break;
                     case CANCELLED:
                         fileDownloadLocation.set("");
-                        spinner.stopSpinning();
+                        DisplayManager.getInstance().stopSpinning();
                         break;
                     case FAILED:
                         fileDownloadLocation.set("");
-                        spinner.stopSpinning();
+                        DisplayManager.getInstance().stopSpinning();
                         break;
                 }
             });
@@ -201,7 +197,7 @@ public class MyMiniFactoryLoaderController implements Initializable
         if (!alreadyDownloading)
         {
             alreadyDownloading = true;
-            spinner.startSpinning();
+            DisplayManager.getInstance().startSpinning(webContentContainer);
 
             MyMiniFactoryLoader loader = new MyMiniFactoryLoader(fileURL);
 
@@ -234,7 +230,7 @@ public class MyMiniFactoryLoaderController implements Initializable
     private void finishedWithEngines()
     {
         alreadyDownloading = false;
-        spinner.stopSpinning();
+        DisplayManager.getInstance().stopSpinning();
     }
 
 }

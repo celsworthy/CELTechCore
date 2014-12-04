@@ -111,11 +111,13 @@ public class CalibrationXAndYTransitions implements Transitions
 
     }
 
+    @Override
     public Set<StateTransition<CalibrationXAndYState>> getTransitions()
     {
         return transitions;
     }
 
+    @Override
     public Map<CalibrationXAndYState, ArrivalAction<CalibrationXAndYState>> getArrivals()
     {
         return arrivals;

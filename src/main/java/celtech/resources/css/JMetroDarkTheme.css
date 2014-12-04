@@ -1020,22 +1020,26 @@
 .graph-red {
     -fx-fill: graph_line_red;
     -fx-font-size: 9;
+    -fx-text-fill: graph_line_red;
 }
 .graph-blue {
     -fx-fill: graph_line_blue;
     -fx-font-size: 9;
+    -fx-text-fill: graph_line_blue;
 }
 .graph-green {
     -fx-fill: graph_line_green;
     -fx-font-size: 9;
+    -fx-text-fill: graph_line_green;
 }
 .graph-yellow {
     -fx-fill: graph_line_yellow;
     -fx-font-size: 9;
+    -fx-text-fill: graph_line_yellow;
 }
 
 .temperatureChartLegend {
-    -fx-font-size: 11px;
+    -fx-font-size: 13px;
     -fx-font-family: 'Source Sans Pro Semibold';
 }
 
