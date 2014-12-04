@@ -1,10 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.components;
 
+import celtech.Lookup;
 import celtech.coreUI.DisplayManager;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
@@ -232,7 +228,7 @@ public class RestrictedNumberField extends TextField
         {
             try
             {
-                Locale usersLocale = DisplayManager.getInstance().getUsersLocale();
+                Locale usersLocale = Lookup.getApplicationEnvironment().getAppLocale();
                 numberFormatter = NumberFormat.getInstance(usersLocale);
             } catch (NoClassDefFoundError ex)
             {
@@ -252,7 +248,7 @@ public class RestrictedNumberField extends TextField
         {
             try
             {
-                decimalSeparator = Character.toString(new DecimalFormatSymbols(DisplayManager.getInstance().getUsersLocale()).getDecimalSeparator());
+                decimalSeparator = Character.toString(new DecimalFormatSymbols(Lookup.getApplicationEnvironment().getAppLocale()).getDecimalSeparator());
             } catch (NoClassDefFoundError ex)
             {
                 //We should only be here if we're being loaded by Scene Builder

@@ -972,11 +972,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
         return Lookup.getApplicationEnvironment().getAppLocale();
     }
 
-    public Locale getUsersLocale()
-    {
-        return usersLocale;
-    }
-
     public PurgeInsetPanelController getPurgeInsetPanelController()
     {
         return (PurgeInsetPanelController) insetPanelControllers.get(ApplicationMode.PURGE);
