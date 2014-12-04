@@ -4,9 +4,9 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.LargeProgress;
-import celtech.coreUI.components.Spinner;
 import static celtech.coreUI.controllers.panels.CalibrationMenuConfiguration.configureCalibrationMenu;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.NozzleHeater;
@@ -138,7 +138,6 @@ public class CalibrationInsetPanelController implements Initializable,
     private double currentExtruderTemperature;
     private int targetETC;
     private double printPercent;
-    private Spinner spinner;
     private Pane diagramNode;
     DiagramController diagramController;
     private final Map<String, Node> nameToNodeCache = new HashMap<>();
@@ -230,7 +229,6 @@ public class CalibrationInsetPanelController implements Initializable,
         this.resources = resources;
 
         setupProgressBars();
-        setupSpinner(informationCentre);
 
         setCalibrationMode(CalibrationMode.CHOICE);
 
@@ -572,42 +570,12 @@ public class CalibrationInsetPanelController implements Initializable,
 
     protected void showSpinner()
     {
-        spinner.startSpinning();
+        DisplayManager.getInstance().startSpinning(informationCentre);
     }
 
     protected void hideSpinner()
     {
-        spinner.stopSpinning();
-    }
-
-    /**
-     * Initialise the spinner and make it remain centred on the given parent.
-     */
-    private void setupSpinner(Pane parent)
-    {
-        spinner = new Spinner();
-
-//        parent.getChildren().add(spinner);
-        parent.widthProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                recentreSpinner(parent);
-            });
-
-        parent.heightProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                recentreSpinner(parent);
-            });
-
-        recentreSpinner(parent);
-        spinner.stopSpinning();
-
-    }
-
-    private void recentreSpinner(Pane parent)
-    {
-        spinner.recentre(parent);
+        DisplayManager.getInstance().stopSpinning();
     }
 
     @Override

@@ -10,6 +10,7 @@ import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.components.SlideoutAndProjectHolder;
+import celtech.coreUI.components.Spinner;
 import celtech.coreUI.components.TopMenuStrip;
 import celtech.coreUI.controllers.InfoScreenIndicatorController;
 import celtech.coreUI.controllers.PrinterStatusPageController;
@@ -44,7 +45,6 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
@@ -57,6 +57,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -70,7 +71,7 @@ import libertysystems.stenographer.StenographerFactory;
 public class DisplayManager implements EventHandler<KeyEvent>
 {
 
-    private static Stenographer steno = StenographerFactory.getStenographer(
+    private static final Stenographer steno = StenographerFactory.getStenographer(
         DisplayManager.class.getName());
     private static ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
     private static ProjectManager projectManager = ProjectManager.getInstance();
@@ -79,7 +80,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
     private static Stage mainStage = null;
     private static Scene scene = null;
 
-    private static AnchorPane root = null;
     private HBox mainHolder = null;
     private StackPane sidePanelContainer = null;
     private AnchorPane modeSelectionControl = null;
@@ -99,10 +99,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
     private static Tab addPageTab = null;
     private Tab lastLayoutTab = null;
 
-    private HashMap<String, SidePanelManager> sidePanelControllerCache = new HashMap<>();
-    private HashMap<String, HBox> sidePanelCache = new HashMap<>();
-    private HashMap<String, Initializable> slideoutPanelControllerCache = new HashMap<>();
-    private HashMap<String, HBox> slideoutPanelCache = new HashMap<>();
+    private final HashMap<String, SidePanelManager> sidePanelControllerCache = new HashMap<>();
+    private final HashMap<String, HBox> sidePanelCache = new HashMap<>();
+    private final HashMap<String, Initializable> slideoutPanelControllerCache = new HashMap<>();
+    private final HashMap<String, HBox> slideoutPanelCache = new HashMap<>();
 
     /*
      * Project loading
@@ -111,7 +111,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
     /*
      * Mesh Model loading
      */
-    private ModelLoaderService modelLoaderService = new ModelLoaderService();
+    private final ModelLoaderService modelLoaderService = new ModelLoaderService();
     private ProgressDialog modelLoadDialog = null;
 
     /*
@@ -154,6 +154,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
     };
 
     private boolean captureKeys = false;
+    
+    private StackPane rootStack;
+    private Pane spinnerContainer;
+    private Spinner spinner;
 
     private DisplayManager()
     {
@@ -316,6 +320,23 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         return instance;
     }
+    
+    /**
+     * Show the spinner, and keep it centred on the given region.
+     */
+    public void startSpinning(Region centreRegion) {
+        spinner.setVisible(true);
+        spinner.startSpinning();
+        spinner.setCentreNode(centreRegion);
+    }
+    
+    /**
+     * Stop and hide the spinner.
+     */
+    public void stopSpinning() {
+        spinner.setVisible(false);
+        spinner.stopSpinning();
+    }    
 
     /**
      *
@@ -331,15 +352,18 @@ public class DisplayManager implements EventHandler<KeyEvent>
             "application.title")
             + " - " + ApplicationConfiguration.getApplicationVersion());
 
-        root = new AnchorPane();
+        rootStack = new StackPane();
+        
+        spinnerContainer = new Pane();
+        spinnerContainer.setMouseTransparent(true);
+        spinner = new Spinner();
+        spinnerContainer.getChildren().add(spinner);
+        
         mainHolder = new HBox();
-        AnchorPane.setBottomAnchor(mainHolder, 0.0);
-        AnchorPane.setLeftAnchor(mainHolder, 0.0);
-        AnchorPane.setRightAnchor(mainHolder, 0.0);
-        AnchorPane.setTopAnchor(mainHolder, 0.0);
-
         mainHolder.setPrefSize(-1, -1);
-        root.getChildren().add(mainHolder);
+        
+        rootStack.getChildren().add(mainHolder);
+        rootStack.getChildren().add(spinnerContainer);
 
         // Load in all of the side panels
         for (ApplicationMode mode : ApplicationMode.values())
@@ -484,7 +508,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         projectLoader = new ProjectLoader();
 
-        scene = new Scene(root, ApplicationConfiguration.DEFAULT_WIDTH,
+        scene = new Scene(rootStack, ApplicationConfiguration.DEFAULT_WIDTH,
                           ApplicationConfiguration.DEFAULT_HEIGHT);
 
         scene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
@@ -500,7 +524,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         loadProjectsAtStartup();
 
-        root.layout();
+//        mainHolder.layout();
     }
 
     private void setupPanelsForMode(ApplicationMode mode)
@@ -636,63 +660,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
         return Lookup.getApplicationEnvironment().getLanguageBundle();
     }
 
-    private void addGCode(Group gCodeParts)
-    {
-//        viewControl.addGCodeParts(gCodeParts);
-    }
-
-    /* 
-     * GCode display controls
-     */
-    /**
-     *
-     * @param equalsIgnoreCase
-     */
-    public void showGCodeTravel(boolean equalsIgnoreCase)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    /**
-     *
-     * @param equalsIgnoreCase
-     */
-    public void showGCodeRetracts(boolean equalsIgnoreCase)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    /**
-     *
-     * @param equalsIgnoreCase
-     */
-    public void showGCodeSupport(boolean equalsIgnoreCase)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    /**
-     *
-     * @param intValue
-     * @param i
-     */
-    public void changeVisibleGCodeLayers(int intValue, int i)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    /*
-    
-     */
-    /**
-     *
-     * @return
-     */
-    public ObservableList<String> gcodeFileLinesProperty()
-    {
-        return gcodeFileLines;
-    }
-
     /**
      *
      * @param value
@@ -700,33 +667,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
     public final void setLayersInGCode(int value)
     {
         layersInGCode.set(value);
-    }
-
-    /**
-     *
-     * @return
-     */
-    public final int getLayersInGCode()
-    {
-        return layersInGCode.get();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public final IntegerProperty layersInGCodeProperty()
-    {
-        return layersInGCode;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public final BooleanProperty noGCodeLoadedProperty()
-    {
-        return noGCodeLoaded;
     }
 
     /**
@@ -965,11 +905,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
         {
             slideoutAndProjectHolder.startSlidingOut();
         }
-    }
-
-    public Locale getApplicationLocale()
-    {
-        return Lookup.getApplicationEnvironment().getAppLocale();
     }
 
     public Locale getUsersLocale()

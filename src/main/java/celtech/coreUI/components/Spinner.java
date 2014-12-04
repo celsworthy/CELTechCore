@@ -1,26 +1,18 @@
 package celtech.coreUI.components;
 
-import celtech.configuration.ApplicationConfiguration;
-import celtech.coreUI.DisplayManager;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.animation.AnimationTimer;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
-import javafx.scene.Node;
-import javafx.scene.Scene;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import libertysystems.stenographer.Stenographer;
-import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -29,23 +21,16 @@ import libertysystems.stenographer.StenographerFactory;
 public class Spinner extends StackPane implements Initializable
 {
     
-    private final Stenographer steno = StenographerFactory.getStenographer(
-        Spinner.class.getName());
-
     @FXML
     private SVGPath outerArcs;
 
     @FXML
     private SVGPath innerArcs;
 
-    private Stage stage = null;
     private AnimationTimer timer = null;
 
     public Spinner()
     {
-        stage = new Stage(StageStyle.TRANSPARENT);
-
-        stage.setResizable(false);
 
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
             "/celtech/resources/fxml/components/spinner.fxml"));
@@ -56,16 +41,10 @@ public class Spinner extends StackPane implements Initializable
 
         try
         {
-            StackPane fxmlParent = fxmlLoader.load();
+            fxmlLoader.load();
             scaleXProperty().set(0.5);
             scaleYProperty().set(0.5);
 
-            Scene scene = new Scene(fxmlParent, Color.TRANSPARENT);
-            scene.getStylesheets().clear();
-            scene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
-            stage.setScene(scene);
-            stage.initOwner(DisplayManager.getMainStage());
-            stage.initModality(Modality.NONE);
         } catch (IOException exception)
         {
             throw new RuntimeException(exception);
@@ -77,12 +56,10 @@ public class Spinner extends StackPane implements Initializable
     public void startSpinning()
     {
         timer.start();
-        stage.show();
     }
 
     public void stopSpinning()
     {
-        stage.hide();
         timer.stop();
     }
 
@@ -107,26 +84,31 @@ public class Spinner extends StackPane implements Initializable
             }
         };
     }
-
-    public void recentre(Stage stageToCentreOn)
-    {
-//        steno.info("Stage x " + stageToCentreOn.xProperty().get());
-//        steno.info("Stage y " + stageToCentreOn.yProperty().get());
-//        steno.info("Stage w " + stageToCentreOn.widthProperty().get());
-//        steno.info("Stage h " + stageToCentreOn.heightProperty().get());
-        
-        stage.setX(stageToCentreOn.getX() + stageToCentreOn.getWidth() / 2 - stage.getWidth() / 2);
-        stage.setY(stageToCentreOn.getY() + stageToCentreOn.getHeight() / 2 - stage.getHeight() / 2);
-    }
     
-    public void recentre(Node nodeToCentreOn)
-    {
-        Bounds nodeBounds = nodeToCentreOn.getBoundsInLocal();
+    private void recentreSpinner(Region region) {
+        Bounds nodeBounds = region.getBoundsInLocal();
         double centreX = nodeBounds.getMinX() + nodeBounds.getWidth() / 2.0;
         double centreY = nodeBounds.getMinY() + nodeBounds.getHeight()/ 2.0;
-        Point2D nodeCentreInScene = nodeToCentreOn.localToScene(centreX, centreY);
-        stage.setX(nodeCentreInScene.getX());
-        stage.setY(nodeCentreInScene.getY());
+        Point2D nodeCentreInScene = region.localToScene(centreX, centreY);
+        Point2D spinnerCentreInScene = localToScene(getWidth() / 2.0, getHeight() / 2.0);
+        setTranslateX(getTranslateX() + nodeCentreInScene.getX() - spinnerCentreInScene.getX());
+        setTranslateY(getTranslateY() + nodeCentreInScene.getY() - spinnerCentreInScene.getY());
     }
 
+    public void setCentreNode(Region centreNode)
+    {
+        centreNode.widthProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                recentreSpinner(centreNode);
+            });
+
+        centreNode.heightProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                recentreSpinner(centreNode);
+            });    
+        
+        recentreSpinner(centreNode);
+    }
 }

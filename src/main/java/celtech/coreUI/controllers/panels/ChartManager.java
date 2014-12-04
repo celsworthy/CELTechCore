@@ -12,7 +12,6 @@ import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
@@ -297,14 +296,23 @@ class ChartManager
         if (legendBed != null && bedTemperatureProperty != null)
         {
             legendBedText += String.format(" %s%s", bedTemperatureProperty.get(), degreesC);
-        } 
+        }
         if (legendAmbient != null && ambientTemperatureProperty != null)
         {
             legendAmbientText += String.format(" %s%s", ambientTemperatureProperty.get(), degreesC);
-        }            
-        legendNozzle.setText(legendNozzleText);
-        legendBed.setText(legendBedText);
-        legendAmbient.setText(legendAmbientText);
+        }
+        if (legendNozzle != null)
+        {
+            legendNozzle.setText(legendNozzleText);
+        }
+        if (legendBed != null)
+        {
+            legendBed.setText(legendBedText);
+        }
+        if (legendAmbient != null)
+        {
+            legendAmbient.setText(legendAmbientText);
+        }
     }
 
     InvalidationListener nozzleTemperatureListener = (Observable observable) ->
@@ -322,7 +330,7 @@ class ChartManager
         nozzleTemperatureProperty.addListener(nozzleTemperatureListener);
         updateLegend();
     }
-    
+
     InvalidationListener bedTemperatureListener = (Observable observable) ->
     {
         updateLegend();
@@ -337,8 +345,8 @@ class ChartManager
         this.bedTemperatureProperty = bedTemperatureProperty;
         bedTemperatureProperty.addListener(bedTemperatureListener);
         updateLegend();
-    }    
-    
+    }
+
     InvalidationListener ambientTemperatureListener = (Observable observable) ->
     {
         updateLegend();
@@ -353,6 +361,6 @@ class ChartManager
         this.ambientTemperatureProperty = ambientTemperatureProperty;
         ambientTemperatureProperty.addListener(ambientTemperatureListener);
         updateLegend();
-    }      
+    }
 
 }
