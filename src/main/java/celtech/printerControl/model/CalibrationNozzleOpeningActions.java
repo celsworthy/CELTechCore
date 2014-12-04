@@ -13,6 +13,7 @@ import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.comms.events.ErrorConsumer;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
+import celtech.utils.tasks.TaskExecutor.NoArgsConsumer;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.property.FloatProperty;
@@ -43,6 +44,7 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
 
     private final Cancellable cancellable = new Cancellable();
     private boolean errorsConsumed = false;
+    private boolean errorOccurred = true;
 
     public CalibrationNozzleOpeningActions(Printer printer)
     {
@@ -60,14 +62,33 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
             });
     }
     
+    private void wrapInPrinterErrorCheck(NoArgsConsumer action, NoArgsConsumer continueHandler,
+        NoArgsConsumer abortHandler, NoArgsConsumer retryHandler) throws Exception {
+        errorOccurred = false;
+        List<FirmwareError> errors = new ArrayList<>();
+        errors.add(FirmwareError.ALL_ERRORS);
+        
+        ErrorConsumer errorConsumer = (FirmwareError error) ->
+        {
+            errorOccurred = true;
+        };
+        printer.registerErrorConsumer(errorConsumer, errors);
+        
+        action.run();
+        printer.deregisterErrorConsumer(errorConsumer);
+        
+        if (errorOccurred) {
+            throw new CalibrationException("Printer errors were detected");
+        }
+        
+    }
     
+    public void doHeatingActionHandled() throws Exception {
+        wrapInPrinterErrorCheck(this::doHeatingAction, null, null, null);
+    }
 
     public void doHeatingAction() throws RoboxCommsException, PrinterException, InterruptedException, CalibrationException
     {
-        List<FirmwareError> errors = new ArrayList<>();
-        errors.add(FirmwareError.ALL_ERRORS);
-        printer.registerErrorConsumer(this, errors);
-        errorsConsumed = false;
         printer.inhibitHeadIntegrityChecks(true);
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_OPENING);
 
@@ -94,10 +115,11 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
             printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("Home_all"), true);
             if (PrinterUtils.waitOnMacroFinished(printer, cancellable) == false)
             {
+                printer.goToTargetNozzleTemperature();
                 printer.goToZPosition(50);
                 if (PrinterUtils.waitOnBusy(printer, cancellable) == false)
                 {
-                    printer.goToTargetNozzleTemperature();
+                    
 //                                if (printer.headProperty().get().getNozzleHeaters().size() < 1) {
 //                                    
 //                                }
@@ -124,10 +146,6 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
                 } 
             } 
         }
-        printer.deregisterErrorConsumer(this);
-        if (errorsConsumed) {
-            throw new CalibrationException("Firmware errors were detected");
-        }
     }
 
     public void doNoMaterialCheckAction()
@@ -137,16 +155,17 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
     
     public void doT0Extrusion() throws PrinterException {
         printer.selectNozzle(0);
-        printer.openNozzleFully();
+        printer.openNozzleFullyExtra();
         printer.sendRawGCode("G1 E10 F300", false);
         PrinterUtils.waitOnBusy(printer, cancellable);
     }
     
     public void doT1Extrusion() throws PrinterException {
         printer.selectNozzle(1);
-        printer.openNozzleFully();
-        printer.sendRawGCode("G1 E10 F600", false);
+        printer.openNozzleFullyExtra();
+        printer.sendRawGCode("G1 E15 F600", false);
         PrinterUtils.waitOnBusy(printer, cancellable);
+        printer.closeNozzleFully();
     }      
 
     public void doPreCalibrationPrimingFine() throws RoboxCommsException

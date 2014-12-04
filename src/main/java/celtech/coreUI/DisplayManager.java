@@ -114,18 +114,11 @@ public class DisplayManager implements EventHandler<KeyEvent>
     private ProgressDialog modelLoadDialog = null;
 
     /*
-     * GCode model loading
-     */
-    private final ObservableList<String> gcodeFileLines = FXCollections.observableArrayList();
-    /*
      * GCode-related
      */
     private final IntegerProperty layersInGCode = new SimpleIntegerProperty(0);
-    private final BooleanProperty noGCodeLoaded = new SimpleBooleanProperty(true);
 
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
-
-    private Locale usersLocale = null;
 
     private static final String addDummyPrinterCommand = "AddDummy";
 
@@ -160,8 +153,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private DisplayManager()
     {
-        usersLocale = Locale.getDefault();
-
         modelLoadDialog = new ProgressDialog(modelLoaderService);
 
         modelLoaderService.setOnSucceeded((WorkerStateEvent t) ->
@@ -263,7 +254,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
             ProjectTab projectTab = null;
 
-            //Create a tab if one doesnt already exist
+            //Create a tab if one doesn't already exist
             if (tabDisplay.getTabs().size() <= 1)
             {
                 projectTab = new ProjectTab(this, tabDisplay.widthProperty(),

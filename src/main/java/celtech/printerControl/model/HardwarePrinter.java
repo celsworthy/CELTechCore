@@ -2009,6 +2009,19 @@ public final class HardwarePrinter implements Printer
             throw new PrinterException("Error whilst sending nozzle open command");
         }
     }
+    
+    @Override
+    public void openNozzleFullyExtra() throws PrinterException
+    {
+        try
+        {
+            transmitDirectGCode(GCodeConstants.openNozzleExtra, true);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error sending open nozzle command");
+            throw new PrinterException("Error whilst sending nozzle open command");
+        }
+    }    
 
     @Override
     public void closeNozzleFully() throws PrinterException

@@ -192,7 +192,17 @@ public interface Printer extends RoboxResponseConsumer
 
     public void jogAxis(AxisSpecifier axis, float distance, float feedrate, boolean use_G1) throws PrinterException;
 
+    /**
+     * Opens the nozzle to the B1 position.
+     * @throws PrinterException 
+     */
     public void openNozzleFully() throws PrinterException;
+    
+    /**
+     * Opens the nozzle to the B2 position.
+     * @throws PrinterException 
+     */
+    public void openNozzleFullyExtra() throws PrinterException;
 
     public void pause() throws PrinterException;
 

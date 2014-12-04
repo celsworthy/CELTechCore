@@ -136,6 +136,11 @@ public class GCodeConstants
      *
      */
     protected static final String openNozzle = "G0 B1";
+    
+    /**
+     *
+     */
+    protected static final String openNozzleExtra = "G0 B2";
 
     /**
      *
