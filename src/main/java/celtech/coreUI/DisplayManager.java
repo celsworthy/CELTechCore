@@ -73,8 +73,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
         DisplayManager.class.getName());
-    private static ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
-    private static ProjectManager projectManager = ProjectManager.getInstance();
+    private static final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
+    private static final ProjectManager projectManager = ProjectManager.getInstance();
 
     private static DisplayManager instance = null;
     private static Stage mainStage = null;
@@ -82,7 +82,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private HBox mainHolder = null;
     private StackPane sidePanelContainer = null;
-    private AnchorPane modeSelectionControl = null;
     private final HashMap<ApplicationMode, Pane> insetPanels = new HashMap<>();
     private final HashMap<ApplicationMode, HBox> sidePanels = new HashMap<>();
     private final HashMap<ApplicationMode, HBox> slideOutPanels = new HashMap<>();
