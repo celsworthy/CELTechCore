@@ -47,7 +47,7 @@ public class CalibrationXAndYActions
         printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-1_roboxised"), true);
         PrinterUtils.waitOnMacroFinished(printer, cancellable);
         // keep bed temp up to keep remaining part on the bed
-        printer.goToTargetBedTemperature();
+//        printer.goToTargetBedTemperature();
     }
 
     public void doSaveSettingsAndPrintCircle() throws PrinterException, InterruptedException
