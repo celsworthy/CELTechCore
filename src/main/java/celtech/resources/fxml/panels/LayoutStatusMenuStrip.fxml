@@ -55,8 +55,8 @@
                                 <GraphicButtonWithLabel fx:id="homeButton" fxmlFileName="homeAxesButton" onAction="#homeAll" labelText="%buttonText.home" />
                                 <GraphicButtonWithLabel fx:id="removeHeadButton" fxmlFileName="removeHeadButton" onAction="#removeHead" labelText="%buttonText.removeHead" />
                                 <GraphicToggleButtonWithLabel fx:id="headFanButton" fxmlFileName="headFanButton" onAction="#toggleHeadFan" labelText="%buttonText.headFan" />
-                                <GraphicToggleButtonWithLabel fx:id="headLightsButton" fxmlFileName="lightsButton" onAction="#toggleHeadLights" labelText="%buttonText.headLights" />
-                                <GraphicToggleButtonWithLabel fx:id="ambientLightsButton" fxmlFileName="lightsButton" onAction="#toggleAmbientLights" labelText="%buttonText.ambientLights" />
+                                <GraphicButtonWithLabel fx:id="headLightsButton" fxmlFileName="lightsButton" onAction="#toggleHeadLights" labelText="%buttonText.headLights" />
+                                <GraphicButtonWithLabel fx:id="ambientLightsButton" fxmlFileName="lightsButton" onAction="#toggleAmbientLights" labelText="%buttonText.ambientLights" />
                             </children>
                         </HBox>
                         <HBox fx:id="layoutButtonHBox" alignment="CENTER">

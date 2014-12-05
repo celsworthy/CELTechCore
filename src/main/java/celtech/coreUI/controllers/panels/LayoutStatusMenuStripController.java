@@ -21,8 +21,11 @@ import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.printerControl.PrinterStatus;
+import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
+import celtech.printerControl.model.Reel;
+import celtech.utils.PrinterListChangesListener;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.TaskResponse;
 import java.io.File;
@@ -32,6 +35,10 @@ import java.util.ListIterator;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -46,7 +53,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class LayoutStatusMenuStripController
+public class LayoutStatusMenuStripController implements PrinterListChangesListener
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(LayoutStatusMenuStripController.class.getName());
@@ -58,6 +65,9 @@ public class LayoutStatusMenuStripController
     private PrinterUtils printerUtils = null;
     private PrinterColourMap colourMap = PrinterColourMap.getInstance();
     private ChangeListener<Color> printerColourChangeListener = null;
+
+    //Temporary - until the firmware indicates selected nozzle
+    private IntegerProperty currentNozzle = new SimpleIntegerProperty(0);
 
     @FXML
     private GraphicButtonWithLabel backwardFromSettingsButton;
@@ -79,12 +89,12 @@ public class LayoutStatusMenuStripController
 
     @FXML
     private GraphicButtonWithLabel ejectFilamentButton;
-    
+
     @FXML
     private GraphicButtonWithLabel fineNozzleButton;
 
     @FXML
-    private  GraphicButtonWithLabel fillNozzleButton;
+    private GraphicButtonWithLabel fillNozzleButton;
 
     @FXML
     private GraphicButtonWithLabel openNozzleButton;
@@ -102,10 +112,10 @@ public class LayoutStatusMenuStripController
     private GraphicToggleButtonWithLabel headFanButton;
 
     @FXML
-    private  GraphicToggleButtonWithLabel headLightsButton;
+    private GraphicButtonWithLabel headLightsButton;
 
     @FXML
-    private GraphicToggleButtonWithLabel ambientLightsButton;
+    private GraphicButtonWithLabel ambientLightsButton;
 
     @FXML
     private GraphicButtonWithLabel printButton;
@@ -361,6 +371,7 @@ public class LayoutStatusMenuStripController
         try
         {
             currentPrinter.selectNozzle(0);
+            currentNozzle.set(0);
         } catch (PrinterException ex)
         {
             steno.error("Error when selecting nozzle 0" + ex.getMessage());
@@ -373,6 +384,7 @@ public class LayoutStatusMenuStripController
         try
         {
             currentPrinter.selectNozzle(1);
+            currentNozzle.set(1);
         } catch (PrinterException ex)
         {
             steno.error("Error when selecting nozzle 1" + ex.getMessage());
@@ -513,6 +525,12 @@ public class LayoutStatusMenuStripController
     }
 
     private Printer currentPrinter = null;
+    private final BooleanProperty printerAvailable = new SimpleBooleanProperty(false);
+
+    private final ChangeListener<Boolean> headFanStatusListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+    {
+        headFanButton.setSelected(newValue);
+    };
 
     /*
      * JavaFX initialisation method
@@ -529,12 +547,14 @@ public class LayoutStatusMenuStripController
         backwardFromSettingsButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS));
 
         printButton.setVisible(false);
-        calibrateButton.setDisable(true);
+        statusButtonHBox.setVisible(false);
 
         Lookup.getCurrentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
         {
             if (newValue != null)
             {
+                printerAvailable.set(true);
+
                 if (currentPrinter != null)
                 {
                     unlockDoorButton.disableProperty().unbind();
@@ -544,28 +564,22 @@ public class LayoutStatusMenuStripController
                     openNozzleButton.visibleProperty().unbind();
                     closeNozzleButton.visibleProperty().unbind();
                     homeButton.disableProperty().unbind();
-                    headFanButton.disableProperty().unbind();
+                    currentPrinter.getPrinterAncillarySystems().headFanOnProperty().removeListener(headFanStatusListener);
                     headLightsButton.disableProperty().unbind();
                     ambientLightsButton.disableProperty().unbind();
-                    calibrateButton.disableProperty().unbind();                    
+                    calibrateButton.disableProperty().unbind();
                 }
-                
-                unlockDoorButton.disableProperty().bind(newValue.canOpenDoorProperty());
-                ejectFilamentButton.disableProperty().bind(newValue.extrudersProperty().get(0).canEjectProperty());
-//                fineNozzleButton.visibleProperty().bind(newValue.);
-                
-                
-//                                            //TODO modify for multiple extruders
-//        ejectReelButton().bind(
-//            selectedPrinter.extrudersProperty().get(0).canEjectProperty());
-//
-//        unlockLidButton.setVisible(true);
-//        unlockLidButton.disableProperty().bind(
-//            selectedPrinter.getPrinterAncillarySystems().lidOpenProperty().or(
-//                selectedPrinter.printerStatusProperty().
-//                isNotEqualTo(PrinterStatus.IDLE)));
 
+                unlockDoorButton.disableProperty().bind(newValue.canOpenDoorProperty().not());
+                ejectFilamentButton.disableProperty().bind(newValue.extrudersProperty().get(0).canEjectProperty().not());
+                fineNozzleButton.visibleProperty().bind(currentNozzle.isEqualTo(1));
+                fillNozzleButton.visibleProperty().bind(currentNozzle.isEqualTo(0));
+                homeButton.disableProperty().bind(newValue.canPrintProperty());
+                newValue.getPrinterAncillarySystems().headFanOnProperty().addListener(headFanStatusListener);
                 calibrateButton.disableProperty().bind(newValue.canCalibrateHeadProperty().not());
+            } else
+            {
+                printerAvailable.set(false);
             }
         });
 
@@ -585,7 +599,8 @@ public class LayoutStatusMenuStripController
             }
         });
 
-        statusButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.STATUS));
+        statusButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.STATUS)
+            .and(printerAvailable));
         layoutButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LAYOUT));
         modelFileChooser.setTitle(DisplayManager.getLanguageBundle().getString("dialogs.modelFileChooser"));
         modelFileChooser.getExtensionFilters().addAll(
@@ -596,6 +611,8 @@ public class LayoutStatusMenuStripController
 
         forwardButtonSettings.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LAYOUT));
         forwardButtonLayout.visibleProperty().bind((applicationStatus.modeProperty().isEqualTo(ApplicationMode.STATUS)));
+
+        Lookup.getPrinterListChangesNotifier().addListener(this);
     }
 
     /**
@@ -647,5 +664,49 @@ public class LayoutStatusMenuStripController
                 }
             };
         viewManager.layoutSubmodeProperty().addListener(whenSubModeChanges);
+    }
+
+    @Override
+    public void whenPrinterAdded(Printer printer)
+    {
+    }
+
+    @Override
+    public void whenPrinterRemoved(Printer printer)
+    {
+    }
+
+    @Override
+    public void whenHeadAdded(Printer printer)
+    {
+        if (printer == currentPrinter)
+        {
+            openNozzleButton.visibleProperty().bind(printer.headProperty().get().bPositionProperty().lessThan(0.5));
+            closeNozzleButton.visibleProperty().bind(printer.headProperty().get().bPositionProperty().greaterThan(0.5));
+        }
+    }
+
+    @Override
+    public void whenHeadRemoved(Printer printer, Head head)
+    {
+        openNozzleButton.visibleProperty().unbind();
+        openNozzleButton.setVisible(false);
+        closeNozzleButton.visibleProperty().unbind();
+        closeNozzleButton.setVisible(false);
+    }
+
+    @Override
+    public void whenReelAdded(Printer printer, int reelIndex)
+    {
+    }
+
+    @Override
+    public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
+    {
+    }
+
+    @Override
+    public void whenReelChanged(Printer printer, Reel reel)
+    {
     }
 }

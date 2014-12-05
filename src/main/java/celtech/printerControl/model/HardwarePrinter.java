@@ -225,8 +225,7 @@ public final class HardwarePrinter implements Printer
         canPurgeHead.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
             .and(extruders.get(firstExtruderNumber).filamentLoaded.or(extruders.get(secondExtruderNumber).filamentLoaded)));
         
-        canOpenDoor.bind((printerStatus.isEqualTo(PrinterStatus.IDLE).and(printerAncillarySystems.bedTemperatureProperty().lessThan(safeBedTemperatureForOpeningDoor)))
-            .or(printerStatus.isEqualTo(PrinterStatus.IDLE).and(Lookup.getUserPreferences().overrideSafetiesProperty())));
+        canOpenDoor.bind(printerStatus.isEqualTo(PrinterStatus.IDLE));
         
         canResume.bind(printerStatus.isEqualTo(PrinterStatus.PAUSED));
         
@@ -2442,6 +2441,7 @@ public final class HardwarePrinter implements Printer
                                         statusResponse.getBPosition()));
                         }
                         
+                        head.get().BPosition.set(statusResponse.getBPosition());
                         head.get().headXPosition.set(statusResponse.getHeadXPosition());
                         head.get().headYPosition.set(statusResponse.getHeadYPosition());
                         head.get().headZPosition.set(statusResponse.getHeadZPosition());
