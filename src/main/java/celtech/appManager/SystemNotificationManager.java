@@ -76,11 +76,15 @@ public interface SystemNotificationManager
     
     boolean showApplicationUpgradeDialog(String applicationName);
 
-    public boolean showPurgeDialog();
+    public PurgeResponse showPurgeDialog();
 
     public boolean showJobsTransferringShutdownDialog();
 
     public void showProgramInvalidHeadDialog(TaskResponder<HeadFile> taskResponse);
 
     public void showHeadNotRecognisedDialog(String printerName);
+
+    public void showCantPrintNoFilamentDialog();
+
+    public void showCantPrintDoorIsOpenDialog();
 }

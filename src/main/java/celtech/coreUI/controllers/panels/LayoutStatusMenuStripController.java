@@ -8,6 +8,7 @@ import celtech.appManager.ProjectMode;
 import static celtech.appManager.ProjectMode.GCODE;
 import static celtech.appManager.ProjectMode.MESH;
 import static celtech.appManager.ProjectMode.NONE;
+import celtech.appManager.PurgeResponse;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
 import celtech.configuration.PrinterColourMap;
@@ -164,19 +165,32 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         Project currentProject = DisplayManager.getInstance().getCurrentlyVisibleProject();
 
-        boolean purgeConsent = printerUtils.offerPurgeIfNecessary(printer);
-        applicationStatus.setMode(ApplicationMode.STATUS);
-
-        if (purgeConsent)
+        //TODO modify for multiple extruders
+        if (!printer.extrudersProperty().get(0).filamentLoadedProperty().get())
         {
-            displayManager.getPurgeInsetPanelController().purgeAndPrint(currentProject, settingsScreenState.getFilament(),
-                                                                        settingsScreenState.getPrintQuality(),
-                                                                        settingsScreenState.getSettings(), printer);
+            Lookup.getSystemNotificationHandler().showCantPrintNoFilamentDialog();
+        } else if (printer.getPrinterAncillarySystems().lidOpenProperty().get()
+            && !Lookup.getUserPreferences().isOverrideSafeties())
+        {
+            Lookup.getSystemNotificationHandler().showCantPrintDoorIsOpenDialog();
         } else
         {
-            printer.printProject(currentProject, settingsScreenState.getFilament(),
-                                 settingsScreenState.getPrintQuality(),
-                                 settingsScreenState.getSettings());
+            PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer);
+
+            if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
+            {
+                displayManager.getPurgeInsetPanelController().purgeAndPrint(currentProject, settingsScreenState.getFilament(),
+                                                                            settingsScreenState.getPrintQuality(),
+                                                                            settingsScreenState.getSettings(), printer);
+                applicationStatus.setMode(ApplicationMode.STATUS);
+            } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE)
+            {
+                currentPrinter.resetPurgeTemperature();
+                printer.printProject(currentProject, settingsScreenState.getFilament(),
+                                     settingsScreenState.getPrintQuality(),
+                                     settingsScreenState.getSettings());
+                applicationStatus.setMode(ApplicationMode.STATUS);
+            }
         }
     }
 
@@ -547,6 +561,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         backwardFromSettingsButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS));
 
         printButton.setVisible(false);
+        printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS));
+
         statusButtonHBox.setVisible(false);
 
         Lookup.getCurrentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
@@ -563,20 +579,30 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     fillNozzleButton.visibleProperty().unbind();
                     openNozzleButton.visibleProperty().unbind();
                     closeNozzleButton.visibleProperty().unbind();
+                    fineNozzleButton.disableProperty().unbind();
+                    fillNozzleButton.disableProperty().unbind();
+                    openNozzleButton.disableProperty().unbind();
+                    closeNozzleButton.disableProperty().unbind();
                     homeButton.disableProperty().unbind();
                     currentPrinter.getPrinterAncillarySystems().headFanOnProperty().removeListener(headFanStatusListener);
                     headLightsButton.disableProperty().unbind();
                     ambientLightsButton.disableProperty().unbind();
                     calibrateButton.disableProperty().unbind();
+                    removeHeadButton.disableProperty().unbind();
                 }
 
                 unlockDoorButton.disableProperty().bind(newValue.canOpenDoorProperty().not());
                 ejectFilamentButton.disableProperty().bind(newValue.extrudersProperty().get(0).canEjectProperty().not());
                 fineNozzleButton.visibleProperty().bind(currentNozzle.isEqualTo(1));
                 fillNozzleButton.visibleProperty().bind(currentNozzle.isEqualTo(0));
-                homeButton.disableProperty().bind(newValue.canPrintProperty());
+                fineNozzleButton.disableProperty().bind(newValue.canPrintProperty().not());
+                fillNozzleButton.disableProperty().bind(newValue.canPrintProperty().not());
+                openNozzleButton.disableProperty().bind(newValue.canPrintProperty().not());
+                closeNozzleButton.disableProperty().bind(newValue.canPrintProperty().not());
+                homeButton.disableProperty().bind(newValue.canPrintProperty().not());
                 newValue.getPrinterAncillarySystems().headFanOnProperty().addListener(headFanStatusListener);
                 calibrateButton.disableProperty().bind(newValue.canCalibrateHeadProperty().not());
+                removeHeadButton.disableProperty().bind(newValue.canPrintProperty().not());
             } else
             {
                 printerAvailable.set(false);
@@ -592,8 +618,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     printButton.disableProperty().unbind();
 
                 }
-                printButton.disableProperty().bind(applicationStatus.modeProperty().isNotEqualTo(
-                    ApplicationMode.SETTINGS).or(newValue.canPrintProperty().not()));
+                printButton.disableProperty().bind(newValue.canPrintProperty().not());
 
                 currentPrinter = newValue;
             }

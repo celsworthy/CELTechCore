@@ -64,6 +64,8 @@ public interface Printer extends RoboxResponseConsumer
      */
     public ReadOnlyBooleanProperty canPurgeHeadProperty();
 
+    public void resetPurgeTemperature();
+
     /**
      * Calibrate head
      */

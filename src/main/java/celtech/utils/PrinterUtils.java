@@ -6,6 +6,7 @@
 package celtech.utils;
 
 import celtech.Lookup;
+import celtech.appManager.PurgeResponse;
 import celtech.appManager.TaskController;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
@@ -296,20 +297,15 @@ public class PrinterUtils
      * @param printer
      * @return
      */
-    public boolean offerPurgeIfNecessary(Printer printer)
+    public PurgeResponse offerPurgeIfNecessary(Printer printer)
     {
-        boolean purgeConsent = false;
+        PurgeResponse purgeConsent = PurgeResponse.NOT_NECESSARY;
         if (isPurgeNecessary(printer) && purgeDialogVisible == false)
         {
             purgeDialogVisible = true;
 
-            boolean goForPurge = Lookup.getSystemNotificationHandler().showPurgeDialog();
+            purgeConsent = Lookup.getSystemNotificationHandler().showPurgeDialog();
             
-
-            if (goForPurge)
-            {
-                purgeConsent = true;
-            }
             purgeDialogVisible = false;
         }
 

@@ -201,8 +201,7 @@ public final class HardwarePrinter implements Printer
                 .and(extruder.filamentLoaded)));
         
         canPrint.bind(head.isNotNull()
-            .and(printerStatus.isEqualTo(PrinterStatus.IDLE))
-            .and(extruders.get(firstExtruderNumber).filamentLoaded.or(extruders.get(secondExtruderNumber).filamentLoaded)));
+            .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
         canCancel.bind(
             printerStatus.isEqualTo(PrinterStatus.PAUSED)
             .or(printerStatus.isEqualTo(PrinterStatus.PAUSING))
@@ -420,6 +419,35 @@ public final class HardwarePrinter implements Printer
     }
     
     protected final FloatProperty purgeTemperatureProperty = new SimpleFloatProperty(0);
+    
+    @Override
+    public void resetPurgeTemperature()
+    {
+        //TODO modify for multiple reels
+        Filament settingsFilament = SettingsScreenState.getInstance().getFilament();
+        float reelNozzleTemperature = 0;
+        
+        if (settingsFilament != null)
+        {
+            reelNozzleTemperature = settingsFilament.getNozzleTemperature();
+        } else
+        {
+            //TODO modify for multiple reels
+            reelNozzleTemperature = (float) reels.get(0).nozzleTemperatureProperty().get();
+        }
+        
+        Head headToWrite = head.get().clone();
+        headToWrite.nozzleHeaters.get(0).lastFilamentTemperature.set(reelNozzleTemperature);
+        
+        try
+        {
+            writeHeadEEPROM(headToWrite);
+            readHeadEEPROM();
+        } catch (RoboxCommsException ex)
+        {
+            steno.warning("Failed to write purge temperature");
+        }
+    }
     
     @Override
     public void prepareToPurgeHead(TaskResponder responder) throws PrinterException
@@ -1492,7 +1520,7 @@ public final class HardwarePrinter implements Printer
         RoboxEventProcessor roboxEventProcessor = new RoboxEventProcessor(this, rxPacket);
         Lookup.getTaskExecutor().runOnGUIThread(roboxEventProcessor);
     }
-    
+
     /*
      * Door open
      */
@@ -2032,7 +2060,7 @@ public final class HardwarePrinter implements Printer
             steno.error("Error sending open nozzle command");
             throw new PrinterException("Error whilst sending nozzle open command");
         }
-    }    
+    }
     
     @Override
     public void closeNozzleFully() throws PrinterException

@@ -6,6 +6,7 @@
 package celtech.coreUI.components;
 
 import celtech.appManager.ApplicationMode;
+import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
 import celtech.appManager.ProjectMode;
@@ -173,36 +174,39 @@ public class ProjectTab extends Tab
             @Override
             public void handle(DragEvent event)
             {
-                if (event.getGestureSource() != basePane)
+                if (ApplicationStatus.getInstance().modeProperty().equals(ApplicationMode.LAYOUT))
                 {
-                    Dragboard dragboard = event.getDragboard();
-                    if (dragboard.hasFiles())
+                    if (event.getGestureSource() != basePane)
                     {
-                        List<File> fileList = dragboard.getFiles();
-                        boolean accept = true;
-                        for (File file : fileList)
+                        Dragboard dragboard = event.getDragboard();
+                        if (dragboard.hasFiles())
                         {
-                            boolean extensionFound = false;
-                            for (String extension : ApplicationConfiguration.getSupportedFileExtensions(
-                                project.getProjectMode()))
+                            List<File> fileList = dragboard.getFiles();
+                            boolean accept = true;
+                            for (File file : fileList)
                             {
-                                if (file.getName().toUpperCase().endsWith(extension.toUpperCase()))
+                                boolean extensionFound = false;
+                                for (String extension : ApplicationConfiguration.getSupportedFileExtensions(
+                                    project.getProjectMode()))
                                 {
-                                    extensionFound = true;
+                                    if (file.getName().toUpperCase().endsWith(extension.toUpperCase()))
+                                    {
+                                        extensionFound = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!extensionFound)
+                                {
+                                    accept = false;
                                     break;
                                 }
                             }
 
-                            if (!extensionFound)
+                            if (accept)
                             {
-                                accept = false;
-                                break;
+                                event.acceptTransferModes(TransferMode.COPY);
                             }
-                        }
-
-                        if (accept)
-                        {
-                            event.acceptTransferModes(TransferMode.COPY);
                         }
                     }
                 }
@@ -216,42 +220,43 @@ public class ProjectTab extends Tab
             public void handle(DragEvent event)
             {
                 /* the drag-and-drop gesture entered the target */
-                steno.info("onDragEntered");
                 /* show to the user that it is an actual gesture target */
-                if (event.getGestureSource() != basePane)
+//                if (ApplicationStatus.getInstance().modeProperty().equals(ApplicationMode.LAYOUT))
                 {
-                    Dragboard dragboard = event.getDragboard();
-                    if (dragboard.hasFiles())
+                    if (event.getGestureSource() != basePane)
                     {
-                        List<File> fileList = dragboard.getFiles();
-                        boolean accept = true;
-                        for (File file : fileList)
+                        Dragboard dragboard = event.getDragboard();
+                        if (dragboard.hasFiles())
                         {
-                            boolean extensionFound = false;
-                            for (String extension : ApplicationConfiguration.getSupportedFileExtensions(
-                                project.getProjectMode()))
+                            List<File> fileList = dragboard.getFiles();
+                            boolean accept = true;
+                            for (File file : fileList)
                             {
-                                if (file.getName().endsWith(extension))
+                                boolean extensionFound = false;
+                                for (String extension : ApplicationConfiguration.getSupportedFileExtensions(
+                                    project.getProjectMode()))
                                 {
-                                    extensionFound = true;
+                                    if (file.getName().endsWith(extension))
+                                    {
+                                        extensionFound = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!extensionFound)
+                                {
+                                    accept = false;
                                     break;
                                 }
                             }
 
-                            if (!extensionFound)
+                            if (accept)
                             {
-                                accept = false;
-                                break;
+                                basePane.setEffect(new Glow());
                             }
-                        }
-
-                        if (accept)
-                        {
-                            basePane.setEffect(new Glow());
                         }
                     }
                 }
-
                 event.consume();
             }
         });

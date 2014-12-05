@@ -337,11 +337,11 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         if (firmwareUpdateOK == null)
         {
             firmwareUpdateOK = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.firmwareUpdateOKTitle"),
-                                                                              Lookup.i18n("dialogs.firmwareUpdateOKMessage"),
-                                                                              true);
+                                                                             Lookup.i18n("dialogs.firmwareUpdateOKMessage"),
+                                                                             true);
             firmwareUpdateNotOK = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.firmwareUpdateNotOKTitle"),
-                                                                                 Lookup.i18n("dialogs.firmwareUpdateNotOKMessage"),
-                                                                                 false);
+                                                                                Lookup.i18n("dialogs.firmwareUpdateNotOKMessage"),
+                                                                                false);
         }
 
         Callable<Boolean> askUserToUpgradeDialog = new Callable()
@@ -353,7 +353,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     firmwareUpdateOK,
                     firmwareUpdateNotOK
                 );
-                
+
 //                firmwareUpgradeDialog.getDialogPane().getStylesheets().add(ApplicationConfiguration.getDialogsCSSFile());
 //                firmwareUpgradeDialog.getDialogPane().getStyleClass().add("dialog-commands");
                 firmwareUpdateDialog.getDialogPane().setStyle("-fx-wrap-text: true; -fx-font-size: 13px; -fx-font-family: 'Source Sans Pro Regular';");
@@ -381,7 +381,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
-                firmwareUpdateProgress = new ProgressDialog(firmwareLoadService);
+            firmwareUpdateProgress = new ProgressDialog(firmwareLoadService);
         });
     }
 
@@ -571,12 +571,12 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
      * @return True if the user has elected to purge
      */
     @Override
-    public boolean showPurgeDialog()
+    public PurgeResponse showPurgeDialog()
     {
-        Callable<Boolean> askUserWhetherToPurge = new Callable()
+        Callable<PurgeResponse> askUserWhetherToPurge = new Callable()
         {
             @Override
-            public Boolean call() throws Exception
+            public PurgeResponse call() throws Exception
             {
                 CommandLinksDialog.CommandLinksButtonType purge = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.goForPurgeTitle"),
                                                                                                                 Lookup.i18n("dialogs.goForPurgeInstruction"),
@@ -584,20 +584,37 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 CommandLinksDialog.CommandLinksButtonType dontPurge = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.dontGoForPurgeTitle"),
                                                                                                                     Lookup.i18n("dialogs.dontGoForPurgeInstruction"),
                                                                                                                     false);
+                CommandLinksDialog.CommandLinksButtonType dontPrint = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.dontPrintTitle"),
+                                                                                                                    Lookup.i18n("dialogs.dontPrintInstruction"),
+                                                                                                                    false);
                 CommandLinksDialog purgeDialog = new CommandLinksDialog(
                     purge,
-                    dontPurge
+                    dontPurge,
+                    dontPrint
                 );
                 purgeDialog.setTitle(Lookup.i18n("dialogs.purgeRequiredTitle"));
                 purgeDialog.setContentText(Lookup.i18n("dialogs.purgeRequiredInstruction"));
 
                 Optional<ButtonType> purgeResponse = purgeDialog.showAndWait();
 
-                return purgeResponse.get() == purge.getButtonType();
+                PurgeResponse response = null;
+
+                if (purgeResponse.get() == purge.getButtonType())
+                {
+                    response = PurgeResponse.PRINT_WITH_PURGE;
+                } else if (purgeResponse.get() == dontPurge.getButtonType())
+                {
+                    response = PurgeResponse.PRINT_WITHOUT_PURGE;
+                } else if (purgeResponse.get() == dontPrint.getButtonType())
+                {
+                    response = PurgeResponse.DONT_PRINT;
+                }
+
+                return response;
             }
         };
 
-        FutureTask<Boolean> askWhetherToPurgeTask = new FutureTask<>(askUserWhetherToPurge);
+        FutureTask<PurgeResponse> askWhetherToPurgeTask = new FutureTask<>(askUserWhetherToPurge);
         Lookup.getTaskExecutor().runOnGUIThread(askWhetherToPurgeTask);
         try
         {
@@ -605,7 +622,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         } catch (InterruptedException | ExecutionException ex)
         {
             steno.error("Error during purge query");
-            return false;
+            return null;
         }
     }
 
@@ -701,5 +718,29 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 headNotRecognisedDialogOnDisplay = false;
             });
         }
+    }
+
+    @Override
+    public void showCantPrintNoFilamentDialog()
+    {
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            Dialogs.create().title(
+                Lookup.i18n("dialogs.cantPrintNoFilamentTitle"))
+                .message(Lookup.i18n("dialogs.cantPrintNoFilamentMessage"))
+                .masthead(null).showInformation();
+        });
+    }
+
+    @Override
+    public void showCantPrintDoorIsOpenDialog()
+    {
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            Dialogs.create().title(
+                Lookup.i18n("dialogs.cantPrintDoorIsOpenTitle"))
+                .message(Lookup.i18n("dialogs.cantPrintDoorIsOpenMessage"))
+                .masthead(null).showInformation();
+        });
     }
 }
