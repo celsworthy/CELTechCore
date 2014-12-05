@@ -10,6 +10,8 @@ import static celtech.appManager.ProjectMode.MESH;
 import static celtech.appManager.ProjectMode.NONE;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
+import celtech.configuration.PrinterColourMap;
+import celtech.coreUI.AmbientLEDState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.components.ProjectTab;
@@ -18,8 +20,11 @@ import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
+import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterException;
 import celtech.utils.PrinterUtils;
+import celtech.utils.tasks.TaskResponse;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +37,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -50,24 +56,65 @@ public class LayoutStatusMenuStripController
     private final FileChooser modelFileChooser = new FileChooser();
     private Project boundProject = null;
     private PrinterUtils printerUtils = null;
-    
-    @FXML
-    private GraphicButtonWithLabel backwardButton;
-    
-    @FXML
-    private GraphicButtonWithLabel calibrateButton;    
+    private PrinterColourMap colourMap = PrinterColourMap.getInstance();
+    private ChangeListener<Color> printerColourChangeListener = null;
 
     @FXML
-    private GraphicButtonWithLabel forwardButton;
+    private GraphicButtonWithLabel backwardFromSettingsButton;
+
+    @FXML
+    private GraphicButtonWithLabel backwardFromLayoutButton;
+
+    @FXML
+    private GraphicButtonWithLabel calibrateButton;
+
+    @FXML
+    private GraphicButtonWithLabel forwardButtonSettings;
+
+    @FXML
+    private GraphicButtonWithLabel forwardButtonLayout;
+
+    @FXML
+    private GraphicButtonWithLabel unlockDoorButton;
+
+    @FXML
+    private GraphicButtonWithLabel ejectFilamentButton;
+    
+    @FXML
+    private GraphicButtonWithLabel fineNozzleButton;
+
+    @FXML
+    private  GraphicButtonWithLabel fillNozzleButton;
+
+    @FXML
+    private GraphicButtonWithLabel openNozzleButton;
+
+    @FXML
+    private GraphicButtonWithLabel closeNozzleButton;
+
+    @FXML
+    private GraphicButtonWithLabel homeButton;
+
+    @FXML
+    private GraphicButtonWithLabel removeHeadButton;
+
+    @FXML
+    private GraphicButtonWithLabel headFanButton;
+
+    @FXML
+    private  GraphicButtonWithLabel headLightsButton;
+
+    @FXML
+    private GraphicButtonWithLabel ambientLightsButton;
 
     @FXML
     private GraphicButtonWithLabel printButton;
 
     @FXML
     private HBox layoutButtonHBox;
-    
+
     @FXML
-    private HBox statusButtonHBox;      
+    private HBox statusButtonHBox;
 
     @FXML
     private GraphicButtonWithLabel addModelButton;
@@ -113,8 +160,8 @@ public class LayoutStatusMenuStripController
         if (purgeConsent)
         {
             displayManager.getPurgeInsetPanelController().purgeAndPrint(currentProject, settingsScreenState.getFilament(),
-                                               settingsScreenState.getPrintQuality(),
-                                               settingsScreenState.getSettings(), printer);
+                                                                        settingsScreenState.getPrintQuality(),
+                                                                        settingsScreenState.getSettings(), printer);
         } else
         {
             printer.printProject(currentProject, settingsScreenState.getFilament(),
@@ -138,16 +185,18 @@ public class LayoutStatusMenuStripController
                 break;
         }
     }
-    
-   @FXML
-    void calibrate(ActionEvent event) {
+
+    @FXML
+    void calibrate(ActionEvent event)
+    {
         ApplicationStatus.getInstance().setMode(ApplicationMode.CALIBRATION_CHOICE);
-    }   
-    
-   @FXML
-    void register(ActionEvent event) {
+    }
+
+    @FXML
+    void register(ActionEvent event)
+    {
         ApplicationStatus.getInstance().setMode(ApplicationMode.REGISTRATION);
-    }        
+    }
 
     @FXML
     void addModel(ActionEvent event)
@@ -250,6 +299,219 @@ public class LayoutStatusMenuStripController
         displayManager.activateSnapToGround();
     }
 
+    @FXML
+    void unlockDoor(ActionEvent event)
+    {
+        boolean goAheadAndOpenTheDoor = false;
+
+        if (currentPrinter.getPrinterAncillarySystems().bedTemperatureProperty().get() > 60)
+        {
+            if (Lookup.getUserPreferences().isOverrideSafeties() == true)
+            {
+                try
+                {
+                    currentPrinter.goToOpenDoorPositionDontWait(null);
+                } catch (PrinterException ex)
+                {
+                    steno.error("Error opening door " + ex.getMessage());
+                }
+            } else
+            {
+                goAheadAndOpenTheDoor = Lookup.getSystemNotificationHandler().showOpenDoorDialog();
+
+                if (goAheadAndOpenTheDoor)
+                {
+                    try
+                    {
+                        currentPrinter.goToOpenDoorPosition(null);
+                    } catch (PrinterException ex)
+                    {
+                        steno.error("Error opening door " + ex.getMessage());
+                    }
+                }
+            }
+        } else
+        {
+            try
+            {
+                currentPrinter.goToOpenDoorPosition(null);
+            } catch (PrinterException ex)
+            {
+                steno.error("Error opening door " + ex.getMessage());
+            }
+        }
+    }
+
+    @FXML
+    void ejectFilament0(ActionEvent event)
+    {
+        //TODO modify for multiple extruders
+        try
+        {
+            currentPrinter.ejectFilament(0, null);
+        } catch (PrinterException ex)
+        {
+            steno.error("Error when sending eject filament - " + ex.getMessage());
+        }
+    }
+
+    @FXML
+    void selectNozzle0(ActionEvent event)
+    {
+        try
+        {
+            currentPrinter.selectNozzle(0);
+        } catch (PrinterException ex)
+        {
+            steno.error("Error when selecting nozzle 0" + ex.getMessage());
+        }
+    }
+
+    @FXML
+    void selectNozzle1(ActionEvent event)
+    {
+        try
+        {
+            currentPrinter.selectNozzle(1);
+        } catch (PrinterException ex)
+        {
+            steno.error("Error when selecting nozzle 1" + ex.getMessage());
+        }
+    }
+
+    @FXML
+    void openNozzle(ActionEvent event)
+    {
+        try
+        {
+            currentPrinter.openNozzleFully();
+        } catch (PrinterException ex)
+        {
+            steno.error("Error when opening nozzle" + ex.getMessage());
+        }
+    }
+
+    @FXML
+    void closeNozzle(ActionEvent event)
+    {
+        try
+        {
+            currentPrinter.closeNozzleFully();
+        } catch (PrinterException ex)
+        {
+            steno.error("Error when closing nozzle" + ex.getMessage());
+        }
+    }
+
+    @FXML
+    void homeAll(ActionEvent event)
+    {
+        try
+        {
+            currentPrinter.executeMacro("Home_all");
+        } catch (PrinterException ex)
+        {
+            steno.error("Couldn't run home macro");
+        }
+    }
+
+    @FXML
+    void toggleHeadFan(ActionEvent event)
+    {
+        try
+        {
+            if (currentPrinter.getPrinterAncillarySystems().headFanOnProperty().get())
+            {
+                currentPrinter.switchOffHeadFan();
+            } else
+            {
+                currentPrinter.switchOnHeadFan();
+            }
+        } catch (PrinterException ex)
+        {
+            steno.error("Failed to send head fan command - " + ex.getMessage());
+        }
+    }
+
+    boolean headLEDOn = false;
+
+    @FXML
+    void toggleHeadLights(ActionEvent event)
+    {
+        try
+        {
+            if (headLEDOn == true)
+            {
+                currentPrinter.switchOffHeadLEDs();
+                headLEDOn = false;
+            } else
+            {
+                currentPrinter.switchOnHeadLEDs();
+                headLEDOn = true;
+            }
+        } catch (PrinterException ex)
+        {
+            steno.error("Failed to send head LED command - " + ex.getMessage());
+        }
+    }
+
+    private AmbientLEDState ambientLEDState = AmbientLEDState.COLOUR;
+
+    @FXML
+    void toggleAmbientLights(ActionEvent event)
+    {
+        try
+        {
+            // Off, White, Colour
+            ambientLEDState = ambientLEDState.getNextState();
+
+            switch (ambientLEDState)
+            {
+                case OFF:
+                    currentPrinter.setAmbientLEDColour(Color.BLACK);
+                    break;
+                case WHITE:
+                    currentPrinter.setAmbientLEDColour(
+                        colourMap.displayToPrinterColour(Color.WHITE));
+                    break;
+                case COLOUR:
+                    currentPrinter.setAmbientLEDColour(
+                        currentPrinter.getPrinterIdentity().printerColourProperty().get());
+                    break;
+            }
+        } catch (PrinterException ex)
+        {
+            steno.error("Failed to send ambient LED command");
+        }
+    }
+
+    @FXML
+    void removeHead(ActionEvent event)
+    {
+        try
+        {
+            currentPrinter.removeHead((TaskResponse taskResponse) ->
+            {
+                removeHeadFinished(taskResponse);
+            });
+        } catch (PrinterException ex)
+        {
+            steno.error("PrinterException whilst invoking remove head: " + ex.getMessage());
+        }
+    }
+
+    private void removeHeadFinished(TaskResponse taskResponse)
+    {
+        if (taskResponse.succeeded())
+        {
+            Lookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n("removeHead.title"), Lookup.i18n("removeHead.finished"));
+            steno.debug("Head remove completed");
+        } else
+        {
+            Lookup.getSystemNotificationHandler().showWarningNotification(Lookup.i18n("removeHead.title"), Lookup.i18n("removeHead.failed"));
+        }
+    }
+
     private Printer currentPrinter = null;
 
     /*
@@ -263,20 +525,42 @@ public class LayoutStatusMenuStripController
         settingsScreenState = SettingsScreenState.getInstance();
         printerUtils = PrinterUtils.getInstance();
 
-        backwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(
-            ApplicationMode.STATUS));
-//        forwardButton.visibleProperty().bind(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS).and(printerOKToPrint));
+        backwardFromLayoutButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LAYOUT));
+        backwardFromSettingsButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS));
+
         printButton.setVisible(false);
         calibrateButton.setDisable(true);
-        
+
         Lookup.getCurrentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
         {
             if (newValue != null)
             {
                 if (currentPrinter != null)
                 {
-                    calibrateButton.disableProperty().unbind();
+                    unlockDoorButton.disableProperty().unbind();
+                    ejectFilamentButton.disableProperty().unbind();
+                    fineNozzleButton.visibleProperty().unbind();
+                    fillNozzleButton.visibleProperty().unbind();
+                    openNozzleButton.visibleProperty().unbind();
+                    closeNozzleButton.visibleProperty().unbind();
+                    homeButton.disableProperty().unbind();
+                    headFanButton.disableProperty().unbind();
+                    headLightsButton.disableProperty().unbind();
+                    ambientLightsButton.disableProperty().unbind();
+                    calibrateButton.disableProperty().unbind();                    
                 }
+                
+//                unlockDoorButton
+//                                            //TODO modify for multiple extruders
+//        ejectReelButton().bind(
+//            selectedPrinter.extrudersProperty().get(0).canEjectProperty());
+//
+//        unlockLidButton.setVisible(true);
+//        unlockLidButton.disableProperty().bind(
+//            selectedPrinter.getPrinterAncillarySystems().lidOpenProperty().or(
+//                selectedPrinter.printerStatusProperty().
+//                isNotEqualTo(PrinterStatus.IDLE)));
+
                 calibrateButton.disableProperty().bind(newValue.canCalibrateHeadProperty().not());
             }
         });
@@ -287,12 +571,12 @@ public class LayoutStatusMenuStripController
             {
                 if (currentPrinter != null)
                 {
-                    printButton.visibleProperty().unbind();
-                    
+                    printButton.disableProperty().unbind();
+
                 }
-                printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
-                    ApplicationMode.SETTINGS).and(newValue.canPrintProperty()));
-                
+                printButton.disableProperty().bind(applicationStatus.modeProperty().isNotEqualTo(
+                    ApplicationMode.SETTINGS).or(newValue.canPrintProperty().not()));
+
                 currentPrinter = newValue;
             }
         });
@@ -305,6 +589,9 @@ public class LayoutStatusMenuStripController
                     "dialogs.modelFileChooserDescription"),
                                             ApplicationConfiguration.getSupportedFileExtensionWildcards(
                                                 ProjectMode.NONE)));
+
+        forwardButtonSettings.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LAYOUT));
+        forwardButtonLayout.visibleProperty().bind((applicationStatus.modeProperty().isEqualTo(ApplicationMode.STATUS)));
     }
 
     /**
@@ -346,11 +633,6 @@ public class LayoutStatusMenuStripController
 
         distributeModelsButton.disableProperty().bind(snapToGroundOrNoLoadedModels);
         snapToGroundButton.disableProperty().bind(noLoadedModels);
-
-        forwardButton.visibleProperty().unbind();
-        forwardButton.visibleProperty().bind((applicationStatus.modeProperty().isEqualTo(
-            ApplicationMode.LAYOUT).and(Bindings.isNotEmpty(boundProject.getLoadedModels())).or(
-                applicationStatus.modeProperty().isEqualTo(ApplicationMode.STATUS))));
 
         ChangeListener<LayoutSubmode> whenSubModeChanges
             = (ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode oldMode, LayoutSubmode newMode) ->

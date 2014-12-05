@@ -24,6 +24,7 @@ import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.comms.RoboxCommsManager;
+import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.services.modelLoader.ModelLoadResults;
 import celtech.services.modelLoader.ModelLoaderService;
 import java.io.File;
@@ -136,13 +137,13 @@ public class DisplayManager implements EventHandler<KeyEvent>
         if (addDummyPrinterCommand.startsWith(hiddenCommandKeyBuffer + event.getCharacter()))
         {
             hiddenCommandKeyBuffer += event.getCharacter();
-            steno.info("Key: " + hiddenCommandKeyBuffer);
             if (hiddenCommandKeyBuffer != null)
             {
                 switch (hiddenCommandKeyBuffer)
                 {
                     case addDummyPrinterCommand:
                         RoboxCommsManager.getInstance().addDummyPrinter();
+                        steno.info("Added dummy printer");
                         hiddenCommandKeyBuffer = "";
                         break;
                 }
@@ -154,7 +155,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
     };
 
     private boolean captureKeys = false;
-    
+
     private StackPane rootStack;
     private Pane spinnerContainer;
     private Spinner spinner;
@@ -320,23 +321,25 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         return instance;
     }
-    
+
     /**
      * Show the spinner, and keep it centred on the given region.
      */
-    public void startSpinning(Region centreRegion) {
+    public void startSpinning(Region centreRegion)
+    {
         spinner.setVisible(true);
         spinner.startSpinning();
         spinner.setCentreNode(centreRegion);
     }
-    
+
     /**
      * Stop and hide the spinner.
      */
-    public void stopSpinning() {
+    public void stopSpinning()
+    {
         spinner.setVisible(false);
         spinner.stopSpinning();
-    }    
+    }
 
     /**
      *
@@ -353,15 +356,15 @@ public class DisplayManager implements EventHandler<KeyEvent>
             + " - " + ApplicationConfiguration.getApplicationVersion());
 
         rootStack = new StackPane();
-        
+
         spinnerContainer = new Pane();
         spinnerContainer.setMouseTransparent(true);
         spinner = new Spinner();
         spinnerContainer.getChildren().add(spinner);
-        
+
         mainHolder = new HBox();
         mainHolder.setPrefSize(-1, -1);
-        
+
         rootStack.getChildren().add(mainHolder);
         rootStack.getChildren().add(spinnerContainer);
 
@@ -504,6 +507,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
         } catch (IOException ex)
         {
             steno.error("Failed to load menu strip controls:" + ex);
+            ex.printStackTrace();
         }
 
         projectLoader = new ProjectLoader();

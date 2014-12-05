@@ -8,17 +8,27 @@
     <right>
         <StackPane>
             <children>
-                <GraphicButtonWithLabel fx:id="forwardButton" fxmlFileName="forwardButton" onAction="#forwardPressed" labelText="%buttonText.toSettings" />
+                <StackPane>
+                    <children>
+                        <GraphicButtonWithLabel fx:id="forwardButtonSettings" fxmlFileName="forwardButton" onAction="#forwardPressed" labelText="%buttonText.toSettings" />
+                        <GraphicButtonWithLabel fx:id="forwardButtonLayout" fxmlFileName="forwardButton" onAction="#forwardPressed" labelText="%buttonText.toLayout" />
+                    </children>
+                </StackPane>
                 <GraphicButtonWithLabel fx:id="printButton" fxmlFileName="printButton" onAction="#printPressed" labelText="%buttonText.make" />
             </children>
         </StackPane>
     </right>
     <left>
-      <HBox alignment="CENTER">
-         <children>
-              <GraphicButtonWithLabel fx:id="backwardButton" fxmlFileName="backwardButton" onAction="#backwardPressed" labelText="%buttonText.backToStatus" />
-         </children>
-      </HBox>
+        <HBox alignment="CENTER">
+            <children>
+                <StackPane>
+                    <children>
+                        <GraphicButtonWithLabel fx:id="backwardFromLayoutButton" fxmlFileName="backwardButton" onAction="#backwardPressed" labelText="%buttonText.backToStatus" />
+                        <GraphicButtonWithLabel fx:id="backwardFromSettingsButton" fxmlFileName="backwardButton" onAction="#backwardPressed" labelText="%buttonText.backToLayout" />
+                    </children>
+                </StackPane>
+            </children>
+        </HBox>
     </left>
     <center>
         <VBox alignment="CENTER">
@@ -27,8 +37,26 @@
                     <children>
                         <HBox fx:id="statusButtonHBox" alignment="CENTER">
                             <children>
+                                <GraphicButtonWithLabel fx:id="unlockDoorButton" fxmlFileName="unlockDoorButton" onAction="#unlockDoor" labelText="%buttonText.unlockDoor" />
+                                <GraphicButtonWithLabel fx:id="ejectFilamentButton" fxmlFileName="ejectFilamentButton" onAction="#ejectFilament0" labelText="%buttonText.ejectFilament" />
+                                <StackPane>
+                                    <children>
+                                        <GraphicButtonWithLabel fx:id="fineNozzleButton" fxmlFileName="fineNozzleButton" onAction="#selectNozzle0" labelText="%buttonText.fineNozzle" />
+                                        <GraphicButtonWithLabel fx:id="fillNozzleButton" fxmlFileName="fillNozzleButton" onAction="#selectNozzle1" labelText="%buttonText.fillNozzle" />
+                                    </children>
+                                </StackPane>
+                                <StackPane>
+                                    <children>
+                                        <GraphicButtonWithLabel fx:id="openNozzleButton" fxmlFileName="openNozzleButton" onAction="#openNozzle" labelText="%buttonText.openNozzle" />
+                                        <GraphicButtonWithLabel fx:id="closeNozzleButton" fxmlFileName="closeNozzleButton" onAction="#closeNozzle" labelText="%buttonText.closeNozzle" />
+                                    </children>
+                                </StackPane>
                                 <GraphicButtonWithLabel fx:id="calibrateButton" fxmlFileName="calibrateButton" onAction="#calibrate" labelText="%buttonText.calibrate" />
-                                <GraphicButton fx:id="registrationButton" fxmlFileName="helpButton" onAction="#register" />
+                                <GraphicButtonWithLabel fx:id="homeButton" fxmlFileName="homeAxesButton" onAction="#homeAll" labelText="%buttonText.home" />
+                                <GraphicButtonWithLabel fx:id="removeHeadButton" fxmlFileName="removeHeadButton" onAction="#removeHead" labelText="%buttonText.remove" />
+                                <GraphicToggleButtonWithLabel fx:id="headFanButton" fxmlFileName="headFanButton" onAction="#toggleHeadFan" labelText="%buttonText.headFan" />
+                                <GraphicToggleButtonWithLabel fx:id="headLightsButton" fxmlFileName="lightsButton" onAction="#toggleHeadLights" labelText="%buttonText.headLights" />
+                                <GraphicToggleButtonWithLabel fx:id="ambientLightsButton" fxmlFileName="lightsButton" onAction="#toggleAmbientLights" labelText="%buttonText.ambientLights" />
                             </children>
                         </HBox>
                         <HBox fx:id="layoutButtonHBox" alignment="CENTER">

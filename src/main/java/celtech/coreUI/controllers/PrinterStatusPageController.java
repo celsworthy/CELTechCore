@@ -4,7 +4,6 @@ import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterColourMap;
-import celtech.coreUI.AmbientLEDState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.JogButton;
 import celtech.coreUI.visualisation.threed.StaticModelOverlay;
@@ -12,7 +11,6 @@ import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.Reel;
-import celtech.utils.tasks.TaskResponse;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -72,15 +70,6 @@ public class PrinterStatusPageController implements Initializable
     private ImageView printerSilhouette;
 
     @FXML
-    private Button headLEDButton;
-
-    @FXML
-    private Button ambientLEDButton;
-
-    @FXML
-    private Button homeButton;
-
-    @FXML
     private JogButton x_minus1;
 
     @FXML
@@ -120,9 +109,6 @@ public class PrinterStatusPageController implements Initializable
     private ImageView printerOpenImage;
 
     @FXML
-    private Button ejectReelButton;
-
-    @FXML
     private ImageView reel;
 
     @FXML
@@ -138,25 +124,10 @@ public class PrinterStatusPageController implements Initializable
     private Rectangle printerColourRectangle;
 
     @FXML
-    private Button selectNozzle2;
-
-    @FXML
-    private Button openNozzleButton;
-
-    @FXML
     private StackPane statusPane;
 
     @FXML
-    private Button selectNozzle1;
-
-    @FXML
     private JogButton extruder_minus5;
-
-    @FXML
-    private Button headFanButton;
-
-    @FXML
-    private Button removeHeadButton;
 
     @FXML
     private JogButton y_plus100;
@@ -174,13 +145,7 @@ public class PrinterStatusPageController implements Initializable
     private JogButton extruder_minus100;
 
     @FXML
-    private Button unlockLidButton;
-
-    @FXML
     private JogButton x_minus10;
-
-    @FXML
-    private Button closeNozzleButton;
 
     @FXML
     private ProgressBar progressBar;
@@ -249,18 +214,6 @@ public class PrinterStatusPageController implements Initializable
     private final BooleanProperty showProgressGroup = new SimpleBooleanProperty(false);
 
     @FXML
-    void home(ActionEvent event)
-    {
-        try
-        {
-            printerToUse.executeMacro("Home_all");
-        } catch (PrinterException ex)
-        {
-            steno.error("Couldn't run home macro");
-        }
-    }
-
-    @FXML
     void pausePrint(ActionEvent event)
     {
         try
@@ -297,62 +250,6 @@ public class PrinterStatusPageController implements Initializable
     }
 
     @FXML
-    void ejectReel(ActionEvent event)
-    {
-        //TODO modify for multiple extruders
-        try
-        {
-            printerToUse.ejectFilament(0, null);
-        } catch (PrinterException ex)
-        {
-            steno.error("Error when sending eject filament - " + ex.getMessage());
-        }
-    }
-
-    @FXML
-    void unlockLid(ActionEvent event)
-    {
-        boolean goAheadAndOpenTheDoor = false;
-
-        if (printerToUse.getPrinterAncillarySystems().bedTemperatureProperty().get() > 60)
-        {
-            if (Lookup.getUserPreferences().isOverrideSafeties() == true)
-            {
-                try
-                {
-                    printerToUse.goToOpenDoorPositionDontWait(null);
-                } catch (PrinterException ex)
-                {
-                    steno.error("Error opening door " + ex.getMessage());
-                }
-            } else
-            {
-                goAheadAndOpenTheDoor = Lookup.getSystemNotificationHandler().showOpenDoorDialog();
-
-                if (goAheadAndOpenTheDoor)
-                {
-                    try
-                    {
-                        printerToUse.goToOpenDoorPosition(null);
-                    } catch (PrinterException ex)
-                    {
-                        steno.error("Error opening door " + ex.getMessage());
-                    }
-                }
-            }
-        } else
-        {
-            try
-            {
-                printerToUse.goToOpenDoorPosition(null);
-            } catch (PrinterException ex)
-            {
-                steno.error("Error opening door " + ex.getMessage());
-            }
-        }
-    }
-
-    @FXML
     void jogButton(ActionEvent event)
     {
         JogButton button = (JogButton) event.getSource();
@@ -363,156 +260,6 @@ public class PrinterStatusPageController implements Initializable
         } catch (PrinterException ex)
         {
             steno.error("Failed to jog printer - " + ex.getMessage());
-        }
-    }
-
-    boolean headLEDOn = false;
-
-    @FXML
-    void toggleHeadLED(ActionEvent event)
-    {
-        try
-        {
-            if (headLEDOn == true)
-            {
-                printerToUse.switchOffHeadLEDs();
-                headLEDOn = false;
-            } else
-            {
-                printerToUse.switchOnHeadLEDs();
-                headLEDOn = true;
-            }
-        } catch (PrinterException ex)
-        {
-            steno.error("Failed to send head LED command - " + ex.getMessage());
-        }
-    }
-
-    @FXML
-    void toggleHeadFan(ActionEvent event)
-    {
-        try
-        {
-            if (printerToUse.getPrinterAncillarySystems().headFanOnProperty().get())
-            {
-                printerToUse.switchOffHeadFan();
-            } else
-            {
-                printerToUse.switchOnHeadFan();
-            }
-        } catch (PrinterException ex)
-        {
-            steno.error("Failed to send head fan command - " + ex.getMessage());
-        }
-    }
-
-    @FXML
-    void removeHead(ActionEvent event)
-    {
-        try
-        {
-            printerToUse.removeHead((TaskResponse taskResponse) ->
-            {
-                removeHeadFinished(taskResponse);
-            });
-        } catch (PrinterException ex)
-        {
-            steno.error("PrinterException whilst invoking remove head: " + ex.getMessage());
-        }
-    }
-
-    private void removeHeadFinished(TaskResponse taskResponse)
-    {
-        if (taskResponse.succeeded())
-        {
-            Lookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n("removeHead.title"), Lookup.i18n("removeHead.finished"));
-            steno.debug("Head remove completed");
-        } else
-        {
-            Lookup.getSystemNotificationHandler().showWarningNotification(Lookup.i18n("removeHead.title"), Lookup.i18n("removeHead.failed"));
-        }
-    }
-
-    private AmbientLEDState ambientLEDState = AmbientLEDState.COLOUR;
-
-    @FXML
-    void toggleAmbientLED(ActionEvent event)
-    {
-        try
-        {
-            // Off, White, Colour
-            ambientLEDState = ambientLEDState.getNextState();
-
-            switch (ambientLEDState)
-            {
-                case OFF:
-                    printerToUse.setAmbientLEDColour(Color.BLACK);
-                    printerColourRectangle.setFill(Color.BLACK);
-                    break;
-                case WHITE:
-                    printerToUse.setAmbientLEDColour(
-                        colourMap.displayToPrinterColour(Color.WHITE));
-                    printerColourRectangle.setFill(Color.WHITE);
-                    break;
-                case COLOUR:
-                    printerToUse.setAmbientLEDColour(
-                        printerToUse.getPrinterIdentity().printerColourProperty().get());
-                    printerColourRectangle.setFill(
-                        colourMap.printerToDisplayColour(
-                            printerToUse.getPrinterIdentity().printerColourProperty().get()));
-                    break;
-            }
-        } catch (PrinterException ex)
-        {
-            steno.error("Failed to send ambient LED command");
-        }
-    }
-
-    @FXML
-    void selectNozzle1(ActionEvent event)
-    {
-        try
-        {
-            printerToUse.selectNozzle(0);
-        } catch (PrinterException ex)
-        {
-            steno.error("Failed to send open nozzle");
-        }
-    }
-
-    @FXML
-    void selectNozzle2(ActionEvent event)
-    {
-        try
-        {
-            printerToUse.selectNozzle(1);
-        } catch (PrinterException ex)
-        {
-            steno.error("Failed to send open nozzle");
-        }
-    }
-
-    @FXML
-    void openNozzle(ActionEvent event)
-    {
-        try
-        {
-            printerToUse.openNozzleFully();
-        } catch (PrinterException ex)
-        {
-            steno.error("Failed to send open nozzle");
-        }
-    }
-
-    @FXML
-    void closeNozzle(ActionEvent event)
-    {
-        try
-        {
-            printerToUse.closeNozzleFully();
-        } catch (PrinterException ex)
-        {
-            steno.error("Failed to send close nozzle");
         }
     }
 
@@ -568,12 +315,9 @@ public class PrinterStatusPageController implements Initializable
 
         printerColourChangeListener = (ObservableValue<? extends Color> observable, Color oldValue, Color newValue) ->
         {
-            if (ambientLEDState == AmbientLEDState.COLOUR)
-            {
-                printerColourRectangle.setFill(
-                    colourMap.printerToDisplayColour(
-                        newValue));
-            }
+            printerColourRectangle.setFill(
+                colourMap.printerToDisplayColour(
+                    newValue));
         };
 
         printerStatusChangeListener = (ObservableValue<? extends PrinterStatus> observable, PrinterStatus oldValue, PrinterStatus newValue) ->
@@ -588,8 +332,6 @@ public class PrinterStatusPageController implements Initializable
 
         progressGroup.visibleProperty().bind(showProgressGroup);
 
-        ejectReelButton.setVisible(false);
-        unlockLidButton.setVisible(false);
         temperatureWarning.setVisible(false);
 
         reel.setVisible(false);
@@ -598,12 +340,9 @@ public class PrinterStatusPageController implements Initializable
         advancedControls = new Node[]
         {
             extruder_minus100, extruder_minus20, extruder_minus5, extruder_plus100, extruder_plus20, extruder_plus5,
-            homeButton, x_minus1, x_minus10, x_minus100, x_plus1, x_plus10, x_plus100,
+            x_minus1, x_minus10, x_minus100, x_plus1, x_plus10, x_plus100,
             y_minus1, y_minus10, y_minus100, y_plus1, y_plus10, y_plus100,
-            z_minus0_1, z_minus1, z_minus10, z_plus0_1, z_plus1, z_plus10,
-            openNozzleButton, closeNozzleButton, selectNozzle1, selectNozzle2,
-            ambientLEDButton,
-            headFanButton, headLEDButton, removeHeadButton
+            z_minus0_1, z_minus1, z_minus10, z_plus0_1, z_plus1, z_plus10
         };
         setAdvancedControlsVisibility(false);
 
@@ -641,8 +380,6 @@ public class PrinterStatusPageController implements Initializable
                         showProgressGroup.set(false);
                         printerColourRectangle.setVisible(false);
 
-                        ejectReelButton.setVisible(false);
-                        unlockLidButton.setVisible(false);
                         temperatureWarning.setVisible(false);
 
                         reel.setVisible(false);
@@ -748,15 +485,6 @@ public class PrinterStatusPageController implements Initializable
                         selectedPrinter.getPrinterIdentity().printerColourProperty().addListener(
                             printerColourChangeListener);
 
-                        //TODO modify for multiple extruders
-                        ejectReelButton.visibleProperty().bind(
-                            selectedPrinter.extrudersProperty().get(0).canEjectProperty());
-
-                        unlockLidButton.setVisible(true);
-                        unlockLidButton.disableProperty().bind(
-                            selectedPrinter.getPrinterAncillarySystems().lidOpenProperty().or(
-                                selectedPrinter.printerStatusProperty().
-                                isNotEqualTo(PrinterStatus.IDLE)));
                         temperatureWarning.visibleProperty().bind(
                             selectedPrinter.getPrinterAncillarySystems().bedTemperatureProperty()
                             .greaterThan(ApplicationConfiguration.bedHotAboveDegrees));
@@ -943,9 +671,6 @@ public class PrinterStatusPageController implements Initializable
 
         filamentRectangle.visibleProperty().unbind();
 
-        ejectReelButton.visibleProperty().unbind();
-        ejectReelButton.setVisible(false);
-        unlockLidButton.setVisible(false);
         temperatureWarning.visibleProperty().unbind();
         temperatureWarning.setVisible(false);
 

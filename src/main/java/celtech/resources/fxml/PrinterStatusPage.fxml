@@ -40,15 +40,6 @@
                     </image>
                 </ImageView>
                 <Rectangle fx:id="printerColourRectangle" arcHeight="10.0" arcWidth="5.0" fill="DODGERBLUE" height="20.0" stroke="BLACK" strokeType="INSIDE" translateX="24.0" translateY="-94.0" width="105.0" />
-                <Button fx:id="ejectReelButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#ejectReel" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="Eject Reel" translateX="-250.0" translateY="50.0">
-                    <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
-                            <image>
-                                <Image url="@../images/reel_eject.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
                 <Group fx:id="temperatureWarning" scaleX="0.25" scaleY="0.25" translateX="25.0" translateY="125.0">
                     <children>
                         <Group>
@@ -89,15 +80,6 @@
                         </Group>
                     </children>
                 </Group>
-                <Button id="ejectReelButton" fx:id="unlockLidButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#unlockLid" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="Unlock Lid" translateX="25.0" translateY="190.0">
-                    <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
-                            <image>
-                                <Image url="@../images/open_printer_door.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
                 <JogButton fx:id="extruder_minus100" axis="E" distance="-240.0" feedRate="300" onAction="#jogButton" translateX="-301.0" useG1="true">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
@@ -314,61 +296,8 @@
                         </ImageView>
                     </graphic>
                 </JogButton>
-                <Button fx:id="homeButton" contentDisplay="GRAPHIC_ONLY" layoutX="328.0" layoutY="294.0" mnemonicParsing="false" onAction="#home" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="Home" translateX="-116.0" translateY="55.0">
-                    <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
-                            <image>
-                                <Image url="@../images/home_button.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button id="ejectReelButton" fx:id="headLEDButton" contentDisplay="GRAPHIC_ONLY" layoutX="336.0" layoutY="315.0" mnemonicParsing="false" onAction="#toggleHeadLED" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="HeadLED" translateX="25.0" translateY="32.0">
-                    <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
-                            <image>
-                                <Image url="@../images/Head%20LED_Icons.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button id="ejectReelButton" fx:id="headFanButton" contentDisplay="GRAPHIC_ONLY" layoutX="336.0" layoutY="315.0" mnemonicParsing="false" onAction="#toggleHeadFan" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="HeadFan" translateX="25.0" translateY="-60.0">
-                    <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
-                            <image>
-                                <Image url="@../images/H%20Fan_Icons.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button id="ejectReelButton" fx:id="ambientLEDButton" contentDisplay="GRAPHIC_ONLY" layoutX="328.0" layoutY="293.0" mnemonicParsing="false" onAction="#toggleAmbientLED" scaleX="0.6" scaleY="0.6" styleClass="jog-button" text="AmbientLED" translateX="26.0" translateY="-110.0">
-                    <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
-                            <image>
-                                <Image url="@../images/Ambient%20LED_Icons.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <GraphicButton fx:id="removeHeadButton" fxmlFileName="removeHeadButton" styleClass="jog-button" scaleX="0.9" scaleY="0.9" onAction="#removeHead" translateX="25.0" translateY="-14.0"/>
             </children>
         </StackPane>
-        <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="55.0" prefWidth="-1.0" spacing="10.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="120.0">
-            <children>
-                <HBox alignment="CENTER" maxHeight="-1.0" maxWidth="-1.0" minHeight="-1.0" minWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" spacing="10.0" translateX="0.0" translateY="0.0">
-                    <children>
-                        <Button fx:id="selectNozzle1" mnemonicParsing="false" onAction="#selectNozzle1" text="%printerStatus.Nozzle1ControlLabel" />
-                        <Button fx:id="selectNozzle2" mnemonicParsing="false" onAction="#selectNozzle2" text="%printerStatus.Nozzle2ControlLabel" />
-                    </children>
-                </HBox>
-                <HBox alignment="CENTER" maxHeight="-1.0" maxWidth="-1.0" minHeight="-1.0" minWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" spacing="10.0" translateX="0.0" translateY="0.0">
-                    <children>
-                        <Button fx:id="closeNozzleButton" mnemonicParsing="false" onAction="#closeNozzle" text="%printerStatus.NozzleCloseLabel" />
-                        <Button fx:id="openNozzleButton" mnemonicParsing="false" onAction="#openNozzle" text="%printerStatus.NozzleOpenLabel" />
-                    </children>
-                </HBox>
-            </children>
-        </VBox>
         <VBox id="VBox" fx:id="progressGroup" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="120.0" prefWidth="500.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
             <children>
                 <GridPane maxWidth="503.0" prefHeight="90.0" prefWidth="503.0">

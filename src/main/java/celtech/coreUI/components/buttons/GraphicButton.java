@@ -55,6 +55,7 @@ public class GraphicButton extends Button
                 fxmlLoader.load();
             } catch (IOException exception)
             {
+                exception.printStackTrace();
                 throw new RuntimeException(exception);
             }
         }
