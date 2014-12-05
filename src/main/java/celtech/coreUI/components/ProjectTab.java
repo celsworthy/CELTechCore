@@ -174,7 +174,7 @@ public class ProjectTab extends Tab
             @Override
             public void handle(DragEvent event)
             {
-                if (ApplicationStatus.getInstance().modeProperty().equals(ApplicationMode.LAYOUT))
+                if (ApplicationStatus.getInstance().modeProperty().getValue() == ApplicationMode.LAYOUT)
                 {
                     if (event.getGestureSource() != basePane)
                     {
@@ -221,7 +221,7 @@ public class ProjectTab extends Tab
             {
                 /* the drag-and-drop gesture entered the target */
                 /* show to the user that it is an actual gesture target */
-//                if (ApplicationStatus.getInstance().modeProperty().equals(ApplicationMode.LAYOUT))
+                if (ApplicationStatus.getInstance().modeProperty().getValue() == ApplicationMode.LAYOUT)
                 {
                     if (event.getGestureSource() != basePane)
                     {
