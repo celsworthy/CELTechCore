@@ -63,13 +63,6 @@ public class CalibrationNozzleOpeningTransitions implements Transitions
                      },
                                          NozzleOpeningCalibrationState.FAILED));
 
-        arrivals.put(NozzleOpeningCalibrationState.CONFIRM_NO_MATERIAL,
-                     new ArrivalAction<>(() ->
-                         {
-                             actions.doConfirmNoMaterialAction();
-                     },
-                                         NozzleOpeningCalibrationState.FAILED));
-
         arrivals.put(NozzleOpeningCalibrationState.FINISHED,
                      new ArrivalAction<>(() ->
                          {
@@ -91,11 +84,11 @@ public class CalibrationNozzleOpeningTransitions implements Transitions
                                             StateTransitionManager.GUIName.START,
                                             NozzleOpeningCalibrationState.HEATING,
                                             NozzleOpeningCalibrationState.FAILED));
-        
+
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.IDLE,
                                             StateTransitionManager.GUIName.BACK,
                                             NozzleOpeningCalibrationState.DONE,
-                                            NozzleOpeningCalibrationState.FAILED));        
+                                            NozzleOpeningCalibrationState.FAILED));
 
         // HEATING
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.HEATING,
@@ -103,7 +96,7 @@ public class CalibrationNozzleOpeningTransitions implements Transitions
                                             NozzleOpeningCalibrationState.NO_MATERIAL_CHECK,
                                             () ->
                                             {
-                                                actions.doHeatingAction();
+                                                actions.doHeatingActionHandled();
                                             },
                                             NozzleOpeningCalibrationState.FAILED));
 
@@ -230,7 +223,18 @@ public class CalibrationNozzleOpeningTransitions implements Transitions
         transitions.add(new StateTransition(
             NozzleOpeningCalibrationState.HEAD_CLEAN_CHECK_FILL_NOZZLE,
             StateTransitionManager.GUIName.NEXT,
+            NozzleOpeningCalibrationState.CONFIRM_NO_MATERIAL_NO_YESNO_BUTTONS,
+            NozzleOpeningCalibrationState.FAILED));
+        
+        // CONFIRM_NO_MATERIAL_NO_NEXT_BUTTON
+        transitions.add(new StateTransition(
+            NozzleOpeningCalibrationState.CONFIRM_NO_MATERIAL_NO_YESNO_BUTTONS,
+            StateTransitionManager.GUIName.AUTO,
             NozzleOpeningCalibrationState.CONFIRM_NO_MATERIAL,
+            () ->
+            {
+                actions.doConfirmNoMaterialAction();
+            },
             NozzleOpeningCalibrationState.FAILED));
 
         // CONFIRM_NO_MATERIAL
@@ -258,7 +262,6 @@ public class CalibrationNozzleOpeningTransitions implements Transitions
 //            StateTransitionManager.GUIName.B_BUTTON,
 //            NozzleOpeningCalibrationState.FAILED,
 //            NozzleOpeningCalibrationState.FAILED));
-        
         // FINISHED
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.FINISHED,
                                             StateTransitionManager.GUIName.BACK,

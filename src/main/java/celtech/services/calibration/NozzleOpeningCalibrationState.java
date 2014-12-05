@@ -37,6 +37,8 @@ public enum NozzleOpeningCalibrationState
 
     HEAD_CLEAN_CHECK_FILL_NOZZLE("calibrationPanel.ensureHeadIsCleanBMessage", "Nozzle Opening Illustrations_Step 5 and 7.fxml"),
 
+    CONFIRM_NO_MATERIAL_NO_YESNO_BUTTONS("calibrationPanel.valvesClosedNoMaterialPostCalibration", "Nozzle Opening Illustrations_Step 8.fxml"),
+    
     CONFIRM_NO_MATERIAL("calibrationPanel.valvesClosedNoMaterialPostCalibration", "Nozzle Opening Illustrations_Step 8.fxml"),
 
 //    CONFIRM_MATERIAL_EXTRUDING("calibrationPanel.valvesOpenMaterialExtruding", ""),

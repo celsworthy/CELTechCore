@@ -117,6 +117,7 @@ public class CalibrationNozzleOpeningGUI
             case HEAD_CLEAN_CHECK_FILL_NOZZLE:
                 stepNo = 8;
                 break;
+            case CONFIRM_NO_MATERIAL_NO_YESNO_BUTTONS:
             case CONFIRM_NO_MATERIAL:
                 controller.buttonA.setText("No");
                 controller.buttonB.setText("Yes");

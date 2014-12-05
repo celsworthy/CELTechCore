@@ -74,8 +74,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
         DisplayManager.class.getName());
-    private static ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
-    private static ProjectManager projectManager = ProjectManager.getInstance();
+    private static final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
+    private static final ProjectManager projectManager = ProjectManager.getInstance();
 
     private static DisplayManager instance = null;
     private static Stage mainStage = null;
@@ -83,7 +83,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private HBox mainHolder = null;
     private StackPane sidePanelContainer = null;
-    private AnchorPane modeSelectionControl = null;
     private final HashMap<ApplicationMode, Pane> insetPanels = new HashMap<>();
     private final HashMap<ApplicationMode, HBox> sidePanels = new HashMap<>();
     private final HashMap<ApplicationMode, HBox> slideOutPanels = new HashMap<>();
@@ -116,18 +115,11 @@ public class DisplayManager implements EventHandler<KeyEvent>
     private ProgressDialog modelLoadDialog = null;
 
     /*
-     * GCode model loading
-     */
-    private final ObservableList<String> gcodeFileLines = FXCollections.observableArrayList();
-    /*
      * GCode-related
      */
     private final IntegerProperty layersInGCode = new SimpleIntegerProperty(0);
-    private final BooleanProperty noGCodeLoaded = new SimpleBooleanProperty(true);
 
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
-
-    private Locale usersLocale = null;
 
     private static final String addDummyPrinterCommand = "AddDummy";
 
@@ -162,8 +154,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private DisplayManager()
     {
-        usersLocale = Locale.getDefault();
-
         modelLoadDialog = new ProgressDialog(modelLoaderService);
 
         modelLoaderService.setOnSucceeded((WorkerStateEvent t) ->
@@ -265,7 +255,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
             ProjectTab projectTab = null;
 
-            //Create a tab if one doesnt already exist
+            //Create a tab if one doesn't already exist
             if (tabDisplay.getTabs().size() <= 1)
             {
                 projectTab = new ProjectTab(this, tabDisplay.widthProperty(),
