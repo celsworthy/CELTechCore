@@ -355,5 +355,7 @@ public class MaintenancePanelController implements Initializable
         sendGCodeSDGCodeMacroButton.setDisable(printingdisabled);
 
         ZTestButton.setDisable(printingdisabled);
+        
+        loadFirmwareGCodeMacroButton.setDisable(printingdisabled);
     }
 }
