@@ -381,10 +381,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
-            if (firmwareUpdateProgress == null)
-            {
                 firmwareUpdateProgress = new ProgressDialog(firmwareLoadService);
-            }
         });
     }
 

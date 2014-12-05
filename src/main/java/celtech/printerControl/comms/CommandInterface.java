@@ -76,9 +76,8 @@ public abstract class CommandInterface extends Thread
         firmwareLoadService.setOnSucceeded((WorkerStateEvent t) ->
         {
             FirmwareLoadResult result = (FirmwareLoadResult) t.getSource().getValue();
-
             Lookup.getSystemNotificationHandler().showFirmwareUpgradeStatusNotification(result);
-            moveOnFromFirmwareCheck(null);
+            disconnectSerialPort();
         });
 
         firmwareLoadService.setOnFailed((WorkerStateEvent t) ->
