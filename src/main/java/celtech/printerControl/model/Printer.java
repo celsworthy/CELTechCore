@@ -151,6 +151,11 @@ public interface Printer extends RoboxResponseConsumer
     public PrinterAncillarySystems getPrinterAncillarySystems();
 
     public PrinterIdentity getPrinterIdentity();
+    
+     /*
+     * Door open
+     */
+    public ReadOnlyBooleanProperty canOpenDoorProperty();
 
     public void goToOpenDoorPosition(TaskResponder responder) throws PrinterException;
     

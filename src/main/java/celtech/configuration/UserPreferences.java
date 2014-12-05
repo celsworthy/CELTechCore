@@ -2,6 +2,9 @@ package celtech.configuration;
 
 import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.UserPreferenceFile;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 
 /**
  *
@@ -10,7 +13,7 @@ import celtech.configuration.fileRepresentation.UserPreferenceFile;
 public class UserPreferences
 {
     private SlicerType slicerType = SlicerType.Cura;
-    private boolean overrideSafeties = false;
+    private BooleanProperty overrideSafeties = new SimpleBooleanProperty(false);
     private String languageTag = "";
 
     public String getLanguageTag()
@@ -27,7 +30,7 @@ public class UserPreferences
     public UserPreferences(UserPreferenceFile userPreferenceFile)
     {
         this.slicerType = userPreferenceFile.getSlicerType();
-        this.overrideSafeties = userPreferenceFile.isOverrideSafeties();
+        overrideSafeties.set(userPreferenceFile.isOverrideSafeties());
         this.languageTag = userPreferenceFile.getLanguageTag();
     }
 
@@ -44,13 +47,18 @@ public class UserPreferences
 
     public boolean isOverrideSafeties()
     {
-        return overrideSafeties;
+        return overrideSafeties.get();
     }
 
     public void setOverrideSafeties(boolean overrideSafeties)
     {
-        this.overrideSafeties = overrideSafeties;
+        this.overrideSafeties.set(overrideSafeties);
         saveSettings();
+    }
+    
+    public ReadOnlyBooleanProperty overrideSafetiesProperty()
+    {
+        return overrideSafeties;
     }
 
     private void saveSettings()

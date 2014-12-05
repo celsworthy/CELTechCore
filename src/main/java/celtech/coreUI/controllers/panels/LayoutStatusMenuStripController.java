@@ -99,13 +99,13 @@ public class LayoutStatusMenuStripController
     private GraphicButtonWithLabel removeHeadButton;
 
     @FXML
-    private GraphicButtonWithLabel headFanButton;
+    private GraphicToggleButtonWithLabel headFanButton;
 
     @FXML
-    private  GraphicButtonWithLabel headLightsButton;
+    private  GraphicToggleButtonWithLabel headLightsButton;
 
     @FXML
-    private GraphicButtonWithLabel ambientLightsButton;
+    private GraphicToggleButtonWithLabel ambientLightsButton;
 
     @FXML
     private GraphicButtonWithLabel printButton;
@@ -550,7 +550,11 @@ public class LayoutStatusMenuStripController
                     calibrateButton.disableProperty().unbind();                    
                 }
                 
-//                unlockDoorButton
+                unlockDoorButton.disableProperty().bind(newValue.canOpenDoorProperty());
+                ejectFilamentButton.disableProperty().bind(newValue.extrudersProperty().get(0).canEjectProperty());
+//                fineNozzleButton.visibleProperty().bind(newValue.);
+                
+                
 //                                            //TODO modify for multiple extruders
 //        ejectReelButton().bind(
 //            selectedPrinter.extrudersProperty().get(0).canEjectProperty());

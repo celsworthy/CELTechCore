@@ -114,6 +114,8 @@ public final class HardwarePrinter implements Printer
     private SystemNotificationManager systemNotificationManager;
     
     private NumberFormat threeDPformatter;
+    
+    private final float safeBedTemperatureForOpeningDoor = 60f;
 
     /*
      * State machine data
@@ -223,7 +225,8 @@ public final class HardwarePrinter implements Printer
         canPurgeHead.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
             .and(extruders.get(firstExtruderNumber).filamentLoaded.or(extruders.get(secondExtruderNumber).filamentLoaded)));
         
-        canOpenDoor.bind(printerStatus.isEqualTo(PrinterStatus.IDLE));
+        canOpenDoor.bind((printerStatus.isEqualTo(PrinterStatus.IDLE).and(printerAncillarySystems.bedTemperatureProperty().lessThan(safeBedTemperatureForOpeningDoor)))
+            .or(printerStatus.isEqualTo(PrinterStatus.IDLE).and(Lookup.getUserPreferences().overrideSafetiesProperty())));
         
         canResume.bind(printerStatus.isEqualTo(PrinterStatus.PAUSED));
         
@@ -1489,6 +1492,15 @@ public final class HardwarePrinter implements Printer
     {
         RoboxEventProcessor roboxEventProcessor = new RoboxEventProcessor(this, rxPacket);
         Lookup.getTaskExecutor().runOnGUIThread(roboxEventProcessor);
+    }
+    
+    /*
+     * Door open
+     */
+    @Override
+    public ReadOnlyBooleanProperty canOpenDoorProperty()
+    {
+        return canOpenDoor;
     }
     
     @Override
