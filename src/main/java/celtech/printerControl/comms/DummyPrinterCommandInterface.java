@@ -8,6 +8,8 @@ import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.comms.commands.rx.AckResponse;
+import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.printerControl.comms.commands.rx.GCodeDataResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
@@ -62,6 +64,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
     private final String removeSDCardCommand = "REMOVE SD";
 
     private final StatusResponse currentStatus = (StatusResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.STATUS_RESPONSE);
+    private final AckResponse errorStatus = (AckResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.ACK_WITH_ERRORS);
     private Head attachedHead = null;
     private Reel[] attachedReels = new Reel[2];
     private String printerName;
@@ -154,7 +157,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
             response = (RoboxRxPacket) currentStatus;
         } else if (messageToWrite instanceof ReportErrors)
         {
-            response = RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.ACK_WITH_ERRORS);
+            response = errorStatus;
         } else if (messageToWrite instanceof SendGCodeRequest)
         {
             SendGCodeRequest request = (SendGCodeRequest) messageToWrite;
@@ -472,5 +475,20 @@ public class DummyPrinterCommandInterface extends CommandInterface
     {
         currentStatus.setPrintJobLineNumberString("");
         currentStatus.setRunningPrintJobID("");
+    }
+
+    protected void raiseError(FirmwareError error)
+    {
+        errorStatus.getFirmwareErrors().add(error);
+    }
+
+    protected void clearError(FirmwareError error)
+    {
+        errorStatus.getFirmwareErrors().remove(error);
+    }
+
+    protected void clearAllErrors()
+    {
+        errorStatus.getFirmwareErrors().clear();
     }
 }
