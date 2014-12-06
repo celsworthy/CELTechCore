@@ -190,6 +190,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                      settingsScreenState.getPrintQuality(),
                                      settingsScreenState.getSettings());
                 applicationStatus.setMode(ApplicationMode.STATUS);
+            } else if (purgeConsent == PurgeResponse.NOT_NECESSARY)
+            {
+                printer.printProject(currentProject, settingsScreenState.getFilament(),
+                                     settingsScreenState.getPrintQuality(),
+                                     settingsScreenState.getSettings());
+                applicationStatus.setMode(ApplicationMode.STATUS);
             }
         }
     }
