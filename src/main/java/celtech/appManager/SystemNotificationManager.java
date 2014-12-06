@@ -87,4 +87,8 @@ public interface SystemNotificationManager
     public void showCantPrintNoFilamentDialog();
 
     public void showCantPrintDoorIsOpenDialog();
+
+    public void showReelNotRecognisedDialog(String printerName);
+
+    public void showReelUpdatedNotification();
 }

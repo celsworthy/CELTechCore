@@ -93,6 +93,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
     private boolean headNotRecognisedDialogOnDisplay = false;
 
+    private boolean reelNotRecognisedDialogOnDisplay = false;
+
     @Override
     public void showErrorNotification(String title, String message)
     {
@@ -742,5 +744,38 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 .message(Lookup.i18n("dialogs.cantPrintDoorIsOpenMessage"))
                 .masthead(null).showInformation();
         });
+    }
+    
+    @Override
+    public void showReelUpdatedNotification()
+    {
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            Notifier.showInformationNotification(Lookup.i18n("notification.reelDataUpdatedTitle"),
+                                                 Lookup.i18n("notification.noActionRequired"));
+        });
+    }
+
+    @Override
+    public void showReelNotRecognisedDialog(String printerName)
+    {
+        if (!reelNotRecognisedDialogOnDisplay)
+        {
+            reelNotRecognisedDialogOnDisplay = true;
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                Dialogs.create().title(
+                    Lookup.i18n("dialogs.reelNotRecognisedTitle"))
+                    .message(Lookup.i18n("dialogs.reelNotRecognisedMessage1")
+                        + " "
+                        + printerName
+                        + " "
+                        + Lookup.i18n("dialogs.reelNotRecognisedMessage2")
+                        + " "
+                        + ApplicationConfiguration.getApplicationName())
+                    .masthead(null).showError();
+                reelNotRecognisedDialogOnDisplay = false;
+            });
+        }
     }
 }
