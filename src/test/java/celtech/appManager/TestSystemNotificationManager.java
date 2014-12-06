@@ -174,4 +174,14 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     public void showCantPrintDoorIsOpenDialog()
     {
     }
+
+    @Override
+    public void showReelNotRecognisedDialog(String printerName)
+    {
+    }
+
+    @Override
+    public void showReelUpdatedNotification()
+    {
+    }
 }
