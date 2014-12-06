@@ -326,7 +326,7 @@ public class Reel implements RepairableComponent
                 result = RepairResult.REPAIRED_WRITE_ONLY;
             }
 
-            if (displayColour.get() != referenceFilamentData.getDisplayColour())
+            if (displayColour.get().equals(referenceFilamentData.getDisplayColour()) == false)
             {
                 displayColour.set(referenceFilamentData.getDisplayColour());
                 result = RepairResult.REPAIRED_WRITE_ONLY;
@@ -356,10 +356,10 @@ public class Reel implements RepairableComponent
                 result = RepairResult.REPAIRED_WRITE_ONLY;
             }
 
-            steno.info("Head data bounds check - result is " + result.name());
+            steno.info("Reel data bounds check - result is " + result.name());
         } else
         {
-            steno.warning("Head bounds check requested but reference data could not be obtained.");
+            steno.warning("Reel bounds check requested but reference data could not be obtained.");
         }
 
         return result;
