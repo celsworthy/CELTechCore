@@ -2580,19 +2580,18 @@ public final class HardwarePrinter implements Printer
                     if (Reel.isFilamentIDValid(reelResponse.getReelFilamentID()))
                     {
                         // Might be unrecognised but correct format for a Robox head type code
-
+                        if (!reels.containsKey(reelResponse.getReelNumber()))
+                        {
+                            Reel newReel = new Reel();
+                            newReel.updateFromEEPROMData(reelResponse);
+                            reels.put(reelResponse.getReelNumber(), newReel);
+                        } else
+                        {
+                            reels.get(reelResponse.getReelNumber()).updateFromEEPROMData(reelResponse);
+                        }
+                        
                         if (Reel.isFilamentIDInDatabase(reelResponse.getReelFilamentID()))
                         {
-                            if (!reels.containsKey(reelResponse.getReelNumber()))
-                            {
-                                Reel newReel = new Reel();
-                                newReel.updateFromEEPROMData(reelResponse);
-                                reels.put(reelResponse.getReelNumber(), newReel);
-                            } else
-                            {
-                                reels.get(reelResponse.getReelNumber()).updateFromEEPROMData(reelResponse);
-                            }
-
                             // Check to see if the data is in bounds
                             RepairResult result = reels.get(reelResponse.getReelNumber()).bringDataInBounds();
 
@@ -2610,10 +2609,6 @@ public final class HardwarePrinter implements Printer
                                     }
                                     break;
                             }
-                        } else
-                        {
-                            // We don't recognise the reel but it seems to be valid
-                            Lookup.getSystemNotificationHandler().showReelNotRecognisedDialog(printerIdentity.printerFriendlyName.get());
                         }
                     }
                     break;

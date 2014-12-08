@@ -23,6 +23,7 @@ import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.SliceResult;
 import celtech.configuration.slicer.SlicerConfigWriter;
 import celtech.configuration.slicer.SlicerConfigWriterFactory;
+import celtech.printerControl.MacroType;
 import celtech.services.slicer.SlicerService;
 import celtech.utils.SystemUtils;
 import celtech.utils.threed.ThreeDUtils;
@@ -880,7 +881,7 @@ public class PrintEngine implements ControllableService
     {
         boolean acceptedPrintRequest = false;
         consideringPrintRequest = true;
-        
+
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             runMacroPrintJob(filename, useSDCard);
@@ -932,7 +933,12 @@ public class PrintEngine implements ControllableService
         File printjobFile = new File(printjobFilename);
         File fileToCopy = new File(filename);
 
-        associatedPrinter.setPrinterStatus(PrinterStatus.SENDING_TO_PRINTER);
+        if (associatedPrinter.macroTypeProperty().isNotNull().get()
+            && associatedPrinter.macroTypeProperty().get() == MacroType.GCODE_PRINT)
+        {
+            associatedPrinter.setPrinterStatus(PrinterStatus.SENDING_TO_PRINTER);
+        }
+
         try
         {
             Files.copy(fileToCopy.toPath(), printjobFile.toPath(),
@@ -1089,8 +1095,8 @@ public class PrintEngine implements ControllableService
             setPrintProgressTitle(Lookup.i18n("PrintQueue.Printing"));
         });
     }
-    
-        void goToExecutingMacro()
+
+    void goToExecutingMacro()
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {

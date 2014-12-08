@@ -221,6 +221,8 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        setFieldsVisible(false);
+        
         for (MaterialType materialType : MaterialType.values())
         {
             reelMaterialType.getItems().add(materialType);
