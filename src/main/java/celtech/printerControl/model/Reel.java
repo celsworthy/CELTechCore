@@ -350,12 +350,6 @@ public class Reel implements RepairableComponent
                 result = RepairResult.REPAIRED_WRITE_ONLY;
             }
 
-            if (MathUtils.compareDouble(remainingFilament.get(), referenceFilamentData.getRemainingFilament(), epsilon) != MathUtils.EQUAL)
-            {
-                remainingFilament.set(referenceFilamentData.getRemainingFilament());
-                result = RepairResult.REPAIRED_WRITE_ONLY;
-            }
-
             steno.info("Reel data bounds check - result is " + result.name());
         } else
         {
