@@ -295,7 +295,7 @@ public class PrintEngine implements ControllableService
             if (result.isSuccess())
             {
                 steno.info(t.getSource().getTitle() + " has succeeded");
-                if (result.isIsMacro())
+                if (associatedPrinter.macroTypeProperty().isNotNull().get())
                 {
                     associatedPrinter.setPrinterStatus(PrinterStatus.EXECUTING_MACRO);
                     //Remove the print job from disk
@@ -880,7 +880,7 @@ public class PrintEngine implements ControllableService
     {
         boolean acceptedPrintRequest = false;
         consideringPrintRequest = true;
-
+        
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             runMacroPrintJob(filename, useSDCard);
@@ -951,7 +951,6 @@ public class PrintEngine implements ControllableService
         gcodePrintService.setCurrentPrintJobID(printUUID);
         gcodePrintService.setModelFileToPrint(printjobFilename);
         gcodePrintService.setPrinterToUse(associatedPrinter);
-        gcodePrintService.setIsMacro(true);
         gcodePrintService.start();
         consideringPrintRequest = false;
     }
@@ -1088,6 +1087,22 @@ public class PrintEngine implements ControllableService
             printProgressMessage.set("");
             setPrintInProgress(true);
             setPrintProgressTitle(Lookup.i18n("PrintQueue.Printing"));
+        });
+    }
+    
+        void goToExecutingMacro()
+    {
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            printProgressMessage.unbind();
+            primaryProgressPercent.unbind();
+            if (associatedPrinter.printerStatusProperty().get() != PrinterStatus.PAUSED)
+            {
+                setPrimaryProgressPercent(0);
+            }
+            printProgressMessage.set("");
+            setPrintInProgress(true);
+            setPrintProgressTitle(associatedPrinter.macroTypeProperty().get().getI18nString());
         });
     }
 

@@ -10,6 +10,7 @@ import celtech.configuration.PauseStatus;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.SettingsScreenState;
+import celtech.printerControl.MacroType;
 import celtech.printerControl.PrintActionUnavailableException;
 import celtech.printerControl.PrintJobRejectedException;
 import celtech.printerControl.PrinterStatus;
@@ -72,6 +73,7 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.WeakHashMap;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
@@ -87,6 +89,8 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
@@ -106,6 +110,9 @@ public final class HardwarePrinter implements Printer
 
     protected final ObjectProperty<PrinterStatus> printerStatus = new SimpleObjectProperty(
         PrinterStatus.IDLE);
+    protected ObjectProperty<MacroType> macroType = new SimpleObjectProperty<>(null);
+    protected BooleanProperty macroIsInterruptible = new SimpleBooleanProperty(false);
+
     private PrinterStatus lastStateBeforePause = null;
 
     protected PrinterStatusConsumer printerStatusConsumer;
@@ -191,6 +198,22 @@ public final class HardwarePrinter implements Printer
         this.printerStatusConsumer = printerStatusConsumer;
         this.commandInterface = commandInterface;
 
+        macroType.addListener(new ChangeListener<MacroType>()
+        {
+            @Override
+            public void changed(
+                ObservableValue<? extends MacroType> observable, MacroType oldValue, MacroType newValue)
+            {
+                if (newValue != null)
+                {
+                    macroIsInterruptible.set(newValue.isInterruptible());
+                } else
+                {
+                    macroIsInterruptible.set(false);
+                }
+            }
+        });
+
         extruders.add(firstExtruderNumber, new Extruder(firstExtruderLetter));
         extruders.add(secondExtruderNumber, new Extruder(secondExtruderLetter));
 
@@ -207,8 +230,8 @@ public final class HardwarePrinter implements Printer
             .or(printerStatus.isEqualTo(PrinterStatus.PAUSING))
             .or(printerStatus.isEqualTo(PrinterStatus.POST_PROCESSING))
             .or(printerStatus.isEqualTo(PrinterStatus.SLICING))
-            .or(printerStatus.isEqualTo(PrinterStatus.SENDING_TO_PRINTER))
-            .or(printerStatus.isEqualTo(PrinterStatus.EXECUTING_MACRO))
+            .or(printerStatus.isEqualTo(PrinterStatus.SENDING_TO_PRINTER).and(macroType.isNull().or(macroType.isNotNull().and(macroIsInterruptible))))
+            .or(printerStatus.isEqualTo(PrinterStatus.EXECUTING_MACRO).and(macroIsInterruptible))
             .or(printerStatus.isEqualTo(PrinterStatus.PURGING_HEAD)));
         canRunMacro.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
             .or(printerStatus.isEqualTo(PrinterStatus.CANCELLING)));
@@ -273,7 +296,7 @@ public final class HardwarePrinter implements Printer
                     printEngine.goToPrinting();
                     break;
                 case EXECUTING_MACRO:
-                    printEngine.goToPrinting();
+                    printEngine.goToExecutingMacro();
                     break;
             }
             this.printerStatus.set(printerStatus);
@@ -284,6 +307,12 @@ public final class HardwarePrinter implements Printer
     public ReadOnlyObjectProperty<PrinterStatus> printerStatusProperty()
     {
         return printerStatus;
+    }
+
+    @Override
+    public ReadOnlyObjectProperty<MacroType> macroTypeProperty()
+    {
+        return macroType;
     }
 
     @Override
@@ -628,8 +657,14 @@ public final class HardwarePrinter implements Printer
             steno.error("Couldn't send abort command to printer");
         }
         PrinterUtils.waitOnBusy(this, cancellable);
+
+        macroType.set(MacroType.ABORT);
+
         printEngine.printGCodeFile(GCodeMacros.getFilename("abort_print"), true);
         PrinterUtils.waitOnMacroFinished(this, cancellable);
+
+        macroType.set(null);
+
         success = true;
 
         return success;
@@ -744,10 +779,13 @@ public final class HardwarePrinter implements Printer
             throw new PurgeRequiredException("Cannot execute GCode - purge required");
         }
 
+        macroType.set(MacroType.GCODE_PRINT);
+
         boolean jobAccepted = printEngine.printGCodeFile(fileName, true);
 
         if (!jobAccepted)
         {
+            macroType.set(null);
             throw new PrintJobRejectedException("Could not run GCode " + fileName + " in mode "
                 + printerStatus.get().name());
         }
@@ -766,43 +804,18 @@ public final class HardwarePrinter implements Printer
             throw new PurgeRequiredException("Cannot run macro - purge required");
         }
 
+        macroType.set(MacroType.STANDARD_MACRO);
+
         boolean jobAccepted = printEngine.printGCodeFile(GCodeMacros.getFilename(macroName), true);
 
         if (!jobAccepted)
         {
+            macroType.set(null);
             throw new PrintJobRejectedException("Macro " + macroName + " could not be run in mode "
                 + printerStatus.get().name());
         }
     }
 
-//    /**
-//     *
-//     * @param macroName
-//     * @param checkForPurge
-//     * @throws celtech.printerControl.model.PrinterException
-//     */
-//    public void executeMacro(final String macroName, boolean checkForPurge) throws PrinterException
-//    {
-//        if (!canPrintProperty.get())
-//        {
-//            throw new PrintActionUnavailableException("Cannot print at this time");
-//        }
-//        if (checkForPurge)
-//        {
-//            boolean purgeConsent = PrinterUtils.getInstance().offerPurgeIfNecessary(this);
-//
-//            if (purgeConsent)
-//            {
-//                DisplayManager.getInstance().getPurgeInsetPanelController().purgeAndRunMacro(macroName, this);
-//            } else
-//            {
-//                printEngine.printGCodeFile(GCodeMacros.getFilename(macroName), true);
-//            }
-//        } else
-//        {
-//            printEngine.printGCodeFile(GCodeMacros.getFilename(macroName), true);
-//        }
-//    }
     @Override
     public final void executeMacroWithoutPurgeCheck(String macroName) throws PrinterException
     {
@@ -811,10 +824,13 @@ public final class HardwarePrinter implements Printer
             throw new PrintActionUnavailableException("Run macro not available");
         }
 
+        macroType.set(MacroType.STANDARD_MACRO);
+
         boolean jobAccepted = printEngine.printGCodeFile(GCodeMacros.getFilename(macroName), true);
 
         if (!jobAccepted)
         {
+            macroType.set(null);
             throw new PrintJobRejectedException("Macro " + macroName + " could not be run");
         }
     }
@@ -2282,22 +2298,7 @@ public final class HardwarePrinter implements Printer
     @Override
     public void shutdown()
     {
-        switch (printerStatus.get())
-        {
-            case PRINTING:
-            case EXECUTING_MACRO:
-                try
-                {
-                    cancel(null);
-                } catch (PrinterException ex)
-                {
-                    steno.error("Error shutting down printer");
-                }
-                break;
-        }
-
         printEngine.shutdown();
-
         commandInterface.shutdown();
     }
 

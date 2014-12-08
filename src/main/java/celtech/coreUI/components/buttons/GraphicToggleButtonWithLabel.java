@@ -22,7 +22,7 @@ public class GraphicToggleButtonWithLabel extends VBox
     public GraphicToggleButtonWithLabel()
     {
         this.setAlignment(Pos.CENTER);
-        this.setPrefWidth(85);
+        this.setPrefWidth(80);
         this.setPrefHeight(80);
         this.setMinWidth(USE_PREF_SIZE);
         this.setMaxWidth(USE_PREF_SIZE);

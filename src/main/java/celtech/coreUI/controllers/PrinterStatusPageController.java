@@ -555,10 +555,23 @@ public class PrinterStatusPageController implements Initializable
                     setAdvancedControlsVisibility(true);
                     break;
                 case SENDING_TO_PRINTER:
+                    if (!lastSelectedPrinter.macroTypeProperty().isNotNull().get())
+                    {
+                        showProgressGroup.set(true);
+                    }
+                    break;
                 case PRINTING:
                     showProgressGroup.set(true);
                     setAdvancedControlsVisibility(false);
 //                    staticModelOverlay.showModelForPrintJob(lastSelectedPrinter.printJobIDProperty().get());
+                    break;
+                case EXECUTING_MACRO:
+                    if (lastSelectedPrinter.macroTypeProperty().isNotNull().get()
+                        && lastSelectedPrinter.macroTypeProperty().get().isInterruptible())
+                    {
+                        showProgressGroup.set(true);
+                    }
+                    setAdvancedControlsVisibility(false);
                     break;
                 case SLICING:
                 case POST_PROCESSING:

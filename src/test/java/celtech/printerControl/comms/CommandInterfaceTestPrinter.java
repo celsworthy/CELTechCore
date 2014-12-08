@@ -4,6 +4,7 @@ import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.printerControl.MacroType;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
@@ -34,6 +35,7 @@ import celtech.utils.AxisSpecifier;
 import celtech.utils.tasks.TaskResponder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -674,6 +676,12 @@ public class CommandInterfaceTestPrinter implements Printer
 
     @Override
     public void resetPurgeTemperature()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ReadOnlyObjectProperty<MacroType> macroTypeProperty()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
