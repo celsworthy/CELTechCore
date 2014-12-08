@@ -165,7 +165,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         printerIDDialog = new PrinterIDDialog();
 
-        material2.setVisible(false);
+        materialContainer2.setVisible(false);
         speedSliderHBox.setVisible(false);
 
         initialiseTemperatureChart();
@@ -548,7 +548,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         temperatureChart.setVisible(visible);
         temperatureChartXLabels.setVisible(visible);
         materialContainer1.setVisible(visible);
-//        materialContainer2.setVisible(visible);
 
         legendContainer.setVisible(visible);
     }
