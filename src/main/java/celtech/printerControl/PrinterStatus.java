@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl;
 
 import celtech.Lookup;
@@ -14,11 +10,11 @@ import java.util.Optional;
 public enum PrinterStatus
 {
     IDLE("printerStatus.idle"),
-    SLICING("PrintQueue.Slicing"),
-    POST_PROCESSING("PrintQueue.PostProcessing"),
-    SENDING_TO_PRINTER("PrintQueue.SendingToPrinter"),
+    SLICING("printerStatus.slicing"),
+    POST_PROCESSING("printerStatus.postProcessing"),
+    SENDING_TO_PRINTER("printerStatus.sendingToPrinter"),
     PRINTING("printerStatus.printing"),
-    EXECUTING_MACRO("PrintQueue.ExecutingMacro"),
+    EXECUTING_MACRO("printerStatus.executingMacro"),
     PAUSING("printerStatus.pausing"),
     PAUSED("printerStatus.paused"),
     RESUMING("printerStatus.resuming"),
@@ -30,7 +26,7 @@ public enum PrinterStatus
     CALIBRATING_NOZZLE_ALIGNMENT("printerStatus.calibratingNozzleAlignment"),
     CALIBRATING_NOZZLE_HEIGHT("printerStatus.calibratingNozzleHeight"),
     CALIBRATING_NOZZLE_OPENING("printerStatus.calibratingNozzleOpening"),
-    ERROR("PrintQueue.Error");
+    ERROR("printerStatus.error");
 
     private final String i18nString;
 

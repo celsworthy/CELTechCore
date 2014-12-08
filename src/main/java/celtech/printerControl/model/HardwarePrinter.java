@@ -275,6 +275,7 @@ public final class HardwarePrinter implements Printer
                 case IDLE:
                     lastStateBeforePause = null;
                     printEngine.goToIdle();
+                    macroType.set(null);
                     break;
                 case REMOVING_HEAD:
                     break;
@@ -289,7 +290,14 @@ public final class HardwarePrinter implements Printer
                 case SENDING_TO_PRINTER:
                     printEngine.goToSendingToPrinter();
                     break;
+                case PAUSING:
+                    lastStateBeforePause = this.printerStatus.get();
+                    break;
                 case PAUSED:
+                    if (this.printerStatus.get() != PrinterStatus.PAUSING)
+                    {
+                        lastStateBeforePause = this.printerStatus.get();
+                    }
                     printEngine.goToPause();
                     break;
                 case PRINTING:
@@ -300,6 +308,7 @@ public final class HardwarePrinter implements Printer
                     break;
             }
             this.printerStatus.set(printerStatus);
+            steno.info("Setting printer status to " + printerStatus);
         });
     }
 
@@ -687,8 +696,6 @@ public final class HardwarePrinter implements Printer
         {
             throw new PrintActionUnavailableException("Cannot pause at this time");
         }
-
-        lastStateBeforePause = printerStatus.get();
 
         setPrinterStatus(PrinterStatus.PAUSING);
 
@@ -2471,7 +2478,6 @@ public final class HardwarePrinter implements Printer
                     if (pauseStatus.get() != statusResponse.getPauseStatus()
                         && statusResponse.getPauseStatus() == PauseStatus.PAUSED)
                     {
-                        lastStateBeforePause = printerStatus.get();
                         setPrinterStatus(PrinterStatus.PAUSED);
                     } else if (pauseStatus.get() != statusResponse.getPauseStatus()
                         && statusResponse.getPauseStatus() == PauseStatus.NOT_PAUSED)
