@@ -672,8 +672,6 @@ public final class HardwarePrinter implements Printer
         printEngine.printGCodeFile(GCodeMacros.getFilename("abort_print"), true);
         PrinterUtils.waitOnMacroFinished(this, cancellable);
 
-        macroType.set(null);
-
         success = true;
 
         return success;

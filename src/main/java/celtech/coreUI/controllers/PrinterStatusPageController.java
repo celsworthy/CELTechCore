@@ -473,8 +473,10 @@ public class PrinterStatusPageController implements Initializable
                                     selectedPrinter.getPrintEngine().
                                     secondaryProgressProperty(),
                                     100)));
-                        progressTitle.textProperty().bind(
-                            selectedPrinter.printerStatusProperty().asString());
+                        progressTitle.textProperty().bind(Bindings.when(selectedPrinter.printerStatusProperty()
+                                .isEqualTo(PrinterStatus.EXECUTING_MACRO))
+                            .then(selectedPrinter.macroTypeProperty().asString())
+                            .otherwise(selectedPrinter.printerStatusProperty().asString()));
                         progressMessage.textProperty().bind(
                             selectedPrinter.getPrintEngine().messageProperty());
 
@@ -558,8 +560,7 @@ public class PrinterStatusPageController implements Initializable
                     if (!lastSelectedPrinter.macroTypeProperty().isNotNull().get())
                     {
                         showProgressGroup.set(true);
-                    }
-                    else
+                    } else
                     {
                         showProgressGroup.set(false);
                     }
@@ -575,8 +576,7 @@ public class PrinterStatusPageController implements Initializable
                         && lastSelectedPrinter.macroTypeProperty().get().isInterruptible())
                     {
                         showProgressGroup.set(true);
-                    }
-                    else
+                    } else
                     {
                         showProgressGroup.set(false);
                     }
