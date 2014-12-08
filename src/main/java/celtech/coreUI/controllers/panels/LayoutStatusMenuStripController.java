@@ -169,6 +169,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         if (!printer.extrudersProperty().get(0).filamentLoadedProperty().get())
         {
             Lookup.getSystemNotificationHandler().showCantPrintNoFilamentDialog();
+        } else if (settingsScreenState.getFilament() == null)
+        {
+            Lookup.getSystemNotificationHandler().showSelectAFilamentDialog();
         } else if (printer.getPrinterAncillarySystems().lidOpenProperty().get()
             && !Lookup.getUserPreferences().isOverrideSafeties())
         {
@@ -182,7 +185,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 displayManager.getPurgeInsetPanelController().purgeAndPrint(currentProject, settingsScreenState.getFilament(),
                                                                             settingsScreenState.getPrintQuality(),
                                                                             settingsScreenState.getSettings(), printer);
-                applicationStatus.setMode(ApplicationMode.STATUS);
             } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE)
             {
                 currentPrinter.resetPurgeTemperature();

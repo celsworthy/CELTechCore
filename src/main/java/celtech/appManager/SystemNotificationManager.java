@@ -91,4 +91,6 @@ public interface SystemNotificationManager
     public void showReelNotRecognisedDialog(String printerName);
 
     public void showReelUpdatedNotification();
+
+    public void showSelectAFilamentDialog();
 }

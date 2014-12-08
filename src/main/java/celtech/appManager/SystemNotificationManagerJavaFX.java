@@ -778,4 +778,16 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             });
         }
     }
+    
+        @Override
+    public void showSelectAFilamentDialog()
+    {
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            Dialogs.create().title(
+                Lookup.i18n("dialogs.cantPrintNoFilamentSelectedTitle"))
+                .message(Lookup.i18n("dialogs.cantPrintNoFilamentSelectedMessage"))
+                .masthead(null).showInformation();
+        });
+    }
 }

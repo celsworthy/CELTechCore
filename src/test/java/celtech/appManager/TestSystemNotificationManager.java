@@ -184,4 +184,9 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     public void showReelUpdatedNotification()
     {
     }
+
+    @Override
+    public void showSelectAFilamentDialog()
+    {
+    }
 }
