@@ -384,7 +384,8 @@ public class Reel implements RepairableComponent
         boolean filamentIDIsValid = false;
 
         if (filamentID != null
-            && filamentID.matches("RBX-[0-9A-Z]{3}-.*"))
+            && (filamentID.matches("RBX-[0-9A-Z]{3}-.*")
+            || filamentID.matches("^U.*")))
         {
             filamentIDIsValid = true;
         }
