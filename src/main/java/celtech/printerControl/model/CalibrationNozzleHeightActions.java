@@ -38,6 +38,7 @@ public class CalibrationNozzleHeightActions
     private final DoubleProperty zcoGUIT = new SimpleDoubleProperty();
     private double zDifference;
     private final Cancellable cancellable = new Cancellable();
+    private final PrinterErrorHandler printerErrorHandler;
 
     public CalibrationNozzleHeightActions(Printer printer)
     {
@@ -53,19 +54,23 @@ public class CalibrationNozzleHeightActions
                         zcoGUIT.set(zco.get());
                 });
             });
+        printerErrorHandler = new PrinterErrorHandler(printer, cancellable);
+        printerErrorHandler.registerForPrinterErrors();
     }
 
-    public void doInitialiseAndHeatBedAction() throws InterruptedException, PrinterException, RoboxCommsException
+    public void doInitialiseAndHeatBedAction() throws InterruptedException, PrinterException, RoboxCommsException, CalibrationException
     {
 
         zco.set(0);
 
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT);
-
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
         savedHeadData = printer.readHeadEEPROM();
 
         clearZOffsetsOnHead();
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
         heatBed();
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
 
     }
 
@@ -132,16 +137,18 @@ public class CalibrationNozzleHeightActions
         }
     }
 
-    public void doHomeZAction()
+    public void doHomeZAction() throws CalibrationException
     {
         printer.homeZ();
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
-    public void doLiftHeadAction() throws PrinterException
+    public void doLiftHeadAction() throws PrinterException, CalibrationException
     {
         printer.switchToAbsoluteMoveMode();
         printer.goToZPosition(30);
 //        printer.goToOpenDoorPosition(null);
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
     public void doMeasureZDifferenceAction() throws PrinterException, CalibrationException
@@ -157,22 +164,26 @@ public class CalibrationNozzleHeightActions
         printer.goToXYPosition(30.0, 75.0);
         PrinterUtils.waitOnBusy(printer, cancellable);
         printer.homeZ();
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
         PrinterUtils.waitOnBusy(printer, cancellable);
         printer.goToZPosition(5.0);
         PrinterUtils.waitOnBusy(printer, cancellable);
         printer.goToXYPosition(190.0, 75.0);
         PrinterUtils.waitOnBusy(printer, cancellable);
         printer.homeZ();
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
         PrinterUtils.waitOnBusy(printer, cancellable);
         printer.goToZPosition(5.0);
         PrinterUtils.waitOnBusy(printer, cancellable);
         printer.levelGantry();
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
         PrinterUtils.waitOnBusy(printer, cancellable);
         printer.goToXYPosition(105.0, 75.0);
         PrinterUtils.waitOnBusy(printer, cancellable);
-
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
         printer.homeZ();
         PrinterUtils.waitOnBusy(printer, cancellable);
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
         printer.goToZPosition(5.0);
         PrinterUtils.waitOnBusy(printer, cancellable);
 
@@ -201,6 +212,7 @@ public class CalibrationNozzleHeightActions
             }
             steno.info("Delta from " + nozzleFrom + " to " + nozzleTo + " -> " + deltaValue);
             flipFlop = !flipFlop;
+            printerErrorHandler.checkIfPrinterErrorHasOccurred();
         }
 
         printer.selectNozzle(0);
@@ -223,15 +235,17 @@ public class CalibrationNozzleHeightActions
         {
             throw new CalibrationException("ZCO could not be established");
         }
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
-    public void doIncrementZAction()
+    public void doIncrementZAction() throws CalibrationException
     {
         zco.set(zco.get() + 0.05);
         printer.goToZPosition(zco.get());
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
-    public void doDecrementZAction()
+    public void doDecrementZAction() throws CalibrationException
     {
         zco.set(zco.get() - 0.05);
         if (zco.get() < 0)
@@ -239,24 +253,33 @@ public class CalibrationNozzleHeightActions
             zco.set(0);
         }
         printer.goToZPosition(zco.get());
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
     public void doFinishedAction() throws PrinterException, RoboxCommsException
     {
+        printerErrorHandler.deregisterForPrinterErrors();
         saveSettings();
         switchHeaterOffAndRaiseHead();
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
-    public void doFailedAction() throws PrinterException, RoboxCommsException
+    public void doFailedAction() throws PrinterException, RoboxCommsException, CalibrationException
     {
+        printerErrorHandler.deregisterForPrinterErrors();
         restoreHeadData();
         switchHeaterOffAndRaiseHead();
         doBringBedToFront();
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
+    
+    public void doBringBedToFront() throws PrinterException, CalibrationException
+    {
+        printer.goToOpenDoorPositionDontWait(null);
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
+    }    
 
-    public void cancel() throws PrinterException, RoboxCommsException
+    public void cancel() throws PrinterException, RoboxCommsException, CalibrationException
     {
         cancellable.cancelled = true;
         try
@@ -326,8 +349,4 @@ public class CalibrationNozzleHeightActions
         return zcoGUIT;
     }
 
-    public void doBringBedToFront() throws PrinterException
-    {
-        printer.goToOpenDoorPositionDontWait(null);
-    }
 }

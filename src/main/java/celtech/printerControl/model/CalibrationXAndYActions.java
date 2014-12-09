@@ -26,42 +26,50 @@ public class CalibrationXAndYActions
     private HeadEEPROMDataResponse savedHeadData;
     private int xOffset = 0;
     private int yOffset = 0;
+    private final PrinterErrorHandler printerErrorHandler;
     private final Cancellable cancellable = new Cancellable();
 
     public CalibrationXAndYActions(Printer printer)
     {
         this.printer = printer;
         cancellable.cancelled = false;
+        printerErrorHandler = new PrinterErrorHandler(printer, cancellable);
+        printerErrorHandler.registerForPrinterErrors();        
     }
     
-    public void doSaveHead() throws PrinterException, RoboxCommsException, InterruptedException
+    public void doSaveHead() throws PrinterException, RoboxCommsException, InterruptedException, CalibrationException
     {
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT);
         savedHeadData = printer.readHeadEEPROM();
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }    
 
-    public void doPrintPattern() throws PrinterException, RoboxCommsException, InterruptedException
+    public void doPrintPattern() throws PrinterException, RoboxCommsException, InterruptedException, CalibrationException
     {
 //        Thread.sleep(3000);
 //        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
         printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-1_roboxised"), true);
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
         PrinterUtils.waitOnMacroFinished(printer, cancellable);
         // keep bed temp up to keep remaining part on the bed
 //        printer.goToTargetBedTemperature();
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
-    public void doSaveSettingsAndPrintCircle() throws PrinterException, InterruptedException
+    public void doSaveSettingsAndPrintCircle() throws PrinterException, InterruptedException, CalibrationException
     {
         saveSettings();
 //        Thread.sleep(3000);
 //        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
         printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-2_roboxised"), true);
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
         PrinterUtils.waitOnMacroFinished(printer, cancellable);
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
     public void doFinishedAction() throws PrinterException
     {
-
+    printerErrorHandler.deregisterForPrinterErrors();
         saveSettings();
         switchHeatersOffAndRaiseHead();
         printer.setPrinterStatus(PrinterStatus.IDLE);
@@ -69,6 +77,7 @@ public class CalibrationXAndYActions
 
     public void doFailedAction() throws PrinterException, RoboxCommsException
     {
+        printerErrorHandler.deregisterForPrinterErrors();
         restoreHeadData();
         switchHeatersOffAndRaiseHead();
         printer.setPrinterStatus(PrinterStatus.IDLE);

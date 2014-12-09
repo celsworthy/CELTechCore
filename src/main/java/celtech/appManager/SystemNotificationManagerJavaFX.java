@@ -616,6 +616,10 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     Lookup.i18n("dialogs.dontGoForPurgeTitle"),
                     Lookup.i18n("dialogs.dontGoForPurgeInstruction"),
                     false);
+                CommandLinksDialog.CommandLinksButtonType dontPrint = new CommandLinksDialog.CommandLinksButtonType(
+                    Lookup.i18n("dialogs.dontPrintTitle"),
+                    Lookup.i18n("dialogs.dontPrintInstruction"),
+                    false);
                 CommandLinksDialog purgeDialog = new CommandLinksDialog(
                     purge,
                     dontPurge,
@@ -773,27 +777,32 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 if (showContinueOption)
                 {
                     continue_
-                        = new CommandLinksDialog.CommandLinksButtonType("Continue",
-                                                                        "Ignore the error and continue",
+                        = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.error.continue"),
+                                                                        Lookup.i18n("dialogs.error.clearAndContinue"),
                                                                         true);
                     choices.add(continue_);
                 }
                 if (showAbortOption)
                 {
                     abort
-                        = new CommandLinksDialog.CommandLinksButtonType("Abort",
-                                                                        "Abort the process",
+                        = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.error.abort"),
+                                                                        Lookup.i18n("dialogs.error.abortProcess"),
                                                                         true);
                     choices.add(abort);
                 }
                 if (showRetryOption)
                 {
                     retry
-                        = new CommandLinksDialog.CommandLinksButtonType("Retry",
-                                                                        "Retry the process",
+                        = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.error.retry"),
+                                                                        Lookup.i18n("dialogs.error.retryProcess"),
                                                                         true);
                     choices.add(retry);
                 }
+//                
+//                CommandLinksDialog.CommandLinksButtonType test = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.error.retry"),
+//                                                                        Lookup.i18n("dialogs.error.retryProcess"),
+//                                                                        true);
+//                choices.add(test);
 
                 CommandLinksDialog errorDialog = new CommandLinksDialog(choices);
                 errorDialog.setTitle(title);
@@ -824,6 +833,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             return Optional.empty();
         }
 
+    }
+
     public void showCantPrintNoFilamentDialog()
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
@@ -846,7 +857,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 .masthead(null).showInformation();
         });
     }
-    
+
     @Override
     public void showReelUpdatedNotification()
     {
@@ -879,8 +890,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             });
         }
     }
-    
-        @Override
+
+    @Override
     public void showSelectAFilamentDialog()
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
