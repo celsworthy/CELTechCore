@@ -148,7 +148,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private boolean captureKeys = false;
 
-    private StackPane rootStack;
+    private AnchorPane root;
     private Pane spinnerContainer;
     private Spinner spinner;
 
@@ -345,7 +345,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             "application.title")
             + " - " + ApplicationConfiguration.getApplicationVersion());
 
-        rootStack = new StackPane();
+        root = new AnchorPane();
 
         spinnerContainer = new Pane();
         spinnerContainer.setMouseTransparent(true);
@@ -355,8 +355,13 @@ public class DisplayManager implements EventHandler<KeyEvent>
         mainHolder = new HBox();
         mainHolder.setPrefSize(-1, -1);
 
-        rootStack.getChildren().add(mainHolder);
-        rootStack.getChildren().add(spinnerContainer);
+        AnchorPane.setBottomAnchor(mainHolder, 0.0);
+        AnchorPane.setLeftAnchor(mainHolder, 0.0);
+        AnchorPane.setRightAnchor(mainHolder, 0.0);
+        AnchorPane.setTopAnchor(mainHolder, 0.0);
+
+        root.getChildren().add(mainHolder);
+        root.getChildren().add(spinnerContainer);
 
         // Load in all of the side panels
         for (ApplicationMode mode : ApplicationMode.values())
@@ -502,7 +507,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         projectLoader = new ProjectLoader();
 
-        scene = new Scene(rootStack, ApplicationConfiguration.DEFAULT_WIDTH,
+        scene = new Scene(root, ApplicationConfiguration.DEFAULT_WIDTH,
                           ApplicationConfiguration.DEFAULT_HEIGHT);
 
         scene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
@@ -518,7 +523,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         loadProjectsAtStartup();
 
-//        mainHolder.layout();
+        root.layout();
     }
 
     private void setupPanelsForMode(ApplicationMode mode)
