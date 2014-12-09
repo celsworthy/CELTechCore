@@ -39,6 +39,7 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -150,7 +151,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private AnchorPane root;
     private Pane spinnerContainer;
+    private Pane tipArrowContainer;
     private Spinner spinner;
+    
+    private BooleanProperty nodesMayHaveMoved = new SimpleBooleanProperty(false);
 
     private DisplayManager()
     {
@@ -349,8 +353,18 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         spinnerContainer = new Pane();
         spinnerContainer.setMouseTransparent(true);
+        spinnerContainer.setPickOnBounds(false);
         spinner = new Spinner();
         spinnerContainer.getChildren().add(spinner);
+
+        tipArrowContainer = new Pane();
+        AnchorPane.setBottomAnchor(root, 0.0);
+        AnchorPane.setLeftAnchor(root, 0.0);
+        AnchorPane.setRightAnchor(root, 0.0);
+        AnchorPane.setTopAnchor(root, 0.0);
+        
+        tipArrowContainer.setMouseTransparent(true);
+        tipArrowContainer.setPickOnBounds(false);
 
         mainHolder = new HBox();
         mainHolder.setPrefSize(-1, -1);
@@ -362,6 +376,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         root.getChildren().add(mainHolder);
         root.getChildren().add(spinnerContainer);
+        root.getChildren().add(tipArrowContainer);
 
         // Load in all of the side panels
         for (ApplicationMode mode : ApplicationMode.values())
@@ -511,6 +526,36 @@ public class DisplayManager implements EventHandler<KeyEvent>
                           ApplicationConfiguration.DEFAULT_HEIGHT);
 
         scene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
+        
+        scene.widthProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(
+                ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            {
+                fireNodeMayHaveMovedTrigger();
+            }
+        });
+
+        scene.heightProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(
+                ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            {
+                fireNodeMayHaveMovedTrigger();
+            }
+        });
+        
+        slideoutAndProjectHolder.widthProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(
+                ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            {
+                fireNodeMayHaveMovedTrigger();
+            }
+        });
 
         captureHiddenKeys();
 
@@ -928,5 +973,20 @@ public class DisplayManager implements EventHandler<KeyEvent>
             scene.addEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
             captureKeys = true;
         }
+    }
+    
+    private void fireNodeMayHaveMovedTrigger()
+    {
+        nodesMayHaveMoved.set(!nodesMayHaveMoved.get());
+    }
+    
+    public ReadOnlyBooleanProperty nodesMayHaveMovedProperty()
+    {
+        return nodesMayHaveMoved;
+    }
+
+    public Pane getTipArrowContainer()
+    {
+        return tipArrowContainer;
     }
 }
