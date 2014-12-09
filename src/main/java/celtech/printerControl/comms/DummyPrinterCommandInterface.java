@@ -77,6 +77,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
     HeaterMode nozzleHeaterMode = HeaterMode.OFF;
     protected int currentNozzleTemperature = ROOM_TEMPERATURE;
     protected int nozzleTargetTemperature = 210;
+    private boolean errorTriggered;
 
     public DummyPrinterCommandInterface(PrinterStatusConsumer controlInterface, String portName,
         boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks, String printerName)
@@ -120,6 +121,14 @@ public class DummyPrinterCommandInterface extends CommandInterface
             response = (RoboxRxPacket) idResponse;
         } else if (messageToWrite instanceof StatusRequest)
         {
+            if (errorTriggered) {
+                clearAllErrors();
+            }
+            if (!errorTriggered && currentNozzleTemperature > 50) {
+                errorTriggered = true;
+                raiseError(FirmwareError.ERROR_NOZZLE_FLUSH_NEEDED);
+            }
+            
             currentStatus.setAmbientTemperature((int) (Math.random() * 100));
             if (nozzleHeaterMode != HeaterMode.OFF && currentNozzleTemperature < nozzleTargetTemperature)
             {

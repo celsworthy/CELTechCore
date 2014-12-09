@@ -1,12 +1,12 @@
 package celtech.appManager;
 
 import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.model.Printer;
 import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
 import celtech.utils.tasks.TaskResponder;
+import java.util.Optional;
 
 /**
  *
@@ -15,6 +15,10 @@ import celtech.utils.tasks.TaskResponder;
 public interface SystemNotificationManager
 {
 
+    public enum PrinterErrorChoice {
+        CONTINUE, ABORT, RETRY;
+    }
+    
     void showInformationNotification(String title, String message);
 
     void showWarningNotification(String title, String message);
@@ -83,4 +87,11 @@ public interface SystemNotificationManager
     public void showProgramInvalidHeadDialog(TaskResponder<HeadFile> taskResponse);
 
     public void showHeadNotRecognisedDialog(String printerName);
+    
+     /**
+     * Show a dialog to the user asking them to choose between available Continue, Abort or
+     * Retry actions when a printer error has occurred.
+     */
+    public Optional<PrinterErrorChoice> showPrinterErrorDialog(String title, String message, boolean showContinueOption,
+        boolean showAbortOption, boolean showRetryOption);
 }

@@ -201,7 +201,7 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
 
             arrivals = new HashMap<>();
 
-            arrivals.put(TestState.DONE, new ArrivalAction<>((TaskExecutor.NoArgsConsumer) () ->
+            arrivals.put(TestState.DONE, new ArrivalAction<>((TaskExecutor.NoArgsVoidFunc) () ->
                      {
                          actions.doDoneAction();
             }, TestState.FAILED));

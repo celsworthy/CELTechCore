@@ -10,7 +10,7 @@ public interface TaskExecutor
     /**
      * A point interface (ie only one method) that takes no arguments and returns void.
      */
-    public interface NoArgsConsumer {
+    public interface NoArgsVoidFunc {
         void run() throws Exception;
     }
     
@@ -26,6 +26,6 @@ public interface TaskExecutor
      * @param failureHandler This will be run if the function fails (i.e. raises an Exception).
      * @param taskName The name of the task, which is used as the name of the thread
      */
-    public void runAsTask(NoArgsConsumer action, NoArgsConsumer successHandler,
-        NoArgsConsumer failureHandler, String taskName);
+    public void runAsTask(NoArgsVoidFunc action, NoArgsVoidFunc successHandler,
+        NoArgsVoidFunc failureHandler, String taskName);
 }

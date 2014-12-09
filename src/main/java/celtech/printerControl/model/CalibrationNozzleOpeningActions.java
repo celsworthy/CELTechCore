@@ -4,6 +4,9 @@
 package celtech.printerControl.model;
 
 import celtech.Lookup;
+import celtech.appManager.SystemNotificationManager.PrinterErrorChoice;
+import static celtech.appManager.SystemNotificationManager.PrinterErrorChoice.ABORT;
+import static celtech.appManager.SystemNotificationManager.PrinterErrorChoice.CONTINUE;
 import celtech.configuration.HeaterMode;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.GCodeMacros;
@@ -13,9 +16,12 @@ import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.comms.events.ErrorConsumer;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
-import celtech.utils.tasks.TaskExecutor.NoArgsConsumer;
+import celtech.utils.tasks.TaskExecutor.NoArgsVoidFunc;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.ReadOnlyFloatProperty;
 import javafx.beans.property.SimpleFloatProperty;
@@ -27,7 +33,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author tony
  */
-public class CalibrationNozzleOpeningActions implements ErrorConsumer
+public class CalibrationNozzleOpeningActions
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -43,7 +49,6 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
     private final FloatProperty bPositionGUIT = new SimpleFloatProperty();
 
     private final Cancellable cancellable = new Cancellable();
-    private boolean errorsConsumed = false;
     private boolean errorOccurred = true;
 
     public CalibrationNozzleOpeningActions(Printer printer)
@@ -60,37 +65,79 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
                         bPositionGUIT.set(nozzlePosition.get());
                 });
             });
+        registerForPrinterErrors();
     }
-    
-    private void wrapInPrinterErrorCheck(NoArgsConsumer action, NoArgsConsumer continueHandler,
-        NoArgsConsumer abortHandler, NoArgsConsumer retryHandler) throws Exception {
+
+    NoArgsVoidFunc continueHandler = null;
+    NoArgsVoidFunc retryHandler = null;
+    NoArgsVoidFunc abortHandler = () ->
+    {
+        cancellable.cancelled = true;
+        throw new CalibrationException("An error occurred with the printer");
+    };
+
+    /**
+     * Check if a printer error has occurred and if so raise an exception so as to cause the calling
+     * action to fail.
+     */
+    private void checkIfPrinterErrorHasOccurred() throws CalibrationException
+    {
+        if (errorOccurred)
+        {
+            showPrinterErrorOccurred(continueHandler, abortHandler, retryHandler);
+        }
+    }
+
+    ErrorConsumer errorConsumer = (FirmwareError error) ->
+    {
+        cancellable.cancelled = true;
+        errorOccurred = true;
+    };
+
+    private void registerForPrinterErrors()
+    {
         errorOccurred = false;
         List<FirmwareError> errors = new ArrayList<>();
         errors.add(FirmwareError.ALL_ERRORS);
-        
-        ErrorConsumer errorConsumer = (FirmwareError error) ->
-        {
-            errorOccurred = true;
-        };
         printer.registerErrorConsumer(errorConsumer, errors);
-        
-        action.run();
-        printer.deregisterErrorConsumer(errorConsumer);
-        
-        if (errorOccurred) {
-            throw new CalibrationException("Printer errors were detected");
-        }
-        
-    }
-    
-    public void doHeatingActionHandled() throws Exception {
-        wrapInPrinterErrorCheck(this::doHeatingAction, null, null, null);
     }
 
+    private void deregisterForPrinterErrors()
+    {
+        printer.deregisterErrorConsumer(errorConsumer);
+    }
+
+//    private void wrapInPrinterErrorCheck(NoArgsVoidFunc action, NoArgsVoidFunc continueHandler,
+//        NoArgsVoidFunc abortHandler, NoArgsVoidFunc retryHandler) throws Exception
+//    {
+//        errorOccurred = false;
+//        List<FirmwareError> errors = new ArrayList<>();
+//        errors.add(FirmwareError.ALL_ERRORS);
+//
+//        ErrorConsumer errorConsumer = (FirmwareError error) ->
+//        {
+//            errorOccurred = true;
+//        };
+//        printer.registerErrorConsumer(errorConsumer, errors);
+//
+//        try
+//        {
+//            action.run();
+//        } finally
+//        {
+//            printer.deregisterErrorConsumer(errorConsumer);
+//        }
+//    }
+//    public void doHeatingActionHandled() throws Exception
+//    {
+//        wrapInPrinterErrorCheck(this::doHeatingAction, continueHandler, abortHandler, retryHandler);
+//    }
     public void doHeatingAction() throws RoboxCommsException, PrinterException, InterruptedException, CalibrationException
     {
         printer.inhibitHeadIntegrityChecks(true);
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_OPENING);
+
+        checkIfPrinterErrorHasOccurred();
 
         savedHeadData = printer.readHeadEEPROM();
         printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
@@ -109,6 +156,8 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
                                         savedHeadData.getLastFilamentTemperature(),
                                         savedHeadData.getHeadHours());
 
+        checkIfPrinterErrorHasOccurred();
+
         printer.goToTargetNozzleTemperature();
         if (PrinterUtils.waitOnBusy(printer, cancellable) == false)
         {
@@ -119,7 +168,7 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
                 printer.goToZPosition(50);
                 if (PrinterUtils.waitOnBusy(printer, cancellable) == false)
                 {
-                    
+
 //                                if (printer.headProperty().get().getNozzleHeaters().size() < 1) {
 //                                    
 //                                }
@@ -143,30 +192,33 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
                             .nozzleTargetTemperatureProperty().get(), 5, 300, cancellable);
                     }
                     printer.switchOnHeadLEDs();
-                } 
-            } 
+                }
+            }
         }
+        checkIfPrinterErrorHasOccurred();
     }
 
     public void doNoMaterialCheckAction()
     {
         extrudeUntilStall(0);
     }
-    
-    public void doT0Extrusion() throws PrinterException {
+
+    public void doT0Extrusion() throws PrinterException
+    {
         printer.selectNozzle(0);
         printer.openNozzleFullyExtra();
         printer.sendRawGCode("G1 E10 F300", false);
         PrinterUtils.waitOnBusy(printer, cancellable);
     }
-    
-    public void doT1Extrusion() throws PrinterException {
+
+    public void doT1Extrusion() throws PrinterException
+    {
         printer.selectNozzle(1);
         printer.openNozzleFullyExtra();
         printer.sendRawGCode("G1 E15 F600", false);
         PrinterUtils.waitOnBusy(printer, cancellable);
         printer.closeNozzleFully();
-    }      
+    }
 
     public void doPreCalibrationPrimingFine() throws RoboxCommsException
     {
@@ -189,7 +241,7 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
                                         savedHeadData.getHeadHours());
         extrudeUntilStall(0);
     }
-    
+
     public void doCalibrateFineNozzle()
     {
         printer.gotoNozzlePosition(nozzlePosition.get());
@@ -245,7 +297,7 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
         return true;
     }
 
-    public void doConfirmNoMaterialAction()throws PrinterException, RoboxCommsException, InterruptedException
+    public void doConfirmNoMaterialAction() throws PrinterException, RoboxCommsException, InterruptedException
     {
         // set to just about to be open
         saveSettings();
@@ -258,7 +310,7 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
         nozzlePosition.set(0);
     }
 
-    public void doConfirmMaterialExtrudingAction() throws PrinterException 
+    public void doConfirmMaterialExtrudingAction() throws PrinterException
     {
         printer.selectNozzle(0);
         printer.openNozzleFully();
@@ -272,6 +324,7 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
 
     public void doFinishedAction() throws RoboxCommsException
     {
+        deregisterForPrinterErrors();
         saveSettings();
         turnHeaterAndLEDSOff();
         printer.inhibitHeadIntegrityChecks(false);
@@ -280,6 +333,7 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
 
     public void doFailedAction() throws RoboxCommsException
     {
+        deregisterForPrinterErrors();
         restoreHeadState();
         turnHeaterAndLEDSOff();
         printer.inhibitHeadIntegrityChecks(false);
@@ -373,15 +427,46 @@ public class CalibrationNozzleOpeningActions implements ErrorConsumer
         }
     }
 
-    @Override
-    public void consume(FirmwareError error)
-    {
-        errorsConsumed = true;
-    }
-
     public ReadOnlyFloatProperty getBPositionGUITProperty()
     {
         return bPositionGUIT;
+    }
+
+    /**
+     * Show a dialog to the user asking them to choose between available Continue, Abort or Retry
+     * actions. Call the chosen handler.
+     */
+    private void showPrinterErrorOccurred(NoArgsVoidFunc continueHandler,
+        NoArgsVoidFunc abortHandler, NoArgsVoidFunc retryHandler) throws CalibrationException
+    {
+        try
+        {
+            Optional<PrinterErrorChoice> choice = Lookup.getSystemNotificationHandler().showPrinterErrorDialog(
+                "Calibration", "The printer hsa experienced an error during calibration",
+                continueHandler != null, abortHandler != null, retryHandler != null);
+            if (!choice.isPresent())
+            {
+                cancellable.cancelled = true;
+                abortHandler.run();
+                return;
+            }
+            switch (choice.get())
+            {
+                case CONTINUE:
+                    continueHandler.run();
+                    break;
+                case ABORT:
+                    cancellable.cancelled = true;
+                    abortHandler.run();
+                    break;
+                case RETRY:
+                    retryHandler.run();
+                    break;
+            }
+        } catch (Exception ex)
+        {
+            throw new CalibrationException(ex.getMessage());
+        }
     }
 
 }

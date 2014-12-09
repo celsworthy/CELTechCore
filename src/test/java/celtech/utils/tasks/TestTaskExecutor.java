@@ -47,8 +47,8 @@ public class TestTaskExecutor implements TaskExecutor
     }
 
     @Override
-    public void runAsTask(NoArgsConsumer action, NoArgsConsumer successHandler,
-        NoArgsConsumer failureHandler, String taskName)
+    public void runAsTask(NoArgsVoidFunc action, NoArgsVoidFunc successHandler,
+        NoArgsVoidFunc failureHandler, String taskName)
     {
         try
         {

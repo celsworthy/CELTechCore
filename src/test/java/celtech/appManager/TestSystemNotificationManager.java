@@ -6,6 +6,7 @@ import celtech.printerControl.model.Printer;
 import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
 import celtech.utils.tasks.TaskResponder;
+import java.util.Optional;
 
 /**
  *
@@ -163,5 +164,12 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     @Override
     public void showHeadNotRecognisedDialog(String printerName)
     {
+    }
+
+    @Override
+    public Optional<PrinterErrorChoice> showPrinterErrorDialog(String title, String message,
+        boolean showContinueOption, boolean showAbortOption, boolean showRetryOption)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

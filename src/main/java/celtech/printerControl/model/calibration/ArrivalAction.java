@@ -19,13 +19,13 @@ public class ArrivalAction<StateType>
      * false indicates the action was cancelled. To indicate a failure the action must throw an
      * exception.
      */
-    final TaskExecutor.NoArgsConsumer action;
+    final TaskExecutor.NoArgsVoidFunc action;
     /**
      * The state to go to if this actions fails (ie an exception is thrown by the {@link #action}).
      */
     StateType failedState;
 
-    public ArrivalAction(TaskExecutor.NoArgsConsumer action, StateType failedState)
+    public ArrivalAction(TaskExecutor.NoArgsVoidFunc action, StateType failedState)
     {
         this.action = action;
         this.failedState = failedState;

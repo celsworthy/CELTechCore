@@ -37,10 +37,10 @@ public class StateTransition<T>
      * If an action is declared then it takes no arguments and returns void. To indicate
      * a failure an exception should be raised.
      */
-    final TaskExecutor.NoArgsConsumer action;
+    final TaskExecutor.NoArgsVoidFunc action;
 
     public StateTransition(T fromState, StateTransitionManager.GUIName guiName, 
-        T toState, TaskExecutor.NoArgsConsumer action, T failedState)
+        T toState, TaskExecutor.NoArgsVoidFunc action, T failedState)
     {
         this.fromState = fromState;
         this.toState = toState;

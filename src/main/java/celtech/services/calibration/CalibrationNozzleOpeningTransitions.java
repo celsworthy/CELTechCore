@@ -96,7 +96,7 @@ public class CalibrationNozzleOpeningTransitions implements Transitions
                                             NozzleOpeningCalibrationState.NO_MATERIAL_CHECK,
                                             () ->
                                             {
-                                                actions.doHeatingActionHandled();
+                                                actions.doHeatingAction();
                                             },
                                             NozzleOpeningCalibrationState.FAILED));
 

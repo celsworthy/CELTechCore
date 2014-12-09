@@ -15,6 +15,7 @@ import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
 import celtech.utils.tasks.TaskResponder;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -33,7 +34,8 @@ import org.controlsfx.dialog.Dialogs;
 public class SystemNotificationManagerJavaFX implements SystemNotificationManager
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(SystemNotificationManagerJavaFX.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        SystemNotificationManagerJavaFX.class.getName());
     private boolean errorDialogOnDisplay = false;
 
     /*
@@ -125,10 +127,14 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (clearOnly == null)
         {
-            clearOnly = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.error.clearOnly"), false);
-            clearOnlyDefault = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.error.clearOnly"), true);
-            clearAndContinueDefault = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.error.clearAndContinue"), true);
-            abortJob = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.error.abortJob"), false);
+            clearOnly = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n(
+                "dialogs.error.clearOnly"), false);
+            clearOnlyDefault = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n(
+                "dialogs.error.clearOnly"), true);
+            clearAndContinueDefault = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n(
+                "dialogs.error.clearAndContinue"), true);
+            abortJob = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n(
+                "dialogs.error.abortJob"), false);
         }
 
         Lookup.getTaskExecutor().runOnGUIThread(() ->
@@ -152,7 +158,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     errorHandlingResponse = printerErrorDialog.showAndWait();
                 } else
                 {
-                    CommandLinksDialog printerErrorDialog = new CommandLinksDialog(clearOnlyDefault, abortJob);
+                    CommandLinksDialog printerErrorDialog = new CommandLinksDialog(clearOnlyDefault,
+                                                                                   abortJob);
                     printerErrorDialog.setTitle(Lookup.i18n("dialogs.error.errorEncountered"));
                     printerErrorDialog.setContentText(error.getLocalisedErrorText());
                     errorHandlingResponse = printerErrorDialog.showAndWait();
@@ -191,8 +198,10 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (okCalibrate == null)
         {
-            okCalibrate = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.headUpdateCalibrationYes"), true);
-            dontCalibrate = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.headUpdateCalibrationNo"), false);
+            okCalibrate = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n(
+                "dialogs.headUpdateCalibrationYes"), true);
+            dontCalibrate = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n(
+                "dialogs.headUpdateCalibrationNo"), false);
         }
 
         Lookup.getTaskExecutor().runOnGUIThread(() ->
@@ -202,7 +211,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 dontCalibrate
             );
             calibrationDialog.setTitle(Lookup.i18n("dialogs.headUpdateCalibrationRequiredTitle"));
-            calibrationDialog.setContentText(Lookup.i18n("dialogs.headUpdateCalibrationRequiredInstruction"));
+            calibrationDialog.setContentText(Lookup.i18n(
+                "dialogs.headUpdateCalibrationRequiredInstruction"));
             Optional<ButtonType> calibrationResponse = calibrationDialog.showAndWait();
 
             if (calibrationResponse.get() == okCalibrate.getButtonType())
@@ -217,8 +227,9 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
-            Notifier.showInformationNotification(Lookup.i18n("notification.headSettingsUpdatedTitle"),
-                                                 Lookup.i18n("notification.noActionRequired"));
+            Notifier.showInformationNotification(
+                Lookup.i18n("notification.headSettingsUpdatedTitle"),
+                Lookup.i18n("notification.noActionRequired"));
         });
     }
 
@@ -240,43 +251,50 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     @Override
     public void showSliceFailedNotification()
     {
-        showErrorNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.sliceFailed"));
+        showErrorNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
+                              "notification.sliceFailed"));
     }
 
     @Override
     public void showSliceSuccessfulNotification()
     {
-        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.sliceSuccessful"));
+        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
+                                    "notification.sliceSuccessful"));
     }
 
     @Override
     public void showGCodePostProcessFailedNotification()
     {
-        showErrorNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.gcodePostProcessFailed"));
+        showErrorNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
+                              "notification.gcodePostProcessFailed"));
     }
 
     @Override
     public void showGCodePostProcessSuccessfulNotification()
     {
-        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.gcodePostProcessSuccessful"));
+        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
+                                    "notification.gcodePostProcessSuccessful"));
     }
 
     @Override
     public void showPrintJobCancelledNotification()
     {
-        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.printJobCancelled"));
+        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
+                                    "notification.printJobCancelled"));
     }
 
     @Override
     public void showPrintJobFailedNotification()
     {
-        showErrorNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.printJobFailed"));
+        showErrorNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
+                              "notification.printJobFailed"));
     }
 
     @Override
     public void showPrintTransferSuccessfulNotification(String printerName)
     {
-        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.printTransferredSuccessfully")
+        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
+                                    "notification.printTransferredSuccessfully")
                                     + " "
                                     + printerName + "\n"
                                     + Lookup.i18n("notification.printTransferredSuccessfullyEnd"));
@@ -285,19 +303,22 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     @Override
     public void showPrintTransferInitiatedNotification()
     {
-        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.printTransferInitiated"));
+        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
+                                    "notification.printTransferInitiated"));
     }
 
     @Override
     public void showReprintStartedNotification()
     {
-        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.reprintInitiated"));
+        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
+                                    "notification.reprintInitiated"));
     }
 
     @Override
     public void showDetectedPrintInProgressNotification()
     {
-        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n("notification.activePrintDetected"));
+        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
+                                    "notification.activePrintDetected"));
     }
 
     @Override
@@ -336,12 +357,16 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (firmwareUpdateOK == null)
         {
-            firmwareUpdateOK = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.firmwareUpdateOKTitle"),
-                                                                              Lookup.i18n("dialogs.firmwareUpdateOKMessage"),
-                                                                              true);
-            firmwareUpdateNotOK = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.firmwareUpdateNotOKTitle"),
-                                                                                 Lookup.i18n("dialogs.firmwareUpdateNotOKMessage"),
-                                                                                 false);
+            firmwareUpdateOK = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n(
+                "dialogs.firmwareUpdateOKTitle"),
+                                                                             Lookup.i18n(
+                                                                                 "dialogs.firmwareUpdateOKMessage"),
+                                                                             true);
+            firmwareUpdateNotOK = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n(
+                "dialogs.firmwareUpdateNotOKTitle"),
+                                                                                Lookup.i18n(
+                                                                                    "dialogs.firmwareUpdateNotOKMessage"),
+                                                                                false);
         }
 
         Callable<Boolean> askUserToUpgradeDialog = new Callable()
@@ -353,10 +378,11 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     firmwareUpdateOK,
                     firmwareUpdateNotOK
                 );
-                
+
 //                firmwareUpgradeDialog.getDialogPane().getStylesheets().add(ApplicationConfiguration.getDialogsCSSFile());
 //                firmwareUpgradeDialog.getDialogPane().getStyleClass().add("dialog-commands");
-                firmwareUpdateDialog.getDialogPane().setStyle("-fx-wrap-text: true; -fx-font-size: 13px; -fx-font-family: 'Source Sans Pro Regular';");
+                firmwareUpdateDialog.getDialogPane().setStyle(
+                    "-fx-wrap-text: true; -fx-font-size: 13px; -fx-font-family: 'Source Sans Pro Regular';");
                 firmwareUpdateDialog.setTitle(Lookup.i18n("dialogs.firmwareUpdateTitle"));
                 firmwareUpdateDialog.setContentText(Lookup.i18n("dialogs.firmwareUpdateError"));
                 Optional<ButtonType> firmwareUpgradeResponse = firmwareUpdateDialog.showAndWait();
@@ -455,7 +481,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             }
         };
 
-        FutureTask<Boolean> askUserWhetherToOpenDoorTask = new FutureTask<>(askUserWhetherToOpenDoorDialog);
+        FutureTask<Boolean> askUserWhetherToOpenDoorTask = new FutureTask<>(
+            askUserWhetherToOpenDoorDialog);
         Lookup.getTaskExecutor().runOnGUIThread(askUserWhetherToOpenDoorTask);
         try
         {
@@ -505,7 +532,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             }
         };
 
-        FutureTask<Boolean> askUserWhetherToLoadModelTask = new FutureTask<>(askUserWhetherToLoadModel);
+        FutureTask<Boolean> askUserWhetherToLoadModelTask = new FutureTask<>(
+            askUserWhetherToLoadModel);
         Lookup.getTaskExecutor().runOnGUIThread(askUserWhetherToLoadModelTask);
         try
         {
@@ -581,12 +609,14 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             @Override
             public Boolean call() throws Exception
             {
-                CommandLinksDialog.CommandLinksButtonType purge = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.goForPurgeTitle"),
-                                                                                                                Lookup.i18n("dialogs.goForPurgeInstruction"),
-                                                                                                                true);
-                CommandLinksDialog.CommandLinksButtonType dontPurge = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.dontGoForPurgeTitle"),
-                                                                                                                    Lookup.i18n("dialogs.dontGoForPurgeInstruction"),
-                                                                                                                    false);
+                CommandLinksDialog.CommandLinksButtonType purge = new CommandLinksDialog.CommandLinksButtonType(
+                    Lookup.i18n("dialogs.goForPurgeTitle"),
+                    Lookup.i18n("dialogs.goForPurgeInstruction"),
+                    true);
+                CommandLinksDialog.CommandLinksButtonType dontPurge = new CommandLinksDialog.CommandLinksButtonType(
+                    Lookup.i18n("dialogs.dontGoForPurgeTitle"),
+                    Lookup.i18n("dialogs.dontGoForPurgeInstruction"),
+                    false);
                 CommandLinksDialog purgeDialog = new CommandLinksDialog(
                     purge,
                     dontPurge
@@ -623,18 +653,21 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             @Override
             public Boolean call() throws Exception
             {
-                CommandLinksDialog.CommandLinksButtonType shutdown = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.shutDownAndTerminateTitle"),
-                                                                                                                   Lookup.i18n("dialogs.shutDownAndTerminateMessage"),
-                                                                                                                   false);
-                CommandLinksDialog.CommandLinksButtonType dontShutdown = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.dontShutDownTitle"),
-                                                                                                                       Lookup.i18n("dialogs.dontShutDownMessage"),
-                                                                                                                       true);
+                CommandLinksDialog.CommandLinksButtonType shutdown = new CommandLinksDialog.CommandLinksButtonType(
+                    Lookup.i18n("dialogs.shutDownAndTerminateTitle"),
+                    Lookup.i18n("dialogs.shutDownAndTerminateMessage"),
+                    false);
+                CommandLinksDialog.CommandLinksButtonType dontShutdown = new CommandLinksDialog.CommandLinksButtonType(
+                    Lookup.i18n("dialogs.dontShutDownTitle"),
+                    Lookup.i18n("dialogs.dontShutDownMessage"),
+                    true);
                 CommandLinksDialog shutdownDialog = new CommandLinksDialog(
                     shutdown,
                     dontShutdown
                 );
                 shutdownDialog.setTitle(Lookup.i18n("dialogs.printJobsAreStillTransferringTitle"));
-                shutdownDialog.setContentText(Lookup.i18n("dialogs.printJobsAreStillTransferringMessage"));
+                shutdownDialog.setContentText(Lookup.i18n(
+                    "dialogs.printJobsAreStillTransferringMessage"));
 
                 Optional<ButtonType> shutdownResponse = shutdownDialog.showAndWait();
 
@@ -677,7 +710,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     chosenFile = chosenFileOption.get();
                 }
 
-                Lookup.getTaskExecutor().respondOnGUIThread(responder, chosenFile != null, "Head profile chosen", chosenFile);
+                Lookup.getTaskExecutor().respondOnGUIThread(responder, chosenFile != null,
+                                                            "Head profile chosen", chosenFile);
                 programInvalidHeadDialogOnDisplay = false;
             });
         }
@@ -704,5 +738,78 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 headNotRecognisedDialogOnDisplay = false;
             });
         }
+    }
+
+    @Override
+    public Optional<PrinterErrorChoice> showPrinterErrorDialog(String title, String message,
+        boolean showContinueOption, boolean showAbortOption, boolean showRetryOption)
+    {
+        if (!showContinueOption && !showAbortOption && !showRetryOption)
+        {
+            throw new RuntimeException("Must allow one option to be shown");
+        }
+        Callable<PrinterErrorChoice> askUserToRespondToPrinterError = new Callable()
+        {
+            @Override
+            public PrinterErrorChoice call() throws Exception
+            {
+                CommandLinksDialog.CommandLinksButtonType continue_ = null;
+                CommandLinksDialog.CommandLinksButtonType abort = null;
+                CommandLinksDialog.CommandLinksButtonType retry = null;
+                List<CommandLinksDialog.CommandLinksButtonType> choices = new ArrayList<>();
+                if (showContinueOption)
+                {
+                    continue_
+                        = new CommandLinksDialog.CommandLinksButtonType("Continue",
+                                                                        "Ignore the error and continue",
+                                                                        true);
+                    choices.add(continue_);
+                }
+                if (showAbortOption)
+                {
+                    abort
+                        = new CommandLinksDialog.CommandLinksButtonType("Abort",
+                                                                        "Abort the process",
+                                                                        true);
+                    choices.add(abort);
+                }
+                if (showRetryOption)
+                {
+                    retry
+                        = new CommandLinksDialog.CommandLinksButtonType("Retry",
+                                                                        "Retry the process",
+                                                                        true);
+                    choices.add(retry);
+                }
+
+                CommandLinksDialog errorDialog = new CommandLinksDialog(choices);
+                errorDialog.setTitle(title);
+                errorDialog.setContentText(message);
+
+                Optional<ButtonType> errorResponse = errorDialog.showAndWait();
+
+                if (continue_ != null && errorResponse.get().equals(continue_.getButtonType()))
+                {
+                    return PrinterErrorChoice.CONTINUE;
+                } else if (abort != null && errorResponse.get().equals(abort.getButtonType()))
+                {
+                    return PrinterErrorChoice.ABORT;
+                }
+                return PrinterErrorChoice.RETRY;
+            }
+        };
+
+        FutureTask<PrinterErrorChoice> askContinueAbortTask = new FutureTask<>(
+            askUserToRespondToPrinterError);
+        Lookup.getTaskExecutor().runOnGUIThread(askContinueAbortTask);
+        try
+        {
+            return Optional.of(askContinueAbortTask.get());
+        } catch (InterruptedException | ExecutionException ex)
+        {
+            steno.error("Error during printer error query");
+            return Optional.empty();
+        }
+
     }
 }

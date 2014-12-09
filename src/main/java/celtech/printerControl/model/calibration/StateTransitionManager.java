@@ -145,11 +145,11 @@ public class StateTransitionManager<StateType>
 
             ArrivalAction<StateType> arrival = arrivals.get(state);
 
-            TaskExecutor.NoArgsConsumer nullAction = () ->
+            TaskExecutor.NoArgsVoidFunc nullAction = () ->
             {
             };
 
-            TaskExecutor.NoArgsConsumer gotToFailedState = () ->
+            TaskExecutor.NoArgsVoidFunc gotToFailedState = () ->
             {
                 setState(arrival.failedState);
             };
@@ -178,8 +178,7 @@ public class StateTransitionManager<StateType>
     /**
      * Follow the {@link StateTransition} associated with this GUIName. If there is an action
      * declared then call it. If the action succeeds (or if there is no action) then move to the
-     * toState of the relevant {@link StateTransition}. If the action is cancelled (i.e. returns
-     * false) then call {@link cancel() cancel}. If the action fails (i.e. throws an exception) then
+     * toState of the relevant {@link StateTransition}. If the action fails (i.e. throws an exception) then
      * move to the {@link StateTransition#transitionFailedState}.
      *
      * @param guiName
@@ -205,7 +204,7 @@ public class StateTransitionManager<StateType>
         } else
         {
 
-            TaskExecutor.NoArgsConsumer goToNextState = () ->
+            TaskExecutor.NoArgsVoidFunc goToNextState = () ->
             {
                 if (!cancelCalled)
                 {
@@ -213,7 +212,7 @@ public class StateTransitionManager<StateType>
                 }
             };
 
-            TaskExecutor.NoArgsConsumer gotToFailedState = () ->
+            TaskExecutor.NoArgsVoidFunc gotToFailedState = () ->
             {
                  if (!cancelCalled)
                 {
