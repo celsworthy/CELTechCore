@@ -16,6 +16,7 @@ import celtech.coreUI.AmbientLEDState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.components.ProjectTab;
+import celtech.coreUI.components.TipArrow;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
 import celtech.coreUI.controllers.SettingsScreenState;
@@ -570,6 +571,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         printButton.setVisible(false);
         printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS));
+        TipArrow printTipArrow = new TipArrow();
+        printTipArrow.attach(printButton);
 
         statusButtonHBox.setVisible(false);
 
