@@ -10,6 +10,7 @@ import celtech.utils.SystemUtils;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.property.FloatProperty;
+import javafx.beans.property.ReadOnlyFloatProperty;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -27,6 +28,7 @@ public class Head implements Cloneable, RepairableComponent
     protected final FloatProperty headXPosition = new SimpleFloatProperty(0);
     protected final FloatProperty headYPosition = new SimpleFloatProperty(0);
     protected final FloatProperty headZPosition = new SimpleFloatProperty(0);
+    protected final FloatProperty BPosition = new SimpleFloatProperty(0);
 
     protected final StringProperty typeCode = new SimpleStringProperty("");
     protected final StringProperty name = new SimpleStringProperty("");
@@ -152,6 +154,42 @@ public class Head implements Cloneable, RepairableComponent
     public ArrayList<Nozzle> getNozzles()
     {
         return nozzles;
+    }
+    
+    /**
+     *
+     * @return
+     */
+    public ReadOnlyFloatProperty bPositionProperty()
+    {
+        return BPosition;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public ReadOnlyFloatProperty headXPositionProperty()
+    {
+        return headXPosition;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public ReadOnlyFloatProperty headYPositionProperty()
+    {
+        return headYPosition;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public ReadOnlyFloatProperty headZPositionProperty()
+    {
+        return headZPosition;
     }
 
     /**

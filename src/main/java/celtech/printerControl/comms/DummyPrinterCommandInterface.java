@@ -54,7 +54,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
     private final String attachHeadCommand = "ATTACH HEAD ";
     private final String detachHeadCommand = "DETACH HEAD";
     private final String attachReelCommand = "ATTACH REEL ";
-    private final String detachReelCommand = "DETACH REEL";
+    private final String detachReelCommand = "DETACH REEL ";
     private final String detachPrinterCommand = "DETACH PRINTER";
     private final String goToPrintLineCommand = "GOTO LINE ";
     private final String finishPrintCommand = "FINISH PRINT";
@@ -62,6 +62,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
     private final String unloadFilamentCommand = "UNLOAD ";
     private final String insertSDCardCommand = "INSERT SD";
     private final String removeSDCardCommand = "REMOVE SD";
+    private final String errorCommand = "ERROR ";
 
     private final StatusResponse currentStatus = (StatusResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.STATUS_RESPONSE);
     private final AckResponse errorStatus = (AckResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.ACK_WITH_ERRORS);
@@ -217,9 +218,9 @@ public class DummyPrinterCommandInterface extends CommandInterface
                 {
                     gcodeResponse.setMessagePayload("Couldn't attach reel - " + filamentName);
                 }
-            } else if (messageData.equalsIgnoreCase(detachReelCommand))
+            } else if (messageData.startsWith(detachReelCommand))
             {
-                int reelNumber = Integer.valueOf(messageData.replaceAll(attachHeadCommand, "").trim());
+                int reelNumber = Integer.valueOf(messageData.replaceAll(detachReelCommand, "").trim());
                 detachReel(reelNumber);
             } else if (messageData.startsWith(goToPrintLineCommand))
             {
@@ -277,6 +278,15 @@ public class DummyPrinterCommandInterface extends CommandInterface
             {
                 // ZDelta
                 gcodeResponse.populatePacket("0000eZdelta:0.01\nok".getBytes());
+            }
+            else if (messageData.startsWith(errorCommand))
+            {
+                String errorString = messageData.replaceAll(errorCommand, "");
+                FirmwareError fwError = FirmwareError.valueOf(errorString);
+                if (fwError != null)
+                {
+                    errorStatus.getFirmwareErrors().add(fwError);
+                }
             }
 
             response = (RoboxRxPacket) gcodeResponse;

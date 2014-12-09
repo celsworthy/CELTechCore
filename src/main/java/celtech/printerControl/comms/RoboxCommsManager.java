@@ -117,7 +117,9 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
 
             if (activePorts != null)
             {
-                for (String port : activePorts)
+                String port = activePorts[0];
+                //Multiple printer support disabled - ROB-334
+//                for (String port : activePorts)
                 {
 //                    steno.info("Found printer on " + port);
                     if (pendingPrinters.containsKey(port))

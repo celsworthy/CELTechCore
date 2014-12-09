@@ -273,52 +273,52 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         updateProfileList();
 
         customProfileChooser.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<SlicerParametersFile>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends SlicerParametersFile> observable,
+                SlicerParametersFile oldValue, SlicerParametersFile newValue)
             {
-                @Override
-                public void changed(ObservableValue<? extends SlicerParametersFile> observable,
-                    SlicerParametersFile oldValue, SlicerParametersFile newValue)
+                if (!suppressCustomProfileChangeTriggers)
                 {
-                    if (!suppressCustomProfileChangeTriggers)
+                    if (oldValue != newValue)
                     {
-                        if (oldValue != newValue)
+                        if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
                         {
-                            if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
-                            {
-                                displayManager.slideOutAdvancedPanel();
-                            }
-                            slideOutController.showProfileTab();
-
-                            lastCustomProfileSelected = newValue;
+                            displayManager.slideOutAdvancedPanel();
                         }
+                        slideOutController.showProfileTab();
 
-                        if (newValue == SlicerParametersContainer.createNewProfile)
-                        {
-                            showCreateProfileDialogue(draftSettings.clone());
-                        } else if (newValue != null)
-                        {
-                            if (settingsScreenState.getPrintQuality()
+                        lastCustomProfileSelected = newValue;
+                    }
+
+                    if (newValue == SlicerParametersContainer.createNewProfile)
+                    {
+                        showCreateProfileDialogue(draftSettings.clone());
+                    } else if (newValue != null)
+                    {
+                        if (settingsScreenState.getPrintQuality()
                             == PrintQualityEnumeration.CUSTOM)
-                            {
-                                slideOutController.updateProfileData(newValue);
-                                settingsScreenState.setSettings(newValue);
-                                DisplayManager.getInstance().getCurrentlyVisibleProject().setCustomProfileName(
-                                    newValue.getProfileName());
-                            }
-                            customSettings = newValue;
-                        } else if (newValue == null && settingsScreenState.getPrintQuality()
-                        == PrintQualityEnumeration.CUSTOM)
                         {
-                            slideOutController.updateProfileData(null);
-                            customSettings = null;
+                            slideOutController.updateProfileData(newValue);
+                            settingsScreenState.setSettings(newValue);
+                            DisplayManager.getInstance().getCurrentlyVisibleProject().setCustomProfileName(
+                                newValue.getProfileName());
                         }
+                        customSettings = newValue;
+                    } else if (newValue == null && settingsScreenState.getPrintQuality()
+                        == PrintQualityEnumeration.CUSTOM)
+                    {
+                        slideOutController.updateProfileData(null);
+                        customSettings = null;
                     }
                 }
-            });
+            }
+        });
 
         SlicerParametersContainer.getUserProfileList().addListener((ListChangeListener.Change<? extends SlicerParametersFile> c) ->
-            {
-                updateProfileList();
-            });
+        {
+            updateProfileList();
+        });
 
         printerChooser.setCellFactory(
             new Callback<ListView<Printer>, ListCell<Printer>>()
@@ -674,6 +674,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     /**
      *
+     * @param profile
      * @param source
      */
     @Override
@@ -692,6 +693,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             SlicerParametersFile profiletoSave = (SlicerParametersFile) profile;
             SlicerParametersContainer.saveProfile(profiletoSave);
             selectPrintProfileByName(profiletoSave.getProfileName());
+            if (displayManager != null)
+            {
+                projectChanged(displayManager.getCurrentlyVisibleProject());
+            }
         }
     }
 

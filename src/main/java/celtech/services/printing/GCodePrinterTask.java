@@ -26,7 +26,6 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
     private final Stenographer steno = StenographerFactory.getStenographer(this.getClass().getName());
     private IntegerProperty linesInFile = null;
     private boolean printUsingSDCard = true;
-    private boolean isMacro = false;
 
     /**
      *
@@ -35,16 +34,14 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
      * @param printJobID
      * @param linesInFile
      * @param printUsingSDCard
-     * @param isMacro
      */
-    public GCodePrinterTask(Printer printerToUse, String modelFileToPrint, String printJobID, IntegerProperty linesInFile, boolean printUsingSDCard, boolean isMacro)
+    public GCodePrinterTask(Printer printerToUse, String modelFileToPrint, String printJobID, IntegerProperty linesInFile, boolean printUsingSDCard)
     {
         this.printerToUse = printerToUse;
         this.gcodeFileToPrint = modelFileToPrint;
         this.printJobID = printJobID;
         this.linesInFile = linesInFile;
         this.printUsingSDCard = printUsingSDCard;
-        this.isMacro = isMacro;
     }
 
     @Override
@@ -147,7 +144,6 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
         }
 
         result.setSuccess(gotToEndOK);
-        result.setIsMacro(isMacro);
         return result;
     }
 

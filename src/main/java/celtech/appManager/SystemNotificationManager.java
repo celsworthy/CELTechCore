@@ -80,7 +80,7 @@ public interface SystemNotificationManager
     
     boolean showApplicationUpgradeDialog(String applicationName);
 
-    public boolean showPurgeDialog();
+    public PurgeResponse showPurgeDialog();
 
     public boolean showJobsTransferringShutdownDialog();
 
@@ -94,4 +94,14 @@ public interface SystemNotificationManager
      */
     public Optional<PrinterErrorChoice> showPrinterErrorDialog(String title, String message, boolean showContinueOption,
         boolean showAbortOption, boolean showRetryOption);
+
+    public void showCantPrintNoFilamentDialog();
+
+    public void showCantPrintDoorIsOpenDialog();
+
+    public void showReelNotRecognisedDialog(String printerName);
+
+    public void showReelUpdatedNotification();
+
+    public void showSelectAFilamentDialog();
 }

@@ -4,8 +4,11 @@ import celtech.Lookup;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
+import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.coreUI.DisplayManager;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
+import celtech.utils.Math.MathUtils;
 import celtech.utils.SystemUtils;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
@@ -25,6 +28,8 @@ import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.paint.Color;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -33,6 +38,7 @@ import javafx.scene.paint.Color;
 public class Reel implements RepairableComponent
 {
 
+    private final Stenographer steno = StenographerFactory.getStenographer(Reel.class.getName());
     protected final StringProperty friendlyFilamentName = new SimpleStringProperty("");
     protected final ObjectProperty<MaterialType> material = new SimpleObjectProperty();
     protected final StringProperty filamentID = new SimpleStringProperty();
@@ -195,11 +201,10 @@ public class Reel implements RepairableComponent
     }
 
     /**
-     * Compare the contents of this reel with filament data.
-     * Note that the remaining
-     * 
+     * Compare the contents of this reel with filament data. Note that the remaining
+     *
      * @param filament
-     * @return 
+     * @return
      */
     public boolean isSameAs(Filament filament)
     {
@@ -266,18 +271,138 @@ public class Reel implements RepairableComponent
     @Override
     public RepairResult bringDataInBounds()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        float epsilon = 1e-5f;
+
+        RepairResult result = RepairResult.NO_REPAIR_NECESSARY;
+
+        Filament referenceFilamentData = FilamentContainer.getFilamentByID(filamentID.get());
+        if (referenceFilamentData != null)
+        {
+            if (ambientTemperature.get() != referenceFilamentData.getAmbientTemperature())
+            {
+                ambientTemperature.set(referenceFilamentData.getAmbientTemperature());
+                result = RepairResult.REPAIRED_WRITE_ONLY;
+            }
+
+            if (bedTemperature.get() != referenceFilamentData.getBedTemperature())
+            {
+                bedTemperature.set(referenceFilamentData.getBedTemperature());
+                result = RepairResult.REPAIRED_WRITE_ONLY;
+            }
+
+            if (MathUtils.compareDouble(feedRateMultiplier.get(), referenceFilamentData.getFeedRateMultiplier(), epsilon) != MathUtils.EQUAL)
+            {
+                feedRateMultiplier.set(referenceFilamentData.getFeedRateMultiplier());
+                result = RepairResult.REPAIRED_WRITE_ONLY;
+            }
+
+            if (MathUtils.compareDouble(diameter.get(), referenceFilamentData.getDiameter(), epsilon) != MathUtils.EQUAL)
+            {
+                diameter.set(referenceFilamentData.getDiameter());
+                result = RepairResult.REPAIRED_WRITE_ONLY;
+            }
+
+            if (MathUtils.compareDouble(filamentMultiplier.get(), referenceFilamentData.getFilamentMultiplier(), epsilon) != MathUtils.EQUAL)
+            {
+                filamentMultiplier.set(referenceFilamentData.getFilamentMultiplier());
+                result = RepairResult.REPAIRED_WRITE_ONLY;
+            }
+
+            if (firstLayerBedTemperature.get() != referenceFilamentData.getFirstLayerBedTemperature())
+            {
+                firstLayerBedTemperature.set(referenceFilamentData.getFirstLayerBedTemperature());
+                result = RepairResult.REPAIRED_WRITE_ONLY;
+            }
+
+            if (firstLayerNozzleTemperature.get() != referenceFilamentData.getFirstLayerNozzleTemperature())
+            {
+                firstLayerNozzleTemperature.set(referenceFilamentData.getFirstLayerNozzleTemperature());
+                result = RepairResult.REPAIRED_WRITE_ONLY;
+            }
+
+            if (nozzleTemperature.get() != referenceFilamentData.getNozzleTemperature())
+            {
+                nozzleTemperature.set(referenceFilamentData.getNozzleTemperature());
+                result = RepairResult.REPAIRED_WRITE_ONLY;
+            }
+
+            if (displayColour.get().equals(referenceFilamentData.getDisplayColour()) == false)
+            {
+                displayColour.set(referenceFilamentData.getDisplayColour());
+                result = RepairResult.REPAIRED_WRITE_ONLY;
+            }
+
+            if (filamentID.get().equals(referenceFilamentData.getFilamentID()) == false)
+            {
+                filamentID.set(referenceFilamentData.getFilamentID());
+                result = RepairResult.REPAIRED_WRITE_ONLY;
+            }
+
+            if (friendlyFilamentName.get().equals(referenceFilamentData.getFriendlyFilamentName()) == false)
+            {
+                friendlyFilamentName.set(referenceFilamentData.getFriendlyFilamentName());
+                result = RepairResult.REPAIRED_WRITE_ONLY;
+            }
+
+            if (material.get() != referenceFilamentData.getMaterial())
+            {
+                material.set(referenceFilamentData.getMaterial());
+                result = RepairResult.REPAIRED_WRITE_ONLY;
+            }
+
+            steno.info("Reel data bounds check - result is " + result.name());
+        } else
+        {
+            steno.warning("Reel bounds check requested but reference data could not be obtained.");
+        }
+
+        return result;
+
     }
 
     @Override
     public void resetToDefaults()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Filament referenceFilament = FilamentContainer.getFilamentByID(filamentID.get());
+        if (referenceFilament != null)
+        {
+            updateContents(referenceFilament);
+            steno.info("Reset reel to defaults with data set - " + referenceFilament.getFriendlyFilamentName());
+        } else
+        {
+            steno.warning("Attempt to reset reel to defaults failed - reference data cannot be derived");
+        }
     }
 
     @Override
     public void allocateRandomID()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public static boolean isFilamentIDValid(String filamentID)
+    {
+        boolean filamentIDIsValid = false;
+
+        if (filamentID != null
+            && (filamentID.matches("RBX-[0-9A-Z]{3}-.*")
+            || filamentID.matches("^U.*")))
+        {
+            filamentIDIsValid = true;
+        }
+
+        return filamentIDIsValid;
+    }
+
+    public static boolean isFilamentIDInDatabase(String filamentID)
+    {
+        boolean filamentIDIsInDatabase = false;
+
+        if (filamentID != null
+            && FilamentContainer.getFilamentByID(filamentID) != null)
+        {
+            filamentIDIsInDatabase = true;
+        }
+
+        return filamentIDIsInDatabase;
     }
 }

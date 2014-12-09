@@ -23,6 +23,7 @@ import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.SliceResult;
 import celtech.configuration.slicer.SlicerConfigWriter;
 import celtech.configuration.slicer.SlicerConfigWriterFactory;
+import celtech.printerControl.MacroType;
 import celtech.services.slicer.SlicerService;
 import celtech.utils.SystemUtils;
 import celtech.utils.threed.ThreeDUtils;
@@ -295,7 +296,7 @@ public class PrintEngine implements ControllableService
             if (result.isSuccess())
             {
                 steno.info(t.getSource().getTitle() + " has succeeded");
-                if (result.isIsMacro())
+                if (associatedPrinter.macroTypeProperty().isNotNull().get())
                 {
                     associatedPrinter.setPrinterStatus(PrinterStatus.EXECUTING_MACRO);
                     //Remove the print job from disk
@@ -932,7 +933,12 @@ public class PrintEngine implements ControllableService
         File printjobFile = new File(printjobFilename);
         File fileToCopy = new File(filename);
 
-        associatedPrinter.setPrinterStatus(PrinterStatus.SENDING_TO_PRINTER);
+        if (associatedPrinter.macroTypeProperty().isNotNull().get()
+            && associatedPrinter.macroTypeProperty().get() == MacroType.GCODE_PRINT)
+        {
+            associatedPrinter.setPrinterStatus(PrinterStatus.SENDING_TO_PRINTER);
+        }
+
         try
         {
             Files.copy(fileToCopy.toPath(), printjobFile.toPath(),
@@ -951,7 +957,6 @@ public class PrintEngine implements ControllableService
         gcodePrintService.setCurrentPrintJobID(printUUID);
         gcodePrintService.setModelFileToPrint(printjobFilename);
         gcodePrintService.setPrinterToUse(associatedPrinter);
-        gcodePrintService.setIsMacro(true);
         gcodePrintService.start();
         consideringPrintRequest = false;
     }
@@ -1088,6 +1093,22 @@ public class PrintEngine implements ControllableService
             printProgressMessage.set("");
             setPrintInProgress(true);
             setPrintProgressTitle(Lookup.i18n("PrintQueue.Printing"));
+        });
+    }
+
+    void goToExecutingMacro()
+    {
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            printProgressMessage.unbind();
+            primaryProgressPercent.unbind();
+            if (associatedPrinter.printerStatusProperty().get() != PrinterStatus.PAUSED)
+            {
+                setPrimaryProgressPercent(0);
+            }
+            printProgressMessage.set("");
+            setPrintInProgress(true);
+            setPrintProgressTitle(associatedPrinter.macroTypeProperty().get().getI18nString());
         });
     }
 

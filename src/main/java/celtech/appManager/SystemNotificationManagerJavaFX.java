@@ -95,6 +95,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
     private boolean headNotRecognisedDialogOnDisplay = false;
 
+    private boolean reelNotRecognisedDialogOnDisplay = false;
+
     @Override
     public void showErrorNotification(String title, String message)
     {
@@ -407,10 +409,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
-            if (firmwareUpdateProgress == null)
-            {
-                firmwareUpdateProgress = new ProgressDialog(firmwareLoadService);
-            }
+            firmwareUpdateProgress = new ProgressDialog(firmwareLoadService);
         });
     }
 
@@ -602,12 +601,12 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
      * @return True if the user has elected to purge
      */
     @Override
-    public boolean showPurgeDialog()
+    public PurgeResponse showPurgeDialog()
     {
-        Callable<Boolean> askUserWhetherToPurge = new Callable()
+        Callable<PurgeResponse> askUserWhetherToPurge = new Callable()
         {
             @Override
-            public Boolean call() throws Exception
+            public PurgeResponse call() throws Exception
             {
                 CommandLinksDialog.CommandLinksButtonType purge = new CommandLinksDialog.CommandLinksButtonType(
                     Lookup.i18n("dialogs.goForPurgeTitle"),
@@ -619,18 +618,32 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     false);
                 CommandLinksDialog purgeDialog = new CommandLinksDialog(
                     purge,
-                    dontPurge
+                    dontPurge,
+                    dontPrint
                 );
                 purgeDialog.setTitle(Lookup.i18n("dialogs.purgeRequiredTitle"));
                 purgeDialog.setContentText(Lookup.i18n("dialogs.purgeRequiredInstruction"));
 
                 Optional<ButtonType> purgeResponse = purgeDialog.showAndWait();
 
-                return purgeResponse.get() == purge.getButtonType();
+                PurgeResponse response = null;
+
+                if (purgeResponse.get() == purge.getButtonType())
+                {
+                    response = PurgeResponse.PRINT_WITH_PURGE;
+                } else if (purgeResponse.get() == dontPurge.getButtonType())
+                {
+                    response = PurgeResponse.PRINT_WITHOUT_PURGE;
+                } else if (purgeResponse.get() == dontPrint.getButtonType())
+                {
+                    response = PurgeResponse.DONT_PRINT;
+                }
+
+                return response;
             }
         };
 
-        FutureTask<Boolean> askWhetherToPurgeTask = new FutureTask<>(askUserWhetherToPurge);
+        FutureTask<PurgeResponse> askWhetherToPurgeTask = new FutureTask<>(askUserWhetherToPurge);
         Lookup.getTaskExecutor().runOnGUIThread(askWhetherToPurgeTask);
         try
         {
@@ -638,7 +651,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         } catch (InterruptedException | ExecutionException ex)
         {
             steno.error("Error during purge query");
-            return false;
+            return null;
         }
     }
 
@@ -811,5 +824,71 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             return Optional.empty();
         }
 
+    public void showCantPrintNoFilamentDialog()
+    {
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            Dialogs.create().title(
+                Lookup.i18n("dialogs.cantPrintNoFilamentTitle"))
+                .message(Lookup.i18n("dialogs.cantPrintNoFilamentMessage"))
+                .masthead(null).showInformation();
+        });
+    }
+
+    @Override
+    public void showCantPrintDoorIsOpenDialog()
+    {
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            Dialogs.create().title(
+                Lookup.i18n("dialogs.cantPrintDoorIsOpenTitle"))
+                .message(Lookup.i18n("dialogs.cantPrintDoorIsOpenMessage"))
+                .masthead(null).showInformation();
+        });
+    }
+    
+    @Override
+    public void showReelUpdatedNotification()
+    {
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            Notifier.showInformationNotification(Lookup.i18n("notification.reelDataUpdatedTitle"),
+                                                 Lookup.i18n("notification.noActionRequired"));
+        });
+    }
+
+    @Override
+    public void showReelNotRecognisedDialog(String printerName)
+    {
+        if (!reelNotRecognisedDialogOnDisplay)
+        {
+            reelNotRecognisedDialogOnDisplay = true;
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                Dialogs.create().title(
+                    Lookup.i18n("dialogs.reelNotRecognisedTitle"))
+                    .message(Lookup.i18n("dialogs.reelNotRecognisedMessage1")
+                        + " "
+                        + printerName
+                        + " "
+                        + Lookup.i18n("dialogs.reelNotRecognisedMessage2")
+                        + " "
+                        + ApplicationConfiguration.getApplicationName())
+                    .masthead(null).showError();
+                reelNotRecognisedDialogOnDisplay = false;
+            });
+        }
+    }
+    
+        @Override
+    public void showSelectAFilamentDialog()
+    {
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            Dialogs.create().title(
+                Lookup.i18n("dialogs.cantPrintNoFilamentSelectedTitle"))
+                .message(Lookup.i18n("dialogs.cantPrintNoFilamentSelectedMessage"))
+                .masthead(null).showInformation();
+        });
     }
 }

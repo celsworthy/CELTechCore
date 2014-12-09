@@ -145,12 +145,6 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     }
 
     @Override
-    public boolean showPurgeDialog()
-    {
-        return false;
-    }
-
-    @Override
     public boolean showJobsTransferringShutdownDialog()
     {
         return false;
@@ -163,6 +157,37 @@ public class TestSystemNotificationManager implements SystemNotificationManager
 
     @Override
     public void showHeadNotRecognisedDialog(String printerName)
+    {
+    }
+
+    @Override
+    public PurgeResponse showPurgeDialog()
+    {
+        return PurgeResponse.PRINT_WITH_PURGE;
+    }
+
+    @Override
+    public void showCantPrintNoFilamentDialog()
+    {
+    }
+
+    @Override
+    public void showCantPrintDoorIsOpenDialog()
+    {
+    }
+
+    @Override
+    public void showReelNotRecognisedDialog(String printerName)
+    {
+    }
+
+    @Override
+    public void showReelUpdatedNotification()
+    {
+    }
+
+    @Override
+    public void showSelectAFilamentDialog()
     {
     }
 

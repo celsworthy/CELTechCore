@@ -1,5 +1,6 @@
 package celtech.coreUI.components.buttons;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
@@ -82,5 +83,10 @@ public class GraphicToggleButtonWithLabel extends VBox
     public void setSelected(boolean selected)
     {
         button.setSelected(selected);
+    }
+    
+    public BooleanProperty selectedProperty()
+    {
+        return button.selectedProperty();
     }
 }

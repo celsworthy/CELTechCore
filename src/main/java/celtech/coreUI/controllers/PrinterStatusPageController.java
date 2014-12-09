@@ -473,8 +473,10 @@ public class PrinterStatusPageController implements Initializable
                                     selectedPrinter.getPrintEngine().
                                     secondaryProgressProperty(),
                                     100)));
-                        progressTitle.textProperty().bind(
-                            selectedPrinter.getPrintEngine().titleProperty());
+                        progressTitle.textProperty().bind(Bindings.when(selectedPrinter.printerStatusProperty()
+                                .isEqualTo(PrinterStatus.EXECUTING_MACRO))
+                            .then(selectedPrinter.macroTypeProperty().asString())
+                            .otherwise(selectedPrinter.printerStatusProperty().asString()));
                         progressMessage.textProperty().bind(
                             selectedPrinter.getPrintEngine().messageProperty());
 
@@ -555,10 +557,30 @@ public class PrinterStatusPageController implements Initializable
                     setAdvancedControlsVisibility(true);
                     break;
                 case SENDING_TO_PRINTER:
+                    if (!lastSelectedPrinter.macroTypeProperty().isNotNull().get())
+                    {
+                        showProgressGroup.set(true);
+                    } else
+                    {
+                        showProgressGroup.set(false);
+                    }
+                    setAdvancedControlsVisibility(false);
+                    break;
                 case PRINTING:
                     showProgressGroup.set(true);
                     setAdvancedControlsVisibility(false);
 //                    staticModelOverlay.showModelForPrintJob(lastSelectedPrinter.printJobIDProperty().get());
+                    break;
+                case EXECUTING_MACRO:
+                    if (lastSelectedPrinter.macroTypeProperty().isNotNull().get()
+                        && lastSelectedPrinter.macroTypeProperty().get().isInterruptible())
+                    {
+                        showProgressGroup.set(true);
+                    } else
+                    {
+                        showProgressGroup.set(false);
+                    }
+                    setAdvancedControlsVisibility(false);
                     break;
                 case SLICING:
                 case POST_PROCESSING:
