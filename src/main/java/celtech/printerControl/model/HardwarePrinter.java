@@ -223,6 +223,7 @@ public final class HardwarePrinter implements Printer
                 .and(extruder.isFitted)
                 .and(extruder.filamentLoaded)));
 
+        //TODO canPrint ought to take account of lid and filament
         canPrint.bind(head.isNotNull()
             .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
         canCancel.bind(

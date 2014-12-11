@@ -151,7 +151,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private AnchorPane root;
     private Pane spinnerContainer;
-    private Pane tipArrowContainer;
     private Spinner spinner;
     
     private BooleanProperty nodesMayHaveMoved = new SimpleBooleanProperty(false);
@@ -357,15 +356,11 @@ public class DisplayManager implements EventHandler<KeyEvent>
         spinner = new Spinner();
         spinnerContainer.getChildren().add(spinner);
 
-        tipArrowContainer = new Pane();
         AnchorPane.setBottomAnchor(root, 0.0);
         AnchorPane.setLeftAnchor(root, 0.0);
         AnchorPane.setRightAnchor(root, 0.0);
         AnchorPane.setTopAnchor(root, 0.0);
         
-        tipArrowContainer.setMouseTransparent(true);
-        tipArrowContainer.setPickOnBounds(false);
-
         mainHolder = new HBox();
         mainHolder.setPrefSize(-1, -1);
 
@@ -376,7 +371,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         root.getChildren().add(mainHolder);
         root.getChildren().add(spinnerContainer);
-        root.getChildren().add(tipArrowContainer);
 
         // Load in all of the side panels
         for (ApplicationMode mode : ApplicationMode.values())
@@ -553,6 +547,28 @@ public class DisplayManager implements EventHandler<KeyEvent>
             public void changed(
                 ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
             {
+                fireNodeMayHaveMovedTrigger();
+            }
+        });
+        
+        mainStage.maximizedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(
+                ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                steno.info("Stage maximised = " + newValue.booleanValue());
+                fireNodeMayHaveMovedTrigger();
+            }
+        });
+
+        mainStage.fullScreenProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(
+                ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                steno.info("Stage fullscreen = " + newValue.booleanValue());
                 fireNodeMayHaveMovedTrigger();
             }
         });
@@ -983,10 +999,5 @@ public class DisplayManager implements EventHandler<KeyEvent>
     public ReadOnlyBooleanProperty nodesMayHaveMovedProperty()
     {
         return nodesMayHaveMoved;
-    }
-
-    public Pane getTipArrowContainer()
-    {
-        return tipArrowContainer;
     }
 }

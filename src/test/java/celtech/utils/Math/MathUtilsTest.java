@@ -5,6 +5,7 @@
  */
 package celtech.utils.Math;
 
+import javafx.geometry.Point2D;
 import org.apache.commons.math3.geometry.euclidean.twod.Line;
 import org.apache.commons.math3.geometry.euclidean.twod.Segment;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
@@ -153,21 +154,19 @@ public class MathUtilsTest
 //        fail("The test case is a prototype.");
 //    }
 //
-//    /**
-//     * Test of angleDegreesToCartesianCWFromTop method, of class MathUtils.
-//     */
-//    @Test
-//    public void testAngleDegreesToCartesianCWFromTop()
-//    {
-//        System.out.println("angleDegreesToCartesianCWFromTop");
-//        double angle = 0.0;
-//        double radius = 0.0;
-//        Point2D expResult = null;
-//        Point2D result = MathUtils.angleDegreesToCartesianCWFromTop(angle, radius);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
+    /**
+     * Test of angleDegreesToCartesianCWFromTop method, of class MathUtils.
+     */
+    @Test
+    public void testAngleDegreesToCartesianCWFromTop()
+    {
+        System.out.println("angleDegreesToCartesianCWFromTop");
+        double angle = 0.0;
+        double radius = 10.0;
+        Point2D expResult = new Point2D(0, -10);
+        Point2D result = MathUtils.angleDegreesToCartesianCWFromTop(angle, radius, true);
+        assertEquals(expResult, result);
+    }
 //
 //    /**
 //     * Test of cartesianToAngleDegreesCCWFromRight method, of class MathUtils.

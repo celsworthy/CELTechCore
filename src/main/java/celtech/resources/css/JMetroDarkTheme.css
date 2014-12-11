@@ -185,6 +185,36 @@
     -fx-fill: black;   
 }
 
+.arrow-tag
+{
+    -fx-background-color: transparent;    
+}
+
+.arrow-tag:disabled #title
+{
+    -fx-opacity: 1;
+}
+
+.arrow-tag:disabled #bodyText
+{
+    -fx-opacity: 1;
+}
+
+.arrow-tag #bodyText
+{
+    -fx-font-size: 12pt;
+}
+
+.arrow-tag #title
+{
+    -fx-font-size: 14pt;
+}
+
+.arrow-tag #arrow
+{
+    -fx-fill: white;
+}
+
 /*
  * Borderless button (typically round)
  */

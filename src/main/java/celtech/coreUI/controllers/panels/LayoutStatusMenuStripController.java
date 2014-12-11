@@ -16,7 +16,7 @@ import celtech.coreUI.AmbientLEDState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.components.ProjectTab;
-import celtech.coreUI.components.TipArrow;
+import celtech.coreUI.components.tips.ArrowTag;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
 import celtech.coreUI.controllers.SettingsScreenState;
@@ -45,6 +45,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -166,40 +167,26 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         Project currentProject = DisplayManager.getInstance().getCurrentlyVisibleProject();
 
-        //TODO modify for multiple extruders
-        if (!printer.extrudersProperty().get(0).filamentLoadedProperty().get())
-        {
-            Lookup.getSystemNotificationHandler().showCantPrintNoFilamentDialog();
-        } else if (settingsScreenState.getFilament() == null)
-        {
-            Lookup.getSystemNotificationHandler().showSelectAFilamentDialog();
-        } else if (printer.getPrinterAncillarySystems().lidOpenProperty().get()
-            && !Lookup.getUserPreferences().isOverrideSafeties())
-        {
-            Lookup.getSystemNotificationHandler().showCantPrintDoorIsOpenDialog();
-        } else
-        {
-            PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer);
+        PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer);
 
-            if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
-            {
-                displayManager.getPurgeInsetPanelController().purgeAndPrint(currentProject, settingsScreenState.getFilament(),
-                                                                            settingsScreenState.getPrintQuality(),
-                                                                            settingsScreenState.getSettings(), printer);
-            } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE)
-            {
-                currentPrinter.resetPurgeTemperature();
-                printer.printProject(currentProject, settingsScreenState.getFilament(),
-                                     settingsScreenState.getPrintQuality(),
-                                     settingsScreenState.getSettings());
-                applicationStatus.setMode(ApplicationMode.STATUS);
-            } else if (purgeConsent == PurgeResponse.NOT_NECESSARY)
-            {
-                printer.printProject(currentProject, settingsScreenState.getFilament(),
-                                     settingsScreenState.getPrintQuality(),
-                                     settingsScreenState.getSettings());
-                applicationStatus.setMode(ApplicationMode.STATUS);
-            }
+        if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
+        {
+            displayManager.getPurgeInsetPanelController().purgeAndPrint(currentProject, settingsScreenState.getFilament(),
+                                                                        settingsScreenState.getPrintQuality(),
+                                                                        settingsScreenState.getSettings(), printer);
+        } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE)
+        {
+            currentPrinter.resetPurgeTemperature();
+            printer.printProject(currentProject, settingsScreenState.getFilament(),
+                                 settingsScreenState.getPrintQuality(),
+                                 settingsScreenState.getSettings());
+            applicationStatus.setMode(ApplicationMode.STATUS);
+        } else if (purgeConsent == PurgeResponse.NOT_NECESSARY)
+        {
+            printer.printProject(currentProject, settingsScreenState.getFilament(),
+                                 settingsScreenState.getPrintQuality(),
+                                 settingsScreenState.getSettings());
+            applicationStatus.setMode(ApplicationMode.STATUS);
         }
     }
 
@@ -571,8 +558,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         printButton.setVisible(false);
         printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS));
-        TipArrow printTipArrow = new TipArrow();
-        printTipArrow.attach(printButton);
+
+        printButton.installTag("dialogs.cantPrintDoorIsOpenTitle");
 
         statusButtonHBox.setVisible(false);
 
@@ -600,6 +587,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     ambientLightsButton.disableProperty().unbind();
                     calibrateButton.disableProperty().unbind();
                     removeHeadButton.disableProperty().unbind();
+
+                    printButton.getTag().removeAllConditionalText();
                 }
 
                 unlockDoorButton.disableProperty().bind(newValue.canOpenDoorProperty().not());
@@ -614,11 +603,24 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 newValue.getPrinterAncillarySystems().headFanOnProperty().addListener(headFanStatusListener);
                 calibrateButton.disableProperty().bind(newValue.canCalibrateHeadProperty().not());
                 removeHeadButton.disableProperty().bind(newValue.canPrintProperty().not());
+
+                printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentSelectedMessage", settingsScreenState.filamentProperty().isNull());
+                printButton.getTag().addConditionalText("dialogs.cantPrintDoorIsOpenMessage", newValue.getPrinterAncillarySystems().lidOpenProperty().not().not());
+                printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage", newValue.extrudersProperty().get(0).filamentLoadedProperty().not());
             } else
             {
                 printerAvailable.set(false);
             }
         });
+
+        if (settingsScreenState.selectedPrinterProperty().get() != null)
+        {
+            Printer printer = settingsScreenState.selectedPrinterProperty().get();
+            printButton.setDisable(!printer.canPrintProperty().get()
+                || settingsScreenState.filamentProperty() == null
+                || printer.getPrinterAncillarySystems().lidOpenProperty().get()
+                || !printer.extrudersProperty().get(0).filamentLoadedProperty().get());
+        }
 
         settingsScreenState.selectedPrinterProperty().addListener((ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
         {
@@ -627,9 +629,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 if (currentPrinter != null)
                 {
                     printButton.disableProperty().unbind();
-
                 }
-                printButton.disableProperty().bind(newValue.canPrintProperty().not());
+                printButton.disableProperty().bind(newValue.canPrintProperty().not()
+                    .or(settingsScreenState.filamentProperty().isNull())
+                    .or(newValue.getPrinterAncillarySystems().lidOpenProperty())
+                    .or(newValue.extrudersProperty().get(0).filamentLoadedProperty().not()));
 
                 currentPrinter = newValue;
             }

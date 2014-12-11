@@ -240,7 +240,7 @@ public class MathUtils
     {
         // Returns an angle assuming the input is relative to a zero centre point
         // Rotation is clockwise
-        double angle = Math.PI - Math.atan2(xPos, yPos);
+        double angle = Math.atan2(xPos, yPos);
         angle = boundAzimuthRadians(angle);
         return angle * RAD_TO_DEG;
     }
@@ -256,10 +256,33 @@ public class MathUtils
         // Returns an angle assuming the input is relative to a zero centre point
         // Rotation is clockwise
 
-        angle += Math.PI;
-        double xPos = Math.sin(DEG_TO_RAD * angle) * radius;
-        double yPos = Math.cos(DEG_TO_RAD * angle) * radius;
+        double angleToProcess = (DEG_TO_RAD * angle);
+        double xPos = Math.sin(angleToProcess) * radius;
+        double yPos = Math.cos(angleToProcess) * radius;
 
+        return new Point2D(xPos, yPos);
+    }
+    
+        /**
+     *
+     * @param angle
+     * @param radius
+     * @return
+     */
+    public static Point2D angleDegreesToCartesianCWFromTop(double angle, double radius, boolean flipY)
+    {
+        // Returns an angle assuming the input is relative to a zero centre point
+        // Rotation is clockwise
+
+        double angleToProcess = DEG_TO_RAD * angle;
+        double xPos = Math.sin(angleToProcess) * radius;
+        double yPos = Math.cos(angleToProcess) * radius;
+
+        if (flipY)
+        {
+            yPos = -yPos;
+        }
+        
         return new Point2D(xPos, yPos);
     }
 

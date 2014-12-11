@@ -12,7 +12,6 @@ import javafx.scene.control.Button;
  */
 public class GraphicButton extends Button
 {
-
     private final StringProperty fxmlFileName = new SimpleStringProperty("");
 
     public GraphicButton()
