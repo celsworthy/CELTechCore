@@ -104,4 +104,6 @@ public interface SystemNotificationManager
     public void showReelUpdatedNotification();
 
     public void showSelectAFilamentDialog();
+    
+    public void showFilamentSlipDuringPrintDialog();
 }

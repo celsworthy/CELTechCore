@@ -8,5 +8,5 @@ import celtech.printerControl.comms.commands.rx.FirmwareError;
  */
 public interface ErrorConsumer
 {
-    public void consume(FirmwareError error);
+    public void consumeError(FirmwareError error);
 }

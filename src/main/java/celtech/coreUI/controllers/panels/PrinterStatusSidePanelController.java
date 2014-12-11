@@ -423,7 +423,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     {
         PrinterAncillarySystems ancillarySystems = printer.getPrinterAncillarySystems();
         currentAmbientTemperatureHistory = ancillarySystems.getAmbientTemperatureHistory();
-        
+
         chartManager.setLegendLabels(legendNozzle, legendBed, legendAmbient);
 
         chartManager.setAmbientData(ancillarySystems.getAmbientTemperatureHistory());
@@ -437,11 +437,13 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         chartManager.setTargetBedTemperatureProperty(ancillarySystems.bedTargetTemperatureProperty());
         chartManager.setTargetBedFirstLayerTemperatureProperty(ancillarySystems.bedFirstLayerTargetTemperatureProperty());
 
+        speedSliderHBox.setVisible(printer.canChangeFilamentInfoProperty().get());
         speedSliderHBox.visibleProperty().bind(printer.canChangeFilamentInfoProperty());
+        speedMultiplierSlider.setValue(printer.getPrinterAncillarySystems().feedRateMultiplierProperty().get());
         speedMultiplierSlider.valueProperty().addListener(speedMultiplierListener);
 
         materialContainer2.visibleProperty().bind(printer.getPrinterAncillarySystems().dualReelAdaptorPresentProperty());
-        
+
         printer.getPrinterAncillarySystems().feedRateMultiplierProperty().addListener(feedRateChangeListener);
     }
 

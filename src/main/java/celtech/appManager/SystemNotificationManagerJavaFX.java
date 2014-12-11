@@ -167,14 +167,6 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     errorHandlingResponse = printerErrorDialog.showAndWait();
                 }
 
-                try
-                {
-                    printer.transmitResetErrors();
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Couldn't reset errors after error detection");
-                }
-
                 if (errorHandlingResponse.get() == abortJob.getButtonType())
                 {
                     try
@@ -900,6 +892,18 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 Lookup.i18n("dialogs.cantPrintNoFilamentSelectedTitle"))
                 .message(Lookup.i18n("dialogs.cantPrintNoFilamentSelectedMessage"))
                 .masthead(null).showInformation();
+        });
+    }
+    
+        @Override
+    public void showFilamentSlipDuringPrintDialog()
+    {
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            Dialogs.create().title(
+                Lookup.i18n("dialogs.error.filamentSlipDuringPrintTitle"))
+                .message(Lookup.i18n("dialogs.error.filamentSlipDuringPrintMessage"))
+                .masthead(null).showError();
         });
     }
 }

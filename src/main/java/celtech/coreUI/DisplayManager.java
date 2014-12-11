@@ -557,7 +557,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
             public void changed(
                 ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
             {
-                steno.info("Stage maximised = " + newValue.booleanValue());
                 fireNodeMayHaveMovedTrigger();
             }
         });

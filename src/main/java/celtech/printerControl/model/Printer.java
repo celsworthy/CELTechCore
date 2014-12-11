@@ -492,6 +492,8 @@ public interface Printer extends RoboxResponseConsumer
     public void changeFeedRateMultiplierDuringPrint(double feedRate) throws PrinterException;
 
     public void registerErrorConsumer(ErrorConsumer errorConsumer, List<FirmwareError> errorsOfInterest);
+    
+    public void registerErrorConsumerAllErrors(ErrorConsumer errorConsumer);
 
     public void deregisterErrorConsumer(ErrorConsumer errorConsumer);
 }

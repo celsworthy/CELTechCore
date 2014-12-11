@@ -70,6 +70,7 @@ import celtech.utils.tasks.TaskResponder;
 import celtech.utils.tasks.TaskResponse;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -102,7 +103,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public final class HardwarePrinter implements Printer
+public final class HardwarePrinter implements Printer, ErrorConsumer
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -123,6 +124,11 @@ public final class HardwarePrinter implements Printer
     private NumberFormat threeDPformatter;
 
     private final float safeBedTemperatureForOpeningDoor = 60f;
+
+    private final float MIN_FEEDRATE_MULTIPLIER = 0.5f;
+    private final float MAX_FEEDRATE_MULTIPLIER = 1.5f;
+    private boolean moderatingFeedrate = false;
+    private float originalFeedrateMultiplier = 1.0f;
 
     /*
      * State machine data
@@ -277,6 +283,7 @@ public final class HardwarePrinter implements Printer
                     lastStateBeforePause = null;
                     printEngine.goToIdle();
                     macroType.set(null);
+                    deregisterErrorConsumer(this);
                     break;
                 case REMOVING_HEAD:
                     break;
@@ -302,6 +309,7 @@ public final class HardwarePrinter implements Printer
                     printEngine.goToPause();
                     break;
                 case PRINTING:
+                    registerErrorConsumerAllErrors(this);
                     printEngine.goToPrinting();
                     break;
                 case EXECUTING_MACRO:
@@ -2361,9 +2369,84 @@ public final class HardwarePrinter implements Printer
     }
 
     @Override
+    public void registerErrorConsumerAllErrors(ErrorConsumer errorConsumer)
+    {
+        ArrayList<FirmwareError> errorsOfInterest = new ArrayList<>();
+        errorsOfInterest.add(FirmwareError.ALL_ERRORS);
+        errorConsumers.put(errorConsumer, errorsOfInterest);
+    }
+
+    @Override
     public void deregisterErrorConsumer(ErrorConsumer errorConsumer)
     {
         errorConsumers.remove(errorConsumer);
+    }
+
+    @Override
+    public void consumeError(FirmwareError error)
+    {
+        switch (error)
+        {
+            case ERROR_E_FILAMENT_SLIP:
+            case ERROR_D_FILAMENT_SLIP:
+                if (printerStatus.get() == PrinterStatus.PRINTING)
+                {
+                    // Close and open the nozzle
+//                    try
+//                    {
+//                        steno.info("Pausing");
+//                        pause();
+//                        float currentBPosition = head.get().BPosition.get();
+//                        steno.info("Closing");
+//                        closeNozzleFully();
+//                        steno.info("Re-opening");
+//                        gotoNozzlePosition(currentBPosition);
+//                        steno.info("Resuming");
+//                        resume();
+//                    } catch (PrinterException ex)
+//                    {
+//                        steno.warning("Failed to cycle nozzle");
+//                    }
+
+                    float feedrateMultiplier = printerAncillarySystems.feedRateMultiplier.get();
+
+                    if (!moderatingFeedrate)
+                    {
+                        moderatingFeedrate = true;
+                        originalFeedrateMultiplier = feedrateMultiplier;
+                    }
+
+                    if (feedrateMultiplier > MIN_FEEDRATE_MULTIPLIER)
+                    {
+                        feedrateMultiplier -= 0.2f;
+                        try
+                        {
+                            steno.info("Reducing feedrate to " + feedrateMultiplier);
+                            changeFeedRateMultiplierDuringPrint(feedrateMultiplier);
+                        } catch (PrinterException ex)
+                        {
+                            steno.warning("Failed to automatically reduce feedrate during print");
+                        }
+                    } else
+                    {
+                        //Unable to proceed
+                        try
+                        {
+                            pause();
+                        } catch (PrinterException ex)
+                        {
+                            steno.warning("Failed to automatically pause during print");
+                        }
+
+                        Lookup.getSystemNotificationHandler().showFilamentSlipDuringPrintDialog();
+                    }
+                }
+                break;
+            default:
+                // Back stop
+                Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(error, this);
+                break;
+        }
     }
 
     class RoboxEventProcessor implements Runnable
@@ -2389,26 +2472,26 @@ public final class HardwarePrinter implements Printer
 
                     if (ackResponse.isError())
                     {
+                        List<FirmwareError> errorsFound = new ArrayList<>(ackResponse.getFirmwareErrors());
+
                         try
                         {
+                            steno.info("Clearing errors");
                             transmitResetErrors();
                         } catch (RoboxCommsException ex)
                         {
                             steno.warning("Couldn't clear firmware error list");
                         }
 
-                        List<FirmwareError> errorsFound = ackResponse.getFirmwareErrors();
-
                         errorsFound.stream()
-                            .forEach(
-                                foundError ->
+                            .forEach(foundError ->
                                 {
                                     errorWasConsumed = false;
                                     errorConsumers.forEach((consumer, errorList) ->
                                         {
                                             if (errorList.contains(foundError) || errorList.contains(FirmwareError.ALL_ERRORS))
                                             {
-                                                consumer.consume(foundError);
+                                                consumer.consumeError(foundError);
                                                 errorWasConsumed = true;
                                             }
                                     });
@@ -2417,7 +2500,7 @@ public final class HardwarePrinter implements Printer
                                     {
                                         systemNotificationManager.processErrorPacketFromPrinter(foundError, printer);
                                     }
-                                });
+                            });
 
                         steno.trace(ackResponse.toString());
                     }
@@ -2590,7 +2673,7 @@ public final class HardwarePrinter implements Printer
                         {
                             reels.get(reelResponse.getReelNumber()).updateFromEEPROMData(reelResponse);
                         }
-                        
+
                         if (Reel.isFilamentIDInDatabase(reelResponse.getReelFilamentID()))
                         {
                             // Check to see if the data is in bounds
