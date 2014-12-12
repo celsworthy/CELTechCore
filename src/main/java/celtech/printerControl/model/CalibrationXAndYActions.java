@@ -69,7 +69,7 @@ public class CalibrationXAndYActions
 
     public void doFinishedAction() throws PrinterException
     {
-    printerErrorHandler.deregisterForPrinterErrors();
+        printerErrorHandler.deregisterForPrinterErrors();
         saveSettings();
         switchHeatersOffAndRaiseHead();
         printer.setPrinterStatus(PrinterStatus.IDLE);

@@ -1903,6 +1903,11 @@ modal-dialogue{
     -fx-background-color: dark_grey;
 }
 
+.darkGreyFill {
+    -fx-fill: dark_grey;
+}
+
+
 /**
 * Calibration diagram text
 */

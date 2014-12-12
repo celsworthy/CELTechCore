@@ -82,9 +82,9 @@
         <children>
           <SVGPath content="M733.547,392.664h85.937c13.27,0,24.063-10.794,24.063-24.061s-10.794-24.061-24.063-24.061h-85.937v6.875   h85.937c9.491,0,17.188,7.694,17.188,17.186c0,9.495-7.697,17.186-17.188,17.186h-85.937V392.664z" fill="#009EE3" />
           <SVGPath content="M733.547,379.144h85.937c7.119,0,12.891-5.771,12.891-12.891c0-7.118-5.771-12.891-12.891-12.891h-85.937   v2.578h85.937c5.686,0,10.312,4.625,10.312,10.313s-4.626,10.312-10.312,10.312h-85.937V379.144z" fill="#FFFFFF" />
-            <TextField alignment="CENTER" layoutX="528.0" layoutY="331.0" prefHeight="16.0" prefWidth="26.0" styleClass="smallCalibrationText" text="%calibrationDiagram.or" />
-            <TextField alignment="CENTER" layoutX="771.0" layoutY="325.0" prefHeight="16.0" prefWidth="26.0" styleClass="smallCalibrationText" text="%calibrationDiagram.or" />
-            <TextField fx:id="fineNozzleLbl" layoutX="110.0" layoutY="383.0" prefHeight="16.0" prefWidth="175.0" styleClass="smallLightGreyCalibrationText" text="%calibrationDiagram.fineNozzle03" />
+            <TextField alignment="CENTER" layoutX="528.0" layoutY="331.0" prefHeight="16.0" prefWidth="26.0" style="-fx-background-color: transparent;" styleClass="smallCalibrationText" text="%calibrationDiagram.or" />
+            <TextField alignment="CENTER" layoutX="771.0" layoutY="325.0" prefHeight="16.0" prefWidth="26.0" style="-fx-background-color: transparent;" styleClass="smallCalibrationText" text="%calibrationDiagram.or" />
+            <TextField fx:id="fineNozzleLbl" layoutX="110.0" layoutY="383.0" prefHeight="16.0" prefWidth="175.0" style="-fx-background-color: transparent;" styleClass="smallLightGreyCalibrationText" text="%calibrationDiagram.fineNozzle03" />
         </children>
      </Pane>
      <Pane>
@@ -144,8 +144,8 @@
         <children>
           <SVGPath content="M843.547,114.543H757.61c-13.27,0-24.063,10.794-24.063,24.061s10.794,24.061,24.063,24.061h85.937v-6.875   H757.61c-9.491,0-17.188-7.693-17.188-17.186c0-9.495,7.697-17.186,17.188-17.186h85.937V114.543z" fill="#009EE3" />
           <SVGPath content="M843.547,125.713H757.61c-7.119,0-12.891,5.771-12.891,12.891s5.771,12.891,12.891,12.891h85.937v-2.578   H757.61c-5.686,0-10.312-4.623-10.312-10.313c0-5.686,4.626-10.312,10.312-10.312h85.937V125.713z" fill="#FFFFFF" />
-            <TextField alignment="CENTER" layoutX="529.0" layoutY="101.0" prefHeight="16.0" prefWidth="26.0" styleClass="smallCalibrationText" text="%calibrationDiagram.or" />
-            <TextField alignment="CENTER" layoutX="770.0" layoutY="96.0" prefHeight="16.0" prefWidth="26.0" styleClass="smallCalibrationText" text="%calibrationDiagram.or" />
+            <TextField alignment="CENTER" layoutX="529.0" layoutY="101.0" prefHeight="16.0" prefWidth="26.0" style="-fx-background-color: transparent;" styleClass="smallCalibrationText" text="%calibrationDiagram.or" />
+            <TextField alignment="CENTER" layoutX="770.0" layoutY="96.0" prefHeight="16.0" prefWidth="26.0" style="-fx-background-color: transparent;" styleClass="smallCalibrationText" text="%calibrationDiagram.or" />
         </children>
      </Pane>
      <Pane>
@@ -164,12 +164,12 @@
             </VBox>
             <HBox fx:id="perfectAlignmentContainer" alignment="CENTER" layoutX="560.0" layoutY="16.0" prefWidth="220.0">
                <children>
-                  <TextField fx:id="alignmentTitleB" alignment="BASELINE_CENTER" styleClass="mediumCalibrationText" text="%calibrationDiagram.perfectAlignment" />
+                  <TextField fx:id="alignmentTitleB" alignment="BASELINE_CENTER" style="-fx-background-color: transparent;" styleClass="mediumCalibrationText" text="%calibrationDiagram.perfectAlignment" />
                </children>
             </HBox>
             <HBox fx:id="incorrectAlignmentContainer" alignment="CENTER" layoutX="560.0" layoutY="245.0" prefWidth="220.0">
                <children>
-                  <TextField fx:id="alignmentTitleB1" alignment="BASELINE_CENTER" prefHeight="20.0" styleClass="mediumCalibrationText" text="%calibrationDiagram.incorrectAlignment" />
+                  <TextField fx:id="alignmentTitleB1" alignment="BASELINE_CENTER" prefHeight="20.0" style="-fx-background-color: transparent;" styleClass="mediumCalibrationText" text="%calibrationDiagram.incorrectAlignment" />
                </children>
             </HBox>
         </children>

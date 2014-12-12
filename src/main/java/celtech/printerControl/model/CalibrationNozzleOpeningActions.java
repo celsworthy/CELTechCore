@@ -4,22 +4,13 @@
 package celtech.printerControl.model;
 
 import celtech.Lookup;
-import celtech.appManager.SystemNotificationManager.PrinterErrorChoice;
-import static celtech.appManager.SystemNotificationManager.PrinterErrorChoice.ABORT;
-import static celtech.appManager.SystemNotificationManager.PrinterErrorChoice.CONTINUE;
 import celtech.configuration.HeaterMode;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
-import celtech.printerControl.comms.events.ErrorConsumer;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
-import celtech.utils.tasks.TaskExecutor.NoArgsVoidFunc;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.ReadOnlyFloatProperty;
 import javafx.beans.property.SimpleFloatProperty;
