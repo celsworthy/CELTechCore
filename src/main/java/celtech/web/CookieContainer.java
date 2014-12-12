@@ -1,9 +1,16 @@
 package celtech.web;
 
 import java.net.HttpCookie;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -32,6 +39,11 @@ public class CookieContainer
 
     public static String cookieToHeader(HttpCookie cookie)
     {
+        SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("EEE, dd-MMM-yyyy H:m:s");
+        Calendar calendar = Calendar.getInstance(Locale.UK);
+        calendar.setTime(new Date());
+        calendar.add(Calendar.SECOND, (int)cookie.getMaxAge());
+
         StringBuilder header = new StringBuilder();
 
         header.append(cookie.getName() + "=");
@@ -45,21 +57,21 @@ public class CookieContainer
 //            header.append("; ");
 //        }
 //
-//        header.append("domain=");
-//        header.append(cookie.getDomain());
-//        header.append("; ");
-//
-//        header.append("max-age=");
-//        header.append(cookie.getMaxAge());
-//        header.append("; ");
-//
-//        header.append("path=");
-//        header.append(cookie.getPath());
-//        header.append("; ");
-//
-//        header.append("version=");
-//        header.append(cookie.getVersion());
-//        header.append("; ");
+        header.append("domain=");
+        header.append(cookie.getDomain());
+        header.append("; ");
+
+        header.append("max-age=");
+        header.append(cookie.getMaxAge());
+        header.append("; ");
+
+        header.append("path=");
+        header.append(cookie.getPath());
+        header.append("; ");
+
+        header.append("expires=");
+        header.append(dateTimeFormatter.format(calendar.getTime()));
+        header.append("; ");
 
         return header.toString();
     }
@@ -97,7 +109,6 @@ public class CookieContainer
 //
 //        return mapToReturn;
 //    }
-
     public String getUri()
     {
         return uri;

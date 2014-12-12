@@ -8,12 +8,18 @@ import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.utils.MyMiniFactoryLoadResult;
 import celtech.utils.MyMiniFactoryLoader;
 import celtech.web.AllCookiePolicy;
+import celtech.web.CookieContainer;
 import celtech.web.PersistentCookieStore;
+import java.io.IOException;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.CookieStore;
+import java.net.HttpCookie;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -105,34 +111,6 @@ public class MyMiniFactoryLoaderController implements Initializable
         CookiePolicy policy = new AllCookiePolicy();
         CookieManager handler = new CookieManager(persistentStore, policy);
         CookieHandler.setDefault(handler);
-
-        boolean firstTime = true;
-
-        //Set up the mmf cookie the first time we're loading the page
-//        if (firstTime)
-//        {
-//            try
-//            {
-//                URI mmfURI = new URI(myMiniFactoryURLString);
-//                List<HttpCookie> cookieList = persistentStore.get(mmfURI);
-//                cookieList.stream().forEach(cookie
-//                    ->
-//                    {
-//                        try
-//                        {
-//                            CookieHandler.getDefault().put(mmfURI, CookieContainer.cookieToHeaderMap(cookie));
-//                        }
-//                        catch (IOException ex)
-//                        {
-//                            steno.error("Couldn't process MMF element");
-//                        }
-//                    });
-//            } catch (URISyntaxException ex)
-//            {
-//                steno.error("Error creating MMF URI");
-//            }
-//            firstTime = !firstTime;
-//        }
 
         webContentContainer.getChildren().clear();
 
