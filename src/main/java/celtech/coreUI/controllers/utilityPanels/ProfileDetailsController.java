@@ -8,6 +8,8 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.CustomSlicerType;
 import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
+import celtech.configuration.fileRepresentation.SlicerMappingData;
+import celtech.configuration.fileRepresentation.SlicerMappings;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.slicer.FillPattern;
 import celtech.configuration.slicer.SupportPattern;
@@ -20,6 +22,7 @@ import celtech.coreUI.controllers.popups.PopupCommandTransmitter;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -412,6 +415,9 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
     private boolean inhibitAutoExtrusionWidth = false;
 
+    private SlicerMappings slicerMappings;
+    private SlicerType currentSlicerType = SlicerType.Cura;
+
     /**
      * Initializes the controller class.
      *
@@ -421,6 +427,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        slicerMappings = Lookup.getSlicerMappings();
         nameEditable.set(false);
         isMutable.set(true);
 
@@ -809,7 +816,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
         slicerChooser.setItems(FXCollections.observableArrayList(CustomSlicerType.values()));
 
-
         slicerChooser.valueProperty().addListener(new ChangeListener<CustomSlicerType>()
         {
             @Override
@@ -818,6 +824,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
                 if (lastSlicer != newSlicer)
                 {
                     workingProfile.setSlicerOverride(newSlicer.getSlicerType());
+                    updateFieldDisabledState(workingProfile);
                 }
             }
         });
@@ -956,6 +963,66 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         enableFanIfLayerTimeBelow.intValueProperty().set(newSettings.getCoolIfLayerTimeLessThan_secs());
         slowFanIfLayerTimeBelow.intValueProperty().set(newSettings.getSlowDownIfLayerTimeLessThan_secs());
         minPrintSpeed.intValueProperty().set(newSettings.getMinPrintSpeed_mm_per_s());
+
+        updateFieldDisabledState(newSettings);
+    }
+
+    private void updateFieldDisabledState(SlicerParametersFile settings)
+    {
+        SlicerType slicerType;
+
+        if (settings.getSlicerOverride() == null)
+        {
+            slicerType = Lookup.getUserPreferences().getSlicerType();
+        } else
+        {
+            slicerType = settings.getSlicerOverride();
+        }
+        
+        
+        
+         layerHeight.setDisable(!slicerMappings.isMapped(slicerType, "layerHeight_mm"));
+        fillDensity.setDisable(!slicerMappings.isMapped(slicerType, "fillDensity_normalised"));
+        infillEveryN.setDisable(!slicerMappings.isMapped(slicerType, "fillEveryNLayers"));
+        solidLayersTop.setDisable(!slicerMappings.isMapped(slicerType, "solidLayersAtTop"));
+        solidLayersBottom.setDisable(!slicerMappings.isMapped(slicerType, "solidLayersAtBottom"));
+        numberOfPerimeters.setDisable(!slicerMappings.isMapped(slicerType, "numberOfPerimeters"));
+        brimWidth.setDisable(!slicerMappings.isMapped(slicerType, "brimWidth_mm"));
+
+        //Nozzle tab
+        firstLayerExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType, "firstLayerExtrusionWidth_mm"));
+        perimeterExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType, "perimeterExtrusionWidth_mm"));
+        infillExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType, "fillExtrusionWidth_mm"));
+        solidInfillExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType, "solidFillExtrusionWidth_mm"));
+        topSolidInfillExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType, "topSolidFillExtrusionWidth_mm"));
+        supportExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType, "supportExtrusionWidth_mm"));
+
+        //Support tab
+        supportOverhangThreshold.setDisable(!slicerMappings.isMapped(slicerType, "supportOverhangThreshold_degrees"));
+        forcedSupportLayers.setDisable(!slicerMappings.isMapped(slicerType, "forcedSupportForFirstNLayers"));
+        supportPatternSpacing.setDisable(!slicerMappings.isMapped(slicerType, "supportPatternSpacing_mm"));
+        supportPatternAngle.setDisable(!slicerMappings.isMapped(slicerType, "supportPatternAngle_degrees"));
+
+        //Speed tab
+        firstLayerSpeed.setDisable(!slicerMappings.isMapped(slicerType, "firstLayerSpeed_mm_per_s"));
+        perimeterSpeed.setDisable(!slicerMappings.isMapped(slicerType, "perimeterSpeed_mm_per_s"));
+        smallPerimeterSpeed.setDisable(!slicerMappings.isMapped(slicerType, "smallPerimeterSpeed_mm_per_s"));
+        externalPerimeterSpeed.setDisable(!slicerMappings.isMapped(slicerType, "externalPerimeterSpeed_mm_per_s"));
+        infillSpeed.setDisable(!slicerMappings.isMapped(slicerType, "fillSpeed_mm_per_s"));
+        solidInfillSpeed.setDisable(!slicerMappings.isMapped(slicerType, "solidFillSpeed_mm_per_s"));
+        topSolidInfillSpeed.setDisable(!slicerMappings.isMapped(slicerType, "topSolidFillSpeed_mm_per_s"));
+        supportMaterialSpeed.setDisable(!slicerMappings.isMapped(slicerType, "supportSpeed_mm_per_s"));
+        bridgesSpeed.setDisable(!slicerMappings.isMapped(slicerType, "bridgeSpeed_mm_per_s"));
+        gapFillSpeed.setDisable(!slicerMappings.isMapped(slicerType, "gapFillSpeed_mm_per_s"));
+
+        //Cooling tab
+        minFanSpeed.setDisable(!slicerMappings.isMapped(slicerType, "minFanSpeed_percent"));
+        maxFanSpeed.setDisable(!slicerMappings.isMapped(slicerType, "maxFanSpeed_percent"));
+        bridgesFanSpeed.setDisable(!slicerMappings.isMapped(slicerType, "bridgeFanSpeed_percent"));
+        disableFanForFirstNLayers.setDisable(!slicerMappings.isMapped(slicerType, "disableFanFirstNLayers"));
+        enableFanIfLayerTimeBelow.setDisable(!slicerMappings.isMapped(slicerType, "coolIfLayerTimeLessThan_secs"));
+        slowFanIfLayerTimeBelow.setDisable(!slicerMappings.isMapped(slicerType, "slowDownIfLayerTimeLessThan_secs"));
+        minPrintSpeed.setDisable(!slicerMappings.isMapped(slicerType, "minPrintSpeed_mm_per_s"));        
     }
 
     private void updateSettingsFromGUI(SlicerParametersFile settingsToUpdate)

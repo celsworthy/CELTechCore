@@ -16,9 +16,14 @@ public class SlicerMappings
     {
         return mappings;
     }
-
+    
     public void setMappings(HashMap<SlicerType, SlicerMappingData> mappings)
     {
         this.mappings = mappings;
+    }
+    
+    public boolean isMapped(SlicerType slicerType, String variable)
+    {
+        return mappings.get(slicerType).getMappingData().containsKey(variable);
     }
 }

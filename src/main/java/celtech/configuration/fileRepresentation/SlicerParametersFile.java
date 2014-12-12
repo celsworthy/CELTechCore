@@ -5,6 +5,7 @@ import celtech.configuration.slicer.FillPattern;
 import celtech.configuration.slicer.NozzleParameters;
 import celtech.configuration.slicer.SupportPattern;
 import java.util.ArrayList;
+import java.util.Optional;
 
 /**
  *
