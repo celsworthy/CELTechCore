@@ -101,7 +101,7 @@ public class CalibrationNozzleHeightActions
     private void heatBed() throws InterruptedException, PrinterException
     {
         printer.goToTargetNozzleTemperature();
-        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("Home_all"), true);
+            printer.executeGCodeFile(GCodeMacros.getFilename("Home_all"));
         if (PrinterUtils.waitOnMacroFinished(printer, cancellable) == false)
         {
             printer.goToTargetNozzleTemperature();

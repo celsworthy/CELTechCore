@@ -34,7 +34,7 @@ public class CalibrationXAndYGUI
     {
         this.controller = controller;
         this.stateManager = stateManager;
-        
+
         stateManager.stateGUITProperty().addListener(new ChangeListener()
         {
 
@@ -68,7 +68,8 @@ public class CalibrationXAndYGUI
         steno.info("GUI going to state " + state);
         controller.calibrationStatus.setText(state.getStepTitle());
         showAppropriateButtons(state);
-        if (state.getDiagramFXMLFileName().isPresent()) {
+        if (state.getDiagramFXMLFileName().isPresent())
+        {
             controller.showDiagram(state.getDiagramFXMLFileName().get());
         }
         int stepNo = 0;
@@ -76,15 +77,6 @@ public class CalibrationXAndYGUI
         {
             case IDLE:
                 break;
-//            case HEATING:
-//                controller.hideAllInputControlsExceptStepNumber();
-//                controller.calibrationMenu.disableNonSelectedItems();
-//                controller.setCalibrationProgressVisible(
-//                    CalibrationInsetPanelController.ProgressVisibility.TEMP);
-//                controller.cancelCalibrationButton.setVisible(true);
-//                controller.calibrationStatus.setText(state.getStepTitle());
-//                controller.stepNumber.setText(String.format("Step %s of 10", 2));
-//                break;
             case PRINT_PATTERN:
                 controller.calibrationMenu.disableNonSelectedItems();
                 controller.showSpinner();
@@ -104,15 +96,19 @@ public class CalibrationXAndYGUI
             case PRINT_CIRCLE_CHECK:
                 stepNo = 4;
                 break;
+            case DONE:
+                controller.resetMenuAndGoToChoiceMode();
+                break;
             case FINISHED:
-                controller.calibrationMenu.enableNonSelectedItems();
+                controller.calibrationMenu.reset();
                 break;
             case FAILED:
                 controller.calibrationMenu.enableNonSelectedItems();
                 break;
         }
-         if (stepNo != 0) {
-             controller.stepNumber.setText(String.format("Step %s of 4", stepNo));
+        if (stepNo != 0)
+        {
+            controller.stepNumber.setText(String.format("Step %s of 4", stepNo));
         }
     }
 
