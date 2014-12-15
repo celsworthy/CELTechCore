@@ -269,6 +269,8 @@ public class ThreeDViewManager
             {
                 int faceNumber = pickResult.getIntersectedFace();
                 snapToGround(intersectedNode, faceNumber);
+                collideModels();
+                DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
                 return;
             }
 

@@ -49,7 +49,10 @@ public class RoboxRxPacketFactory
                 case PRINTER_ID_RESPONSE:
                     returnVal = new PrinterIDResponse();
                     break;
-                case REEL_EEPROM_DATA:
+                case REEL_0_EEPROM_DATA:
+                    returnVal = new ReelEEPROMDataResponse();
+                    break;
+                case REEL_1_EEPROM_DATA:
                     returnVal = new ReelEEPROMDataResponse();
                     break;
                 case HEAD_EEPROM_DATA:
@@ -112,10 +115,17 @@ public class RoboxRxPacketFactory
                     printerIDResponse.populatePacket(inputBytes);
                     returnVal = printerIDResponse;
                     break;
-                case REEL_EEPROM_DATA:
-                    ReelEEPROMDataResponse reelEepromDataResponse = new ReelEEPROMDataResponse();
-                    reelEepromDataResponse.populatePacket(inputBytes);
-                    returnVal = reelEepromDataResponse;
+                case REEL_0_EEPROM_DATA:
+                    ReelEEPROMDataResponse reel0EepromDataResponse = new ReelEEPROMDataResponse();
+                    reel0EepromDataResponse.populatePacket(inputBytes);
+                    reel0EepromDataResponse.setReelNumber(0);
+                    returnVal = reel0EepromDataResponse;
+                    break;
+                case REEL_1_EEPROM_DATA:
+                    ReelEEPROMDataResponse reel1EepromDataResponse = new ReelEEPROMDataResponse();
+                    reel1EepromDataResponse.populatePacket(inputBytes);
+                    reel1EepromDataResponse.setReelNumber(1);
+                    returnVal = reel1EepromDataResponse;
                     break;
                 case HEAD_EEPROM_DATA:
                     HeadEEPROMDataResponse headEepromDataResponse = new HeadEEPROMDataResponse();

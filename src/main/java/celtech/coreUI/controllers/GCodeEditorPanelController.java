@@ -5,11 +5,12 @@
  */
 package celtech.coreUI.controllers;
 
+import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectMode;
 import celtech.coreUI.components.SlidingComponentDirection;
 import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.IntegerProperty;
@@ -36,7 +37,6 @@ import libertysystems.stenographer.StenographerFactory;
 public class GCodeEditorPanelController extends SlidingElementController implements Initializable
 {
 
-    private StatusScreenState statusScreenState = null;
     private final Stenographer steno = StenographerFactory.getStenographer(GCodeEditorPanelController.class.getName());
     private ModelContainer boundModel = null;
     private IntegerProperty selectedGCodeLine = new SimpleIntegerProperty();
@@ -53,17 +53,15 @@ public class GCodeEditorPanelController extends SlidingElementController impleme
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        statusScreenState = StatusScreenState.getInstance();
-
         setDimensions(gcodeEditParent.getPrefWidth(), gcodeEditParent.getPrefHeight(), gcodeEditParent.getLayoutX(), gcodeEditParent.getLayoutY());
         configurePanel(gcodeEditParent, SlidingComponentDirection.IN_FROM_RIGHT);
 
-        if (statusScreenState.getCurrentlySelectedPrinter() != null)
+        if (Lookup.getCurrentlySelectedPrinterProperty().get() != null)
         {
-            gcodeListView.setItems(statusScreenState.getCurrentlySelectedPrinter().gcodeTranscriptProperty());
+            gcodeListView.setItems(Lookup.getCurrentlySelectedPrinterProperty().get().gcodeTranscriptProperty());
         }
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        Lookup.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
             @Override
             public void changed(ObservableValue<? extends Printer> ov, Printer t, Printer t1)

@@ -1,11 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.services.printing;
 
-import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterException;
 import celtech.utils.SystemUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,7 +26,6 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
     private final Stenographer steno = StenographerFactory.getStenographer(this.getClass().getName());
     private IntegerProperty linesInFile = null;
     private boolean printUsingSDCard = true;
-    private boolean isMacro = false;
 
     /**
      *
@@ -38,16 +34,14 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
      * @param printJobID
      * @param linesInFile
      * @param printUsingSDCard
-     * @param isMacro
      */
-    public GCodePrinterTask(Printer printerToUse, String modelFileToPrint, String printJobID, IntegerProperty linesInFile, boolean printUsingSDCard, boolean isMacro)
+    public GCodePrinterTask(Printer printerToUse, String modelFileToPrint, String printJobID, IntegerProperty linesInFile, boolean printUsingSDCard)
     {
         this.printerToUse = printerToUse;
         this.gcodeFileToPrint = modelFileToPrint;
         this.printJobID = printJobID;
         this.linesInFile = linesInFile;
         this.printUsingSDCard = printUsingSDCard;
-        this.isMacro = isMacro;
     }
 
     @Override
@@ -101,15 +95,15 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
                     {
 //                        steno.info("Sending line " + lineCounter);
                         printerToUse.sendDataFileChunk(line, lineCounter == numberOfLines - 1, true);
-                        if ((printerToUse.getSequenceNumber() > 1 && printerToUse.isPrintInitiated() == false)
-                                || (lineCounter == numberOfLines - 1 && printerToUse.isPrintInitiated() == false))
+                        if ((printerToUse.getDataFileSequenceNumber() > 1 && printerToUse.isPrintInitiated() == false)
+                            || (lineCounter == numberOfLines - 1 && printerToUse.isPrintInitiated() == false))
                         {
                             //Start printing!
                             printerToUse.initiatePrint(printJobID);
                         }
                     } else
                     {
-                        printerToUse.transmitDirectGCode(line, false);
+                        printerToUse.sendRawGCode(line, false);
                     }
                     lineCounter++;
                 }
@@ -121,13 +115,19 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
             gotToEndOK = true;
         } catch (FileNotFoundException ex)
         {
-            steno.error("Couldn't open gcode file " + gcodeFileToPrint);
+            steno.error("Couldn't open gcode file " + gcodeFileToPrint + ": " + ex);
         } catch (RoboxCommsException ex)
         {
             steno.error("Error during print operation - abandoning print " + printJobID + " " + ex.getMessage());
             if (printUsingSDCard)
             {
-                printerToUse.abortPrint();
+                try
+                {
+                    printerToUse.cancel(null);
+                } catch (PrinterException exp)
+                {
+                    steno.error("Error cancelling print - " + exp.getMessage());
+                }
             }
             updateMessage("Printing error");
         } finally
@@ -136,7 +136,7 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
             {
                 scanner.close();
             }
-            
+
             if (gcodeReader != null)
             {
                 gcodeReader.close();
@@ -144,7 +144,6 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
         }
 
         result.setSuccess(gotToEndOK);
-        result.setIsMacro(isMacro);
         return result;
     }
 

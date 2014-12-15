@@ -53,6 +53,17 @@ public class SystemUtils
 
     /**
      *
+     * @param doubleA
+     * @param doubleB
+     * @return
+     */
+    public static boolean isDoubleSame(double doubleA, double doubleB)
+    {
+        return isDoubleSame(doubleA, doubleB, 1e-12);
+    }
+
+    /**
+     *
      * @param inputString
      * @return
      * @throws InvalidChecksumException
@@ -245,13 +256,13 @@ public class SystemUtils
 
 //set ch to "current" character to be processed
             char ch = inputString
-                    .charAt(i);
+                .charAt(i);
 
 // throw exception for invalid characters
             if (validChars.indexOf(ch) == -1)
             {
                 throw new InvalidChecksumException(
-                        "\"" + ch + "\" is an invalid character");
+                    "\"" + ch + "\" is an invalid character");
             }
 
 // our "digit" is calculated using ASCII value - 48
@@ -420,7 +431,7 @@ public class SystemUtils
         if (!(image instanceof RenderedImage))
         {
             BufferedImage bufferedImage = new BufferedImage(image.getWidth(null),
-                    image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+                                                            image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
             Graphics g = bufferedImage.createGraphics();
             g.drawImage(image, 0, 0, null);
             g.dispose();
@@ -433,7 +444,7 @@ public class SystemUtils
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
         return new javafx.scene.image.Image(in);
     }
-    
+
     /**
      *
      * @param gcode

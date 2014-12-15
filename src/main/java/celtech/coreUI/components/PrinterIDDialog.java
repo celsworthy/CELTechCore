@@ -1,13 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.components;
 
-import celtech.coreUI.DisplayManager;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.PrinterIDDialogController;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import java.io.IOException;
 import java.net.URL;
 import javafx.fxml.FXMLLoader;
@@ -45,7 +41,7 @@ public class PrinterIDDialog
             dialogController = (PrinterIDDialogController) dialogLoader.getController();
 
             Scene dialogScene = new Scene(dialogBoxScreen, Color.TRANSPARENT);
-            dialogScene.getStylesheets().add(ApplicationConfiguration.mainCSSFile);
+            dialogScene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
             dialogStage.setScene(dialogScene);
             dialogStage.initOwner(DisplayManager.getMainStage());
             dialogStage.initModality(Modality.WINDOW_MODAL);

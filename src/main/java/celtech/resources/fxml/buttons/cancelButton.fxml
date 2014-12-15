@@ -6,7 +6,7 @@
 <?import javafx.scene.text.*?>
 <?import javafx.scene.*?>
 
-<fx:root type="celtech.coreUI.components.buttons.CancelButton" styleClass="borderlessGraphicButton" stylesheets="@../../css/JMetroDarkTheme.css" text="" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root type="celtech.coreUI.components.buttons.GraphicButton" stylesheets="@../../css/JMetroDarkTheme.css" text="" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <graphic>
        <Group>
 	<SVGPath fill="#FFFFFF" content="M23.937,32.346l7.765-7.766l-7.765-7.764l3.285-3.299l7.765,7.764l7.777-7.764l3.299,3.283l-7.778,7.779 l7.778,7.777l-3.299,3.287l-7.777-7.766l-7.765,7.766L23.937,32.346z"/>

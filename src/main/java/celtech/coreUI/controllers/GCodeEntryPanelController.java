@@ -5,9 +5,9 @@
  */
 package celtech.coreUI.controllers;
 
+import celtech.Lookup;
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.printerControl.Printer;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ObservableValue;
@@ -32,7 +32,6 @@ import libertysystems.stenographer.StenographerFactory;
 public class GCodeEntryPanelController implements Initializable
 {
 
-    private StatusScreenState statusScreenState = null;
     private final Stenographer steno = StenographerFactory.getStenographer(GCodeEntryPanelController.class.getName());
     private ListChangeListener<String> gcodeTranscriptListener = null;
 
@@ -63,20 +62,13 @@ public class GCodeEntryPanelController implements Initializable
     private void fireGCodeAtPrinter()
     {
         gcodeEntryField.selectAll();
-        try
-        {
-            statusScreenState.getCurrentlySelectedPrinter().transmitDirectGCode(gcodeEntryField.getText(), true);
-        } catch (RoboxCommsException ex)
-        {
-            steno.info("Error sending GCode");
-        }
+
+        Lookup.getCurrentlySelectedPrinterProperty().get().sendRawGCode(gcodeEntryField.getText(), true);
     }
 
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        statusScreenState = StatusScreenState.getInstance();
-
         gcodeListView.setEditable(false);
         gcodeListView.setScrollTop(Double.MAX_VALUE);
 
@@ -110,7 +102,7 @@ public class GCodeEntryPanelController implements Initializable
 
         populateGCodeArea();
 
-        statusScreenState.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
+        Lookup.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
         {
             if (t1 != null)
             {
@@ -136,61 +128,61 @@ public class GCodeEntryPanelController implements Initializable
 //                }
 //            }
 //        });
-        gcodeEditParent.visibleProperty().bind(statusScreenState.currentlySelectedPrinterProperty().isNotNull().and(statusScreenState.modeProperty().isEqualTo(StatusScreenMode.ADVANCED)));
+//        gcodeEditParent.visibleProperty().bind(statusScreenState.currentlySelectedPrinterProperty().isNotNull().and(statusScreenState.modeProperty().isEqualTo(StatusScreenMode.ADVANCED)));
 
         sendGCodeButton.setDefaultButton(true);
 
         gcodeEntryField.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>()
-        {
+                                    {
 
-            @Override
-            public void handle(KeyEvent t)
-            {
-                if (t.getCode() == KeyCode.UP)
-                {
-                    String allText = gcodeListView.getText();
+                                        @Override
+                                        public void handle(KeyEvent t)
+                                        {
+                                            if (t.getCode() == KeyCode.UP)
+                                            {
+                                                String allText = gcodeListView.getText();
 
-                    if (gcodeListView.getSelectedText().length() > 0)
-                    {
-                        int selectionStart = gcodeListView.getSelection().getStart();
-                        int selectionEnd = gcodeListView.getSelection().getEnd();
+                                                if (gcodeListView.getSelectedText().length() > 0)
+                                                {
+                                                    int selectionStart = gcodeListView.getSelection().getStart();
+                                                    int selectionEnd = gcodeListView.getSelection().getEnd();
 
-                        int lastposition = allText.lastIndexOf('\n', selectionStart);
+                                                    int lastposition = allText.lastIndexOf('\n', selectionStart);
 
-                        if (lastposition > 0)
-                        {
-                            int penultimatePosition = allText.lastIndexOf("\n", lastposition - 1);
-                            if (penultimatePosition > 0)
-                            {
-                                gcodeListView.selectRange(penultimatePosition, lastposition);
-                            }
-                        }
-                    } else
-                    {
-                        int lastposition = allText.lastIndexOf('\n');
+                                                    if (lastposition > 0)
+                                                    {
+                                                        int penultimatePosition = allText.lastIndexOf("\n", lastposition - 1);
+                                                        if (penultimatePosition > 0)
+                                                        {
+                                                            gcodeListView.selectRange(penultimatePosition, lastposition);
+                                                        }
+                                                    }
+                                                } else
+                                                {
+                                                    int lastposition = allText.lastIndexOf('\n');
 
-                        if (lastposition > 0)
-                        {
-                            int penultimatePosition = allText.lastIndexOf("\n", lastposition - 1);
-                            if (penultimatePosition > 0)
-                            {
-                                gcodeListView.selectRange(penultimatePosition, lastposition);
-                            }
-                        }
-                    }
-                } else if (t.getCode() == KeyCode.DOWN)
-                {
-                    gcodeListView.selectNextWord();
-                }
-            }
+                                                    if (lastposition > 0)
+                                                    {
+                                                        int penultimatePosition = allText.lastIndexOf("\n", lastposition - 1);
+                                                        if (penultimatePosition > 0)
+                                                        {
+                                                            gcodeListView.selectRange(penultimatePosition, lastposition);
+                                                        }
+                                                    }
+                                                }
+                                            } else if (t.getCode() == KeyCode.DOWN)
+                                            {
+                                                gcodeListView.selectNextWord();
+                                            }
+                                        }
         });
     }
 
     private void populateGCodeArea()
     {
-        if (statusScreenState.getCurrentlySelectedPrinter() != null)
+        if (Lookup.getCurrentlySelectedPrinterProperty().get() != null)
         {
-            for (String gcodeLine : statusScreenState.getCurrentlySelectedPrinter().gcodeTranscriptProperty())
+            for (String gcodeLine : Lookup.getCurrentlySelectedPrinterProperty().get().gcodeTranscriptProperty())
             {
                 gcodeListView.appendText(gcodeLine);
             }

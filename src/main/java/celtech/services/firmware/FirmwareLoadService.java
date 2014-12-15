@@ -1,10 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.services.firmware;
 
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.services.ControllableService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -15,10 +11,9 @@ import javafx.concurrent.Task;
  *
  * @author ianhudson
  */
-public class FirmwareLoadService extends Service<Integer> implements ControllableService
+public class FirmwareLoadService extends Service<FirmwareLoadResult> implements ControllableService
 {
-
-    private StringProperty firmwareFileToLoad = new SimpleStringProperty();
+    private final StringProperty firmwareFileToLoad = new SimpleStringProperty();
     private Printer printerToUse = null;
 
     /**
@@ -49,7 +44,7 @@ public class FirmwareLoadService extends Service<Integer> implements Controllabl
     }
 
     @Override
-    protected Task<Integer> createTask()
+    protected Task<FirmwareLoadResult> createTask()
     {
         return new FirmwareLoadTask(getFirmwareFileToLoad(), printerToUse);
     }

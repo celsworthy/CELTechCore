@@ -5,13 +5,13 @@
  */
 package celtech.coreUI.controllers;
 
+import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.EnhancedToggleGroup;
-import celtech.printerControl.Printer;
-import celtech.printerControl.comms.RoboxCommsManager;
+import celtech.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
@@ -68,7 +68,7 @@ public class ModeSelectionControlController implements Initializable
     @FXML
     private ToggleButton printModeButton;
 
-    private ObservableList<Printer> printerStatusList = null;
+    private ObservableList<Printer> connectedPrinters = null;
 
     @FXML
     void gotoStatusMode(MouseEvent event)
@@ -181,10 +181,10 @@ public class ModeSelectionControlController implements Initializable
             }
         });
 
-        printerStatusList = RoboxCommsManager.getInstance().getPrintStatusList();
+        connectedPrinters = Lookup.getConnectedPrinters();
 
-        settingsModeButton.disableProperty().bind(Bindings.isEmpty(printerStatusList).or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.STATUS)));
-        printModeButton.disableProperty().bind(Bindings.isEmpty(printerStatusList).or(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS).or(settingsScreenState.selectedPrinterProperty().isNull())));
+        settingsModeButton.disableProperty().bind(Bindings.isEmpty(connectedPrinters).or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.STATUS)));
+        printModeButton.disableProperty().bind(Bindings.isEmpty(connectedPrinters).or(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS).or(settingsScreenState.selectedPrinterProperty().isNull())));
 
     }
 

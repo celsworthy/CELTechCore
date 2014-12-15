@@ -4,14 +4,14 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.RestrictedNumberField;
-import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.GCodeMacros;
+import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterException;
 import celtech.services.purge.PurgeState;
 import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.services.slicer.RoboxProfile;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
@@ -44,7 +44,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     private Project project = null;
     private Filament filament = null;
     private PrintQualityEnumeration printQuality = null;
-    private RoboxProfile settings = null;
+    private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
     private String macroToExecuteAfterPurge = null;
 
@@ -66,9 +66,6 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
 
     @FXML
     private Text purgeStatus;
-
-    @FXML
-    private Text instruction;
 
     @FXML
     private RestrictedNumberField purgeTemperature;
@@ -157,7 +154,13 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                         .masthead(null)
                         .message(DisplayManager.getLanguageBundle().getString("dialogs.clearBedInstruction"))
                         .showWarning();
-                    printerToUse.getPrintQueue().printGCodeFile(GCodeMacros.getFilename(macroToExecuteAfterPurge), true);
+                    try
+                    {
+                        printerToUse.executeMacro(GCodeMacros.getFilename(macroToExecuteAfterPurge));
+                    } catch (PrinterException ex)
+                    {
+                        steno.error("Error running macro");
+                    }
                 }
             });
 
@@ -178,9 +181,6 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     public void initialize(URL location, ResourceBundle resources)
     {
         i18nBundle = DisplayManager.getLanguageBundle();
-
-        StatusScreenState statusScreenState = StatusScreenState.getInstance();
-
         purgeHelper.addStateListener(this);
         purgeHelper.setState(PurgeState.IDLE);
     }
@@ -257,7 +257,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         }
     }
 
-    public void purgeAndPrint(Project project, Filament filament, PrintQualityEnumeration printQuality, RoboxProfile settings, Printer printerToUse)
+    public void purgeAndPrint(Project project, Filament filament, PrintQualityEnumeration printQuality, SlicerParametersFile settings, Printer printerToUse)
     {
         this.project = project;
         this.filament = filament;

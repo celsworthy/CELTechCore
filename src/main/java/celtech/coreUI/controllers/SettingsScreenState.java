@@ -1,20 +1,11 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
-import celtech.configuration.PrintProfileContainer;
-import celtech.printerControl.Printer;
+import celtech.configuration.datafileaccessors.SlicerParametersContainer;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.services.slicer.RoboxProfile;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
@@ -28,7 +19,7 @@ public class SettingsScreenState
     private static SettingsScreenState instance = null;
     private final ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
     private final ObjectProperty<Filament> selectedFilament = new SimpleObjectProperty<>(null);
-    private final ObjectProperty<RoboxProfile> settings = new SimpleObjectProperty<>(PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName));
+    private final ObjectProperty<SlicerParametersFile> settings = new SimpleObjectProperty<>(SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName));
     private final ObjectProperty<PrintQualityEnumeration> printQuality = new SimpleObjectProperty<>();
 
     private SettingsScreenState()
@@ -107,7 +98,7 @@ public class SettingsScreenState
      *
      * @param value
      */
-    public void setSettings(RoboxProfile value)
+    public void setSettings(SlicerParametersFile value)
     {
         settings.set(value);
     }
@@ -116,7 +107,7 @@ public class SettingsScreenState
      *
      * @return
      */
-    public RoboxProfile getSettings()
+    public SlicerParametersFile getSettings()
     {
         return settings.get();
     }
@@ -125,7 +116,7 @@ public class SettingsScreenState
      *
      * @return
      */
-    public ObjectProperty<RoboxProfile> getSettingsProperty()
+    public ObjectProperty<SlicerParametersFile> getSettingsProperty()
     {
         return settings;
     }

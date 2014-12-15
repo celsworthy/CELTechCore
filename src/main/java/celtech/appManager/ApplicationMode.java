@@ -12,12 +12,8 @@ import celtech.configuration.ApplicationConfiguration;
  */
 public enum ApplicationMode
 {
-
-    /**
-     *
-     */
-    NOZZLE_OPEN_CALIBRATION("printerStatus", "CalibrationNozzleB"),
-    NOZZLE_OFFSET_CALIBRATION("printerStatus", "CalibrationNozzleOffset"),
+    CALIBRATION_CHOICE("printerStatus", "Calibration"),
+    REGISTRATION("printerStatus", "registration"),
     PURGE("printerStatus", "purge"),
     ABOUT("printerStatus", "about"),
     SYSTEM_INFORMATION("printerStatus", "systemInformation"),
@@ -29,6 +25,7 @@ public enum ApplicationMode
      */
     LAYOUT("layout", null),
     ADD_MODEL("layout", "loadModel"),
+    MY_MINI_FACTORY("layout", "myMiniFactoryLoader"),
     /**
      *
      */

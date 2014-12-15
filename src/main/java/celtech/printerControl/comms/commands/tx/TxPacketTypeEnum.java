@@ -86,7 +86,12 @@ public enum TxPacketTypeEnum
     /**
      *
      */
-    WRITE_REEL_EEPROM((byte) 0xa2, 1, true, RxPacketTypeEnum.ACK_WITH_ERRORS),
+    WRITE_REEL_0_EEPROM((byte) 0xa2, 1, true, RxPacketTypeEnum.ACK_WITH_ERRORS),
+    
+    /**
+     *
+     */
+    WRITE_REEL_1_EEPROM((byte) 0xa4, 1, true, RxPacketTypeEnum.ACK_WITH_ERRORS),
 
     /**
      *
@@ -96,8 +101,13 @@ public enum TxPacketTypeEnum
     /**
      *
      */
-    READ_REEL_EEPROM((byte) 0xa3, 5, false, RxPacketTypeEnum.REEL_EEPROM_DATA),
+    READ_REEL_0_EEPROM((byte) 0xa3, 5, false, RxPacketTypeEnum.REEL_0_EEPROM_DATA),
 
+    /**
+     *
+     */
+    READ_REEL_1_EEPROM((byte) 0xa5, 5, false, RxPacketTypeEnum.REEL_1_EEPROM_DATA),
+    
     /**
      *
      */
@@ -106,7 +116,12 @@ public enum TxPacketTypeEnum
     /**
      *
      */
-    FORMAT_REEL_EEPROM((byte) 0xf9, 1, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
+    FORMAT_REEL_0_EEPROM((byte) 0xf9, 1, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
+
+    /**
+     *
+     */
+    FORMAT_REEL_1_EEPROM((byte) 0xfa, 1, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
 
     /**
      *
@@ -131,12 +146,12 @@ public enum TxPacketTypeEnum
     /**
      *
      */
-    SET_TEMPERATURES((byte) 0xc3, 41, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
+    SET_TEMPERATURES((byte) 0xc3, 57, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
 
     /**
      *
      */
-    SET_FILAMENT_INFO((byte) 0xc5, 25, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
+    SET_FILAMENT_INFO((byte) 0xc5, 41, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
 
     /**
      *

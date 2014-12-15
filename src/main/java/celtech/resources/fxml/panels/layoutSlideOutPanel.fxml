@@ -5,7 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<HBox fx:id="slideout" maxHeight="1.7976931348623157E308" maxWidth="380.0" minWidth="-Infinity" styleClass="slideOutPanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.LayoutSlideOutPanelController">
+<HBox fx:id="slideout" maxHeight="1.7976931348623157E308" maxWidth="380.0" minWidth="-Infinity" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.LayoutSlideOutPanelController">
     <children>
         <VBox id="Container" fx:id="gcodeEditParent" spacing="10.0" HBox.hgrow="ALWAYS">
 <children><Label styleClass="sidePanelDivider" text="%layoutSlideOut.ProjectMetadata" /><HBox spacing="5.0">
@@ -25,4 +25,8 @@
 <padding>
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
 </padding>
+   <styleClass>
+      <String fx:value="slideOutPanel" />
+      <String fx:value="regularFont" />
+   </styleClass>
 </HBox>

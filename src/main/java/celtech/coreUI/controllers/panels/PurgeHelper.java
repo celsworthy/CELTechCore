@@ -1,18 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.TaskController;
 import celtech.configuration.Filament;
 import celtech.coreUI.controllers.SettingsScreenState;
-import celtech.printerControl.Printer;
-import celtech.printerControl.comms.commands.GCodeConstants;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
+import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterException;
 import celtech.services.purge.PurgeState;
 import celtech.services.purge.PurgeTask;
 import java.util.ArrayList;
@@ -28,7 +23,7 @@ import libertysystems.stenographer.StenographerFactory;
 public class PurgeHelper
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(CalibrationNozzleBHelper.class.getName());
+    private Stenographer steno = StenographerFactory.getStenographer(PurgeHelper.class.getName());
 
     private Printer printerToUse = null;
 
@@ -75,14 +70,14 @@ public class PurgeHelper
         {
             try
             {
-                printerToUse.transmitDirectGCode("G0 B0", false);
-                printerToUse.transmitDirectGCode(GCodeConstants.switchBedHeaterOff, false);
-                printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
-
-            } catch (RoboxCommsException ex)
+                printerToUse.gotoNozzlePosition(0);
+                printerToUse.switchBedHeaterOff();
+                //TODO modify for multiple nozzle heater support
+                printerToUse.switchNozzleHeaterOff(0);
+                printerToUse.switchOffHeadLEDs();
+            } catch (PrinterException ex)
             {
-                steno.error("Error in purge routine - mode=" + state.name());
+                steno.error("Error resetting printer");
             }
         }
     }
@@ -120,7 +115,7 @@ public class PurgeHelper
                 // put the write after the purge routine once the firmware no longer raises an error whilst connected to the host computer
                 try
                 {
-                    savedHeadData = printerToUse.transmitReadHeadEEPROM();
+                    savedHeadData = printerToUse.readHeadEEPROM();
 
                     // The nozzle should be heated to a temperature halfway between the last temperature stored on the head and the current required temperature stored on the reel
                     SettingsScreenState settingsScreenState = SettingsScreenState.getInstance();
@@ -132,7 +127,8 @@ public class PurgeHelper
                         reelNozzleTemperature = settingsFilament.getNozzleTemperature();
                     } else
                     {
-                        reelNozzleTemperature = (float) printerToUse.getReelNozzleTemperature().get();
+                        //TODO modify for multiple reels
+                        reelNozzleTemperature = (float) printerToUse.reelsProperty().get(0).nozzleTemperatureProperty().get();
                     }
 
                     float temperatureDifference = reelNozzleTemperature - savedHeadData.getLastFilamentTemperature();
@@ -191,7 +187,7 @@ public class PurgeHelper
                                                                                    savedHeadData.getNozzle2BOffset(),
                                                                                    reelNozzleTemperature,
                                                                                    savedHeadData.getHeadHours());
-                    printerToUse.transmitReadHeadEEPROM();
+                   printerToUse.readHeadEEPROM();
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in purge - mode=" + state.name());
@@ -200,13 +196,14 @@ public class PurgeHelper
             case FAILED:
                 try
                 {
-                    printerToUse.transmitDirectGCode("G0 B0", false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchBedHeaterOff, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.switchOffHeadLEDs, false);
-                } catch (RoboxCommsException ex)
+                    printerToUse.gotoNozzlePosition(0);
+                    printerToUse.switchBedHeaterOff();
+                    //TODO modify for multiple nozzle heater support
+                    printerToUse.switchNozzleHeaterOff(0);
+                    printerToUse.switchOffHeadLEDs();
+                } catch (PrinterException ex)
                 {
-                    steno.error("Error clearing up after failed purge");
+                    steno.error("Error resetting printer");
                 }
                 break;
         }

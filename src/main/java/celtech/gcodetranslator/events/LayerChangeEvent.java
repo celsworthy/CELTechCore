@@ -10,7 +10,6 @@ import java.util.Locale;
  */
 public class LayerChangeEvent extends GCodeParseEvent
 {
-
     private double z;
 
     /**

@@ -1,10 +1,10 @@
 package celtech.appManager;
 
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.PrintProfileContainer;
+import celtech.configuration.datafileaccessors.SlicerParametersContainer;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.services.slicer.RoboxProfile;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -35,7 +35,7 @@ public class Project implements Serializable
     private String gcodeFileName = "";
     private ObjectProperty<ProjectMode> projectMode = new SimpleObjectProperty<>(ProjectMode.NONE);
     private PrintQualityEnumeration printQuality = null;
-    private RoboxProfile customSettings = null;
+    private SlicerParametersFile customSettings = null;
     private String customProfileName = "";
     private BooleanProperty isDirty = new SimpleBooleanProperty(false);
     private String lastPrintJobID = "";
@@ -45,7 +45,7 @@ public class Project implements Serializable
      */
     public Project()
     {
-        this.customSettings = PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.customSettingsProfileName);
+        this.customSettings = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.customSettingsProfileName);
     }
 
     /**
@@ -59,7 +59,7 @@ public class Project implements Serializable
         projectHeader.setProjectUUID(preloadedProjectUUID);
         setProjectName(projectName);
         this.loadedModels = loadedModels;
-        this.customSettings = PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.customSettingsProfileName);
+        this.customSettings = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.customSettingsProfileName);
     }
 
     /**
@@ -166,7 +166,7 @@ public class Project implements Serializable
 
         try
         {
-            customSettings = (RoboxProfile) in.readObject();
+            customSettings = (SlicerParametersFile) in.readObject();
             //Introduced in version 1.00.06
             if (in.available() > 0)
             {

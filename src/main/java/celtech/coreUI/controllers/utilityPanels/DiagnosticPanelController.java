@@ -5,8 +5,9 @@
  */
 package celtech.coreUI.controllers.utilityPanels;
 
-import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.Printer;
+import celtech.Lookup;
+import celtech.printerControl.model.Head;
+import celtech.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
@@ -22,59 +23,68 @@ import javafx.scene.control.Label;
  */
 public class DiagnosticPanelController implements Initializable
 {
-    
+
     private Printer connectedPrinter = null;
-    private StatusScreenState statusScreenState = null;
-    
+
     @FXML
     private Label extruder1Loaded;
-    
+
     @FXML
     private Label lidSwitch;
-    
+
     @FXML
     private Label zPositiveLimitSwitch;
-    
+
     @FXML
     private Label extruder2Loaded;
-    
+
     @FXML
     private Label extruder2Index;
-    
+
     @FXML
     private Label reelButtonSwitch;
-    
+
     @FXML
     private Label printerID;
-    
+
     @FXML
     private Label zLimitSwitch;
-    
+
     @FXML
     private Label xLimitSwitch;
-    
+
     @FXML
     private Label yLimitSwitch;
-    
+
     @FXML
     private Label extruder1Index;
-    
+
     @FXML
     private Label headID;
-    
+
+    private final ChangeListener<Head> headChangeListener = (ObservableValue<? extends Head> observable, Head oldValue, Head newValue) ->
+    {
+        if (newValue != null)
+        {
+            headID.textProperty().bind(newValue.uniqueIDProperty());
+        } else if (oldValue != null)
+        {
+            headID.textProperty().unbind();
+        }
+    };
+
     /**
      * Initializes the controller class.
+     *
      * @param url
      * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        statusScreenState = StatusScreenState.getInstance();
-        
-        statusScreenState.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        Lookup.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
-            
+
             @Override
             public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
             {
@@ -82,7 +92,7 @@ public class DiagnosticPanelController implements Initializable
                 {
                     unbindFromPrinter(connectedPrinter);
                 }
-                
+
                 if (newValue != null)
                 {
                     bindToPrinter(newValue);
@@ -90,11 +100,13 @@ public class DiagnosticPanelController implements Initializable
             }
         });
     }
-    
+
     private void unbindFromPrinter(Printer printer)
     {
         if (connectedPrinter != null)
         {
+            printer.headProperty().removeListener(headChangeListener);
+
             xLimitSwitch.textProperty().unbind();
             xLimitSwitch.setText("");
             printerID.textProperty().unbind();
@@ -119,30 +131,32 @@ public class DiagnosticPanelController implements Initializable
             extruder1Index.setText("");
             extruder2Index.textProperty().unbind();
             extruder2Index.setText("");
-            
+
             connectedPrinter = null;
         }
     }
-    
+
     private void bindToPrinter(Printer printer)
     {
         if (connectedPrinter == null)
         {
             connectedPrinter = printer;
-            
-            printerID.textProperty().bind(printer.getPrinterUniqueIDProperty());
-            headID.textProperty().bind(printer.getHeadUniqueID());
-            xLimitSwitch.textProperty().bind(printer.XStopSwitchProperty().asString());
-            yLimitSwitch.textProperty().bind(printer.YStopSwitchProperty().asString());
-            zLimitSwitch.textProperty().bind(printer.ZStopSwitchProperty().asString());
-            zPositiveLimitSwitch.textProperty().bind(printer.ZTopStopSwitchProperty().asString());
-            lidSwitch.textProperty().bind(printer.LidOpenProperty().asString());
-            reelButtonSwitch.textProperty().bind(printer.reelButtonProperty().asString());
-            extruder1Loaded.textProperty().bind(printer.Filament1LoadedProperty().asString());
-            extruder1Index.textProperty().bind(printer.Filament1IndexProperty().asString());
-            extruder2Loaded.textProperty().bind(printer.Filament2LoadedProperty().asString());
-            extruder2Index.textProperty().bind(printer.Filament2IndexProperty().asString());
+
+            printerID.textProperty().bind(printer.getPrinterIdentity().printerUniqueIDProperty());
+            xLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().xStopSwitchProperty().asString());
+            yLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().yStopSwitchProperty().asString());
+            zLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().zStopSwitchProperty().asString());
+            zPositiveLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().zTopStopSwitchProperty().asString());
+            lidSwitch.textProperty().bind(printer.getPrinterAncillarySystems().lidOpenProperty().asString());
+            reelButtonSwitch.textProperty().bind(printer.getPrinterAncillarySystems().reelButtonProperty().asString());
+            //TODO modify to work with multiple extruders
+            extruder1Loaded.textProperty().bind(printer.extrudersProperty().get(0).filamentLoadedProperty().asString());
+            extruder1Index.textProperty().bind(printer.extrudersProperty().get(0).indexWheelStateProperty().asString());
+            extruder2Loaded.textProperty().bind(printer.extrudersProperty().get(0).filamentLoadedProperty().asString());
+            extruder2Index.textProperty().bind(printer.extrudersProperty().get(0).indexWheelStateProperty().asString());
+
+            printer.headProperty().addListener(headChangeListener);
         }
     }
-    
+
 }

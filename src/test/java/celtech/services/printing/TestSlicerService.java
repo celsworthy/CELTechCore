@@ -5,11 +5,11 @@ package celtech.services.printing;
 
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.FilamentContainer;
-import celtech.printerControl.Printer;
+import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.printerControl.model.Printer;
 import celtech.services.slicer.AbstractSlicerService;
 import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.services.slicer.RoboxProfile;
 import celtech.services.slicer.SliceResult;
 import celtech.services.slicer.SlicerTask;
 import java.io.File;
@@ -30,7 +30,7 @@ public class TestSlicerService extends AbstractSlicerService
     private String printJobUUID = null;
     private Project project = null;
     private PrintQualityEnumeration printQuality = null;
-    private RoboxProfile settings = null;
+    private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
 
     /**
@@ -64,7 +64,7 @@ public class TestSlicerService extends AbstractSlicerService
      *
      * @param settings
      */
-    public void setSettings(RoboxProfile settings)
+    public void setSettings(SlicerParametersFile settings)
     {
         this.settings = settings;
     }
@@ -101,7 +101,7 @@ public class TestSlicerService extends AbstractSlicerService
         private FilamentContainer filament = null;
 
         public TestSlicerTask(String printJobUUID, Project project,
-                PrintQualityEnumeration printQuality, RoboxProfile settings,
+                PrintQualityEnumeration printQuality, SlicerParametersFile settings,
                 Printer printerToUse)
         {
             super(printJobUUID, project, printQuality, settings, printerToUse);

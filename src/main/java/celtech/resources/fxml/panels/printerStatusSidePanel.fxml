@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import celtech.coreUI.components.material.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.*?>
@@ -9,146 +10,20 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.text.*?>
-<?import celtech.coreUI.components.*?>
 <?scenebuilder-preview-i18n-resource ../../i18n/LanguageData.properties?>
 <?scenebuilder-stylesheet ../../css/AutoMaker.css?>
 
-<HBox fx:id="myContainer" maxWidth="360.0" minWidth="-Infinity" prefWidth="360.0" styleClass="sidePanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.PrinterStatusSidePanelController">
+<HBox fx:id="statusPane" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="300.0" styleClass="statusPanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.PrinterStatusSidePanelController">
     <children>
-        <BorderPane id="StatusPanel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="-1.0" styleClass="sidePanel" HBox.hgrow="ALWAYS">
-            <opaqueInsets>
-                <Insets />
-            </opaqueInsets>
-            <HBox.margin>
-                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-            </HBox.margin>
-            <bottom>
-                <VBox fx:id="temperatureVBox" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" styleClass="sidePanelVBox">
+        <AnchorPane minHeight="750.0">
+            <children>
+                <VBox id="StatusPanel" layoutY="41.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="-1.0" styleClass="sidePanel" AnchorPane.topAnchor="0.0" HBox.hgrow="ALWAYS">
                     <children>
-                        <Label maxWidth="1.7976931348623157E308" styleClass="sidePanelDivider" text="%sidePanel_printerStatus.temperatureStatusLabel" />
-                        <GridPane fx:id="targetTemperatureColumn" alignment="CENTER" hgap="5.0" prefWidth="-1.0" vgap="5.0">
+                        <HBox alignment="TOP_CENTER" VBox.vgrow="NEVER">
                             <children>
-                                <Label styleClass="sidePanelInformationLabel" text="%sidePanel_printerStatus.nozzleLabel" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                <Label id="printerStatusTitle" styleClass="sidePanelTitle" text="%sidePanel_printerStatus.title" translateX="7.0">
                                     <graphic>
-                                        <Rectangle id="nozzleTempLegend" arcHeight="0.0" arcWidth="0.0" fill="#41cc00" height="20.0" stroke="BLACK" strokeType="INSIDE" width="20.0" />
-                                    </graphic>
-                                </Label>
-                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                <Label fx:id="nozzleTemperatureLabel" styleClass="sidePanelInformationLabel" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                <Label styleClass="sidePanelInformationLabel" text="%sidePanel_printerStatus.bedLabel" GridPane.columnIndex="0" GridPane.rowIndex="2">
-                                    <graphic>
-                                        <Rectangle id="bedTempLegend" arcHeight="0.0" arcWidth="0.0" height="20.0" stroke="BLACK" strokeType="INSIDE" width="20.0">
-                                            <fill>
-                                                <Color blue="0.000" green="0.800" red="0.255" fx:id="x2" />
-                                            </fill>
-                                        </Rectangle>
-                                    </graphic>
-                                </Label>
-                                <Label fx:id="bedTemperatureLabel" styleClass="sidePanelInformationLabel" text="-" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                                <Label fx:id="ambientTemperatureLabel" styleClass="sidePanelInformationLabel" text="-" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                                <Label id="ambientTempLegend" styleClass="sidePanelInformationLabel" text="%sidePanel_printerStatus.ambientLabel" GridPane.columnIndex="0" GridPane.rowIndex="3">
-                                    <graphic>
-                                        <Rectangle id="ambientTempLegend" arcHeight="0.0" arcWidth="0.0" fill="$x2" height="20.0" stroke="BLACK" strokeType="INSIDE" width="20.0" />
-                                    </graphic>
-                                </Label>
-                                <HBox id="HBox" fx:id="targetNozzleTempHBox" alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
-                                    <children>
-                                        <StackPane>
-                                            <children>
-                                                <Label fx:id="nozzleTemperaturePlaceholder" text="-" />
-                                                <RestrictedNumberField fx:id="nozzleFirstLayerTargetTemperature" maxLength="4" onAction="#setNozzleFirstLayerTargetTemp" prefColumnCount="3" />
-                                                <RestrictedNumberField fx:id="nozzleTargetTemperature" alignment="CENTER_RIGHT" maxLength="4" onAction="#setNozzleTargetTemp" prefColumnCount="3" text="555">
-                                                    <font>
-                                                        <Font size="10.0" />
-                                                    </font>
-                                                </RestrictedNumberField>
-                                            </children>
-                                        </StackPane>
-                                        <Label text="%misc.degreesC" />
-                                    </children>
-                                </HBox>
-                                <HBox id="HBox" fx:id="targetBedTempHBox" alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
-                                    <children>
-                                        <StackPane>
-                                            <children>
-                                                <RestrictedNumberField fx:id="bedFirstLayerTargetTemperature" maxLength="4" onAction="#setBedFirstLayerTargetTemp" prefColumnCount="3" />
-                                                <RestrictedNumberField fx:id="bedTargetTemperature" maxLength="4" onAction="#setBedTargetTemp" prefColumnCount="3" text="666">
-                                                </RestrictedNumberField>
-                                                <Label fx:id="bedTemperaturePlaceholder" text="-" />
-                                            </children>
-                                        </StackPane>
-                                        <Label text="%misc.degreesC" />
-                                    </children>
-                                </HBox>
-                                <HBox id="HBox" fx:id="targetAmbientTempHBox" alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
-                                    <children>
-                                        <RestrictedNumberField fx:id="ambientTargetTemperature" maxHeight="20.0" maxLength="50" minHeight="0.0" minWidth="0.0" onAction="#setAmbientTargetTemp" prefColumnCount="3" HBox.hgrow="NEVER">
-                                        </RestrictedNumberField>
-                                        <Label text="%misc.degreesC" />
-                                    </children>
-                                </HBox>
-                                <Label text="%sidePanel_settings.currentTemperature" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                                <Label fx:id="targetTempLabel" alignment="CENTER" text="%sidePanel_settings.targetTemperature" textAlignment="LEFT" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-                                <Label fx:id="heaterStatusLabel" alignment="CENTER" text="%sidePanel_settings.heaters" textAlignment="LEFT" GridPane.columnIndex="3" GridPane.rowIndex="0" />
-                                <CheckBox fx:id="nozzleHeaterCheckBox" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-                                <CheckBox fx:id="bedHeaterCheckBox" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.halignment="RIGHT" GridPane.rowIndex="2">
-                                    <cursor>
-                                        <Cursor fx:constant="DEFAULT" />
-                                    </cursor>
-                                </CheckBox>
-                            </children>
-                            <columnConstraints>
-                                <ColumnConstraints hgrow="SOMETIMES" />
-                                <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" />
-                                <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" />
-                                <ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="SOMETIMES" />
-                            </columnConstraints>
-                            <rowConstraints>
-                                <RowConstraints vgrow="SOMETIMES" />
-                                <RowConstraints vgrow="NEVER" />
-                                <RowConstraints vgrow="SOMETIMES" />
-                                <RowConstraints vgrow="SOMETIMES" />
-                            </rowConstraints>
-                        </GridPane>
-                        <LineChart fx:id="temperatureChart" alternativeColumnFillVisible="true" alternativeRowFillVisible="true" animated="false" legendVisible="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" prefWidth="300.0" verticalGridLinesVisible="true">
-                            <xAxis>
-                                <NumberAxis fx:id="timeAxis" animated="false" autoRanging="false" lowerBound="0.0" side="BOTTOM" tickLabelsVisible="false" tickUnit="30.0" upperBound="190.0" />
-                            </xAxis>
-                            <yAxis>
-                                <NumberAxis id="temperatureGraphTempAxis" fx:id="temperatureAxis" animated="false" autoRanging="false" label="%misc.degreesC" minorTickCount="3" side="LEFT" tickUnit="50.0" upperBound="300.0" />
-                            </yAxis>
-                            <padding>
-                                <Insets left="5.0" right="5.0" />
-                            </padding>
-                        </LineChart>
-                        <HBox id="HBox" alignment="CENTER_RIGHT" prefWidth="-1.0" spacing="90.0">
-                            <children>
-                                <Label text="3 min" HBox.hgrow="NEVER" />
-                                <Label style="-fx-font-size:14px;" text="Time">
-                                </Label>
-                                <Label text="Now" HBox.hgrow="NEVER" />
-                            </children>
-                            <VBox.margin>
-                                <Insets top="-15.0" />
-                            </VBox.margin>
-                            <padding>
-                                <Insets right="15.0" />
-                            </padding>
-                        </HBox>
-                    </children>
-                    <BorderPane.margin>
-                        <Insets top="5.0" />
-                    </BorderPane.margin>
-                </VBox>
-            </bottom>
-            <top>
-                <VBox alignment="TOP_CENTER" fillWidth="true" prefWidth="-1.0" BorderPane.alignment="CENTER">
-                    <children>
-                        <VBox>
-                            <children>
-                                <Label scaleX="2.0" scaleY="2.0" styleClass="sidePanelTitle" text="%sidePanel_printerStatus.title" translateX="3.0">
-                                    <graphic>
-                                        <Group>
+                                        <Group scaleX="1.5" scaleY="1.5" translateX="-15.0">
                                             <children>
                                                 <Group>
                                                     <children>
@@ -236,38 +111,115 @@
                                     </graphic>
                                 </Label>
                             </children>
-                            <VBox.margin>
-                                <Insets />
-                            </VBox.margin>
-                            <padding>
-                                <Insets left="41.0" />
-                            </padding>
-                        </VBox>
-                        <ListView fx:id="printerStatusTable" prefHeight="120.0">
-                        </ListView>
-                        <HBox fx:id="printerStatusHBox" spacing="5.0">
+                        </HBox>
+                        <Pane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="20.0" />
+                        <GridPane fx:id="printerStatusGrid" hgap="20.0" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" translateX="20.0">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="TOP" vgrow="SOMETIMES" />
+                            </rowConstraints>
+                        </GridPane>
+                        <Pane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="20.0" />
+                        <HBox fx:id="materialContainer1" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="statusPanelChild" translateX="20.0">
                             <children>
-                                <VBox alignment="TOP_RIGHT">
-                                    <children>
-                                        <Label fx:id="printHeadValueLabel" text="%sidePanel_printerStatus.headStatusLabel" />
-                                        <Label fx:id="filamentStatusValueLabel" text="%sidePanel_printerStatus.filamentStatusLabel" />
-                                    </children>
-                                </VBox>
-                                <VBox>
-                                    <children>
-                                        <Label fx:id="printHeadLabel" text="-" />
-                                        <Label fx:id="filamentStatusLabel" text="-" />
-                                    </children>
+                                <MaterialComponent fx:id="material1" translateX="10.0" />
+                            </children>
+                        </HBox>
+                        <HBox fx:id="speedSliderHBox" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" translateX="20.0">
+                            <children>
+                                <Label text="%printerStatus.printSpeedMultiplierLabel" textAlignment="RIGHT" />
+                                <Slider fx:id="speedMultiplierSlider" blockIncrement="0.1" majorTickUnit="0.5" max="1.5" min="0.5" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="1.0">
+                                    <padding>
+                                        <Insets left="20.0" right="20.0" />
+                                    </padding>
+                                </Slider>
+                            </children>
+                            <padding>
+                                <Insets top="5.0" />
+                            </padding>
+                        </HBox>
+                        <HBox fx:id="materialContainer2" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="statusPanelChild" translateX="20.0">
+                            <children>
+                                <MaterialComponent fx:id="material2" translateX="10.0" />
+                            </children>
+                        </HBox>                 
+                        <VBox fx:id="temperatureVBox" alignment="TOP_CENTER" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" styleClass="sidePanelVBox">
+                            <BorderPane.margin>
+                                <Insets top="5.0" />
+                            </BorderPane.margin>
+                        </VBox>
+             
+                        <VBox alignment="TOP_CENTER" fillWidth="true" BorderPane.alignment="CENTER">
+                            <children>
+                                <VBox prefWidth="300.0">
+                                    <VBox.margin>
+                                        <Insets />
+                                    </VBox.margin>
                                 </VBox>
                             </children>
-                            <VBox.margin>
-                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                            </VBox.margin>
-                        </HBox>
+                        </VBox>
                     </children>
                 </VBox>
-            </top>
-        </BorderPane>
-        <!--<fx:include fx:id="slideout" source="printerStatusSlideOutPanel.fxml" />-->
+                <LineChart id="temperatureChart" fx:id="temperatureChart" alternativeColumnFillVisible="true" alternativeRowFillVisible="true" animated="false" horizontalGridLinesVisible="false" legendVisible="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="160.0" prefWidth="260.0" verticalGridLinesVisible="false" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="20.0">
+                    <xAxis>
+                        <NumberAxis fx:id="timeAxis" animated="false" autoRanging="false" lowerBound="0.0" minorTickCount="2" side="BOTTOM" tickLabelsVisible="false" tickUnit="30.0" upperBound="210.0" />
+                    </xAxis>
+                    <yAxis>
+                        <NumberAxis id="temperatureGraphTempAxis" fx:id="temperatureAxis" animated="false" autoRanging="false" label="%printerStatus.temperatureGraphTempAxisTitle" minorTickCount="2" side="RIGHT" tickUnit="50.0" upperBound="300.0">
+                            <tickLabelFont>
+                                <Font size="9.0" />
+                            </tickLabelFont>
+                        </NumberAxis>
+                    </yAxis>
+                </LineChart>
+                <HBox id="temperatureChartXLabels" fx:id="temperatureChartXLabels" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="260.0" style="-fx-background-color: dark_grey;" translateX="20.0" AnchorPane.bottomAnchor="40.0">
+                    <children>
+                        <Text fill="#ffffff" style="-fx-font-size: 9;" styleClass="temperatureXLabel" text="-3" translateX="-57.0" translateY="-4.0" HBox.hgrow="NEVER">
+                        </Text>
+                        <Text fill="#ffffff" style="-fx-font-size: 9;" styleClass="temperatureXLabel" text="-2" translateX="-12.0" translateY="-4.0">
+                        </Text>
+                        <Text fill="#ffffff" style="-fx-font-size: 12;" styleClass="temperatureXLabel" text="%printerStatus.temperatureGraphMinutes" translateX="-5.0" translateY="-4.0" />
+                        <Text fill="#ffffff" style="-fx-font-size: 9;" styleClass="temperatureXLabel" text="-1" translateX="3.0" translateY="-4.0">
+                        </Text>
+                        <Text fill="#ffffff" style="-fx-font-size: 9;" styleClass="temperatureXLabel" text="%printerStatus.temperatureGraphNow" translateX="36.0" translateY="-4.0" HBox.hgrow="NEVER">
+                        </Text>
+                    </children>
+                </HBox>
+
+                <GridPane fx:id="legendContainer" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="23.0" AnchorPane.rightAnchor="0.0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="33.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="33.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="33.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                    <children>
+                        <Label fx:id="legendNozzle" text="N">
+                            <styleClass>
+                                <String fx:value="graph-red" />
+                                <String fx:value="temperatureChartLegend" />
+                            </styleClass>
+                        </Label>
+                        <Label fx:id="legendBed" text="B" GridPane.columnIndex="1">
+                            <styleClass>
+                                <String fx:value="graph-yellow" />
+                                <String fx:value="temperatureChartLegend" />
+                            </styleClass>
+                        </Label>
+                        <Label fx:id="legendAmbient" text="A" GridPane.columnIndex="2">
+                            <styleClass>
+                                <String fx:value="graph-green" />
+                                <String fx:value="temperatureChartLegend" />
+                            </styleClass>
+                        </Label>
+                    </children>
+                </GridPane>
+            </children>
+        </AnchorPane>
     </children>
 </HBox>

@@ -1,54 +1,36 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers.panels;
 
-import celtech.appManager.ApplicationMode;
-import celtech.appManager.ApplicationStatus;
-import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.EEPROMState;
-import celtech.configuration.HeaterMode;
+import celtech.Lookup;
 import celtech.configuration.PrinterColourMap;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.PrinterIDDialog;
-import celtech.coreUI.components.PrinterStatusListCell;
-import celtech.coreUI.components.RestrictedNumberField;
-import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.Printer;
-import celtech.printerControl.comms.RoboxCommsManager;
-import celtech.printerControl.comms.commands.GCodeConstants;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.utils.PrinterUtils;
+import celtech.coreUI.components.material.MaterialComponent;
+import celtech.coreUI.components.printerstatus.PrinterComponent;
+import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.Head;
+import celtech.printerControl.model.PrinterAncillarySystems;
+import celtech.printerControl.model.PrinterException;
+import celtech.printerControl.model.PrinterIdentity;
+import celtech.printerControl.model.Reel;
+import celtech.utils.PrinterListChangesListener;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
-import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Side;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.SelectionModel;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.Slider;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.util.Callback;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -57,154 +39,82 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class PrinterStatusSidePanelController implements Initializable, SidePanelManager
+public class PrinterStatusSidePanelController implements Initializable, SidePanelManager,
+    PrinterListChangesListener
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(PrinterStatusSidePanelController.class.getName());
-    private ApplicationStatus applicationStatus = null;
-    private PrinterUtils printerUtils = null;
-    private PurgeInsetPanelController purgePanelController = null;
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        PrinterStatusSidePanelController.class.getName());
 
     @FXML
-    private HBox myContainer;
+    private MaterialComponent material1;
 
     @FXML
-    private HBox slideout;
+    private MaterialComponent material2;
 
     @FXML
-    private PrinterStatusSlideOutPanelController slideoutController;
+    private HBox materialContainer1;
 
     @FXML
-    private ListView printerStatusTable;
+    private HBox materialContainer2;
 
     @FXML
-    private Label ambientTemperatureLabel;
+    private HBox temperatureChartXLabels;
 
     @FXML
-    private RestrictedNumberField ambientTargetTemperature;
+    private GridPane legendContainer;
 
     @FXML
-    private Label bedTemperatureLabel;
+    protected LineChart<Number, Number> temperatureChart;
 
     @FXML
-    private RestrictedNumberField bedTargetTemperature;
-
-    @FXML
-    private RestrictedNumberField bedFirstLayerTargetTemperature;
-
-    @FXML
-    private Label bedTemperaturePlaceholder;
-
-    @FXML
-    private Label filamentStatusLabel;
-
-    @FXML
-    private Label filamentStatusValueLabel;
-
-    @FXML
-    private Label nozzleTemperatureLabel;
-
-    @FXML
-    private RestrictedNumberField nozzleTargetTemperature;
-
-    @FXML
-    private RestrictedNumberField nozzleFirstLayerTargetTemperature;
-
-    @FXML
-    private Label nozzleTemperaturePlaceholder;
-
-    @FXML
-    private Label printHeadLabel;
-
-    @FXML
-    private Label printHeadValueLabel;
-
-    @FXML
-    private HBox printerStatusHBox;
-
-    @FXML
-    private VBox temperatureVBox;
-
-    @FXML
-    private Label targetTempLabel;
-    @FXML
-    private HBox targetNozzleTempHBox;
-    @FXML
-    private HBox targetBedTempHBox;
-    @FXML
-    private Label heaterStatusLabel;
-
-    @FXML
-    private CheckBox nozzleHeaterCheckBox;
-    @FXML
-    private CheckBox bedHeaterCheckBox;
-
-    @FXML
-    private HBox targetAmbientTempHBox;
-
-    @FXML
-    private LineChart<Number, Number> temperatureChart;
+    private GridPane printerStatusGrid;
 
     @FXML
     private NumberAxis temperatureAxis;
+    @FXML
     private NumberAxis timeAxis;
 
-    private ChangeListener<Number> graphStartListener = null;
-    private ChangeListener<Number> graphEndListener = null;
+    @FXML
+    private Label legendNozzle;
 
-    private TableColumn printerNameColumn = new TableColumn();
-    private SelectionModel printerStatusTableSelectionModel = null;
+    @FXML
+    private Label legendBed;
 
-    private ObservableList<Printer> printerStatusList = null;
-    private StatusScreenState statusScreenState = null;
+    @FXML
+    private Label legendAmbient;
 
-    private String offString;
-    private String onString;
-    private String openString;
-    private String closedString;
-    private String filamentLoadedString;
-    private String filamentNotLoadedString;
-    private String reelNotFormattedString;
-    private String connectedString;
-    private String notConnectedString;
-    private String headNotAttachedString;
-    private String headNotFormattedString;
-    private String tempOutOfRangeHighString;
-    private String tempOutOfRangeLowString;
+    @FXML
+    private Slider speedMultiplierSlider;
 
-    private PrinterStatusSlideOutPanelController slideOutController = null;
+    @FXML
+    private HBox speedSliderHBox;
 
     private PrinterIDDialog printerIDDialog = null;
 
-    private ChangeListener<Number> targetNozzleFirstLayerTempListener = null;
-    private ChangeListener<Number> targetNozzleTempListener = null;
-    private ChangeListener<Number> targetBedFirstLayerTempListener = null;
-    private ChangeListener<Number> targetBedTempListener = null;
-    private ChangeListener<Number> targetAmbientTempListener = null;
+    private Printer selectedPrinter = null;
+    private final Map<Printer, PrinterComponent> printerComponentsByPrinter = new HashMap<>();
 
-    private ChangeListener<Boolean> nozzleHeaterCheckBoxListener = null;
-    private ChangeListener<Boolean> bedHeaterCheckBoxListener = null;
-    private ChangeListener<HeaterMode> bedHeaterStatusListener = null;
-    private ChangeListener<HeaterMode> nozzleHeaterStatusListener = null;
+    private final int MAX_DATA_POINTS = 210;
 
-    private Printer lastSelectedPrinter = null;
-
-    private DisplayManager displayManager = null;
-
-    private final int MAX_DATA_POINTS = 180;
+    private final ObservableList<Printer> connectedPrinters = Lookup.getConnectedPrinters();
 
     private LineChart.Series<Number, Number> currentAmbientTemperatureHistory = null;
 
-    private ListChangeListener<XYChart.Data<Number, Number>> graphDataPointChangeListener = new ListChangeListener<XYChart.Data<Number, Number>>()
+    private ChartManager chartManager;
+
+    private final ListChangeListener<XYChart.Data<Number, Number>> graphDataPointChangeListener = new ListChangeListener<XYChart.Data<Number, Number>>()
     {
         @Override
-        public void onChanged(ListChangeListener.Change<? extends XYChart.Data<Number, Number>> change)
+        public void onChanged(
+            ListChangeListener.Change<? extends XYChart.Data<Number, Number>> change)
         {
             while (change.next())
             {
                 if (change.wasAdded() || change.wasRemoved())
                 {
-                    timeAxis.setLowerBound(currentAmbientTemperatureHistory.getData().size() - MAX_DATA_POINTS);
+                    timeAxis.setLowerBound(currentAmbientTemperatureHistory.getData().size()
+                        - MAX_DATA_POINTS);
                     timeAxis.setUpperBound(currentAmbientTemperatureHistory.getData().size());
                 } else if (change.wasReplaced())
                 {
@@ -215,97 +125,32 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         }
     };
 
-    @FXML
-    void setNozzleFirstLayerTargetTemp(ActionEvent event)
+    private final PrinterColourMap colourMap = PrinterColourMap.getInstance();
+
+    private final ChangeListener<Number> speedMultiplierListener = new ChangeListener<Number>()
     {
-        if (lastSelectedPrinter != null)
+        @Override
+        public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
         {
             try
             {
-                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.setFirstLayerNozzleTemperatureTarget + Integer.valueOf(nozzleFirstLayerTargetTemperature.getText()), false);
-            } catch (NumberFormatException ex)
+                selectedPrinter.changeFeedRateMultiplierDuringPrint(newValue.doubleValue());
+            } catch (PrinterException ex)
             {
-                steno.error("Couldn't translate value to float");
-            } catch (RoboxCommsException ex)
-            {
-                steno.error("Error whilst sending new temperature to printer");
+                steno.error("Error setting feed rate multiplier - " + ex.getMessage());
             }
         }
-    }
+    };
 
-    @FXML
-    void setNozzleTargetTemp(ActionEvent event)
+    private final ChangeListener<Number> feedRateChangeListener = new ChangeListener<Number>()
     {
-        if (lastSelectedPrinter != null)
+        @Override
+        public void changed(
+            ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
         {
-            try
-            {
-                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.setNozzleTemperatureTarget + Integer.valueOf(nozzleTargetTemperature.getText()), false);
-            } catch (NumberFormatException ex)
-            {
-                steno.error("Couldn't translate value to float");
-            } catch (RoboxCommsException ex)
-            {
-                steno.error("Error whilst sending new temperature to printer");
-            }
+            speedMultiplierSlider.setValue(newValue.doubleValue());
         }
-    }
-
-    @FXML
-    void setAmbientTargetTemp(ActionEvent event)
-    {
-        if (lastSelectedPrinter != null)
-        {
-            try
-            {
-                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.setAmbientTemperature + Integer.valueOf(ambientTargetTemperature.getText()), false);
-            } catch (NumberFormatException ex)
-            {
-                steno.error("Couldn't translate value to float");
-            } catch (RoboxCommsException ex)
-            {
-                steno.error("Error whilst sending new temperature to printer");
-            }
-        }
-    }
-
-    @FXML
-    void setBedFirstLayerTargetTemp(ActionEvent event)
-    {
-        if (lastSelectedPrinter != null)
-        {
-            try
-            {
-                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.setFirstLayerBedTemperatureTarget + Float.valueOf(bedFirstLayerTargetTemperature.getText()), false);
-            } catch (NumberFormatException ex)
-            {
-                steno.error("Couldn't translate value to float");
-            } catch (RoboxCommsException ex)
-            {
-                steno.error("Error whilst sending new temperature to printer");
-            }
-        }
-    }
-
-    @FXML
-    void setBedTargetTemp(ActionEvent event)
-    {
-        if (lastSelectedPrinter != null)
-        {
-            try
-            {
-                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.setBedTemperatureTarget + Float.valueOf(bedTargetTemperature.getText()), false);
-            } catch (NumberFormatException ex)
-            {
-                steno.error("Couldn't translate value to float");
-            } catch (RoboxCommsException ex)
-            {
-                steno.error("Error whilst sending new temperature to printer");
-            }
-        }
-    }
-
-    private PrinterColourMap colourMap = PrinterColourMap.getInstance();
+    };
 
     /**
      * Initializes the controller class.
@@ -316,15 +161,23 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        applicationStatus = ApplicationStatus.getInstance();
-        displayManager = DisplayManager.getInstance();
-        RoboxCommsManager commsManager = RoboxCommsManager.getInstance();
-        printerStatusList = commsManager.getPrintStatusList();
-        statusScreenState = StatusScreenState.getInstance();
-        printerUtils = PrinterUtils.getInstance();
+        chartManager = new ChartManager(temperatureChart);
 
-        purgePanelController = displayManager.getPurgeInsetPanelController();
+        printerIDDialog = new PrinterIDDialog();
 
+        materialContainer2.setVisible(false);
+        speedSliderHBox.setVisible(false);
+
+        initialiseTemperatureChart();
+        initialisePrinterStatusGrid();
+        controlDetailsVisibility();
+
+        Lookup.getPrinterListChangesNotifier().addListener(this);
+
+    }
+
+    private void initialiseTemperatureChart()
+    {
         timeAxis = new NumberAxis(0, MAX_DATA_POINTS, 30);
         timeAxis.setForceZeroInRange(false);
         timeAxis.setAutoRanging(true);
@@ -337,485 +190,437 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         temperatureChart.setLegendSide(Side.RIGHT);
 
         temperatureChart.setVisible(false);
-
-        printerIDDialog = new PrinterIDDialog();
-
-        ResourceBundle languageBundle = DisplayManager.getLanguageBundle();
-        offString = languageBundle.getString("genericFirstLetterCapitalised.Off");
-        onString = languageBundle.getString("genericFirstLetterCapitalised.On");
-        openString = languageBundle.getString("genericFirstLetterCapitalised.Open");
-        closedString = languageBundle.getString("genericFirstLetterCapitalised.Closed");
-        filamentLoadedString = languageBundle.getString("sidePanel_printerStatus.filamentLoaded");
-        filamentNotLoadedString = languageBundle.getString("smartReelProgrammer.noReelLoaded");
-        reelNotFormattedString = languageBundle.getString("smartReelProgrammer.reelNotFormatted");
-        connectedString = languageBundle.getString("sidePanel_printerStatus.connected");
-        notConnectedString = languageBundle.getString("sidePanel_printerStatus.notConnected");
-        headNotAttachedString = languageBundle.getString("sidePanel_printerStatus.headNotAttached");
-        headNotFormattedString = languageBundle.getString("smartheadProgrammer.headNotFormatted");
-        tempOutOfRangeHighString = languageBundle.getString("printerStatus.tempOutOfRangeHigh");
-        tempOutOfRangeLowString = languageBundle.getString("printerStatus.tempOutOfRangeLow");
-
-        printerNameColumn.setText(languageBundle.getString("sidePanel_printerStatus.printerNameColumn"));
-        printerNameColumn.setPrefWidth(300);
-        printerNameColumn.setCellValueFactory(new PropertyValueFactory<Printer, String>("printerFriendlyName"));
-
-//        printerStatusTable.getColumns().addAll(printerNameColumn);
-//        printerStatusTable.setEditable(false);
-//        printerStatusTable.getSortOrder().add(printerNameColumn);
-        printerStatusTableSelectionModel = printerStatusTable.getSelectionModel();
-        printerStatusTable.setItems(printerStatusList);
-        printerStatusTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        printerStatusTable.setCellFactory(new Callback<ListView<Printer>, ListCell<Printer>>()
-        {
-            @Override
-            public ListCell<Printer> call(ListView<Printer> list)
-            {
-                return new PrinterStatusListCell();
-            }
-        }
-        );
-
-        printerStatusTable.setOnMouseClicked(new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent event)
-            {
-                if (event.getClickCount() > 1)
-                {
-                    Printer printerToEdit = (Printer) printerStatusTableSelectionModel.getSelectedItem();
-                    if (printerToEdit != null)
-                    {
-                        printerIDDialog.setPrinterToUse(printerToEdit);
-                        printerIDDialog.setChosenDisplayColour(colourMap.printerToDisplayColour(printerToEdit.getPrinterColour()));
-                        printerIDDialog.setChosenPrinterName(printerToEdit.getPrinterFriendlyName());
-
-                        Color currentColour = printerToEdit.getPrinterColour();
-
-                        boolean okPressed = printerIDDialog.show();
-
-                        if (okPressed)
-                        {
-                            try
-                            {
-                                printerToEdit.transmitWritePrinterID(printerToEdit.getPrintermodel().get(), printerToEdit.getPrinteredition().get(),
-                                                                     printerToEdit.getPrinterweekOfManufacture().get(), printerToEdit.getPrinteryearOfManufacture().get(),
-                                                                     printerToEdit.getPrinterpoNumber().get(), printerToEdit.getPrinterserialNumber().get(),
-                                                                     printerToEdit.getPrintercheckByte().get(), printerIDDialog.getChosenPrinterName(), colourMap.displayToPrinterColour(
-                                                                         printerIDDialog.getChosenDisplayColour()));
-
-                                printerToEdit.transmitReadPrinterID();
-                            } catch (RoboxCommsException ex)
-                            {
-                                steno.error("Error writing printer ID");
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        Label noPrinterLabel = new Label();
-        noPrinterLabel.setText(languageBundle.getString("sidePanel_printerStatus.noPrinterPlaceholder"));
-
-        printerStatusTable.setPlaceholder(noPrinterLabel);
-
-        printerStatusList.addListener(new ListChangeListener<Printer>()
-        {
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends Printer> change)
-            {
-                while (change.next())
-                {
-                    if (change.wasAdded())
-                    {
-                        for (Printer additem : change.getAddedSubList())
-                        {
-                            printerStatusTableSelectionModel.select(additem);
-                        }
-                    } else if (change.wasRemoved())
-                    {
-                        for (Printer additem : change.getRemoved())
-                        {
-                        }
-                    } else if (change.wasReplaced())
-                    {
-                    } else if (change.wasUpdated())
-                    {
-                    }
-                }
-            }
-        });
-
-        controlDetailsVisibility();
-
-        printerStatusTableSelectionModel.selectedItemProperty().addListener(new ChangeListener<Printer>()
-        {
-
-            @Override
-            public void changed(ObservableValue<? extends Printer> ov, Printer t, Printer latestSelection)
-            {
-                if (latestSelection != null
-                    || printerStatusList.size() > 0)
-                {
-                    statusScreenState.setCurrentlySelectedPrinter(latestSelection);
-                    bindDetails(latestSelection);
-                } else
-                {
-                    statusScreenState.setCurrentlySelectedPrinter(latestSelection);
-                }
-
-                controlDetailsVisibility();
-            }
-        });
-
-        targetAmbientTempListener = new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                if (ambientTargetTemperature.isFocused() == false)
-                {
-                    ambientTargetTemperature.setText(String.format("%d", t1.intValue()));
-                }
-            }
-        };
-
-        targetNozzleFirstLayerTempListener = new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                if (nozzleFirstLayerTargetTemperature.isFocused() == false)
-                {
-                    nozzleFirstLayerTargetTemperature.setText(String.format("%d", t1.intValue()));
-                }
-            }
-        };
-
-        targetNozzleTempListener = new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                if (nozzleTargetTemperature.isFocused() == false)
-                {
-                    nozzleTargetTemperature.setText(String.format("%d", t1.intValue()));
-                }
-            }
-        };
-
-        targetBedTempListener = new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                if (bedTargetTemperature.isFocused() == false)
-                {
-                    bedTargetTemperature.setText(String.format("%d", t1.intValue()));
-                }
-            }
-        };
-
-        targetBedFirstLayerTempListener = new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                if (bedFirstLayerTargetTemperature.isFocused() == false)
-                {
-                    bedFirstLayerTargetTemperature.setText(String.format("%d", t1.intValue()));
-                }
-            }
-        };
-
-        ambientTargetTemperature.focusedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
-            {
-                if (t1.booleanValue() == false)
-                {
-                    setAmbientTargetTemp(null);
-                }
-            }
-        });
-
-        bedFirstLayerTargetTemperature.focusedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean lastValue, Boolean newValue)
-            {
-                if (newValue.booleanValue() == false)
-                {
-                    setBedFirstLayerTargetTemp(null);
-                }
-            }
-        });
-
-        bedTargetTemperature.focusedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
-            {
-                if (t1.booleanValue() == false)
-                {
-                    setBedTargetTemp(null);
-                }
-            }
-        });
-
-        bedHeaterCheckBoxListener = new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean oldHeaterOnDemand, Boolean heaterOnDemand)
-            {
-                if (heaterOnDemand == true)
-                {
-                    try
-                    {
-                        if (lastSelectedPrinter != null)
-                        {
-                            if (lastSelectedPrinter.getBedHeaterMode() == HeaterMode.OFF)
-                            {
-                                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.goToTargetBedTemperature, false);
-                            }
-                        }
-                    } catch (RoboxCommsException ex)
-                    {
-                        steno.error("Error whilst setting bed target temperature");
-                    }
-                } else
-                {
-                    try
-                    {
-                        if (lastSelectedPrinter != null)
-                        {
-                            if (lastSelectedPrinter.getBedHeaterMode() != HeaterMode.OFF)
-                            {
-                                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.switchBedHeaterOff, false);
-                            }
-                        }
-                    } catch (RoboxCommsException ex)
-                    {
-                        steno.error("Error whilst setting bed target temperature");
-                    }
-                }
-            }
-        };
-
-        nozzleHeaterCheckBoxListener = new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
-            {
-                if (t1 == true)
-                {
-                    try
-                    {
-                        if (lastSelectedPrinter != null)
-                        {
-                            if (lastSelectedPrinter.getNozzleHeaterMode() == HeaterMode.OFF)
-                            {
-                                boolean purgeConsent = printerUtils.offerPurgeIfNecessary(lastSelectedPrinter);
-                                if (purgeConsent)
-                                {
-                                    purgePanelController.purge(lastSelectedPrinter);
-                                }
-                                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.goToTargetNozzleTemperature, false);
-                            }
-                        }
-                    } catch (RoboxCommsException ex)
-                    {
-                        steno.error("Error whilst setting nozzle target temperature");
-                    }
-                } else
-                {
-                    try
-                    {
-                        if (lastSelectedPrinter != null)
-                        {
-                            if (lastSelectedPrinter.getNozzleHeaterMode() != HeaterMode.OFF)
-                            {
-                                lastSelectedPrinter.transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
-                            }
-                        }
-                    } catch (RoboxCommsException ex)
-                    {
-                        steno.error("Error whilst setting nozzle target temperature");
-                    }
-                }
-            }
-        };
-
-        nozzleFirstLayerTargetTemperature.focusedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
-            {
-                if (t1.booleanValue() == false)
-                {
-                    setNozzleFirstLayerTargetTemp(null);
-                }
-            }
-        });
-
-        nozzleTargetTemperature.focusedProperty().addListener(new ChangeListener<Boolean>()
-        {
-
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
-            {
-                if (t1.booleanValue() == false)
-                {
-                    setNozzleTargetTemp(null);
-                }
-            }
-        }
-        );
-
-        bedHeaterStatusListener = new ChangeListener<HeaterMode>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends HeaterMode> ov, HeaterMode oldValue, HeaterMode newValue)
-            {
-                bedHeaterCheckBox.setSelected(newValue != HeaterMode.OFF);
-            }
-        };
-
-        nozzleHeaterStatusListener = new ChangeListener<HeaterMode>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends HeaterMode> ov, HeaterMode oldValue, HeaterMode newValue)
-            {
-                nozzleHeaterCheckBox.setSelected(newValue != HeaterMode.OFF);
-            }
-        };
-
     }
 
-    private void bindDetails(Printer selectedPrinter)
+    private void initialisePrinterStatusGrid()
     {
-        nozzleTemperatureLabel.textProperty().unbind();
-        bedTemperatureLabel.textProperty().unbind();
-        ambientTemperatureLabel.textProperty().unbind();
-        filamentStatusLabel.textProperty().unbind();
+        clearAndAddAllPrintersToGrid();
+    }
 
-        if (lastSelectedPrinter != null)
+    private void clearAndAddAllPrintersToGrid()
+    {
+        removeAllPrintersFromGrid();
+        int row = 0;
+        int column = 0;
+        int columnsPerRow = 2;
+        if (connectedPrinters.size() > 4)
         {
-            lastSelectedPrinter.nozzleFirstLayerTargetTemperatureProperty().unbind();
-            lastSelectedPrinter.nozzleTargetTemperatureProperty().unbind();
-            lastSelectedPrinter.bedFirstLayerTargetTemperatureProperty().unbind();
-            lastSelectedPrinter.bedTargetTemperatureProperty().unbind();
-            lastSelectedPrinter.ambientTargetTemperatureProperty().unbind();
-
-            temperatureChart.getData().remove(lastSelectedPrinter.ambientTemperatureHistory());
-            currentAmbientTemperatureHistory = null;
-            temperatureChart.getData().remove(lastSelectedPrinter.bedTemperatureHistory());
-            temperatureChart.getData().remove(lastSelectedPrinter.nozzleTemperatureHistory());
-            temperatureChart.getData().remove(lastSelectedPrinter.ambientTargetTemperatureHistory());
-            temperatureChart.getData().remove(lastSelectedPrinter.bedTargetTemperatureHistory());
-            temperatureChart.getData().remove(lastSelectedPrinter.nozzleTargetTemperatureHistory());
-
-            nozzleFirstLayerTargetTemperature.visibleProperty().unbind();
-            nozzleTargetTemperature.visibleProperty().unbind();
-            nozzleTemperaturePlaceholder.visibleProperty().unbind();
-            bedFirstLayerTargetTemperature.visibleProperty().unbind();
-            bedTargetTemperature.visibleProperty().unbind();
-            bedTemperaturePlaceholder.visibleProperty().unbind();
-
-            bedHeaterCheckBox.selectedProperty()
-                .removeListener(bedHeaterCheckBoxListener);
-            nozzleHeaterCheckBox.selectedProperty()
-                .removeListener(nozzleHeaterCheckBoxListener);
-            lastSelectedPrinter.getBedHeaterModeProperty().removeListener(bedHeaterStatusListener);
-            lastSelectedPrinter.getNozzleHeaterModeProperty().removeListener(nozzleHeaterStatusListener);
+            columnsPerRow = 3;
         }
+        for (Printer printer : connectedPrinters)
+        {
+            PrinterComponent printerComponent = createPrinterComponentForPrinter(printer);
+            addPrinterComponentToGrid(printerComponent, row, column);
+            column += 1;
+            if (column == columnsPerRow)
+            {
+                column = 0;
+                row += 1;
+            }
+        }
+        // UGH shouldnt need this here but can't get PrinterComponent / Grid to negotiate size
+        if (connectedPrinters.size() > 1 && connectedPrinters.size() <= 2)
+        {
+            printerStatusGrid.setPrefSize(260, 120);
+        } else if (connectedPrinters.size() > 2 && connectedPrinters.size() <= 4)
+        {
+            printerStatusGrid.setPrefSize(260, 260);
+        } else if (connectedPrinters.size() > 4 && connectedPrinters.size() < 7)
+        {
+            printerStatusGrid.setPrefSize(260, 180);
+        } else
+        {
+            printerStatusGrid.setPrefSize(260, 260);
+        }
+    }
 
+    /**
+     * Add the given printer component to the given grid coordinates.
+     */
+    private void addPrinterComponentToGrid(PrinterComponent printerComponent, int row,
+        int column)
+    {
+        PrinterComponent.Size size;
+        if (connectedPrinters.size() > 6)
+        {
+            size = PrinterComponent.Size.SIZE_SMALL;
+        } else if (connectedPrinters.size() > 1)
+        {
+            size = PrinterComponent.Size.SIZE_MEDIUM;
+        } else
+        {
+            size = PrinterComponent.Size.SIZE_LARGE;
+        }
+        printerComponent.setSize(size);
+        printerStatusGrid.add(printerComponent, column, row);
+    }
+
+    private void removeAllPrintersFromGrid()
+    {
+        for (Printer printer : connectedPrinters)
+        {
+            PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
+            removePrinterComponentFromGrid(printerComponent);
+        }
+    }
+
+    /**
+     * Remove the given printer from the display. Update the selected printer to one of the remaining printers.
+     */
+    private void removePrinter(Printer printer)
+    {
+        PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
+        removePrinterComponentFromGrid(printerComponent);
+    }
+
+    /**
+     * Select any one of the active printers. If there are no printers left then select 'null'
+     */
+    private void selectOnePrinter()
+    {
+        if (connectedPrinters.size() > 0)
+        {
+            selectPrinter(connectedPrinters.get(0));
+        } else
+        {
+            selectPrinter(null);
+            Lookup.setCurrentlySelectedPrinter(null);
+        }
+    }
+
+    /**
+     * Make the given printer the selected printer.
+     *
+     * @param printer
+     */
+    private void selectPrinter(Printer printer)
+    {
         if (selectedPrinter != null)
         {
-            // Temperatures / Heaters / Fans
-            nozzleTemperatureLabel.textProperty().bind(Bindings.when(selectedPrinter.printerConnectedProperty().not()).then("-").otherwise(Bindings.when(selectedPrinter.extruderTemperatureProperty().
-                greaterThan(ApplicationConfiguration.maxTempToDisplayOnGraph)).then(tempOutOfRangeHighString)
-                .otherwise(Bindings.when(selectedPrinter.extruderTemperatureProperty().lessThan(ApplicationConfiguration.minTempToDisplayOnGraph)).then(tempOutOfRangeLowString).otherwise(
-                        selectedPrinter.extruderTemperatureProperty().asString("%d°C")))));
-            nozzleFirstLayerTargetTemperature.setText(String.format("%d", selectedPrinter.getNozzleFirstLayerTargetTemperature()));
-            selectedPrinter.nozzleFirstLayerTargetTemperatureProperty().addListener(targetNozzleFirstLayerTempListener);
-            nozzleTargetTemperature.setText(String.format("%d", selectedPrinter.getNozzleTargetTemperature()));
-            selectedPrinter.nozzleTargetTemperatureProperty().addListener(targetNozzleTempListener);
-            nozzleFirstLayerTargetTemperature.visibleProperty().bind(selectedPrinter.getNozzleHeaterModeProperty().isEqualTo(HeaterMode.FIRST_LAYER));
-            nozzleTargetTemperature.visibleProperty().bind(selectedPrinter.getNozzleHeaterModeProperty().isEqualTo(HeaterMode.NORMAL));
-            nozzleTemperaturePlaceholder.visibleProperty().bind(selectedPrinter.getNozzleHeaterModeProperty().isEqualTo(HeaterMode.OFF));
+            PrinterComponent printerComponent = printerComponentsByPrinter.get(selectedPrinter);
+            printerComponent.setSelected(false);
+            unbindPrinter(selectedPrinter);
+            if (selectedPrinter.headProperty().get() != null)
+            {
+                unbindHeadProperties(selectedPrinter.headProperty().get());
+            }
 
-            bedTemperatureLabel.textProperty().bind(Bindings.when(selectedPrinter.printerConnectedProperty().not()).then("-").otherwise(Bindings.when(selectedPrinter.bedTemperatureProperty().
-                greaterThan(ApplicationConfiguration.maxTempToDisplayOnGraph)).then(tempOutOfRangeHighString)
-                .otherwise(Bindings.when(selectedPrinter.bedTemperatureProperty().lessThan(ApplicationConfiguration.minTempToDisplayOnGraph)).then(tempOutOfRangeLowString).otherwise(selectedPrinter.
-                        bedTemperatureProperty().asString("%d°C")))));
-            bedFirstLayerTargetTemperature.setText(String.format("%d", selectedPrinter.getBedFirstLayerTargetTemperature()));
-            selectedPrinter.bedFirstLayerTargetTemperatureProperty().addListener(targetBedFirstLayerTempListener);
-            bedTargetTemperature.setText(String.format("%d", selectedPrinter.getBedTargetTemperature()));
-            selectedPrinter.bedTargetTemperatureProperty().addListener(targetBedTempListener);
-            bedFirstLayerTargetTemperature.visibleProperty().bind(selectedPrinter.getBedHeaterModeProperty().isEqualTo(HeaterMode.FIRST_LAYER));
-            bedTargetTemperature.visibleProperty().bind(selectedPrinter.getBedHeaterModeProperty().isEqualTo(HeaterMode.NORMAL));
-            bedTemperaturePlaceholder.visibleProperty().bind(selectedPrinter.getBedHeaterModeProperty().isEqualTo(HeaterMode.OFF));
-
-            ambientTemperatureLabel.textProperty().bind(Bindings.when(selectedPrinter.printerConnectedProperty().not()).then("-").otherwise(Bindings.when(selectedPrinter.ambientTemperatureProperty().
-                greaterThan(ApplicationConfiguration.maxTempToDisplayOnGraph)).then(tempOutOfRangeHighString).otherwise(selectedPrinter.ambientTemperatureProperty().asString("%d°C"))));
-            ambientTargetTemperature.setText(String.format("%d", selectedPrinter.getAmbientTargetTemperature()));
-            selectedPrinter.ambientTargetTemperatureProperty().addListener(targetAmbientTempListener);
-            /*
-             * Door
-             */
-//            doorStatusLabel.textProperty().bind(Bindings.when(selectedPrinter.LidOpenProperty()).then(openString).otherwise(closedString));
-
-            /*
-             * Reel
-             */
-            filamentStatusLabel.textProperty().bind(Bindings.when(selectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED)).then(selectedPrinter.reelFriendlyNameProperty()).
-                otherwise(Bindings.when(selectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PROGRAMMED)).then(reelNotFormattedString).otherwise(filamentNotLoadedString)));
-
-            /*
-             * Head
-             */
-            printHeadLabel.textProperty().bind(Bindings.when(selectedPrinter.headEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED)).then(selectedPrinter.getHeadType()).otherwise(Bindings.when(
-                selectedPrinter.headEEPROMStatusProperty().isEqualTo(EEPROMState.NOT_PROGRAMMED)).then(headNotFormattedString).otherwise(headNotAttachedString)));
-
-            currentAmbientTemperatureHistory = selectedPrinter.ambientTemperatureHistory();
-            temperatureChart.getData().add(selectedPrinter.ambientTemperatureHistory());
-            selectedPrinter.nozzleTemperatureHistory().getData().addListener(graphDataPointChangeListener);
-            temperatureChart.getData().add(selectedPrinter.bedTemperatureHistory());
-            temperatureChart.getData().add(selectedPrinter.nozzleTemperatureHistory());
-            temperatureChart.getData().add(selectedPrinter.ambientTargetTemperatureHistory());
-            temperatureChart.getData().add(selectedPrinter.bedTargetTemperatureHistory());
-            temperatureChart.getData().add(selectedPrinter.nozzleTargetTemperatureHistory());
-
-            selectedPrinter.getBedHeaterModeProperty().addListener(bedHeaterStatusListener);
-
-            selectedPrinter.getNozzleHeaterModeProperty().addListener(nozzleHeaterStatusListener);
-            bedHeaterCheckBox.selectedProperty()
-                .addListener(bedHeaterCheckBoxListener);
-            nozzleHeaterCheckBox.selectedProperty()
-                .addListener(nozzleHeaterCheckBoxListener);
-
-            lastSelectedPrinter = selectedPrinter;
+            selectedPrinter.reelsProperty().entrySet().stream().forEach(
+                entry ->
+                {
+                    unbindReelProperties(entry.getKey(), entry.getValue());
+                });
         }
+
+        if (printer != null)
+        {
+            PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
+            printerComponent.setSelected(true);
+            Lookup.setCurrentlySelectedPrinter(printer);
+            bindDetails(printer);
+            if (printer.headProperty().get() != null)
+            {
+                bindHeadProperties(printer.headProperty().get());
+            }
+
+            printer.reelsProperty().entrySet().stream().forEach(
+                entry ->
+                {
+                    bindReelProperties(entry.getKey(), entry.getValue());
+                    updateReelMaterial(entry.getKey(), entry.getValue());
+                });
+        }
+        controlDetailsVisibility();
+
+        selectedPrinter = printer;
+    }
+
+    /**
+     * This is called when the user clicks on the printer component for the given printer, and handles click (select printer) and double-click (go to edit printer details).
+     *
+     * @param event
+     */
+    private void handlePrinterClicked(MouseEvent event, Printer printer)
+    {
+        if (event.getClickCount() == 1)
+        {
+            selectPrinter(printer);
+        }
+        if (event.getClickCount() > 1)
+        {
+            showEditPrinterDetails(printer);
+        }
+    }
+
+    /**
+     * Show the printerIDDialog for the given printer.
+     */
+    private void showEditPrinterDetails(Printer printer)
+    {
+        if (printer != null)
+        {
+            printerIDDialog.setPrinterToUse(printer);
+            PrinterIdentity printerIdentity = printer.getPrinterIdentity();
+            printerIDDialog.setChosenDisplayColour(colourMap.printerToDisplayColour(
+                printerIdentity.printerColourProperty().get()));
+            printerIDDialog.setChosenPrinterName(printerIdentity.printerFriendlyNameProperty().get());
+
+            boolean okPressed = printerIDDialog.show();
+
+            if (okPressed)
+            {
+                try
+                {
+                    printer.updatePrinterName(printerIDDialog.getChosenPrinterName());
+                    printer.updatePrinterDisplayColour(colourMap.displayToPrinterColour(
+                        printerIDDialog.getChosenDisplayColour()));
+                } catch (PrinterException ex)
+                {
+                    steno.error("Error writing printer ID");
+                }
+            }
+        }
+    }
+
+    /**
+     * Create the PrinterComponent for the given printer and set up any listeners on component events.
+     */
+    private PrinterComponent createPrinterComponentForPrinter(Printer printer)
+    {
+        PrinterComponent printerComponent = new PrinterComponent(printer);
+        printerComponent.setOnMouseClicked((MouseEvent event) ->
+        {
+            handlePrinterClicked(event, printer);
+        });
+        printerComponentsByPrinter.put(printer, printerComponent);
+        return printerComponent;
+    }
+
+    /**
+     * Remove the given printer from the grid.
+     *
+     * @param printerComponent
+     */
+    private void removePrinterComponentFromGrid(PrinterComponent printerComponent)
+    {
+        printerStatusGrid.getChildren().remove(printerComponent);
+    }
+
+    private void bindDetails(Printer printer)
+    {
+        if (selectedPrinter != null)
+        {
+            unbindPrinter(selectedPrinter);
+        }
+
+        if (printer != null)
+        {
+            bindPrinter(printer);
+        }
+    }
+
+    private void bindPrinter(Printer printer)
+    {
+        PrinterAncillarySystems ancillarySystems = printer.getPrinterAncillarySystems();
+        currentAmbientTemperatureHistory = ancillarySystems.getAmbientTemperatureHistory();
+
+        chartManager.setLegendLabels(legendNozzle, legendBed, legendAmbient);
+
+        chartManager.setAmbientData(ancillarySystems.getAmbientTemperatureHistory());
+        chartManager.setBedData(ancillarySystems.getBedTemperatureHistory());
+        chartManager.setAmbientTemperatureProperty(ancillarySystems.ambientTemperatureProperty());
+        chartManager.setBedTemperatureProperty(ancillarySystems.bedTemperatureProperty());
+
+        chartManager.setTargetAmbientTemperatureProperty(
+            ancillarySystems.ambientTargetTemperatureProperty());
+        chartManager.setBedHeaterModeProperty(ancillarySystems.bedHeaterModeProperty());
+        chartManager.setTargetBedTemperatureProperty(ancillarySystems.bedTargetTemperatureProperty());
+        chartManager.setTargetBedFirstLayerTemperatureProperty(ancillarySystems.bedFirstLayerTargetTemperatureProperty());
+
+        speedSliderHBox.setVisible(printer.canChangeFilamentInfoProperty().get());
+        speedSliderHBox.visibleProperty().bind(printer.canChangeFilamentInfoProperty());
+        speedMultiplierSlider.setValue(printer.getPrinterAncillarySystems().feedRateMultiplierProperty().get());
+        speedMultiplierSlider.valueProperty().addListener(speedMultiplierListener);
+
+        materialContainer2.visibleProperty().bind(printer.getPrinterAncillarySystems().dualReelAdaptorPresentProperty());
+
+        printer.getPrinterAncillarySystems().feedRateMultiplierProperty().addListener(feedRateChangeListener);
+    }
+
+    private void unbindPrinter(Printer printer)
+    {
+        if (printer.headProperty().get() != null)
+        {
+            unbindHeadProperties(printer.headProperty().get());
+        }
+
+        printer.reelsProperty().entrySet().stream().forEach(
+            entry ->
+            {
+                unbindReelProperties(entry.getKey(), entry.getValue());
+            });
+
+        chartManager.clearAmbientData();
+        chartManager.clearBedData();
+        chartManager.clearLegendLabels();
+        currentAmbientTemperatureHistory = null;
+
+        speedSliderHBox.visibleProperty().unbind();
+        speedSliderHBox.setVisible(false);
+        speedMultiplierSlider.valueProperty().removeListener(speedMultiplierListener);
+
+        materialContainer2.visibleProperty().unbind();
+
+        printer.getPrinterAncillarySystems().feedRateMultiplierProperty().removeListener(feedRateChangeListener);
+    }
+
+    private ChangeListener<Object> reelListener;
+
+    private void unbindReelProperties(int reelNumber, Reel reel)
+    {
+        if (reel != null)
+        {
+            reel.friendlyFilamentNameProperty().removeListener(reelListener);
+            reel.displayColourProperty().removeListener(reelListener);
+            reel.remainingFilamentProperty().removeListener(reelListener);
+            reel.diameterProperty().removeListener(reelListener);
+            reel.materialProperty().removeListener(reelListener);
+        }
+    }
+
+    private void bindReelProperties(int reelNumber, Reel reel)
+    {
+        if (reel != null)
+        {
+            reelListener = (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
+            {
+                updateReelMaterial(reelNumber, reel);
+            };
+            reel.friendlyFilamentNameProperty().addListener(reelListener);
+            reel.displayColourProperty().addListener(reelListener);
+            reel.remainingFilamentProperty().addListener(reelListener);
+            reel.diameterProperty().addListener(reelListener);
+            reel.materialProperty().addListener(reelListener);
+        }
+    }
+
+    private void unbindHeadProperties(Head head)
+    {
+        chartManager.clearNozzleData();
+    }
+
+    private void bindHeadProperties(Head head)
+    {
+        head.getNozzleHeaters().get(0).getNozzleTemperatureHistory().getData().addListener(
+            graphDataPointChangeListener);
+
+        chartManager.setNozzleTemperatureProperty(head.getNozzleHeaters().get(0).nozzleTemperatureProperty());
+        chartManager.setNozzleData(head.getNozzleHeaters().get(0).getNozzleTemperatureHistory());
+        chartManager.setTargetNozzleTemperatureProperty(
+            head.getNozzleHeaters().get(0).nozzleTargetTemperatureProperty());
+        chartManager.setTargetFirstLayerNozzleTemperatureProperty(
+            head.getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty());
+        chartManager.setNozzleHeaterModeProperty(head.getNozzleHeaters().get(0).heaterModeProperty());
+    }
+
+    /**
+     * Update the material component with the appropriate details.
+     */
+    private void updateReelMaterial(int reelNumber, Reel reel)
+    {
+        MaterialComponent materialComponent = reelNumber == 0 ? material1 : material2;
+        if (reel == null)
+        {
+            materialComponent.showFilamentNotLoaded();
+        } else
+        {
+            materialComponent.setMaterial(reelNumber, reel.materialProperty().get(),
+                                          reel.friendlyFilamentNameProperty().get(),
+                                          reel.displayColourProperty().get(),
+                                          reel.remainingFilamentProperty().get(),
+                                          reel.diameterProperty().get());
+        }
+//            material1.showReelNotFormatted();
     }
 
     private void controlDetailsVisibility()
     {
-        boolean visible = printerStatusList.size() > 0 && !printerStatusTableSelectionModel.isEmpty();
+        boolean visible = connectedPrinters.size() > 0;
 
-        temperatureVBox.setVisible(visible);
         temperatureChart.setVisible(visible);
-        printerStatusHBox.setVisible(visible);
+        temperatureChartXLabels.setVisible(visible);
+        materialContainer1.setVisible(visible);
+
+        legendContainer.setVisible(visible);
     }
 
-    /**
-     *
-     * @param slideOutController
-     */
     @Override
     public void configure(Initializable slideOutController)
     {
-        this.slideOutController = (PrinterStatusSlideOutPanelController) slideOutController;
     }
+
+    @Override
+    public void whenPrinterAdded(Printer printer)
+    {
+        clearAndAddAllPrintersToGrid();
+        selectPrinter(printer);
+        controlDetailsVisibility();
+        updateReelMaterial(0, null);
+        updateReelMaterial(1, null);
+    }
+
+    @Override
+    public void whenPrinterRemoved(Printer printer)
+    {
+        removePrinter(printer);
+        clearAndAddAllPrintersToGrid();
+        selectOnePrinter();
+        controlDetailsVisibility();
+    }
+
+    @Override
+    public void whenHeadAdded(Printer printer)
+    {
+        if (printer == selectedPrinter)
+        {
+            Head head = printer.headProperty().get();
+            bindHeadProperties(head);
+        }
+    }
+
+    @Override
+    public void whenHeadRemoved(Printer printer, Head head)
+    {
+        if (printer == selectedPrinter)
+        {
+            unbindHeadProperties(head);
+        }
+    }
+
+    @Override
+    public void whenReelAdded(Printer printer, int reelIndex)
+    {
+        if (printer == selectedPrinter)
+        {
+            Reel reel = printer.reelsProperty().get(reelIndex);
+            bindReelProperties(reelIndex, reel);
+            updateReelMaterial(reelIndex, reel);
+        }
+    }
+
+    @Override
+    public void whenReelRemoved(Printer printer, Reel reel, int reelNumber)
+    {
+        if (printer == selectedPrinter)
+        {
+            unbindReelProperties(reelNumber, reel);
+            updateReelMaterial(reelNumber, null);
+        }
+    }
+
+    @Override
+    public void whenReelChanged(Printer printer, Reel reel)
+    {
+    }
+
 }

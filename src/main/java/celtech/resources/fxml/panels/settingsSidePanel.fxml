@@ -9,7 +9,7 @@
 <?import javafx.scene.shape.*?>
 <?import jfxtras.styles.jmetro8.*?>
 
-<HBox maxWidth="360.0" minWidth="-Infinity" prefWidth="360.0" styleClass="sidePanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.SettingsSidePanelController">
+<HBox maxWidth="360.0" minWidth="-Infinity" prefWidth="360.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.SettingsSidePanelController">
     <children>
         <BorderPane id="AnchorPane" maxHeight="-1.0" styleClass="sidePanel" HBox.hgrow="ALWAYS">
             <top>
@@ -253,4 +253,8 @@
             </HBox.margin>
         </BorderPane>
     </children>
+   <styleClass>
+      <String fx:value="sidePanel" />
+      <String fx:value="regularFont" />
+   </styleClass>
 </HBox>

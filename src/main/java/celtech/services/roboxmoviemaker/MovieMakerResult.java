@@ -6,8 +6,7 @@ package celtech.services.roboxmoviemaker;
 
 import celtech.services.slicer.*;
 import celtech.appManager.Project;
-import celtech.configuration.FilamentContainer;
-import celtech.printerControl.Printer;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 
 /**
  *

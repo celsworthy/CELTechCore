@@ -1,12 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.services.slicer;
 
 import celtech.appManager.Project;
-import celtech.configuration.FilamentContainer;
-import celtech.printerControl.Printer;
+import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.printerControl.model.Printer;
 
 /**
  *
@@ -18,7 +15,7 @@ public class SliceResult
     private Project project = null;
     private FilamentContainer filament = null;
     private PrintQualityEnumeration printQuality = null;
-    private RoboxProfile settings = null;  
+    private SlicerParametersFile settings = null;  
     private Printer printerToUse = null;
     private boolean success = false;
 
@@ -32,7 +29,7 @@ public class SliceResult
      * @param printerToUse
      * @param success
      */
-    public SliceResult(String printJobUUID, Project project, FilamentContainer filament, PrintQualityEnumeration printQuality, RoboxProfile settings, Printer printerToUse, boolean success)
+    public SliceResult(String printJobUUID, Project project, FilamentContainer filament, PrintQualityEnumeration printQuality, SlicerParametersFile settings, Printer printerToUse, boolean success)
     {
         this.printJobUUID = printJobUUID;
         this.project = project;
@@ -83,7 +80,7 @@ public class SliceResult
      *
      * @return
      */
-    public RoboxProfile getSettings()
+    public SlicerParametersFile getSettings()
     {
         return settings;
     }

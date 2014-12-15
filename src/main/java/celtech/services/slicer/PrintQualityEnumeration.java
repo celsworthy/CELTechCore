@@ -1,14 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.services.slicer;
 
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.PrintProfileContainer;
+import celtech.configuration.datafileaccessors.SlicerParametersContainer;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 
 /**
  *
@@ -20,28 +14,28 @@ public enum PrintQualityEnumeration
     /**
      *
      */
-    DRAFT("Draft", PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName), 0),
+    DRAFT("Draft", SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName), 0),
 
     /**
      *
      */
-    NORMAL("Normal", PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.normalSettingsProfileName), 1),
+    NORMAL("Normal", SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.normalSettingsProfileName), 1),
 
     /**
      *
      */
-    FINE("Fine", PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.fineSettingsProfileName), 2),
+    FINE("Fine", SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.fineSettingsProfileName), 2),
 
     /**
      *
      */
-    CUSTOM("Custom", PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.customSettingsProfileName), 3);
+    CUSTOM("Custom", SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.customSettingsProfileName), 3);
 
     private final String friendlyName;
-    private final RoboxProfile settings;
+    private final SlicerParametersFile settings;
     private final int enumPosition;
 
-    private PrintQualityEnumeration(String friendlyName, RoboxProfile settings, int enumPosition)
+    private PrintQualityEnumeration(String friendlyName, SlicerParametersFile settings, int enumPosition)
     {
         this.friendlyName = friendlyName;
         this.settings = settings;
@@ -61,7 +55,7 @@ public enum PrintQualityEnumeration
      *
      * @return
      */
-    public RoboxProfile getSettings()
+    public SlicerParametersFile getSettings()
     {
         return settings;
     }

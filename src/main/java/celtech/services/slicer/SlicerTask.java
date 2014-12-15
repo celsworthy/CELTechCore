@@ -1,15 +1,14 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.services.slicer;
 
+import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.FilamentContainer;
 import celtech.configuration.MachineType;
+import celtech.configuration.SlicerType;
+import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.visualisation.exporters.STLOutputConverter;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,7 +28,7 @@ public class SlicerTask extends Task<SliceResult>
     private Project project = null;
     private FilamentContainer filament = null;
     private PrintQualityEnumeration printQuality = null;
-    private RoboxProfile settings = null;
+    private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
     private String tempModelFilename = null;
     private String tempGcodeFilename = null;
@@ -42,7 +41,7 @@ public class SlicerTask extends Task<SliceResult>
      * @param settings
      * @param printerToUse
      */
-    public SlicerTask(String printJobUUID, Project project, PrintQualityEnumeration printQuality, RoboxProfile settings, Printer printerToUse)
+    public SlicerTask(String printJobUUID, Project project, PrintQualityEnumeration printQuality, SlicerParametersFile settings, Printer printerToUse)
     {
         this.printJobUUID = printJobUUID;
         this.project = project;
@@ -72,27 +71,89 @@ public class SlicerTask extends Task<SliceResult>
         MachineType machineType = ApplicationConfiguration.getMachineType();
         ArrayList<String> commands = new ArrayList<>();
 
+        SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
+        String windowsSlicerCommand = "";
+        String macSlicerCommand = "";
+        String linuxSlicerCommand = "";
+        String configLoadCommand = "";
+        String combinedConfigSection = "";
+        String verboseOutputCommand = "";
+        String progressOutputCommand = "";
+        
+        if (settings.getSlicerOverride() != null)
+        {
+            slicerType = settings.getSlicerOverride();
+        }
+
+        switch (slicerType)
+        {
+            case Slic3r:
+                windowsSlicerCommand = "\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\"";
+                macSlicerCommand = "Slic3r.app/Contents/MacOS/slic3r";
+                linuxSlicerCommand = "Slic3r/bin/slic3r";
+                configLoadCommand = "--load";
+                combinedConfigSection = configLoadCommand + " " + configFile;
+                break;
+            case Cura:
+                windowsSlicerCommand = "\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Cura\\CuraEngine.exe\"";
+                macSlicerCommand = "Cura/CuraEngine";
+                linuxSlicerCommand = "Cura/CuraEngine";
+                verboseOutputCommand = "-v";
+                configLoadCommand = "-c";
+                progressOutputCommand = "-p";
+                combinedConfigSection = configLoadCommand + " " + configFile;
+                break;
+        }
+
+        steno.info("Selected slicer is " + slicerType);
+
         switch (machineType)
         {
             case WINDOWS_95:
                 commands.add("command.com");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"pushd \"" + workingDirectory + "\" && \"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\" --load " + configFile + " -o "
-                    + tempGcodeFilename + " " + tempModelFilename
+                commands.add("\"pushd \""
+                    + workingDirectory
+                    + "\" && "
+                    + windowsSlicerCommand
+                    + " "
+                    + verboseOutputCommand
+                    + " "
+                    + progressOutputCommand
+                    + " "
+                    + combinedConfigSection
+                    + " -o "
+                    + tempGcodeFilename
+                    + " "
+                    + tempModelFilename
                     + " && popd\"");
                 break;
             case WINDOWS:
                 commands.add("cmd.exe");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"pushd \"" + workingDirectory + "\" && \"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\" --load " + configFile + " -o "
-                    + tempGcodeFilename + " " + tempModelFilename
+                commands.add("\"pushd \""
+                    + workingDirectory
+                    + "\" && "
+                    + windowsSlicerCommand
+                    + " "
+                    + verboseOutputCommand
+                    + " "
+                    + progressOutputCommand
+                    + " "
+                    + combinedConfigSection
+                    + " -o "
+                    + tempGcodeFilename
+                    + " "
+                    + tempModelFilename
                     + " && popd\"");
                 break;
             case MAC:
-                commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r.app/Contents/MacOS/slic3r");
-                commands.add("--load");
+                commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + macSlicerCommand);
+                commands.add(verboseOutputCommand);
+                commands.add(progressOutputCommand);
+                commands.add(configLoadCommand);
                 commands.add(configFile);
                 commands.add("-o");
                 commands.add(tempGcodeFilename);
@@ -100,8 +161,10 @@ public class SlicerTask extends Task<SliceResult>
                 break;
             case LINUX_X86:
             case LINUX_X64:
-                commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r/bin/slic3r");
-                commands.add("--load");
+                commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + linuxSlicerCommand);
+                commands.add(verboseOutputCommand);
+                commands.add(progressOutputCommand);
+                commands.add(configLoadCommand);
                 commands.add(configFile);
                 commands.add("-o");
                 commands.add(tempGcodeFilename);
@@ -118,17 +181,17 @@ public class SlicerTask extends Task<SliceResult>
             {
                 slicerProcessBuilder.directory(new File(workingDirectory));
             }
-            
+
             Process slicerProcess = null;
 
             try
             {
                 slicerProcess = slicerProcessBuilder.start();
                 // any error message?
-                StreamGobbler errorGobbler = new StreamGobbler(slicerProcess.getErrorStream(), "ERROR");
+                SlicerOutputGobbler errorGobbler = new SlicerOutputGobbler(this, slicerProcess.getErrorStream(), "ERROR", slicerType);
 
                 // any output?
-                SlicerOutputGobbler outputGobbler = new SlicerOutputGobbler(this, slicerProcess.getInputStream(), "OUTPUT");
+                SlicerOutputGobbler outputGobbler = new SlicerOutputGobbler(this, slicerProcess.getInputStream(), "OUTPUT", slicerType);
 
                 // kick them off
                 errorGobbler.start();

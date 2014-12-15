@@ -43,6 +43,15 @@ public class FirmwareResponse extends RoboxRxPacket
     }
 
     /**
+     * 
+     * @param firmwareRevision 
+     */
+    public void setFirmwareRevision(String firmwareRevision)
+    {
+        this.firmwareRevision = firmwareRevision;
+    }
+
+    /**
      *
      */
     public FirmwareResponse()

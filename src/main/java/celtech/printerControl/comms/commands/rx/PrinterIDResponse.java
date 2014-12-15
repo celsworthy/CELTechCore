@@ -46,7 +46,7 @@ public class PrinterIDResponse extends RoboxRxPacket
     @Override
     public boolean populatePacket(byte[] byteData)
     {
-        
+
         boolean success = false;
 
         try
@@ -87,15 +87,16 @@ public class PrinterIDResponse extends RoboxRxPacket
             this.printerFriendlyName = this.printerFriendlyName.trim();
             // beta testers will have unencoded printer names.
             // TODO: remove this test after 1.000.08 has been out for a while
-            if (StringToBase64Encoder.isEncodedData(this.printerFriendlyName)) {
+            if (StringToBase64Encoder.isEncodedData(this.printerFriendlyName))
+            {
                 this.printerFriendlyName = StringToBase64Encoder.decode(this.printerFriendlyName);
             }
             byteOffset += PrinterIDDataStructure.printerFriendlyNameBytes;
 
             byteOffset += WritePrinterID.BYTES_FOR_SECOND_PAD;
 
-            String colourDigits = new String(byteData, byteOffset, 
-                PrinterIDDataStructure.colourBytes * 3, charsetToUse);
+            String colourDigits = new String(byteData, byteOffset,
+                                             PrinterIDDataStructure.colourBytes * 3, charsetToUse);
             byteOffset += PrinterIDDataStructure.colourBytes * 3;
 
             printerColour = stringToColor(colourDigits);
@@ -209,6 +210,46 @@ public class PrinterIDResponse extends RoboxRxPacket
     public String getPrinterFriendlyName()
     {
         return printerFriendlyName;
+    }
+
+    public void setModel(String model)
+    {
+        this.model = model;
+    }
+
+    public void setEdition(String edition)
+    {
+        this.edition = edition;
+    }
+
+    public void setWeekOfManufacture(String weekOfManufacture)
+    {
+        this.weekOfManufacture = weekOfManufacture;
+    }
+
+    public void setYearOfManufacture(String yearOfManufacture)
+    {
+        this.yearOfManufacture = yearOfManufacture;
+    }
+
+    public void setPoNumber(String poNumber)
+    {
+        this.poNumber = poNumber;
+    }
+
+    public void setSerialNumber(String serialNumber)
+    {
+        this.serialNumber = serialNumber;
+    }
+
+    public void setPrinterColour(Color printerColour)
+    {
+        this.printerColour = printerColour;
+    }
+
+    public void setPrinterFriendlyName(String printerFriendlyName)
+    {
+        this.printerFriendlyName = printerFriendlyName;
     }
 
 }

@@ -10,6 +10,8 @@ import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.components.SlideoutAndProjectHolder;
+import celtech.coreUI.components.Spinner;
+import celtech.coreUI.components.TopMenuStrip;
 import celtech.coreUI.controllers.InfoScreenIndicatorController;
 import celtech.coreUI.controllers.PrinterStatusPageController;
 import celtech.coreUI.controllers.panels.LayoutSidePanelController;
@@ -21,6 +23,8 @@ import celtech.coreUI.controllers.panels.SidePanelManager;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
+import celtech.printerControl.comms.RoboxCommsManager;
+import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.services.modelLoader.ModelLoadResults;
 import celtech.services.modelLoader.ModelLoaderService;
 import java.io.File;
@@ -35,6 +39,7 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -42,7 +47,6 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
@@ -53,16 +57,14 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.control.action.Action;
-import org.controlsfx.dialog.Dialogs;
-import org.controlsfx.dialog.Dialogs.CommandLink;
 
 /**
  *
@@ -71,20 +73,18 @@ import org.controlsfx.dialog.Dialogs.CommandLink;
 public class DisplayManager implements EventHandler<KeyEvent>
 {
 
-    private static Stenographer steno = StenographerFactory.getStenographer(
+    private static final Stenographer steno = StenographerFactory.getStenographer(
         DisplayManager.class.getName());
-    private static ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
-    private static ProjectManager projectManager = ProjectManager.getInstance();
+    private static final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
+    private static final ProjectManager projectManager = ProjectManager.getInstance();
 
     private static DisplayManager instance = null;
     private static Stage mainStage = null;
     private static Scene scene = null;
 
-    private static AnchorPane root = null;
     private HBox mainHolder = null;
     private StackPane sidePanelContainer = null;
-    private AnchorPane modeSelectionControl = null;
-    private final HashMap<ApplicationMode, VBox> insetPanels = new HashMap<>();
+    private final HashMap<ApplicationMode, Pane> insetPanels = new HashMap<>();
     private final HashMap<ApplicationMode, HBox> sidePanels = new HashMap<>();
     private final HashMap<ApplicationMode, HBox> slideOutPanels = new HashMap<>();
     private final StackPane rhPanel = new StackPane();
@@ -100,10 +100,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
     private static Tab addPageTab = null;
     private Tab lastLayoutTab = null;
 
-    private HashMap<String, SidePanelManager> sidePanelControllerCache = new HashMap<>();
-    private HashMap<String, HBox> sidePanelCache = new HashMap<>();
-    private HashMap<String, Initializable> slideoutPanelControllerCache = new HashMap<>();
-    private HashMap<String, HBox> slideoutPanelCache = new HashMap<>();
+    private final HashMap<String, SidePanelManager> sidePanelControllerCache = new HashMap<>();
+    private final HashMap<String, HBox> sidePanelCache = new HashMap<>();
+    private final HashMap<String, Initializable> slideoutPanelControllerCache = new HashMap<>();
+    private final HashMap<String, HBox> slideoutPanelCache = new HashMap<>();
 
     /*
      * Project loading
@@ -112,36 +112,51 @@ public class DisplayManager implements EventHandler<KeyEvent>
     /*
      * Mesh Model loading
      */
-    private ModelLoaderService modelLoaderService = new ModelLoaderService();
+    private final ModelLoaderService modelLoaderService = new ModelLoaderService();
     private ProgressDialog modelLoadDialog = null;
 
-    /*
-     * GCode model loading
-     */
-    private final ObservableList<String> gcodeFileLines = FXCollections.observableArrayList();
     /*
      * GCode-related
      */
     private final IntegerProperty layersInGCode = new SimpleIntegerProperty(0);
-    private final BooleanProperty noGCodeLoaded = new SimpleBooleanProperty(true);
 
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
 
-    /**
-     * The primary font used throughout the GUI, at various font sizes
-     */
-    private final Font primaryFont;
+    private static final String addDummyPrinterCommand = "AddDummy";
 
-    private Locale usersLocale = null;
+    private String hiddenCommandKeyBuffer = "";
+    private final EventHandler<KeyEvent> hiddenCommandEventHandler = (KeyEvent event) ->
+    {
+        if (addDummyPrinterCommand.startsWith(hiddenCommandKeyBuffer + event.getCharacter()))
+        {
+            hiddenCommandKeyBuffer += event.getCharacter();
+            if (hiddenCommandKeyBuffer != null)
+            {
+                switch (hiddenCommandKeyBuffer)
+                {
+                    case addDummyPrinterCommand:
+                        RoboxCommsManager.getInstance().addDummyPrinter();
+                        steno.info("Added dummy printer");
+                        hiddenCommandKeyBuffer = "";
+                        break;
+                }
+            }
+        } else
+        {
+            hiddenCommandKeyBuffer = "";
+        }
+    };
+
+    private boolean captureKeys = false;
+
+    private AnchorPane root;
+    private Pane spinnerContainer;
+    private Spinner spinner;
+    
+    private BooleanProperty nodesMayHaveMoved = new SimpleBooleanProperty(false);
 
     private DisplayManager()
     {
-        usersLocale = Locale.getDefault();
-
-        String primaryFontLocation = DisplayManager.class.getResource(
-            ApplicationConfiguration.fontResourcePath + "SourceSansPro-Light.ttf").toExternalForm();
-        primaryFont = Font.loadFont(primaryFontLocation, 10);
-
         modelLoadDialog = new ProgressDialog(modelLoaderService);
 
         modelLoaderService.setOnSucceeded((WorkerStateEvent t) ->
@@ -152,11 +167,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private void whenModelLoadSucceeded()
     {
-        CommandLink dontLoadModel = new Dialogs.CommandLink(getLanguageBundle().getString(
-            "dialogs.ModelTooLargeNo"), null);
-        CommandLink shrinkModel = new Dialogs.CommandLink(getLanguageBundle().getString(
-            "dialogs.ShrinkModelToFit"), null);
-
         ModelLoadResults loadResults = modelLoaderService.getValue();
         if (loadResults.getResults().isEmpty())
         {
@@ -170,14 +180,9 @@ public class DisplayManager implements EventHandler<KeyEvent>
             {
                 if (loadResult.isModelTooLarge())
                 {
-                    Action tooBigResponse = Dialogs.create().title(getLanguageBundle().getString(
-                        "dialogs.ModelTooLargeTitle"))
-                        .message(loadResult.getModelFilename() + ": "
-                            + getLanguageBundle().getString("dialogs.ModelTooLargeDescription"))
-                        .masthead(null)
-                        .showCommandLinks(shrinkModel, shrinkModel, dontLoadModel);
+                    boolean shrinkModel = Lookup.getSystemNotificationHandler().showModelTooBigDialog(loadResult.getModelFilename());
 
-                    if (tooBigResponse == shrinkModel)
+                    if (shrinkModel)
                     {
                         ModelContainer modelContainer = loadResult.getModelContainer();
                         modelContainer.shrinkToFitBed();
@@ -215,17 +220,15 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
-    private void switchPagesForMode(ApplicationMode oldMode,
-        ApplicationMode newMode)
+    private void switchPagesForMode(ApplicationMode oldMode, ApplicationMode newMode)
     {
-        infoScreenIndicatorController.setSelected(newMode
-            == ApplicationMode.STATUS);
+        infoScreenIndicatorController.setSelected(newMode == ApplicationMode.STATUS);
 
         // Remove the existing side panel
         if (oldMode != null)
         {
             sidePanelContainer.getChildren().remove(sidePanels.get(oldMode));
-            VBox lastInsetPanel = insetPanels.get(oldMode);
+            Pane lastInsetPanel = insetPanels.get(oldMode);
             if (lastInsetPanel != null)
             {
                 rhPanel.getChildren().remove(lastInsetPanel);
@@ -243,7 +246,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         slideoutAndProjectHolder.switchInSlideout(slideOutPanels.get(newMode));
 
-        VBox newInsetPanel = insetPanels.get(newMode);
+        Pane newInsetPanel = insetPanels.get(newMode);
         if (newInsetPanel != null)
         {
             rhPanel.getChildren().add(0, newInsetPanel);
@@ -255,7 +258,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
             ProjectTab projectTab = null;
 
-            //Create a tab if one doesnt already exist
+            //Create a tab if one doesn't already exist
             if (tabDisplay.getTabs().size() <= 1)
             {
                 projectTab = new ProjectTab(this, tabDisplay.widthProperty(),
@@ -313,6 +316,25 @@ public class DisplayManager implements EventHandler<KeyEvent>
     }
 
     /**
+     * Show the spinner, and keep it centred on the given region.
+     */
+    public void startSpinning(Region centreRegion)
+    {
+        spinner.setVisible(true);
+        spinner.startSpinning();
+        spinner.setCentreNode(centreRegion);
+    }
+
+    /**
+     * Stop and hide the spinner.
+     */
+    public void stopSpinning()
+    {
+        spinner.setVisible(false);
+        spinner.stopSpinning();
+    }
+
+    /**
      *
      * @param mainStage
      * @param applicationName
@@ -327,113 +349,33 @@ public class DisplayManager implements EventHandler<KeyEvent>
             + " - " + ApplicationConfiguration.getApplicationVersion());
 
         root = new AnchorPane();
+
+        spinnerContainer = new Pane();
+        spinnerContainer.setMouseTransparent(true);
+        spinnerContainer.setPickOnBounds(false);
+        spinner = new Spinner();
+        spinnerContainer.getChildren().add(spinner);
+
+        AnchorPane.setBottomAnchor(root, 0.0);
+        AnchorPane.setLeftAnchor(root, 0.0);
+        AnchorPane.setRightAnchor(root, 0.0);
+        AnchorPane.setTopAnchor(root, 0.0);
+        
         mainHolder = new HBox();
+        mainHolder.setPrefSize(-1, -1);
+
         AnchorPane.setBottomAnchor(mainHolder, 0.0);
         AnchorPane.setLeftAnchor(mainHolder, 0.0);
         AnchorPane.setRightAnchor(mainHolder, 0.0);
         AnchorPane.setTopAnchor(mainHolder, 0.0);
 
-        mainHolder.setPrefSize(-1, -1);
         root.getChildren().add(mainHolder);
+        root.getChildren().add(spinnerContainer);
 
         // Load in all of the side panels
         for (ApplicationMode mode : ApplicationMode.values())
         {
-            try
-            {
-                URL fxmlFileName = getClass().getResource(mode.getInsetPanelFXMLName());
-                if (fxmlFileName != null)
-                {
-                    steno.debug("About to load inset panel fxml: " + fxmlFileName);
-                    FXMLLoader insetPanelLoader = new FXMLLoader(fxmlFileName, getLanguageBundle());
-                    VBox insetPanel = (VBox) insetPanelLoader.load();
-                    Initializable insetPanelController = insetPanelLoader.getController();
-                    insetPanel.setId(mode.name());
-                    insetPanels.put(mode, insetPanel);
-                    insetPanelControllers.put(mode, insetPanelController);
-                }
-            } catch (Exception ex)
-            {
-                ex.printStackTrace();
-                insetPanels.put(mode, null);
-                insetPanelControllers.put(mode, null);
-                steno.warning("Couldn't load inset panel for mode:" + mode + ". " + ex.getMessage());
-            }
-
-            SidePanelManager sidePanelController = null;
-            HBox sidePanel = null;
-            boolean sidePanelLoadedOK = false;
-
-            if (sidePanelControllerCache.containsKey(mode.getSidePanelFXMLName()) == false)
-            {
-                try
-                {
-                    URL fxmlFileName = getClass().getResource(mode.getSidePanelFXMLName());
-                    steno.debug("About to load side panel fxml: " + fxmlFileName);
-                    FXMLLoader sidePanelLoader = new FXMLLoader(fxmlFileName, getLanguageBundle());
-                    sidePanel = (HBox) sidePanelLoader.load();
-                    sidePanelController = sidePanelLoader.getController();
-                    sidePanel.setId(mode.name());
-                    sidePanelLoadedOK = true;
-                    sidePanelControllerCache.put(mode.getSidePanelFXMLName(), sidePanelController);
-                    sidePanelCache.put(mode.getSidePanelFXMLName(), sidePanel);
-                } catch (Exception ex)
-                {
-                    ex.printStackTrace();
-                    sidePanels.put(mode, null);
-                    sidePanelControllers.put(mode, null);
-                    steno.error("Couldn't load side panel for mode:" + mode + ". "
-                        + ex);
-                    System.out.println("Exception: " + ex.getMessage());
-                }
-            } else
-            {
-                sidePanelController = sidePanelControllerCache.get(mode.getSidePanelFXMLName());
-                sidePanel = sidePanelCache.get(mode.getSidePanelFXMLName());
-                sidePanelLoadedOK = true;
-            }
-
-            if (sidePanelLoadedOK)
-            {
-                sidePanels.put(mode, sidePanel);
-                sidePanelControllers.put(mode, sidePanelController);
-            }
-
-            Initializable slideOutController = null;
-            HBox slideOut = null;
-            boolean slideoutPanelLoadedOK = false;
-
-            if (slideoutPanelControllerCache.containsKey(mode.getSlideOutFXMLName()) == false)
-            {
-                try
-                {
-                    URL fxmlSlideOutFileName = getClass().getResource(mode.getSlideOutFXMLName());
-                    steno.debug("About to load slideout fxml: "
-                        + fxmlSlideOutFileName);
-                    FXMLLoader slideOutLoader = new FXMLLoader(fxmlSlideOutFileName, getLanguageBundle());
-                    slideOut = (HBox) slideOutLoader.load();
-                    slideOutController = slideOutLoader.getController();
-                    sidePanelControllers.get(mode).configure(slideOutController);
-                    slideoutPanelLoadedOK = true;
-                } catch (Exception ex)
-                {
-                    slideOutPanels.put(mode, null);
-                    slideOutControllers.put(mode, null);
-                    steno.error("Couldn't load slideout panel for mode:" + mode
-                        + ". " + ex + " : " + ex.getCause());
-                    System.out.println("Exception: " + ex.getMessage());
-                }
-            } else
-            {
-                slideOutController = slideoutPanelControllerCache.get(mode.getSlideOutFXMLName());
-                slideOut = slideoutPanelCache.get(mode.getSlideOutFXMLName());
-            }
-
-            if (slideoutPanelLoadedOK)
-            {
-                slideOutPanels.put(mode, slideOut);
-                slideOutControllers.put(mode, slideOutController);
-            }
+            setupPanelsForMode(mode);
         }
 
         // Create a place to hang the side panels from
@@ -448,18 +390,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         HBox.setHgrow(rhPanel, Priority.ALWAYS);
 
-        try
-        {
-            URL menuStripURL = getClass().getResource(ApplicationConfiguration.fxmlPanelResourcePath
-                + "TopMenuStrip.fxml");
-            FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, getLanguageBundle());
-            VBox topMenuStripControls = (VBox) menuStripLoader.load();
-            VBox.setVgrow(topMenuStripControls, Priority.NEVER);
-//            rhPanel.getChildren().add(topMenuStripControls);
-        } catch (IOException ex)
-        {
-            steno.error("Failed to load top menu strip controls:" + ex);
-        }
+        addTopMenuStripController();
 
         mainHolder.getChildren().add(rhPanel);
 
@@ -467,8 +398,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
         tabDisplay = new TabPane();
         tabDisplay.setPickOnBounds(false);
         tabDisplay.setOnKeyPressed(this);
-        tabDisplay.setTabMinHeight(50);
-        tabDisplay.setTabMaxHeight(50);
+        tabDisplay.setTabMinHeight(56);
+        tabDisplay.setTabMaxHeight(56);
         tabDisplaySelectionModel = tabDisplay.getSelectionModel();
         tabDisplay.getStyleClass().add("main-project-tabPane");
 
@@ -580,6 +511,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
         } catch (IOException ex)
         {
             steno.error("Failed to load menu strip controls:" + ex);
+            ex.printStackTrace();
         }
 
         projectLoader = new ProjectLoader();
@@ -587,10 +519,60 @@ public class DisplayManager implements EventHandler<KeyEvent>
         scene = new Scene(root, ApplicationConfiguration.DEFAULT_WIDTH,
                           ApplicationConfiguration.DEFAULT_HEIGHT);
 
-        scene.getStylesheets().add("/celtech/resources/css/JMetroDarkTheme.css");
-//        root.setStyle("-fx-font-family: FreeMono;");
-        String primaryFontFamily = primaryFont.getFamily();
-        root.setStyle("-fx-font-family: " + primaryFontFamily + ";");
+        scene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
+        
+        scene.widthProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(
+                ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            {
+                fireNodeMayHaveMovedTrigger();
+            }
+        });
+
+        scene.heightProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(
+                ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            {
+                fireNodeMayHaveMovedTrigger();
+            }
+        });
+        
+        slideoutAndProjectHolder.widthProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(
+                ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            {
+                fireNodeMayHaveMovedTrigger();
+            }
+        });
+        
+        mainStage.maximizedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(
+                ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                fireNodeMayHaveMovedTrigger();
+            }
+        });
+
+        mainStage.fullScreenProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(
+                ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                steno.info("Stage fullscreen = " + newValue.booleanValue());
+                fireNodeMayHaveMovedTrigger();
+            }
+        });
+
+        captureHiddenKeys();
 
         // Camera required to allow 2D shapes to be rotated in 3D in the '2D' UI
         PerspectiveCamera controlOverlaycamera = new PerspectiveCamera(false);
@@ -602,6 +584,111 @@ public class DisplayManager implements EventHandler<KeyEvent>
         loadProjectsAtStartup();
 
         root.layout();
+    }
+
+    private void setupPanelsForMode(ApplicationMode mode)
+    {
+        try
+        {
+            URL fxmlFileName = getClass().getResource(mode.getInsetPanelFXMLName());
+            if (fxmlFileName != null)
+            {
+                steno.debug("About to load inset panel fxml: " + fxmlFileName);
+                FXMLLoader insetPanelLoader = new FXMLLoader(fxmlFileName, getLanguageBundle());
+                Pane insetPanel = (Pane) insetPanelLoader.load();
+                Initializable insetPanelController = insetPanelLoader.getController();
+                insetPanel.setId(mode.name());
+                insetPanels.put(mode, insetPanel);
+                insetPanelControllers.put(mode, insetPanelController);
+            }
+        } catch (Exception ex)
+        {
+            ex.printStackTrace();
+            insetPanels.put(mode, null);
+            insetPanelControllers.put(mode, null);
+            steno.warning("Couldn't load inset panel for mode:" + mode + ". " + ex.getMessage());
+        }
+
+        SidePanelManager sidePanelController = null;
+        HBox sidePanel = null;
+        boolean sidePanelLoadedOK = false;
+
+        if (sidePanelControllerCache.containsKey(mode.getSidePanelFXMLName()) == false)
+        {
+            try
+            {
+                URL fxmlFileName = getClass().getResource(mode.getSidePanelFXMLName());
+                steno.debug("About to load side panel fxml: " + fxmlFileName);
+                FXMLLoader sidePanelLoader = new FXMLLoader(fxmlFileName, getLanguageBundle());
+                sidePanel = (HBox) sidePanelLoader.load();
+                sidePanelController = sidePanelLoader.getController();
+                sidePanel.setId(mode.name());
+                sidePanelLoadedOK = true;
+                sidePanelControllerCache.put(mode.getSidePanelFXMLName(), sidePanelController);
+                sidePanelCache.put(mode.getSidePanelFXMLName(), sidePanel);
+            } catch (Exception ex)
+            {
+                ex.printStackTrace();
+                sidePanels.put(mode, null);
+                sidePanelControllers.put(mode, null);
+                steno.error("Couldn't load side panel for mode:" + mode + ". "
+                    + ex);
+                System.out.println("Exception: " + ex.getMessage());
+            }
+        } else
+        {
+            sidePanelController = sidePanelControllerCache.get(mode.getSidePanelFXMLName());
+            sidePanel = sidePanelCache.get(mode.getSidePanelFXMLName());
+            sidePanelLoadedOK = true;
+        }
+
+        if (sidePanelLoadedOK)
+        {
+            sidePanels.put(mode, sidePanel);
+            sidePanelControllers.put(mode, sidePanelController);
+        }
+
+        Initializable slideOutController = null;
+        HBox slideOut = null;
+        boolean slideoutPanelLoadedOK = false;
+
+        if (slideoutPanelControllerCache.containsKey(mode.getSlideOutFXMLName()) == false)
+        {
+            try
+            {
+                URL fxmlSlideOutFileName = getClass().getResource(mode.getSlideOutFXMLName());
+                steno.debug("About to load slideout fxml: "
+                    + fxmlSlideOutFileName);
+                FXMLLoader slideOutLoader = new FXMLLoader(fxmlSlideOutFileName, getLanguageBundle());
+                slideOut = (HBox) slideOutLoader.load();
+                slideOutController = slideOutLoader.getController();
+                sidePanelControllers.get(mode).configure(slideOutController);
+                slideoutPanelLoadedOK = true;
+            } catch (Exception ex)
+            {
+                slideOutPanels.put(mode, null);
+                slideOutControllers.put(mode, null);
+                steno.error("Couldn't load slideout panel for mode:" + mode
+                    + ". " + ex + " : " + ex.getCause());
+                System.out.println("Exception: " + ex.getMessage());
+            }
+        } else
+        {
+            slideOutController = slideoutPanelControllerCache.get(mode.getSlideOutFXMLName());
+            slideOut = slideoutPanelCache.get(mode.getSlideOutFXMLName());
+        }
+
+        if (slideoutPanelLoadedOK)
+        {
+            slideOutPanels.put(mode, slideOut);
+            slideOutControllers.put(mode, slideOutController);
+        }
+    }
+
+    private void addTopMenuStripController()
+    {
+        HBox topMenuStrip = new TopMenuStrip();
+        rhPanel.getChildren().add(topMenuStrip);
     }
 
     private ProjectTab createAndAddNewProjectTab()
@@ -632,63 +719,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
         return Lookup.getApplicationEnvironment().getLanguageBundle();
     }
 
-    private void addGCode(Group gCodeParts)
-    {
-//        viewControl.addGCodeParts(gCodeParts);
-    }
-
-    /* 
-     * GCode display controls
-     */
-    /**
-     *
-     * @param equalsIgnoreCase
-     */
-    public void showGCodeTravel(boolean equalsIgnoreCase)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    /**
-     *
-     * @param equalsIgnoreCase
-     */
-    public void showGCodeRetracts(boolean equalsIgnoreCase)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    /**
-     *
-     * @param equalsIgnoreCase
-     */
-    public void showGCodeSupport(boolean equalsIgnoreCase)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    /**
-     *
-     * @param intValue
-     * @param i
-     */
-    public void changeVisibleGCodeLayers(int intValue, int i)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    /*
-    
-     */
-    /**
-     *
-     * @return
-     */
-    public ObservableList<String> gcodeFileLinesProperty()
-    {
-        return gcodeFileLines;
-    }
-
     /**
      *
      * @param value
@@ -696,33 +726,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
     public final void setLayersInGCode(int value)
     {
         layersInGCode.set(value);
-    }
-
-    /**
-     *
-     * @return
-     */
-    public final int getLayersInGCode()
-    {
-        return layersInGCode.get();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public final IntegerProperty layersInGCodeProperty()
-    {
-        return layersInGCode;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public final BooleanProperty noGCodeLoadedProperty()
-    {
-        return noGCodeLoaded;
     }
 
     /**
@@ -963,28 +966,37 @@ public class DisplayManager implements EventHandler<KeyEvent>
         }
     }
 
-    public Locale getApplicationLocale()
-    {
-        return Lookup.getApplicationEnvironment().getAppLocale();
-    }
-
-    public Locale getUsersLocale()
-    {
-        return usersLocale;
-    }
-
-    /**
-     * Return the font family name of the primary font used in the GUI
-     *
-     * @return
-     */
-    public String getPrimaryFontFamily()
-    {
-        return primaryFont.getFamily();
-    }
-
     public PurgeInsetPanelController getPurgeInsetPanelController()
     {
         return (PurgeInsetPanelController) insetPanelControllers.get(ApplicationMode.PURGE);
+    }
+
+    private void stopCapturingHiddenKeys()
+    {
+        if (captureKeys)
+        {
+            scene.removeEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
+            hiddenCommandKeyBuffer = "";
+            captureKeys = false;
+        }
+    }
+
+    private void captureHiddenKeys()
+    {
+        if (!captureKeys)
+        {
+            scene.addEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
+            captureKeys = true;
+        }
+    }
+    
+    private void fireNodeMayHaveMovedTrigger()
+    {
+        nodesMayHaveMoved.set(!nodesMayHaveMoved.get());
+    }
+    
+    public ReadOnlyBooleanProperty nodesMayHaveMovedProperty()
+    {
+        return nodesMayHaveMoved;
     }
 }

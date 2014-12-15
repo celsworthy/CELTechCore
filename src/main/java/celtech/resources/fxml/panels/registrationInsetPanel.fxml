@@ -1,188 +1,153 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
+<?import javafx.geometry.*?>
+<?import celtech.coreUI.components.*?>
+<?import celtech.coreUI.components.buttons.*?>
+<?import java.lang.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 
-<VBox styleClass="blue-inset-panel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.AboutPanelController">
+<VBox fx:id="container" style="-fx-background-color: black;" stylesheets="@../../css/JMetroDarkTheme.css" VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.RegistrationInsetPanelController">
     <children>
-        <AnchorPane VBox.vgrow="ALWAYS">
+      <TopMenuStrip />        
+        <HBox styleClass="blue-inset-panel" VBox.vgrow="ALWAYS">
             <children>
-                <ImageView fitWidth="150.0" pickOnBounds="true" preserveRatio="true" AnchorPane.rightAnchor="11.0" AnchorPane.topAnchor="10.0">
-                    <image>
-                        <Image url="@../../images/whiteRoboxOutline.PNG" />
-                    </image>
-                </ImageView>
-                <ImageView fitWidth="150.0" layoutX="126.0" layoutY="20.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
-                    <image>
-                        <Image url="@../../images/CEL_logo.PNG" />
-                    </image>
-                </ImageView>
-                <VBox alignment="CENTER" minWidth="-Infinity" prefWidth="500.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
-                    <children>
-                        <HBox layoutY="-24.0">
-                            <children>
-                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="blue-inset-panel-text" text="%aboutPanel.applicationNamePart1">
-                                    <font>
-                                        <Font size="48.0" />
-                                    </font>
-                                </Text>
-                                <Text layoutX="10.0" layoutY="10.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="blue-inset-panel-text" text="%aboutPanel.applicationNamePart2">
-                                    <font>
-                                        <Font size="48.0" />
-                                    </font>
-                                </Text>
-                                <Text layoutX="42.0" layoutY="10.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="blue-inset-panel-text" text="%aboutPanel.tm" />
-                            </children>
-                        </HBox>
-                        <HBox alignment="CENTER_LEFT" spacing="5.0">
-                            <children>
-                                <Label layoutX="10.0" layoutY="118.0" style="-fx-font-size: 18px;" text="%aboutPanel.version" wrapText="true">
-                                    <font>
-                                        <Font size="18.0" />
-                                    </font>
-                                </Label>
-                                <Label fx:id="version" layoutX="10.0" layoutY="10.0" style="-fx-font-size: 18px;" text="%aboutPanel.version" wrapText="true">
-                                    <font>
-                                        <Font size="18.0" />
-                                    </font>
-                                </Label>
-                            </children>
-                        </HBox>
-<HBox>
-<children>
-<Label layoutX="10.0" layoutY="150.0" style="-fx-font-size: 14px;" text="%aboutPanel.copyright" wrapText="true">
-<font>
-<Font size="18.0" />
-</font>
-</Label>
-</children>
-</HBox>
-                        <Label prefHeight="180.0" style="-fx-font-size: 14px;" text="%aboutPanel.warning" wrapText="true" VBox.vgrow="ALWAYS">
-                            <font>
-                                <Font size="18.0" />
-                            </font>
-                            <VBox.margin>
-                                <Insets top="20.0" />
-                            </VBox.margin>
+            <VBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="30.0" style="-fx-background-color: black;" />
+            <HBox alignment="CENTER" minHeight="200.0" minWidth="200.0" styleClass="blue-background">
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin>
+               <children>
+                  <VBox alignment="CENTER" HBox.hgrow="NEVER">
+                     <children>
+                        <Label id="registrationTitle" text="Robox User Account">
+                           <VBox.margin>
+                              <Insets bottom="30.0" top="30.0" />
+                           </VBox.margin>
                         </Label>
-                        <GridPane style="-fx-font-size: 14px;">
-                            <columnConstraints>
-                                <ColumnConstraints hgrow="NEVER" minWidth="-Infinity" prefWidth="170.0" />
-                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="50.0" />
-                            </columnConstraints>
-                            <rowConstraints>
-                                <RowConstraints vgrow="SOMETIMES" />
-                                <RowConstraints vgrow="SOMETIMES" />
-                                <RowConstraints />
-                            </rowConstraints>
-                            <children>
-                                <Text layoutX="10.0" layoutY="157.0" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-size: 14px;" styleClass="blue-inset-panel-text" text="%aboutPanel.businessDevelopment" GridPane.rowIndex="2">
-                                    <font>
-                                        <Font name="System Bold" size="18.0" />
-                                    </font>
-                                    <VBox.margin>
-                                        <Insets top="20.0" />
-                                    </VBox.margin>
-                                </Text>
-                                <Text layoutX="10.0" layoutY="29.0" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-size: 14px;" styleClass="blue-inset-panel-text" text="Kenneth Tam" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                                    <font>
-                                        <Font size="18.0" />
-                                    </font>
-                                </Text>
-                                <Text layoutX="10.0" layoutY="29.0" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-size: 14px;" styleClass="blue-inset-panel-text" text="Chris Elsworthy and Chris White" GridPane.columnIndex="1">
-                                    <font>
-                                        <Font size="18.0" />
-                                    </font>
-                                </Text>
-                                <Text layoutX="10.0" layoutY="157.0" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-size: 14px;" styleClass="blue-inset-panel-text" text="%aboutPanel.hardwareEngineering">
-                                    <font>
-                                        <Font name="System Bold" size="18.0" />
-                                    </font>
-                                    <VBox.margin>
-                                        <Insets top="20.0" />
-                                    </VBox.margin>
-                                </Text>
-                                <Text layoutX="10.0" layoutY="157.0" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-size: 14px;" styleClass="blue-inset-panel-text" text="%aboutPanel.softwareEngineering" GridPane.rowIndex="1">
-                                    <font>
-                                        <Font name="System Bold" size="18.0" />
-                                    </font>
-                                    <VBox.margin>
-                                        <Insets top="20.0" />
-                                    </VBox.margin>
-                                </Text>
-                                <Text layoutX="10.0" layoutY="29.0" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-size: 14px;" styleClass="blue-inset-panel-text" text="Ian Hudson, Ben Willcocks and Tony Lynch" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                    <font>
-                                        <Font size="18.0" />
-                                    </font>
-                                </Text>
-                            </children>
-                            <VBox.margin>
-                                <Insets top="20.0" />
-                            </VBox.margin>
+                        <GridPane hgap="30.0" styleClass="registrationGrid">
+                          <columnConstraints>
+                            <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" />
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
+                              <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="330.0" />
+                          </columnConstraints>
+                          <rowConstraints>
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                          </rowConstraints>
+                           <children>
+                              <Label text="First Name:" />
+                              <Label text="Surname:" GridPane.rowIndex="1" />
+                              <Label text="Company Name:" GridPane.rowIndex="2" />
+                              <TextField GridPane.columnIndex="1" />
+                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                              <Label text="Address Line 1:" GridPane.rowIndex="3" />
+                              <Label text="Address Line 2:" GridPane.rowIndex="4" />
+                              <Label text="Address Line 3:" GridPane.rowIndex="5" />
+                              <Label text="Town/City:" GridPane.rowIndex="6" />
+                              <Label text="Region/State:" GridPane.rowIndex="7" />
+                              <Label text="Postal Code:" GridPane.rowIndex="8" />
+                              <Label text="Country:" GridPane.rowIndex="9" />
+                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                              <Label text="Robox Serial No.:" GridPane.columnIndex="2" />
+                              <Label text="Head Serial No.:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                              <Label text="Date Of Purchase:" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                              <Label text="Purchased From:" GridPane.columnIndex="2" GridPane.rowIndex="4" />
+                              <TextField GridPane.columnIndex="3" GridPane.rowIndex="4" />
+                              <Label text="User Name:" GridPane.columnIndex="2" GridPane.rowIndex="6" />
+                              <Label text="Password:" GridPane.columnIndex="2" GridPane.rowIndex="7" />
+                              <TextField GridPane.columnIndex="3" GridPane.rowIndex="6" />
+                              <TextField GridPane.columnIndex="3" GridPane.rowIndex="7" />
+                              <HBox alignment="CENTER" GridPane.columnIndex="3">
+                                 <children>
+                                    <TextField />
+                                    <Label text="-" />
+                                    <TextField prefColumnCount="10" />
+                                    <Label text="-" />
+                                    <TextField />
+                                    <Label text="-" />
+                                    <TextField prefColumnCount="14" />
+                                    <Label text="-" />
+                                    <TextField />
+                                    <Label text="-" />
+                                    <TextField prefColumnCount="10" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="1">
+                              <children>
+                                    <TextField />
+                                    <Label text="-" />
+                                    <TextField prefColumnCount="10" />
+                                    <Label text="-" />
+                                    <TextField />
+                                    <Label text="-" />
+                                    <TextField prefColumnCount="14" />
+                                    <Label text="-" />
+                                    <TextField />
+                                    <Label text="-" />
+                                    <TextField prefColumnCount="10" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="3">
+                                 <children>
+                                    <ComboBox prefWidth="150.0" />
+                                    <ComboBox prefWidth="150.0" />
+                                    <ComboBox prefWidth="150.0" />
+                                 </children>
+                              </HBox>
+                             
+                           </children>
+                           <HBox.margin>
+                              <Insets left="60.0" />
+                           </HBox.margin>
+                           <VBox.margin>
+                              <Insets left="60.0" right="60.0" />
+                           </VBox.margin>
                         </GridPane>
-                        <HBox alignment="CENTER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="450.0">
-                            <children>
-                                <GridPane hgap="5.0" minWidth="400.0" style="-fx-background-color: white;">
-                                    <columnConstraints>
-                                        <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" percentWidth="50.0" />
-                                        <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" minWidth="10.0" percentWidth="50.0" />
-                                    </columnConstraints>
-                                    <rowConstraints>
-                                        <RowConstraints vgrow="SOMETIMES" />
-                                        <RowConstraints vgrow="SOMETIMES" />
-                                    </rowConstraints>
-                                    <children>
-                                        <Label fx:id="roboxSerialNumber" layoutX="230.0" layoutY="10.0" style="-fx-font-size: 18px; -fx-text-fill: black; -fx-font-family: monospace;" wrapText="true" GridPane.columnIndex="1">
-                                            <font>
-                                                <Font size="18.0" />
-                                            </font>
-                                        </Label>
-                                        <Label fx:id="headSerialNumber" layoutX="230.0" layoutY="10.0" style="-fx-text-fill: black; -fx-font-family: monospace; -fx-font-size: 48px;" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                            <font>
-                                                <Font size="18.0" />
-                                            </font>
-                                        </Label>
-                                        <Label layoutX="10.0" layoutY="118.0" style="-fx-font-size: 16px; -fx-text-fill: black;" text="%aboutPanel.roboxSerialNumber" wrapText="true">
-                                            <font>
-                                                <Font size="18.0" />
-                                            </font>
-                                        </Label>
-                                        <Label layoutX="10.0" layoutY="118.0" style="-fx-font-size: 16px; -fx-text-fill: black;" text="%aboutPanel.headSerialNumber" wrapText="true" GridPane.rowIndex="1">
-                                            <font>
-                                                <Font size="18.0" />
-                                            </font>
-                                        </Label>
-                                    </children>
-                                    <VBox.margin>
-                                        <Insets />
-                                    </VBox.margin>
-                                </GridPane>
-                            </children>
-                            <VBox.margin>
-                                <Insets top="40.0" />
-                            </VBox.margin>
+                        <HBox alignment="CENTER" spacing="30.0">
+                           <children>
+                              <Button mnemonicParsing="false" text="Register" />
+                              <Button mnemonicParsing="false" text="I Already Have An Account" />
+                           </children>
+                           <VBox.margin>
+                              <Insets bottom="30.0" top="30.0" />
+                           </VBox.margin>
                         </HBox>
-<HBox alignment="CENTER" spacing="40.0">
-<children><Button mnemonicParsing="false" onAction="#okPressed" text="%misc.OK" />
-<Button layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#systemInformationPressed" text="%aboutPanel.systemInformation" />
-</children>
-<padding>
-<Insets top="40.0" />
-</padding>
-</HBox>
-                    </children>
-                    <opaqueInsets>
-                        <Insets />
-                    </opaqueInsets>
-                </VBox>
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
             </children>
-        </AnchorPane>
+        </HBox>
+        <BorderPane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="90.0" styleClass="menubar">
+            <center>
+            </center>
+         <center>
+            <HBox alignment="CENTER" BorderPane.alignment="CENTER">
+               <children>
+                      <GraphicButton fx:id="backwardButton" fxmlFileName="backwardButton" onAction="#backwardPressed" />
+               </children>
+               <BorderPane.margin>
+                  <Insets right="10.0" />
+               </BorderPane.margin>
+            </HBox>
+         </center>
+        </BorderPane>
     </children>
-    <padding>
-        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-    </padding>
 </VBox>

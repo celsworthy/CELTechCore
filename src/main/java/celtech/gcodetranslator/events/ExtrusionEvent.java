@@ -5,6 +5,7 @@
  */
 package celtech.gcodetranslator.events;
 
+import celtech.gcodetranslator.ExtrusionTask;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -16,8 +17,27 @@ import java.util.Locale;
 public class ExtrusionEvent extends MovementEvent
 {
 
+    private ExtrusionTask extrusionTask = null;
     private double e;
     private double d;
+
+    /**
+     *
+     * @return
+     */
+    public ExtrusionTask getExtrusionTask()
+    {
+        return extrusionTask;
+    }
+
+    /**
+     *
+     * @param extrusionTask
+     */
+    public void setExtrusionTask(ExtrusionTask extrusionTask)
+    {
+        this.extrusionTask = extrusionTask;
+    }
 
     /**
      *
@@ -78,6 +98,11 @@ public class ExtrusionEvent extends MovementEvent
         }
 
         stringToReturn += " ; ->L" + getLength() + " ->E" + getE() + " ->D" + getD();
+        
+        if (extrusionTask != null)
+        {
+            stringToReturn += "; " + extrusionTask.name();
+        }
 
         if (getComment() != null)
         {

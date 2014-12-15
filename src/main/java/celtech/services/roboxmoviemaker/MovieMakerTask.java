@@ -5,7 +5,7 @@
 package celtech.services.roboxmoviemaker;
 
 import celtech.configuration.ApplicationConfiguration;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import java.io.File;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -63,8 +63,8 @@ public class MovieMakerTask extends Task<MovieMakerResult>
     protected MovieMakerResult call() throws Exception
     {
         boolean succeeded = false;
-//        keepRunning = true;
-//
+        keepRunning = true;
+
 //        String movieFile = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID + File.separator + "movie.avi";
 //        String movieFile2 = "C:\\Users\\Ian\\Documents\\CEL Robox\\PrintJobs\\movie.avi";
 //
@@ -82,7 +82,7 @@ public class MovieMakerTask extends Task<MovieMakerResult>
 //
 //            if (videoWriter != null)
 //            {
-//                printerToUse.XStopSwitchProperty().addListener(triggerListener);
+//                printerToUse.getPrinterAncillarySystems().xStopSwitchProperty().addListener(triggerListener);
 //
 //                succeeded = true;
 //

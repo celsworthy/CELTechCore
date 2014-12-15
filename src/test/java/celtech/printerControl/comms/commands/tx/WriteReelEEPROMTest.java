@@ -32,7 +32,7 @@ public class WriteReelEEPROMTest
         String friendlyName = "NAME1";
         MaterialType materialType = MaterialType.ABS;
         Color displayColour = Color.RED;
-        WriteReelEEPROM instance = new WriteReelEEPROM();
+        WriteReel0EEPROM instance = new WriteReel0EEPROM();
         instance.populateEEPROM(filamentID, reelFirstLayerNozzleTemperature, reelNozzleTemperature,
                                 reelFirstLayerBedTemperature, reelBedTemperature,
                                 reelAmbientTemperature, reelFilamentDiameter, reelFilamentMultiplier,
@@ -60,7 +60,7 @@ public class WriteReelEEPROMTest
         String friendlyName = "سلام";
         MaterialType materialType = MaterialType.Nylon;
         Color displayColour = Color.BLUE;
-        WriteReelEEPROM instance = new WriteReelEEPROM();
+        WriteReel0EEPROM instance = new WriteReel0EEPROM();
         instance.populateEEPROM(filamentID, reelFirstLayerNozzleTemperature, reelNozzleTemperature,
                                 reelFirstLayerBedTemperature, reelBedTemperature,
                                 reelAmbientTemperature, reelFilamentDiameter, reelFilamentMultiplier,

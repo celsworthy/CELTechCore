@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.modelcontrol;
 
 import celtech.configuration.PrintBed;
@@ -224,7 +219,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         getTransforms().addAll(transformSnapToGroundYAdjust, transformMoveToPreferred,
                                transformMoveToCentre, transformBedCentre,
                                transformRotateYPreferred, transformRotateSnapToGround);
-
         meshGroup.getTransforms().addAll(transformScalePreferred);
 
         originalModelBounds = calculateBounds();

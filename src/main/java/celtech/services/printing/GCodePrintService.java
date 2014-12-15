@@ -1,10 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.services.printing;
 
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Printer;
 import celtech.services.ControllableService;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -28,7 +24,6 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
     private final IntegerProperty linesInGCodeFile = new SimpleIntegerProperty(1);
     private final Stenographer steno = StenographerFactory.getStenographer(this.getClass().getName());
     private boolean printUsingSDCard = true;
-    private boolean isMacro = false;
     
     /**
      *
@@ -137,7 +132,7 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
     @Override
     protected Task<GCodePrintResult> createTask()
     {
-        return new GCodePrinterTask(getPrinterToUse(), getModelFileToPrint(), getCurrentPrintJobID(), linesInGCodeFileProperty(), printUsingSDCard, isMacro);
+        return new GCodePrinterTask(getPrinterToUse(), getModelFileToPrint(), getCurrentPrintJobID(), linesInGCodeFileProperty(), printUsingSDCard);
     }
 
     /**
@@ -151,15 +146,9 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
         return cancel();
     }
 
-    void setIsMacro(boolean isMacro)
-    {
-        this.isMacro = isMacro;
-    }
-
     @Override
     public void reset()
     {
         super.reset();
-        isMacro = false;
     }
 }

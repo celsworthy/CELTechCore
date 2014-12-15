@@ -1,13 +1,16 @@
 package celtech.coreUI.controllers.panels;
 
+import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
-import celtech.configuration.FilamentContainer;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.MaterialType;
-import celtech.configuration.PrintProfileContainer;
+import celtech.configuration.datafileaccessors.SlicerParametersContainer;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.configuration.slicer.FillPattern;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.MaterialChoiceListCell;
 import celtech.coreUI.components.ModalDialog;
@@ -16,11 +19,12 @@ import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.controllers.popups.PopupCommandReceiver;
 import celtech.coreUI.controllers.utilityPanels.MaterialDetailsController;
 import celtech.coreUI.controllers.utilityPanels.ProfileDetailsController;
-import celtech.printerControl.Printer;
-import celtech.printerControl.comms.RoboxCommsManager;
+import celtech.printerControl.model.Head;
+import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.Reel;
 import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.services.slicer.RoboxProfile;
 import static celtech.utils.DeDuplicator.suggestNonDuplicateName;
+import celtech.utils.PrinterListChangesListener;
 import celtech.utils.SystemUtils;
 import java.net.URL;
 import java.util.Collection;
@@ -40,7 +44,6 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Toggle;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.util.Callback;
@@ -54,16 +57,19 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class SettingsSidePanelController implements Initializable, SidePanelManager, PopupCommandReceiver
+public class SettingsSidePanelController implements Initializable, SidePanelManager,
+    PopupCommandReceiver, PrinterListChangesListener
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(SettingsSidePanelController.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        SettingsSidePanelController.class.getName());
     private ObservableList<Printer> printerStatusList = null;
     private SettingsScreenState settingsScreenState = null;
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
 
     private boolean suppressQualityOverrideTriggers = false;
+    private boolean suppressCustomProfileChangeTriggers = false;
 
     @FXML
     private Label materialLabel;
@@ -78,7 +84,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private ComboBox<Filament> materialChooser;
 
     @FXML
-    private ComboBox<RoboxProfile> customProfileChooser;
+    private ComboBox<SlicerParametersFile> customProfileChooser;
 
     @FXML
     private ToggleSwitch supportToggle;
@@ -103,23 +109,19 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
 //    @FXML
 //    private ToggleSwitch spiralPrintToggle;
-    @FXML
-    void go(MouseEvent event)
-    {
-        settingsScreenState.getSettings().writeToFile("/tmp/settings.dat");
-    }
-
-    private RoboxProfile draftSettings = PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
-    private RoboxProfile normalSettings = PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.normalSettingsProfileName);
-    private RoboxProfile fineSettings = PrintProfileContainer.getSettingsByProfileName(ApplicationConfiguration.fineSettingsProfileName);
-    private RoboxProfile customSettings = null;
-    private RoboxProfile lastSettings = null;
+    private SlicerParametersFile draftSettings = SlicerParametersContainer.getSettingsByProfileName(
+        ApplicationConfiguration.draftSettingsProfileName);
+    private SlicerParametersFile normalSettings = SlicerParametersContainer.getSettingsByProfileName(
+        ApplicationConfiguration.normalSettingsProfileName);
+    private SlicerParametersFile fineSettings = SlicerParametersContainer.getSettingsByProfileName(
+        ApplicationConfiguration.fineSettingsProfileName);
+    private SlicerParametersFile customSettings = null;
+    private SlicerParametersFile lastSettings = null;
 
     private ChangeListener<Toggle> nozzleSelectionListener = null;
-    private ChangeListener<Boolean> reelDataChangedListener = null;
 
     private ObservableList<Filament> availableFilaments = FXCollections.observableArrayList();
-    private ObservableList<RoboxProfile> availableProfiles = FXCollections.observableArrayList();
+    private ObservableList<SlicerParametersFile> availableProfiles = FXCollections.observableArrayList();
 
     private Printer currentPrinter = null;
     private Filament currentlyLoadedFilament = null;
@@ -135,7 +137,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private ModalDialog createProfileDialogue = null;
     private int saveProfileAction = 0;
     private int cancelProfileSaveAction = 0;
-    private RoboxProfile lastCustomProfileSelected = null;
+    private SlicerParametersFile lastCustomProfileSelected = null;
 
     private SettingsSlideOutPanelController slideOutController = null;
 
@@ -154,23 +156,30 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         applicationStatus = ApplicationStatus.getInstance();
         displayManager = DisplayManager.getInstance();
         settingsScreenState = SettingsScreenState.getInstance();
-        printerStatusList = RoboxCommsManager.getInstance().getPrintStatusList();
+        printerStatusList = Lookup.getConnectedPrinters();
 
         try
         {
-            FXMLLoader createMaterialPageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlUtilityPanelResourcePath + "materialDetails.fxml"), DisplayManager.
+            FXMLLoader createMaterialPageLoader = new FXMLLoader(getClass().getResource(
+                ApplicationConfiguration.fxmlUtilityPanelResourcePath + "materialDetails.fxml"),
+                                                                 DisplayManager.
                                                                  getLanguageBundle());
             createMaterialPage = createMaterialPageLoader.load();
             materialDetailsController = createMaterialPageLoader.getController();
             materialDetailsController.updateMaterialData(new Filament("", MaterialType.ABS, null,
-                                                                      0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, true));
+                                                                      0, 0, 0, 0, 0, 0, 0, 0,
+                                                                      Color.ALICEBLUE, true));
             materialDetailsController.showButtons(false);
 
-            createMaterialDialogue = new ModalDialog(DisplayManager.getLanguageBundle().getString("sidePanel_settings.createMaterialDialogueTitle"));
+            createMaterialDialogue = new ModalDialog(DisplayManager.getLanguageBundle().getString(
+                "sidePanel_settings.createMaterialDialogueTitle"));
             createMaterialDialogue.setContent(createMaterialPage);
-            saveMaterialAction = createMaterialDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Save"), materialDetailsController.
-                                                                  getProfileNameInvalidProperty());
-            cancelMaterialSaveAction = createMaterialDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Cancel"));
+            saveMaterialAction = createMaterialDialogue.addButton(
+                DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Save"),
+                materialDetailsController.
+                getProfileNameInvalidProperty());
+            cancelMaterialSaveAction = createMaterialDialogue.addButton(
+                DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Cancel"));
 
         } catch (Exception ex)
         {
@@ -188,17 +197,23 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         try
         {
-            FXMLLoader createProfilePageLoader = new FXMLLoader(getClass().getResource(ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetails.fxml"), DisplayManager.
+            FXMLLoader createProfilePageLoader = new FXMLLoader(getClass().getResource(
+                ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetails.fxml"),
+                                                                DisplayManager.
                                                                 getLanguageBundle());
             createProfilePage = createProfilePageLoader.load();
             profileDetailsController = createProfilePageLoader.getController();
             profileDetailsController.showButtons(false);
 
-            createProfileDialogue = new ModalDialog(DisplayManager.getLanguageBundle().getString("sidePanel_settings.createProfileDialogueTitle"));
+            createProfileDialogue = new ModalDialog(DisplayManager.getLanguageBundle().getString(
+                "sidePanel_settings.createProfileDialogueTitle"));
             createProfileDialogue.setContent(createProfilePage);
-            saveProfileAction = createProfileDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Save"), profileDetailsController.
-                                                                getProfileNameInvalidProperty());
-            cancelProfileSaveAction = createProfileDialogue.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Cancel"));
+            saveProfileAction = createProfileDialogue.addButton(
+                DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Save"),
+                profileDetailsController.
+                getProfileNameInvalidProperty());
+            cancelProfileSaveAction = createProfileDialogue.addButton(
+                DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Cancel"));
         } catch (Exception ex)
         {
             steno.error("Failed to load profile creation page");
@@ -209,7 +224,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             @Override
             public String toString(Double n)
             {
-                PrintQualityEnumeration selectedQuality = PrintQualityEnumeration.fromEnumPosition(n.intValue());
+                PrintQualityEnumeration selectedQuality = PrintQualityEnumeration.fromEnumPosition(
+                    n.intValue());
                 return selectedQuality.getFriendlyName();
             }
 
@@ -220,9 +236,9 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 return (double) selectedQuality.getEnumPosition();
             }
         });
-        // Hack to force slider font, don't know why we need this
-        String primaryFontFamily = displayManager.getPrimaryFontFamily();
-        qualityChooser.setStyle("-fx-tick-label-font-family: " + primaryFontFamily + ";");
+//        // Hack to force slider font, don't know why we need this
+//        String primaryFontFamily = displayManager.getPrimaryFontFamily();
+//        qualityChooser.setStyle("-fx-tick-label-font-family: " + primaryFontFamily + ";");
 
         settingsScreenState.setPrintQuality(PrintQualityEnumeration.DRAFT);
         settingsScreenState.setSettings(draftSettings);
@@ -234,19 +250,21 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         qualityChooser.valueProperty().addListener(new ChangeListener<Number>()
         {
             @Override
-            public void changed(ObservableValue<? extends Number> ov, Number lastQualityValue, Number newQualityValue)
+            public void changed(ObservableValue<? extends Number> ov, Number lastQualityValue,
+                Number newQualityValue)
             {
                 if (lastQualityValue != newQualityValue)
                 {
-                    PrintQualityEnumeration quality = PrintQualityEnumeration.fromEnumPosition(newQualityValue.intValue());
+                    PrintQualityEnumeration quality = PrintQualityEnumeration.fromEnumPosition(
+                        newQualityValue.intValue());
 
                     printQualityUpdate(quality);
                 }
             }
         });
 
-        Callback<ListView<RoboxProfile>, ListCell<RoboxProfile>> profileChooserCellFactory
-            = (ListView<RoboxProfile> list) -> new ProfileChoiceListCell();
+        Callback<ListView<SlicerParametersFile>, ListCell<SlicerParametersFile>> profileChooserCellFactory
+            = (ListView<SlicerParametersFile> list) -> new ProfileChoiceListCell();
 
         customProfileChooser.setCellFactory(profileChooserCellFactory);
         customProfileChooser.setButtonCell(profileChooserCellFactory.call(null));
@@ -254,60 +272,92 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         updateProfileList();
 
-        customProfileChooser.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<RoboxProfile>()
+        customProfileChooser.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<SlicerParametersFile>()
         {
             @Override
-            public void changed(ObservableValue<? extends RoboxProfile> observable, RoboxProfile oldValue, RoboxProfile newValue)
+            public void changed(ObservableValue<? extends SlicerParametersFile> observable,
+                SlicerParametersFile oldValue, SlicerParametersFile newValue)
             {
-                if (oldValue != newValue)
+                if (!suppressCustomProfileChangeTriggers)
                 {
-                    if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
+                    if (oldValue != newValue)
                     {
-                        displayManager.slideOutAdvancedPanel();
+                        if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
+                        {
+                            displayManager.slideOutAdvancedPanel();
+                        }
+                        slideOutController.showProfileTab();
+
+                        lastCustomProfileSelected = newValue;
                     }
-                    slideOutController.showProfileTab();
 
-                    lastCustomProfileSelected = newValue;
-                }
-
-                if (newValue == PrintProfileContainer.createNewProfile)
-                {
-                    showCreateProfileDialogue(draftSettings.clone());
-                } else if (newValue != null)
-                {
-                    if (settingsScreenState.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
+                    if (newValue == SlicerParametersContainer.createNewProfile)
                     {
-                        slideOutController.updateProfileData(newValue);
-                        settingsScreenState.setSettings(newValue);
-                        DisplayManager.getInstance().getCurrentlyVisibleProject().setCustomProfileName(newValue.getProfileName());
+                        showCreateProfileDialogue(draftSettings.clone());
+                    } else if (newValue != null)
+                    {
+                        if (settingsScreenState.getPrintQuality()
+                            == PrintQualityEnumeration.CUSTOM)
+                        {
+                            slideOutController.updateProfileData(newValue);
+                            settingsScreenState.setSettings(newValue);
+                            DisplayManager.getInstance().getCurrentlyVisibleProject().setCustomProfileName(
+                                newValue.getProfileName());
+                        }
+                        customSettings = newValue;
+                    } else if (newValue == null && settingsScreenState.getPrintQuality()
+                        == PrintQualityEnumeration.CUSTOM)
+                    {
+                        slideOutController.updateProfileData(null);
+                        customSettings = null;
                     }
-                    customSettings = newValue;
-                } else if (newValue == null && settingsScreenState.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
-                {
-                    slideOutController.updateProfileData(null);
-                    customSettings = null;
                 }
             }
         });
 
-        PrintProfileContainer.getUserProfileList().addListener(new ListChangeListener<RoboxProfile>()
+        SlicerParametersContainer.getUserProfileList().addListener((ListChangeListener.Change<? extends SlicerParametersFile> c) ->
         {
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends RoboxProfile> c)
-            {
-                updateProfileList();
-            }
+            updateProfileList();
         });
+
+        printerChooser.setCellFactory(
+            new Callback<ListView<Printer>, ListCell<Printer>>()
+            {
+                @Override
+                public ListCell<Printer> call(ListView<Printer> param)
+                {
+                    final ListCell<Printer> cell = new ListCell<Printer>()
+                    {
+                        {
+                            super.setPrefWidth(100);
+                        }
+
+                        @Override
+                        public void updateItem(Printer item,
+                            boolean empty)
+                        {
+                            super.updateItem(item, empty);
+                            if (item != null)
+                            {
+                                setText(
+                                    item.getPrinterIdentity().printerFriendlyNameProperty().get());
+                            } else
+                            {
+                                setText(null);
+                            }
+                        }
+                    };
+                    return cell;
+                }
+            });
+
         printerChooser.setItems(printerStatusList);
 
         printerChooser.getSelectionModel()
             .clearSelection();
 
-        printerChooser.getItems().addListener(new ListChangeListener<Printer>()
-        {
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends Printer> change
-            )
+        printerChooser.getItems().addListener(
+            (ListChangeListener.Change<? extends Printer> change) ->
             {
                 while (change.next())
                 {
@@ -315,15 +365,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     {
                         for (Printer addedPrinter : change.getAddedSubList())
                         {
-                            Platform.runLater(new Runnable()
-                            {
-
-                                @Override
-                                public void run()
-                                {
-                                    printerChooser.setValue(addedPrinter);
-                                }
-                            });
+                            printerChooser.setValue(addedPrinter);
                         }
                     } else if (change.wasRemoved())
                     {
@@ -331,24 +373,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         {
                             if (printerChooser.getItems().isEmpty())
                             {
-                                Platform.runLater(new Runnable()
-                                {
-                                    @Override
-                                    public void run()
-                                    {
-                                        printerChooser.getSelectionModel().select(null);
-                                    }
-                                });
+                                printerChooser.getSelectionModel().select(null);
                             } else
                             {
-                                Platform.runLater(new Runnable()
-                                {
-                                    @Override
-                                    public void run()
-                                    {
-                                        printerChooser.getSelectionModel().selectFirst();
-                                    }
-                                });
+                                printerChooser.getSelectionModel().selectFirst();
                             }
                         }
                     } else if (change.wasReplaced())
@@ -360,25 +388,22 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
                     }
                 }
-            }
-        }
-        );
+            });
 
         printerChooser.getSelectionModel()
             .selectedItemProperty().addListener(new ChangeListener<Printer>()
                 {
                     @Override
-                    public void changed(ObservableValue<? extends Printer> ov, Printer lastSelectedPrinter, Printer selectedPrinter
+                    public void changed(ObservableValue<? extends Printer> ov,
+                        Printer lastSelectedPrinter, Printer selectedPrinter
                     )
                     {
                         if (lastSelectedPrinter != null)
                         {
-                            lastSelectedPrinter.reelDataChangedProperty().removeListener(reelDataChangedListener);
                         }
                         if (selectedPrinter != null && selectedPrinter != lastSelectedPrinter)
                         {
                             currentPrinter = selectedPrinter;
-                            selectedPrinter.reelDataChangedProperty().addListener(reelDataChangedListener);
                         }
 
                         if (selectedPrinter == null)
@@ -393,71 +418,56 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             );
 
         Callback<ListView<Filament>, ListCell<Filament>> materialChooserCellFactory
-            = new Callback<ListView<Filament>, ListCell<Filament>>()
-            {
-                @Override
-                public ListCell<Filament> call(ListView<Filament> list)
-                {
-                    return new MaterialChoiceListCell();
-                }
-            };
+            = (ListView<Filament> list) -> new MaterialChoiceListCell();
 
         materialChooser.setCellFactory(materialChooserCellFactory);
         materialChooser.setButtonCell(new MaterialChoiceListCell());
         materialChooser.setItems(availableFilaments);
 
-        materialChooser.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Filament>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue)
+        materialChooser.getSelectionModel().selectedItemProperty().addListener(
+            new ChangeListener<Filament>()
             {
-                if (oldValue != newValue)
+                @Override
+                public void changed(ObservableValue<? extends Filament> observable,
+                    Filament oldValue, Filament newValue)
                 {
-                    if (slideOutController != null)
+                    if (oldValue != newValue)
                     {
-                        slideOutController.showMaterialTab();
+                        if (slideOutController != null)
+                        {
+                            slideOutController.showMaterialTab();
+                        }
+                        lastFilamentSelected = newValue;
                     }
-                    lastFilamentSelected = newValue;
-                }
 
-                if (inhibitMaterialSelection == false)
-                {
-                    if (newValue == FilamentContainer.createNewFilament)
+                    if (inhibitMaterialSelection == false)
                     {
-                        showCreateMaterialDialogue();
-                    } else if (newValue == null)
-                    {
-                        if (slideOutController != null)
+                        if (newValue == FilamentContainer.createNewFilament)
                         {
-                            slideOutController.updateFilamentData(newValue);
-                        }
-                        settingsScreenState.setFilament(null);
-                    } else
-                    {
-                        if (slideOutController != null)
+                            showCreateMaterialDialogue();
+                        } else if (newValue == null)
                         {
-                            slideOutController.updateFilamentData(newValue);
+                            if (slideOutController != null)
+                            {
+                                slideOutController.updateFilamentData(newValue);
+                            }
+                            settingsScreenState.setFilament(null);
+                        } else
+                        {
+                            if (slideOutController != null)
+                            {
+                                slideOutController.updateFilamentData(newValue);
+                            }
+                            settingsScreenState.setFilament(newValue);
                         }
-                        settingsScreenState.setFilament(newValue);
                     }
                 }
             }
-        }
         );
 
-        reelDataChangedListener = new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
-            {
-                currentlyLoadedFilament = currentPrinter.loadedFilamentProperty().get();
-                updateFilamentList();
-                materialChooser.getSelectionModel().select(currentlyLoadedFilament);
-            }
-        };
-
         nonCustomProfileVBox.visibleProperty()
-            .bind(qualityChooser.valueProperty().isNotEqualTo(PrintQualityEnumeration.CUSTOM.getEnumPosition()));
+            .bind(qualityChooser.valueProperty().isNotEqualTo(
+                    PrintQualityEnumeration.CUSTOM.getEnumPosition()));
 
         supportToggle.selectedProperty().addListener(new ChangeListener<Boolean>()
         {
@@ -472,7 +482,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
                     }
 
-                    settingsScreenState.getSettings().setSupport_material(newValue);
+                    settingsScreenState.getSettings().setGenerateSupportMaterial(newValue);
                 }
             }
         });
@@ -480,7 +490,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         fillDensitySlider.valueProperty().addListener(new ChangeListener<Number>()
         {
             @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue,
+                Number newValue)
             {
                 if (suppressQualityOverrideTriggers == false)
                 {
@@ -489,7 +500,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
                     }
 
-                    settingsScreenState.getSettings().setFill_density(newValue.floatValue() / 100.0f);
+                    settingsScreenState.getSettings().setFillDensity_normalised(
+                        newValue.floatValue() / 100.0f);
                 }
             }
         });
@@ -497,7 +509,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         brimSlider.valueProperty().addListener(new ChangeListener<Number>()
         {
             @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue,
+                Number newValue)
             {
                 if (suppressQualityOverrideTriggers == false)
                 {
@@ -506,7 +519,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
                     }
 
-                    settingsScreenState.getSettings().getBrim_width().setValue(newValue.intValue());
+                    settingsScreenState.getSettings().setBrimWidth_mm(newValue.intValue());
                 }
             }
         });
@@ -530,31 +543,33 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 //        });
 //
 //        updateFilamentList();
+        Lookup.getPrinterListChangesNotifier().addListener(this);
     }
 
-    private void setupQualityOverrideControls(RoboxProfile settings)
+    private void setupQualityOverrideControls(SlicerParametersFile settings)
     {
-        supportToggle.setSelected(settings.support_materialProperty().get());
-        fillDensitySlider.setValue(settings.fill_densityProperty().get() * 100.0);
-        if (settings.fill_patternProperty().get().equalsIgnoreCase("line"))
+        supportToggle.setSelected(settings.getGenerateSupportMaterial());
+        fillDensitySlider.setValue(settings.getFillDensity_normalised() * 100.0);
+        if (settings.getFillPattern().equals(FillPattern.LINE))
         {
             fillDensitySlider.setMax(99);
         } else
         {
             fillDensitySlider.setMax(100);
         }
-        brimSlider.setValue(settings.getBrim_width().get());
+        brimSlider.setValue(settings.getBrimWidth_mm());
     }
 
     private void updateProfileList()
     {
-        RoboxProfile currentSelection = customProfileChooser.getSelectionModel().getSelectedItem();
+        SlicerParametersFile currentSelection = customProfileChooser.getSelectionModel().getSelectedItem();
 
         availableProfiles.clear();
-        availableProfiles.addAll(PrintProfileContainer.getUserProfileList());
-        availableProfiles.add(PrintProfileContainer.createNewProfile);
+        availableProfiles.addAll(SlicerParametersContainer.getUserProfileList());
+        availableProfiles.add(SlicerParametersContainer.createNewProfile);
 
-        if (currentSelection != null && availableProfiles.contains(currentSelection) && currentSelection != PrintProfileContainer.createNewProfile)
+        if (currentSelection != null && availableProfiles.contains(currentSelection)
+            && currentSelection != SlicerParametersContainer.createNewProfile)
         {
             customProfileChooser.getSelectionModel().select(currentSelection);
         } else if (customProfileChooser.getItems().size() > 1)
@@ -579,7 +594,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         availableFilaments.addAll(FilamentContainer.getUserFilamentList());
         availableFilaments.add(FilamentContainer.createNewFilament);
 
-        if (currentSelection != null && availableFilaments.contains(currentSelection) && currentSelection != FilamentContainer.createNewFilament)
+        if (currentSelection != null && availableFilaments.contains(currentSelection)
+            && currentSelection != FilamentContainer.createNewFilament)
         {
             materialChooser.getSelectionModel().select(currentSelection);
         } else if (materialChooser.getItems().size() > 1)
@@ -636,18 +652,21 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 clonedFilament = currentlyLoadedFilament.clone();
             }
             String originalFilamentName = clonedFilament.getFriendlyFilamentName();
-            String filename = SystemUtils.getIncrementalFilenameOnly(ApplicationConfiguration.getUserFilamentDirectory(), originalFilamentName, ApplicationConfiguration.filamentFileExtension);
+            String filename = SystemUtils.getIncrementalFilenameOnly(
+                ApplicationConfiguration.getUserFilamentDirectory(), originalFilamentName,
+                ApplicationConfiguration.filamentFileExtension);
             clonedFilament.setFriendlyFilamentName(filename);
             clonedFilament.setMutable(true);
             materialDetailsController.updateMaterialData(clonedFilament);
             showCreateMaterialDialogue();
         } else if (source instanceof ProfileDetailsController)
         {
-            RoboxProfile settings = settingsScreenState.getSettings().clone();
+            SlicerParametersFile settings = settingsScreenState.getSettings().clone();
             String originalProfileName = settings.getProfileName();
-            String filename = SystemUtils.getIncrementalFilenameOnly(ApplicationConfiguration.getUserPrintProfileDirectory(), originalProfileName, ApplicationConfiguration.printProfileFileExtension);
-            settings.getProfileNameProperty().set(filename);
-            settings.setMutable(true);
+            String filename = SystemUtils.getIncrementalFilenameOnly(
+                ApplicationConfiguration.getUserPrintProfileDirectory(), originalProfileName,
+                ApplicationConfiguration.printProfileFileExtension);
+            settings.setProfileName(filename);
             profileDetailsController.updateProfileData(settings);
             showCreateProfileDialogue(settings);
         }
@@ -655,6 +674,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     /**
      *
+     * @param profile
      * @param source
      */
     @Override
@@ -665,13 +685,18 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             Filament filamentToSave = (Filament) profile;
 
             FilamentContainer.saveFilament(filamentToSave);
-            Filament chosenFilament = FilamentContainer.getFilamentByID(filamentToSave.getFilamentID());
+            Filament chosenFilament = FilamentContainer.getFilamentByID(
+                filamentToSave.getFilamentID());
             materialChooser.getSelectionModel().select(chosenFilament);
-        } else if (profile instanceof RoboxProfile)
+        } else if (profile instanceof SlicerParametersFile)
         {
-            RoboxProfile profiletoSave = (RoboxProfile) profile;
-            PrintProfileContainer.saveProfile(profiletoSave);
+            SlicerParametersFile profiletoSave = (SlicerParametersFile) profile;
+            SlicerParametersContainer.saveProfile(profiletoSave);
             selectPrintProfileByName(profiletoSave.getProfileName());
+            if (displayManager != null)
+            {
+                projectChanged(displayManager.getCurrentlyVisibleProject());
+            }
         }
     }
 
@@ -689,7 +714,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     Filament filamentToSave = materialDetailsController.getMaterialData();
                     FilamentContainer.saveFilament(filamentToSave);
 
-                    Filament chosenFilament = FilamentContainer.getFilamentByID(filamentToSave.getFilamentID());
+                    Filament chosenFilament = FilamentContainer.getFilamentByID(
+                        filamentToSave.getFilamentID());
                     materialChooser.getSelectionModel().select(chosenFilament);
                 } else
                 {
@@ -708,20 +734,19 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         });
     }
 
-    private int showCreateProfileDialogue(RoboxProfile dataToUse)
+    private int showCreateProfileDialogue(SlicerParametersFile dataToUse)
     {
-        dataToUse.setMutable(true);
         profileDetailsController.updateProfileData(dataToUse);
         profileDetailsController.setNameEditable(true);
         int response = createProfileDialogue.show();
         if (response == saveProfileAction)
         {
             String profileNameToSave = profileDetailsController.getProfileName();
-            RoboxProfile settingsToSave = profileDetailsController.getProfileData();
-            Collection<String> profileNames = PrintProfileContainer.getProfileNames();
+            SlicerParametersFile settingsToSave = profileDetailsController.getProfileData();
+            Collection<String> profileNames = SlicerParametersContainer.getProfileNames();
             profileNameToSave = suggestNonDuplicateName(profileNameToSave, profileNames);
-            settingsToSave.getProfileNameProperty().set(profileNameToSave);
-            PrintProfileContainer.saveProfile(settingsToSave);
+            settingsToSave.setProfileName(profileNameToSave);
+            SlicerParametersContainer.saveProfile(settingsToSave);
             updateProfileList();
             selectPrintProfileByName(profileNameToSave);
             qualityChooser.adjustValue(PrintQualityEnumeration.CUSTOM.getEnumPosition());
@@ -729,7 +754,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         {
             if (lastCustomProfileSelected != null)
             {
-                if (lastCustomProfileSelected == PrintProfileContainer.createNewProfile)
+                if (lastCustomProfileSelected == SlicerParametersContainer.createNewProfile)
                 {
                     customProfileChooser.getSelectionModel().clearSelection();
                 } else
@@ -744,9 +769,11 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     private void selectPrintProfileByName(String profileNameToSave)
     {
-        for (RoboxProfile settings : availableProfiles)
+        for (SlicerParametersFile settings : availableProfiles)
         {
-            if (settings.getProfileName().equals(profileNameToSave))
+
+            if (settings.getProfileName() != null && settings.getProfileName().equals(
+                profileNameToSave))
             {
                 customProfileChooser.getSelectionModel().select(settings);
                 break;
@@ -766,9 +793,11 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         if (project.getCustomProfileName() != null)
         {
-            if (customSettings == null || project.getCustomProfileName().equals(customSettings.getProfileName()) == false)
+            if (customSettings == null || project.getCustomProfileName().equals(
+                customSettings.getProfileName()) == false)
             {
-                RoboxProfile chosenProfile = PrintProfileContainer.getSettingsByProfileName(project.getCustomProfileName());
+                SlicerParametersFile chosenProfile = SlicerParametersContainer.getSettingsByProfileName(
+                    project.getCustomProfileName());
                 customProfileChooser.getSelectionModel().select(chosenProfile);
             }
         }
@@ -787,7 +816,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         settingsScreenState.setPrintQuality(quality);
 
-        RoboxProfile settings = null;
+        SlicerParametersFile settings = null;
 
         switch (quality)
         {
@@ -810,6 +839,9 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 }
                 settings = customSettings;
                 customProfileVBox.setVisible(true);
+                suppressCustomProfileChangeTriggers = true;
+                customProfileChooser.getSelectionModel().select(settings);
+                suppressCustomProfileChangeTriggers = false;
                 break;
             default:
                 break;
@@ -841,4 +873,47 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         settingsScreenState.setSettings(settings);
     }
 
+    @Override
+    public void whenPrinterAdded(Printer printer)
+    {
+    }
+
+    @Override
+    public void whenPrinterRemoved(Printer printer)
+    {
+    }
+
+    @Override
+    public void whenHeadAdded(Printer printer)
+    {
+    }
+
+    @Override
+    public void whenHeadRemoved(Printer printer, Head head)
+    {
+    }
+
+    @Override
+    public void whenReelAdded(Printer printer, int reelIndex)
+    {
+        //TODO modify for multiple reels
+        if (printer == currentPrinter)
+        {
+            currentlyLoadedFilament = new Filament(currentPrinter.reelsProperty().get(0));
+            updateFilamentList();
+            materialChooser.getSelectionModel().select(currentlyLoadedFilament);
+        }
+    }
+
+    @Override
+    public void whenReelRemoved(Printer printer, Reel reel, int reelNumber)
+    {
+        currentlyLoadedFilament = null;
+        updateFilamentList();
+    }
+
+    @Override
+    public void whenReelChanged(Printer printer, Reel reel)
+    {
+    }
 }

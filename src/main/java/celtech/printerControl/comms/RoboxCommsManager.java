@@ -1,33 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.comms;
 
+import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.MachineType;
-import celtech.printerControl.Printer;
-import celtech.printerControl.PrinterImpl;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
-import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
-import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
-import celtech.printerControl.comms.events.RoboxEvent;
-import celtech.printerControl.comms.events.RoboxEventProducer;
-import celtech.printerControl.comms.events.RoboxEventType;
+import celtech.printerControl.model.HardwarePrinter;
+import celtech.printerControl.model.Printer;
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -35,7 +21,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class RoboxCommsManager extends Thread implements PrinterControlInterface
+public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
 {
 
     private static RoboxCommsManager instance = null;
@@ -50,21 +36,15 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
     private final String roboxProductID = "081B";
 
     private final String notConnectedString = "NOT_CONNECTED";
-    private InputStream inputStream = null;
-    private OutputStream outputStream = null;
-    private DataInputStream dataInputStream = null;
     private Stenographer steno = null;
-    private RoboxEventProducer eventProducer = new RoboxEventProducer();
-    private final HashMap<String, PrinterHandler> pendingPrinterConnections = new HashMap<>();
     private final HashMap<String, Printer> pendingPrinters = new HashMap<>();
-    private final HashMap<String, PrinterHandler> activePrinterConnections = new HashMap<>();
-    private final HashMap<String, Printer> activePrinterStatuses = new HashMap<>();
-    private final ObservableList<Printer> printerStatus = FXCollections.observableArrayList();
+    private final HashMap<String, Printer> activePrinters = new HashMap<>();
     private boolean suppressPrinterIDChecks = false;
     private int sleepBetweenStatusChecks = 1000;
 
-    private final String nullPrinterString = "NullPrinter";
-    private Printer nullPrinter = null;
+    private String dummyPrinterPort = "DummyPrinterPort";
+
+    private int dummyPrinterCounter = 0;
 
     private RoboxCommsManager(String pathToBinaries, boolean suppressPrinterIDChecks)
     {
@@ -82,14 +62,16 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
         switch (machineType)
         {
             case WINDOWS:
-                roboxDetectorCommand = roboxDetectorWindows + " " + roboxVendorID + " " + roboxProductID;
+                roboxDetectorCommand = roboxDetectorWindows + " " + roboxVendorID + " "
+                    + roboxProductID;
                 break;
             case MAC:
                 roboxDetectorCommand = roboxDetectorMac + " " + printerToSearchFor;
                 break;
             case LINUX_X86:
             case LINUX_X64:
-                roboxDetectorCommand = roboxDetectorLinux + " " + printerToSearchFor + " " + roboxVendorID;
+                roboxDetectorCommand = roboxDetectorLinux + " " + printerToSearchFor + " "
+                    + roboxVendorID;
                 break;
             default:
                 steno.error("Unsupported OS - cannot establish comms.");
@@ -128,8 +110,6 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
     @Override
     public void run()
     {
-//        enableNullPrinter(true);
-
         while (keepRunning)
         {
 //            steno.info("Looking for printers");
@@ -137,14 +117,16 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
 
             if (activePorts != null)
             {
-                for (String port : activePorts)
+                String port = activePorts[0];
+                //Multiple printer support disabled - ROB-334
+//                for (String port : activePorts)
                 {
 //                    steno.info("Found printer on " + port);
-                    if (pendingPrinterConnections.containsKey(port))
+                    if (pendingPrinters.containsKey(port))
                     {
                         //A connection to this printer is pending...
 //                        System.out.println("PENDING FOUND");
-                    } else if (activePrinterConnections.containsKey(port))
+                    } else if (activePrinters.containsKey(port))
                     {
                         //We're already connected to this printer
 //                        System.out.println("ACTIVE FOUND");
@@ -152,14 +134,11 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
                     {
                         // We need to connect!
                         steno.info("Adding new printer on " + port);
-                        PrinterHandler newPrinterHandler = new PrinterHandler(this, port, suppressPrinterIDChecks, sleepBetweenStatusChecks);
-//                        System.out.println("ADD NEW HANDLER " + newPrinterHandler);
-                        pendingPrinterConnections.put(port, newPrinterHandler);
-                        Printer newPrinter = new PrinterImpl(port, this);
-                        pendingPrinters.put(port, newPrinter);
-                        newPrinterHandler.setPrinterToUse(newPrinter);
 
-                        newPrinterHandler.start();
+                        Printer newPrinter = new HardwarePrinter(this, new HardwareCommandInterface(
+                                                                 this, port, suppressPrinterIDChecks,
+                                                                 sleepBetweenStatusChecks));
+                        pendingPrinters.put(port, newPrinter);
                     }
                 }
             }
@@ -179,37 +158,17 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
      */
     public void shutdown()
     {
-        for (Printer printer : printerStatus)
+        for (Printer printer : Lookup.getConnectedPrinters())
         {
-
-            switch (printer.getPrinterStatus())
-            {
-                case IDLE:
-                case PAUSED:
-                case PRINTING:
-                    break;
-                case SENDING_TO_PRINTER:
-                case POST_PROCESSING:
-                case SLICING:
-                case ERROR:
-                    printer.getPrintQueue().abortPrint();
-                    break;
-            }
+            printer.shutdown();
         }
 
-        for (PrinterHandler printerHandler : activePrinterConnections.values())
-        {
-            printerHandler.shutdown();
-        }
-        for (PrinterHandler printerHandler : pendingPrinterConnections.values())
-        {
-            printerHandler.shutdown();
-        }
         keepRunning = false;
     }
 
     /**
      * Detect any attached Robox printers and return an array of port names
+     *
      * @return an array of com or dev (e.g. /dev/ttyACM0) names
      */
     private String[] searchForPrinter()
@@ -257,124 +216,17 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
 
     /**
      *
-     * @param printerName
-     * @param gcodePacket
-     * @return
-     * @throws RoboxCommsException
-     */
-    public RoboxRxPacket submitForWrite(String printerName, RoboxTxPacket gcodePacket) throws RoboxCommsException
-    {
-        RoboxRxPacket response = null;
-        PrinterHandler handler = null;
-
-        if (printerName != null)
-        {
-            handler = activePrinterConnections.get(printerName);
-            if (handler == null)
-            {
-//                steno.warning("Had to fall back to pending list to send packet of type " + gcodePacket.getPacketType().name());
-                handler = pendingPrinterConnections.get(printerName);
-            }
-        }
-
-        if (handler != null)
-        {
-            response = (RoboxRxPacket) handler.writeToPrinter(gcodePacket);
-        } else
-        {
-            if (printerName.equals(nullPrinterString))
-            {
-                response = RoboxRxPacketFactory.createPacket(gcodePacket.getPacketType().getExpectedResponse());
-            } else
-            {
-                steno.error("Rejected request to send packet of type " + gcodePacket.getPacketType().name());
-            }
-        }
-
-        return response;
-    }
-
-    /**
-     *
-     * @param portName
-     * @param event
-     */
-    @Override
-    public void publishEvent(String portName, RoboxEvent event)
-    {
-        switch (event.getEventType())
-        {
-            case PRINTER_OFFLINE:
-                activePrinterConnections.remove(portName);
-                Platform.runLater(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        Printer printerStat = activePrinterStatuses.get(portName);
-                        activePrinterStatuses.remove(portName);
-                        printerStatus.remove(printerStat);
-//                        printerStat.setPrinterConnected(false);
-                    }
-                });
-                break;
-
-            default:
-                Printer printerStat = activePrinterStatuses.get(portName);
-                if (printerStat != null)
-                {
-                    Platform.runLater(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            printerStat.processRoboxEvent(event);
-                        }
-                    });
-                } else
-                {
-                    Printer pendingPrinterStat = pendingPrinters.get(portName);
-                    if (pendingPrinterStat != null)
-                    {
-                        Platform.runLater(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                pendingPrinterStat.processRoboxEvent(event);
-                            }
-                        });
-                    }
-                    steno.warning("Update " + event.getEventType() + " received for printer on port " + portName + " but printer is not in active list");
-                }
-                break;
-        }
-    }
-
-    /**
-     *
      * @param portName
      */
     @Override
     public void printerConnected(String portName)
     {
-        PrinterHandler handler = pendingPrinterConnections.get(portName);
-
-        pendingPrinterConnections.remove(portName);
-
-//        System.out.println("ADD HANDLER " + handler + " To ACTIVE");
-        activePrinterConnections.put(portName, handler);
-
         Printer printer = pendingPrinters.get(portName);
-        activePrinterStatuses.put(portName, printer);
-        Platform.runLater(new Runnable()
+        activePrinters.put(portName, printer);
+
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
-            @Override
-            public void run()
-            {
-                printerStatus.add(printer);
-                printer.setPrinterConnected(true);
-            }
+            Lookup.getConnectedPrinters().add(printer);
         });
     }
 
@@ -385,7 +237,6 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
     @Override
     public void failedToConnect(String portName)
     {
-        pendingPrinterConnections.remove(portName);
         pendingPrinters.remove(portName);
     }
 
@@ -396,90 +247,33 @@ public class RoboxCommsManager extends Thread implements PrinterControlInterface
     @Override
     public void disconnected(String portName)
     {
-        publishEvent(portName, new RoboxEvent(RoboxEventType.PRINTER_OFFLINE));
-        pendingPrinterConnections.remove(portName);
         pendingPrinters.remove(portName);
-        activePrinterConnections.remove(portName);
-    }
 
-    /**
-     *
-     * @return
-     */
-    public ObservableList<Printer> getPrintStatusList()
-    {
-        return printerStatus;
-    }
+        final Printer printerToRemove = activePrinters.get(portName);
+        activePrinters.remove(portName);
 
-    /**
-     *
-     * @param sleepValue
-     */
-    public void setSleepBetweenStatusChecks(int sleepValue)
-    {
-        sleepBetweenStatusChecks = sleepValue;
-    }
-
-    /**
-     *
-     * @param connectedPrinter
-     * @param sleepMillis
-     */
-    public void setSleepBetweenStatusChecks(Printer connectedPrinter, int sleepMillis)
-    {
-        if (connectedPrinter != null)
+        Platform.runLater(new Runnable()
         {
-            String port = connectedPrinter.getPrinterPort();
-            if (port != null)
+            @Override
+            public void run()
             {
-                PrinterHandler handler = activePrinterConnections.get(connectedPrinter.getPrinterPort());
-
-                if (handler != null)
-                {
-                    handler.setSleepBetweenStatusChecks(sleepMillis);
-                }
+                Lookup.getConnectedPrinters().remove(printerToRemove);
             }
-        }
+        });
     }
 
-    /**
-     *
-     * @param enable
-     */
-    public void enableNullPrinter(boolean enable)
+    public void addDummyPrinter()
     {
+        dummyPrinterCounter++;
+        String actualPrinterPort = dummyPrinterPort + " " + dummyPrinterCounter;
+        Printer nullPrinter = new HardwarePrinter(this,
+                                                  new DummyPrinterCommandInterface(this, actualPrinterPort, suppressPrinterIDChecks,
+                                                                                   sleepBetweenStatusChecks, "DP " + dummyPrinterCounter));
+        pendingPrinters.put(actualPrinterPort, nullPrinter);
+    }
 
-        if (nullPrinter == null)
-        {
-            nullPrinter = new PrinterImpl(nullPrinterString, this);
-        }
-
-        if (enable)
-        {
-            if (activePrinterStatuses.containsKey(nullPrinterString) == false)
-            {
-                activePrinterStatuses.put(nullPrinterString, nullPrinter);
-                Platform.runLater(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        printerStatus.add(nullPrinter);
-                        nullPrinter.setPrinterConnected(true);
-                    }
-                });
-            }
-        } else
-        {
-            activePrinterStatuses.remove(nullPrinterString);
-            Platform.runLater(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    printerStatus.remove(nullPrinter);
-                }
-            });
-        }
+    public void removeDummyPrinter(String portName)
+    {
+        disconnected(portName);
     }
 }

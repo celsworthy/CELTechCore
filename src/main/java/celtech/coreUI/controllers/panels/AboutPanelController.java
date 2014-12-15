@@ -1,18 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers.panels;
 
+import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.controllers.SettingsScreenState;
-import celtech.printerControl.Printer;
+import celtech.printerControl.model.Head;
+import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.Reel;
+import celtech.utils.PrinterListChangesListener;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -23,21 +21,10 @@ import javafx.scene.control.Label;
  *
  * @author Ian
  */
-public class AboutPanelController implements Initializable
+public class AboutPanelController implements Initializable, PrinterListChangesListener
 {
 
     private SettingsScreenState settingsScreenState = null;
-    private Printer currentPrinter = null;
-    private final ChangeListener<Boolean> printerIDListener = new ChangeListener<Boolean>()
-    {
-        @Override
-        public void changed(
-            ObservableValue<? extends Boolean> observable, Boolean oldValue,
-            Boolean newValue)
-        {
-            roboxSerialNumber.setText(currentPrinter.getPrinterUniqueID());
-        }
-    };
 
     @FXML
     private Label roboxSerialNumber;
@@ -47,7 +34,7 @@ public class AboutPanelController implements Initializable
 
     @FXML
     private Label version;
-    
+
     @FXML
     private void okPressed(ActionEvent event)
     {
@@ -57,36 +44,53 @@ public class AboutPanelController implements Initializable
     @FXML
     private void systemInformationPressed(ActionEvent event)
     {
-        ApplicationStatus.getInstance().setMode(ApplicationMode.SYSTEM_INFORMATION);        
+        ApplicationStatus.getInstance().setMode(ApplicationMode.SYSTEM_INFORMATION);
     }
-    
+
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
         settingsScreenState = SettingsScreenState.getInstance();
-        
-        settingsScreenState.selectedPrinterProperty().addListener(new ChangeListener<Printer>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue,
-                Printer newValue)
-            {
-                if (currentPrinter != null)
-                {
-                    currentPrinter.getPrinterIDDataChangedToggle().removeListener(printerIDListener);
-                    headSerialNumber.textProperty().unbind();
-                }
-
-                if (newValue != null)
-                {
-                    currentPrinter = newValue;
-                    currentPrinter.getPrinterIDDataChangedToggle().addListener(printerIDListener);
-                    headSerialNumber.textProperty().bind(currentPrinter.getHeadUniqueID());
-                }
-            }
-        });
-        
+        Lookup.getPrinterListChangesNotifier().addListener(this);
         version.setText(ApplicationConfiguration.getApplicationVersion());
     }
 
+    @Override
+    public void whenPrinterAdded(Printer printer)
+    {
+        roboxSerialNumber.setText(printer.getPrinterIdentity().printerUniqueIDProperty().get());
+    }
+
+    @Override
+    public void whenPrinterRemoved(Printer printer)
+    {
+        roboxSerialNumber.setText("");
+    }
+
+    @Override
+    public void whenHeadAdded(Printer printer)
+    {
+        headSerialNumber.setText(printer.headProperty().get().uniqueIDProperty().get());
+    }
+
+    @Override
+    public void whenHeadRemoved(Printer printer, Head head)
+    {
+        headSerialNumber.setText("");
+    }
+
+    @Override
+    public void whenReelAdded(Printer printer, int reelIndex)
+    {
+    }
+
+    @Override
+    public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
+    {
+    }
+
+    @Override
+    public void whenReelChanged(Printer printer, Reel reel)
+    {
+    }
 }

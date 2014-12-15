@@ -11,7 +11,7 @@ package celtech.coreUI.visualisation;
 public interface ShapeProvider
 {
 
-    public double getOriginalWidth();
+   public double getOriginalWidth();
 
     public double getOriginalDepth();
 
@@ -28,7 +28,7 @@ public interface ShapeProvider
     public double getCentreY();
 
     public double getCentreZ();
-
+    
     public void addShapeChangeListener(ShapeChangeListener listener);
     
     public interface ShapeChangeListener {

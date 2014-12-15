@@ -20,7 +20,7 @@ package celtech.coreUI.controllers.popups;
 import celtech.CoreTest;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
-import celtech.configuration.FilamentContainer;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.controllers.utilityPanels.MaterialDetailsController;
 import java.net.URL;
 import java.util.ResourceBundle;

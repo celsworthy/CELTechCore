@@ -1,14 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.services.purge;
 
-import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.Printer;
-import celtech.printerControl.comms.commands.GCodeConstants;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.Lookup;
+import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterException;
 import celtech.services.ControllableService;
 import celtech.utils.PrinterUtils;
 import javafx.concurrent.Task;
@@ -45,40 +39,39 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
     {
         boolean success = false;
 
-        StatusScreenState statusScreenState = StatusScreenState.getInstance();
-        printerToUse = statusScreenState.getCurrentlySelectedPrinter();
+        printerToUse = Lookup.getCurrentlySelectedPrinterProperty().get();
 
         switch (desiredState)
         {
             case HEATING:
-                try
-                {
-                    //Set the bed to 90 degrees C
-                    int desiredBedTemperature = 90;
-                    printerToUse.transmitDirectGCode(GCodeConstants.setBedTemperatureTarget + desiredBedTemperature, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.goToTargetBedTemperature, false);
-                    boolean bedHeatedOK = PrinterUtils.waitUntilTemperatureIsReached(printerToUse.bedTemperatureProperty(), this, desiredBedTemperature, 5, 600);
 
-                    printerToUse.transmitDirectGCode(GCodeConstants.setFirstLayerNozzleTemperatureTarget + purgeTemperature, false);
-                    printerToUse.transmitDirectGCode(GCodeConstants.goToTargetFirstLayerNozzleTemperature, false);
-                    boolean extruderHeatedOK = PrinterUtils.waitUntilTemperatureIsReached(printerToUse.extruderTemperatureProperty(), this, purgeTemperature, 5, 300);
+                //Set the bed to 90 degrees C
+                int desiredBedTemperature = 90;
+                printerToUse.setBedTargetTemperature(desiredBedTemperature);
+                printerToUse.goToTargetBedTemperature();
+                boolean bedHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(printerToUse.getPrinterAncillarySystems().bedTemperatureProperty(), this, desiredBedTemperature, 5, 600);
 
-                    if (bedHeatedOK && extruderHeatedOK)
-                    {
-                        success = true;
-                    }
-                } catch (RoboxCommsException ex)
+                printerToUse.setNozzleTargetTemperature(purgeTemperature);
+                printerToUse.goToTargetNozzleTemperature();
+                //TODO modify to support multiple heaters
+                boolean extruderHeatFailed = PrinterUtils.
+                    waitUntilTemperatureIsReached(printerToUse.headProperty().get().getNozzleHeaters().get(0).nozzleTemperatureProperty(), this, purgeTemperature, 5, 300);
+
+                if (!bedHeatFailed && !extruderHeatFailed)
                 {
-                    steno.error("Error in purge - mode=" + desiredState.name());
-                } catch (InterruptedException ex)
-                {
-                    steno.error("Interrrupted during purge - mode=" + desiredState.name());
+                    success = true;
                 }
 
                 break;
 
             case RUNNING_PURGE:
-                printerToUse.transmitStoredGCode("Purge Material", false);
+                try
+                {
+                    printerToUse.executeMacro("Purge Material");
+                } catch (PrinterException ex)
+                {
+                    steno.error("Error running purge");
+                }
                 PrinterUtils.waitOnMacroFinished(printerToUse, this);
                 break;
         }
@@ -100,7 +93,13 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
     {
         if (desiredState == PurgeState.RUNNING_PURGE)
         {
-            printerToUse.getPrintQueue().abortPrint();
+            try
+            {
+                printerToUse.cancel(null);
+            } catch (PrinterException ex)
+            {
+                steno.error("Error whilst running purge - " + ex.getMessage());
+            }
         }
         return cancel();
     }

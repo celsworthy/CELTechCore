@@ -16,23 +16,28 @@ public enum MaterialType
     /**
      *
      */
-    ABS("ABS"),
+    ABS("ABS", 1.04),
 
     /**
      *
      */
-    PLA("PLA"),
+    PLA("PLA", 1.25),
 
     /**
      *
      */
-    Nylon("Nylon");
+    Nylon("Nylon", 1.134);
     
     private String friendlyName;
+     /**
+     * Approximate material density in g / cm^3.
+     */
+    private double density;
 
-    private MaterialType(String friendlyName)
+    private MaterialType(String friendlyName, Double density)
     {
         this.friendlyName = friendlyName;
+        this.density = density;
     }
     
     /**
@@ -42,6 +47,10 @@ public enum MaterialType
     public String getFriendlyName()
     {
         return friendlyName;
+    }
+    
+    public double getDensity() {
+        return density;
     }
     
     /**

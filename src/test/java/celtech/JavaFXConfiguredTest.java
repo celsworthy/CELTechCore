@@ -3,7 +3,11 @@
  */
 package celtech;
 
+import celtech.appManager.TestSystemNotificationManager;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.datafileaccessors.SlicerParametersContainer;
+import celtech.gcodetranslator.TestGCodeOutputWriter;
+import celtech.utils.tasks.TestTaskExecutor;
 import java.io.File;
 import java.net.URL;
 import java.util.Properties;
@@ -27,8 +31,8 @@ public class JavaFXConfiguredTest
         Properties testProperties = new Properties();
 
         testProperties.setProperty("language", "UK");
-        URL applicationInstallURL = this.getClass().getResource("/");
-        URL applicationCommonURL = this.getClass().getResource("/Common/");
+        URL applicationInstallURL = JavaFXConfiguredTest.class.getResource("/");
+        URL applicationCommonURL = JavaFXConfiguredTest.class.getResource("/Common/");
         String userStorageFolder = temporaryUserStorageFolder.getRoot().getAbsolutePath()
             + File.separator;
         ApplicationConfiguration.setInstallationProperties(
@@ -42,12 +46,17 @@ public class JavaFXConfiguredTest
             + ApplicationConfiguration.printSpoolStorageDirectoryPath
             + File.separator).mkdir();
 
-//        // force initialisation
-//        URL configURL = this.getClass().getResource("/AutoMaker.configFile.xml");
-//        System.setProperty("libertySystems.configFile", configURL.getFile());
-//        String installDir = ApplicationConfiguration.getApplicationInstallDirectory(
-//                Lookup.class);
-//        PrintProfileContainer.getInstance();
+        // force initialisation
+        URL configURL = JavaFXConfiguredTest.class.getResource("/AutoMaker.configFile.xml");
+        System.setProperty("libertySystems.configFile", configURL.getFile());
+        String installDir = ApplicationConfiguration.getApplicationInstallDirectory(
+            Lookup.class);
+        SlicerParametersContainer.getInstance();
+
+        Lookup.setTaskExecutor(new TestTaskExecutor());
+        Lookup.setSystemNotificationHandler(new TestSystemNotificationManager());
+        
+        Lookup.setPostProcessorOutputWriterFactory(TestGCodeOutputWriter :: new);
     }
 
 }

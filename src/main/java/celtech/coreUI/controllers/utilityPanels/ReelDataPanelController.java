@@ -1,3 +1,4 @@
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -5,20 +6,19 @@
  */
 package celtech.coreUI.controllers.utilityPanels;
 
-import celtech.configuration.EEPROMState;
+import celtech.Lookup;
 import celtech.configuration.Filament;
-import celtech.configuration.FilamentContainer;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.MaterialType;
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.coreUI.controllers.StatusScreenState;
-import celtech.printerControl.Printer;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.model.Head;
+import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.Reel;
+import celtech.utils.PrinterListChangesListener;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -28,7 +28,6 @@ import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -37,13 +36,11 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class ReelDataPanelController implements Initializable
+public class ReelDataPanelController implements Initializable, PrinterListChangesListener
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         ReelDataPanelController.class.getName());
-    private Printer connectedPrinter = null;
-    private StatusScreenState statusScreenState = null;
 
     @FXML
     Pane reelContainer;
@@ -93,6 +90,8 @@ public class ReelDataPanelController implements Initializable
     @FXML
     private Button saveFilamentAs;
 
+    private Printer selectedPrinter;
+
     @FXML
     void filamentSaveAs(ActionEvent event)
     {
@@ -120,10 +119,9 @@ public class ReelDataPanelController implements Initializable
             Filament newFilament = makeFilamentFromFields();
             try
             {
-
                 FilamentContainer.saveFilament(newFilament);
-
-                connectedPrinter.transmitWriteReelEEPROM(newFilament);
+                //TODO make this work for both reels
+                selectedPrinter.transmitWriteReelEEPROM(0, newFilament);
 
             } catch (RoboxCommsException ex)
             {
@@ -134,8 +132,6 @@ public class ReelDataPanelController implements Initializable
         {
             steno.info("Parse error getting filament data");
         }
-        readReelConfig(event);
-
     }
 
     private Filament makeFilamentFromFields() throws ParseException
@@ -166,37 +162,51 @@ public class ReelDataPanelController implements Initializable
         return newFilament;
     }
 
-    void readReelConfig(ActionEvent event)
+    private void populateSelectedPrinter()
     {
-        try
+        Reel reel = selectedPrinter.reelsProperty().get(0);
+
+        if (reel != null)
         {
-            connectedPrinter.transmitReadReelEEPROM();
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error reading reel EEPROM");
+            makeReadOnlyIfNecessary();
+
+            filamentID.setText(reel.filamentIDProperty().get());
+            reelAmbientTemperature.setText(String.format("%d",
+                                                         reel.ambientTemperatureProperty().get()));
+            reelFirstLayerBedTemperature.setText(String.format("%d",
+                                                               reel.firstLayerBedTemperatureProperty().get()));
+            reelBedTemperature.setText(String.format("%d",
+                                                     reel.bedTemperatureProperty().get()));
+            reelFirstLayerNozzleTemperature.setText(String.format("%d",
+                                                                  reel.firstLayerNozzleTemperatureProperty().get()));
+            reelNozzleTemperature.setText(String.format("%d",
+                                                        reel.nozzleTemperatureProperty().get()));
+            reelFilamentMultiplier.setText(String.format("%.2f",
+                                                         reel.filamentMultiplierProperty().get()));
+            reelFeedRateMultiplier.setText(String.format("%.2f",
+                                                         reel.feedRateMultiplierProperty().get()));
+            reelRemainingFilament.setText(String.format("%.0f",
+                                                        reel.remainingFilamentProperty().get()));
+            reelFilamentDiameter.setText(String.format("%.2f",
+                                                       reel.diameterProperty().get()));
+            reelFilamentName.setText(
+                reel.friendlyFilamentNameProperty().get());
+            MaterialType reelMaterialTypeVal = reel.materialProperty().get();
+            reelMaterialType.getSelectionModel().select(reelMaterialTypeVal);
+            reelDisplayColor.setValue(reel.displayColourProperty().get());
         }
     }
+    /*
+     * Initializes the controller class.
+     */
 
-    void formatReelEEPROM(ActionEvent event)
+    private void makeReadOnlyIfNecessary()
     {
-        try
-        {
-            connectedPrinter.transmitFormatReelEEPROM();
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Error formatting reel EEPROM");
-        }
-        readReelConfig(null);
-    }
+        Reel reel = selectedPrinter.reelsProperty().get(0);
 
-    private ChangeListener<Boolean> reelDataChangeListener = new ChangeListener<Boolean>()
-    {
-        @Override
-        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue,
-            Boolean newValue)
+        if (reel != null)
         {
-
-            if (connectedPrinter.getReelFilamentIsMutable().get())
+            if (reel.isUserFilament())
             {
                 reelContainer.disableProperty().set(false);
                 reelWriteConfig.disableProperty().set(false);
@@ -205,98 +215,101 @@ public class ReelDataPanelController implements Initializable
                 reelContainer.disableProperty().set(true);
                 reelWriteConfig.disableProperty().set(true);
             }
-
-            filamentID.setText(connectedPrinter.getReelFilamentID().get());
-            reelAmbientTemperature.setText(String.format("%d",
-                                                         connectedPrinter.getReelAmbientTemperature().get()));
-            reelFirstLayerBedTemperature.setText(String.format("%d",
-                                                               connectedPrinter.getReelFirstLayerBedTemperature().get()));
-            reelBedTemperature.setText(String.format("%d",
-                                                     connectedPrinter.getReelBedTemperature().get()));
-            reelFirstLayerNozzleTemperature.setText(String.format("%d",
-                                                                  connectedPrinter.getReelFirstLayerNozzleTemperature().get()));
-            reelNozzleTemperature.setText(String.format("%d",
-                                                        connectedPrinter.getReelNozzleTemperature().get()));
-            reelFilamentMultiplier.setText(String.format("%.2f",
-                                                         connectedPrinter.getReelFilamentMultiplier().get()));
-            reelFeedRateMultiplier.setText(String.format("%.2f",
-                                                         connectedPrinter.getReelFeedRateMultiplier().get()));
-            reelRemainingFilament.setText(String.format("%.0f",
-                                                        connectedPrinter.getReelRemainingFilament().get()));
-            reelFilamentDiameter.setText(String.format("%.2f",
-                                                       connectedPrinter.getReelFilamentDiameter().get()));
-            reelFilamentName.setText(connectedPrinter.getReelFriendlyName());
-            MaterialType reelMaterialTypeVal = connectedPrinter.getReelMaterialType();
-            reelMaterialType.getSelectionModel().select(reelMaterialTypeVal);
-            reelDisplayColor.setValue(connectedPrinter.getReelDisplayColour());
         }
-    };
-    /*
-     * Initializes the controller class.
-     */
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        setFieldsVisible(false);
+        
         for (MaterialType materialType : MaterialType.values())
         {
             reelMaterialType.getItems().add(materialType);
         }
 
-        statusScreenState = StatusScreenState.getInstance();
-
-        statusScreenState.currentlySelectedPrinterProperty().addListener(
-            new ChangeListener<Printer>()
+        Lookup.currentlySelectedPrinterProperty().addListener(
+            (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
             {
-
-                @Override
-                public void changed(ObservableValue<? extends Printer> observable, Printer oldValue,
-                    Printer newValue)
+                if (newValue != oldValue)
                 {
-                    if (connectedPrinter != null)
-                    {
-                        unbindFromPrinter(connectedPrinter);
-                    }
-
-                    if (newValue != null)
-                    {
-                        bindToPrinter(newValue);
-                    }
+                    setSelectedPrinter(newValue);
                 }
             });
-    }
 
-    private void unbindFromPrinter(Printer printer)
-    {
-        if (connectedPrinter != null)
+        Lookup.getPrinterListChangesNotifier().addListener(this);
+
+        if (Lookup.currentlySelectedPrinterProperty().get() != null)
         {
-            reelContainer.visibleProperty().unbind();
-
-            connectedPrinter.reelDataChangedProperty().removeListener(reelDataChangeListener);
-
-            reelWriteConfig.visibleProperty().unbind();
-            saveFilamentAs.visibleProperty().unbind();
-
-            connectedPrinter = null;
+            setSelectedPrinter(
+                Lookup.currentlySelectedPrinterProperty().get());
         }
     }
 
-    private void bindToPrinter(Printer printer)
+    private void setSelectedPrinter(Printer printer)
     {
-        if (connectedPrinter == null)
+        setFieldsVisible(false);
+        selectedPrinter = printer;
+
+        if (printer != null)
         {
-            connectedPrinter = printer;
-
-            reelContainer.visibleProperty().bind(
-                connectedPrinter.reelEEPROMStatusProperty().isEqualTo(EEPROMState.PROGRAMMED));
-
-            connectedPrinter.reelDataChangedProperty().addListener(reelDataChangeListener);
-
-            reelWriteConfig.visibleProperty().bind(
-                connectedPrinter.reelEEPROMStatusProperty().isNotEqualTo(EEPROMState.NOT_PRESENT));
-            saveFilamentAs.visibleProperty().bind(
-                connectedPrinter.reelEEPROMStatusProperty().isNotEqualTo(EEPROMState.NOT_PRESENT));
+            populateSelectedPrinter();
+            setFieldsVisible(true);
         }
     }
 
+    private void setFieldsVisible(boolean visible)
+    {
+        reelContainer.setVisible(visible);
+        reelWriteConfig.setVisible(visible);
+        saveFilamentAs.setVisible(visible);
+    }
+
+    @Override
+    public void whenPrinterAdded(Printer printer)
+    {
+    }
+
+    @Override
+    public void whenPrinterRemoved(Printer printer)
+    {
+    }
+
+    @Override
+    public void whenHeadAdded(Printer printer)
+    {
+    }
+
+    @Override
+    public void whenHeadRemoved(Printer printer, Head head)
+    {
+    }
+
+    @Override
+    public void whenReelAdded(Printer printer, int reelIndex)
+    {
+        if (printer == selectedPrinter)
+        {
+            populateSelectedPrinter();
+            setFieldsVisible(true);
+        }
+    }
+
+    @Override
+    public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
+    {
+        if (printer == selectedPrinter)
+        {
+            setFieldsVisible(false);
+        }
+    }
+
+    @Override
+    public void whenReelChanged(Printer printer, Reel reel)
+    {
+        if (printer == selectedPrinter)
+        {
+            populateSelectedPrinter();
+        }
+    }
 }
