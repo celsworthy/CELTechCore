@@ -123,15 +123,11 @@ public class CalibrationNozzleOpeningGUI
                 controller.buttonB.setText("Yes");
                 stepNo = 9;
                 break;
-//            case CONFIRM_MATERIAL_EXTRUDING:
-//                controller.buttonA.setText("Yes");
-//                controller.buttonB.setText("No");
-//                controller.calibrationStatus.setText(state.getStepTitle());
-//                controller.showDiagram("nozzleopening", "Nozzle Opening Illustrations_Step 9.fxml");
-//                stepNo = 9;
-//                break;
             case FINISHED:
-                controller.calibrationMenu.enableNonSelectedItems();
+                controller.calibrationMenu.reset();
+                break;
+            case DONE:    
+                controller.resetMenuAndGoToChoiceMode();
                 break;
             case FAILED:
                 controller.calibrationMenu.enableNonSelectedItems();

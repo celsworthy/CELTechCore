@@ -48,7 +48,7 @@ public class CalibrationXAndYActions
     {
 //        Thread.sleep(3000);
 //        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
-        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-1_roboxised"), true);
+        printer.executeGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-1_roboxised"));
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
         PrinterUtils.waitOnMacroFinished(printer, cancellable);
         // keep bed temp up to keep remaining part on the bed
@@ -61,7 +61,7 @@ public class CalibrationXAndYActions
         saveSettings();
 //        Thread.sleep(3000);
 //        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("tiny_robox"), true);
-        printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-2_roboxised"), true);
+        printer.executeGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-2_roboxised"));
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
         PrinterUtils.waitOnMacroFinished(printer, cancellable);
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
@@ -96,6 +96,7 @@ public class CalibrationXAndYActions
         }
         try
         {
+            steno.debug("Cancelling macro");
             printer.cancel(null);
         } catch (PrinterException ex)
         {

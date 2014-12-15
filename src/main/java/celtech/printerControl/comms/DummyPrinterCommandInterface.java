@@ -127,8 +127,9 @@ public class DummyPrinterCommandInterface extends CommandInterface
             }
             if (!errorTriggered && currentNozzleTemperature > 50)
             {
-                errorTriggered = true;
-                raiseError(FirmwareError.ERROR_NOZZLE_FLUSH_NEEDED);
+                // Uncomment the following two lines to test handling a printer error
+//                errorTriggered = true;
+//                raiseError(FirmwareError.ERROR_NOZZLE_FLUSH_NEEDED);
             }
             
             currentStatus.setAmbientTemperature((int) (Math.random() * 100));

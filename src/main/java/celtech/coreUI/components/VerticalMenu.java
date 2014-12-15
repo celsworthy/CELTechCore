@@ -9,6 +9,9 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -47,11 +50,45 @@ public class VerticalMenu extends VBox
 
     private static final PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     private Set<Text> allItems = new HashSet<>();
-    
+
     private boolean firstItemInitialised = false;
     private Text firstItem;
-    private Rectangle firstSquare;    
+    private Rectangle firstSquare;
     private Callable firstCallable;
+
+    class Item
+    {
+
+        Text item;
+        Rectangle square;
+
+        public Item(Text item, Rectangle square)
+        {
+            this.item = firstItem;
+            this.square = firstSquare;
+        }
+        
+        ChangeListener<Boolean> enabledListener = new ChangeListener<Boolean>()
+            {
+                public void changed(ObservableValue<? extends Boolean> observable,
+                    Boolean oldValue, Boolean newValue)
+                {
+                    whenEnabledChanged(newValue);
+                }
+            };
+
+        private void whenEnabledChanged(Boolean newValue)
+        {
+            item.disableProperty().set(!newValue);
+            square.disableProperty().set(!newValue);
+        }
+
+        private void setEnabledPredicate(BooleanProperty enabledPredicate)
+        {
+            enabledPredicate.addListener(enabledListener);
+            whenEnabledChanged(enabledPredicate.get());
+        }
+    }
 
     public VerticalMenu()
     {
@@ -77,7 +114,16 @@ public class VerticalMenu extends VBox
         verticalMenuTitle.setText(title);
     }
 
-    public void addItem(String itemName, Callable<Object> callback)
+    public void addItem(String itemName, Callable<Object> callback, BooleanProperty enabledPredicate)
+    {
+        Item item = addItem(itemName, callback);
+        if (enabledPredicate != null)
+        {
+            item.setEnabledPredicate(enabledPredicate);
+        }
+    }
+
+    public Item addItem(String itemName, Callable<Object> callback)
     {
         Text text = new Text(itemName);
         allItems.add(text);
@@ -88,16 +134,20 @@ public class VerticalMenu extends VBox
         square.setWidth(SQUARE_SIZE);
         addRow(verticalMenuGrid, square, text);
         setUpEventHandlersForItem(square, text, callback);
-        
-        if (! firstItemInitialised) {
+
+        if (!firstItemInitialised)
+        {
             firstItem = text;
             firstSquare = square;
             firstCallable = callback;
             firstItemInitialised = true;
         }
+
+        return new Item(text, square);
     }
-    
-    public void selectFirstItem() {
+
+    public void selectFirstItem()
+    {
         selectItem(firstItem, firstSquare, firstCallable);
     }
 
