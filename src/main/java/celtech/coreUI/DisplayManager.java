@@ -384,7 +384,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
         mainHolder.getChildren().add(sidePanelContainer);
 
-        slideoutAndProjectHolder.setPrefSize(-1, -1);
         slideoutAndProjectHolder.getStyleClass().add("master-details-pane");
         HBox.setHgrow(slideoutAndProjectHolder, Priority.ALWAYS);
 
@@ -506,7 +505,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
             BorderPane menuStripControls = (BorderPane) menuStripLoader.load();
             layoutStatusMenuStripController = menuStripLoader.getController();
             menuStripControls.prefWidthProperty().bind(slideoutAndProjectHolder.widthProperty());
-            VBox.setVgrow(menuStripControls, Priority.NEVER);
             slideoutAndProjectHolder.populateProjectDisplay(menuStripControls);
         } catch (IOException ex)
         {

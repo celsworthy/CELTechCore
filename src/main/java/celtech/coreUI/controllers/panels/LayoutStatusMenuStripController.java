@@ -46,6 +46,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -124,10 +125,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private GraphicButtonWithLabel printButton;
 
     @FXML
-    private HBox layoutButtonHBox;
+    private FlowPane layoutButtonHBox;
 
     @FXML
-    private HBox statusButtonHBox;
+    private FlowPane statusButtonHBox;
 
     @FXML
     private GraphicButtonWithLabel addModelButton;
@@ -639,6 +640,28 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             }
         });
 
+        // Prevent the status bar affecting layout when it is invisible
+        statusButtonHBox.visibleProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(
+                ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                statusButtonHBox.setManaged(newValue);
+            }
+        });
+
+        // Prevent the layout bar affecting layout when it is invisible
+        layoutButtonHBox.visibleProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(
+                ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                layoutButtonHBox.setManaged(newValue);
+            }
+        });
+
         statusButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.STATUS)
             .and(printerAvailable));
         layoutButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LAYOUT));
@@ -704,6 +727,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 }
             };
         viewManager.layoutSubmodeProperty().addListener(whenSubModeChanges);
+
     }
 
     @Override
