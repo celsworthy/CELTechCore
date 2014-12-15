@@ -67,6 +67,12 @@ public class CalibrationInsetPanelController implements Initializable,
         topBorderPane.setMaxHeight(topPane.getHeight());
     }
 
+    void resetMenu()
+    {
+        calibrationMenu.reset();
+        setCalibrationMode(CalibrationMode.CHOICE);
+    }
+
     protected static enum ProgressVisibility
     {
 

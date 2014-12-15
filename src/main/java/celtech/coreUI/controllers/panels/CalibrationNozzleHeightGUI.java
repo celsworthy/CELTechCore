@@ -67,7 +67,8 @@ public class CalibrationNozzleHeightGUI
         steno.info("GUI going to state " + state);
         controller.calibrationStatus.setText(state.getStepTitle());
         showAppropriateButtons(state);
-        if (state.getDiagramFXMLFileName().isPresent()) {
+        if (state.getDiagramFXMLFileName().isPresent())
+        {
             controller.showDiagram(state.getDiagramFXMLFileName().get());
         }
         int stepNo = 0;
@@ -102,15 +103,19 @@ public class CalibrationNozzleHeightGUI
             case REPLACE_PEI_BED:
                 stepNo = 7;
                 break;
+            case DONE:
+                controller.resetMenu();
+                break;
             case FINISHED:
-                controller.calibrationMenu.enableNonSelectedItems();
+                controller.calibrationMenu.reset();
                 break;
             case FAILED:
                 controller.calibrationMenu.enableNonSelectedItems();
                 break;
         }
-         if (stepNo != 0) {
-             controller.stepNumber.setText(String.format("Step %s of 7", stepNo));
+        if (stepNo != 0)
+        {
+            controller.stepNumber.setText(String.format("Step %s of 7", stepNo));
         }
     }
 

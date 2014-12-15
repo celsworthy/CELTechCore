@@ -6,6 +6,7 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.coreUI.components.VerticalMenu;
 import java.util.concurrent.Callable;
+import javafx.beans.property.SimpleBooleanProperty;
 
 /**
  *
@@ -28,7 +29,7 @@ public class CalibrationMenuConfiguration
                                 calibrationInsetPanelController.setCalibrationMode(
                                     CalibrationMode.NOZZLE_HEIGHT);
                                 return null;
-        });
+        }, new SimpleBooleanProperty(true));
     
         calibrationMenu.addItem(Lookup.i18n("calibrationMenu.nozzleAlignment"), (Callable) () ->
                             {
