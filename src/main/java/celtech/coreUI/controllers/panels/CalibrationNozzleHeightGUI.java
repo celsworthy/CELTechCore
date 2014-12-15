@@ -104,7 +104,7 @@ public class CalibrationNozzleHeightGUI
                 stepNo = 7;
                 break;
             case DONE:
-                controller.resetMenu();
+                controller.resetMenuAndGoToChoiceMode();
                 break;
             case FINISHED:
                 controller.calibrationMenu.reset();

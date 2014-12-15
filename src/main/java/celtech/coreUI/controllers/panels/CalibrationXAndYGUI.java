@@ -97,7 +97,7 @@ public class CalibrationXAndYGUI
                 stepNo = 4;
                 break;
             case DONE:
-                controller.resetMenu();
+                controller.resetMenuAndGoToChoiceMode();
                 break;
             case FINISHED:
                 controller.calibrationMenu.reset();

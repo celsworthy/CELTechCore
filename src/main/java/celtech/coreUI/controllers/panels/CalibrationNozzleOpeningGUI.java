@@ -127,7 +127,7 @@ public class CalibrationNozzleOpeningGUI
                 controller.calibrationMenu.reset();
                 break;
             case DONE:    
-                controller.resetMenu();
+                controller.resetMenuAndGoToChoiceMode();
                 break;
             case FAILED:
                 controller.calibrationMenu.enableNonSelectedItems();

@@ -112,7 +112,7 @@ public class CalibrationNozzleOpeningActions
         printer.goToTargetNozzleTemperature();
         if (PrinterUtils.waitOnBusy(printer, cancellable) == false)
         {
-            printer.getPrintEngine().printGCodeFile(GCodeMacros.getFilename("Home_all"), true);
+            printer.executeGCodeFile(GCodeMacros.getFilename("Home_all"));
             if (PrinterUtils.waitOnMacroFinished(printer, cancellable) == false)
             {
                 printer.goToTargetNozzleTemperature();

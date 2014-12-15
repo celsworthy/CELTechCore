@@ -67,7 +67,7 @@ public class CalibrationInsetPanelController implements Initializable,
         topBorderPane.setMaxHeight(topPane.getHeight());
     }
 
-    void resetMenu()
+    void resetMenuAndGoToChoiceMode()
     {
         calibrationMenu.reset();
         setCalibrationMode(CalibrationMode.CHOICE);
@@ -419,7 +419,7 @@ public class CalibrationInsetPanelController implements Initializable,
             String targetETCStr = targetETC + "s";
             String currentPrintPercentStr = ((int) (printPercent * 100)) + "%";
             calibrationProgressPrint.setCurrentValue(currentPrintPercentStr);
-            calibrationProgressPrint.setTargetValue(targetETCStr);
+//            calibrationProgressPrint.setTargetValue(targetETCStr);
             calibrationProgressPrint.setProgress(printPercent);
         }
     }
@@ -566,9 +566,11 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private void setupProgressBars()
     {
-        calibrationProgressPrint.setTargetLegend(Lookup.i18n("calibrationPanel.approxBuildTime"));
+//        calibrationProgressPrint.setTargetLegend(Lookup.i18n("calibrationPanel.approxBuildTime"));
+        calibrationProgressPrint.setTargetLegend("");
         calibrationProgressPrint.setProgressDescription(Lookup.i18n("calibrationPanel.printingCaps"));
-        calibrationProgressPrint.setTargetValue("0");
+//        calibrationProgressPrint.setTargetValue("0");
+        calibrationProgressPrint.setTargetValue("");
 
         calibrationProgressTemp.setTargetLegend(Lookup.i18n("calibrationPanel.targetTemperature"));
         calibrationProgressTemp.setProgressDescription(Lookup.i18n("calibrationPanel.heatingCaps"));
