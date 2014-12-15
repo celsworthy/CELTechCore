@@ -7,7 +7,6 @@ import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.printerControl.PrinterStatus;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
@@ -762,14 +761,14 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             @Override
             public PrinterErrorChoice call() throws Exception
             {
-                CommandLinksDialog.CommandLinksButtonType continue_ = null;
-                CommandLinksDialog.CommandLinksButtonType abort = null;
-                CommandLinksDialog.CommandLinksButtonType retry = null;
-                List<CommandLinksDialog.CommandLinksButtonType> choices = new ArrayList<>();
+                CommandLinksDialog2.CommandLinksButtonType continue_ = null;
+                CommandLinksDialog2.CommandLinksButtonType abort = null;
+                CommandLinksDialog2.CommandLinksButtonType retry = null;
+                List<CommandLinksDialog2.CommandLinksButtonType> choices = new ArrayList<>();
                 if (showContinueOption)
                 {
                     continue_
-                        = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.error.continue"),
+                        = new CommandLinksDialog2.CommandLinksButtonType(Lookup.i18n("dialogs.error.continue"),
                                                                         Lookup.i18n("dialogs.error.clearAndContinue"),
                                                                         true);
                     choices.add(continue_);
@@ -777,7 +776,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 if (showAbortOption)
                 {
                     abort
-                        = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.error.abort"),
+                        = new CommandLinksDialog2.CommandLinksButtonType(Lookup.i18n("dialogs.error.abort"),
                                                                         Lookup.i18n("dialogs.error.abortProcess"),
                                                                         true);
                     choices.add(abort);
@@ -785,7 +784,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 if (showRetryOption)
                 {
                     retry
-                        = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.error.retry"),
+                        = new CommandLinksDialog2.CommandLinksButtonType(Lookup.i18n("dialogs.error.retry"),
                                                                         Lookup.i18n("dialogs.error.retryProcess"),
                                                                         true);
                     choices.add(retry);
@@ -796,7 +795,9 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 //                                                                        true);
 //                choices.add(test);
 
-                CommandLinksDialog errorDialog = new CommandLinksDialog(choices);
+                CommandLinksDialog2 errorDialog = new CommandLinksDialog2(choices);
+//                errorDialog.getDialogPane().setStyle(
+//                    "-fx-wrap-text: true; -fx-font-size: 11px; -fx-font-family: 'Source Sans Pro Regular';");
                 errorDialog.setTitle(title);
                 errorDialog.setContentText(message);
 
