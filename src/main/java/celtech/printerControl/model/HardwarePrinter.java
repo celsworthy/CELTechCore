@@ -242,9 +242,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             .or(printerStatus.isEqualTo(PrinterStatus.PURGING_HEAD)));
         canRunMacro.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
             .or(printerStatus.isEqualTo(PrinterStatus.CANCELLING)
-            .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT)
-            .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT)
-            .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING))))));
+                .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT)
+                    .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT)
+                        .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING))))));
         canPause.bind(printerStatus.isEqualTo(PrinterStatus.PRINTING)
             .or(printerStatus.isEqualTo(PrinterStatus.RESUMING)));
         canCalibrateHead.bind(head.isNotNull()
@@ -1550,8 +1550,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
 
         //TODO modify for multiple reels
-        if (filament != null
+        if ((reels.size() > 0
+            && filament != null
             && reels.get(0).isSameAs(filament) == false)
+            || filament != null)
         {
             try
             {
