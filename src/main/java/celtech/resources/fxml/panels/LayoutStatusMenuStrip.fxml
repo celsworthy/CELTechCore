@@ -19,7 +19,7 @@
         </StackPane>
     </right>
     <left>
-        <HBox alignment="CENTER">
+        <HBox alignment="BOTTOM_CENTER">
             <children>
                 <StackPane>
                     <children>

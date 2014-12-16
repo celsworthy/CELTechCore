@@ -91,7 +91,22 @@ public class Lookup
             appLocale = Locale.getDefault();
         } else
         {
-            appLocale = Locale.forLanguageTag(languageTag);
+            String[] languageElements = languageTag.split("-");
+            switch (languageElements.length)
+            {
+                case 1:
+                    appLocale = new Locale(languageElements[0]);
+                    break;
+                case 2:
+                    appLocale = new Locale(languageElements[0], languageElements[1]);
+                    break;
+                case 3:
+                    appLocale = new Locale(languageElements[0], languageElements[1], languageElements[2]);
+                    break;
+                default:
+                    appLocale = Locale.getDefault();
+                    break;
+            }
         }
         ResourceBundle i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData",
                                                              appLocale, new UTF8Control());
@@ -103,7 +118,7 @@ public class Lookup
 
         slicerMappings = SlicerMappingsContainer.getSlicerMappings();
 
-        setPostProcessorOutputWriterFactory(LiveGCodeOutputWriter :: new);
+        setPostProcessorOutputWriterFactory(LiveGCodeOutputWriter::new);
     }
 
     public static void initialise()

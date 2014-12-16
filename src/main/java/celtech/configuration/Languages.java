@@ -50,18 +50,28 @@ public class Languages
         {
             Matcher matcher = matchPattern.matcher(resource);
             matcher.find();
-            String languageCountry = matcher.group(1);
-            Locale locale;
-            if (languageCountry.contains("_"))
+            String languageString = matcher.group(1);
+            Locale locale = null;
+
+            String[] languageStringParts = languageString.split("_");
+
+            switch (languageStringParts.length)
             {
-                String language = languageCountry.split("_")[0];
-                String country = languageCountry.split("_")[1];
-                locale = new Locale(language, country);
-            } else
-            {
-                locale = new Locale(languageCountry);
+                case 1:
+                    locale = new Locale(languageStringParts[0]);
+                    break;
+                case 2:
+                    locale = new Locale(languageStringParts[0], languageStringParts[1]);
+                    break;
+                case 3:
+                    locale = new Locale(languageStringParts[0], languageStringParts[1], languageStringParts[2]);
+                    break;
             }
-            locales.add(locale);
+
+            if (locale != null)
+            {
+                locales.add(locale);
+            }
         }
     }
 
@@ -79,8 +89,7 @@ public class Languages
     {
 
         /**
-         * for all elements of java.class.path get a Collection of resources Pattern pattern =
-         * Pattern.compile(".*"); gets all resources
+         * for all elements of java.class.path get a Collection of resources Pattern pattern = Pattern.compile(".*"); gets all resources
          *
          * @param pattern the pattern to match
          * @return the resources in the order they are found

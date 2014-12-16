@@ -36,7 +36,7 @@ public class PreferencesTopInsetPanelController implements Initializable
 {
 
     private static final int ROW_HEIGHT = 60;
-    
+
     private static final String SYSTEM_DEFAULT = "System Default";
 
     public interface Preference
@@ -249,8 +249,19 @@ public class PreferencesTopInsetPanelController implements Initializable
             {
                 if (control.getValue() instanceof Locale)
                 {
-                    userPreferences.setLanguageTag(((Locale) control.getValue()).toLanguageTag());
-                } else {
+                    Locale localeToUse = ((Locale) control.getValue());
+                    if (localeToUse.getVariant().length() > 0)
+                    {
+                        userPreferences.setLanguageTag(localeToUse.getLanguage() + "-" + localeToUse.getCountry() + "-" + localeToUse.getVariant());
+                    } else if (localeToUse.getCountry().length() > 0)
+                    {
+                        userPreferences.setLanguageTag(localeToUse.getLanguage() + "-" + localeToUse.getCountry());
+                    } else
+                    {
+                        userPreferences.setLanguageTag(localeToUse.getLanguage());
+                    }
+                } else
+                {
                     userPreferences.setLanguageTag("");
                 }
             }
@@ -260,11 +271,12 @@ public class PreferencesTopInsetPanelController implements Initializable
             {
                 Object preferredLocale;
                 String userPrefLanguageTag = userPreferences.getLanguageTag();
-                
+
                 if (userPrefLanguageTag == null || userPrefLanguageTag.equals(""))
                 {
                     preferredLocale = SYSTEM_DEFAULT;
-                } else {
+                } else
+                {
                     preferredLocale = Locale.forLanguageTag(userPrefLanguageTag);
                 }
                 control.setValue(preferredLocale);
@@ -298,9 +310,11 @@ public class PreferencesTopInsetPanelController implements Initializable
                                 super.updateItem(item, empty);
                                 if (item != null && !empty)
                                 {
-                                    if (item instanceof Locale) {
+                                    if (item instanceof Locale)
+                                    {
                                         setText(((Locale) item).getDisplayName());
-                                    } else {
+                                    } else
+                                    {
                                         setText((String) item);
                                     }
                                 }
