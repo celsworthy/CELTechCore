@@ -6,6 +6,8 @@
 
 <BorderPane styleClass="menubar" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.LayoutStatusMenuStripController">
     <right>
+<HBox alignment="BOTTOM_CENTER" fillHeight="false">
+<children>
         <StackPane>
             <children>
                 <StackPane>
@@ -17,9 +19,11 @@
                 <GraphicButtonWithLabel fx:id="printButton" fxmlFileName="printButton" labelText="%buttonText.make" onAction="#printPressed" tagOrientation="WEST" />
             </children>
         </StackPane>
+</children>
+</HBox>
     </right>
     <left>
-        <HBox alignment="BOTTOM_CENTER">
+        <HBox alignment="BOTTOM_CENTER" fillHeight="false">
             <children>
                 <StackPane>
                     <children>
