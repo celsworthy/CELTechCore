@@ -108,6 +108,7 @@ class PrinterErrorHandler
             }
         } catch (Exception ex)
         {
+            ex.printStackTrace();
             throw new CalibrationException(ex.getMessage());
         }
     }
