@@ -146,7 +146,6 @@ public class CalibrationInsetPanelController implements Initializable,
     private double printPercent;
     private Pane diagramNode;
     DiagramController diagramController;
-    private final Map<String, Node> nameToNodeCache = new HashMap<>();
     private final Map<Node, Bounds> nodeToBoundsCache = new HashMap<>();
 
     @FXML
@@ -310,7 +309,7 @@ public class CalibrationInsetPanelController implements Initializable,
     }
 
     /**
-     * If this diagramNode has already been loaded then return that, else create it and return it.
+     * Create and return the diagram node for the given fxml file.
      *
      * @param diagramName
      * @return
