@@ -13,8 +13,8 @@
         <children>
           <Pane>
              <children>
-               <Rectangle fill="#009EE3" height="1.501" width="50" x="40.119" y="390.544" />
-               <Rectangle fill="#FFFFFF" height="4" width="50" x="40.119" y="425.212" />
+               <Rectangle fill="#009EE3" height="1.501" layoutX="-10.0" width="50" x="40.119" y="390.544" />
+               <Rectangle fill="#FFFFFF" height="4" width="50" x="30.119" y="425.212" />
              </children>
           </Pane>
           <Pane>
@@ -59,7 +59,7 @@
                <SVGPath content="M197.409,279.95h1.494v5.924h0.054l4.916-5.924h1.692l-3.69,4.501l4.267,7.311h-1.675l-3.529-6.14     l-2.034,2.395v3.745h-1.494V279.95z" fill="#009EE3" />
              </children>
           </Pane>
-            <TextField fx:id="fillNozzleLbl" layoutX="110.0" layoutY="419.0" prefHeight="16.0" prefWidth="175.0" styleClass="smallLightGreyCalibrationText" text="%calibrationDiagram.fillNozzle08" />
+            <TextField fx:id="fillNozzleLbl" layoutX="125.0" layoutY="419.0" prefHeight="16.0" prefWidth="175.0" styleClass="smallLightGreyCalibrationText" text="%calibrationDiagram.fillNozzle08" />
         </children>
      </Pane>
      <Rectangle fill="#414141" height="210" width="400" x="465" y="0" />
@@ -83,7 +83,7 @@
           <SVGPath content="M733.547,379.144h85.937c7.119,0,12.891-5.771,12.891-12.891c0-7.118-5.771-12.891-12.891-12.891h-85.937   v2.578h85.937c5.686,0,10.312,4.625,10.312,10.313s-4.626,10.312-10.312,10.312h-85.937V379.144z" fill="#FFFFFF" />
             <TextField alignment="CENTER" layoutX="528.0" layoutY="331.0" prefHeight="16.0" prefWidth="26.0" style="-fx-background-color: transparent;" styleClass="smallCalibrationText" text="%calibrationDiagram.or" />
             <TextField alignment="CENTER" layoutX="771.0" layoutY="325.0" prefHeight="16.0" prefWidth="26.0" style="-fx-background-color: transparent;" styleClass="smallCalibrationText" text="%calibrationDiagram.or" />
-            <TextField fx:id="fineNozzleLbl" layoutX="110.0" layoutY="383.0" prefHeight="16.0" prefWidth="175.0" style="-fx-background-color: transparent;" styleClass="smallLightGreyCalibrationText" text="%calibrationDiagram.fineNozzle03" />
+            <TextField fx:id="fineNozzleLbl" layoutX="125.0" layoutY="383.0" prefHeight="16.0" prefWidth="175.0" style="-fx-background-color: transparent;" styleClass="smallLightGreyCalibrationText" text="%calibrationDiagram.fineNozzle03" />
         </children>
      </Pane>
      <Pane>

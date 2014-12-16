@@ -104,6 +104,10 @@
     -fx-fill-color: grey;
 }
 
+.text{
+    -fx-font-smoothing-type: gray;
+}
+
 .text-field {
     -fx-font-size: 10pt;
     -fx-background-radius: 0px;
