@@ -70,7 +70,7 @@ public class AckResponse extends RoboxRxPacket
 
         for (FirmwareError error : firmwareErrors)
         {
-            outputString.append(error.getLocalisedErrorText());
+            outputString.append(error.getLocalisedErrorTitle());
             outputString.append("\n");
         }
 
@@ -91,7 +91,7 @@ public class AckResponse extends RoboxRxPacket
         outputString.append("\n");
         for (FirmwareError error : firmwareErrors)
         {
-            outputString.append(error.getLocalisedErrorText());
+            outputString.append(error.getLocalisedErrorTitle());
             outputString.append("\n");
         }
         outputString.append(">>>>>>>>>>\n");

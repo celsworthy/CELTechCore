@@ -2905,9 +2905,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public void changeFeedRateMultiplierDuringPrint(double feedRate) throws PrinterException
     {
-        if (printerStatus.get() != PrinterStatus.PRINTING)
+        if (!canSetFilamentInfo.get())
         {
-            throw new PrinterException("Cannot change feed rate unless printing is in progress");
+            throw new PrinterException("Cannot change feed rate at this time");
         }
 
         // Get the current values

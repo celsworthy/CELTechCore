@@ -129,8 +129,8 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
         gCodeRoboxiser.slicerType = SlicerType.Cura;
 
         try
-        {
-            gCodeRoboxiser.insertTravelAndClosePath(2, 16, "nothing", false, null, 0.5);
+        {            
+            gCodeRoboxiser.insertTravelAndClosePath(2, 16, "nothing", false, false, null, 0.5);
 
             // Check that there is a travel event to the next part
             TravelEvent travelToWipe = (TravelEvent) gCodeRoboxiser.extrusionBuffer.get(17);
@@ -146,7 +146,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
             TravelEvent finalTravel = (TravelEvent) gCodeRoboxiser.extrusionBuffer.get(gCodeRoboxiser.extrusionBuffer.size() - 1);
             assertEquals(finalTravelToX, finalTravel.getX(), 1e-12);
             assertEquals(finalTravelToY, finalTravel.getY(), 1e-12);
-        } catch (PostProcessingError ex)
+        } catch (PostProcessingError | CannotCloseOnInnerPerimeterException ex)
         {
             fail("Got PostProcessingError");
         }
@@ -363,7 +363,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 
         try
         {
-            gCodeRoboxiser.insertTravelAndClosePath(2, 33, "nothing", false, null, 0.5);
+            gCodeRoboxiser.insertTravelAndClosePath(2, 33, "nothing", false, false, null, 0.5);
 
             // Check that there is a travel event to the next part
             TravelEvent travelToWipe = (TravelEvent) gCodeRoboxiser.extrusionBuffer.get(34);
@@ -379,7 +379,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
             TravelEvent finalTravel = (TravelEvent) gCodeRoboxiser.extrusionBuffer.get(gCodeRoboxiser.extrusionBuffer.size() - 1);
             assertEquals(finalTravelToX, finalTravel.getX(), 1e-12);
             assertEquals(finalTravelToY, finalTravel.getY(), 1e-12);
-        } catch (PostProcessingError ex)
+        } catch (PostProcessingError | CannotCloseOnInnerPerimeterException ex)
         {
             fail("Got PostProcessingError");
         }
@@ -511,7 +511,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 
         try
         {
-            gCodeRoboxiser.insertTravelAndClosePath(2, 16, "nothing", false, null, 0.5);
+            gCodeRoboxiser.insertTravelAndClosePath(2, 16, "nothing", false, false, null, 0.5);
 
             // Check that there is a travel event to the next part
             TravelEvent travelToWipe = (TravelEvent) gCodeRoboxiser.extrusionBuffer.get(17);
@@ -527,7 +527,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
             TravelEvent finalTravel = (TravelEvent) gCodeRoboxiser.extrusionBuffer.get(gCodeRoboxiser.extrusionBuffer.size() - 1);
             assertEquals(finalTravelToX, finalTravel.getX(), 1e-12);
             assertEquals(finalTravelToY, finalTravel.getY(), 1e-12);
-        } catch (PostProcessingError ex)
+        } catch (PostProcessingError | CannotCloseOnInnerPerimeterException ex)
         {
             fail("Got PostProcessingError");
         }
