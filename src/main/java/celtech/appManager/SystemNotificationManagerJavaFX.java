@@ -917,8 +917,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             Dialogs.create().title(
-                Lookup.i18n("dialogs.error.filamentSlipDuringPrintTitle"))
-                .message(Lookup.i18n("dialogs.error.filamentSlipDuringPrintMessage"))
+                Lookup.i18n(FirmwareError.ERROR_E_FILAMENT_SLIP.getLocalisedErrorTitle()))
+                .message(Lookup.i18n(FirmwareError.ERROR_E_FILAMENT_SLIP.getLocalisedErrorMessage()))
                 .masthead(null).showError();
         });
     }
