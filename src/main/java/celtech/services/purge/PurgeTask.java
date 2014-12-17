@@ -46,7 +46,8 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
             case HEATING:
 
                 //Set the bed to 90 degrees C
-                int desiredBedTemperature = 90;
+//                int desiredBedTemperature = 90;
+                int desiredBedTemperature = 40;
                 printerToUse.setBedTargetTemperature(desiredBedTemperature);
                 printerToUse.goToTargetBedTemperature();
                 boolean bedHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(printerToUse.getPrinterAncillarySystems().bedTemperatureProperty(), this, desiredBedTemperature, 5, 600);
@@ -67,13 +68,23 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
             case RUNNING_PURGE:
                 try
                 {
-                    printerToUse.executeMacro("Purge Material");
-                } catch (PrinterException ex)
+//                    printerToUse.executeMacro("Purge Material");
+                    Thread.sleep(5000);
+                } catch (InterruptedException ex)
                 {
                     steno.error("Error running purge");
                 }
                 PrinterUtils.waitOnMacroFinished(printerToUse, this);
-                break;
+                break;                
+//                try
+//                {
+//                    printerToUse.executeMacro("Purge Material");
+//                } catch (PrinterException ex)
+//                {
+//                    steno.error("Error running purge");
+//                }
+//                PrinterUtils.waitOnMacroFinished(printerToUse, this);
+//                break;
         }
 
         return new PurgeStepResult(desiredState, success);
