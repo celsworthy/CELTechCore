@@ -1849,7 +1849,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     }
 
     protected int insertTravelAndClosePath(final int firstExtrusionEventIndex,
-        final int finalExtrusionEventIndex, final String comment, boolean forceReverse,
+        final int finalExtrusionEventIndex, final String originalComment, boolean forceReverse,
         final boolean reverseAllowed,
         TravelEvent lastInwardsMoveEvent,
         double targetVolume) throws PostProcessingError, CannotCloseOnInnerPerimeterException
@@ -2033,15 +2033,18 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
                 if (closestEventIndex < 0)
                 {
-                    steno.warning(
-                        "Couldn't find closest point - defaulting to reverse. Got up to line "
-                        + extrusionBuffer.get(extrusionBuffer.size() - 1).getLinesSoFar());
 
                     if (reverseAllowed)
                     {
+                        steno.warning(
+                            "Couldn't find inner perimeter for close - defaulting to reverse. Got up to line "
+                            + extrusionBuffer.get(extrusionBuffer.size() - 1).getLinesSoFar());
                         finalExtrusionWasPerimeter = false;
                     } else
                     {
+                        steno.warning(
+                            "Couldn't find inner perimeter for close - fall back to normal close. Got up to line "
+                            + extrusionBuffer.get(extrusionBuffer.size() - 1).getLinesSoFar());
                         throw new CannotCloseOnInnerPerimeterException("Line: " + extrusionBuffer.
                             get(
                                 extrusionBuffer.size() - 1).getLinesSoFar());
@@ -2077,7 +2080,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             TravelEvent travelToClosestPoint = new TravelEvent();
             travelToClosestPoint.setX(closestEvent.getX());
             travelToClosestPoint.setY(closestEvent.getY());
-            travelToClosestPoint.setComment(comment);
+            travelToClosestPoint.setComment(originalComment);
             travelToClosestPoint.setFeedRate(wipeFeedRate_mmPerMin);
 
             extrusionBuffer.add(insertedEventIndex, travelToClosestPoint);
@@ -2189,7 +2192,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
                         eventToInsert.setX(firstSegment.getX());
                         eventToInsert.setY(firstSegment.getY());
-                        eventToInsert.setComment(wipeTypeComment + " end");
+                        eventToInsert.setComment(originalComment + ":" + wipeTypeComment + " end");
 
                         extrusionBuffer.add(insertedEventIndex, eventToInsert);
                         cumulativeExtrusionVolume += requiredSegmentVolume;
@@ -2201,7 +2204,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                         eventToInsert.setD(eventToCopy.getD());
                         eventToInsert.setX(eventToCopy.getX());
                         eventToInsert.setY(eventToCopy.getY());
-                        eventToInsert.setComment(wipeTypeComment
+                        eventToInsert.setComment(originalComment + ":" + wipeTypeComment
                             + ((startMessageOutput == false) ? " start" : " in progress"));
                         startMessageOutput = true;
                         eventToInsert.setFeedRate(wipeFeedRate_mmPerMin);
