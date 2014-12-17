@@ -104,9 +104,9 @@
     -fx-fill-color: grey;
 }
 
-.text{
+/*.text{
     -fx-font-smoothing-type: gray;
-}
+}*/
 
 .text-field {
     -fx-font-size: 10pt;
