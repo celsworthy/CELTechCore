@@ -68,9 +68,14 @@ public enum FirmwareError
         this.bytePosition = bytePosition;
     }
     
-    public String getLocalisedErrorText()
+    public String getLocalisedErrorTitle()
     {
         return Lookup.i18n(errorText);
+    }
+    
+    public String getLocalisedErrorMessage()
+    {
+        return Lookup.i18n(errorText + ".message");
     }
     
     public int getBytePosition()

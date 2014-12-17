@@ -154,15 +154,23 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                         clearOnly,
                         abortJob
                     );
-                    printerErrorDialog.setTitle(Lookup.i18n("dialogs.error.errorEncountered"));
-                    printerErrorDialog.setContentText(error.getLocalisedErrorText());
+                    printerErrorDialog.setTitle(Lookup.i18n(error.getLocalisedErrorTitle()));
+                    String errorMessage = error.getLocalisedErrorMessage();
+                    if (errorMessage != null)
+                    {
+                        printerErrorDialog.setContentText(error.getLocalisedErrorMessage());
+                    }
                     errorHandlingResponse = printerErrorDialog.showAndWait();
                 } else
                 {
                     CommandLinksDialog printerErrorDialog = new CommandLinksDialog(clearOnlyDefault,
                                                                                    abortJob);
-                    printerErrorDialog.setTitle(Lookup.i18n("dialogs.error.errorEncountered"));
-                    printerErrorDialog.setContentText(error.getLocalisedErrorText());
+                    printerErrorDialog.setTitle(Lookup.i18n(error.getLocalisedErrorTitle()));
+                    String errorMessage = error.getLocalisedErrorMessage();
+                    if (errorMessage != null)
+                    {
+                        printerErrorDialog.setContentText(error.getLocalisedErrorMessage());
+                    }
                     errorHandlingResponse = printerErrorDialog.showAndWait();
                 }
 
@@ -570,7 +578,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     + applicationName
                     + Lookup.i18n("dialogs.updateApplicationMessagePart2"));
 
-                Optional<ButtonType> upgradeApplicationResponse = upgradeApplicationDialog.showAndWait();
+                Optional<ButtonType> upgradeApplicationResponse = upgradeApplicationDialog.
+                    showAndWait();
 
                 return upgradeApplicationResponse.get() == upgradeApplication.getButtonType();
             }
@@ -768,25 +777,31 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 if (showContinueOption)
                 {
                     continue_
-                        = new CommandLinksDialog2.CommandLinksButtonType(Lookup.i18n("dialogs.error.continue"),
-                                                                        Lookup.i18n("dialogs.error.clearAndContinue"),
-                                                                        true);
+                        = new CommandLinksDialog2.CommandLinksButtonType(Lookup.i18n(
+                                "dialogs.error.continue"),
+                                                                         Lookup.i18n(
+                                                                             "dialogs.error.clearAndContinue"),
+                                                                         true);
                     choices.add(continue_);
                 }
                 if (showAbortOption)
                 {
                     abort
-                        = new CommandLinksDialog2.CommandLinksButtonType(Lookup.i18n("dialogs.error.abort"),
-                                                                        Lookup.i18n("dialogs.error.abortProcess"),
-                                                                        true);
+                        = new CommandLinksDialog2.CommandLinksButtonType(Lookup.i18n(
+                                "dialogs.error.abort"),
+                                                                         Lookup.i18n(
+                                                                             "dialogs.error.abortProcess"),
+                                                                         true);
                     choices.add(abort);
                 }
                 if (showRetryOption)
                 {
                     retry
-                        = new CommandLinksDialog2.CommandLinksButtonType(Lookup.i18n("dialogs.error.retry"),
-                                                                        Lookup.i18n("dialogs.error.retryProcess"),
-                                                                        true);
+                        = new CommandLinksDialog2.CommandLinksButtonType(Lookup.i18n(
+                                "dialogs.error.retry"),
+                                                                         Lookup.i18n(
+                                                                             "dialogs.error.retryProcess"),
+                                                                         true);
                     choices.add(retry);
                 }
 //                
@@ -895,8 +910,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 .masthead(null).showInformation();
         });
     }
-    
-        @Override
+
+    @Override
     public void showFilamentSlipDuringPrintDialog()
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
