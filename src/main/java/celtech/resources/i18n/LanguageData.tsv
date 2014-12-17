@@ -258,29 +258,57 @@ eeprom.headReadError	Error reading from head EEPROM	读取打印头EEPROM时发�
 eeprom.headWriteError	Error writing to head EEPROM	写入打印头EEPROM时发生错误	未能寫入打印頭數據線路板		Erreur d’écriture de la tête EEPROM		헤드 EEPROM에 쓰기 오류	Fehler beim Schreiben auf den Druckkopf-EEPROM		Boquilla para rellenado			Skrivfel skrivhuvudets EEPROM				Ошибка записи на головку EEPROM								Fehler beim Schreiben auf den Druckkopf-EEPROM		Chyba při zápisu do paměti EEPROM hlavy	Kirjoitusvirhe tulostuspään EEPROM	EEPROMへの書き込みに失敗しました
 eeprom.reelReadError	Error reading from reel EEPROM	读取线圈EEPROM时发生错误	未能讀取膠線耗材數據線路板		Erreur de lecture de la bobine EEPROM		릴 EEPROM에서 읽기 오류	Fehler beim Lesen vom Spulen-EEPROM		Patrón de relleno			Läsfel rullens EEPROM				Ошибка чтения с катушки EEPROM								Fehler beim Lesen vom Spulen-EEPROM		Chyba při čtení z paměti EEPROM cívky	Lukuvirhe kelan EEPROM	リールEEPROMからの読み込みに失敗しました
 eeprom.reelWriteError	Error writing to reel EEPROM	写入线圈EEPROM时发生错误	未能寫入膠線耗材數據線路板		Erreur d’écriture de la bobine EEPROM		릴 EEPROM에 쓰기 오류	Fehler beim Schreiben auf den Spulen-EEPROM		Primera capa			Skrivfel rullens EEPROM				Ошибка записи на катушку EEPROM								Fehler beim Schreiben auf den Spulen-EEPROM		Chyba při zápisu do paměti EEPROM cívky	Kirjoitusvirhe kelan EEPROM	リールEEPROMへの書き込みに失敗しました
+*T01	Disconnect your machine from USB and AC power. Check your USB cable is connected correctly.																												
+*T02	If this error persists then revert to older version of firmware / AutoMaker.																												
+*T03	Disconnect your machine from USB and AC power. Check that your SD card is present and seated correctly.																												
+*T04	Robox has detected the amount of material passing through the extruder  is different to the expected. If your print seems normal then you can  clear this message and continue, or abort the current process and take  further actions. Please read the user manual for further steps to  resolve this.																												
+*T05	Eject the filament then disconnect your Robox from USB and AC power.  Remove and reseat the printer head. If this error persists then consult  the user manual.																												
 error.ERROR_SD_CARD	Firmware: SD card error				Micrologiciel: erreur de la carte SD																								
+error.ERROR_SD_CARD.message	*T03 [OK]																												
 error.ERROR_CHUNK_SEQUENCE	Firmware: Chunk sequence error				Micrologiciel: erreur de équence chunk																								
+error.ERROR_CHUNK_SEQUENCE.message	*T01 [OK] 																												
 error.ERROR_FILE_TOO_LARGE	Firmware: File too large error				Micrologiciel: errereur fichié trop volumineux																								
+error.ERROR_FILE_TOO_LARGE.message	*T01 [OK] 																												
 error.ERROR_GCODE_LINE_TOO_LONG	Firmware: GCode line too long error				Micrologiciel: ereur ligne du Gcode trop longue																								
+error.ERROR_GCODE_LINE_TOO_LONG.message	*T01 [OK] 																												
 error.ERROR_USB_RX	Firmware: USB Rx error				Micrologiciel: erreur USB Rx 																								
+error.ERROR_USB_RX.message	*T01 [OK]																												
 error.ERROR_USB_TX	Firmware: USB Tx error				Micrologiciel: erreur USB Tx																								
+error.ERROR_USB_TX.message	*T01 [OK] 																												
 error.ERROR_BAD_COMMAND	Firmware: Bad command error				Micrologiciel: erreur de commande incorrecte																								
+error.ERROR_BAD_COMMAND.message	*T01 [OK] 																												
 error.ERROR_HEAD_EEPROM	Firmware: Head EEPROM error				Micrologiciel: erreur de la tête EEPROM																								
+error.ERROR_HEAD_EEPROM.message	Eject the filament then disconnect your Robox from USB and AC power. Remove and reseat the printer head.																												
 error.ERROR_BAD_FIRMWARE_FILE	Firmware: Bad firmware file				Micrologiciel: fichier micrologiciel erronée																								
+error.ERROR_BAD_FIRMWARE_FILE.message	*T02																												
 error.ERROR_FLASH_CHECKSUM	Firmware: Checksum error				Micrologiciel: erreur de la somme de Contrôle (checksum)																								
+error.ERROR_FLASH_CHECKSUM.message	*T02																												
 error.ERROR_GCODE_BUFFER_OVERRUN	Firmware: GCode buffer overrun error				Micrologiciel: erreur Gcode dépassement de mémoire tampon 																								
+error.ERROR_GCODE_BUFFER_OVERRUN.message	*T01																												
 error.ERROR_FILE_READ_CLOBBERED	Firmware: File read clobbered error				Micrologiciel: erreur mise à mal de la lecture fichier																								
+error.ERROR_FILE_READ_CLOBBERED.message	*T03																												
 error.ERROR_MAX_GANTRY_ADJUSTMENT	Firmware: Max gantry adjustment error				Micrologiciel: erreur maximale de réglage du portique																								
-error.ERROR_REEL0_EEPROM	Firmware: Reel 0 EEPROM error				Micrologiciel: erreur de la bobine 0 EEPROM																								
-error.ERROR_E_FILAMENT_SLIP	Extruder 0 Filament slip detected				Extrudeur 0 glissement du filament détecté																								
-error.ERROR_D_FILAMENT_SLIP	Extruder 1 Filament slip detected				Extrudeur 1  glissement du filament détecté																								
+error.ERROR_MAX_GANTRY_ADJUSTMENT.message	Visually inspect the gantry. If it is significantly off from horizontal then manually turn right threaded bar in order to level the gantry. Rerun the level gantry macro.																												
+error.ERROR_REEL0_EEPROM	Firmware: Reel 1 EEPROM error				Micrologiciel: erreur de la bobine 0 EEPROM																								
+error.ERROR_REEL0_EEPROM.message	Try reseating the SmartReel in position 1 by taking it off and on again.																												
+error.ERROR_E_FILAMENT_SLIP	Extruder 1 Filament slip detected				Extrudeur 0 glissement du filament détecté																								
+error.ERROR_E_FILAMENT_SLIP.message	*T04 [Continue, Abort]																												
+error.ERROR_D_FILAMENT_SLIP	Extruder 2 Filament slip detected				Extrudeur 1  glissement du filament détecté																								
+error.ERROR_D_FILAMENT_SLIP.message	*T04																												
 error.ERROR_NOZZLE_FLUSH_NEEDED	Purge required				Purge requise																								
+error.ERROR_NOZZLE_FLUSH_NEEDED.message	Robox has detected that the material you are about to print with is different from the material remaining in the head. We recommend a purge to flush out the previous material.																												
 error.ERROR_Z_TOP_SWITCH	Z protection switch activated				Interrupteur de protection Z activé																								
+error.ERROR_Z_TOP_SWITCH.message	Robox has unexpectedly seen that it is close to the top of its travel. If you are happy to continue then this error can be cleared or you can abort the print.																												
 error.ERROR_B_STUCK	Nozzle control error				Erreur de commande du jet																								
-error.ERROR_REEL1_EEPROM	Firmware: Reel 1 EEPROM error				Micrologiciel: erreur bobine 1 EEPROM																								
+error.ERROR_B_STUCK.message	Robox has been unable to perform the nozzle selection command. Eject the filament then disconnect your Robox from USB and AC power. Remove and reseat the printer head.																												
+error.ERROR_REEL1_EEPROM	Firmware: Reel 2 EEPROM error				Micrologiciel: erreur bobine 1 EEPROM																								
+error.ERROR_REEL1_EEPROM.message	Try reseating the SmartReel in position 2 by taking it off and on again.																												
 error.ERROR_HEAD_POWER_EEPROM	Head power off - EEPROM error				Tête hors tension - erreur EEPROM																								
+error.ERROR_HEAD_POWER_EEPROM.message	*T05																												
 error.ERROR_HEAD_POWER_OVERTEMP	Head power off - overtemperature				Tête hors tension - surchauffe																								
-error.ERROR_UNKNOWN	ERROR_UNKNOWN				ERREUR INCONNUE																								
+error.ERROR_HEAD_POWER_OVERTEMP.message	The temperature of the nozzle has gone beyond the intended temperature. The power to the head has been switched off to protect the hardware. *T05																												
+error.ERROR_UNKNOWN	Unexpected error.				ERREUR INCONNUE																								
+error.ERROR_UNKNOWN.message	An unexpected error has occured. *T01																												
 errors.filamentSlipE	Extruder 1 slip	推料器1 打滑	推料器1跳步		Glissement de l’extruder 1		압출기 1 	Extruder 1 rutscht		Relleno			Extruder 1 glid				Скольжение 1 экструдера								Extruder 1 rutscht		Prokluz kolečka pohonu 1	Suulakepuristin 1 liuku	Extruder1 スリップ
 errors.filamentSlipD	Extruder 2 slip	推料器2 打滑	推料器2跳步		Glissement de l’extruder 2		압출기 2	Extruder 2 rutscht		Relleno cada			Extruder 2 glid				Скольжение 2 экструдера								Extruder 2 rutscht		Prokluz kolečka pohonu 2	Suulakepuristin 2 liuku	Extruder2 スリップ
 extrusion.autoUnretract	Automatic unretract	自动停止倒卷	自動不回捲	Non ritiro automatico	Contre-retrait automatique		자동 언리트랙트	Automatik nicht zurückgenommen	Automatischer Auszug	Altura de capa	Descarga automática	Descarga automática	Automatisk anti-indragning			Automatisch ontkoppelen	Автоматическое удлинение	自動的に収納しない							Automatik nicht zurückgenommen		Automatický pohyb	Automaattinen sisäänvedon esto	自動的に収納しない

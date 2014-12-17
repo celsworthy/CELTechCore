@@ -804,15 +804,10 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                                                          true);
                     choices.add(retry);
                 }
-//                
-//                CommandLinksDialog.CommandLinksButtonType test = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.error.retry"),
-//                                                                        Lookup.i18n("dialogs.error.retryProcess"),
-//                                                                        true);
-//                choices.add(test);
 
                 CommandLinksDialog2 errorDialog = new CommandLinksDialog2(choices);
-//                errorDialog.getDialogPane().setStyle(
-//                    "-fx-wrap-text: true; -fx-font-size: 11px; -fx-font-family: 'Source Sans Pro Regular';");
+                errorDialog.getDialogPane().setStyle(
+                    "-fx-wrap-text: true; -fx-font-size: 13px; -fx-font-family: 'Source Sans Pro Regular';");
                 errorDialog.setTitle(title);
                 errorDialog.setContentText(message);
 
