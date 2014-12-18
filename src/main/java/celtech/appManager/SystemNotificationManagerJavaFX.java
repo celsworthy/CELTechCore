@@ -44,6 +44,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     private static CommandLinksDialog.CommandLinksButtonType clearOnlyDefault = null;
     private static CommandLinksDialog.CommandLinksButtonType clearAndContinueDefault = null;
     private static CommandLinksDialog.CommandLinksButtonType abortJob = null;
+    private static CommandLinksDialog.CommandLinksButtonType okAbortJob = null;
 
     /*
      * Calibration dialog
@@ -136,6 +137,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 "dialogs.error.clearAndContinue"), true);
             abortJob = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n(
                 "dialogs.error.abortJob"), false);
+            okAbortJob = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n(
+                "dialogs.error.okAbortJob"), false);
         }
 
         Lookup.getTaskExecutor().runOnGUIThread(() ->
@@ -154,7 +157,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                         clearOnly,
                         abortJob
                     );
-                    printerErrorDialog.setTitle(Lookup.i18n(error.getLocalisedErrorTitle()));
+                    printerErrorDialog.setTitle(error.getLocalisedErrorTitle());
                     String errorMessage = error.getLocalisedErrorMessage();
                     if (errorMessage != null)
                     {
@@ -165,7 +168,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 {
                     CommandLinksDialog printerErrorDialog = new CommandLinksDialog(clearOnlyDefault,
                                                                                    abortJob);
-                    printerErrorDialog.setTitle(Lookup.i18n(error.getLocalisedErrorTitle()));
+                    printerErrorDialog.setTitle(error.getLocalisedErrorTitle());
                     String errorMessage = error.getLocalisedErrorMessage();
                     if (errorMessage != null)
                     {
@@ -174,7 +177,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     errorHandlingResponse = printerErrorDialog.showAndWait();
                 }
 
-                if (errorHandlingResponse.get() == abortJob.getButtonType())
+                if (errorHandlingResponse.get() == abortJob.getButtonType() || 
+                    errorHandlingResponse.get() == okAbortJob.getButtonType())
                 {
                     try
                     {
@@ -804,15 +808,10 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                                                          true);
                     choices.add(retry);
                 }
-//                
-//                CommandLinksDialog.CommandLinksButtonType test = new CommandLinksDialog.CommandLinksButtonType(Lookup.i18n("dialogs.error.retry"),
-//                                                                        Lookup.i18n("dialogs.error.retryProcess"),
-//                                                                        true);
-//                choices.add(test);
 
                 CommandLinksDialog2 errorDialog = new CommandLinksDialog2(choices);
-//                errorDialog.getDialogPane().setStyle(
-//                    "-fx-wrap-text: true; -fx-font-size: 11px; -fx-font-family: 'Source Sans Pro Regular';");
+                errorDialog.getDialogPane().setStyle(
+                    "-fx-wrap-text: true; -fx-font-size: 13px; -fx-font-family: 'Source Sans Pro Regular';");
                 errorDialog.setTitle(title);
                 errorDialog.setContentText(message);
 

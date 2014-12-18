@@ -68,18 +68,13 @@ public class PurgeHelper
         }
         if (state != PurgeState.IDLE)
         {
-            try
-            {
-                printerToUse.gotoNozzlePosition(0);
-                printerToUse.switchBedHeaterOff();
-                //TODO modify for multiple nozzle heater support
-                printerToUse.switchNozzleHeaterOff(0);
-                printerToUse.switchOffHeadLEDs();
-            } catch (PrinterException ex)
-            {
-                steno.error("Error resetting printer");
-            }
+            resetPrinter();
         }
+    }
+
+    public void repeatPurgeAction()
+    {
+        setState(PurgeState.INITIALISING);
     }
 
     public PurgeState getState()
@@ -131,10 +126,14 @@ public class PurgeHelper
                         reelNozzleTemperature = (float) printerToUse.reelsProperty().get(0).nozzleTemperatureProperty().get();
                     }
 
-                    float temperatureDifference = reelNozzleTemperature - savedHeadData.getLastFilamentTemperature();
+                    float temperatureDifference = reelNozzleTemperature
+                        - savedHeadData.getLastFilamentTemperature();
                     lastDisplayTemperature = (int) savedHeadData.getLastFilamentTemperature();
                     currentDisplayTemperature = (int) reelNozzleTemperature;
-                    purgeTemperature = (int) Math.min(savedHeadData.getMaximumTemperature(), Math.max(180.0, savedHeadData.getLastFilamentTemperature() + (temperatureDifference / 2)));
+                    purgeTemperature = (int) Math.min(savedHeadData.getMaximumTemperature(),
+                                                      Math.max(180.0,
+                                                               savedHeadData.getLastFilamentTemperature()
+                                                               + (temperatureDifference / 2)));
                     setState(state.getNextState());
                 } catch (RoboxCommsException ex)
                 {
@@ -172,40 +171,47 @@ public class PurgeHelper
             case FINISHED:
                 try
                 {
-                    AckResponse ackResponse = printerToUse.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                                                                   savedHeadData.getUniqueID(),
-                                                                                   savedHeadData.getMaximumTemperature(),
-                                                                                   savedHeadData.getBeta(),
-                                                                                   savedHeadData.getTCal(),
-                                                                                   savedHeadData.getNozzle1XOffset(),
-                                                                                   savedHeadData.getNozzle1YOffset(),
-                                                                                   savedHeadData.getNozzle1ZOffset(),
-                                                                                   savedHeadData.getNozzle1BOffset(),
-                                                                                   savedHeadData.getNozzle2XOffset(),
-                                                                                   savedHeadData.getNozzle2YOffset(),
-                                                                                   savedHeadData.getNozzle2ZOffset(),
-                                                                                   savedHeadData.getNozzle2BOffset(),
-                                                                                   reelNozzleTemperature,
-                                                                                   savedHeadData.getHeadHours());
-                   printerToUse.readHeadEEPROM();
+                    AckResponse ackResponse = printerToUse.transmitWriteHeadEEPROM(
+                        savedHeadData.getTypeCode(),
+                        savedHeadData.getUniqueID(),
+                        savedHeadData.getMaximumTemperature(),
+                        savedHeadData.getBeta(),
+                        savedHeadData.getTCal(),
+                        savedHeadData.getNozzle1XOffset(),
+                        savedHeadData.getNozzle1YOffset(),
+                        savedHeadData.getNozzle1ZOffset(),
+                        savedHeadData.getNozzle1BOffset(),
+                        savedHeadData.getNozzle2XOffset(),
+                        savedHeadData.getNozzle2YOffset(),
+                        savedHeadData.getNozzle2ZOffset(),
+                        savedHeadData.getNozzle2BOffset(),
+                        reelNozzleTemperature,
+                        savedHeadData.getHeadHours());
+                    printerToUse.readHeadEEPROM();
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error in purge - mode=" + state.name());
                 }
+                resetPrinter();
                 break;
             case FAILED:
-                try
-                {
-                    printerToUse.gotoNozzlePosition(0);
-                    printerToUse.switchBedHeaterOff();
-                    //TODO modify for multiple nozzle heater support
-                    printerToUse.switchNozzleHeaterOff(0);
-                    printerToUse.switchOffHeadLEDs();
-                } catch (PrinterException ex)
-                {
-                    steno.error("Error resetting printer");
-                }
+                resetPrinter();
                 break;
+        }
+    }
+
+    private void resetPrinter()
+    {
+        try
+        {
+            printerToUse.gotoNozzlePosition(0);
+            printerToUse.switchBedHeaterOff();
+            //TODO modify for multiple nozzle heater support
+            printerToUse.switchNozzleHeaterOff(0);
+            printerToUse.switchOffHeadLEDs();
+        } catch (PrinterException ex)
+        {
+            steno.error("Error resetting printer");
         }
     }
 
