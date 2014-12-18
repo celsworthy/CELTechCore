@@ -59,7 +59,12 @@ public enum RxPacketTypeEnum
     /**
      *
      */
-    LIST_FILES_RESPONSE((byte)0xE0, 3, true, 2);
+    LIST_FILES_RESPONSE((byte)0xE0, 3, true, 2),
+    
+    /**
+     *
+     */
+    SEND_FILE((byte)0xE9, 25, false, 0);
     
     private final byte commandByte;
     private final int packetSize;

@@ -156,7 +156,12 @@ public enum TxPacketTypeEnum
     /**
      *
      */
-    LIST_FILES((byte) 0x96, 1, false, RxPacketTypeEnum.LIST_FILES_RESPONSE);
+    LIST_FILES((byte) 0x96, 1, false, RxPacketTypeEnum.LIST_FILES_RESPONSE),
+    
+    /**
+     *
+     */
+    READ_SEND_FILE_REPORT((byte) 0x93, 1, false, RxPacketTypeEnum.SEND_FILE);
 
     private final byte commandByte;
     private final int packetSize;
