@@ -117,7 +117,7 @@ public class MyMiniFactoryLoaderController implements Initializable
         WebView webView = new WebView();
         VBox.setVgrow(webView, Priority.ALWAYS);
 
-        DisplayManager.getInstance().startSpinning(webContentContainer);
+//        DisplayManager.getInstance().startSpinning(webContentContainer);
 
         webEngine = webView.getEngine();
 
