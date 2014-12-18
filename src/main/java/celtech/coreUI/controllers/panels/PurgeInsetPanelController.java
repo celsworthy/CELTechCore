@@ -1,12 +1,16 @@
 package celtech.coreUI.controllers.panels;
 
+import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.DisplayManager;
+import celtech.coreUI.components.LargeProgress;
 import celtech.coreUI.components.RestrictedNumberField;
+import celtech.coreUI.components.buttons.GraphicButton;
+import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
@@ -35,11 +39,10 @@ import org.controlsfx.dialog.Dialogs;
 public class PurgeInsetPanelController implements Initializable, PurgeStateListener
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(PurgeInsetPanelController.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        PurgeInsetPanelController.class.getName());
 
     private final PurgeHelper purgeHelper = new PurgeHelper();
-
-    private ResourceBundle i18nBundle = null;
 
     private Project project = null;
     private Filament filament = null;
@@ -47,8 +50,9 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
     private String macroToExecuteAfterPurge = null;
+    private double printPercent;
 
-    private ChangeListener<Number> purgeTempEntryListener = new ChangeListener<Number>()
+    private final ChangeListener<Number> purgeTempEntryListener = new ChangeListener<Number>()
     {
         @Override
         public void changed(
@@ -62,7 +66,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     private VBox container;
 
     @FXML
-    private Button startPurgeButton;
+    private GraphicButtonWithLabel startPurgeButton;
 
     @FXML
     private Text purgeStatus;
@@ -77,16 +81,22 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     private GridPane purgeDetailsGrid;
 
     @FXML
-    private Button cancelPurgeButton;
+    private GraphicButtonWithLabel cancelPurgeButton;
 
     @FXML
-    private Button proceedButton;
+    private GraphicButtonWithLabel proceedButton;
 
     @FXML
-    private Button okButton;
+    private GraphicButtonWithLabel okButton;
+
+    @FXML
+    private GraphicButtonWithLabel repeatButton;
 
     @FXML
     private Text lastMaterialTemperature;
+
+    @FXML
+    protected LargeProgress purgeProgressBar;
 
     @FXML
     void start(ActionEvent event)
@@ -107,6 +117,12 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     }
 
     @FXML
+    void repeat(ActionEvent event)
+    {
+        repeatPurgeAction();
+    }
+
+    @FXML
     void okPressed(ActionEvent event)
     {
         closeWindow(null);
@@ -123,7 +139,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         if (project != null && purgeCompletedOK)
         {
             final Project projectCopy = project;
-            
+
             Platform.runLater(new Runnable()
             {
                 @Override
@@ -133,7 +149,8 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                         .owner(null)
                         .title(DisplayManager.getLanguageBundle().getString("dialogs.clearBedTitle"))
                         .masthead(null)
-                        .message(DisplayManager.getLanguageBundle().getString("dialogs.clearBedInstruction"))
+                        .message(DisplayManager.getLanguageBundle().getString(
+                                "dialogs.clearBedInstruction"))
                         .showWarning();
                     printerToUse.printProject(projectCopy, filament, printQuality, settings);
                 }
@@ -152,7 +169,8 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                         .owner(null)
                         .title(DisplayManager.getLanguageBundle().getString("dialogs.clearBedTitle"))
                         .masthead(null)
-                        .message(DisplayManager.getLanguageBundle().getString("dialogs.clearBedInstruction"))
+                        .message(DisplayManager.getLanguageBundle().getString(
+                                "dialogs.clearBedInstruction"))
                         .showWarning();
                     try
                     {
@@ -177,12 +195,22 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         closeWindow(null);
     }
 
+    public void repeatPurgeAction()
+    {
+        purgeHelper.repeatPurgeAction();
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        i18nBundle = DisplayManager.getLanguageBundle();
         purgeHelper.addStateListener(this);
         purgeHelper.setState(PurgeState.IDLE);
+        
+        purgeProgressBar.setTargetLegend("");
+        purgeProgressBar.setProgressDescription(Lookup.i18n("calibrationPanel.printingCaps"));
+        purgeProgressBar.setTargetValue("");
+        
+        startPurgeButton.installTag("dialogs.cantPurgeDoorIsOpenMessage");
     }
 
     @Override
@@ -194,7 +222,9 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 startPurgeButton.setVisible(true);
                 cancelPurgeButton.setVisible(true);
                 purgeDetailsGrid.setVisible(false);
+                purgeProgressBar.setVisible(false);
                 proceedButton.setVisible(false);
+                repeatButton.setVisible(false);
                 okButton.setVisible(false);
                 purgeStatus.setText(state.getStepTitle());
                 purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
@@ -203,6 +233,8 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 startPurgeButton.setVisible(false);
                 cancelPurgeButton.setVisible(true);
                 proceedButton.setVisible(false);
+                purgeProgressBar.setVisible(false);
+                repeatButton.setVisible(false);
                 okButton.setVisible(false);
                 purgeDetailsGrid.setVisible(false);
                 purgeStatus.setText(state.getStepTitle());
@@ -211,9 +243,13 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 startPurgeButton.setVisible(false);
                 cancelPurgeButton.setVisible(true);
                 proceedButton.setVisible(true);
+                purgeProgressBar.setVisible(false);
+                repeatButton.setVisible(false);
                 okButton.setVisible(false);
-                lastMaterialTemperature.setText(String.valueOf(purgeHelper.getLastMaterialTemperature()));
-                currentMaterialTemperature.setText(String.valueOf(purgeHelper.getCurrentMaterialTemperature()));
+                lastMaterialTemperature.setText(String.valueOf(
+                    purgeHelper.getLastMaterialTemperature()));
+                currentMaterialTemperature.setText(String.valueOf(
+                    purgeHelper.getCurrentMaterialTemperature()));
                 purgeTemperature.setText(String.valueOf(purgeHelper.getPurgeTemperature()));
                 purgeTemperature.intValueProperty().addListener(purgeTempEntryListener);
                 purgeDetailsGrid.setVisible(true);
@@ -223,6 +259,8 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 startPurgeButton.setVisible(false);
                 cancelPurgeButton.setVisible(true);
                 proceedButton.setVisible(false);
+                repeatButton.setVisible(false);
+                purgeProgressBar.setVisible(false);
                 okButton.setVisible(false);
                 purgeDetailsGrid.setVisible(false);
                 purgeStatus.setText(state.getStepTitle());
@@ -232,6 +270,8 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 startPurgeButton.setVisible(false);
                 cancelPurgeButton.setVisible(true);
                 proceedButton.setVisible(false);
+                repeatButton.setVisible(false);
+                purgeProgressBar.setVisible(true);
                 okButton.setVisible(false);
                 purgeDetailsGrid.setVisible(false);
                 purgeStatus.setText(state.getStepTitle());
@@ -240,6 +280,8 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 startPurgeButton.setVisible(false);
                 cancelPurgeButton.setVisible(false);
                 proceedButton.setVisible(false);
+                repeatButton.setVisible(true);
+                purgeProgressBar.setVisible(false);
                 okButton.setVisible(true);
                 purgeDetailsGrid.setVisible(false);
                 purgeStatus.setText(state.getStepTitle());
@@ -249,6 +291,8 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 startPurgeButton.setVisible(true);
                 cancelPurgeButton.setVisible(true);
                 proceedButton.setVisible(false);
+                repeatButton.setVisible(false);
+                purgeProgressBar.setVisible(false);
                 okButton.setVisible(false);
                 purgeDetailsGrid.setVisible(false);
                 purgeStatus.setText(state.getStepTitle());
@@ -257,34 +301,72 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         }
     }
 
-    public void purgeAndPrint(Project project, Filament filament, PrintQualityEnumeration printQuality, SlicerParametersFile settings, Printer printerToUse)
+    private final ChangeListener<Number> printPercentListener
+        = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+        {
+            printPercent = newValue.doubleValue();
+            updateProgressPrint();
+        };
+
+    private void updateProgressPrint()
+    {
+        if (purgeProgressBar.isVisible())
+        {
+            String currentPrintPercentStr = ((int) (printPercent * 100)) + "%";
+            purgeProgressBar.setCurrentValue(currentPrintPercentStr);
+            purgeProgressBar.setProgress(printPercent);
+        }
+    }
+
+    private void removePrintProgressListeners(Printer printer)
+    {
+        printer.getPrintEngine().progressProperty().removeListener(printPercentListener);
+    }
+
+    private void setupPrintProgressListeners(Printer printer)
+    {
+        printer.getPrintEngine().progressProperty().addListener(printPercentListener);
+    }
+
+    public void purgeAndPrint(Project project, Filament filament,
+        PrintQualityEnumeration printQuality, SlicerParametersFile settings, Printer printerToUse)
     {
         this.project = project;
         this.filament = filament;
         this.printQuality = printQuality;
         this.settings = settings;
-        this.printerToUse = printerToUse;
-
-        purgeHelper.setPrinterToUse(printerToUse);
+        bindPrinter(printerToUse);
 
         ApplicationStatus.getInstance().setMode(ApplicationMode.PURGE);
+    }
+
+    private void bindPrinter(Printer printerToUse1)
+    {
+        if (this.printerToUse != null)
+        {
+            removePrintProgressListeners(this.printerToUse);
+            startPurgeButton.getTag().removeAllConditionalText();
+        }
+        this.printerToUse = printerToUse1;
+        purgeHelper.setPrinterToUse(printerToUse1);
+        setupPrintProgressListeners(printerToUse1);
+        startPurgeButton.getTag().addConditionalText("dialogs.cantPurgeDoorIsOpenMessage",
+                                                     printerToUse1.getPrinterAncillarySystems().lidOpenProperty().not().not());
     }
 
     public void purgeAndRunMacro(String macroName, Printer printerToUse)
     {
         this.macroToExecuteAfterPurge = macroName;
-        this.printerToUse = printerToUse;
 
-        purgeHelper.setPrinterToUse(printerToUse);
+        bindPrinter(printerToUse);
 
         ApplicationStatus.getInstance().setMode(ApplicationMode.PURGE);
     }
 
     public void purge(Printer printerToUse)
     {
-        this.printerToUse = printerToUse;
 
-        purgeHelper.setPrinterToUse(printerToUse);
+        bindPrinter(printerToUse);
 
         ApplicationStatus.getInstance().setMode(ApplicationMode.PURGE);
     }
