@@ -63,6 +63,7 @@
                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="2" />
                             </children>
                         </GridPane>
+                        <VBox fx:id="diagramContainer" VBox.vgrow="ALWAYS" />
                     </children>
                 </VBox>
                     </center>
@@ -80,8 +81,8 @@
                                     <children>
                                         <StackPane pickOnBounds="false">
                                             <children>
-                                                <GraphicButtonWithLabel fx:id="startPurgeButton" fxmlFileName="startButton" onAction="#start" labelText="%purgeMaterial.StartPurge" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
-                                                <GraphicButtonWithLabel fx:id="proceedButton" fxmlFileName="nextButton" layoutX="10.0" layoutY="10.0"  onAction="#proceed" labelText="%purgeMaterial.proceed" />
+                                                <GraphicButtonWithLabel fx:id="startPurgeButton" fxmlFileName="startButton" labelText="%purgeMaterial.StartPurge" onAction="#start" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
+                                                <GraphicButtonWithLabel fx:id="proceedButton" fxmlFileName="nextButton" labelText="%purgeMaterial.proceed" layoutX="10.0" layoutY="10.0" onAction="#proceed" />
                                             </children>
                                         </StackPane>
                                     </children>
@@ -93,11 +94,11 @@
                                     <children>
                                         <StackPane>
                                             <children>
-                                                <GraphicButtonWithLabel fx:id="okButton" fxmlFileName="backwardButton"  onAction="#okPressed" labelText="%misc.OK" />
-                                                <GraphicButtonWithLabel fx:id="cancelPurgeButton" fxmlFileName="cancelButton" onAction="#cancel" labelText="%calibrationPanel.cancelCalibration" />
+                                                <GraphicButtonWithLabel fx:id="okButton" fxmlFileName="backwardButton" labelText="%misc.OK" onAction="#okPressed" />
+                                                <GraphicButtonWithLabel fx:id="cancelPurgeButton" fxmlFileName="cancelButton" labelText="%calibrationPanel.cancelCalibration" onAction="#cancel" />
                                             </children>
                                         </StackPane>
-                                          <GraphicButtonWithLabel fx:id="repeatButton" fxmlFileName="retryButton" onAction="#repeat" labelText="%purgeMaterial.repeatPurge" />
+                                          <GraphicButtonWithLabel fx:id="repeatButton" fxmlFileName="retryButton" labelText="%purgeMaterial.repeatPurge" onAction="#repeat" />
                                     </children>
                                     <padding>
                                         <Insets left="40.0" right="10.0" />

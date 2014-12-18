@@ -4,18 +4,19 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
+import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.LargeProgress;
 import celtech.coreUI.components.RestrictedNumberField;
-import celtech.coreUI.components.buttons.GraphicButton;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.purge.PurgeState;
 import celtech.services.slicer.PrintQualityEnumeration;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
@@ -23,9 +24,15 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
+import javafx.geometry.Bounds;
+import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
@@ -51,6 +58,9 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     private Printer printerToUse = null;
     private String macroToExecuteAfterPurge = null;
     private double printPercent;
+    private Bounds diagramBounds;
+    private Pane diagramNode;
+    private ResourceBundle resources;
 
     private final ChangeListener<Number> purgeTempEntryListener = new ChangeListener<Number>()
     {
@@ -63,7 +73,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     };
 
     @FXML
-    private VBox container;
+    private VBox diagramContainer;
 
     @FXML
     private GraphicButtonWithLabel startPurgeButton;
@@ -203,6 +213,8 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
+        this.resources = resources;
+        
         purgeHelper.addStateListener(this);
         purgeHelper.setState(PurgeState.IDLE);
         
@@ -211,6 +223,12 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         purgeProgressBar.setTargetValue("");
         
         startPurgeButton.installTag("dialogs.cantPurgeDoorIsOpenMessage");
+        proceedButton.installTag("dialogs.cantPurgeDoorIsOpenMessage");
+        
+        loadDiagram();
+        resizeDiagram();
+        addDiagramMoveScaleListeners();
+        
     }
 
     @Override
@@ -340,18 +358,25 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         ApplicationStatus.getInstance().setMode(ApplicationMode.PURGE);
     }
 
-    private void bindPrinter(Printer printerToUse1)
+    private void bindPrinter(Printer printerToUse)
     {
         if (this.printerToUse != null)
         {
             removePrintProgressListeners(this.printerToUse);
             startPurgeButton.getTag().removeAllConditionalText();
         }
-        this.printerToUse = printerToUse1;
-        purgeHelper.setPrinterToUse(printerToUse1);
-        setupPrintProgressListeners(printerToUse1);
-        startPurgeButton.getTag().addConditionalText("dialogs.cantPurgeDoorIsOpenMessage",
-                                                     printerToUse1.getPrinterAncillarySystems().lidOpenProperty().not().not());
+        this.printerToUse = printerToUse;
+        purgeHelper.setPrinterToUse(printerToUse);
+        setupPrintProgressListeners(printerToUse);
+        installTag(printerToUse, startPurgeButton);
+        installTag(printerToUse, proceedButton);
+    }
+
+    private void installTag(Printer printerToUse, GraphicButtonWithLabel button)
+    {
+        button.getTag().addConditionalText("dialogs.cantPurgeDoorIsOpenMessage",
+                                                     printerToUse.getPrinterAncillarySystems().lidOpenProperty().not().not());
+        button.disableProperty().bind(printerToUse.getPrinterAncillarySystems().lidOpenProperty());
     }
 
     public void purgeAndRunMacro(String macroName, Printer printerToUse)
@@ -370,4 +395,80 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
 
         ApplicationStatus.getInstance().setMode(ApplicationMode.PURGE);
     }
+    
+    private Bounds getBoundsOfNotYetDisplayedNode(Pane loadedDiagramNode)
+    {
+        Group group = new Group(loadedDiagramNode);
+        Scene scene = new Scene(group);
+        scene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
+        group.applyCss();
+        group.layout();
+        Bounds bounds = loadedDiagramNode.getLayoutBounds();
+        return bounds;
+    }    
+    
+private void addDiagramMoveScaleListeners()
+    {
+
+        diagramContainer.widthProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                resizeDiagram();
+            });
+
+        diagramContainer.heightProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                resizeDiagram();
+            });
+
+    }    
+    
+    private void loadDiagram() {
+        URL fxmlFileName = getClass().getResource(
+            ApplicationConfiguration.fxmlDiagramsResourcePath + "purge/purge.fxml");
+        try
+        {
+            FXMLLoader loader = new FXMLLoader(fxmlFileName, resources);
+            diagramNode = loader.load();
+            diagramBounds = getBoundsOfNotYetDisplayedNode(diagramNode);
+            diagramContainer.getChildren().clear();
+            diagramContainer.getChildren().add(diagramNode);
+
+        } catch (IOException ex)
+        {
+            ex.printStackTrace();
+            steno.error("Could not load diagram: " + fxmlFileName);
+        }
+    }
+    
+    private void resizeDiagram()
+    {
+        double diagramWidth = diagramBounds.getWidth();
+        double diagramHeight = diagramBounds.getHeight();
+
+        double availableWidth = diagramContainer.getWidth();
+        double availableHeight = diagramContainer.getHeight();
+
+        double requiredScaleHeight = availableHeight / diagramHeight * 0.95;
+        double requiredScaleWidth = availableWidth / diagramWidth * 0.95;
+        double requiredScale = Math.min(requiredScaleHeight, requiredScaleWidth);
+        requiredScale = Math.min(requiredScale, 1.3d);
+
+        diagramNode.setPrefWidth(0);
+        diagramNode.setPrefHeight(0);
+
+        double scaledDiagramWidth = diagramWidth * requiredScale;
+
+        double xTranslate = 0;
+        double yTranslate = 0;
+//        
+        xTranslate = -scaledDiagramWidth / 2;
+        yTranslate -= availableHeight / 2.0;
+
+        diagramNode.setTranslateX(xTranslate);
+        diagramNode.setTranslateY(yTranslate);
+
+    }
+
 }

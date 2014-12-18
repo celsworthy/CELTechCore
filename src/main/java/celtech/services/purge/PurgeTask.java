@@ -47,7 +47,7 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
 
                 //Set the bed to 90 degrees C
                 int desiredBedTemperature = 90;
-//                int desiredBedTemperature = 40;
+//                int desiredBedTemperature = 60;
                 printerToUse.setBedTargetTemperature(desiredBedTemperature);
                 printerToUse.goToTargetBedTemperature();
                 boolean bedHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(printerToUse.getPrinterAncillarySystems().bedTemperatureProperty(), this, desiredBedTemperature, 5, 600);
@@ -73,7 +73,6 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
 //                {
 //                    steno.error("Error running purge");
 //                }
-//                PrinterUtils.waitOnMacroFinished(printerToUse, this);
 //                break;                
                 try
                 {
