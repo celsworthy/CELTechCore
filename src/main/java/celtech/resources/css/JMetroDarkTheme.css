@@ -1885,6 +1885,12 @@ modal-dialogue{
 /**
 *
 */
+.printerstatus-label
+{
+    -fx-text-fill: black;
+    -fx-font-size: 11pt;
+    -fx-alignment: CENTER;
+}
 
 #printerStatusTitle {
     -fx-font-size: 36px;

@@ -2508,6 +2508,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     {
                         List<FirmwareError> errorsFound = new ArrayList<>(ackResponse.
                             getFirmwareErrors());
+                        
+                        steno.debug(ackResponse.getErrorsAsString());
 
                         try
                         {

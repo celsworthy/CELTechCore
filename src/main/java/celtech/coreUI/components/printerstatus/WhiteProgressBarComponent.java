@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.URL;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -19,13 +20,13 @@ import javafx.scene.shape.Polygon;
  */
 public class WhiteProgressBarComponent extends Pane
 {
-    
+
     @FXML
-    private  Polygon solidBar;
-    
+    private Polygon solidBar;
+
     @FXML
-    private  Polygon clearBar;    
-    
+    private Polygon clearBar;
+
     private double width;
     private double height;
     private double progress;
@@ -34,7 +35,8 @@ public class WhiteProgressBarComponent extends Pane
     public WhiteProgressBarComponent()
     {
         super();
-        URL fxml = getClass().getResource("/celtech/resources/fxml/printerstatus/whiteprogressbar.fxml");
+        URL fxml = getClass().getResource(
+            "/celtech/resources/fxml/printerstatus/whiteprogressbar.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
@@ -46,12 +48,13 @@ public class WhiteProgressBarComponent extends Pane
         {
             throw new RuntimeException(exception);
         }
-        
+
         solidBar.setFill(Color.WHITE);
         clearBar.setFill(Color.WHITE);
         clearBar.setOpacity(0.5);
-        
-        this.getChildren().add(0, statusLabel);
+
+        statusLabel.getStyleClass().add("printerstatus-label");
+        this.getChildren().add(statusLabel);
 
         width = 50;
         height = 10;
@@ -60,7 +63,8 @@ public class WhiteProgressBarComponent extends Pane
 
     public void setProgress(double progress)
     {
-        if (progress != this.progress) {
+        if (progress != this.progress)
+        {
             this.progress = progress;
             redraw();
         }
@@ -101,6 +105,12 @@ public class WhiteProgressBarComponent extends Pane
 
     public void setStatus(PrinterStatus status)
     {
-        statusLabel.setText(status.getI18nString());
+        if (status == PrinterStatus.IDLE)
+        {
+            statusLabel.setText("");
+        } else
+        {
+            statusLabel.setText(status.getI18nString());
+        }
     }
 }

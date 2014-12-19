@@ -2065,57 +2065,56 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         boolean reverseAlongPath = true;
         int modifiedFirstExtrusionIndex = Math.max(lastLayerChangeIndex, firstExtrusionEventIndex);
 
-//        // If we're dealing with a perimeter then determine whether we need to go forward or backwards
-//        if (finalExtrusionWasPerimeter)
-//        {
-//            MovementEvent closestEvent = null;
-//
-//            boolean forwardsSearch = true;
-//            
-//            double forwardsVolume = 0;
-//            double reverseVolume = 0;
-//
-//            for (int iterations = 0; iterations <= 1; iterations++)
-//            {
-//                double volumeTotal = 0;
-//
-//                //Count up the available volume - forwards first
-//                for (int movementIndex = closestEventIndex;
-//                    movementIndex >= modifiedFirstExtrusionIndex && movementIndex <= modifiedFinalExtrusionEventIndex;
-//                    movementIndex += ((forwardsSearch) ? 1 : -1))
-//                {
-//                    GCodeParseEvent eventUnderExamination = extrusionBuffer.get(movementIndex);
-//                    if (eventUnderExamination instanceof ExtrusionEvent)
-//                    {
-//                        volumeTotal += ((ExtrusionEvent) eventUnderExamination).getE()
-//                            + ((ExtrusionEvent) eventUnderExamination).getD();
-//                    }
-//                }
-//
-//                if (forwardsSearch)
-//                {
-//                    forwardsVolume = volumeTotal;
-//                }
-//                else
-//                {
-//                    reverseVolume = volumeTotal;
-//                }
-//
-//                forwardsSearch = !forwardsSearch;
-//            }
-//            
-//            if (forwardsVolume >= reverseVolume)
-//            {
-//                reverseAlongPath = false;
-//            }
-//            else
-//            {
-//                reverseAlongPath = true;
-//            }
-//        }
-//
-//        if (!reverseAlongPath)
+        // If we're dealing with a perimeter then determine whether we need to go forward or backwards
         if (finalExtrusionWasPerimeter)
+        {
+            MovementEvent closestEvent = null;
+
+            boolean forwardsSearch = true;
+            
+            double forwardsVolume = 0;
+            double reverseVolume = 0;
+
+            for (int iterations = 0; iterations <= 1; iterations++)
+            {
+                double volumeTotal = 0;
+
+                //Count up the available volume - forwards first
+                for (int movementIndex = closestEventIndex;
+                    movementIndex >= modifiedFirstExtrusionIndex && movementIndex <= modifiedFinalExtrusionEventIndex;
+                    movementIndex += ((forwardsSearch) ? 1 : -1))
+                {
+                    GCodeParseEvent eventUnderExamination = extrusionBuffer.get(movementIndex);
+                    if (eventUnderExamination instanceof ExtrusionEvent)
+                    {
+                        volumeTotal += ((ExtrusionEvent) eventUnderExamination).getE()
+                            + ((ExtrusionEvent) eventUnderExamination).getD();
+                    }
+                }
+
+                if (forwardsSearch)
+                {
+                    forwardsVolume = volumeTotal;
+                }
+                else
+                {
+                    reverseVolume = volumeTotal;
+                }
+
+                forwardsSearch = !forwardsSearch;
+            }
+            
+            if (forwardsVolume >= reverseVolume)
+            {
+                reverseAlongPath = false;
+            }
+            else
+            {
+                reverseAlongPath = true;
+            }
+        }
+
+        if (!reverseAlongPath)
         {
             wipeTypeComment = "Close - forwards";
 
