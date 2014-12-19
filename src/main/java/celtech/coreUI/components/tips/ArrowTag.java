@@ -13,8 +13,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
 
 /**
@@ -24,8 +27,10 @@ import javafx.scene.shape.SVGPath;
 public class ArrowTag extends HBox
 {
 
+    Label title = new Label();
+    
     @FXML
-    Label title;
+    VBox labelContainer;
 
     @FXML
     Label label;
@@ -34,7 +39,7 @@ public class ArrowTag extends HBox
     SVGPath arrow;
 
     private TaggablePane attachedTo;
-    private String i18nTitle;
+    private String i18nTitle = null;
     private final List<ConditionalText> conditionalTextElements = new ArrayList<>();
     private final ChangeListener<Boolean> conditionChangeListener = new ChangeListener<Boolean>()
     {
@@ -56,6 +61,10 @@ public class ArrowTag extends HBox
         fxmlLoader.setController(this);
 
         fxmlLoader.setClassLoader(this.getClass().getClassLoader());
+        
+        title.setAlignment(Pos.CENTER_LEFT);
+        AnchorPane.setLeftAnchor(this, 0.0);
+        title.setId("title");
 
         try
         {
@@ -98,10 +107,11 @@ public class ArrowTag extends HBox
 
     private void bindPosition()
     {
-        DisplayManager.getInstance().nodesMayHaveMovedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-        {
-            repositionText();
-        });
+        DisplayManager.getInstance().nodesMayHaveMovedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                repositionText();
+            });
     }
 
     private void repositionText()
@@ -143,7 +153,10 @@ public class ArrowTag extends HBox
     {
         StringBuilder labelText = new StringBuilder();
 
-        title.setText(Lookup.i18n(i18nTitle));
+        if (i18nTitle != null)
+        {
+            title.setText(Lookup.i18n(i18nTitle));
+        }
 
         boolean addedFirst = false;
 
@@ -167,10 +180,16 @@ public class ArrowTag extends HBox
 
     public void initialise(TaggablePane node, String i18nTitle)
     {
+        this.i18nTitle = i18nTitle;
+        labelContainer.getChildren().add(0, title);
+        initialise(node);
+    }
+
+    public void initialise(TaggablePane node)
+    {
         node.getChildren().add(this);
 
         this.attachedTo = node;
-        this.i18nTitle = i18nTitle;
 
         attachedTo.visibleProperty().addListener(conditionChangeListener);
 

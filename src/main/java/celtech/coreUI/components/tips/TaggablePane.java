@@ -34,6 +34,16 @@ public abstract class TaggablePane extends Pane
     {
         return tagOrientation;
     }
+    
+    
+    public void installTag()
+    {
+        if (tipArrow == null)
+        {
+            tipArrow = new ArrowTag();
+            tipArrow.initialise(this);
+        }
+    }
 
     public void installTag(String i18nTitle)
     {
