@@ -192,7 +192,6 @@ public class PurgeHelper
                 {
                     steno.error("Error in purge - mode=" + state.name());
                 }
-                resetPrinter();
                 break;
             case FAILED:
                 resetPrinter();

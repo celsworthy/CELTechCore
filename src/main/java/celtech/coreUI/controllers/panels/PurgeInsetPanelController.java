@@ -147,8 +147,8 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 {
                     Dialogs.create()
                         .owner(null)
-                        .title(DisplayManager.getLanguageBundle().getString("dialogs.clearBedTitle"))
-                        .masthead(null)
+                        .title(DisplayManager.getLanguageBundle().getString("dialogs.clearBedTitle")).
+                        masthead(null)
                         .message(DisplayManager.getLanguageBundle().getString(
                                 "dialogs.clearBedInstruction"))
                         .showWarning();
@@ -167,8 +167,8 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 {
                     Dialogs.create()
                         .owner(null)
-                        .title(DisplayManager.getLanguageBundle().getString("dialogs.clearBedTitle"))
-                        .masthead(null)
+                        .title(DisplayManager.getLanguageBundle().getString("dialogs.clearBedTitle")).
+                        masthead(null)
                         .message(DisplayManager.getLanguageBundle().getString(
                                 "dialogs.clearBedInstruction"))
                         .showWarning();
@@ -205,12 +205,12 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     {
         purgeHelper.addStateListener(this);
         purgeHelper.setState(PurgeState.IDLE);
-        
+
         purgeProgressBar.setTargetLegend("");
         purgeProgressBar.setProgressDescription(Lookup.i18n("calibrationPanel.printingCaps"));
         purgeProgressBar.setTargetValue("");
-        
-        startPurgeButton.installTag("dialogs.cantPurgeDoorIsOpenMessage");
+
+        startPurgeButton.installTag();
     }
 
     @Override
@@ -351,7 +351,15 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         purgeHelper.setPrinterToUse(printerToUse1);
         setupPrintProgressListeners(printerToUse1);
         startPurgeButton.getTag().addConditionalText("dialogs.cantPurgeDoorIsOpenMessage",
-                                                     printerToUse1.getPrinterAncillarySystems().lidOpenProperty().not().not());
+                                                     printerToUse1.getPrinterAncillarySystems().
+                                                     lidOpenProperty().not().not());
+        startPurgeButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
+                                                     printerToUse1.extrudersProperty().get(0).
+                                                     filamentLoadedProperty().not());
+
+        startPurgeButton.disableProperty().bind(printerToUse1.canPrintProperty().not()
+            .or(printerToUse1.getPrinterAncillarySystems().lidOpenProperty())
+            .or(printerToUse1.extrudersProperty().get(0).filamentLoadedProperty().not()));
     }
 
     public void purgeAndRunMacro(String macroName, Printer printerToUse)

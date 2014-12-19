@@ -197,6 +197,7 @@ public class PrinterComponent extends Pane
                 break;
         }
         setStatus(status);
+        progressBar.setStatus(newStatus);
     }
 
     /**

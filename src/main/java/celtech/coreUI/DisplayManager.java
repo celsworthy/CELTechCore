@@ -502,7 +502,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             URL menuStripURL = getClass().getResource(ApplicationConfiguration.fxmlPanelResourcePath
                 + "LayoutStatusMenuStrip.fxml");
             FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, getLanguageBundle());
-            BorderPane menuStripControls = (BorderPane) menuStripLoader.load();
+            VBox menuStripControls = (VBox) menuStripLoader.load();
             layoutStatusMenuStripController = menuStripLoader.getController();
             menuStripControls.prefWidthProperty().bind(slideoutAndProjectHolder.widthProperty());
             slideoutAndProjectHolder.populateProjectDisplay(menuStripControls);

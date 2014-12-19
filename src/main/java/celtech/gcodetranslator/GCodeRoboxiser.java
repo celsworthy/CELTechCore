@@ -984,12 +984,16 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 if (extrusionTask != ExtrusionTask.Fill)
                 {
 
-                    if ((totalExtrusionForPath >= currentNozzle.getNozzleParameters().
-                        getOpenOverVolume()
-                        + currentNozzle.getNozzleParameters().getPreejectionVolume())
-                        && (totalExtrusionForPath >= currentNozzle.getNozzleParameters().
-                        getEjectionVolume()
-                        + currentNozzle.getNozzleParameters().getWipeVolume()))
+//                    if ((totalExtrusionForPath >= currentNozzle.getNozzleParameters().
+//                        getOpenOverVolume()
+//                        + currentNozzle.getNozzleParameters().getPreejectionVolume())
+//                        && (totalExtrusionForPath >= currentNozzle.getNozzleParameters().
+//                        getEjectionVolume()
+//                        + currentNozzle.getNozzleParameters().getWipeVolume()))
+                    
+                    // At the moment we only look at ejection volume for a normal perimeter close
+                    if (totalExtrusionForPath >= currentNozzle.getNozzleParameters().
+                        getEjectionVolume())
                     {
                         //OK - we're go for a normal close   
                         nozzleStartPosition = 1.0;
@@ -1173,7 +1177,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                             {
                                 nozzleCloseStartIndex = insertTravelAndClosePath(
                                     firstUsableExtrusionEventIndex, finalExtrusionEventIndex,
-                                    "Move to start of wipe - full open", true, true,
+                                    "Move to start of wipe - full open", false, true,
                                     lastInwardMoveEvent, currentNozzle.getNozzleParameters().
                                     getEjectionVolume());
                             } catch (CannotCloseOnInnerPerimeterException ex)
@@ -1876,6 +1880,15 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         int indexToCopyFrom = -1;
         int minimumIndexToCopyFrom = firstExtrusionEventIndex;
 
+        // We can't go back over a layer boundary to wipe...
+        int lastLayerChangeIndex = extrusionBuffer.getPreviousEventIndex(
+            modifiedFinalExtrusionEventIndex, LayerChangeEvent.class);
+
+        if (lastLayerChangeIndex <= 0)
+        {
+            lastLayerChangeIndex = 0;
+        }
+
         if (reverseWipePath == false && extrusionBuffer.getPreviousExtrusionEventIndex(
             modifiedFinalExtrusionEventIndex) >= 0)
         {
@@ -1890,6 +1903,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                         modifiedFinalExtrusionEventIndex) < 0)
                 {
                     // We couldn't find an inner perimeter - revert to reverse
+                    steno.info("No inner perimeter found - reversing - on layer " + layer);
                     finalExtrusionWasPerimeter = false;
                 } else
                 {
@@ -1906,16 +1920,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
             if (finalExtrusionWasPerimeter)
             {
-                // We can't go back over a layer boundary to wipe...
-                int lastLayerChangeIndex = extrusionBuffer.getPreviousEventIndex(
-                    modifiedFinalExtrusionEventIndex, LayerChangeEvent.class);
-
-                if (lastLayerChangeIndex
-                    <= 0)
-                {
-                    lastLayerChangeIndex = 0;
-                }
-
                 Segment orthogonalSegment = null;
                 Vector2D orthogonalSegmentMidpoint = null;
                 Vector2D lastPointConsidered = null;
@@ -2058,9 +2062,62 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
         String wipeTypeComment = "";
 
+        boolean reverseAlongPath = true;
+        int modifiedFirstExtrusionIndex = Math.max(lastLayerChangeIndex, firstExtrusionEventIndex);
+
+//        // If we're dealing with a perimeter then determine whether we need to go forward or backwards
+//        if (finalExtrusionWasPerimeter)
+//        {
+//            MovementEvent closestEvent = null;
+//
+//            boolean forwardsSearch = true;
+//            
+//            double forwardsVolume = 0;
+//            double reverseVolume = 0;
+//
+//            for (int iterations = 0; iterations <= 1; iterations++)
+//            {
+//                double volumeTotal = 0;
+//
+//                //Count up the available volume - forwards first
+//                for (int movementIndex = closestEventIndex;
+//                    movementIndex >= modifiedFirstExtrusionIndex && movementIndex <= modifiedFinalExtrusionEventIndex;
+//                    movementIndex += ((forwardsSearch) ? 1 : -1))
+//                {
+//                    GCodeParseEvent eventUnderExamination = extrusionBuffer.get(movementIndex);
+//                    if (eventUnderExamination instanceof ExtrusionEvent)
+//                    {
+//                        volumeTotal += ((ExtrusionEvent) eventUnderExamination).getE()
+//                            + ((ExtrusionEvent) eventUnderExamination).getD();
+//                    }
+//                }
+//
+//                if (forwardsSearch)
+//                {
+//                    forwardsVolume = volumeTotal;
+//                }
+//                else
+//                {
+//                    reverseVolume = volumeTotal;
+//                }
+//
+//                forwardsSearch = !forwardsSearch;
+//            }
+//            
+//            if (forwardsVolume >= reverseVolume)
+//            {
+//                reverseAlongPath = false;
+//            }
+//            else
+//            {
+//                reverseAlongPath = true;
+//            }
+//        }
+//
+//        if (!reverseAlongPath)
         if (finalExtrusionWasPerimeter)
         {
-            wipeTypeComment = "Wipe - inwards";
+            wipeTypeComment = "Close - forwards";
 
             reverseWipePath = false;
 
@@ -2104,15 +2161,15 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 insertedEventIndex++;
             }
 
-            wipeTypeComment = "Wipe - reverse";
+            wipeTypeComment = "Close - reverse";
 
             reverseWipePath = true;
 
             indexToCopyFrom = modifiedFinalExtrusionEventIndex - 1;
 
-            if (firstExtrusionEventIndex != modifiedFinalExtrusionEventIndex)
+            if (modifiedFirstExtrusionIndex != modifiedFinalExtrusionEventIndex)
             {
-                minimumIndexToCopyFrom = firstExtrusionEventIndex;
+                minimumIndexToCopyFrom = modifiedFirstExtrusionIndex;
             } else
             {
                 int previousTravelEvent = extrusionBuffer.getPreviousEventIndex(
@@ -2192,7 +2249,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
                         eventToInsert.setX(firstSegment.getX());
                         eventToInsert.setY(firstSegment.getY());
-                        eventToInsert.setComment(originalComment + ":" + wipeTypeComment + " end");
+                        eventToInsert.setComment(originalComment + ":" + wipeTypeComment
+                            + " - end -");
 
                         extrusionBuffer.add(insertedEventIndex, eventToInsert);
                         cumulativeExtrusionVolume += requiredSegmentVolume;
@@ -2205,7 +2263,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                         eventToInsert.setX(eventToCopy.getX());
                         eventToInsert.setY(eventToCopy.getY());
                         eventToInsert.setComment(originalComment + ":" + wipeTypeComment
-                            + ((startMessageOutput == false) ? " start" : " in progress"));
+                            + ((startMessageOutput == false) ? " - start -" : " - in progress -"));
                         startMessageOutput = true;
                         eventToInsert.setFeedRate(wipeFeedRate_mmPerMin);
 
@@ -2232,8 +2290,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                     } else
                     {
                         dontIncrementEventIndex = true;
-                        steno.info("Warning - elided event of type " + event.getClass().getName());
-//                        extrusionBuffer.add(insertedEventIndex, extrusionBuffer.get(indexToCopyFrom));
+                        steno.info("Elided event of type " + event.getClass().getName()
+                            + " during close");
                     }
                 }
 

@@ -177,8 +177,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     errorHandlingResponse = printerErrorDialog.showAndWait();
                 }
 
-                if (errorHandlingResponse.get() == abortJob.getButtonType() || 
-                    errorHandlingResponse.get() == okAbortJob.getButtonType())
+                if (errorHandlingResponse.get() == abortJob.getButtonType()
+                    || errorHandlingResponse.get() == okAbortJob.getButtonType())
                 {
                     try
                     {
@@ -915,9 +915,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
-            Dialogs.create().title(
-                Lookup.i18n(FirmwareError.ERROR_E_FILAMENT_SLIP.getLocalisedErrorTitle()))
-                .message(Lookup.i18n(FirmwareError.ERROR_E_FILAMENT_SLIP.getLocalisedErrorMessage()))
+            Dialogs.create().title(FirmwareError.ERROR_E_FILAMENT_SLIP.getLocalisedErrorTitle())
+                .message(FirmwareError.ERROR_E_FILAMENT_SLIP.getLocalisedErrorMessage())
                 .masthead(null).showError();
         });
     }

@@ -117,11 +117,13 @@ public class MyMiniFactoryLoaderController implements Initializable
         WebView webView = new WebView();
         VBox.setVgrow(webView, Priority.ALWAYS);
 
-//        DisplayManager.getInstance().startSpinning(webContentContainer);
-
         webEngine = webView.getEngine();
 
-        webEngine.getLoadWorker().stateProperty().addListener(
+        webContentContainer.getChildren().addAll(webView);
+
+        webEngine.load(myMiniFactoryURLString);
+        
+                webEngine.getLoadWorker().stateProperty().addListener(
             (ObservableValue<? extends Worker.State> ov, Worker.State oldState, Worker.State newState) ->
             {
                 switch (newState)
@@ -156,9 +158,6 @@ public class MyMiniFactoryLoaderController implements Initializable
                         break;
                 }
             });
-        webContentContainer.getChildren().addAll(webView);
-
-        webEngine.load(myMiniFactoryURLString);
     }
 
     private boolean alreadyDownloading = false;

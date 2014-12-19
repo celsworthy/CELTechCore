@@ -120,7 +120,8 @@ public class ExtrusionBuffer extends ArrayList<GCodeParseEvent>
 
         for (int index = startingIndex; index >= 0; index--)
         {
-            if (this.get(index).getClass() == eventClass)
+            if (this.get(index).getClass() == eventClass
+                || this.get(index).getClass().getSuperclass() == eventClass)
             {
                 indexOfEvent = index;
                 break;

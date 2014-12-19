@@ -3,13 +3,14 @@
  */
 package celtech.coreUI.components.printerstatus;
 
+import celtech.printerControl.PrinterStatus;
 import java.io.IOException;
 import java.net.URL;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.shape.Polygon;
 
 /**
@@ -28,6 +29,7 @@ public class WhiteProgressBarComponent extends Pane
     private double width;
     private double height;
     private double progress;
+    private Label statusLabel = new Label();
 
     public WhiteProgressBarComponent()
     {
@@ -48,6 +50,8 @@ public class WhiteProgressBarComponent extends Pane
         solidBar.setFill(Color.WHITE);
         clearBar.setFill(Color.WHITE);
         clearBar.setOpacity(0.5);
+        
+        this.getChildren().add(0, statusLabel);
 
         width = 50;
         height = 10;
@@ -95,4 +99,8 @@ public class WhiteProgressBarComponent extends Pane
         });
     }
 
+    public void setStatus(PrinterStatus status)
+    {
+        statusLabel.setText(status.getI18nString());
+    }
 }
