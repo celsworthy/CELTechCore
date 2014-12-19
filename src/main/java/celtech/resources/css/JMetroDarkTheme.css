@@ -1251,7 +1251,6 @@ table-view .column-header-background {
 
 .menubar{
     -fx-background-color: black;
-    -fx-padding: 5px;
 }
 
 .regularFont {
