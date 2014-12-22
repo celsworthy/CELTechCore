@@ -146,7 +146,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
 
         if (project != null && purgeCompletedOK)
         {
-            final Project projectCopy = project;
+//            final Project projectCopy = project;
 
             Platform.runLater(new Runnable()
             {
