@@ -443,7 +443,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     private void loadDiagram()
     {
         URL fxmlFileName = getClass().getResource(
-            ApplicationConfiguration.fxmlDiagramsResourcePath + "purge/purge.fxml");
+            ApplicationConfiguration.fxmlDiagramsResourcePath + "purge/purge_simplified.fxml");
         try
         {
             FXMLLoader loader = new FXMLLoader(fxmlFileName, resources);
