@@ -160,7 +160,9 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                         .message(DisplayManager.getLanguageBundle().getString(
                                 "dialogs.clearBedInstruction"))
                         .showWarning();
-                    printerToUse.printProject(projectCopy, filament, printQuality, settings);
+                    // Need to go to settings page for this project
+                    ApplicationStatus.getInstance().setMode(ApplicationMode.SETTINGS);
+//                    printerToUse.printProject(projectCopy, filament, printQuality, settings);
                 }
             });
 
