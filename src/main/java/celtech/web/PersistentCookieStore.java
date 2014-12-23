@@ -34,7 +34,7 @@ public class PersistentCookieStore implements CookieStore, Runnable
         store = new CookieManager().getCookieStore();
 
         cryptoFileStore = new CryptoFileStore(ApplicationConfiguration.getApplicationStorageDirectory() + filename);
-        steno.info("Reading cookie store");
+//        steno.info("Reading cookie store");
         String encryptedCookieData = cryptoFileStore.readFile();
 
         if (encryptedCookieData != null)
@@ -79,7 +79,7 @@ public class PersistentCookieStore implements CookieStore, Runnable
         try
         {
             String dataToEncrypt = jsonMapper.writeValueAsString(cookieContainers);
-            steno.info("Writing cookie store");
+//            steno.info("Writing cookie store");
             cryptoFileStore.writeFile(dataToEncrypt);
         } catch (IOException ex)
         {

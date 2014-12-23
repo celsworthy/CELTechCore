@@ -7,6 +7,7 @@ import celtech.coreUI.visualisation.importers.FloatArrayList;
 import celtech.coreUI.visualisation.importers.IntegerArrayList;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
+import celtech.utils.Math.MathUtils;
 import static celtech.utils.Math.MathUtils.RAD_TO_DEG;
 import celtech.utils.gcode.representation.GCodeElement;
 import celtech.utils.gcode.representation.GCodeMeshData;
@@ -354,7 +355,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * This method checks if the model is off the print bed and if so it adjusts the transformMoveToPreferred to bring it back to the nearest edge of the bed.
+     * This method checks if the model is off the print bed and if so it adjusts the
+     * transformMoveToPreferred to bring it back to the nearest edge of the bed.
      */
     private void keepOnBedXZ()
     {
@@ -489,7 +491,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             }
         } else
         {
-            for (Node node : ((Group) (meshGroup.getChildrenUnmodifiable().get(0))).getChildrenUnmodifiable())
+            for (Node node : ((Group) (meshGroup.getChildrenUnmodifiable().get(0))).
+                getChildrenUnmodifiable())
             {
                 if (node instanceof MeshView)
                 {
@@ -502,7 +505,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                             ApplicationMaterials.getCollidedModelMaterial());
                     } else
                     {
-                        ((MeshView) node).setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+                        ((MeshView) node).
+                            setMaterial(ApplicationMaterials.getDefaultModelMaterial());
                     }
                 }
             }
@@ -830,7 +834,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
             if (selectedPart != null)
             {
-                Group parentLayer = (Group) selectedPart.getGcodeVisualRepresentation().getParent().getParent().getParent();
+                Group parentLayer = (Group) selectedPart.getGcodeVisualRepresentation().getParent().
+                    getParent().getParent();
                 currentLayer.set(Integer.valueOf(parentLayer.getId()));
 //                selectedPart.getGcodeVisualRepresentation().setMaterial(ApplicationMaterials.getGCodeMaterial(selectedPart.getMovementType(), true));
                 lastSelectedPart = selectedPart;
@@ -1087,12 +1092,18 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void checkOffBed()
     {
         ModelBounds bounds = getTransformedBounds();
-        if (bounds.getMinX() < 0
-            || bounds.getMaxX() > printBed.getPrintVolumeMaximums().getX()
-            || bounds.getMinZ() < 0
-            || bounds.getMaxZ() > printBed.getPrintVolumeMaximums().getZ()
-            || bounds.getMaxY() > 0
-            || bounds.getMinY() < printBed.getPrintVolumeMinimums().getY())
+
+        double epsilon = 0.001;
+
+        if (MathUtils.compareDouble(bounds.getMinX(), 0, epsilon) == MathUtils.LESS_THAN
+            || MathUtils.compareDouble(bounds.getMaxX(), printBed.getPrintVolumeMaximums().getX(),
+                                       epsilon) == MathUtils.MORE_THAN
+            || MathUtils.compareDouble(bounds.getMinZ(), 0, epsilon) == MathUtils.LESS_THAN
+            || MathUtils.compareDouble(bounds.getMaxZ(), printBed.getPrintVolumeMaximums().getZ(),
+                                       epsilon) == MathUtils.MORE_THAN
+            || MathUtils.compareDouble(bounds.getMaxY(), 0, epsilon) == MathUtils.MORE_THAN
+            || MathUtils.compareDouble(bounds.getMinY(), printBed.getPrintVolumeMinimums().getY(),
+                                       epsilon) == MathUtils.LESS_THAN)
         {
             isOffBed.set(true);
         } else
@@ -1119,7 +1130,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * Calculate max/min X,Y,Z before the transforms have been applied (ie the original model dimensions before any transforms).
+     * Calculate max/min X,Y,Z before the transforms have been applied (ie the original model
+     * dimensions before any transforms).
      */
     private ModelBounds calculateBounds()
     {
@@ -1217,7 +1229,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         ObservableFloatArray originalPoints = mesh.getPoints();
 
         double minPrintableY = printBed.getPrintVolumeMinimums().getY();
-        int numberOfBins = (int) Math.ceil(Math.abs(originalModelBounds.getHeight() / minPrintableY));
+        int numberOfBins = (int) Math.
+            ceil(Math.abs(originalModelBounds.getHeight() / minPrintableY));
 
         ArrayList<ModelContainer> outputMeshes = new ArrayList<>();
 
@@ -1517,7 +1530,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * This method must be called at the end of any operation that changes one or more of the transforms.
+     * This method must be called at the end of any operation that changes one or more of the
+     * transforms.
      */
     private void notifyShapeChange()
     {
