@@ -382,6 +382,9 @@ public class CalibrationNozzleOpeningActions
             // G36 = extrude until stall E700 = top extruder F2000 = feed rate mm/min (?)
             // extrude either requested volume or until filament slips
             printer.sendRawGCode("G36 E700 F2000", false);
+            
+            printer.sendRawGCode("G0 E5 F100", false);
+            
 
             PrinterUtils.waitOnBusy(printer, cancellable);
 
