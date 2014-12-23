@@ -222,7 +222,7 @@ dialogs.noSDCardOK	OK - I've done that	好，已完成	好，已完成	OK - Fatt
 dialogs.noSDCardTitle	No SD card	无SD卡	無SD卡	Nessuna scheda SD	Pas de carte SD		SD 카드 없음	Keine SD-Card	Keine SD-Karte	Archivo Robox	Cartão SD ausente	Cartão SD ausente	Inget SD kort			Geen SD kaart	Нет карты памяти SD	SDカード無し							Keine SD-Card		SD karta chybí	Ei SD-korttia	SDカード無し
 dialogs.OK	OK	成功	成功	OK	OK		OK	OK	OK	La temperatura de los filamentos cargados, difiere del filamento anterior	OK	OK	OK			OK	ОК	OK							OK		OK	OK	OK
 dialogs.openLidPrinterHotDontOpenHeading	Don't open the lid	请不要打开盖子	請勿打開機門		Ne pas ouvrir le couvercle		뚜껑을 열지 마십시오.	Deckel nicht öffnen		Purga de material requerido			Öppna inte luckan				Не открывайте крышку	扉を開けないで下さい							Deckel nicht öffnen		Neotvírejte víko	Älä avaa luukkua	扉を開けないで下さい
-dialogs.openLidPrinterHotGoAheadHeading	Cool down and open the lid	冷却，然後打开盖子	冷卻後開門		Refroidir et ouvrir le couvercle		냉각시킨 후 커버를 여십시오.	Abkühlen lassen und Deckel öffnen		Error de tarjeta SD - remplazar la tarjeta si esto persiste			Öppna luckan och låt svalna				Охладите и откройте крышку	冷やして扉を開けて下さい							Abkühlen lassen und Deckel öffnen		Nechte vychladnout a otevřete víko	Avaa luukku ja anna jäähtyä	冷やして扉を開けて下さい
+dialogs.openLidPrinterHotGoAheadHeading	dialogs.openLidPrinterHotDontOpenHeading	冷却，然後打开盖子	冷卻後開門		Refroidir et ouvrir le couvercle		냉각시킨 후 커버를 여십시오.	Abkühlen lassen und Deckel öffnen		Error de tarjeta SD - remplazar la tarjeta si esto persiste			Öppna luckan och låt svalna				Охладите и откройте крышку	冷やして扉を開けて下さい							Abkühlen lassen und Deckel öffnen		Nechte vychladnout a otevřete víko	Avaa luukku ja anna jäähtyä	冷やして扉を開けて下さい
 dialogs.openLidPrinterHotGoAheadInfo	All print jobs will be cancelled.	所有的打印工作将被取消。	所有的列印工作將被取消。		Tous les travaux d’impressions vont être annulé		모든 프린트 작업이 취소됩니다.	Alle Druckjobs werden abgebrochen.		Modelo reducido			Alla utskriftsjobb avbryts.				Все задания принтера будут отменены.	印刷作業は全てキャンセルされます。							Alle Druckjobs werden abgebrochen.		Všechny tiskové úlohy budou zrušeny.	Kaikki tulosutustyöt peruutetaan.	印刷作業は全てキャンセルされます。
 dialogs.openLidPrinterHotInfo	The print bed is too hot to allow the door to be opened immediately.	打印床太热，以致不能让门立即打开。	打印床太熱，不允許立即打開機門。		Le châssis d’impression est trop chaude pour permettre l’ouverture de la porte.		프린트 베드가 너무 뜨거워서 도어를 즉각 개방할 수 없습니다.	Das Druckbett ist zu heiß, um die Tür sofort zu öffnen.		Trabajos de impresión incompletos puedes resultar			Bädden för het, luckan kan inte öppnas omedelbart.				Слишком горячая платформа, нельзя немедленно открыть крышку	印刷台は非常に熱いのですぐに開けないで下さい。							Das Druckbett ist zu heiß, um die Tür sofort zu öffnen.		Stavební podložka je příliš horká, takže není možné dvířka hned otevřít.	Rakennusalusta liian kuuma, luukkua ei voida avata välittömästi.	印刷台は非常に熱いのですぐに開けないで下さい。
 dialogs.openLidPrinterHotTitle	Lid open - print bed hot	保护盖已打开 - 打印床高热	機門打開 - 打印床已熱		Couvercle ouvert -  Châssis d’impression chaude		커버 개방 - 프린트 베드 고온상태	Deckel offen - Druckbett heiß		Apagar sin trabajos de impresión terminados			Luckan öppen - bädden het				Открыта крышка, платформа горячая	扉は開いています‐印刷台は熱いです　							Deckel offen - Druckbett heiß		Víko otevřeno - horká stavební podložka	Luukku auki - rakennusalusta kuuma	扉は開いています‐印刷台は熱いです　
@@ -318,6 +318,18 @@ error.ERROR_NOZZLE1_THERMISTOR	Nozzle 1 thermistor error
 error.ERROR_NOZZLE1_THERMISTOR.message	The temperature sensor for nozzle 1 is not working correctly. *T06																												
 error.ERROR_UNKNOWN	Unexpected error.				ERREUR INCONNUE																								
 error.ERROR_UNKNOWN.message	An unexpected error has occured. *T01																												
+error.handler.ABORT.title	Abort																												
+error.handler.ABORT.message	Immediately abort the current task																												
+error.handler.CLEAR_CONTINUE.title	Clear and continue																												
+error.handler.CLEAR_CONTINUE.message	Continue the current task																												
+error.handler.RETRY.title	Retry																												
+error.handler.RETRY.message	Retry the current task																												
+error.handler.OK.title	OK																												
+error.handler.OK.message																													
+error.handler.OK_ABORT.title	OK																												
+error.handler.OK_ABORT.message	Immediately abort the current task																												
+error.handler.OK_CONTINUE.title	Continue																												
+error.handler.OK_CONTINUE.message	Continue the current task																												
 errors.filamentSlipE	Extruder 1 slip	推料器1 打滑	推料器1跳步		Glissement de l’extruder 1		압출기 1 	Extruder 1 rutscht		Relleno			Extruder 1 glid				Скольжение 1 экструдера								Extruder 1 rutscht		Prokluz kolečka pohonu 1	Suulakepuristin 1 liuku	Extruder1 スリップ
 errors.filamentSlipD	Extruder 2 slip	推料器2 打滑	推料器2跳步		Glissement de l’extruder 2		압출기 2	Extruder 2 rutscht		Relleno cada			Extruder 2 glid				Скольжение 2 экструдера								Extruder 2 rutscht		Prokluz kolečka pohonu 2	Suulakepuristin 2 liuku	Extruder2 スリップ
 extrusion.autoUnretract	Automatic unretract	自动停止倒卷	自動不回捲	Non ritiro automatico	Contre-retrait automatique		자동 언리트랙트	Automatik nicht zurückgenommen	Automatischer Auszug	Altura de capa	Descarga automática	Descarga automática	Automatisk anti-indragning			Automatisch ontkoppelen	Автоматическое удлинение	自動的に収納しない							Automatik nicht zurückgenommen		Automatický pohyb	Automaattinen sisäänvedon esto	自動的に収納しない
@@ -398,6 +410,7 @@ loadModel.myMiniFactory	My Mini Factory	我的小工厂	我的迷你工廠		My M
 macros.abort	Aborting																												
 macros.gcodePrint	Printing GCode file																												
 macros.standard	Running Robox Command																												
+maintenancePanel.changeColour	Change Colour																												
 maintenancePanel.ejectStuckMaterial	Eject Stuck Material	喷出卡住了的材料	退出堵塞物料		Ejecter le materiel coincé		막힘 소재 배출	Stecken gebliebenes Material entfernen		Limpiar inyector de 0.3 mm			Avlägsna fastnat material				Извлеките застрявший материал	詰まった材料の排出							Stecken gebliebenes Material entfernen		Vytlačit ucpaný materiál	Poista juuttunut materiaali	詰まった材料の排出
 maintenancePanel.firmwareCurrentVersion	Current firmware version	当前固件版本	當前韌體版本		Version actuelle du micrologiciel		현재 펌웨어 버전	Aktuelle Firmwareversion		Limpiar inyector de 0.8 mm			Nuvarande firmwareversion				Текущая версия прошивки								Aktuelle Firmwareversion		Aktuální verze firmwaru	Nykyinen laiteohjelmistoversio	ファームウェアバージョン
 maintenancePanel.firmwareFileChooserTitle	Load firmware	加载固件	載入韌體		Charger le micrologiciel		펌웨어 로딩	Firmware laden		Purgar Material			Ladda firmware				Загрузить версию прошивки	ファームウェアの搭載							Firmware laden		Načíst firmware	Lataa laiteohjelmisto	ファームウェアの搭載

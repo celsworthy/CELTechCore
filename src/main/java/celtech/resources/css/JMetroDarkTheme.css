@@ -2041,3 +2041,61 @@ modal-dialogue{
 .notification-bar .label {
     -fx-wrap-text: true;
 }
+
+/**
+ * The error dialog configuration
+ */
+.error-dialog{
+    -fx-background-color: mid_grey;
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-spacing: 5;
+    -fx-padding: 5;
+    -fx-max-width: 500;
+    -fx-min-width: 100;
+}
+
+.error-dialog #errorDialogButtonContainer{
+    -fx-spacing: 5;
+}
+
+.error-dialog #errorDialogTitle{
+    -fx-font-size: 16pt;
+    -fx-padding: 5 20 5 20;
+    -fx-max-height: 1000;
+    -fx-wrap-text: true;
+}
+
+.error-dialog #errorDialogMessage{
+    -fx-font-size: 14pt;
+    -fx-padding: 5 20 5 20;
+    -fx-max-height: 1000;
+    -fx-wrap-text: true;
+}
+
+.error-dialog-choice-button
+{
+    -fx-background-color: light_grey;
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-max-width: 1000;
+    -fx-wrap-text: true;
+    -fx-max-height:1000;
+}
+
+.error-dialog-choice-button #errorDialogButtonTitle
+{
+    -fx-font-size: 14pt;
+    -fx-wrap-text: true;
+    -fx-pref-height: -1;
+    -fx-max-height: 1000;
+}
+
+.error-dialog-choice-button #errorDialogButtonMessage
+{
+    -fx-font-size: 10pt;
+    -fx-max-height: 1000;
+}
+
+.error-dialog-choice-button #errorDialogButtonLabelGroup
+{
+    -fx-max-height: -1;
+}

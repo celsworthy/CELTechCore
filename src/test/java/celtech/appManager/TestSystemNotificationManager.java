@@ -167,27 +167,12 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     }
 
     @Override
-    public void showCantPrintNoFilamentDialog()
-    {
-    }
-
-    @Override
-    public void showCantPrintDoorIsOpenDialog()
-    {
-    }
-
-    @Override
     public void showReelNotRecognisedDialog(String printerName)
     {
     }
 
     @Override
     public void showReelUpdatedNotification()
-    {
-    }
-
-    @Override
-    public void showSelectAFilamentDialog()
     {
     }
 

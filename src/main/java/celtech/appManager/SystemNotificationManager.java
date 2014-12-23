@@ -93,15 +93,9 @@ public interface SystemNotificationManager
     public Optional<PrinterErrorChoice> showPrinterErrorDialog(String title, String message, boolean showContinueOption,
         boolean showAbortOption, boolean showRetryOption);
 
-    public void showCantPrintNoFilamentDialog();
-
-    public void showCantPrintDoorIsOpenDialog();
-
     public void showReelNotRecognisedDialog(String printerName);
 
     public void showReelUpdatedNotification();
-
-    public void showSelectAFilamentDialog();
     
     public void showFilamentSlipDuringPrintDialog();
 }

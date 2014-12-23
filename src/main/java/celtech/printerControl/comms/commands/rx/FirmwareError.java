@@ -5,6 +5,7 @@ import celtech.appManager.errorHandling.SystemErrorHandlerOptions;
 import static celtech.appManager.errorHandling.SystemErrorHandlerOptions.OK_ABORT;
 import static celtech.appManager.errorHandling.SystemErrorHandlerOptions.ABORT;
 import static celtech.appManager.errorHandling.SystemErrorHandlerOptions.CLEAR_CONTINUE;
+import static celtech.appManager.errorHandling.SystemErrorHandlerOptions.OK;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -48,8 +49,8 @@ public enum FirmwareError
     ERROR_CHUNK_SEQUENCE("error.ERROR_CHUNK_SEQUENCE", 1, OK_ABORT),
     ERROR_FILE_TOO_LARGE("error.ERROR_FILE_TOO_LARGE", 2, OK_ABORT),
     ERROR_GCODE_LINE_TOO_LONG("error.ERROR_GCODE_LINE_TOO_LONG", 3, OK_ABORT),
-    ERROR_USB_RX("error.ERROR_USB_RX", 4, OK_ABORT),
-    ERROR_USB_TX("error.ERROR_USB_TX", 5, OK_ABORT),
+    ERROR_USB_RX("error.ERROR_USB_RX", 4, OK),
+    ERROR_USB_TX("error.ERROR_USB_TX", 5, OK),
     ERROR_BAD_COMMAND("error.ERROR_BAD_COMMAND", 6, OK_ABORT),
     ERROR_HEAD_EEPROM("error.ERROR_HEAD_EEPROM", 7, OK_ABORT),
     ERROR_BAD_FIRMWARE_FILE("error.ERROR_BAD_FIRMWARE_FILE", 8, OK_ABORT),
@@ -91,6 +92,11 @@ public enum FirmwareError
     public String getLocalisedErrorMessage()
     {
         return Lookup.i18n(errorText + ".message");
+    }
+    
+    public Set<SystemErrorHandlerOptions> getOptions()
+    {
+        return options;
     }
 
     public int getBytePosition()

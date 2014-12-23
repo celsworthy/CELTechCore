@@ -3,6 +3,8 @@
  */
 package celtech.appManager.errorHandling;
 
+import celtech.Lookup;
+
 /**
  *
  * @author tony
@@ -10,6 +12,15 @@ package celtech.appManager.errorHandling;
 public enum SystemErrorHandlerOptions
 {
     
-    ABORT, CLEAR_CONTINUE, RETRY, OK_ABORT, OK_CONTINUE;
+    ABORT, CLEAR_CONTINUE, RETRY, OK, OK_ABORT, OK_CONTINUE;
     
+    public String getLocalisedErrorTitle()
+    {
+        return Lookup.i18n("error.handler." + name() + ".title");
+    }
+
+    public String getLocalisedErrorMessage()
+    {
+        return Lookup.i18n("error.handler." + name() + ".message");
+    }
 }
