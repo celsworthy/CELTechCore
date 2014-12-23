@@ -67,9 +67,6 @@ public class CalibrationNozzleHeightActions
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT);
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
         savedHeadData = printer.readHeadEEPROM();
-        printer.goToZPosition(50);
-        printer.goToXYPosition(PrintBed.getPrintVolumeCentre().getX(), PrintBed.getPrintVolumeCentre().getZ());
-
         clearZOffsetsOnHead();
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
         heatBed();
@@ -108,6 +105,8 @@ public class CalibrationNozzleHeightActions
         if (PrinterUtils.waitOnMacroFinished(printer, cancellable) == false)
         {
             printer.goToTargetNozzleTemperature();
+        printer.goToZPosition(50);
+        printer.goToXYPosition(PrintBed.getPrintVolumeCentre().getX(), PrintBed.getPrintVolumeCentre().getZ());               
             if (printer.headProperty().get()
                 .getNozzleHeaters().get(0)
                 .heaterModeProperty().get() == HeaterMode.FIRST_LAYER)
