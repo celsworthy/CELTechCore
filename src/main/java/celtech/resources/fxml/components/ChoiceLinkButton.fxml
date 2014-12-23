@@ -7,8 +7,8 @@
     <graphic>
         <VBox id="errorDialogButtonLabelGroup" fx:id="labelGroup">
             <children>
-                <Label id="errorDialogButtonTitle" fx:id="title" text="Label" />
-                <Label id="errorDialogButtonMessage" fx:id="message" text="Label" />
+                <Label id="errorDialogButtonTitle" fx:id="title" text="" />
+                <Label id="errorDialogButtonMessage" fx:id="message" text="" />
             </children>
         </VBox>
     </graphic>
