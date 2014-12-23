@@ -5,6 +5,7 @@
 package celtech.configuration;
 
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
+import celtech.utils.Math.MathUtils;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Point3D;
 import libertysystems.stenographer.Stenographer;
@@ -27,10 +28,13 @@ public class PrintBed
     public static final float maxPrintableXSize = 210;
     public static final float maxPrintableZSize = 150;
     private static final float maxPrintableYSize = -100;
-    private static final Point3D printVolumeMaximums = new Point3D(maxPrintableXSize, 0, maxPrintableZSize);
+    private static final Point3D printVolumeMaximums = new Point3D(maxPrintableXSize, 0,
+                                                                   maxPrintableZSize);
     private static final Point3D printVolumeMinimums = new Point3D(0, maxPrintableYSize, 0);
-    private static final Point3D centre = new Point3D(maxPrintableXSize / 2, maxPrintableYSize / 2, maxPrintableZSize / 2);
-    private static final Point3D centreZeroHeight = new Point3D(maxPrintableXSize / 2, 0, maxPrintableZSize / 2);
+    private static final Point3D centre = new Point3D(maxPrintableXSize / 2, maxPrintableYSize / 2,
+                                                      maxPrintableZSize / 2);
+    private static final Point3D centreZeroHeight = new Point3D(maxPrintableXSize / 2, 0,
+                                                                maxPrintableZSize / 2);
     private BoundingBox printVolumeBoundingBox = null;
     private Stenographer steno = null;
 
@@ -38,7 +42,8 @@ public class PrintBed
     {
         steno = StenographerFactory.getStenographer(this.getClass().getName());
 
-        printVolumeBoundingBox = new BoundingBox(0,0,0, maxPrintableXSize, maxPrintableYSize, maxPrintableZSize);
+        printVolumeBoundingBox = new BoundingBox(0, 0, 0, maxPrintableXSize, maxPrintableYSize,
+                                                 maxPrintableZSize);
         steno.debug("Print volume bounds " + printVolumeBoundingBox);
     }
 
@@ -100,7 +105,7 @@ public class PrintBed
     {
         return centre;
     }
-    
+
     /**
      *
      * @return
@@ -132,9 +137,11 @@ public class PrintBed
         double ySize = bounds.getHeight();
         double zSize = bounds.getDepth();
 
-        if (xSize > maxPrintableXSize
-                || ySize > -maxPrintableYSize
-                || zSize > maxPrintableZSize)
+        double epsilon = 0.001;
+
+        if (MathUtils.compareDouble(xSize, maxPrintableXSize, epsilon) == MathUtils.MORE_THAN
+            || MathUtils.compareDouble(ySize, -maxPrintableYSize, epsilon) == MathUtils.MORE_THAN
+            || MathUtils.compareDouble(zSize, maxPrintableZSize, epsilon) == MathUtils.MORE_THAN)
         {
             biggerThanPrintArea = true;
         }
