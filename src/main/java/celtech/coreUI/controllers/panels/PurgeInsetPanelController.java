@@ -212,9 +212,6 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     {
         this.resources = resources;
 
-        purgeHelper.addStateListener(this);
-        purgeHelper.setState(PurgeState.IDLE);
-
         purgeProgressBar.setTargetLegend("");
         purgeProgressBar.setProgressDescription(Lookup.i18n("calibrationPanel.printingCaps"));
         purgeProgressBar.setTargetValue("");
@@ -369,6 +366,8 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         }
         this.printerToUse = printerToUse;
         purgeHelper = new PurgeHelper(printerToUse);
+        purgeHelper.addStateListener(this);
+        purgeHelper.setState(PurgeState.IDLE);
         setupPrintProgressListeners(printerToUse);
 
         installTag(printerToUse, startPurgeButton);

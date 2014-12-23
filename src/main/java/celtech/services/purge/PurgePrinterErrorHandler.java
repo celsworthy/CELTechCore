@@ -3,13 +3,23 @@
  */
 package celtech.services.purge;
 
+import celtech.Lookup;
+import celtech.coreUI.components.ChoiceLinkButton;
+import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.comms.events.ErrorConsumer;
 import celtech.printerControl.model.CalibrationXAndYActions;
 import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterException;
 import celtech.utils.tasks.Cancellable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -74,7 +84,51 @@ public class PurgePrinterErrorHandler
      */
     private void showPrinterErrorOccurred() 
     {
-        
+        Callable<Boolean> askUserWhetherToAbort = new Callable()
+        {
+            @Override
+            public Boolean call() throws Exception
+            {
+                ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox();
+                choiceLinkDialogBox.setTitle(Lookup.i18n(
+                    "dialogs.purge.printerErrorTitle"));
+                choiceLinkDialogBox.setMessage(Lookup.i18n(
+                    "dialogs.purge.printerError"));
+                choiceLinkDialogBox.addChoiceLink(
+                    Lookup.i18n("error.handler.OK_CONTINUE.title"),
+                    Lookup.i18n("dialogs.purge.continueAfterPrinterError"));
+                ChoiceLinkButton abort = choiceLinkDialogBox.addChoiceLink(
+                    Lookup.i18n("error.handler.ABORT.title"),
+                    Lookup.i18n("dialogs.purge.abort"));
+
+                Optional<ChoiceLinkButton> shutdownResponse = choiceLinkDialogBox.
+                    getUserInput();
+
+                return shutdownResponse.get() == abort;
+            }
+        };
+
+        FutureTask<Boolean> askWhetherToAbortTask = new FutureTask<>(askUserWhetherToAbort);
+        Lookup.getTaskExecutor().runOnGUIThread(askWhetherToAbortTask);
+        try
+        {
+            boolean doAbort = askWhetherToAbortTask.get();
+            if (doAbort) {
+                cancellable.cancelled = true;
+                try
+                {
+                    printer.cancel(null);
+                } catch (PrinterException ex)
+                {
+                   steno.error("Cannot cancel purge");
+                }
+            } else {
+                errorOccurred = false;
+            }
+        } catch (InterruptedException | ExecutionException ex)
+        {
+            steno.error("Error during purge");
+        }
     }
 
 }
