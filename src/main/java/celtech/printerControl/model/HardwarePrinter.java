@@ -2472,7 +2472,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             steno.warning("Failed to automatically pause during print");
                         }
 
-                        Lookup.getSystemNotificationHandler().showFilamentSlipDuringPrintDialog();
+                        Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(error, this);
                     }
                 }
                 break;

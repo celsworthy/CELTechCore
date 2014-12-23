@@ -137,6 +137,20 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                             "Error whilst cancelling print from error dialog");
                                     }
                                     break;
+                                case CLEAR_CONTINUE:
+                                case OK_CONTINUE:
+                                    try
+                                    {
+                                        if (printer.canResumeProperty().get())
+                                        {
+                                            printer.resume();
+                                        }
+                                    } catch (PrinterException ex)
+                                    {
+                                        steno.error(
+                                            "Error whilst resuming print from error dialog");
+                                    }
+                                    break;
                             }
                             break;
                         }
@@ -832,22 +846,5 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 reelNotRecognisedDialogOnDisplay = false;
             });
         }
-    }
-
-    @Override
-    public void showFilamentSlipDuringPrintDialog()
-    {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
-        {
-            ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox();
-            choiceLinkDialogBox.setTitle(FirmwareError.ERROR_E_FILAMENT_SLIP.
-                getLocalisedErrorTitle());
-            choiceLinkDialogBox.setMessage(FirmwareError.ERROR_E_FILAMENT_SLIP.
-                getLocalisedErrorMessage());
-
-            choiceLinkDialogBox.addChoiceLink(Lookup.i18n("misc.OK"));
-
-            choiceLinkDialogBox.getUserInput();
-        });
     }
 }
