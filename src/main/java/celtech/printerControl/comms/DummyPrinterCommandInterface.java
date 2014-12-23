@@ -78,6 +78,9 @@ public class DummyPrinterCommandInterface extends CommandInterface
     HeaterMode nozzleHeaterMode = HeaterMode.OFF;
     protected int currentNozzleTemperature = ROOM_TEMPERATURE;
     protected int nozzleTargetTemperature = 210;
+    HeaterMode bedHeaterMode = HeaterMode.OFF;
+    protected int currentBedTemperature = ROOM_TEMPERATURE;
+    protected int bedTargetTemperature = 30;    
     private boolean errorTriggered;
     
     public DummyPrinterCommandInterface(PrinterStatusConsumer controlInterface, String portName,
@@ -128,31 +131,13 @@ public class DummyPrinterCommandInterface extends CommandInterface
             if (!errorTriggered && currentNozzleTemperature > 50)
             {
                 // Uncomment the following two lines to test handling a printer error
-//                errorTriggered = true;
-//                raiseError(FirmwareError.ERROR_NOZZLE_FLUSH_NEEDED);
+                errorTriggered = true;
+                raiseError(FirmwareError.ERROR_NOZZLE_FLUSH_NEEDED);
             }
             
             currentStatus.setAmbientTemperature((int) (Math.random() * 100));
-            if (nozzleHeaterMode != HeaterMode.OFF && currentNozzleTemperature < nozzleTargetTemperature)
-            {
-                currentNozzleTemperature += 10;
-                if (currentNozzleTemperature > nozzleTargetTemperature)
-                {
-                    currentNozzleTemperature = nozzleTargetTemperature;
-                }
-            } else if (nozzleHeaterMode == HeaterMode.OFF && currentNozzleTemperature > ROOM_TEMPERATURE)
-            {
-                currentNozzleTemperature -= 10;
-                if (currentNozzleTemperature < ROOM_TEMPERATURE)
-                {
-                    currentNozzleTemperature = ROOM_TEMPERATURE;
-                }
-            }
-            steno.debug("set status nozzle temp to " + currentNozzleTemperature + "and heater mode to " + nozzleHeaterMode);
-            currentStatus.setNozzle0HeaterMode(nozzleHeaterMode);
-            currentStatus.setNozzle0Temperature(currentNozzleTemperature);
-            steno.debug("set status nozzle target temp to " + nozzleTargetTemperature);
-            currentStatus.setNozzle0TargetTemperature(nozzleTargetTemperature);
+            handleNozzleTempChange();
+            handleBedTempChange();
             
             if (!printJobID.equals(NOTHING_PRINTING_JOB_ID))
             {
@@ -280,6 +265,19 @@ public class DummyPrinterCommandInterface extends CommandInterface
             {
                 nozzleHeaterMode = HeaterMode.NORMAL;
                 steno.debug("set heater mode normal");
+            } else if (messageData.startsWith("M140 S") || messageData.startsWith("M139 S"))
+            {
+                bedTargetTemperature = Integer.parseInt(messageData.substring(6));
+                steno.debug("set bed target temp to " + bedTargetTemperature);
+                if (bedTargetTemperature == 0)
+                {
+                    bedHeaterMode = HeaterMode.OFF;
+                    steno.debug("set bed heater mode off");
+                }
+            } else if (messageData.startsWith("M140") || messageData.startsWith("M139"))
+            {
+                bedHeaterMode = HeaterMode.NORMAL;
+                steno.debug("set bed heater mode normal");
             } else if (messageData.startsWith("M113"))
             {
                 // ZDelta
@@ -367,6 +365,50 @@ public class DummyPrinterCommandInterface extends CommandInterface
         
         return response;
     }
+
+    private void handleNozzleTempChange()
+    {
+        if (nozzleHeaterMode != HeaterMode.OFF && currentNozzleTemperature < nozzleTargetTemperature)
+        {
+            currentNozzleTemperature += 10;
+            if (currentNozzleTemperature > nozzleTargetTemperature)
+            {
+                currentNozzleTemperature = nozzleTargetTemperature;
+            }
+        } else if (nozzleHeaterMode == HeaterMode.OFF && currentNozzleTemperature > ROOM_TEMPERATURE)
+        {
+            currentNozzleTemperature -= 10;
+            if (currentNozzleTemperature < ROOM_TEMPERATURE)
+            {
+                currentNozzleTemperature = ROOM_TEMPERATURE;
+            }
+        }
+        currentStatus.setNozzle0HeaterMode(nozzleHeaterMode);
+        currentStatus.setNozzle0Temperature(currentNozzleTemperature);
+        currentStatus.setNozzle0TargetTemperature(nozzleTargetTemperature);
+    }
+    
+    private void handleBedTempChange()
+    {
+        if (bedHeaterMode != HeaterMode.OFF && currentBedTemperature < bedTargetTemperature)
+        {
+            currentBedTemperature += 5;
+            if (currentBedTemperature > bedTargetTemperature)
+            {
+                currentBedTemperature = bedTargetTemperature;
+            }
+        } else if (bedHeaterMode == HeaterMode.OFF && currentBedTemperature > ROOM_TEMPERATURE)
+        {
+            currentNozzleTemperature -= 5;
+            if (currentBedTemperature < ROOM_TEMPERATURE)
+            {
+                currentBedTemperature = ROOM_TEMPERATURE;
+            }
+        }
+        currentStatus.setBedHeaterMode(bedHeaterMode);
+        currentStatus.setBedTemperature(currentBedTemperature);
+        currentStatus.setBedTargetTemperature(bedTargetTemperature);
+    }    
     
     private void detachReel(int reelNumber)
     {

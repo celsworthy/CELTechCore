@@ -37,7 +37,7 @@ public class CalibrationNozzleOpeningActions
     private final FloatProperty nozzlePosition = new SimpleFloatProperty();
     private final FloatProperty bPositionGUIT = new SimpleFloatProperty();
 
-    private final PrinterErrorHandler printerErrorHandler;
+    private final CalibrationPrinterErrorHandler printerErrorHandler;
     private final Cancellable cancellable = new Cancellable();
 
     public CalibrationNozzleOpeningActions(Printer printer)
@@ -54,7 +54,7 @@ public class CalibrationNozzleOpeningActions
                         bPositionGUIT.set(nozzlePosition.get());
                 });
             });
-        printerErrorHandler = new PrinterErrorHandler(printer, cancellable);
+        printerErrorHandler = new CalibrationPrinterErrorHandler(printer, cancellable);
         printerErrorHandler.registerForPrinterErrors();
     }
 

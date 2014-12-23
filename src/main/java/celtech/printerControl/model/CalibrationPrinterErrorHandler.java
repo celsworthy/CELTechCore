@@ -14,12 +14,12 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * The PrinterErrorHandler listens for printer errors and if they occur then the next call to 
+ * The CalibrationPrinterErrorHandler listens for printer errors and if they occur then the next call to 
  * {@link #checkIfPrinterErrorHasOccurred()} will cause the user to get an Abort dialog, which is
  * followed by raising an exception.
  * @author tony
  */
-class PrinterErrorHandler
+class CalibrationPrinterErrorHandler
 {
     
     private boolean errorOccurred = true;
@@ -35,7 +35,7 @@ class PrinterErrorHandler
     };    
     
     
-    public PrinterErrorHandler(Printer printer, Cancellable cancellable)
+    public CalibrationPrinterErrorHandler(Printer printer, Cancellable cancellable)
     {
         this.printer = printer;
         this.cancellable = cancellable;

@@ -5,6 +5,7 @@ import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.ControllableService;
 import celtech.utils.PrinterUtils;
+import celtech.utils.tasks.Cancellable;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -22,14 +23,16 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
     private Printer printerToUse = null;
 
     private int purgeTemperature = 0;
+    private final Cancellable cancellable;
 
     /**
      *
      * @param desiredState
      */
-    public PurgeTask(PurgeState desiredState)
+    public PurgeTask(PurgeState desiredState, Cancellable cancellable)
     {
         this.desiredState = desiredState;
+        this.cancellable = cancellable;
     }
 
     @Override
@@ -48,13 +51,17 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
 //                int desiredBedTemperature = 30;
                 printerToUse.setBedTargetTemperature(desiredBedTemperature);
                 printerToUse.goToTargetBedTemperature();
-                boolean bedHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(printerToUse.getPrinterAncillarySystems().bedTemperatureProperty(), this, desiredBedTemperature, 5, 600);
+                boolean bedHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(
+                    printerToUse.getPrinterAncillarySystems().bedTemperatureProperty(), this, 
+                    desiredBedTemperature, 5, 600, cancellable);
 
                 printerToUse.setNozzleTargetTemperature(purgeTemperature);
                 printerToUse.goToTargetNozzleTemperature();
                 //TODO modify to support multiple heaters
                 boolean extruderHeatFailed = PrinterUtils.
-                    waitUntilTemperatureIsReached(printerToUse.headProperty().get().getNozzleHeaters().get(0).nozzleTemperatureProperty(), this, purgeTemperature, 5, 300);
+                    waitUntilTemperatureIsReached(
+                        printerToUse.headProperty().get().getNozzleHeaters().get(0).nozzleTemperatureProperty(), 
+                        this, purgeTemperature, 5, 300, cancellable);
 
                 if (!bedHeatFailed && !extruderHeatFailed)
                 {

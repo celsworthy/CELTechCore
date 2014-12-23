@@ -8,8 +8,10 @@ import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
+import celtech.services.purge.PurgePrinterErrorHandler;
 import celtech.services.purge.PurgeState;
 import celtech.services.purge.PurgeTask;
+import celtech.utils.tasks.Cancellable;
 import java.util.ArrayList;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -32,13 +34,16 @@ public class PurgeHelper
     private PurgeTask purgeTask = null;
 
     private PurgeState state = PurgeState.IDLE;
-    private ArrayList<PurgeStateListener> stateListeners = new ArrayList<>();
+    private final ArrayList<PurgeStateListener> stateListeners = new ArrayList<>();
 
     private float reelNozzleTemperature = 0;
     private int lastDisplayTemperature = 0;
     private int currentDisplayTemperature = 0;
     private int purgeTemperature = 0;
 
+    private final PurgePrinterErrorHandler printerErrorHandler;
+    private final Cancellable cancellable = new Cancellable();
+    
     private final EventHandler<WorkerStateEvent> failedTaskHandler = (WorkerStateEvent event) ->
     {
         cancelPurgeAction();
@@ -49,16 +54,16 @@ public class PurgeHelper
         setState(state.getNextState());
     };
 
-    public void setPrinterToUse(Printer printer)
+    PurgeHelper(Printer printer)
     {
         this.printerToUse = printer;
+        printerErrorHandler = new PurgePrinterErrorHandler(printer, cancellable);
+        printerErrorHandler.registerForPrinterErrors();
     }
 
-    /**
-     *
-     */
     public void cancelPurgeAction()
     {
+        printerErrorHandler.deregisterForPrinterErrors();
         if (purgeTask != null)
         {
             if (purgeTask.isRunning())
@@ -103,7 +108,7 @@ public class PurgeHelper
         switch (state)
         {
             case IDLE:
-
+                printerErrorHandler.checkIfPrinterErrorHasOccurredAndAbortIfNotSlip();
                 break;
 
             case INITIALISING:
@@ -140,10 +145,11 @@ public class PurgeHelper
                     steno.error("Error during purge operation");
                     cancelPurgeAction();
                 }
+                printerErrorHandler.checkIfPrinterErrorHasOccurredAndAbortIfNotSlip();
                 break;
 
             case RUNNING_PURGE:
-                purgeTask = new PurgeTask(state);
+                purgeTask = new PurgeTask(state, cancellable);
                 purgeTask.setOnSucceeded(succeededTaskHandler);
                 purgeTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(purgeTask);
@@ -153,10 +159,11 @@ public class PurgeHelper
                 Thread purgingTaskThread = new Thread(purgeTask);
                 purgingTaskThread.setName("Purge - running purge");
                 purgingTaskThread.start();
+                printerErrorHandler.checkIfPrinterErrorHasOccurredAndAbortIfNotSlip();
                 break;
 
             case HEATING:
-                purgeTask = new PurgeTask(state);
+                purgeTask = new PurgeTask(state, cancellable);
                 purgeTask.setOnSucceeded(succeededTaskHandler);
                 purgeTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(purgeTask);
@@ -166,6 +173,7 @@ public class PurgeHelper
                 Thread heatingTaskThread = new Thread(purgeTask);
                 heatingTaskThread.setName("Purge - heating");
                 heatingTaskThread.start();
+                printerErrorHandler.checkIfPrinterErrorHasOccurredAndAbortIfNotSlip();
                 break;
 
             case FINISHED:
@@ -192,9 +200,11 @@ public class PurgeHelper
                 {
                     steno.error("Error in purge - mode=" + state.name());
                 }
+                printerErrorHandler.deregisterForPrinterErrors();
                 break;
             case FAILED:
                 resetPrinter();
+                printerErrorHandler.deregisterForPrinterErrors();
                 break;
         }
     }

@@ -26,14 +26,14 @@ public class CalibrationXAndYActions
     private HeadEEPROMDataResponse savedHeadData;
     private int xOffset = 0;
     private int yOffset = 0;
-    private final PrinterErrorHandler printerErrorHandler;
+    private final CalibrationPrinterErrorHandler printerErrorHandler;
     private final Cancellable cancellable = new Cancellable();
 
     public CalibrationXAndYActions(Printer printer)
     {
         this.printer = printer;
         cancellable.cancelled = false;
-        printerErrorHandler = new PrinterErrorHandler(printer, cancellable);
+        printerErrorHandler = new CalibrationPrinterErrorHandler(printer, cancellable);
         printerErrorHandler.registerForPrinterErrors();        
     }
     
