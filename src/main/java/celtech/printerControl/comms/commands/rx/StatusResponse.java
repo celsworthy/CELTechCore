@@ -15,7 +15,7 @@ import java.text.ParseException;
 public class StatusResponse extends RoboxRxPacket
 {
     /*
-     v 689
+     v 699
      status: <0xe1> iiiiiiiiiiiiiiii llllllll p b x y z e d b g h i j a m n k mmmmmmmm nnnnnnnn ccccccccl rrrrrrrr uuuuuuuu dddddddd o pppppppp qqqqqqqq aaaaaaaa r ssssssss tttttttt u c v w x p s xxxxxxxx yyyyyyyy zzzzzzzz bbbbbbbb eeeeeeee gggggggg hhhhhhhh jjjjjjjj ffffffff
      iiiiiiiiiiiiiiii = id of running job
      llllllll = line # of running job in hex

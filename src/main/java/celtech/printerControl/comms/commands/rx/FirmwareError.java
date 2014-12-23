@@ -17,7 +17,7 @@ import java.util.Set;
 public enum FirmwareError
 {
     /*
-     Error flags as at firmware v698
+     Error flags as at firmware v699
      ERROR_SD_CARD 0
      ERROR_CHUNK_SEQUENCE 1
      ERROR_FILE_TOO_LARGE 2
