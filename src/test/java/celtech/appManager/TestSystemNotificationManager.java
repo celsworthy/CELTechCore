@@ -180,12 +180,6 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     public Optional<PrinterErrorChoice> showPrinterErrorDialog(String title, String message,
         boolean showContinueOption, boolean showAbortOption, boolean showRetryOption)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void showFilamentSlipDuringPrintDialog()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return Optional.empty();
     }
 }
