@@ -502,6 +502,7 @@ public class PrintEngine implements ControllableService
      */
     public void shutdown()
     {
+        stopAllServices();
     }
 
     /*
