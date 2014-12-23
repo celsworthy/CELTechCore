@@ -18,10 +18,8 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
 
     private final Stenographer steno = StenographerFactory.getStenographer(PurgeTask.class.getName());
     private PurgeState desiredState = null;
-    private int nozzleNumber = -1;
 
     private Printer printerToUse = null;
-    private boolean keyPressed = false;
 
     private int purgeTemperature = 0;
 
@@ -47,7 +45,7 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
 
                 //Set the bed to 90 degrees C
                 int desiredBedTemperature = 90;
-//                int desiredBedTemperature = 60;
+//                int desiredBedTemperature = 30;
                 printerToUse.setBedTargetTemperature(desiredBedTemperature);
                 printerToUse.goToTargetBedTemperature();
                 boolean bedHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(printerToUse.getPrinterAncillarySystems().bedTemperatureProperty(), this, desiredBedTemperature, 5, 600);

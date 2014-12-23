@@ -100,7 +100,7 @@ public class MaintenancePanelController implements Initializable
     private GCodeMacroButton XTestButton;
 
     @FXML
-    private GCodeMacroButton Level_YButton;
+    private GCodeMacroButton ChangeColourButton;
 
     @FXML
     private GCodeMacroButton T0CleanButton;
@@ -346,7 +346,7 @@ public class MaintenancePanelController implements Initializable
 
         XTestButton.setDisable(printingdisabled);
 
-        Level_YButton.setDisable(printingdisabled);
+        ChangeColourButton.setDisable(printingdisabled);
 
         T0CleanButton.setDisable(noFilamentOrPrintingdisabled);
 

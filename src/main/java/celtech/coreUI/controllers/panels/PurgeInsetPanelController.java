@@ -28,11 +28,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Bounds;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
@@ -148,7 +146,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
 
         if (project != null && purgeCompletedOK)
         {
-            final Project projectCopy = project;
+//            final Project projectCopy = project;
 
             Platform.runLater(new Runnable()
             {
@@ -162,7 +160,9 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                         .message(DisplayManager.getLanguageBundle().getString(
                                 "dialogs.clearBedInstruction"))
                         .showWarning();
-                    printerToUse.printProject(projectCopy, filament, printQuality, settings);
+                    // Need to go to settings page for this project
+                    ApplicationStatus.getInstance().setMode(ApplicationMode.SETTINGS);
+//                    printerToUse.printProject(projectCopy, filament, printQuality, settings);
                 }
             });
 
@@ -225,9 +225,9 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         startPurgeButton.installTag();
         proceedButton.installTag();
 
-//        loadDiagram();
-//        resizeDiagram();
-//        addDiagramMoveScaleListeners();
+        loadDiagram();
+        resizeDiagram();
+        addDiagramMoveScaleListeners();
 
     }
 
@@ -246,7 +246,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 okButton.setVisible(false);
                 purgeStatus.setText(state.getStepTitle());
                 purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
-//                diagramContainer.setVisible(false);
+                diagramContainer.setVisible(false);
                 break;
             case INITIALISING:
                 startPurgeButton.setVisible(false);
@@ -257,7 +257,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 okButton.setVisible(false);
                 purgeDetailsGrid.setVisible(false);
                 purgeStatus.setText(state.getStepTitle());
-//                diagramContainer.setVisible(false);
+                diagramContainer.setVisible(false);
                 break;
             case CONFIRM_TEMPERATURE:
                 startPurgeButton.setVisible(false);
@@ -274,7 +274,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 purgeTemperature.intValueProperty().addListener(purgeTempEntryListener);
                 purgeDetailsGrid.setVisible(true);
                 purgeStatus.setText(state.getStepTitle());
-//                diagramContainer.setVisible(false);
+                diagramContainer.setVisible(false);
                 break;
             case HEATING:
                 startPurgeButton.setVisible(false);
@@ -286,7 +286,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 purgeDetailsGrid.setVisible(false);
                 purgeStatus.setText(state.getStepTitle());
                 purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
-//                diagramContainer.setVisible(false);
+                diagramContainer.setVisible(false);
                 break;
             case RUNNING_PURGE:
                 startPurgeButton.setVisible(false);
@@ -297,7 +297,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 okButton.setVisible(false);
                 purgeDetailsGrid.setVisible(false);
                 purgeStatus.setText(state.getStepTitle());
-//                diagramContainer.setVisible(false);
+                diagramContainer.setVisible(true);
                 break;
             case FINISHED:
                 startPurgeButton.setVisible(false);
@@ -309,7 +309,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 purgeDetailsGrid.setVisible(false);
                 purgeStatus.setText(state.getStepTitle());
                 purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
-//                diagramContainer.setVisible(true);
+                diagramContainer.setVisible(true);
                 break;
             case FAILED:
                 startPurgeButton.setVisible(true);
@@ -321,7 +321,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 purgeDetailsGrid.setVisible(false);
                 purgeStatus.setText(state.getStepTitle());
                 purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
-//                diagramContainer.setVisible(false);
+                diagramContainer.setVisible(false);
                 break;
         }
     }
@@ -371,6 +371,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         {
             removePrintProgressListeners(this.printerToUse);
             startPurgeButton.getTag().removeAllConditionalText();
+            proceedButton.getTag().removeAllConditionalText();
         }
         this.printerToUse = printerToUse;
         purgeHelper.setPrinterToUse(printerToUse);
@@ -425,24 +426,24 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     private void addDiagramMoveScaleListeners()
     {
 
-//        diagramContainer.widthProperty().addListener(
-//            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-//            {
-//                resizeDiagram();
-//            });
-//
-//        diagramContainer.heightProperty().addListener(
-//            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-//            {
-//                resizeDiagram();
-//            });
+        diagramContainer.widthProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                resizeDiagram();
+            });
+
+        diagramContainer.heightProperty().addListener(
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                resizeDiagram();
+            });
 
     }
 
     private void loadDiagram()
     {
         URL fxmlFileName = getClass().getResource(
-            ApplicationConfiguration.fxmlDiagramsResourcePath + "purge/purge.fxml");
+            ApplicationConfiguration.fxmlDiagramsResourcePath + "purge/purge_simplified.fxml");
         try
         {
             FXMLLoader loader = new FXMLLoader(fxmlFileName, resources);
@@ -469,7 +470,10 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         double requiredScaleHeight = availableHeight / diagramHeight * 0.95;
         double requiredScaleWidth = availableWidth / diagramWidth * 0.95;
         double requiredScale = Math.min(requiredScaleHeight, requiredScaleWidth);
-        requiredScale = Math.min(requiredScale, 1.3d);
+//        requiredScale = Math.min(requiredScale, 1.3d);
+        steno.debug("Scale is " + requiredScale);
+        diagramNode.setScaleX(requiredScale);
+        diagramNode.setScaleY(requiredScale);
 
         diagramNode.setPrefWidth(0);
         diagramNode.setPrefHeight(0);
@@ -479,8 +483,8 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         double xTranslate = 0;
         double yTranslate = 0;
 //        
-        xTranslate = -scaledDiagramWidth / 2;
-        yTranslate -= availableHeight / 2.0;
+        xTranslate += availableWidth / 2.0 - diagramWidth / 2.0;
+        yTranslate -= availableHeight;
 
         diagramNode.setTranslateX(xTranslate);
         diagramNode.setTranslateY(yTranslate);
