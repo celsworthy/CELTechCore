@@ -108,7 +108,7 @@ public class PurgeHelper
         switch (state)
         {
             case IDLE:
-                printerErrorHandler.checkIfPrinterErrorHasOccurred();
+                printerErrorHandler.checkIfPrinterErrorHasOccurredAndAbortIfNotSlip();
                 break;
 
             case INITIALISING:
@@ -145,7 +145,7 @@ public class PurgeHelper
                     steno.error("Error during purge operation");
                     cancelPurgeAction();
                 }
-                printerErrorHandler.checkIfPrinterErrorHasOccurred();
+                printerErrorHandler.checkIfPrinterErrorHasOccurredAndAbortIfNotSlip();
                 break;
 
             case RUNNING_PURGE:
@@ -159,7 +159,7 @@ public class PurgeHelper
                 Thread purgingTaskThread = new Thread(purgeTask);
                 purgingTaskThread.setName("Purge - running purge");
                 purgingTaskThread.start();
-                printerErrorHandler.checkIfPrinterErrorHasOccurred();
+                printerErrorHandler.checkIfPrinterErrorHasOccurredAndAbortIfNotSlip();
                 break;
 
             case HEATING:
@@ -173,7 +173,7 @@ public class PurgeHelper
                 Thread heatingTaskThread = new Thread(purgeTask);
                 heatingTaskThread.setName("Purge - heating");
                 heatingTaskThread.start();
-                printerErrorHandler.checkIfPrinterErrorHasOccurred();
+                printerErrorHandler.checkIfPrinterErrorHasOccurredAndAbortIfNotSlip();
                 break;
 
             case FINISHED:
