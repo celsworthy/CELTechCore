@@ -152,11 +152,22 @@ public class DisplayManager implements EventHandler<KeyEvent>
     private AnchorPane root;
     private Pane spinnerContainer;
     private Spinner spinner;
-    
+
     private BooleanProperty nodesMayHaveMoved = new SimpleBooleanProperty(false);
 
     private DisplayManager()
     {
+        switch (ApplicationConfiguration.getMachineType())
+        {
+            case LINUX_X64:
+            case LINUX_X86:
+                System.setProperty("prism.lcdtext", "false");
+                break;
+            default:
+                System.setProperty("prism.lcdtext", "true");
+                break;
+        }
+
         modelLoadDialog = new ProgressDialog(modelLoaderService);
 
         modelLoaderService.setOnSucceeded((WorkerStateEvent t) ->
@@ -180,7 +191,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
             {
                 if (loadResult.isModelTooLarge())
                 {
-                    boolean shrinkModel = Lookup.getSystemNotificationHandler().showModelTooBigDialog(loadResult.getModelFilename());
+                    boolean shrinkModel = Lookup.getSystemNotificationHandler().
+                        showModelTooBigDialog(loadResult.getModelFilename());
 
                     if (shrinkModel)
                     {
@@ -283,10 +295,12 @@ public class DisplayManager implements EventHandler<KeyEvent>
             }
 
             projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
-            ((LayoutSlideOutPanelController) slideOutControllers.get(ApplicationMode.LAYOUT)).bindLoadedModels(
-                projectTab.getProject());
-            ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).bindLoadedModels(
-                projectTab.getThreeDViewManager());
+            ((LayoutSlideOutPanelController) slideOutControllers.get(ApplicationMode.LAYOUT)).
+                bindLoadedModels(
+                    projectTab.getProject());
+            ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).
+                bindLoadedModels(
+                    projectTab.getThreeDViewManager());
             layoutStatusMenuStripController.bindSelectedModels(projectTab);
             projectTab.setMode(newMode);
         } else if (newMode == ApplicationMode.SETTINGS)
@@ -360,7 +374,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
         AnchorPane.setLeftAnchor(root, 0.0);
         AnchorPane.setRightAnchor(root, 0.0);
         AnchorPane.setTopAnchor(root, 0.0);
-        
+
         mainHolder = new HBox();
         mainHolder.setPrefSize(-1, -1);
 
@@ -411,8 +425,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 ApplicationConfiguration.fxmlResourcePath
                 + "PrinterStatusPage.fxml"), getLanguageBundle());
             AnchorPane printerStatusPage = printerStatusPageLoader.load();
-            PrinterStatusPageController printerStatusPageController = printerStatusPageLoader.getController();
-            printerStatusPageController.configure(slideoutAndProjectHolder.getProjectTabPaneHolder());
+            PrinterStatusPageController printerStatusPageController = printerStatusPageLoader.
+                getController();
+            printerStatusPageController.
+                configure(slideoutAndProjectHolder.getProjectTabPaneHolder());
 
             printerStatusTab = new Tab();
             printerStatusTab.setText(getLanguageBundle().getString("printerStatusTabTitle"));
@@ -461,7 +477,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
                         if (lastTab != newTab)
                         {
-                            ProjectTab projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
+                            ProjectTab projectTab = (ProjectTab) tabDisplaySelectionModel.
+                            getSelectedItem();
                             ((LayoutSidePanelController) (sidePanelControllers.get(
                                 ApplicationMode.LAYOUT))).bindLoadedModels(
                                 projectTab.getThreeDViewManager());
@@ -518,7 +535,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                           ApplicationConfiguration.DEFAULT_HEIGHT);
 
         scene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
-        
+
         scene.widthProperty().addListener(new ChangeListener<Number>()
         {
             @Override
@@ -538,7 +555,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 fireNodeMayHaveMovedTrigger();
             }
         });
-        
+
         slideoutAndProjectHolder.widthProperty().addListener(new ChangeListener<Number>()
         {
             @Override
@@ -548,7 +565,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 fireNodeMayHaveMovedTrigger();
             }
         });
-        
+
         mainStage.maximizedProperty().addListener(new ChangeListener<Boolean>()
         {
             @Override
@@ -748,7 +765,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
     }
 
     /**
-     * Load each model in modelsToLoad, do not lay them out on the bed. , If there are already models loaded in the project then do not relayout even if relayout=true;
+     * Load each model in modelsToLoad, do not lay them out on the bed. , If there are already
+     * models loaded in the project then do not relayout even if relayout=true;
      *
      * @param modelsToLoad
      * @param newTab
@@ -987,12 +1005,12 @@ public class DisplayManager implements EventHandler<KeyEvent>
             captureKeys = true;
         }
     }
-    
+
     private void fireNodeMayHaveMovedTrigger()
     {
         nodesMayHaveMoved.set(!nodesMayHaveMoved.get());
     }
-    
+
     public ReadOnlyBooleanProperty nodesMayHaveMovedProperty()
     {
         return nodesMayHaveMoved;
