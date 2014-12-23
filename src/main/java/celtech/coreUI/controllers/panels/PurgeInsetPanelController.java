@@ -47,12 +47,9 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     private final Stenographer steno = StenographerFactory.getStenographer(
         PurgeInsetPanelController.class.getName());
 
-    private final PurgeHelper purgeHelper = new PurgeHelper();
+    private PurgeHelper purgeHelper;
 
     private Project project = null;
-    private Filament filament = null;
-    private PrintQualityEnumeration printQuality = null;
-    private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
     private String macroToExecuteAfterPurge = null;
     private double printPercent;
@@ -357,9 +354,6 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         PrintQualityEnumeration printQuality, SlicerParametersFile settings, Printer printerToUse)
     {
         this.project = project;
-        this.filament = filament;
-        this.printQuality = printQuality;
-        this.settings = settings;
         bindPrinter(printerToUse);
 
         ApplicationStatus.getInstance().setMode(ApplicationMode.PURGE);
@@ -374,7 +368,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
             proceedButton.getTag().removeAllConditionalText();
         }
         this.printerToUse = printerToUse;
-        purgeHelper.setPrinterToUse(printerToUse);
+        purgeHelper = new PurgeHelper(printerToUse);
         setupPrintProgressListeners(printerToUse);
 
         installTag(printerToUse, startPurgeButton);

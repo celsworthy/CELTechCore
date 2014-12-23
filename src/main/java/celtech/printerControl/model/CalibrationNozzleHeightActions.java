@@ -38,7 +38,7 @@ public class CalibrationNozzleHeightActions
     private final DoubleProperty zcoGUIT = new SimpleDoubleProperty();
     private double zDifference;
     private final Cancellable cancellable = new Cancellable();
-    private final PrinterErrorHandler printerErrorHandler;
+    private final CalibrationPrinterErrorHandler printerErrorHandler;
 
     public CalibrationNozzleHeightActions(Printer printer)
     {
@@ -54,7 +54,7 @@ public class CalibrationNozzleHeightActions
                         zcoGUIT.set(zco.get());
                 });
             });
-        printerErrorHandler = new PrinterErrorHandler(printer, cancellable);
+        printerErrorHandler = new CalibrationPrinterErrorHandler(printer, cancellable);
         printerErrorHandler.registerForPrinterErrors();
     }
 
