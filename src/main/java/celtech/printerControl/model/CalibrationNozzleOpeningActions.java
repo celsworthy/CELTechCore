@@ -5,6 +5,7 @@ package celtech.printerControl.model;
 
 import celtech.Lookup;
 import celtech.configuration.HeaterMode;
+import celtech.configuration.PrintBed;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -117,6 +118,7 @@ public class CalibrationNozzleOpeningActions
             {
                 printer.goToTargetNozzleTemperature();
                 printer.goToZPosition(50);
+                printer.goToXYPosition(PrintBed.getPrintVolumeCentre().getX(), PrintBed.getPrintVolumeCentre().getZ());
                 if (PrinterUtils.waitOnBusy(printer, cancellable) == false)
                 {
 

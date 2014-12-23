@@ -5,6 +5,7 @@ package celtech.printerControl.model;
 
 import celtech.Lookup;
 import celtech.configuration.HeaterMode;
+import celtech.configuration.PrintBed;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.NozzleData;
@@ -66,6 +67,8 @@ public class CalibrationNozzleHeightActions
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT);
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
         savedHeadData = printer.readHeadEEPROM();
+        printer.goToZPosition(50);
+        printer.goToXYPosition(PrintBed.getPrintVolumeCentre().getX(), PrintBed.getPrintVolumeCentre().getZ());
 
         clearZOffsetsOnHead();
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
