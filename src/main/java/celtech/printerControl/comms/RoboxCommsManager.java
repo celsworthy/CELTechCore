@@ -160,7 +160,12 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     {
         for (Printer printer : Lookup.getConnectedPrinters())
         {
+            steno.info("Shutdown printer " + printer);
+            try {
             printer.shutdown();
+            } catch (Exception ex) {
+                steno.error("Error shutting down printer");
+            }
         }
 
         keepRunning = false;

@@ -3,7 +3,6 @@ package celtech.web;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.crypto.CryptoFileStore;
 import java.io.IOException;
-import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookieStore;
 import java.net.HttpCookie;
@@ -61,7 +60,7 @@ public class PersistentCookieStore implements CookieStore, Runnable
         }
 
         // add a shutdown hook to write out the in memory cookies
-        Runtime.getRuntime().addShutdownHook(new Thread(this));
+        Runtime.getRuntime().addShutdownHook(new Thread(this, "cookie saver"));
     }
 
     @Override

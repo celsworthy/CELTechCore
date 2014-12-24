@@ -63,7 +63,11 @@ public class PurgeHelper
 
     public void cancelPurgeAction()
     {
+        try {
         printerErrorHandler.deregisterForPrinterErrors();
+        } catch (Exception ex) {
+            steno.error("Error deregistering printer error handler");
+        }
         if (purgeTask != null)
         {
             if (purgeTask.isRunning())
@@ -156,7 +160,7 @@ public class PurgeHelper
 
                 purgeTask.setPurgeTemperature(purgeTemperature);
 
-                Thread purgingTaskThread = new Thread(purgeTask);
+                Thread purgingTaskThread = new Thread(purgeTask, "run purge");
                 purgingTaskThread.setName("Purge - running purge");
                 purgingTaskThread.start();
                 printerErrorHandler.checkIfPrinterErrorHasOccurredAndAbortIfNotSlip();
@@ -170,7 +174,7 @@ public class PurgeHelper
 
                 purgeTask.setPurgeTemperature(purgeTemperature);
 
-                Thread heatingTaskThread = new Thread(purgeTask);
+                Thread heatingTaskThread = new Thread(purgeTask, "purge heating");
                 heatingTaskThread.setName("Purge - heating");
                 heatingTaskThread.start();
                 printerErrorHandler.checkIfPrinterErrorHasOccurredAndAbortIfNotSlip();

@@ -2345,7 +2345,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public void shutdown()
     {
+        steno.info("Shutdown print engine...");
         printEngine.shutdown();
+        steno.info("Shutdown command interface...");
         commandInterface.shutdown();
     }
 

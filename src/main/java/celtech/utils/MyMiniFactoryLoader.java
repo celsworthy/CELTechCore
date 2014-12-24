@@ -1,7 +1,6 @@
 package celtech.utils;
 
 import celtech.configuration.ApplicationConfiguration;
-import celtech.coreUI.controllers.MyMiniFactoryLoaderController;
 import com.github.junrar.Archive;
 import com.github.junrar.exception.RarException;
 import com.github.junrar.impl.FileVolumeManager;
@@ -13,7 +12,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;

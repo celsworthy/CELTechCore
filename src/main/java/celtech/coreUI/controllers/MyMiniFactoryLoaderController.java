@@ -192,7 +192,7 @@ public class MyMiniFactoryLoaderController implements Initializable
                 finishedWithEngines();
             });
 
-            Thread loaderThread = new Thread(loader);
+            Thread loaderThread = new Thread(loader, "My minifactory downloader");
             loaderThread.start();
         }
     }

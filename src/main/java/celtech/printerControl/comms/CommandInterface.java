@@ -245,10 +245,13 @@ public abstract class CommandInterface extends Thread
 
     public void shutdown()
     {
+        steno.info("Shutdown command interface...");
         if (firmwareLoadService.isRunning())
         {
+            steno.info("Shutdown command interface firmware service...");
             firmwareLoadService.cancel();
         }
+        steno.info("Shutdown command interface complete");
         keepRunning = false;
     }
 

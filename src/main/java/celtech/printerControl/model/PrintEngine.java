@@ -1124,18 +1124,23 @@ public class PrintEngine implements ControllableService
             @Override
             public Boolean call() throws Exception
             {
+                steno.info("Shutdown print services...");
                 if (slicerService.isRunning())
                 {
+                    steno.info("Shutdown slicer service...");
                     slicerService.cancelRun();
                 }
                 if (gcodePostProcessorService.isRunning())
                 {
+                    steno.info("Shutdown PP...");
                     gcodePostProcessorService.cancelRun();
                 }
                 if (gcodePrintService.isRunning())
                 {
+                    steno.info("Shutdown print service...");
                     gcodePrintService.cancelRun();
                 }
+                steno.info("Shutdown print services complete");
                 return true;
             }
         };
