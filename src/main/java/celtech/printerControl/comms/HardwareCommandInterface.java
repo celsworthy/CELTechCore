@@ -75,6 +75,7 @@ public class HardwareCommandInterface extends CommandInterface
         serialPort = null;
 
         controlInterface.disconnected(portName);
+        keepRunning = false;
     }
 
     /**
@@ -224,7 +225,7 @@ public class HardwareCommandInterface extends CommandInterface
         {
             throw new RoboxCommsException("Invalid state for writing data");
         }
-
+        steno.debug("Command Interface send - completed " + messageToWrite.getPacketType());
         return receivedPacket;
     }
 

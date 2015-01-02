@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.scene.control.Button;
+import javafx.scene.layout.Region;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -27,7 +27,7 @@ public class CalibrationXAndYGUI
 
     private CalibrationInsetPanelController controller;
     StateTransitionManager<CalibrationXAndYState> stateManager;
-    Map<GUIName, Button> namesToButtons = new HashMap<>();
+    Map<GUIName, Region> namesToButtons = new HashMap<>();
 
     public CalibrationXAndYGUI(CalibrationInsetPanelController controller,
         StateTransitionManager stateManager)

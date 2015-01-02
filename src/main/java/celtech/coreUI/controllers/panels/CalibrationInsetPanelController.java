@@ -7,6 +7,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.LargeProgress;
+import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import static celtech.coreUI.controllers.panels.CalibrationMenuConfiguration.configureCalibrationMenu;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.NozzleHeater;
@@ -110,19 +111,19 @@ public class CalibrationInsetPanelController implements Initializable,
     protected Button buttonB;
 
     @FXML
-    protected Button nextButton;
+    protected GraphicButtonWithLabel nextButton;
 
     @FXML
-    protected Button retryPrintButton;
+    protected GraphicButtonWithLabel retryPrintButton;
 
     @FXML
-    protected Button backToStatus;
+    protected GraphicButtonWithLabel backToStatus;
 
     @FXML
-    protected Button startCalibrationButton;
+    protected GraphicButtonWithLabel startCalibrationButton;
 
     @FXML
-    protected Button cancelCalibrationButton;
+    protected GraphicButtonWithLabel cancelCalibrationButton;
 
     @FXML
     protected Label calibrationStatus;

@@ -123,7 +123,7 @@ public abstract class CommandInterface extends Thread
                     break;
 
                 case CHECKING_FIRMWARE:
-
+                    steno.debug("Check firmware " + portName);
                     if (loadingFirmware)
                     {
                         try
@@ -170,6 +170,7 @@ public abstract class CommandInterface extends Thread
                     break;
 
                 case CHECKING_ID:
+                    steno.debug("Check id " + portName);
                     String printerID = null;
 
                     PrinterIDResponse lastPrinterIDResponse = null;
@@ -197,10 +198,12 @@ public abstract class CommandInterface extends Thread
                     break;
 
                 case CONNECTED:
+                    steno.debug("CONNECTED " + portName);
                     try
                     {
                         this.sleep(sleepBetweenStatusChecks);
 
+                        steno.debug("STATUS REQUEST: " + portName);
                         RoboxRxPacket response = writeToPrinter(RoboxTxPacketFactory.createPacket(
                             TxPacketTypeEnum.STATUS_REQUEST));
 

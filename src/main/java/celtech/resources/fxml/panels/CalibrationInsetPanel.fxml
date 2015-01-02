@@ -48,36 +48,36 @@
                                 <Insets bottom="30.0" top="95.0" />
                             </HBox.margin>
                         </Separator>
-                          <VBox fx:id="informationCentre" alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
-                              <padding>
-                                  <Insets bottom="5.0" top="5.0" />
-                              </padding>
-                              <children>
-                                  <Label id="calibrationStatus" fx:id="calibrationStatus" text="%calibrationPanel.readyToBeginNozzleOpeningCalibration" wrapText="true" VBox.vgrow="ALWAYS">
-                                      <VBox.margin>
-                                          <Insets bottom="20.0" left="30.0" right="30.0" top="120.0" />
-                                      </VBox.margin>
-                                  </Label>
-                        <VBox fx:id="diagramContainer" alignment="CENTER" fillWidth="false" VBox.vgrow="ALWAYS" />
-                                  <HBox alignment="CENTER" VBox.vgrow="NEVER">
-                                      <children>
-                                          <Button id="buttonA" fx:id="buttonA" mnemonicParsing="false" onAction="#buttonAAction" styleClass="calibrationButtonsAB" text="A">
-                                              <HBox.margin>
-                                                  <Insets left="70.0" right="70.0" />
-                                              </HBox.margin>
-                                          </Button>
-                                          <Button id="buttonB" fx:id="buttonB" mnemonicParsing="false" onAction="#buttonBAction" styleClass="calibrationButtonsAB" text="B">
-                                              <HBox.margin>
-                                                  <Insets left="70.0" right="70.0" />
-                                              </HBox.margin>
-                                          </Button>
-                                      </children>
-                           <VBox.margin>
-                              <Insets bottom="15.0" top="15.0" />
-                           </VBox.margin>
-                                  </HBox>
-                              </children>
-                          </VBox>
+                        <VBox fx:id="informationCentre" alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
+                            <padding>
+                                <Insets bottom="5.0" top="5.0" />
+                            </padding>
+                            <children>
+                                <Label id="calibrationStatus" fx:id="calibrationStatus" text="%calibrationPanel.readyToBeginNozzleOpeningCalibration" wrapText="true" VBox.vgrow="ALWAYS">
+                                    <VBox.margin>
+                                        <Insets bottom="20.0" left="30.0" right="30.0" top="120.0" />
+                                    </VBox.margin>
+                                </Label>
+                                <VBox fx:id="diagramContainer" alignment="CENTER" fillWidth="false" VBox.vgrow="ALWAYS" />
+                                <HBox alignment="CENTER" VBox.vgrow="NEVER">
+                                    <children>
+                                        <Button id="buttonA" fx:id="buttonA" mnemonicParsing="false" onAction="#buttonAAction" styleClass="calibrationButtonsAB" text="A">
+                                            <HBox.margin>
+                                                <Insets left="70.0" right="70.0" />
+                                            </HBox.margin>
+                                        </Button>
+                                        <Button id="buttonB" fx:id="buttonB" mnemonicParsing="false" onAction="#buttonBAction" styleClass="calibrationButtonsAB" text="B">
+                                            <HBox.margin>
+                                                <Insets left="70.0" right="70.0" />
+                                            </HBox.margin>
+                                        </Button>
+                                    </children>
+                                    <VBox.margin>
+                                        <Insets bottom="15.0" top="15.0" />
+                                    </VBox.margin>
+                                </HBox>
+                            </children>
+                        </VBox>
                     </children>
                 </HBox>
             </center>
@@ -90,27 +90,23 @@
                             <children>
                                 <HBox alignment="CENTER_LEFT" pickOnBounds="false">
                                     <children>
-                              <StackPane>
-                                 <children>
-                                              <GraphicButton fx:id="cancelCalibrationButton" fxmlFileName="cancelButton" mnemonicParsing="false" onAction="#cancelCalibration" text="%calibrationPanel.cancelCalibration">
-                                           
-                                        </GraphicButton>
-                                              <GraphicButton fx:id="backToStatus" fxmlFileName="backwardButton" mnemonicParsing="false" onAction="#backToStatusAction" text="Back To Status" />
-                                 </children>
-                              </StackPane>
-                                        <GraphicButton fx:id="retryPrintButton" fxmlFileName="retryButton" mnemonicParsing="false" onAction="#retryCalibration" text="%calibrationPanel.retryCalibration">
-                                            
-                                        </GraphicButton>
+                                        <StackPane>
+                                            <children>
+                                                <GraphicButtonWithLabel fx:id="cancelCalibrationButton" fxmlFileName="cancelButton" onAction="#cancelCalibration" labelText="%calibrationPanel.cancelCalibration"/>
+                                                <GraphicButtonWithLabel fx:id="backToStatus" fxmlFileName="backwardButton" onAction="#backToStatusAction" labelText="%buttonText.back" />
+                                            </children>
+                                        </StackPane>
+                                        <GraphicButtonWithLabel fx:id="retryPrintButton" fxmlFileName="retryButton" onAction="#retryCalibration" labelText="%calibrationPanel.retryCalibration"/>
                                     </children>
                                 </HBox>
                                 <StackPane alignment="CENTER_RIGHT" maxHeight="-Infinity" pickOnBounds="false">
                                     <children>
-                                        <GraphicButton fx:id="startCalibrationButton" fxmlFileName="startButton" layoutX="5.0" mnemonicParsing="false" onAction="#startCalibration" text="%calibrationPanel.startCalibration" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
-                                        <GraphicButton id="nextButton" fx:id="nextButton" fxmlFileName="nextButton" mnemonicParsing="false" onAction="#nextButtonAction" text="Next" />
+                                        <GraphicButtonWithLabel fx:id="startCalibrationButton" fxmlFileName="startButton" layoutX="5.0" onAction="#startCalibration" labelText="%calibrationPanel.startCalibration" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
+                                        <GraphicButtonWithLabel id="nextButton" fx:id="nextButton" fxmlFileName="nextButton" onAction="#nextButtonAction" labelText="%buttonText.next" />
                                     </children>
-                           <StackPane.margin>
-                              <Insets right="30.0" />
-                           </StackPane.margin>
+                                    <StackPane.margin>
+                                        <Insets right="30.0" />
+                                    </StackPane.margin>
                                 </StackPane>
                             </children>
                             <BorderPane.margin>
@@ -126,9 +122,9 @@
             <left>
                 <Pane id="calibrationLeftBorder" prefWidth="30.0" BorderPane.alignment="CENTER" />
             </left>
-         <top>
-            <TopMenuStrip BorderPane.alignment="CENTER" />
-         </top>
+            <top>
+                <TopMenuStrip BorderPane.alignment="CENTER" />
+            </top>
         </BorderPane>
     </children>
 </Pane>
