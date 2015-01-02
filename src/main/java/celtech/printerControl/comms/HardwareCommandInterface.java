@@ -6,17 +6,14 @@ import celtech.printerControl.comms.commands.exceptions.InvalidResponseFromPrint
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.exceptions.UnableToGenerateRoboxPacketException;
 import celtech.printerControl.comms.commands.exceptions.UnknownPacketTypeException;
-import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
 import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
-import celtech.printerControl.comms.commands.tx.FormatHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
-import celtech.printerControl.comms.commands.tx.RoboxTxPacketFactory;
-import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
 import celtech.printerControl.model.Printer;
 import jssc.SerialPort;
 import jssc.SerialPortException;
+import jssc.SerialPortTimeoutException;
 
 /**
  *
@@ -24,12 +21,15 @@ import jssc.SerialPortException;
  */
 public class HardwareCommandInterface extends CommandInterface
 {
+    // timeout is required on the read particularly for when the firmware is out of date
+    // and the returned status report is then too short see issue ROB-453
+    private final static int READ_TIMEOUT = 5000;
 
     public HardwareCommandInterface(PrinterStatusConsumer controlInterface, String portName,
         boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
         super(controlInterface, portName, suppressPrinterIDChecks, sleepBetweenStatusChecks);
-        this.setName("PrinterHandler:" + portName + " " + this.toString());
+        this.setName("HCI:" + portName + " " + this.toString());
     }
 
     @Override
@@ -126,7 +126,7 @@ public class HardwareCommandInterface extends CommandInterface
 
                     }
 
-                    byte[] respCommand = serialPort.readBytes(1);
+                    byte[] respCommand = readSerialPort(1);
 
 //                steno.info("Got response:" + String.format("0x%02X", respCommand) + " for message: " + messageToWrite);
                     RxPacketTypeEnum packetType = RxPacketTypeEnum.getEnumForCommand(respCommand[0]);
@@ -141,7 +141,7 @@ public class HardwareCommandInterface extends CommandInterface
                         byte[] inputBuffer = null;
                         if (packetType.containsLengthField())
                         {
-                            byte[] lengthData = serialPort.readBytes(packetType.getLengthFieldSize());
+                            byte[] lengthData = readSerialPort(packetType.getLengthFieldSize());
 
                             int payloadSize = Integer.valueOf(new String(lengthData), 16);
                             if (packetType == RxPacketTypeEnum.LIST_FILES_RESPONSE)
@@ -155,7 +155,7 @@ public class HardwareCommandInterface extends CommandInterface
                                 inputBuffer[1 + i] = lengthData[i];
                             }
 
-                            byte[] payloadData = serialPort.readBytes(payloadSize);
+                            byte[] payloadData = readSerialPort(payloadSize);
                             for (int i = 0; i < payloadSize; i++)
                             {
                                 inputBuffer[1 + packetType.getLengthFieldSize() + i] = payloadData[i];
@@ -164,7 +164,7 @@ public class HardwareCommandInterface extends CommandInterface
                         {
                             inputBuffer = new byte[packetType.getPacketSize()];
                             int bytesToRead = packetType.getPacketSize() - 1;
-                            byte[] payloadData = serialPort.readBytes(bytesToRead);
+                            byte[] payloadData = readSerialPort(bytesToRead);
                             for (int i = 0; i < bytesToRead; i++)
                             {
                                 inputBuffer[1 + i] = payloadData[i];
@@ -229,6 +229,17 @@ public class HardwareCommandInterface extends CommandInterface
         return receivedPacket;
     }
 
+    private byte[] readSerialPort(int numBytes) throws RoboxCommsException, SerialPortException
+    {
+        byte[] returnData = null;
+        try {
+            returnData = serialPort.readBytes(numBytes, READ_TIMEOUT);
+        } catch (SerialPortTimeoutException ex) {
+            throw new RoboxCommsException("Timeout waiting for Robox: " + ex);
+        }
+        return returnData;
+    }
+
     private void actionOnCommsFailure() throws ConnectionLostException
     {
         //If we get an exception then abort and treat
@@ -251,18 +262,6 @@ public class HardwareCommandInterface extends CommandInterface
     public void setSleepBetweenStatusChecks(int sleepMillis)
     {
         sleepBetweenStatusChecks = sleepMillis;
-    }
-
-    /**
-     * Format the head.
-     *
-     * @throws RoboxCommsException
-     */
-    private AckResponse formatHead() throws RoboxCommsException
-    {
-        FormatHeadEEPROM formatHead = (FormatHeadEEPROM) RoboxTxPacketFactory.createPacket(
-            TxPacketTypeEnum.FORMAT_HEAD_EEPROM);
-        return (AckResponse) writeToPrinter(formatHead);
     }
 
 }
