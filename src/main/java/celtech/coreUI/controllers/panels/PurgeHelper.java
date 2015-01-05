@@ -129,7 +129,9 @@ public class PurgeHelper
                 {
                     savedHeadData = printerToUse.readHeadEEPROM();
 
-                    // The nozzle should be heated to a temperature halfway between the last temperature stored on the head and the current required temperature stored on the reel
+                    // The nozzle should be heated to a temperature halfway between the last
+                    //temperature stored on the head and the current required temperature stored
+                    // on the reel
                     SettingsScreenState settingsScreenState = SettingsScreenState.getInstance();
 
                     Filament settingsFilament = settingsScreenState.getFilament();

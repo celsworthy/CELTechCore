@@ -61,6 +61,11 @@ public interface Printer extends RoboxResponseConsumer
      * Print
      */
     public ReadOnlyBooleanProperty canPrintProperty();
+    
+    /*
+     * Can Open or Close a nozzle
+     */
+    public ReadOnlyBooleanProperty canOpenCloseNozzleProperty();    
 
     /**
      * Purge

@@ -592,10 +592,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 ejectFilamentButton.disableProperty().bind(newValue.extrudersProperty().get(0).canEjectProperty().not());
                 fineNozzleButton.visibleProperty().bind(currentNozzle.isEqualTo(1));
                 fillNozzleButton.visibleProperty().bind(currentNozzle.isEqualTo(0));
-                fineNozzleButton.disableProperty().bind(newValue.canPrintProperty().not());
-                fillNozzleButton.disableProperty().bind(newValue.canPrintProperty().not());
-                openNozzleButton.disableProperty().bind(newValue.canPrintProperty().not());
-                closeNozzleButton.disableProperty().bind(newValue.canPrintProperty().not());
+                fineNozzleButton.disableProperty().bind(newValue.canOpenCloseNozzleProperty().not());
+                fillNozzleButton.disableProperty().bind(newValue.canOpenCloseNozzleProperty().not());
+                openNozzleButton.disableProperty().bind(newValue.canOpenCloseNozzleProperty().not());
+                closeNozzleButton.disableProperty().bind(newValue.canOpenCloseNozzleProperty().not());
                 homeButton.disableProperty().bind(newValue.canPrintProperty().not());
                 newValue.getPrinterAncillarySystems().headFanOnProperty().addListener(headFanStatusListener);
                 calibrateButton.disableProperty().bind(newValue.canCalibrateHeadProperty().not());
