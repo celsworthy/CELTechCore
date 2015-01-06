@@ -21,7 +21,8 @@ public class CuraConfigWriter extends SlicerConfigWriter
     @Override
     protected void outputLine(FileWriter writer, String variableName, boolean value) throws IOException
     {
-        writer.append(variableName + "=" + value + "\n");
+        int valueToWrite = (value) ? 1 : 0;
+        writer.append(variableName + " = " + valueToWrite + "\n");
     }
 
     @Override
@@ -58,7 +59,7 @@ public class CuraConfigWriter extends SlicerConfigWriter
     protected void outputLine(FileWriter writer, String variableName, SupportPattern value) throws IOException
     {
         int supportType = 0;
-        
+
         switch (value)
         {
             case RECTILINEAR:
@@ -79,6 +80,7 @@ public class CuraConfigWriter extends SlicerConfigWriter
     @Override
     protected void outputFilamentDiameter(FileWriter writer, float diameter) throws IOException
     {
-        outputLine(writer, "filamentDiameter", String.format(Locale.UK, "%d", (int)(diameter * 1000)));
+        outputLine(writer, "filamentDiameter", String.format(Locale.UK, "%d",
+                                                             (int) (diameter * 1000)));
     }
 }
