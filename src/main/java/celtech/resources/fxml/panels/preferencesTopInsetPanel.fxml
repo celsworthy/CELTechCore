@@ -45,9 +45,9 @@
                                 </VBox>
                             </children>
                         </HBox>
-                        <HBox alignment="CENTER_LEFT" styleClass="menubar" BorderPane.alignment="CENTER">
+                        <HBox alignment="CENTER_LEFT" prefHeight="90.0" styleClass="menubar" BorderPane.alignment="CENTER">
                             <children>
-                                <GraphicButton fx:id="backwardButton" fxmlFileName="backwardButton" onAction="#backwardPressed" prefWidth="80.0" />
+                                <GraphicButtonWithLabel fx:id="backwardButton" fxmlFileName="backwardButton" labelText="%buttonText.back" onAction="#backwardPressed" prefWidth="80.0" />
                             </children>
                             <BorderPane.margin>
                                 <Insets right="10.0" />

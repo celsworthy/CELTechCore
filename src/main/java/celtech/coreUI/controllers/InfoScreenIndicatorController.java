@@ -15,7 +15,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 
 /**
- *
+ * 
  * @author Ian
  */
 public class InfoScreenIndicatorController implements Initializable
@@ -25,7 +25,7 @@ public class InfoScreenIndicatorController implements Initializable
     private Group blueParts;
 
     private Color blueColour = Color.rgb(38, 166, 217);
-    private Color greyColour = Color.rgb(115, 115, 115);
+    private Color whiteColour = Color.rgb(255, 255, 255);
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
@@ -38,13 +38,14 @@ public class InfoScreenIndicatorController implements Initializable
      */
     public void setSelected(boolean selected)
     {
+        //TODO make this work with CSS
         if (selected)
         {
             for (Node node : blueParts.getChildren())
             {
                 if (node instanceof SVGPath)
                 {
-                    ((SVGPath) node).setFill(greyColour);
+                    ((SVGPath) node).setFill(whiteColour);
                 }
             }
         } else
