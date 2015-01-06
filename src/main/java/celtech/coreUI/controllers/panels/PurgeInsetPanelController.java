@@ -93,6 +93,9 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
 
     @FXML
     private GraphicButtonWithLabel okButton;
+    
+    @FXML
+    private GraphicButtonWithLabel backButton;    
 
     @FXML
     private GraphicButtonWithLabel repeatButton;
@@ -232,6 +235,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         {
             case IDLE:
                 startPurgeButton.setVisible(true);
+                backButton.setVisible(false);
                 cancelPurgeButton.setVisible(true);
                 purgeDetailsGrid.setVisible(false);
                 purgeProgressBar.setVisible(false);
@@ -244,6 +248,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 break;
             case INITIALISING:
                 startPurgeButton.setVisible(false);
+                backButton.setVisible(false);
                 cancelPurgeButton.setVisible(true);
                 proceedButton.setVisible(false);
                 purgeProgressBar.setVisible(false);
@@ -255,6 +260,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 break;
             case CONFIRM_TEMPERATURE:
                 startPurgeButton.setVisible(false);
+                backButton.setVisible(false);
                 cancelPurgeButton.setVisible(true);
                 proceedButton.setVisible(true);
                 purgeProgressBar.setVisible(false);
@@ -272,6 +278,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 break;
             case HEATING:
                 startPurgeButton.setVisible(false);
+                backButton.setVisible(false);
                 cancelPurgeButton.setVisible(true);
                 proceedButton.setVisible(false);
                 repeatButton.setVisible(false);
@@ -284,6 +291,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 break;
             case RUNNING_PURGE:
                 startPurgeButton.setVisible(false);
+                backButton.setVisible(false);
                 cancelPurgeButton.setVisible(true);
                 proceedButton.setVisible(false);
                 repeatButton.setVisible(false);
@@ -295,6 +303,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 break;
             case FINISHED:
                 startPurgeButton.setVisible(false);
+                backButton.setVisible(false);
                 cancelPurgeButton.setVisible(false);
                 proceedButton.setVisible(false);
                 repeatButton.setVisible(true);
@@ -306,8 +315,9 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
                 diagramContainer.setVisible(true);
                 break;
             case FAILED:
-                startPurgeButton.setVisible(true);
-                cancelPurgeButton.setVisible(true);
+                startPurgeButton.setVisible(false);
+                backButton.setVisible(true);
+                cancelPurgeButton.setVisible(false);
                 proceedButton.setVisible(false);
                 repeatButton.setVisible(false);
                 purgeProgressBar.setVisible(false);

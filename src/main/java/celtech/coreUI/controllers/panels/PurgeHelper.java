@@ -43,7 +43,7 @@ public class PurgeHelper
 
     private final PurgePrinterErrorHandler printerErrorHandler;
     private final Cancellable cancellable = new Cancellable();
-    
+
     private final EventHandler<WorkerStateEvent> failedTaskHandler = (WorkerStateEvent event) ->
     {
         cancelPurgeAction();
@@ -63,9 +63,11 @@ public class PurgeHelper
 
     public void cancelPurgeAction()
     {
-        try {
-        printerErrorHandler.deregisterForPrinterErrors();
-        } catch (Exception ex) {
+        try
+        {
+            printerErrorHandler.deregisterForPrinterErrors();
+        } catch (Exception ex)
+        {
             steno.error("Error deregistering printer error handler");
         }
         if (purgeTask != null)
@@ -112,7 +114,13 @@ public class PurgeHelper
         switch (state)
         {
             case IDLE:
-                printerErrorHandler.checkIfPrinterErrorHasOccurredAndAbortIfNotSlip();
+                if (cancellable.cancelled)
+                {
+//                    cancelPurgeAction();
+                    setState(PurgeState.FAILED);
+                    return;
+                }
+                ;
                 break;
 
             case INITIALISING:
@@ -121,7 +129,9 @@ public class PurgeHelper
                 {
                     savedHeadData = printerToUse.readHeadEEPROM();
 
-                    // The nozzle should be heated to a temperature halfway between the last temperature stored on the head and the current required temperature stored on the reel
+                    // The nozzle should be heated to a temperature halfway between the last
+                    //temperature stored on the head and the current required temperature stored
+                    // on the reel
                     SettingsScreenState settingsScreenState = SettingsScreenState.getInstance();
 
                     Filament settingsFilament = settingsScreenState.getFilament();
@@ -147,12 +157,23 @@ public class PurgeHelper
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error during purge operation");
-                    cancelPurgeAction();
+//                    cancelPurgeAction();
+                    setState(PurgeState.FAILED);
                 }
-                printerErrorHandler.checkIfPrinterErrorHasOccurredAndAbortIfNotSlip();
+                if (cancellable.cancelled)
+                {
+//                    cancelPurgeAction();
+                    setState(PurgeState.FAILED);
+                }
+                ;
                 break;
 
             case RUNNING_PURGE:
+                if (cancellable.cancelled)
+                {
+                    setState(PurgeState.FAILED);
+                    return;
+                }
                 purgeTask = new PurgeTask(state, cancellable);
                 purgeTask.setOnSucceeded(succeededTaskHandler);
                 purgeTask.setOnFailed(failedTaskHandler);
@@ -163,10 +184,14 @@ public class PurgeHelper
                 Thread purgingTaskThread = new Thread(purgeTask, "run purge");
                 purgingTaskThread.setName("Purge - running purge");
                 purgingTaskThread.start();
-                printerErrorHandler.checkIfPrinterErrorHasOccurredAndAbortIfNotSlip();
                 break;
 
             case HEATING:
+                if (cancellable.cancelled)
+                {
+                    setState(PurgeState.FAILED);
+                    return;
+                }
                 purgeTask = new PurgeTask(state, cancellable);
                 purgeTask.setOnSucceeded(succeededTaskHandler);
                 purgeTask.setOnFailed(failedTaskHandler);
@@ -177,10 +202,14 @@ public class PurgeHelper
                 Thread heatingTaskThread = new Thread(purgeTask, "purge heating");
                 heatingTaskThread.setName("Purge - heating");
                 heatingTaskThread.start();
-                printerErrorHandler.checkIfPrinterErrorHasOccurredAndAbortIfNotSlip();
                 break;
 
             case FINISHED:
+                if (cancellable.cancelled)
+                {
+                    setState(PurgeState.FAILED);
+                    return;
+                }
                 try
                 {
                     AckResponse ackResponse = printerToUse.transmitWriteHeadEEPROM(

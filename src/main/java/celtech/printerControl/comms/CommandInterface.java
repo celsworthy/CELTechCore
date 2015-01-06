@@ -3,7 +3,6 @@ package celtech.printerControl.comms;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.printerControl.comms.commands.rx.PrinterIDResponse;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
@@ -198,16 +197,16 @@ public abstract class CommandInterface extends Thread
                     break;
 
                 case CONNECTED:
-                    steno.debug("CONNECTED " + portName);
+//                    steno.debug("CONNECTED " + portName);
                     try
                     {
                         this.sleep(sleepBetweenStatusChecks);
 
-                        steno.debug("STATUS REQUEST: " + portName);
-                        RoboxRxPacket response = writeToPrinter(RoboxTxPacketFactory.createPacket(
+//                        steno.debug("STATUS REQUEST: " + portName);
+                        writeToPrinter(RoboxTxPacketFactory.createPacket(
                             TxPacketTypeEnum.STATUS_REQUEST));
 
-                        AckResponse errors = (AckResponse) writeToPrinter(
+                        writeToPrinter(
                             RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.REPORT_ERRORS));
                     } catch (RoboxCommsException ex)
                     {

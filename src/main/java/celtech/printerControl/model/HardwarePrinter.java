@@ -74,8 +74,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.WeakHashMap;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
@@ -137,6 +137,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private final BooleanProperty canPurgeHead = new SimpleBooleanProperty(false);
     private final BooleanProperty mustPurgeHead = new SimpleBooleanProperty(false);
     private final BooleanProperty canPrint = new SimpleBooleanProperty(false);
+    private final BooleanProperty canOpenCloseNozzle = new SimpleBooleanProperty(false);
     private final BooleanProperty canPause = new SimpleBooleanProperty(false);
     private final BooleanProperty canResume = new SimpleBooleanProperty(false);
     private final BooleanProperty canRunMacro = new SimpleBooleanProperty(false);
@@ -225,17 +226,22 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         extruders.add(secondExtruderNumber, new Extruder(secondExtruderLetter));
 
         extruders.stream().forEach(extruder -> extruder.canEject
-            .bind(printerStatus
-                .isEqualTo(PrinterStatus.IDLE)
+            .bind(Bindings.or(printerStatus.isEqualTo(PrinterStatus.IDLE), printerStatus
+                .isEqualTo(PrinterStatus.PAUSED))
                 .and(extruder.isFitted)
                 .and(extruder.filamentLoaded)));
 
         //TODO canPrint ought to take account of lid and filament
         canPrint.bind(head.isNotNull()
             .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
+        canOpenCloseNozzle.bind(head.isNotNull()
+            .and(
+                printerStatus.isEqualTo(PrinterStatus.IDLE)
+                .or(printerStatus.isEqualTo(PrinterStatus.PAUSED))));
         canCancel.bind(
             printerStatus.isEqualTo(PrinterStatus.PAUSED)
             .or(printerStatus.isEqualTo(PrinterStatus.PAUSING))
+            .or(printerStatus.isEqualTo(PrinterStatus.EXECUTING_MACRO))
             .or(printerStatus.isEqualTo(PrinterStatus.POST_PROCESSING))
             .or(printerStatus.isEqualTo(PrinterStatus.SLICING))
             .or(printerStatus.isEqualTo(PrinterStatus.SENDING_TO_PRINTER).and(macroType.isNull().or(
@@ -620,6 +626,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         return canPrint;
     }
+    
+    @Override
+    public ReadOnlyBooleanProperty canOpenCloseNozzleProperty()
+    {
+        return canOpenCloseNozzle;
+    }    
 
     /**
      * Calibrate head

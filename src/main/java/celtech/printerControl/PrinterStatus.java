@@ -1,7 +1,6 @@
 package celtech.printerControl;
 
 import celtech.Lookup;
-import java.util.Optional;
 
 /**
  *

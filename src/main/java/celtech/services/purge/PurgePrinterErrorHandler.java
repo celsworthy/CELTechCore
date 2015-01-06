@@ -18,14 +18,12 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
 /**
- * The PurgePrinterErrorHandler listens for printer errors and if they occur then the next call to
- * {@link #checkIfPrinterErrorHasOccurredAndAbortIfNotSlip()} will cause the user to get an Continue/Abort dialog.
+ * The PurgePrinterErrorHandler listens for printer errors and if they occur then cause the user to
+ * get a Continue/Abort dialog.
  *
  * @author tony
  */
@@ -35,10 +33,8 @@ public class PurgePrinterErrorHandler
     private final Stenographer steno = StenographerFactory.getStenographer(
         CalibrationXAndYActions.class.getName());
 
-    private FirmwareError detectedError;
     private final Printer printer;
     private final Cancellable cancellable;
-    private ErrorConsumer errorConsumer;
 
     public PurgePrinterErrorHandler(Printer printer, Cancellable cancellable)
     {
@@ -46,55 +42,67 @@ public class PurgePrinterErrorHandler
         this.cancellable = cancellable;
     }
 
+    ErrorConsumer errorConsumer = (FirmwareError error) ->
+    {
+        steno.debug("ERROR consumed in purge");
+        notifyUserErrorHasOccurredAndAbortIfNotSlip(error);
+    };
+
     public void registerForPrinterErrors()
     {
-        detectedError = null;
         List<FirmwareError> errors = new ArrayList<>();
         errors.add(FirmwareError.ALL_ERRORS);
-        errorConsumer = (FirmwareError error) ->
-        {
-            cancellable.cancelled = true;
-            detectedError = error;
-        };
         printer.registerErrorConsumer(errorConsumer, errors);
     }
 
     /**
      * Check if a printer error has occurred and if so notify the user via a dialog box (only giving
-     * the Abort option) and then raise an exception so as to cause the calling action to fail.
+     * the Abort option). Return a boolean indicating if the process should abort.
      */
-    public void checkIfPrinterErrorHasOccurredAndAbortIfNotSlip()
+    private void notifyUserErrorHasOccurredAndAbortIfNotSlip(FirmwareError error)
     {
-        if (detectedError != null)
+
+        boolean allowContinue = false;
+        if (error == FirmwareError.ERROR_D_FILAMENT_SLIP || error
+            == FirmwareError.ERROR_E_FILAMENT_SLIP)
         {
-            boolean allowContinue = false;
-            if (detectedError == FirmwareError.ERROR_D_FILAMENT_SLIP ||
-                detectedError == FirmwareError.ERROR_E_FILAMENT_SLIP) {
-                allowContinue = true;
-            } else {
-                try
-                {
-                    cancellable.cancelled = true;
-                    printer.cancel(null);
-                } catch (PrinterException ex)
-                {
-                    steno.error("Cannot cancel print (in purge)");
-                }
+            allowContinue = true;
+        } else
+        {
+            // if not filament slip then cancel / abort printer activity immediately
+            cancelPurge();
+        }
+        boolean abort = showPrinterErrorOccurred(error, allowContinue);
+        if (abort && allowContinue)
+        {
+            cancelPurge();
+        }
+    }
+
+    private void cancelPurge()
+    {
+        try
+        {
+            cancellable.cancelled = true;
+            if (printer.canCancelProperty().get())
+            {
+                printer.cancel(null);
             }
-            showPrinterErrorOccurred(allowContinue);
+        } catch (PrinterException ex)
+        {
+            steno.error("Cannot cancel print (in purge): " + ex);
         }
     }
 
     public void deregisterForPrinterErrors()
     {
-        detectedError = null;
         printer.deregisterErrorConsumer(errorConsumer);
     }
 
     /**
      * Show a dialog to the user asking them to choose between available Continue or Abort actions.
      */
-    private void showPrinterErrorOccurred(boolean allowContinue)
+    private boolean showPrinterErrorOccurred(FirmwareError error, boolean allowContinue)
     {
         Callable<Boolean> askUserWhetherToAbort = new Callable()
         {
@@ -104,8 +112,9 @@ public class PurgePrinterErrorHandler
                 ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox();
                 choiceLinkDialogBox.setTitle(Lookup.i18n(
                     "dialogs.purge.printerErrorTitle"));
-                choiceLinkDialogBox.setMessage(Lookup.i18n(
-                    "dialogs.purge.printerError"));
+//                choiceLinkDialogBox.setMessage(Lookup.i18n(
+//                    "dialogs.purge.printerError"));
+                choiceLinkDialogBox.setMessage(error.getLocalisedErrorTitle());
                 if (allowContinue)
                 {
                     choiceLinkDialogBox.addChoiceLink(
@@ -128,24 +137,12 @@ public class PurgePrinterErrorHandler
         try
         {
             boolean doAbort = askWhetherToAbortTask.get();
-            if (doAbort)
-            {
-                cancellable.cancelled = true;
-                try
-                {
-                    printer.cancel(null);
-                } catch (PrinterException ex)
-                {
-                    steno.error("Cannot cancel purge");
-                }
-            } else
-            {
-                detectedError = null;
-            }
+            return doAbort;
         } catch (InterruptedException | ExecutionException ex)
         {
             steno.error("Error during purge");
         }
+        return true;
     }
 
 }

@@ -67,7 +67,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
     private final StatusResponse currentStatus = (StatusResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.STATUS_RESPONSE);
     private final AckResponse errorStatus = (AckResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.ACK_WITH_ERRORS);
     private Head attachedHead = null;
-    private Reel[] attachedReels = new Reel[2];
+    private final Reel[] attachedReels = new Reel[2];
     private String printerName;
     
     private static String NOTHING_PRINTING_JOB_ID = "\0000";
@@ -132,7 +132,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
             {
                 // Uncomment the following two lines to test handling a printer error
 //                errorTriggered = true;
-//                raiseError(FirmwareError.ERROR_NOZZLE_FLUSH_NEEDED);
+//                raiseError(FirmwareError.ERROR_D_FILAMENT_SLIP);
             }
             
             currentStatus.setAmbientTemperature((int) (Math.random() * 100));
@@ -142,7 +142,14 @@ public class DummyPrinterCommandInterface extends CommandInterface
             if (!printJobID.equals(NOTHING_PRINTING_JOB_ID))
             {
                 printJobLineNo += 1;
-                if (printJobLineNo > 10)
+                
+                if (!errorTriggered && printJobLineNo > 3) {
+                    steno.debug("raise ERROR");
+                    errorTriggered = true;
+                    raiseError(FirmwareError.ERROR_B_STUCK);
+                }
+                
+                if (printJobLineNo > 20)
                 {
                     printJobLineNo = 0;
                     printJobID = NOTHING_PRINTING_JOB_ID;
@@ -152,6 +159,14 @@ public class DummyPrinterCommandInterface extends CommandInterface
             currentStatus.setRunningPrintJobID(printJobID);
             
             response = (RoboxRxPacket) currentStatus;
+        } else if (messageToWrite instanceof AbortPrint)
+        {
+            steno.debug("ABORT print");
+            printJobLineNo = 0;
+            printJobID = NOTHING_PRINTING_JOB_ID;
+            currentStatus.setPrintJobLineNumber(printJobLineNo);
+            currentStatus.setRunningPrintJobID(printJobID);
+            response = (AckResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.ACK_WITH_ERRORS);
         } else if (messageToWrite instanceof ReportErrors)
         {
             response = errorStatus;
