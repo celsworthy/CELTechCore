@@ -289,18 +289,36 @@ class ChartManager
         String legendNozzleText = Lookup.i18n("printerStatus.temperatureGraphNozzleLabel");
         String legendBedText = Lookup.i18n("printerStatus.temperatureGraphBedLabel");
         String legendAmbientText = Lookup.i18n("printerStatus.temperatureGraphAmbientLabel");
+
         if (legendNozzle != null && nozzleTemperatureProperty != null)
         {
-            legendNozzleText += String.format(" %s%s", nozzleTemperatureProperty.get(), degreesC);
+            if (nozzleTemperatureProperty.get() >= ApplicationConfiguration.minTempToDisplayOnGraph)
+            {
+                legendNozzleText += String.format(" %s%s",
+                                                  nozzleTemperatureProperty.get(),
+                                                  degreesC);
+            } else
+            {
+                legendNozzleText += " " + Lookup.i18n("printerStatus.tempOutOfRangeLow");
+            }
         }
+
         if (legendBed != null && bedTemperatureProperty != null)
         {
-            legendBedText += String.format(" %s%s", bedTemperatureProperty.get(), degreesC);
+            if (bedTemperatureProperty.get() >= ApplicationConfiguration.minTempToDisplayOnGraph)
+            {
+                legendBedText += String.format(" %s%s", bedTemperatureProperty.get(), degreesC);
+            } else
+            {
+                legendBedText += " " + Lookup.i18n("printerStatus.tempOutOfRangeLow");
+            }
         }
+
         if (legendAmbient != null && ambientTemperatureProperty != null)
         {
             legendAmbientText += String.format(" %s%s", ambientTemperatureProperty.get(), degreesC);
         }
+        
         if (legendNozzle != null)
         {
             legendNozzle.setText(legendNozzleText);
