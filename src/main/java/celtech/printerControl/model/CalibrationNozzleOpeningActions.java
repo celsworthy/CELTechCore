@@ -151,9 +151,15 @@ public class CalibrationNozzleOpeningActions
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
-    public void doNoMaterialCheckAction() throws CalibrationException
+    public void doNoMaterialCheckAction() throws CalibrationException, InterruptedException, PrinterException
     {
         extrudeUntilStall(0);
+        printer.sendRawGCode("G1 E3 F400", false);
+        Thread.sleep(3000);
+        printer.selectNozzle(1);
+        // 
+        nozzlePosition.set(0);
+        
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
@@ -161,8 +167,9 @@ public class CalibrationNozzleOpeningActions
     {
         printer.selectNozzle(0);
         printer.openNozzleFullyExtra();
-        printer.sendRawGCode("G1 E10 F300", false);
+        printer.sendRawGCode("G1 E15 F300", false);
         PrinterUtils.waitOnBusy(printer, cancellable);
+        printer.closeNozzleFully();
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
@@ -170,7 +177,7 @@ public class CalibrationNozzleOpeningActions
     {
         printer.selectNozzle(1);
         printer.openNozzleFullyExtra();
-        printer.sendRawGCode("G1 E15 F600", false);
+        printer.sendRawGCode("G1 E45 F600", false);
         PrinterUtils.waitOnBusy(printer, cancellable);
         printer.closeNozzleFully();
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
@@ -196,6 +203,7 @@ public class CalibrationNozzleOpeningActions
                                         savedHeadData.getLastFilamentTemperature(),
                                         savedHeadData.getHeadHours());
         extrudeUntilStall(0);
+        printer.sendRawGCode("G1 E4 F400", false);
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
@@ -233,6 +241,7 @@ public class CalibrationNozzleOpeningActions
     {
         nozzlePosition.set(0);
         extrudeUntilStall(1);
+        printer.sendRawGCode("G1 E6 F400", false);
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
@@ -267,6 +276,7 @@ public class CalibrationNozzleOpeningActions
         printer.closeNozzleFully();
         printer.selectNozzle(0);
         extrudeUntilStall(0);
+        printer.sendRawGCode("G1 E3 F400", false);
         Thread.sleep(3000);
         printer.selectNozzle(1);
         // 

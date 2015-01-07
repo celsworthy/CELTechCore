@@ -2356,6 +2356,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         try
         {
             String response = transmitDirectGCode("M113", false);
+            steno.debug("ZDelta response: "  + response);
             measurementString = response.replaceFirst("Zdelta:", "").replaceFirst(
                 "\nok", "").trim();
             deltaValue = Float.valueOf(measurementString.trim());

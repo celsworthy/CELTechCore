@@ -76,7 +76,7 @@ public class CalibrationNozzleHeightTransitions implements Transitions
                                             NozzleOffsetCalibrationState.HEAD_CLEAN_CHECK,
                                             () ->
                                             {
-                                                actions.doInitialiseAndHeatBedAction();
+                                                actions.doInitialiseAndHeatNozzleAction();
                                             },
                                             NozzleOffsetCalibrationState.FAILED));
 
