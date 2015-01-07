@@ -14,6 +14,8 @@ public enum NozzleOpeningCalibrationState
     IDLE("calibrationPanel.readyToBeginNozzleOpeningCalibration", "Nozzle Opening Illustrations_Step 1.fxml"),
 
     HEATING("calibrationPanel.heating", ""),
+    
+    NO_MATERIAL_CHECK_NO_YES_NO_BUTTONS("calibrationPanel.valvesClosedNoMaterial", "Nozzle Opening Illustrations_Step 3.fxml"),
 
     NO_MATERIAL_CHECK("calibrationPanel.valvesClosedNoMaterial", "Nozzle Opening Illustrations_Step 3.fxml"),
     

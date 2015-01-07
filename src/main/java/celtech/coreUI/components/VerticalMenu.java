@@ -163,7 +163,7 @@ public class VerticalMenu extends VBox
     }
 
     /**
-     * Select the first (top) item
+     * Select the first (top) item.
      */
     public void selectFirstItem()
     {
@@ -231,7 +231,7 @@ public class VerticalMenu extends VBox
 
     /**
      * ***
-     * Disable all menu items except the currently selected text.
+     * Disable all menu items except the currently selected item.
      */
     public void disableNonSelectedItems()
     {
