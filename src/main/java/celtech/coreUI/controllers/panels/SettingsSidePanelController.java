@@ -87,7 +87,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private ComboBox<SlicerParametersFile> customProfileChooser;
 
     @FXML
-    private ToggleSwitch supportToggle;
+    private Slider supportSlider;
 
     @FXML
     private Slider qualityChooser;
@@ -111,8 +111,9 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 //    private ToggleSwitch spiralPrintToggle;
     private SlicerParametersFile draftSettings = SlicerParametersContainer.getSettingsByProfileName(
         ApplicationConfiguration.draftSettingsProfileName);
-    private SlicerParametersFile normalSettings = SlicerParametersContainer.getSettingsByProfileName(
-        ApplicationConfiguration.normalSettingsProfileName);
+    private SlicerParametersFile normalSettings = SlicerParametersContainer.
+        getSettingsByProfileName(
+            ApplicationConfiguration.normalSettingsProfileName);
     private SlicerParametersFile fineSettings = SlicerParametersContainer.getSettingsByProfileName(
         ApplicationConfiguration.fineSettingsProfileName);
     private SlicerParametersFile customSettings = null;
@@ -121,7 +122,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private ChangeListener<Toggle> nozzleSelectionListener = null;
 
     private ObservableList<Filament> availableFilaments = FXCollections.observableArrayList();
-    private ObservableList<SlicerParametersFile> availableProfiles = FXCollections.observableArrayList();
+    private ObservableList<SlicerParametersFile> availableProfiles = FXCollections.
+        observableArrayList();
 
     private Printer currentPrinter = null;
     private Filament currentlyLoadedFilament = null;
@@ -272,53 +274,56 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         updateProfileList();
 
-        customProfileChooser.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<SlicerParametersFile>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends SlicerParametersFile> observable,
-                SlicerParametersFile oldValue, SlicerParametersFile newValue)
+        customProfileChooser.getSelectionModel().selectedItemProperty().addListener(
+            new ChangeListener<SlicerParametersFile>()
             {
-                if (!suppressCustomProfileChangeTriggers)
+                @Override
+                public void changed(ObservableValue<? extends SlicerParametersFile> observable,
+                    SlicerParametersFile oldValue, SlicerParametersFile newValue)
                 {
-                    if (oldValue != newValue)
+                    if (!suppressCustomProfileChangeTriggers)
                     {
-                        if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
+                        if (oldValue != newValue)
                         {
-                            displayManager.slideOutAdvancedPanel();
+                            if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
+                            {
+                                displayManager.slideOutAdvancedPanel();
+                            }
+                            slideOutController.showProfileTab();
+
+                            lastCustomProfileSelected = newValue;
                         }
-                        slideOutController.showProfileTab();
 
-                        lastCustomProfileSelected = newValue;
-                    }
-
-                    if (newValue == SlicerParametersContainer.createNewProfile)
-                    {
-                        showCreateProfileDialogue(draftSettings.clone());
-                    } else if (newValue != null)
-                    {
-                        if (settingsScreenState.getPrintQuality()
+                        if (newValue == SlicerParametersContainer.createNewProfile)
+                        {
+                            showCreateProfileDialogue(draftSettings.clone());
+                        } else if (newValue != null)
+                        {
+                            if (settingsScreenState.getPrintQuality()
                             == PrintQualityEnumeration.CUSTOM)
-                        {
-                            slideOutController.updateProfileData(newValue);
-                            settingsScreenState.setSettings(newValue);
-                            DisplayManager.getInstance().getCurrentlyVisibleProject().setCustomProfileName(
-                                newValue.getProfileName());
-                        }
-                        customSettings = newValue;
-                    } else if (newValue == null && settingsScreenState.getPrintQuality()
+                            {
+                                slideOutController.updateProfileData(newValue);
+                                settingsScreenState.setSettings(newValue);
+                                DisplayManager.getInstance().getCurrentlyVisibleProject().
+                                setCustomProfileName(
+                                    newValue.getProfileName());
+                            }
+                            customSettings = newValue;
+                        } else if (newValue == null && settingsScreenState.getPrintQuality()
                         == PrintQualityEnumeration.CUSTOM)
-                    {
-                        slideOutController.updateProfileData(null);
-                        customSettings = null;
+                        {
+                            slideOutController.updateProfileData(null);
+                            customSettings = null;
+                        }
                     }
                 }
-            }
-        });
+            });
 
-        SlicerParametersContainer.getUserProfileList().addListener((ListChangeListener.Change<? extends SlicerParametersFile> c) ->
-        {
-            updateProfileList();
-        });
+        SlicerParametersContainer.getUserProfileList().addListener(
+            (ListChangeListener.Change<? extends SlicerParametersFile> c) ->
+            {
+                updateProfileList();
+            });
 
         printerChooser.setCellFactory(
             new Callback<ListView<Printer>, ListCell<Printer>>()
@@ -469,60 +474,107 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             .bind(qualityChooser.valueProperty().isNotEqualTo(
                     PrintQualityEnumeration.CUSTOM.getEnumPosition()));
 
-        supportToggle.selectedProperty().addListener(new ChangeListener<Boolean>()
+        supportSlider.setLabelFormatter(new StringConverter<Double>()
         {
             @Override
-            public void changed(
-                ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            public String toString(Double n)
+            {
+                String returnedText = "";
+
+                if (n <= 0)
+                {
+                    returnedText = Lookup.i18n("sidePanel_settings.supportMaterialNo");
+                } else
+                {
+                    returnedText = Lookup.i18n("sidePanel_settings.supportMaterialAuto");
+                }
+                return returnedText;
+            }
+
+            @Override
+            public Double fromString(String s)
+            {
+                double returnVal = 0;
+
+                if (s.equals(Lookup.i18n("sidePanel_settings.supportMaterialNo")))
+                {
+                    returnVal = 0;
+                } else if (s.equals(Lookup.i18n("sidePanel_settings.supportMaterialAuto")))
+                {
+                    returnVal = 1;
+                }
+                return returnVal;
+            }
+        }
+        );
+
+        supportSlider.valueProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number lastSupportValue,
+                Number newSupportValue)
             {
                 if (suppressQualityOverrideTriggers == false)
                 {
-                    if (newValue != oldValue)
+                    if (lastSupportValue != newSupportValue)
                     {
-                        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-                    }
+                        boolean supportSelected = (newSupportValue.doubleValue() >= 1.0) ? true : false;
+                        DisplayManager.getInstance().getCurrentlyVisibleProject().
+                            projectModified();
 
-                    settingsScreenState.getSettings().setGenerateSupportMaterial(newValue);
+                        settingsScreenState.getSettings().
+                            setGenerateSupportMaterial(supportSelected);
+                    }
                 }
             }
         });
 
-        fillDensitySlider.valueProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue,
-                Number newValue)
-            {
-                if (suppressQualityOverrideTriggers == false)
+        fillDensitySlider.valueProperty()
+            .addListener(new ChangeListener<Number>()
                 {
-                    if (newValue != oldValue)
+                    @Override
+                    public void changed(ObservableValue<? extends Number> observable,
+                        Number oldValue,
+                        Number newValue
+                    )
                     {
-                        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+                        if (suppressQualityOverrideTriggers == false)
+                        {
+                            if (newValue != oldValue)
+                            {
+                                DisplayManager.getInstance().getCurrentlyVisibleProject().
+                                projectModified();
+                            }
+
+                            settingsScreenState.getSettings().setFillDensity_normalised(
+                                newValue.floatValue() / 100.0f);
+                        }
                     }
-
-                    settingsScreenState.getSettings().setFillDensity_normalised(
-                        newValue.floatValue() / 100.0f);
-                }
             }
-        });
+            );
 
-        brimSlider.valueProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue,
-                Number newValue)
-            {
-                if (suppressQualityOverrideTriggers == false)
+        brimSlider.valueProperty()
+            .addListener(new ChangeListener<Number>()
                 {
-                    if (newValue != oldValue)
+                    @Override
+                    public void changed(ObservableValue<? extends Number> observable,
+                        Number oldValue,
+                        Number newValue
+                    )
                     {
-                        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-                    }
+                        if (suppressQualityOverrideTriggers == false)
+                        {
+                            if (newValue != oldValue)
+                            {
+                                DisplayManager.getInstance().getCurrentlyVisibleProject().
+                                projectModified();
+                            }
 
-                    settingsScreenState.getSettings().setBrimWidth_mm(newValue.intValue());
-                }
+                            settingsScreenState.getSettings().setBrimWidth_mm(newValue.intValue());
+                        }
+                    }
             }
-        });
+            );
 
 //        spiralPrintToggle.selectedProperty().addListener(new ChangeListener<Boolean>()
 //        {
@@ -543,12 +595,14 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 //        });
 //
 //        updateFilamentList();
-        Lookup.getPrinterListChangesNotifier().addListener(this);
+        Lookup.getPrinterListChangesNotifier()
+            .addListener(this);
     }
 
     private void setupQualityOverrideControls(SlicerParametersFile settings)
     {
-        supportToggle.setSelected(settings.getGenerateSupportMaterial());
+        supportSlider.setValue((settings.getGenerateSupportMaterial()==true)?1.0:0.0);
+        
         fillDensitySlider.setValue(settings.getFillDensity_normalised() * 100.0);
         if (settings.getFillPattern().equals(FillPattern.LINE))
         {
@@ -562,7 +616,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     private void updateProfileList()
     {
-        SlicerParametersFile currentSelection = customProfileChooser.getSelectionModel().getSelectedItem();
+        SlicerParametersFile currentSelection = customProfileChooser.getSelectionModel().
+            getSelectedItem();
 
         availableProfiles.clear();
         availableProfiles.addAll(SlicerParametersContainer.getUserProfileList());
@@ -796,8 +851,9 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             if (customSettings == null || project.getCustomProfileName().equals(
                 customSettings.getProfileName()) == false)
             {
-                SlicerParametersFile chosenProfile = SlicerParametersContainer.getSettingsByProfileName(
-                    project.getCustomProfileName());
+                SlicerParametersFile chosenProfile = SlicerParametersContainer.
+                    getSettingsByProfileName(
+                        project.getCustomProfileName());
                 customProfileChooser.getSelectionModel().select(chosenProfile);
             }
         }

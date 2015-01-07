@@ -210,9 +210,7 @@
                                             <Label styleClass="sidePanelDivider" text="%sidePanel_settings.supportMaterialLabel" />
                                             <HBox alignment="CENTER" spacing="5.0"> 
                                                 <children>
-                                                    <Label text="%sidePanel_settings.supportMaterialNo" textAlignment="RIGHT" />
-                                                    <ToggleSwitch fx:id="supportToggle" prefWidth="40.0" />
-                                                    <Label text="%sidePanel_settings.supportMaterialAuto" textAlignment="LEFT" />
+                                                    <Slider fx:id="supportSlider" majorTickUnit="1.0" max="1.0" maxWidth="260" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" />
                                                 </children>
                                             </HBox>
                                             <Label styleClass="sidePanelDivider" text="%sidePanel_settings.brimLabel" />
