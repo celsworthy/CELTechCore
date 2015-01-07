@@ -84,7 +84,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     protected NozzleProxy currentNozzle = null;
 
     private Tool selectedTool = Tool.Unknown;
-    private double currentFeedrate = 0;
+    private double unretractFeedRate = 0;
     private double currentZHeight = 0;
 
     //Profile variables
@@ -310,7 +310,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         totalExtrudedVolume = 0;
         totalXYMovement = 0;
         layer = 0;
-        currentFeedrate = 0;
+        unretractFeedRate = 0;
         currentZHeight = 0;
 
         forcedNozzleOnFirstLayer = settings.getFirstLayerNozzle();
@@ -554,6 +554,15 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
             lastPoint = currentPoint;
 
+            if (unretractFeedRate > 0)
+            {
+                if (extrusionEvent.getFeedRate() <= 0)
+                {
+                    extrusionEvent.setFeedRate(unretractFeedRate);
+                }
+                unretractFeedRate = 0;
+            }
+
             extrusionBuffer.add(extrusionEvent);
         } else if (event instanceof RetractDuringExtrusionEvent)
         {
@@ -704,6 +713,19 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             resetMeasuringThing();
             autoUnretractEValue = 0;
             autoUnretractDValue = 0;
+
+            if (unretractEvent.getFeedRate() > 0)
+            {
+                unretractFeedRate = unretractEvent.getFeedRate();
+            }
+        } else if (event instanceof UnretractEvent)
+        {
+            UnretractEvent unretractEvent = (UnretractEvent) event;
+
+            if (unretractEvent.getFeedRate() > 0)
+            {
+                unretractFeedRate = unretractEvent.getFeedRate();
+            }
         } else if (event instanceof MCodeEvent)
         {
             MCodeEvent mCodeEvent = (MCodeEvent) event;
@@ -990,7 +1012,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 //                        && (totalExtrusionForPath >= currentNozzle.getNozzleParameters().
 //                        getEjectionVolume()
 //                        + currentNozzle.getNozzleParameters().getWipeVolume()))
-                    
                     // At the moment we only look at ejection volume for a normal perimeter close
                     if (totalExtrusionForPath >= currentNozzle.getNozzleParameters().
                         getEjectionVolume())
@@ -2071,7 +2092,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             MovementEvent closestEvent = null;
 
             boolean forwardsSearch = true;
-            
+
             double forwardsVolume = 0;
             double reverseVolume = 0;
 
@@ -2081,7 +2102,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
                 //Count up the available volume - forwards first
                 for (int movementIndex = closestEventIndex;
-                    movementIndex >= modifiedFirstExtrusionIndex && movementIndex <= modifiedFinalExtrusionEventIndex;
+                    movementIndex >= modifiedFirstExtrusionIndex && movementIndex
+                    <= modifiedFinalExtrusionEventIndex;
                     movementIndex += ((forwardsSearch) ? 1 : -1))
                 {
                     GCodeParseEvent eventUnderExamination = extrusionBuffer.get(movementIndex);
@@ -2095,20 +2117,18 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 if (forwardsSearch)
                 {
                     forwardsVolume = volumeTotal;
-                }
-                else
+                } else
                 {
                     reverseVolume = volumeTotal;
                 }
 
                 forwardsSearch = !forwardsSearch;
             }
-            
+
             if (forwardsVolume >= reverseVolume)
             {
                 reverseAlongPath = false;
-            }
-            else
+            } else
             {
                 reverseAlongPath = true;
             }
