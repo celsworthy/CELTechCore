@@ -47,7 +47,7 @@ public class AckResponse extends RoboxRxPacket
         {
             if ((byteData[byteOffset] & 1) > 0)
             {
-                FirmwareError error = FirmwareError.fromBytePosition(byteOffset);
+                FirmwareError error = FirmwareError.fromBytePosition(byteOffset - 1);
                 firmwareErrors.add(error);
             }
         }
