@@ -88,7 +88,7 @@
                                         <StackPane pickOnBounds="false">
                                             <children>
                                                 <GraphicButtonWithLabel fx:id="startPurgeButton" fxmlFileName="startButton" labelText="%purgeMaterial.StartPurge" onAction="#start" tagOrientation="WEST" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
-                                                <GraphicButtonWithLabel fx:id="proceedButton" fxmlFileName="nextButton" labelText="%purgeMaterial.proceed" layoutX="10.0" layoutY="10.0" onAction="#proceed" />
+                                                <GraphicButtonWithLabel fx:id="proceedButton" fxmlFileName="nextButton" labelText="%purgeMaterial.proceed" layoutX="10.0" layoutY="10.0" tagOrientation="WEST" onAction="#proceed" />
                                             </children>
                                         </StackPane>
                                     </children>

@@ -116,7 +116,6 @@ public class PurgeHelper
             case IDLE:
                 if (cancellable.cancelled)
                 {
-//                    cancelPurgeAction();
                     setState(PurgeState.FAILED);
                     return;
                 }
@@ -157,12 +156,10 @@ public class PurgeHelper
                 } catch (RoboxCommsException ex)
                 {
                     steno.error("Error during purge operation");
-//                    cancelPurgeAction();
                     setState(PurgeState.FAILED);
                 }
                 if (cancellable.cancelled)
                 {
-//                    cancelPurgeAction();
                     setState(PurgeState.FAILED);
                 }
                 ;

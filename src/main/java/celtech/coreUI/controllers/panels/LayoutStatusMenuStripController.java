@@ -556,7 +556,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         printButton.setVisible(false);
         printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS));
 
-        printButton.installTag("dialogs.cantPrintDoorIsOpenTitle");
+        printButton.installTag();
 
         statusButtonHBox.setVisible(false);
 

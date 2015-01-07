@@ -577,7 +577,8 @@ public class ThreeDViewManager
     private Group buildBed()
     {
         String bedOuterURL = CoreTest.class
-            .getResource(ApplicationConfiguration.modelResourcePath + "bedOuter.obj").toExternalForm();
+            .getResource(ApplicationConfiguration.modelResourcePath + "bedOuter.obj").
+            toExternalForm();
         String bedInnerURL = CoreTest.class.getResource(ApplicationConfiguration.modelResourcePath
             + "bedInner.obj").toExternalForm();
 
@@ -1394,6 +1395,14 @@ public class ThreeDViewManager
         for (ModelContainer modelContainer : loadedModels)
         {
             selectedModelContainers.addModelContainer(modelContainer);
+        }
+    }
+
+    public void deselectAllModels()
+    {
+        for (ModelContainer modelContainer : loadedModels)
+        {
+            deselectModel(modelContainer);
         }
     }
 }
