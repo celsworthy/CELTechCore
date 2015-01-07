@@ -90,7 +90,7 @@ public class VerticalMenu extends VBox
 
         private void setEnabled(Boolean enabled)
         {
-            if (enabled && !predicateEnabled)
+            if (enabled && predicateEnabled != null && !predicateEnabled)
             {
                 // don't enable if predicate says no
                 return;
@@ -137,6 +137,10 @@ public class VerticalMenu extends VBox
         verticalMenuTitle.setText(title);
     }
 
+    /**
+     * Add a menu item to the menu. If enabledPredicate is not null then it governs
+     * if the item is enabled or not.
+     */
     public void addItem(String itemName, Callable<Object> callback,
         ReadOnlyBooleanProperty enabledPredicate)
     {

@@ -242,7 +242,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             .and(printerStatus.isEqualTo(PrinterStatus.IDLE)
                 .or(printerStatus.isEqualTo(PrinterStatus.PAUSED))));
         canCalibrateNozzleOpening.bind(head.isNotNull()
-            .and(printerStatus.isEqualTo(PrinterStatus.IDLE).and(Bindings.isEmpty(reels).not())));
+            .and(printerStatus.isEqualTo(PrinterStatus.IDLE).and(extrudersProperty().get(0).
+                                           filamentLoadedProperty()).and(Bindings.isNotEmpty(reels))));
         canCalibrateNozzleHeight.bind(head.isNotNull()
             .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
         canCalibrateXYAlignment.bind(head.isNotNull()
