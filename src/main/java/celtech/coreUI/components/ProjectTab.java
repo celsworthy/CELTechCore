@@ -585,6 +585,7 @@ public class ProjectTab extends Tab
                 break;
             case SETTINGS:
                 //start rotation
+                viewManager.deselectAllModels();
                 viewManager.startSettingsAnimation();
                 break;
         }
