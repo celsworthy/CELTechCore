@@ -96,6 +96,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.scene.paint.Color;
+import libertysystems.stenographer.LogLevel;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -227,7 +228,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         extruders.stream().forEach(extruder -> extruder.canEject
             .bind(Bindings.or(printerStatus.isEqualTo(PrinterStatus.IDLE), printerStatus
-                .isEqualTo(PrinterStatus.PAUSED))
+                              .isEqualTo(PrinterStatus.PAUSED))
                 .and(extruder.isFitted)
                 .and(extruder.filamentLoaded)));
 
@@ -626,12 +627,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         return canPrint;
     }
-    
+
     @Override
     public ReadOnlyBooleanProperty canOpenCloseNozzleProperty()
     {
         return canOpenCloseNozzle;
-    }    
+    }
 
     /**
      * Calibrate head
@@ -721,6 +722,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         if (!canPause.get())
         {
             throw new PrintActionUnavailableException("Cannot pause at this time");
+        }
+
+        steno.debug("Printer model asked to pause");
+        if (steno.getCurrentLogLevel().isLoggable(LogLevel.DEBUG))
+        {
+            Throwable t = new Throwable();
+            t.printStackTrace();
         }
 
         setPrinterStatus(PrinterStatus.PAUSING);
@@ -1006,20 +1014,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(
             TxPacketTypeEnum.INITIATE_PRINT);
         gcodePacket.setMessagePayload(printJobUUID);
-
-        commandInterface.writeToPrinter(gcodePacket);
-    }
-
-    /**
-     *
-     * @throws RoboxCommsException
-     */
-    @Override
-    public void transmitPausePrint() throws RoboxCommsException
-    {
-        PausePrint gcodePacket = (PausePrint) RoboxTxPacketFactory.createPacket(
-            TxPacketTypeEnum.PAUSE_RESUME_PRINT);
-        gcodePacket.setPause();
 
         commandInterface.writeToPrinter(gcodePacket);
     }
@@ -2486,7 +2480,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             steno.warning("Failed to automatically pause during print");
                         }
 
-                        Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(error, this);
+                        Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(error,
+                                                                                            this);
                     }
                 }
                 break;
@@ -2522,7 +2517,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     {
                         List<FirmwareError> errorsFound = new ArrayList<>(ackResponse.
                             getFirmwareErrors());
-                        
+
                         steno.debug(ackResponse.getErrorsAsString());
 
                         try

@@ -433,12 +433,6 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void transmitPausePrint() throws RoboxCommsException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public AckResponse transmitReportErrors() throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

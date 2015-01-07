@@ -361,12 +361,6 @@ public interface Printer extends RoboxResponseConsumer
 
     /**
      *
-     * @throws RoboxCommsException
-     */
-    public void transmitPausePrint() throws RoboxCommsException;
-
-    /**
-     *
      * @return @throws RoboxCommsException
      */
     public AckResponse transmitReportErrors() throws RoboxCommsException;
