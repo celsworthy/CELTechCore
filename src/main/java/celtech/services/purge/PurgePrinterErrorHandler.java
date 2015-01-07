@@ -61,21 +61,23 @@ public class PurgePrinterErrorHandler
      */
     private void notifyUserErrorHasOccurredAndAbortIfNotSlip(FirmwareError error)
     {
-
-        boolean allowContinue = false;
-        if (error == FirmwareError.ERROR_D_FILAMENT_SLIP || error
-            == FirmwareError.ERROR_E_FILAMENT_SLIP)
+        if (cancellable.cancelled == false)
         {
-            allowContinue = true;
-        } else
-        {
-            // if not filament slip then cancel / abort printer activity immediately
-            cancelPurge();
-        }
-        boolean abort = showPrinterErrorOccurred(error, allowContinue);
-        if (abort && allowContinue)
-        {
-            cancelPurge();
+            boolean allowContinue = false;
+            if (error == FirmwareError.ERROR_D_FILAMENT_SLIP || error
+                == FirmwareError.ERROR_E_FILAMENT_SLIP)
+            {
+                allowContinue = true;
+            } else
+            {
+                // if not filament slip then cancel / abort printer activity immediately
+                cancelPurge();
+            }
+            boolean abort = showPrinterErrorOccurred(error, allowContinue);
+            if (abort && allowContinue)
+            {
+                cancelPurge();
+            }
         }
     }
 

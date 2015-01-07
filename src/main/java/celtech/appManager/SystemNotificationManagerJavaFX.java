@@ -65,6 +65,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     private boolean headNotRecognisedDialogOnDisplay = false;
 
     private boolean reelNotRecognisedDialogOnDisplay = false;
+    
+    private boolean clearBedDialogOnDisplay = false;
 
     @Override
     public void showErrorNotification(String title, String message)
@@ -844,6 +846,27 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 choiceLinkDialogBox.getUserInput();
 
                 reelNotRecognisedDialogOnDisplay = false;
+            });
+        }
+    }
+    
+    @Override
+    public void askUserToClearBed()
+    {
+        if (!clearBedDialogOnDisplay)
+        {
+            clearBedDialogOnDisplay = true;
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox();
+                choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.clearBedTitle"));
+                choiceLinkDialogBox.setMessage(Lookup.i18n("dialogs.clearBedInstruction"));
+
+                choiceLinkDialogBox.addChoiceLink(Lookup.i18n("misc.OK"));
+
+                choiceLinkDialogBox.getUserInput();
+
+                clearBedDialogOnDisplay = false;
             });
         }
     }

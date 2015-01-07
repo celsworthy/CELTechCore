@@ -35,7 +35,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.dialog.Dialogs;
 
 /**
  *
@@ -51,7 +50,6 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
 
     private Project project = null;
     private Printer printerToUse = null;
-    private String macroToExecuteAfterPurge = null;
     private double printPercent;
     private Bounds diagramBounds;
     private Pane diagramNode;
@@ -93,9 +91,9 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
 
     @FXML
     private GraphicButtonWithLabel okButton;
-    
+
     @FXML
-    private GraphicButtonWithLabel backButton;    
+    private GraphicButtonWithLabel backButton;
 
     @FXML
     private GraphicButtonWithLabel repeatButton;
@@ -146,53 +144,11 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
 
         if (project != null && purgeCompletedOK)
         {
-//            final Project projectCopy = project;
+            Lookup.getSystemNotificationHandler().askUserToClearBed();
 
-            Platform.runLater(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    Dialogs.create()
-                        .owner(null)
-                        .title(DisplayManager.getLanguageBundle().getString("dialogs.clearBedTitle")).
-                        masthead(null)
-                        .message(DisplayManager.getLanguageBundle().getString(
-                                "dialogs.clearBedInstruction"))
-                        .showWarning();
-                    // Need to go to settings page for this project
-                    ApplicationStatus.getInstance().setMode(ApplicationMode.SETTINGS);
-//                    printerToUse.printProject(projectCopy, filament, printQuality, settings);
-                }
-            });
-
+            // Need to go to settings page for this project
+            ApplicationStatus.getInstance().setMode(ApplicationMode.SETTINGS);
             project = null;
-
-        } else if (macroToExecuteAfterPurge != null)
-        {
-            Platform.runLater(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    Dialogs.create()
-                        .owner(null)
-                        .title(DisplayManager.getLanguageBundle().getString("dialogs.clearBedTitle")).
-                        masthead(null)
-                        .message(DisplayManager.getLanguageBundle().getString(
-                                "dialogs.clearBedInstruction"))
-                        .showWarning();
-                    try
-                    {
-                        printerToUse.executeMacro(GCodeMacros.getFilename(macroToExecuteAfterPurge));
-                    } catch (PrinterException ex)
-                    {
-                        steno.error("Error running macro");
-                    }
-                }
-            });
-
-            macroToExecuteAfterPurge = null;
         }
     }
 
@@ -396,15 +352,6 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         button.disableProperty().bind(printerToUse.canPrintProperty().not()
             .or(printerToUse.getPrinterAncillarySystems().lidOpenProperty())
             .or(printerToUse.extrudersProperty().get(0).filamentLoadedProperty().not()));
-    }
-
-    public void purgeAndRunMacro(String macroName, Printer printerToUse)
-    {
-        this.macroToExecuteAfterPurge = macroName;
-
-        bindPrinter(printerToUse);
-
-        ApplicationStatus.getInstance().setMode(ApplicationMode.PURGE);
     }
 
     public void purge(Printer printerToUse)

@@ -182,4 +182,10 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     {
         return Optional.empty();
     }
+
+    @Override
+    public void askUserToClearBed()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }
