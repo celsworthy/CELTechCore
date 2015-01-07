@@ -48,7 +48,7 @@ public class UserPreferenceContainer
 
             } catch (IOException ex)
             {
-                steno.error("Error loading user preferences " + userPreferenceInputFile.getAbsolutePath());
+                steno.error("Error loading user preferences " + userPreferenceInputFile.getAbsolutePath() + ": " + ex.getMessage());
             }
         }
     }
