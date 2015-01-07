@@ -59,7 +59,7 @@ public class CalibrationNozzleHeightActions
         printerErrorHandler.registerForPrinterErrors();
     }
 
-    public void doInitialiseAndHeatBedAction() throws InterruptedException, PrinterException, RoboxCommsException, CalibrationException
+    public void doInitialiseAndHeatNozzleAction() throws InterruptedException, PrinterException, RoboxCommsException, CalibrationException
     {
 
         zco.set(0);
@@ -69,7 +69,7 @@ public class CalibrationNozzleHeightActions
         savedHeadData = printer.readHeadEEPROM();
         clearZOffsetsOnHead();
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
-        heatBed();
+        heatNozzle();
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
 
     }
@@ -98,7 +98,7 @@ public class CalibrationNozzleHeightActions
                                         savedHeadData.getHeadHours());
     }
 
-    private void heatBed() throws InterruptedException, PrinterException
+    private void heatNozzle() throws InterruptedException, PrinterException
     {
         printer.goToTargetNozzleTemperature();
             printer.executeGCodeFile(GCodeMacros.getFilename("Home_all"));
