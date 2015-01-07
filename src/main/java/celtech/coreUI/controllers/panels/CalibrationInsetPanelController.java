@@ -23,6 +23,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -59,7 +60,7 @@ public class CalibrationInsetPanelController implements Initializable,
     StateTransitionManager stateManager;
 
     private ResourceBundle resources;
-    
+
     private void resizeTopBorderPane()
     {
         topBorderPane.setPrefWidth(topPane.getWidth());
@@ -236,6 +237,7 @@ public class CalibrationInsetPanelController implements Initializable,
 
         setupProgressBars();
 
+        startCalibrationButton.installTag();
         setCalibrationMode(CalibrationMode.CHOICE);
 
         Lookup.getPrinterListChangesNotifier().addListener(this);
@@ -243,6 +245,8 @@ public class CalibrationInsetPanelController implements Initializable,
         calibrationMenuConfiguration.configureCalibrationMenu(calibrationMenu, this);
 
         addDiagramMoveScaleListeners();
+
+        
 
     }
 
@@ -476,8 +480,9 @@ public class CalibrationInsetPanelController implements Initializable,
             nozzleHeater.nozzleTemperatureProperty().addListener(extruderTemperatureListener);
         }
         setupPrintProgressListeners(printer);
+        configureStartButtonForMode(calibrationMode, printer);
     }
-    
+
     private void removePrintProgressListeners(Printer printer)
     {
         printer.getPrintEngine().progressETCProperty().removeListener(targetETCListener);
@@ -500,10 +505,42 @@ public class CalibrationInsetPanelController implements Initializable,
         }
     }
 
+    private void configureStartButtonForMode(CalibrationMode calibrationMode, Printer printer)
+    {
+        if (printer == null) {
+            return;
+        }
+        startCalibrationButton.getTag().removeAllConditionalText();
+        startCalibrationButton.getTag().addConditionalText("dialogs.cantCalibrateHeadIsDetached",
+                                           Bindings.isNull(printer.headProperty()));
+        switch (calibrationMode)
+        {
+            case NOZZLE_OPENING:
+                startCalibrationButton.disableProperty().bind(
+                    printer.canCalibrateNozzleOpeningProperty().not());
+                 startCalibrationButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
+                                           printer.extrudersProperty().get(0).
+                                           filamentLoadedProperty().not());
+                 startCalibrationButton.getTag().addConditionalText("dialogs.cantCalibrateNoSmartReel",
+                                           Bindings.isEmpty(printer.reelsProperty()));
+                break;
+            case NOZZLE_HEIGHT:
+                startCalibrationButton.disableProperty().bind(
+                    printer.canCalibrateNozzleHeightProperty().not());
+                break;
+            case X_AND_Y_OFFSET:
+                startCalibrationButton.disableProperty().bind(
+                    printer.canCalibrateXYAlignmentProperty().not());
+                break;
+
+        }
+    }
+
     public void setCalibrationMode(CalibrationMode calibrationMode)
     {
         this.calibrationMode = calibrationMode;
         switchToPrinter(Lookup.getCurrentlySelectedPrinterProperty().get());
+        configureStartButtonForMode(calibrationMode, currentPrinter);
         switch (calibrationMode)
         {
             case NOZZLE_OPENING:
@@ -520,6 +557,7 @@ public class CalibrationInsetPanelController implements Initializable,
             calibrationNozzleOpeningGUI = new CalibrationNozzleOpeningGUI(this, stateManager);
             calibrationNozzleOpeningGUI.setState(NozzleOpeningCalibrationState.IDLE);
             break;
+
             case NOZZLE_HEIGHT:
             {
                 try
@@ -533,8 +571,8 @@ public class CalibrationInsetPanelController implements Initializable,
             }
             calibrationNozzleHeightGUI = new CalibrationNozzleHeightGUI(this, stateManager);
             calibrationNozzleHeightGUI.setState(NozzleOffsetCalibrationState.IDLE);
-
             break;
+
             case X_AND_Y_OFFSET:
             {
                 try
@@ -549,6 +587,7 @@ public class CalibrationInsetPanelController implements Initializable,
             calibrationXAndYGUI = new CalibrationXAndYGUI(this, stateManager);
             calibrationXAndYGUI.setState(CalibrationXAndYState.IDLE);
             break;
+
             case CHOICE:
                 setupChoice();
         }

@@ -47,7 +47,7 @@ public class CalibrationMenuConfiguration
                                 return null;
         };
         calibrationMenu.addItem(Lookup.i18n("calibrationMenu.nozzleOpening"), 
-                                doOpeningCalibration, nozzleOpeningCalibrationEnabled);
+                                doOpeningCalibration, null);
         Callable doHeightCalibration =  () ->
                             {
                                 calibrationInsetPanelController.setCalibrationMode(
@@ -55,7 +55,7 @@ public class CalibrationMenuConfiguration
                                 return null;
         };
         calibrationMenu.addItem(Lookup.i18n("calibrationMenu.nozzleHeight"), 
-                                doHeightCalibration, nozzleHeightCalibrationEnabled);
+                                doHeightCalibration, null);
         Callable doXYAlignmentCalibration = () ->
                             {
                                 calibrationInsetPanelController.setCalibrationMode(
@@ -63,7 +63,7 @@ public class CalibrationMenuConfiguration
                                 return null;
         };
         calibrationMenu.addItem(Lookup.i18n("calibrationMenu.nozzleAlignment"),
-                                doXYAlignmentCalibration, xyAlignmentCalibrationEnabled);
+                                doXYAlignmentCalibration, null);
 
         Lookup.getCurrentlySelectedPrinterProperty().addListener(selectedPrinterListener);
     }
