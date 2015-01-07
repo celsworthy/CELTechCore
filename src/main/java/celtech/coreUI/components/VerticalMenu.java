@@ -158,6 +158,9 @@ public class VerticalMenu extends VBox
         }
     }
 
+    /**
+     * Select the first (top) item
+     */
     public void selectFirstItem()
     {
         selectItem(firstItem, firstCallable);
@@ -255,7 +258,7 @@ public class VerticalMenu extends VBox
     }
 
     /**
-     * If an text is selected then deselect it.
+     * If an item is selected then deselect it.
      */
     public void deselectSelectedItem()
     {
@@ -266,6 +269,9 @@ public class VerticalMenu extends VBox
         }
     }
 
+    /**
+     * Reset the menu.
+     */
     public void reset()
     {
         enableNonSelectedItems();
