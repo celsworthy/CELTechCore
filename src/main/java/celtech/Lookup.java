@@ -153,31 +153,14 @@ public class Lookup
         return connectedPrinters;
     }
 
-    /**
-     *
-     * @return
-     */
     public static ReadOnlyObjectProperty<Printer> getCurrentlySelectedPrinterProperty()
     {
         return currentlySelectedPrinterProperty;
     }
 
-    /**
-     *
-     * @param currentlySelectedPrinter
-     */
     public static void setCurrentlySelectedPrinter(Printer currentlySelectedPrinter)
     {
         currentlySelectedPrinterProperty.set(currentlySelectedPrinter);
-    }
-
-    /**
-     *
-     * @return
-     */
-    public static ObjectProperty<Printer> currentlySelectedPrinterProperty()
-    {
-        return currentlySelectedPrinterProperty;
     }
 
     public static UserPreferences getUserPreferences()

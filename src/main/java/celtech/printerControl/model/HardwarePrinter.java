@@ -145,6 +145,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private final BooleanProperty canOpenDoor = new SimpleBooleanProperty(false);
     private final BooleanProperty canCalibrateHead = new SimpleBooleanProperty(false);
     private final BooleanProperty canSetFilamentInfo = new SimpleBooleanProperty(false);
+    private final BooleanProperty canCalibrateNozzleHeight = new SimpleBooleanProperty(false);
+    private final BooleanProperty canCalibrateXYAlignment = new SimpleBooleanProperty(false);
+    private final BooleanProperty canCalibrateNozzleOpening = new SimpleBooleanProperty(false);
 
     private boolean headIntegrityChecksInhibited = false;
 
@@ -235,9 +238,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         canPrint.bind(head.isNotNull()
             .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
         canOpenCloseNozzle.bind(head.isNotNull()
-            .and(
-                printerStatus.isEqualTo(PrinterStatus.IDLE)
+            .and(printerStatus.isEqualTo(PrinterStatus.IDLE)
                 .or(printerStatus.isEqualTo(PrinterStatus.PAUSED))));
+        canCalibrateNozzleOpening.bind(head.isNotNull()
+            .and(printerStatus.isEqualTo(PrinterStatus.IDLE).and(Bindings.isEmpty(reels).not())));
+        canCalibrateNozzleHeight.bind(head.isNotNull()
+            .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
+        canCalibrateXYAlignment.bind(head.isNotNull()
+            .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
         canCancel.bind(
             printerStatus.isEqualTo(PrinterStatus.PAUSED)
             .or(printerStatus.isEqualTo(PrinterStatus.PAUSING))
@@ -631,6 +639,24 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public ReadOnlyBooleanProperty canOpenCloseNozzleProperty()
     {
         return canOpenCloseNozzle;
+    }  
+    
+    @Override
+    public ReadOnlyBooleanProperty canCalibrateNozzleHeightProperty()
+    {
+        return canCalibrateNozzleHeight;
+    }
+
+    @Override
+    public ReadOnlyBooleanProperty canCalibrateXYAlignmentProperty()
+    {
+        return canCalibrateXYAlignment;
+    }
+
+    @Override
+    public ReadOnlyBooleanProperty canCalibrateNozzleOpeningProperty()
+    {
+        return canCalibrateNozzleOpening;
     }    
 
     /**

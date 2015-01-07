@@ -72,9 +72,9 @@ public class PreferencesTopInsetPanelController implements Initializable
 
         preferencesMenu.setTitle(Lookup.i18n("preferences.preferences"));
 
-        preferencesMenu.addItem(Lookup.i18n("preferences.printing"), this::showPrintingPreferences);
+        preferencesMenu.addItem(Lookup.i18n("preferences.printing"), this::showPrintingPreferences, null);
         preferencesMenu.addItem(Lookup.i18n("preferences.environment"),
-                                this::showEnvironmentPreferences);
+                                this::showEnvironmentPreferences, null);
         preferencesMenu.selectFirstItem();
 
     }

@@ -228,7 +228,7 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
             reelMaterialType.getItems().add(materialType);
         }
 
-        Lookup.currentlySelectedPrinterProperty().addListener(
+        Lookup.getCurrentlySelectedPrinterProperty().addListener(
             (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
             {
                 if (newValue != oldValue)
@@ -239,10 +239,10 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
 
         Lookup.getPrinterListChangesNotifier().addListener(this);
 
-        if (Lookup.currentlySelectedPrinterProperty().get() != null)
+        if (Lookup.getCurrentlySelectedPrinterProperty().get() != null)
         {
             setSelectedPrinter(
-                Lookup.currentlySelectedPrinterProperty().get());
+                Lookup.getCurrentlySelectedPrinterProperty().get());
         }
     }
 

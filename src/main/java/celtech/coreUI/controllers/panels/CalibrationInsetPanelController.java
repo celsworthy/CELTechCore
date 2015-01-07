@@ -8,7 +8,6 @@ import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.LargeProgress;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
-import static celtech.coreUI.controllers.panels.CalibrationMenuConfiguration.configureCalibrationMenu;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.NozzleHeater;
 import celtech.printerControl.model.Printer;
@@ -52,6 +51,7 @@ public class CalibrationInsetPanelController implements Initializable,
     PrinterListChangesListener
 {
 
+    CalibrationMenuConfiguration calibrationMenuConfiguration = new CalibrationMenuConfiguration();
     CalibrationMode calibrationMode;
     CalibrationXAndYGUI calibrationXAndYGUI;
     CalibrationNozzleHeightGUI calibrationNozzleHeightGUI;
@@ -59,7 +59,7 @@ public class CalibrationInsetPanelController implements Initializable,
     StateTransitionManager stateManager;
 
     private ResourceBundle resources;
-
+    
     private void resizeTopBorderPane()
     {
         topBorderPane.setPrefWidth(topPane.getWidth());
@@ -240,7 +240,7 @@ public class CalibrationInsetPanelController implements Initializable,
 
         Lookup.getPrinterListChangesNotifier().addListener(this);
 
-        configureCalibrationMenu(calibrationMenu, this);
+        calibrationMenuConfiguration.configureCalibrationMenu(calibrationMenu, this);
 
         addDiagramMoveScaleListeners();
 
@@ -477,7 +477,7 @@ public class CalibrationInsetPanelController implements Initializable,
         }
         setupPrintProgressListeners(printer);
     }
-
+    
     private void removePrintProgressListeners(Printer printer)
     {
         printer.getPrintEngine().progressETCProperty().removeListener(targetETCListener);

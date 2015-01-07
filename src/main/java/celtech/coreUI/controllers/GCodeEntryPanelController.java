@@ -102,7 +102,7 @@ public class GCodeEntryPanelController implements Initializable
 
         populateGCodeArea();
 
-        Lookup.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
+        Lookup.getCurrentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
         {
             if (t1 != null)
             {

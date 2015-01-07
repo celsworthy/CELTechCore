@@ -356,7 +356,7 @@ public class PrinterStatusPageController implements Initializable
             processPrinterStatusChange(printer.printerStatusProperty().get());
         }
 
-        Lookup.currentlySelectedPrinterProperty().addListener(
+        Lookup.getCurrentlySelectedPrinterProperty().addListener(
             new ChangeListener<Printer>()
             {
                 @Override
