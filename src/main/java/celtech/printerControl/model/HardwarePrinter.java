@@ -640,8 +640,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public ReadOnlyBooleanProperty canOpenCloseNozzleProperty()
     {
         return canOpenCloseNozzle;
-    }  
-    
+    }
+
     @Override
     public ReadOnlyBooleanProperty canCalibrateNozzleHeightProperty()
     {
@@ -658,7 +658,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public ReadOnlyBooleanProperty canCalibrateNozzleOpeningProperty()
     {
         return canCalibrateNozzleOpening;
-    }    
+    }
 
     /**
      * Calibrate head
@@ -2539,6 +2539,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             {
                 case ACK_WITH_ERRORS:
                     AckResponse ackResponse = (AckResponse) rxPacket;
+                    steno.trace(ackResponse.toString());
 
                     if (ackResponse.isError())
                     {
