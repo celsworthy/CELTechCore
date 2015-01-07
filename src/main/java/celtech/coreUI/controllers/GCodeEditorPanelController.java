@@ -61,7 +61,7 @@ public class GCodeEditorPanelController extends SlidingElementController impleme
             gcodeListView.setItems(Lookup.getCurrentlySelectedPrinterProperty().get().gcodeTranscriptProperty());
         }
 
-        Lookup.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        Lookup.getCurrentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
             @Override
             public void changed(ObservableValue<? extends Printer> ov, Printer t, Printer t1)

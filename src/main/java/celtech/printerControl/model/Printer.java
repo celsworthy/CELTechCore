@@ -27,8 +27,6 @@ import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.AxisSpecifier;
 import celtech.utils.tasks.TaskResponder;
 import java.util.List;
-import java.util.Optional;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -63,9 +61,24 @@ public interface Printer extends RoboxResponseConsumer
     public ReadOnlyBooleanProperty canPrintProperty();
     
     /*
-     * Can Open or Close a nozzle
+     * Can open or close a nozzle
      */
     public ReadOnlyBooleanProperty canOpenCloseNozzleProperty();    
+    
+    /**
+     * Can perform a nozzle height calibration
+     */
+    public ReadOnlyBooleanProperty canCalibrateNozzleHeightProperty();
+    
+    /**
+     * Can perform an XY alignment calibration
+     */
+    public ReadOnlyBooleanProperty canCalibrateXYAlignmentProperty();
+    
+    /**
+     * Can perform a nozzle opening calibration
+     */
+    public ReadOnlyBooleanProperty canCalibrateNozzleOpeningProperty();    
 
     /**
      * Purge

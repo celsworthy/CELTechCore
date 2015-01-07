@@ -99,7 +99,7 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
 
         populateGCodeArea();
 
-        Lookup.currentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
+        Lookup.getCurrentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
         {
             if (t1 != null)
             {
@@ -127,7 +127,7 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
 //                }
 //            }
 //        });
-        gcodeEditParent.visibleProperty().bind(Lookup.currentlySelectedPrinterProperty().isNotNull());
+        gcodeEditParent.visibleProperty().bind(Lookup.getCurrentlySelectedPrinterProperty().isNotNull());
 
 //        sendGCodeButton.setDefaultButton(true);
         gcodeEntryField.addEventHandler(KeyEvent.KEY_PRESSED, (KeyEvent t) ->

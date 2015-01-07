@@ -9,7 +9,7 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.css.PseudoClass;
@@ -33,8 +33,7 @@ public class VerticalMenu extends VBox
     private static final int SQUARE_SIZE = 16;
     private static final int ROW_HEIGHT = 50;
 
-    private Text selectedItem;
-    private Rectangle selectedSquare;
+    private Item selectedItem;
 
     @FXML
     private GridPane verticalMenuGrid;
@@ -43,50 +42,74 @@ public class VerticalMenu extends VBox
     private Text verticalMenuTitle;
 
     /**
-     * The row number of the next item to be added
+     * The row number of the next text to be added
      */
     private int nextRowNum = 2;
     private boolean disableNonSelectedItems;
 
     private static final PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
-    private Set<Text> allItems = new HashSet<>();
+    private Set<Item> allItems = new HashSet<>();
 
     private boolean firstItemInitialised = false;
-    private Text firstItem;
-    private Rectangle firstSquare;
+    private Item firstItem;
     private Callable firstCallable;
 
     class Item
     {
 
-        Text item;
+        Text text;
         Rectangle square;
+        Boolean predicateEnabled;
 
-        public Item(Text item, Rectangle square)
+        public Item(String itemName)
         {
-            this.item = firstItem;
-            this.square = firstSquare;
-        }
-        
-        ChangeListener<Boolean> enabledListener = new ChangeListener<Boolean>()
-            {
-                public void changed(ObservableValue<? extends Boolean> observable,
-                    Boolean oldValue, Boolean newValue)
-                {
-                    whenEnabledChanged(newValue);
-                }
-            };
-
-        private void whenEnabledChanged(Boolean newValue)
-        {
-            item.disableProperty().set(!newValue);
-            square.disableProperty().set(!newValue);
+            text = new Text(itemName);
+            text.getStyleClass().add("verticalMenuOption");
+            square = new Rectangle();
+            square.getStyleClass().add("verticalMenuSquare");
+            square.setHeight(SQUARE_SIZE);
+            square.setWidth(SQUARE_SIZE);
         }
 
-        private void setEnabledPredicate(BooleanProperty enabledPredicate)
+        ChangeListener<Boolean> enabledListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        {
+            whenPredicateEnabledChanged(newValue);
+        };
+
+        private void whenPredicateEnabledChanged(Boolean newValue)
+        {
+            predicateEnabled = newValue;
+            setEnabled(newValue);
+        }
+
+        private void setEnabledPredicate(ReadOnlyBooleanProperty enabledPredicate)
         {
             enabledPredicate.addListener(enabledListener);
-            whenEnabledChanged(enabledPredicate.get());
+            whenPredicateEnabledChanged(enabledPredicate.get());
+        }
+
+        private void setEnabled(Boolean enabled)
+        {
+            if (enabled && !predicateEnabled)
+            {
+                // don't enable if predicate says no
+                return;
+            }
+            text.disableProperty().set(!enabled);
+        }
+
+        private void deselect()
+        {
+            square.setVisible(false);
+            text.pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, false);
+            square.setFill(Color.WHITE);
+        }
+
+        private void displayAsSelected()
+        {
+            square.setVisible(true);
+            text.pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, true);
+            square.setFill(StandardColours.ROBOX_BLUE);
         }
     }
 
@@ -114,82 +137,70 @@ public class VerticalMenu extends VBox
         verticalMenuTitle.setText(title);
     }
 
-    public void addItem(String itemName, Callable<Object> callback, BooleanProperty enabledPredicate)
+    public void addItem(String itemName, Callable<Object> callback,
+        ReadOnlyBooleanProperty enabledPredicate)
     {
-        Item item = addItem(itemName, callback);
+        Item item = new Item(itemName);
+        addRow(verticalMenuGrid, item);
+        allItems.add(item);
+        setUpEventHandlersForItem(item, callback);
+
+        if (!firstItemInitialised)
+        {
+            firstItem = item;
+            firstCallable = callback;
+            firstItemInitialised = true;
+        }
+
         if (enabledPredicate != null)
         {
             item.setEnabledPredicate(enabledPredicate);
         }
     }
 
-    public Item addItem(String itemName, Callable<Object> callback)
-    {
-        Text text = new Text(itemName);
-        allItems.add(text);
-        text.getStyleClass().add("verticalMenuOption");
-        Rectangle square = new Rectangle();
-        square.getStyleClass().add("verticalMenuSquare");
-        square.setHeight(SQUARE_SIZE);
-        square.setWidth(SQUARE_SIZE);
-        addRow(verticalMenuGrid, square, text);
-        setUpEventHandlersForItem(square, text, callback);
-
-        if (!firstItemInitialised)
-        {
-            firstItem = text;
-            firstSquare = square;
-            firstCallable = callback;
-            firstItemInitialised = true;
-        }
-
-        return new Item(text, square);
-    }
-
     public void selectFirstItem()
     {
-        selectItem(firstItem, firstSquare, firstCallable);
+        selectItem(firstItem, firstCallable);
     }
 
-    private void setUpEventHandlersForItem(Rectangle square, Text itemName,
+    private void setUpEventHandlersForItem(Item item,
         Callable<Object> callback)
     {
-        square.setVisible(false);
-        itemName.setOnMouseEntered((MouseEvent e) ->
+        item.square.setVisible(false);
+        item.text.setOnMouseEntered((MouseEvent e) ->
         {
-            if (itemName != selectedItem && !disableNonSelectedItems)
+            if (item != selectedItem && !disableNonSelectedItems)
             {
-                square.setVisible(true);
-                square.setFill(Color.WHITE);
+                item.square.setVisible(true);
+                item.square.setFill(Color.WHITE);
             }
         });
-        itemName.setOnMouseExited((MouseEvent e) ->
+        item.text.setOnMouseExited((MouseEvent e) ->
         {
-            if (itemName != selectedItem && !disableNonSelectedItems)
+            if (item != selectedItem && !disableNonSelectedItems)
             {
-                square.setVisible(false);
+                item.square.setVisible(false);
             }
 
         });
-        itemName.setOnMouseClicked((MouseEvent e) ->
+        item.text.setOnMouseClicked((MouseEvent e) ->
         {
-            if (itemName != selectedItem && !disableNonSelectedItems)
+            if (item != selectedItem && !disableNonSelectedItems)
             {
                 if (selectedItem != null)
                 {
-                    deselect(selectedItem, selectedSquare);
+                    selectedItem.deselect();
                 }
 
-                selectItem(itemName, square, callback);
+                selectItem(item, callback);
             }
         });
     }
 
-    private void selectItem(Text itemName, Rectangle square, Callable<Object> callback)
+    private void selectItem(Item item, Callable<Object> callback)
     {
-        selectedItem = itemName;
-        selectedSquare = square;
-        displayAsSelected(selectedItem, selectedSquare);
+        selectedItem = item;
+        selectedItem.displayAsSelected();
         try
         {
             callback.call();
@@ -202,41 +213,27 @@ public class VerticalMenu extends VBox
     /**
      * Add the given controls to a new row in the grid pane.
      */
-    private void addRow(GridPane menuGrid, Rectangle square, Text itemName)
+    private void addRow(GridPane menuGrid, Item item)
     {
-        menuGrid.add(square, 0, nextRowNum);
-        menuGrid.add(itemName, 1, nextRowNum);
+        menuGrid.add(item.square, 0, nextRowNum);
+        menuGrid.add(item.text, 1, nextRowNum);
         menuGrid.getRowConstraints().add(nextRowNum, new RowConstraints(ROW_HEIGHT, ROW_HEIGHT,
                                                                         ROW_HEIGHT));
         nextRowNum++;
     }
 
-    private void deselect(Text selectedItem, Rectangle square)
-    {
-        square.setVisible(false);
-        selectedItem.pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, false);
-        square.setFill(Color.WHITE);
-    }
-
-    private void displayAsSelected(Text selectedItem, Rectangle square)
-    {
-        square.setVisible(true);
-        selectedItem.pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, true);
-        square.setFill(StandardColours.ROBOX_BLUE);
-    }
-
     /**
-     * *
-     * Disable all menu items except the currently selected item.
+     * ***
+     * Disable all menu items except the currently selected text.
      */
     public void disableNonSelectedItems()
     {
         disableNonSelectedItems = true;
-        for (Text item : allItems)
+        for (Item item : allItems)
         {
             if (item != selectedItem)
             {
-                item.setDisable(true);
+                item.setEnabled(false);
             }
         }
     }
@@ -248,25 +245,24 @@ public class VerticalMenu extends VBox
     public void enableNonSelectedItems()
     {
         disableNonSelectedItems = false;
-        for (Text item : allItems)
+        for (Item item : allItems)
         {
             if (item != selectedItem)
             {
-                item.setDisable(false);
+                item.setEnabled(true);
             }
         }
     }
 
     /**
-     * If an item is selected then deselect it.
+     * If an text is selected then deselect it.
      */
     public void deselectSelectedItem()
     {
-        if (selectedItem != null && selectedSquare != null)
+        if (selectedItem != null)
         {
-            deselect(selectedItem, selectedSquare);
+            selectedItem.deselect();
             selectedItem = null;
-            selectedSquare = null;
         }
     }
 

@@ -135,7 +135,7 @@ public class SmartPartProgrammerController implements Initializable
     {
         materialSelector.setItems(FilamentContainer.getCompleteFilamentList());
 
-        Lookup.currentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        Lookup.getCurrentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
             @Override
             public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newPrinter)

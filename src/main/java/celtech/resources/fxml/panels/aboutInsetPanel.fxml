@@ -179,7 +179,7 @@
                         </AnchorPane>
                         <HBox alignment="CENTER_LEFT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="90.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER">
                             <children>
-                                <GraphicButton fxmlFileName="backwardButton" onAction="#okPressed" prefWidth="80.0" />
+                                <GraphicButtonWithLabel fxmlFileName="backwardButton" onAction="#okPressed" labelText="%buttonText.back" prefWidth="80.0" />
                             </children>
                         </HBox>
                     </children>
