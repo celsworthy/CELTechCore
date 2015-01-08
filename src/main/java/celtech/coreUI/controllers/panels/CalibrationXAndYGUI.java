@@ -87,15 +87,15 @@ public class CalibrationXAndYGUI
             case GET_Y_OFFSET:
                 stepNo = 2;
                 break;
-            case PRINT_CIRCLE:
-                controller.showSpinner();
-                controller.setCalibrationProgressVisible(
-                    CalibrationInsetPanelController.ProgressVisibility.PRINT);
-                stepNo = 3;
-                break;
-            case PRINT_CIRCLE_CHECK:
-                stepNo = 4;
-                break;
+//            case PRINT_CIRCLE:
+//                controller.showSpinner();
+//                controller.setCalibrationProgressVisible(
+//                    CalibrationInsetPanelController.ProgressVisibility.PRINT);
+//                stepNo = 3;
+//                break;
+//            case PRINT_CIRCLE_CHECK:
+//                stepNo = 3;
+//                break;
             case DONE:
                 controller.resetMenuAndGoToChoiceMode();
                 break;
@@ -108,7 +108,7 @@ public class CalibrationXAndYGUI
         }
         if (stepNo != 0)
         {
-            controller.stepNumber.setText(String.format("Step %s of 4", stepNo));
+            controller.stepNumber.setText(String.format("Step %s of 2", stepNo));
         }
     }
 
