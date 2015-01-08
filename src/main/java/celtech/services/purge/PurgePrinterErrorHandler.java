@@ -35,6 +35,7 @@ public class PurgePrinterErrorHandler
 
     private final Printer printer;
     private final Cancellable cancellable;
+    private boolean errorDialogIsOnDisplay = false;
 
     public PurgePrinterErrorHandler(Printer printer, Cancellable cancellable)
     {
@@ -73,7 +74,15 @@ public class PurgePrinterErrorHandler
                 // if not filament slip then cancel / abort printer activity immediately
                 cancelPurge();
             }
-            boolean abort = showPrinterErrorOccurred(error, allowContinue);
+            boolean abort = false;
+
+            if (!errorDialogIsOnDisplay)
+            {
+                errorDialogIsOnDisplay = true;
+                abort = showPrinterErrorOccurred(error, allowContinue);
+                errorDialogIsOnDisplay = false;
+            }
+            
             if (abort && allowContinue)
             {
                 cancelPurge();
