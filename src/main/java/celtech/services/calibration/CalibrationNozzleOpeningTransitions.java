@@ -250,13 +250,13 @@ public class CalibrationNozzleOpeningTransitions implements Transitions
         // CONFIRM_NO_MATERIAL
         transitions.add(new StateTransition(
             NozzleOpeningCalibrationState.CONFIRM_NO_MATERIAL,
-            StateTransitionManager.GUIName.A_BUTTON,
+            StateTransitionManager.GUIName.B_BUTTON,
             NozzleOpeningCalibrationState.FINISHED,
             NozzleOpeningCalibrationState.FAILED));
 
         transitions.add(new StateTransition(
             NozzleOpeningCalibrationState.CONFIRM_NO_MATERIAL,
-            StateTransitionManager.GUIName.B_BUTTON,
+            StateTransitionManager.GUIName.A_BUTTON,
             NozzleOpeningCalibrationState.FAILED,
             NozzleOpeningCalibrationState.FAILED));
 

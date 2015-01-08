@@ -119,8 +119,8 @@ public class CalibrationNozzleOpeningGUI
                 break;
             case CONFIRM_NO_MATERIAL_NO_YESNO_BUTTONS:
             case CONFIRM_NO_MATERIAL:
-                controller.buttonA.setText("No");
-                controller.buttonB.setText("Yes");
+                controller.buttonA.setText("Yes");
+                controller.buttonB.setText("No");
                 stepNo = 9;
                 break;
             case FINISHED:
