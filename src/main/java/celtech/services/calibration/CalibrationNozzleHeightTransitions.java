@@ -44,13 +44,6 @@ public class CalibrationNozzleHeightTransitions implements Transitions
                      },
                                          NozzleOffsetCalibrationState.FAILED));
 
-//        arrivals.put(NozzleOffsetCalibrationState.REPLACE_PEI_BED,
-//                     new ArrivalAction<>(() ->
-//                         {
-//                             actions.doBringBedToFront();
-//                     },
-//                                         NozzleOffsetCalibrationState.FAILED));
-
         transitions = new HashSet<>();
 
         // IDLE
@@ -109,7 +102,7 @@ public class CalibrationNozzleHeightTransitions implements Transitions
         // PROBING
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.PROBING,
                                             StateTransitionManager.GUIName.NEXT,
-                                            NozzleOffsetCalibrationState.LIFT_HEAD,
+                                            NozzleOffsetCalibrationState.BRING_BED_FORWARD,
                                             () ->
                                             {
                                                 actions.doLiftHeadAction();
@@ -144,13 +137,13 @@ public class CalibrationNozzleHeightTransitions implements Transitions
                                             NozzleOffsetCalibrationState.PROBING,
                                             NozzleOffsetCalibrationState.FAILED));
 
-        // LIFT_HEAD
-        transitions.add(new StateTransition(NozzleOffsetCalibrationState.LIFT_HEAD,
+        // BRING_BED_FORWARD
+        transitions.add(new StateTransition(NozzleOffsetCalibrationState.BRING_BED_FORWARD,
                                             StateTransitionManager.GUIName.AUTO,
                                             NozzleOffsetCalibrationState.REPLACE_PEI_BED,
                                             () ->
                                             {
-                                                actions.doBringBedToFront();
+                                                actions.doBringBedToFrontAndRaiseHead();
                                             },
                                             NozzleOffsetCalibrationState.FAILED));
 
@@ -158,10 +151,6 @@ public class CalibrationNozzleHeightTransitions implements Transitions
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.REPLACE_PEI_BED,
                                             StateTransitionManager.GUIName.NEXT,
                                             NozzleOffsetCalibrationState.FINISHED,
-                                            () ->
-                                            {
-                                                actions.doFinishedAction();
-                                            },
                                             NozzleOffsetCalibrationState.FAILED));
 
         // FINISHED
