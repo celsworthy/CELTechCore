@@ -23,7 +23,7 @@ public enum NozzleOffsetCalibrationState
     PROBING("calibrationPanel.moveThePaperInstruction", "Nozzle Height Illustrations_Step 7.fxml"),
     INCREMENT_Z("", ""),
     DECREMENT_Z("", ""),
-    LIFT_HEAD("", ""),
+    BRING_BED_FORWARD("", ""),
     REPLACE_PEI_BED("calibrationPanel.replacePEIBed", "Nozzle Height Illustrations_Step 8.fxml"),
     FINISHED("calibrationPanel.calibrationSucceededMessage",
              "Nozzle Height Illustrations_Step 9.fxml"),

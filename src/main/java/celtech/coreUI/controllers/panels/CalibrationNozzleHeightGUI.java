@@ -98,7 +98,7 @@ public class CalibrationNozzleHeightGUI
             case PROBING:
                 stepNo = 6;
                 break;
-            case LIFT_HEAD:
+            case BRING_BED_FORWARD:
                 break;
             case REPLACE_PEI_BED:
                 stepNo = 7;

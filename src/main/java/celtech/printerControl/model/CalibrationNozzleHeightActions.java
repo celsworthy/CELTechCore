@@ -262,7 +262,7 @@ public class CalibrationNozzleHeightActions
     {
         printerErrorHandler.deregisterForPrinterErrors();
         saveSettings();
-        switchHeaterOffAndRaiseHead();
+        switchHeatersAndHeadLightOff();
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
@@ -270,14 +270,17 @@ public class CalibrationNozzleHeightActions
     {
         printerErrorHandler.deregisterForPrinterErrors();
         restoreHeadData();
-        switchHeaterOffAndRaiseHead();
-        doBringBedToFront();
+        switchHeatersAndHeadLightOff();
+        doBringBedToFrontAndRaiseHead();
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
     
-    public void doBringBedToFront() throws PrinterException, CalibrationException
+    public void doBringBedToFrontAndRaiseHead() throws PrinterException, CalibrationException
     {
+        printer.switchToAbsoluteMoveMode();
+        printer.goToZPosition(25);
         printer.goToOpenDoorPositionDontWait(null);
+        PrinterUtils.waitOnBusy(printer, cancellable);
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }    
 
@@ -295,12 +298,10 @@ public class CalibrationNozzleHeightActions
         doFailedAction();
     }
 
-    private void switchHeaterOffAndRaiseHead() throws PrinterException
+    private void switchHeatersAndHeadLightOff() throws PrinterException
     {
         printer.switchAllNozzleHeatersOff();
         printer.switchOffHeadLEDs();
-        printer.switchToAbsoluteMoveMode();
-        printer.goToZPosition(25);
     }
 
     private void restoreHeadData() throws RoboxCommsException
