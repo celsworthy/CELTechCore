@@ -29,11 +29,15 @@ public enum NozzleOpeningCalibrationState
 
     CALIBRATE_FINE_NOZZLE("calibrationPanel.calibrationCommencedMessageFine", "Nozzle Opening Illustrations_Step 4A.fxml"),
     
+    INCREMENT_FINE_NOZZLE_POSITION_NO_BUTTONS("calibrationPanel.calibrationCommencedMessageFine", "Nozzle Opening Illustrations_Step 4A.fxml"),
+    
     INCREMENT_FINE_NOZZLE_POSITION("", ""),
 
     PRE_CALIBRATION_PRIMING_FILL("calibrationPanel.primingNozzle", ""),
 
     CALIBRATE_FILL_NOZZLE("calibrationPanel.calibrationCommencedMessageFill", "Nozzle Opening Illustrations_Step 6A.fxml"),
+    
+    INCREMENT_FILL_NOZZLE_POSITION_NO_BUTTONS("calibrationPanel.calibrationCommencedMessageFill", "Nozzle Opening Illustrations_Step 6A.fxml"),
     
     INCREMENT_FILL_NOZZLE_POSITION("", ""),
 

@@ -213,7 +213,7 @@ public class CalibrationNozzleOpeningActions
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
-    public void doIncrementFineNozzlePosition() throws CalibrationException
+    public void doIncrementFineNozzlePosition() throws CalibrationException, InterruptedException
     {
         nozzlePosition.set(nozzlePosition.get() + 0.05f);
         steno.info("(FINE) nozzle position set to " + nozzlePosition.get());
@@ -222,10 +222,11 @@ public class CalibrationNozzleOpeningActions
             throw new CalibrationException("Nozzle position beyond limit");
         }
         printer.gotoNozzlePosition(nozzlePosition.get());
+        Thread.sleep(1000);
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
-    public void doIncrementFillNozzlePosition() throws CalibrationException
+    public void doIncrementFillNozzlePosition() throws CalibrationException, InterruptedException
     {
         nozzlePosition.set(nozzlePosition.get() + 0.05f);
         steno.info("(FILL) nozzle position set to " + nozzlePosition);
@@ -234,6 +235,7 @@ public class CalibrationNozzleOpeningActions
             throw new CalibrationException("Nozzle position beyond limit");
         }
         printer.gotoNozzlePosition(nozzlePosition.get());
+        Thread.sleep(1000);
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
