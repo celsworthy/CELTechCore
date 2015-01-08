@@ -271,6 +271,11 @@ public class CalibrationNozzleOpeningTransitions implements Transitions
                                             StateTransitionManager.GUIName.BACK,
                                             NozzleOpeningCalibrationState.DONE,
                                             NozzleOpeningCalibrationState.DONE));
+        
+        transitions.add(new StateTransition(NozzleOpeningCalibrationState.FAILED,
+                                            StateTransitionManager.GUIName.RETRY,
+                                            NozzleOpeningCalibrationState.IDLE,
+                                            NozzleOpeningCalibrationState.DONE));        
     }
 
     @Override

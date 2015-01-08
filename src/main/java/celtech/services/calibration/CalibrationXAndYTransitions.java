@@ -108,6 +108,11 @@ public class CalibrationXAndYTransitions implements Transitions
                                             StateTransitionManager.GUIName.BACK,
                                             CalibrationXAndYState.DONE,
                                             CalibrationXAndYState.DONE));
+        
+        transitions.add(new StateTransition(CalibrationXAndYState.FAILED,
+                                            StateTransitionManager.GUIName.RETRY,
+                                            CalibrationXAndYState.IDLE,
+                                            CalibrationXAndYState.DONE));        
 
     }
 
