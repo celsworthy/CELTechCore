@@ -88,14 +88,15 @@ public class CalibrationNozzleOpeningTransitions implements Transitions
                                             NozzleOpeningCalibrationState.FAILED));
 
         // NO_MATERIAL_CHECK_NO_YES_NO_BUTTONS
-        transitions.add(new StateTransition(NozzleOpeningCalibrationState.NO_MATERIAL_CHECK_NO_YES_NO_BUTTONS,
-                                            StateTransitionManager.GUIName.AUTO,
-                                            NozzleOpeningCalibrationState.NO_MATERIAL_CHECK,
-                                            () ->
-                                            {
-                                                actions.doNoMaterialCheckAction();
-                                            },
-                                            NozzleOpeningCalibrationState.FAILED));
+        transitions.add(new StateTransition(
+            NozzleOpeningCalibrationState.NO_MATERIAL_CHECK_NO_YES_NO_BUTTONS,
+            StateTransitionManager.GUIName.AUTO,
+            NozzleOpeningCalibrationState.NO_MATERIAL_CHECK,
+            () ->
+            {
+                actions.doNoMaterialCheckAction();
+            },
+            NozzleOpeningCalibrationState.FAILED));
 
         // NO MATERIAL CHECK
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.NO_MATERIAL_CHECK,
@@ -155,11 +156,7 @@ public class CalibrationNozzleOpeningTransitions implements Transitions
         // CALIBRATE_FINE_NOZZLE
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.CALIBRATE_FINE_NOZZLE,
                                             StateTransitionManager.GUIName.B_BUTTON,
-                                            NozzleOpeningCalibrationState.INCREMENT_FINE_NOZZLE_POSITION,
-                                            () ->
-                                            {
-                                                actions.doIncrementFineNozzlePosition();
-                                            },
+                                            NozzleOpeningCalibrationState.INCREMENT_FINE_NOZZLE_POSITION_NO_BUTTONS,
                                             NozzleOpeningCalibrationState.FAILED));
 
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.CALIBRATE_FINE_NOZZLE,
@@ -173,6 +170,16 @@ public class CalibrationNozzleOpeningTransitions implements Transitions
                                             NozzleOpeningCalibrationState.FAILED));
 
         // INCREMENT_FINE_NOZZLE_POSITION
+        transitions.add(new StateTransition(
+            NozzleOpeningCalibrationState.INCREMENT_FINE_NOZZLE_POSITION_NO_BUTTONS,
+            StateTransitionManager.GUIName.AUTO,
+            NozzleOpeningCalibrationState.INCREMENT_FINE_NOZZLE_POSITION,
+            () ->
+            {
+                actions.doIncrementFineNozzlePosition();
+            },
+            NozzleOpeningCalibrationState.FAILED));
+
         transitions.add(new StateTransition(
             NozzleOpeningCalibrationState.INCREMENT_FINE_NOZZLE_POSITION,
             StateTransitionManager.GUIName.AUTO,
@@ -193,11 +200,7 @@ public class CalibrationNozzleOpeningTransitions implements Transitions
         // CALIBRATE_FILL_NOZZLE
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.CALIBRATE_FILL_NOZZLE,
                                             StateTransitionManager.GUIName.B_BUTTON,
-                                            NozzleOpeningCalibrationState.INCREMENT_FILL_NOZZLE_POSITION,
-                                            () ->
-                                            {
-                                                actions.doIncrementFillNozzlePosition();
-                                            },
+                                            NozzleOpeningCalibrationState.INCREMENT_FILL_NOZZLE_POSITION_NO_BUTTONS,
                                             NozzleOpeningCalibrationState.FAILED));
 
         transitions.add(new StateTransition(NozzleOpeningCalibrationState.CALIBRATE_FILL_NOZZLE,
@@ -210,6 +213,16 @@ public class CalibrationNozzleOpeningTransitions implements Transitions
                                             NozzleOpeningCalibrationState.FAILED));
 
         // INCREMENT_FILL_NOZZLE_POSITION
+        transitions.add(new StateTransition(
+            NozzleOpeningCalibrationState.INCREMENT_FILL_NOZZLE_POSITION_NO_BUTTONS,
+            StateTransitionManager.GUIName.AUTO,
+            NozzleOpeningCalibrationState.INCREMENT_FILL_NOZZLE_POSITION,
+            () ->
+            {
+                actions.doIncrementFillNozzlePosition();
+            },
+            NozzleOpeningCalibrationState.FAILED));
+
         transitions.add(new StateTransition(
             NozzleOpeningCalibrationState.INCREMENT_FILL_NOZZLE_POSITION,
             StateTransitionManager.GUIName.AUTO,

@@ -143,11 +143,11 @@ public class DummyPrinterCommandInterface extends CommandInterface
             {
                 printJobLineNo += 1;
                 
-                if (!errorTriggered && printJobLineNo > 3) {
-                    steno.debug("raise ERROR");
-                    errorTriggered = true;
-                    raiseError(FirmwareError.ERROR_B_STUCK);
-                }
+//                if (!errorTriggered && printJobLineNo > 3) {
+//                    steno.debug("raise ERROR");
+//                    errorTriggered = true;
+//                    raiseError(FirmwareError.ERROR_B_STUCK);
+//                }
                 
                 if (printJobLineNo > 20)
                 {
