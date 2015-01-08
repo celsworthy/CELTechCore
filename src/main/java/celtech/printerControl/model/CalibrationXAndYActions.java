@@ -64,7 +64,7 @@ public class CalibrationXAndYActions
         PrinterUtils.waitOnMacroFinished(printer, cancellable);
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
-
+    
     public void doFinishedAction() throws PrinterException
     {
         printerErrorHandler.deregisterForPrinterErrors();

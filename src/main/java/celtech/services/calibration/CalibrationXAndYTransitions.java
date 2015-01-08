@@ -73,30 +73,29 @@ public class CalibrationXAndYTransitions implements Transitions
         // GET Y OFFSET
         transitions.add(new StateTransition(CalibrationXAndYState.GET_Y_OFFSET,
                                             StateTransitionManager.GUIName.NEXT,
-                                            CalibrationXAndYState.PRINT_CIRCLE,
-                                            CalibrationXAndYState.FAILED));
-
-        // PRINT CIRCLE
-        transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE,
-                                            StateTransitionManager.GUIName.AUTO,
-                                            CalibrationXAndYState.PRINT_CIRCLE_CHECK,
-                                            () ->
-                                            {
-                                                actions.doSaveSettingsAndPrintCircle();
-                                            },
-                                            CalibrationXAndYState.FAILED));
-
-        // PRINT CIRCLE CHECK
-        transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE_CHECK,
-                                            StateTransitionManager.GUIName.NEXT,
                                             CalibrationXAndYState.FINISHED,
                                             CalibrationXAndYState.FAILED));
 
-        transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE_CHECK,
-                                            StateTransitionManager.GUIName.RETRY,
-                                            CalibrationXAndYState.PRINT_PATTERN,
-                                            CalibrationXAndYState.FAILED));
-
+//        // PRINT CIRCLE
+//        transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE,
+//                                            StateTransitionManager.GUIName.AUTO,
+//                                            CalibrationXAndYState.PRINT_CIRCLE_CHECK,
+//                                            () ->
+//                                            {
+//                                                actions.doSaveSettingsAndPrintCircle();
+//                                            },
+//                                            CalibrationXAndYState.FAILED));
+//
+//        // PRINT CIRCLE CHECK
+//        transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE_CHECK,
+//                                            StateTransitionManager.GUIName.NEXT,
+//                                            CalibrationXAndYState.FINISHED,
+//                                            CalibrationXAndYState.FAILED));
+//
+//        transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE_CHECK,
+//                                            StateTransitionManager.GUIName.RETRY,
+//                                            CalibrationXAndYState.PRINT_PATTERN,
+//                                            CalibrationXAndYState.FAILED));
         // FINISHED
         transitions.add(new StateTransition(CalibrationXAndYState.FINISHED,
                                             StateTransitionManager.GUIName.BACK,
@@ -108,11 +107,11 @@ public class CalibrationXAndYTransitions implements Transitions
                                             StateTransitionManager.GUIName.BACK,
                                             CalibrationXAndYState.DONE,
                                             CalibrationXAndYState.DONE));
-        
+
         transitions.add(new StateTransition(CalibrationXAndYState.FAILED,
                                             StateTransitionManager.GUIName.RETRY,
                                             CalibrationXAndYState.IDLE,
-                                            CalibrationXAndYState.DONE));        
+                                            CalibrationXAndYState.DONE));
 
     }
 
