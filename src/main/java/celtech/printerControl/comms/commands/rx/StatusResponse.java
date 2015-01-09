@@ -1314,6 +1314,18 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append("\n");
         outputString.append("SD card present: " + isSDCardPresent());
         outputString.append("\n");
+        outputString.append("Head X Position: " + getHeadXPosition());
+        outputString.append("\n");
+        outputString.append("Head Y Position: " + getHeadYPosition());
+        outputString.append("\n");
+        outputString.append("Head Z Position: " + getHeadZPosition());
+        outputString.append("\n");
+        outputString.append("Head B Position: " + getBPosition());
+        outputString.append("\n");
+        outputString.append("E Filament diameter: " + EFilamentDiameter);
+        outputString.append("\n");
+        outputString.append("E Filament diameter: " + EFilamentDiameter);
+        outputString.append("\n");
         outputString.append("E Filament diameter: " + EFilamentDiameter);
         outputString.append("\n");
         outputString.append("D Filament diameter: " + DFilamentDiameter);
