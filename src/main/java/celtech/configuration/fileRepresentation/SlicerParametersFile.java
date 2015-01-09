@@ -5,7 +5,6 @@ import celtech.configuration.slicer.FillPattern;
 import celtech.configuration.slicer.NozzleParameters;
 import celtech.configuration.slicer.SupportPattern;
 import java.util.ArrayList;
-import java.util.Optional;
 
 /**
  *
@@ -14,7 +13,7 @@ import java.util.Optional;
 public class SlicerParametersFile
 {
 
-    private int version = 2;
+    private int version = 3;
     private String profileName;
     private SlicerType slicerOverride;
 
@@ -47,6 +46,7 @@ public class SlicerParametersFile
     private int fillNozzle;
     private int supportNozzle;
     private int supportInterfaceNozzle;
+    private int maxClosesBeforeNozzleReselect;
 
     /*
      * Support
@@ -574,6 +574,16 @@ public class SlicerParametersFile
         this.minPrintSpeed_mm_per_s = minPrintSpeed_mm_per_s;
     }
 
+    public int getMaxClosesBeforeNozzleReselect()
+    {
+        return maxClosesBeforeNozzleReselect;
+    }
+
+    public void setMaxClosesBeforeNozzleReselect(int maxClosesBeforeNozzleReselect)
+    {
+        this.maxClosesBeforeNozzleReselect = maxClosesBeforeNozzleReselect;
+    }
+
     @Override
     public SlicerParametersFile clone()
     {
@@ -614,6 +624,8 @@ public class SlicerParametersFile
         clone.fillNozzle = fillNozzle;
         clone.supportNozzle = supportNozzle;
         clone.supportInterfaceNozzle = supportInterfaceNozzle;
+        
+        clone.maxClosesBeforeNozzleReselect = maxClosesBeforeNozzleReselect;
 
         /*
          * Support

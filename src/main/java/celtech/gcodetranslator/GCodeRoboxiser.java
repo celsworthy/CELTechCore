@@ -143,6 +143,11 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
     protected SlicerType slicerType;
 
+    // This counter is used to determine when to reselect the nozzle in use
+    // When printing with a single nozzle it is possible for the home to be lost after many closes
+    private int triggerNozzleReselectAfterNCloses = 0;
+    private int closeCounter = 0;
+
     /**
      *
      */
@@ -316,10 +321,13 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         forcedNozzleOnFirstLayer = settings.getFirstLayerNozzle();
 
         nozzleProxies = new ArrayList<NozzleProxy>();
-
-        settings.getNozzleParameters()
-            .stream()
-            .forEach(nozzleData -> nozzleProxies.add(new NozzleProxy(nozzleData)));
+        
+        for (int nozzleIndex = 0; nozzleIndex < settings.getNozzleParameters().size(); nozzleIndex++)
+        {
+            NozzleProxy proxy = new NozzleProxy(settings.getNozzleParameters().get(nozzleIndex));
+            proxy.setNozzleReferenceNumber(nozzleIndex);
+            nozzleProxies.add(proxy);
+        }
 
         wipeFeedRate_mmPerMin = currentSettings.getPerimeterSpeed_mm_per_s() * 60;
 
@@ -332,6 +340,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             steno.error("Failed to initialise post processor");
             ex.printStackTrace();
         }
+
+        triggerNozzleReselectAfterNCloses = settings.getMaxClosesBeforeNozzleReselect();
 
         return initialised;
     }
@@ -472,6 +482,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                     nozzleChangeEvent.setNozzleNumber(nozzleToUse);
                     nozzleChangeEvent.setComment("return to required nozzle");
                     extrusionBuffer.add(nozzleChangeEvent);
+                    closeCounter = 0;
 
                     currentNozzle = nozzleProxies.get(nozzleToUse);
                 } else
@@ -669,6 +680,9 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 nozzleInUse = nozzleChangeEvent.getNozzleNumber();
                 currentNozzle = nozzleProxies.get(nozzleInUse);
             }
+
+            // Reset the nozzle close counter
+            closeCounter = 0;
         } else if (event instanceof RetractEvent)
         {
             RetractEvent retractEvent = (RetractEvent) event;
@@ -1782,6 +1796,19 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 extrusionBuffer.clear();
 
                 currentNozzle.closeNozzleFully();
+
+                // Determine whether to insert a nozzle reselect at the end of this extrusion path
+                if (closeCounter >= triggerNozzleReselectAfterNCloses)
+                {
+                    NozzleChangeEvent nozzleReselect = new NozzleChangeEvent();
+                    nozzleReselect.setComment("Reselect nozzle");
+                    nozzleReselect.setNozzleNumber(currentNozzle.getNozzleReferenceNumber());
+                    writeEventToFile(nozzleReselect);
+                    closeCounter = 0;
+                } else
+                {
+                    closeCounter++;
+                }
 
             } else if (extrusionBuffer.size() > 0 && extrusionBuffer.containsExtrusionEvents())
             {

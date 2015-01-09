@@ -35,6 +35,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
         this.printJobUUID = printJobUUID;
         this.settings = settings;
         this.printerToUse = printerToUse;
+        updateTitle("Post Processor");
     }
 
     @Override
