@@ -321,7 +321,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
         forcedNozzleOnFirstLayer = settings.getFirstLayerNozzle();
 
         nozzleProxies = new ArrayList<NozzleProxy>();
-        
+
         for (int nozzleIndex = 0; nozzleIndex < settings.getNozzleParameters().size(); nozzleIndex++)
         {
             NozzleProxy proxy = new NozzleProxy(settings.getNozzleParameters().get(nozzleIndex));
@@ -1788,6 +1788,7 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                                 NozzleProxy newNozzle = nozzleProxies.get(
                                     ((NozzleChangeEvent) candidateevent).getNozzleNumber());
                                 currentNozzle = newNozzle;
+                                closeCounter = 0;
                             }
                         }
                     }
@@ -1800,16 +1801,18 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 // Determine whether to insert a nozzle reselect at the end of this extrusion path
                 if (closeCounter >= triggerNozzleReselectAfterNCloses)
                 {
-                    NozzleChangeEvent nozzleReselect = new NozzleChangeEvent();
-                    nozzleReselect.setComment("Reselect nozzle");
-                    nozzleReselect.setNozzleNumber(currentNozzle.getNozzleReferenceNumber());
-                    writeEventToFile(nozzleReselect);
+                    if (triggerNozzleReselectAfterNCloses >= 0)
+                    {
+                        NozzleChangeEvent nozzleReselect = new NozzleChangeEvent();
+                        nozzleReselect.setComment("Reselect nozzle");
+                        nozzleReselect.setNozzleNumber(currentNozzle.getNozzleReferenceNumber());
+                        writeEventToFile(nozzleReselect);
+                    }
                     closeCounter = 0;
                 } else
                 {
                     closeCounter++;
                 }
-
             } else if (extrusionBuffer.size() > 0 && extrusionBuffer.containsExtrusionEvents())
             {
                 CommentEvent failureComment = new CommentEvent();
