@@ -215,10 +215,13 @@ public class HardwareCommandInterface extends CommandInterface
                     }
                 } else
                 {
+                    steno.error("Failure during command write to printer");
                     actionOnCommsFailure();
                 }
             } catch (SerialPortException ex)
             {
+                steno.error("Serial port exception");
+                ex.printStackTrace();
                 actionOnCommsFailure();
             }
         } else
