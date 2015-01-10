@@ -41,26 +41,26 @@ public class CalibrationMenuConfiguration
 
         calibrationMenu.setTitle("Calibration");
         Callable doOpeningCalibration = () ->
-                            {
-                                calibrationInsetPanelController.setCalibrationMode(
-                                    CalibrationMode.NOZZLE_OPENING);
-                                return null;
+        {
+            calibrationInsetPanelController.setCalibrationMode(
+                CalibrationMode.NOZZLE_OPENING);
+            return null;
         };
-        calibrationMenu.addItem(Lookup.i18n("calibrationMenu.nozzleOpening"), 
+        calibrationMenu.addItem(Lookup.i18n("calibrationMenu.nozzleOpening"),
                                 doOpeningCalibration, null);
-        Callable doHeightCalibration =  () ->
-                            {
-                                calibrationInsetPanelController.setCalibrationMode(
-                                    CalibrationMode.NOZZLE_HEIGHT);
-                                return null;
+        Callable doHeightCalibration = () ->
+        {
+            calibrationInsetPanelController.setCalibrationMode(
+                CalibrationMode.NOZZLE_HEIGHT);
+            return null;
         };
-        calibrationMenu.addItem(Lookup.i18n("calibrationMenu.nozzleHeight"), 
+        calibrationMenu.addItem(Lookup.i18n("calibrationMenu.nozzleHeight"),
                                 doHeightCalibration, null);
         Callable doXYAlignmentCalibration = () ->
-                            {
-                                calibrationInsetPanelController.setCalibrationMode(
-                                    CalibrationMode.X_AND_Y_OFFSET);
-                                return null;
+        {
+            calibrationInsetPanelController.setCalibrationMode(
+                CalibrationMode.X_AND_Y_OFFSET);
+            return null;
         };
         calibrationMenu.addItem(Lookup.i18n("calibrationMenu.nozzleAlignment"),
                                 doXYAlignmentCalibration, null);
@@ -71,9 +71,15 @@ public class CalibrationMenuConfiguration
     private ChangeListener<Printer> selectedPrinterListener = (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newPrinter) ->
     {
         currentlySelectedPrinter = newPrinter;
-        nozzleOpeningCalibrationEnabled.bind(newPrinter.canCalibrateNozzleOpeningProperty());
-        nozzleHeightCalibrationEnabled.bind(newPrinter.canCalibrateNozzleHeightProperty());
-        xyAlignmentCalibrationEnabled.bind(newPrinter.canCalibrateXYAlignmentProperty());
+        nozzleOpeningCalibrationEnabled.unbind();
+        nozzleHeightCalibrationEnabled.unbind();
+        xyAlignmentCalibrationEnabled.unbind();
+        if (newPrinter != null)
+        {
+            nozzleOpeningCalibrationEnabled.bind(newPrinter.canCalibrateNozzleOpeningProperty());
+            nozzleHeightCalibrationEnabled.bind(newPrinter.canCalibrateNozzleHeightProperty());
+            xyAlignmentCalibrationEnabled.bind(newPrinter.canCalibrateXYAlignmentProperty());
+        }
     };
 
 }
