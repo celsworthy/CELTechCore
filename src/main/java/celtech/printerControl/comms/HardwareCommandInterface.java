@@ -37,7 +37,7 @@ public class HardwareCommandInterface extends CommandInterface
     {
         boolean portSetupOK = false;
 
-        steno.trace("About to open serial port");
+        steno.info("About to open serial port " + commsPortName);
         serialPort = new SerialPort(commsPortName);
 
         try
@@ -47,7 +47,7 @@ public class HardwareCommandInterface extends CommandInterface
                                  SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
             serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
             portSetupOK = true;
-            steno.trace("Finished opening serial port");
+            steno.info("Finished opening serial port " + commsPortName);
         } catch (SerialPortException ex)
         {
             steno.error("Error setting up serial port " + ex.getMessage());
@@ -67,6 +67,7 @@ public class HardwareCommandInterface extends CommandInterface
             try
             {
                 serialPort.closePort();
+                steno.info("Port " + portName + " disconnected");
             } catch (SerialPortException ex)
             {
                 steno.error("Error closing serial port");

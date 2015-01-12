@@ -79,10 +79,12 @@ public class Lookup
 
     private Lookup()
     {
+        steno.info("Starting AutoMaker - get user preferences...");
         userPreferences = new UserPreferences(UserPreferenceContainer.getUserPreferenceFile());
 
         Locale appLocale;
         String languageTag = userPreferences.getLanguageTag();
+        steno.info("Starting AutoMaker - language tag is " + languageTag);
         if (languageTag == null || languageTag.length() == 0)
         {
             appLocale = Locale.getDefault();
@@ -105,6 +107,8 @@ public class Lookup
                     break;
             }
         }
+        
+        steno.info("Starting AutoMaker - loading resources...");
         ResourceBundle i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData",
                                                              appLocale, new UTF8Control());
         applicationEnvironment = new ApplicationEnvironment(i18nBundle, appLocale);

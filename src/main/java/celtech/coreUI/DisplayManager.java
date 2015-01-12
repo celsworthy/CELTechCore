@@ -152,6 +152,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private DisplayManager()
     {
+        steno.info("Starting AutoMaker - intialising display manager...");
         switch (ApplicationConfiguration.getMachineType())
         {
             case LINUX_X64:
@@ -162,6 +163,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 System.setProperty("prism.lcdtext", "true");
                 break;
         }
+        steno.info("Starting AutoMaker - machine type is " + ApplicationConfiguration.getMachineType());
 
         modelLoadDialog = new ProgressDialog(modelLoaderService);
 
