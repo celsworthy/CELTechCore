@@ -10,8 +10,11 @@ import celtech.utils.SystemUtils;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.property.FloatProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyFloatProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleFloatProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import libertysystems.stenographer.Stenographer;
@@ -30,6 +33,7 @@ public class Head implements Cloneable, RepairableComponent
     protected final FloatProperty headYPosition = new SimpleFloatProperty(0);
     protected final FloatProperty headZPosition = new SimpleFloatProperty(0);
     protected final FloatProperty BPosition = new SimpleFloatProperty(0);
+    protected final IntegerProperty nozzleInUse = new SimpleIntegerProperty(0);
 
     protected final StringProperty typeCode = new SimpleStringProperty("");
     protected final StringProperty name = new SimpleStringProperty("");
@@ -164,6 +168,15 @@ public class Head implements Cloneable, RepairableComponent
     public ReadOnlyFloatProperty bPositionProperty()
     {
         return BPosition;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public ReadOnlyIntegerProperty nozzleInUseProperty()
+    {
+        return nozzleInUse;
     }
 
     /**
