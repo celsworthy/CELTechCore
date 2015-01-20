@@ -10,8 +10,11 @@ import celtech.utils.SystemUtils;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.property.FloatProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyFloatProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleFloatProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import libertysystems.stenographer.Stenographer;
@@ -30,6 +33,7 @@ public class Head implements Cloneable, RepairableComponent
     protected final FloatProperty headYPosition = new SimpleFloatProperty(0);
     protected final FloatProperty headZPosition = new SimpleFloatProperty(0);
     protected final FloatProperty BPosition = new SimpleFloatProperty(0);
+    protected final IntegerProperty nozzleInUse = new SimpleIntegerProperty(0);
 
     protected final StringProperty typeCode = new SimpleStringProperty("");
     protected final StringProperty name = new SimpleStringProperty("");
@@ -164,6 +168,15 @@ public class Head implements Cloneable, RepairableComponent
     public ReadOnlyFloatProperty bPositionProperty()
     {
         return BPosition;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public ReadOnlyIntegerProperty nozzleInUseProperty()
+    {
+        return nozzleInUse;
     }
 
     /**
@@ -437,4 +450,33 @@ public class Head implements Cloneable, RepairableComponent
             get().length());
         uniqueID.set(idToCreate);
     }
+
+    public boolean matchesEEPROMData(HeadEEPROMDataResponse response)
+    {
+        boolean matches = false;
+
+        //TODO fix for multiple heaters/nozzles
+        if (response.getTypeCode().equals(typeCodeProperty().get())
+            && response.getHeadHours() == headHoursProperty().get()
+            && response.getMaximumTemperature() == getNozzleHeaters()
+            .get(0)
+            .maximumTemperatureProperty().get()
+            && response.getNozzle1BOffset() == getNozzles().get(0).bOffsetProperty().get()
+            && response.getNozzle1XOffset() == getNozzles().get(0).xOffsetProperty().get()
+            && response.getNozzle1YOffset() == getNozzles().get(0).yOffsetProperty().get()
+            && response.getNozzle1ZOffset() == getNozzles().get(0).zOffsetProperty().get()
+            && response.getNozzle2BOffset() == getNozzles().get(1).bOffsetProperty().get()
+            && response.getNozzle2XOffset() == getNozzles().get(1).xOffsetProperty().get()
+            && response.getNozzle2YOffset() == getNozzles().get(1).yOffsetProperty().get()
+            && response.getNozzle2ZOffset() == getNozzles().get(1).zOffsetProperty().get()
+            && response.getBeta() == getNozzleHeaters().get(0).betaProperty().get()
+            && response.getTCal() == getNozzleHeaters().get(0).tCalProperty().get()
+            && response.getUniqueID().equals(uniqueIDProperty().get()))
+        {
+            matches = true;
+        }
+
+        return matches;
+    }
+
 }

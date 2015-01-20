@@ -228,6 +228,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     {
         Printer printer = pendingPrinters.get(portName);
         activePrinters.put(portName, printer);
+        printer.connectionEstablished();
 
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {

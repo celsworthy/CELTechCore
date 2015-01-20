@@ -20,6 +20,8 @@ import celtech.coreUI.controllers.panels.LayoutStatusMenuStripController;
 import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
 import celtech.coreUI.controllers.panels.SettingsSidePanelController;
 import celtech.coreUI.controllers.panels.SidePanelManager;
+import celtech.coreUI.keycommands.HiddenKey;
+import celtech.coreUI.keycommands.KeyCommandListener;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
@@ -65,7 +67,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class DisplayManager implements EventHandler<KeyEvent>
+public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListener
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
@@ -118,31 +120,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
 
     private static final String addDummyPrinterCommand = "AddDummy";
-
-    private String hiddenCommandKeyBuffer = "";
-    private final EventHandler<KeyEvent> hiddenCommandEventHandler = (KeyEvent event) ->
-    {
-        if (addDummyPrinterCommand.startsWith(hiddenCommandKeyBuffer + event.getCharacter()))
-        {
-            hiddenCommandKeyBuffer += event.getCharacter();
-            if (hiddenCommandKeyBuffer != null)
-            {
-                switch (hiddenCommandKeyBuffer)
-                {
-                    case addDummyPrinterCommand:
-                        RoboxCommsManager.getInstance().addDummyPrinter();
-                        steno.info("Added dummy printer");
-                        hiddenCommandKeyBuffer = "";
-                        break;
-                }
-            }
-        } else
-        {
-            hiddenCommandKeyBuffer = "";
-        }
-    };
-
-    private boolean captureKeys = false;
 
     private AnchorPane root;
     private Pane spinnerContainer;
@@ -584,7 +561,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
             }
         });
 
-        captureHiddenKeys();
+        HiddenKey hiddenKeyThing = new HiddenKey();
+        hiddenKeyThing.addCommandSequence(addDummyPrinterCommand);
+        hiddenKeyThing.addKeyCommandListener(this);
+        hiddenKeyThing.captureHiddenKeys(scene);
 
         // Camera required to allow 2D shapes to be rotated in 3D in the '2D' UI
         PerspectiveCamera controlOverlaycamera = new PerspectiveCamera(false);
@@ -984,25 +964,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
         return (PurgeInsetPanelController) insetPanelControllers.get(ApplicationMode.PURGE);
     }
 
-    private void stopCapturingHiddenKeys()
-    {
-        if (captureKeys)
-        {
-            scene.removeEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
-            hiddenCommandKeyBuffer = "";
-            captureKeys = false;
-        }
-    }
-
-    private void captureHiddenKeys()
-    {
-        if (!captureKeys)
-        {
-            scene.addEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
-            captureKeys = true;
-        }
-    }
-
     private void fireNodeMayHaveMovedTrigger()
     {
         nodesMayHaveMoved.set(!nodesMayHaveMoved.get());
@@ -1011,5 +972,14 @@ public class DisplayManager implements EventHandler<KeyEvent>
     public ReadOnlyBooleanProperty nodesMayHaveMovedProperty()
     {
         return nodesMayHaveMoved;
+    }
+
+    @Override
+    public void trigger(String commandSequence)
+    {
+        if (commandSequence.equals(addDummyPrinterCommand))
+        {
+            RoboxCommsManager.getInstance().addDummyPrinter();
+        }
     }
 }
