@@ -2899,8 +2899,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 case REEL_EEPROM_DATA:
                     ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) rxPacket;
 
-                    if (Reel.isFilamentIDValid(reelResponse.getReelFilamentID()))
-                    {
+//                    if (Reel.isFilamentIDValid(reelResponse.getReelFilamentID()))
+//                    {
                         // Might be unrecognised but correct format for a Robox head type code
                         if (!reels.containsKey(reelResponse.getReelNumber()))
                         {
@@ -2937,7 +2937,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                     break;
                             }
                         }
-                    }
+//                    }
                     break;
 
                 case HEAD_EEPROM_DATA:
