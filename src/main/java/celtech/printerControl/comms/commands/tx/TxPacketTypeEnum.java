@@ -161,7 +161,12 @@ public enum TxPacketTypeEnum
     /**
      *
      */
-    READ_SEND_FILE_REPORT((byte) 0x93, 1, false, RxPacketTypeEnum.SEND_FILE);
+    READ_SEND_FILE_REPORT((byte) 0x93, 1, false, RxPacketTypeEnum.SEND_FILE),
+
+    /**
+     *
+     */
+    READ_DEBUG_DATA((byte) 0xfc, 1, false, RxPacketTypeEnum.DEBUG_DATA);
 
     private final byte commandByte;
     private final int packetSize;

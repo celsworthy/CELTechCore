@@ -48,6 +48,9 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
     private Button sendGCodeButton;
 
     @FXML
+    private Button getDebugDataButton;
+
+    @FXML
     private HBox slideout;
 
     @FXML
@@ -60,6 +63,12 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
     void sendGCodeA(ActionEvent event)
     {
         fireGCodeAtPrinter();
+    }
+
+    @FXML
+    void sendDebugRequest(ActionEvent event)
+    {
+        Lookup.getCurrentlySelectedPrinterProperty().get().requestDebugData(true);
     }
 
     private void fireGCodeAtPrinter()

@@ -64,7 +64,12 @@ public enum RxPacketTypeEnum
     /**
      *
      */
-    SEND_FILE((byte)0xE9, 25, false, 0);
+    SEND_FILE((byte)0xE9, 25, false, 0),
+    
+    /**
+     *
+     */
+    DEBUG_DATA((byte)0xEF, 257, false, 0);
     
     private final byte commandByte;
     private final int packetSize;

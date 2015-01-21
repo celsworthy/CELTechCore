@@ -508,4 +508,6 @@ public interface Printer extends RoboxResponseConsumer
     public void registerErrorConsumerAllErrors(ErrorConsumer errorConsumer);
 
     public void deregisterErrorConsumer(ErrorConsumer errorConsumer);
+
+    public void requestDebugData(boolean addToGCodeTranscript);
 }

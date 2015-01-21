@@ -24,6 +24,7 @@
                                 <Button fx:id="sendGCodeButton" minWidth="0.0" mnemonicParsing="false" onAction="#sendGCodeA" text="%gcodeEntry.sendGCode" />
                             </children>
                         </HBox>
+                        <Button fx:id="getDebugDataButton" minWidth="0.0" mnemonicParsing="false" onAction="#sendDebugRequest" text="%gcodeEntry.retrieveDebugData" />
                     </children>
                     <padding>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

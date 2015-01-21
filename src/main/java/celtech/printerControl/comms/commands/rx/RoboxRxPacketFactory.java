@@ -64,6 +64,9 @@ public class RoboxRxPacketFactory
                 case LIST_FILES_RESPONSE:
                     returnVal = new ListFilesResponseImpl();
                     break;
+                case DEBUG_DATA:
+                    returnVal = new ListFilesResponseImpl();
+                    break;
                 default:
                     break;
             }
