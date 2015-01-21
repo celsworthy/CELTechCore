@@ -25,6 +25,7 @@ import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.printerControl.comms.commands.rx.GCodeDataResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
+import celtech.printerControl.comms.commands.rx.HoursCounterResponse;
 import celtech.printerControl.comms.commands.rx.ListFilesResponse;
 import celtech.printerControl.comms.commands.rx.PrinterIDResponse;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
@@ -2544,7 +2545,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     {
                         if (response == null)
                         {
-                            addToGCodeTranscript("No data returned");
+                            addToGCodeTranscript("No data returned\n");
                         } else
                         {
                             addToGCodeTranscript(response.getDebugData());
@@ -2747,6 +2748,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         head.get().headXPosition.set(statusResponse.getHeadXPosition());
                         head.get().headYPosition.set(statusResponse.getHeadYPosition());
                         head.get().headZPosition.set(statusResponse.getHeadZPosition());
+                        head.get().nozzleInUse.set(statusResponse.getNozzleInUse());
                     }
 
                     checkHeadEEPROM(statusResponse);
@@ -2932,6 +2934,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     break;
 
                 case GCODE_RESPONSE:
+                    break;
+
+                case HOURS_COUNTER:
+                    HoursCounterResponse hoursResponse = (HoursCounterResponse) rxPacket;
+                    printerAncillarySystems.hoursCounter.set(hoursResponse.getHoursCounter());
                     break;
 
                 default:

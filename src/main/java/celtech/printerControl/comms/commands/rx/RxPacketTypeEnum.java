@@ -14,7 +14,7 @@ public enum RxPacketTypeEnum
     /**
      *
      */
-    STATUS_RESPONSE((byte)0xE1, 211, false, 0),
+    STATUS_RESPONSE((byte)0xE1, 212, false, 0),
 
     /**
      *
@@ -65,6 +65,11 @@ public enum RxPacketTypeEnum
      *
      */
     SEND_FILE((byte)0xE9, 25, false, 0),
+    
+    /**
+     *
+     */
+    HOURS_COUNTER((byte)0xEA, 9, false, 0),
     
     /**
      *

@@ -162,6 +162,11 @@ public enum TxPacketTypeEnum
      *
      */
     READ_SEND_FILE_REPORT((byte) 0x93, 1, false, RxPacketTypeEnum.SEND_FILE),
+    
+    /**
+     *
+     */
+    READ_HOURS_COUNTER((byte) 0xb6, 1, false, RxPacketTypeEnum.HOURS_COUNTER),
 
     /**
      *

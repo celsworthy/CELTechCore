@@ -42,6 +42,7 @@ public class PrinterAncillarySystems
     protected final BooleanProperty lidOpen = new SimpleBooleanProperty(false);
     protected final BooleanProperty dualReelAdaptorPresent = new SimpleBooleanProperty(false);
     protected final FloatProperty feedRateMultiplier = new SimpleFloatProperty(0);
+    protected final FloatProperty hoursCounter = new SimpleFloatProperty(0);
 
     protected final ObjectProperty<HeaterMode> bedHeaterMode = new SimpleObjectProperty<>(HeaterMode.OFF);
     protected final IntegerProperty ambientTemperature = new SimpleIntegerProperty(0);
@@ -166,6 +167,11 @@ public class PrinterAncillarySystems
     public ReadOnlyIntegerProperty bedTargetTemperatureProperty()
     {
         return bedTargetTemperature;
+    }
+
+    public ReadOnlyFloatProperty hoursCounterProperty()
+    {
+        return hoursCounter;
     }
 
     public XYChart.Series<Number, Number> getAmbientTemperatureHistory()

@@ -124,6 +124,12 @@ public class RoboxTxPacketFactory
                 case LIST_FILES:
                     returnVal = new ListFiles();
                     break;
+                case READ_HOURS_COUNTER:
+                    returnVal = new ReadHoursCounter();
+                    break;
+                case READ_DEBUG_DATA:
+                    returnVal = new ReadDebugData();
+                    break;
                 default:
                     break;
             }
@@ -158,11 +164,6 @@ public class RoboxTxPacketFactory
                 default:
                     throw new UnknownPacketTypeException();
             }
-
-//            if (returnVal == null)
-//            {
-//                throw new UnableToGenerateRoboxPacketException();
-//            }
         }
 
         return returnVal;

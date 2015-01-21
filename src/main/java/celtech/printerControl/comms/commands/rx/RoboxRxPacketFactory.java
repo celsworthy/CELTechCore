@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.comms.commands.rx;
 
 import celtech.printerControl.comms.commands.exceptions.UnableToGenerateRoboxPacketException;
@@ -64,9 +60,13 @@ public class RoboxRxPacketFactory
                 case LIST_FILES_RESPONSE:
                     returnVal = new ListFilesResponseImpl();
                     break;
+                case HOURS_COUNTER:
+                    returnVal = new HoursCounterResponse();
+                    break;
                 case DEBUG_DATA:
                     returnVal = new ListFilesResponseImpl();
                     break;
+                    
                 default:
                     break;
             }
