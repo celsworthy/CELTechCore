@@ -11,7 +11,9 @@ import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
 import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.model.Printer;
+import java.util.concurrent.Callable;
 import jssc.SerialPort;
+import static jssc.SerialPort.PURGE_RXCLEAR;
 import jssc.SerialPortException;
 import jssc.SerialPortTimeoutException;
 
@@ -21,9 +23,11 @@ import jssc.SerialPortTimeoutException;
  */
 public class HardwareCommandInterface extends CommandInterface
 {
+
     // timeout is required on the read particularly for when the firmware is out of date
     // and the returned status report is then too short see issue ROB-453
     private final static int READ_TIMEOUT = 5000;
+    private boolean stillWaitingForStatus = false;
 
     public HardwareCommandInterface(PrinterStatusConsumer controlInterface, String portName,
         boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
@@ -120,7 +124,8 @@ public class HardwareCommandInterface extends CommandInterface
                         if (waitCounter >= 10)
                         {
                             steno.error("No response from printer - disconnecting");
-                            throw new SerialPortException(serialPort.getPortName(), "Check availability",
+                            throw new SerialPortException(serialPort.getPortName(),
+                                                          "Check availability",
                                                           "Printer did not respond");
                         }
                         waitCounter++;
@@ -129,16 +134,18 @@ public class HardwareCommandInterface extends CommandInterface
 
                     byte[] respCommand = readSerialPort(1);
 
-//                steno.info("Got response:" + String.format("0x%02X", respCommand) + " for message: " + messageToWrite);
                     RxPacketTypeEnum packetType = RxPacketTypeEnum.getEnumForCommand(respCommand[0]);
                     if (packetType != null)
                     {
                         if (packetType != messageToWrite.getPacketType().getExpectedResponse())
                         {
-                            throw new InvalidResponseFromPrinterException("Expected response of type "
-                                + messageToWrite.getPacketType().getExpectedResponse().name());
+                            throw new InvalidResponseFromPrinterException(
+                                "Expected response of type "
+                                + messageToWrite.getPacketType().getExpectedResponse().name()
+                                + " and got "
+                                + packetType);
                         }
-//                    steno.info("Got a response packet back of type: " + packetType.toString());
+                        steno.trace("Got a response packet back of type: " + packetType.toString());
                         byte[] inputBuffer = null;
                         if (packetType.containsLengthField())
                         {
@@ -177,7 +184,8 @@ public class HardwareCommandInterface extends CommandInterface
                         try
                         {
                             receivedPacket = RoboxRxPacketFactory.createPacket(inputBuffer);
-//                        steno.info("Got packet of type " + receivedPacket.getPacketType().name());
+                            steno.
+                                trace("Got packet of type " + receivedPacket.getPacketType().name());
 
                             printerToUse.processRoboxResponse(receivedPacket);
                         } catch (InvalidCommandByteException ex)
@@ -196,7 +204,7 @@ public class HardwareCommandInterface extends CommandInterface
                     } else
                     {
                         // Attempt to drain the crud from the input
-                        // There shouldn't be anything here but just in case...                    
+                        // There shouldn't be anything here but just in case...
                         byte[] storage = serialPort.readBytes();
 
                         try
@@ -210,7 +218,6 @@ public class HardwareCommandInterface extends CommandInterface
                                 "Invalid packet received from firmware - couldn't print contents");
                         }
 
-                        //TODO Reinstate exception inhibited as a result of issue 23 (firmware fault on M190 command)
 //                    InvalidResponseFromPrinterException exception = new InvalidResponseFromPrinterException("Invalid response - got: " + received);
 //                    throw exception;
                     }
@@ -236,9 +243,11 @@ public class HardwareCommandInterface extends CommandInterface
     private byte[] readSerialPort(int numBytes) throws RoboxCommsException, SerialPortException
     {
         byte[] returnData = null;
-        try {
+        try
+        {
             returnData = serialPort.readBytes(numBytes, READ_TIMEOUT);
-        } catch (SerialPortTimeoutException ex) {
+        } catch (SerialPortTimeoutException ex)
+        {
             throw new RoboxCommsException("Timeout waiting for Robox: " + ex);
         }
         return returnData;

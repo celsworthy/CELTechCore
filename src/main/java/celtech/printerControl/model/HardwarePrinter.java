@@ -7,6 +7,8 @@ import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
 import celtech.configuration.PauseStatus;
+import celtech.configuration.PrinterEdition;
+import celtech.configuration.PrinterModel;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.SettingsScreenState;
@@ -204,6 +206,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
      * Error handling
      */
     private final Map<ErrorConsumer, List<FirmwareError>> errorConsumers = new WeakHashMap<>();
+    private boolean processErrors = false;
 
     public HardwarePrinter(PrinterStatusConsumer printerStatusConsumer,
         CommandInterface commandInterface)
@@ -1813,6 +1816,139 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
+    public void updatePrinterModelAndEdition(PrinterModel model, PrinterEdition edition) throws PrinterException
+    {
+        WritePrinterID writeIDCmd
+            = (WritePrinterID) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_PRINTER_ID);
+
+        PrinterIdentity newIdentity = printerIdentity.clone();
+        newIdentity.printermodel.set(model.getCodeName());
+        newIdentity.printeredition.set(edition.getCodeName());
+        writeIDCmd.populatePacket(newIdentity);
+        try
+        {
+            AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeIDCmd);
+            PrinterIDResponse idResponse = (PrinterIDResponse) commandInterface.writeToPrinter(
+                RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_PRINTER_ID));
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Comms exception whilst writing printer model and edition " + ex.
+                getMessage());
+            throw new PrinterException("Failed to write model and edition to printer");
+        }
+    }
+
+    @Override
+    public void updatePrinterWeek(String weekIdentifier) throws PrinterException
+    {
+        WritePrinterID writeIDCmd
+            = (WritePrinterID) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_PRINTER_ID);
+
+        PrinterIdentity newIdentity = printerIdentity.clone();
+        newIdentity.printerweekOfManufacture.set(weekIdentifier);
+        writeIDCmd.populatePacket(newIdentity);
+        try
+        {
+            AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeIDCmd);
+            PrinterIDResponse idResponse = (PrinterIDResponse) commandInterface.writeToPrinter(
+                RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_PRINTER_ID));
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Comms exception whilst writing printer week " + ex.
+                getMessage());
+            throw new PrinterException("Failed to write week to printer");
+        }
+    }
+
+    @Override
+    public void updatePrinterYear(String yearIdentifier) throws PrinterException
+    {
+        WritePrinterID writeIDCmd
+            = (WritePrinterID) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_PRINTER_ID);
+
+        PrinterIdentity newIdentity = printerIdentity.clone();
+        newIdentity.printeryearOfManufacture.set(yearIdentifier);
+        writeIDCmd.populatePacket(newIdentity);
+        try
+        {
+            AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeIDCmd);
+            PrinterIDResponse idResponse = (PrinterIDResponse) commandInterface.writeToPrinter(
+                RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_PRINTER_ID));
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Comms exception whilst writing printer year " + ex.
+                getMessage());
+            throw new PrinterException("Failed to write year to printer");
+        }
+    }
+
+    @Override
+    public void updatePrinterPONumber(String poIdentifier) throws PrinterException
+    {
+        WritePrinterID writeIDCmd
+            = (WritePrinterID) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_PRINTER_ID);
+
+        PrinterIdentity newIdentity = printerIdentity.clone();
+        newIdentity.printerpoNumber.set(poIdentifier);
+        writeIDCmd.populatePacket(newIdentity);
+        try
+        {
+            AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeIDCmd);
+            PrinterIDResponse idResponse = (PrinterIDResponse) commandInterface.writeToPrinter(
+                RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_PRINTER_ID));
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Comms exception whilst writing printer PO number " + ex.
+                getMessage());
+            throw new PrinterException("Failed to write PO number to printer");
+        }
+    }
+
+    @Override
+    public void updatePrinterSerialNumber(String serialIdentifier) throws PrinterException
+    {
+        WritePrinterID writeIDCmd
+            = (WritePrinterID) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_PRINTER_ID);
+
+        PrinterIdentity newIdentity = printerIdentity.clone();
+        newIdentity.printerserialNumber.set(serialIdentifier);
+        writeIDCmd.populatePacket(newIdentity);
+        try
+        {
+            AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeIDCmd);
+            PrinterIDResponse idResponse = (PrinterIDResponse) commandInterface.writeToPrinter(
+                RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_PRINTER_ID));
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Comms exception whilst writing printer serial number " + ex.
+                getMessage());
+            throw new PrinterException("Failed to write serial number to printer");
+        }
+    }
+
+    @Override
+    public void updatePrinterIDChecksum(String checksum) throws PrinterException
+    {
+        WritePrinterID writeIDCmd
+            = (WritePrinterID) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_PRINTER_ID);
+
+        PrinterIdentity newIdentity = printerIdentity.clone();
+        newIdentity.printercheckByte.set(checksum);
+        writeIDCmd.populatePacket(newIdentity);
+        try
+        {
+            AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeIDCmd);
+            PrinterIDResponse idResponse = (PrinterIDResponse) commandInterface.writeToPrinter(
+                RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_PRINTER_ID));
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Comms exception whilst writing printer id checksum " + ex.
+                getMessage());
+            throw new PrinterException("Failed to write checksum to printer");
+        }
+    }
+
+    @Override
     public void goToTargetBedTemperature()
     {
         try
@@ -2526,6 +2662,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
+    public void connectionEstablished()
+    {
+        processErrors = true;
+    }
+    
+    @Override
     public void requestDebugData(boolean addToGCodeTranscript)
     {
         RoboxTxPacket debugRequest = RoboxTxPacketFactory.
@@ -2548,7 +2690,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             addToGCodeTranscript("No data returned\n");
                         } else
                         {
-                            addToGCodeTranscript(response.getDebugData());
+                            addToGCodeTranscript(response.getDebugData() + "\n");
                         }
                     }
                 });
@@ -2584,11 +2726,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
                     if (ackResponse.isError())
                     {
-                        List<FirmwareError> errorsFound = new ArrayList<>(ackResponse.
-                            getFirmwareErrors());
-
-                        steno.debug(ackResponse.getErrorsAsString());
-
                         try
                         {
                             steno.info("Clearing errors");
@@ -2598,28 +2735,36 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             steno.warning("Couldn't clear firmware error list");
                         }
 
-                        errorsFound.stream()
-                            .forEach(foundError ->
-                                {
-                                    errorWasConsumed = false;
-                                    errorConsumers.forEach((consumer, errorList) ->
-                                        {
-                                            if (errorList.contains(foundError) || errorList.
-                                            contains(FirmwareError.ALL_ERRORS))
-                                            {
-                                                consumer.consumeError(foundError);
-                                                errorWasConsumed = true;
-                                            }
-                                    });
+                        if (processErrors)
+                        {
+                            List<FirmwareError> errorsFound = new ArrayList<>(ackResponse.
+                                getFirmwareErrors());
 
-                                    if (!errorWasConsumed)
+                            steno.debug(ackResponse.getErrorsAsString());
+
+                            errorsFound.stream()
+                                .forEach(foundError ->
                                     {
-                                        systemNotificationManager.processErrorPacketFromPrinter(
-                                            foundError, printer);
-                                    }
-                            });
+                                        errorWasConsumed = false;
+                                        errorConsumers.forEach((consumer, errorList) ->
+                                            {
+                                                if (errorList.contains(foundError) || errorList.
+                                                contains(FirmwareError.ALL_ERRORS))
+                                                {
+                                                    consumer.consumeError(foundError);
+                                                    errorWasConsumed = true;
+                                                }
+                                        });
 
-                        steno.trace(ackResponse.toString());
+                                        if (!errorWasConsumed)
+                                        {
+                                            systemNotificationManager.processErrorPacketFromPrinter(
+                                                foundError, printer);
+                                        }
+                                });
+
+                            steno.trace(ackResponse.toString());
+                        }
                     }
                     break;
 
@@ -2790,8 +2935,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 case REEL_EEPROM_DATA:
                     ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) rxPacket;
 
-                    if (Reel.isFilamentIDValid(reelResponse.getReelFilamentID()))
-                    {
+//                    if (Reel.isFilamentIDValid(reelResponse.getReelFilamentID()))
+//                    {
                         // Might be unrecognised but correct format for a Robox head type code
                         if (!reels.containsKey(reelResponse.getReelNumber()))
                         {
@@ -2828,7 +2973,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                     break;
                             }
                         }
-                    }
+//                    }
                     break;
 
                 case HEAD_EEPROM_DATA:
@@ -2988,6 +3133,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         } catch (RoboxCommsException ex)
                         {
                             steno.error("Error attempting to read head eeprom");
+                            ex.printStackTrace();
                         }
                         break;
                 }

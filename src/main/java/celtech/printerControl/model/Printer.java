@@ -3,6 +3,8 @@ package celtech.printerControl.model;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
+import celtech.configuration.PrinterEdition;
+import celtech.configuration.PrinterModel;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.printerControl.MacroType;
 import celtech.printerControl.PrinterStatus;
@@ -59,26 +61,26 @@ public interface Printer extends RoboxResponseConsumer
      * Print
      */
     public ReadOnlyBooleanProperty canPrintProperty();
-    
+
     /*
      * Can open or close a nozzle
      */
-    public ReadOnlyBooleanProperty canOpenCloseNozzleProperty();    
-    
+    public ReadOnlyBooleanProperty canOpenCloseNozzleProperty();
+
     /**
      * Can perform a nozzle height calibration
      */
     public ReadOnlyBooleanProperty canCalibrateNozzleHeightProperty();
-    
+
     /**
      * Can perform an XY alignment calibration
      */
     public ReadOnlyBooleanProperty canCalibrateXYAlignmentProperty();
-    
+
     /**
      * Can perform a nozzle opening calibration
      */
-    public ReadOnlyBooleanProperty canCalibrateNozzleOpeningProperty();    
+    public ReadOnlyBooleanProperty canCalibrateNozzleOpeningProperty();
 
     /**
      * Purge
@@ -115,7 +117,8 @@ public interface Printer extends RoboxResponseConsumer
 
     /**
      * Filament Info change
-     * @return 
+     *
+     * @return
      */
     public ReadOnlyBooleanProperty canChangeFilamentInfoProperty();
 
@@ -174,14 +177,14 @@ public interface Printer extends RoboxResponseConsumer
     public PrinterAncillarySystems getPrinterAncillarySystems();
 
     public PrinterIdentity getPrinterIdentity();
-    
-     /*
+
+    /*
      * Door open
      */
     public ReadOnlyBooleanProperty canOpenDoorProperty();
 
     public void goToOpenDoorPosition(TaskResponder responder) throws PrinterException;
-    
+
     public void goToOpenDoorPositionDontWait(TaskResponder responder) throws PrinterException;
 
     public void goToTargetBedTemperature();
@@ -222,13 +225,15 @@ public interface Printer extends RoboxResponseConsumer
 
     /**
      * Opens the nozzle to the B1 position.
-     * @throws PrinterException 
+     *
+     * @throws PrinterException
      */
     public void openNozzleFully() throws PrinterException;
-    
+
     /**
      * Opens the nozzle to the B2 position.
-     * @throws PrinterException 
+     *
+     * @throws PrinterException
      */
     public void openNozzleFullyExtra() throws PrinterException;
 
@@ -243,9 +248,11 @@ public interface Printer extends RoboxResponseConsumer
      * @param printQuality
      * @param settings
      */
-    public void printProject(Project project, Filament filament, PrintQualityEnumeration printQuality, SlicerParametersFile settings);
+    public void printProject(Project project, Filament filament,
+        PrintQualityEnumeration printQuality, SlicerParametersFile settings);
 
     public ReadOnlyObjectProperty<PrinterStatus> printerStatusProperty();
+
     public ReadOnlyObjectProperty<MacroType> macroTypeProperty();
 
     @Override
@@ -436,9 +443,11 @@ public interface Printer extends RoboxResponseConsumer
      * @return
      * @throws RoboxCommsException
      */
-    public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature, float thermistorBeta, float thermistorTCal, float nozzle1XOffset,
+    public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID,
+        float maximumTemperature, float thermistorBeta, float thermistorTCal, float nozzle1XOffset,
         float nozzle1YOffset,
-        float nozzle1ZOffset, float nozzle1BOffset, float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset, float lastFilamentTemperature, float hourCounter) throws RoboxCommsException;
+        float nozzle1ZOffset, float nozzle1BOffset, float nozzle2XOffset, float nozzle2YOffset,
+        float nozzle2ZOffset, float nozzle2BOffset, float lastFilamentTemperature, float hourCounter) throws RoboxCommsException;
 
     /**
      *
@@ -467,14 +476,29 @@ public interface Printer extends RoboxResponseConsumer
      * @param displayColour
      * @throws RoboxCommsException
      */
-    public void transmitWriteReelEEPROM(int reelNumber, String filamentID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature, float reelFirstLayerBedTemperature,
+    public void transmitWriteReelEEPROM(int reelNumber, String filamentID,
+        float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
+        float reelFirstLayerBedTemperature,
         float reelBedTemperature,
-        float reelAmbientTemperature, float reelFilamentDiameter, float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament, String friendlyName,
+        float reelAmbientTemperature, float reelFilamentDiameter, float reelFilamentMultiplier,
+        float reelFeedRateMultiplier, float reelRemainingFilament, String friendlyName,
         MaterialType materialType, Color displayColour) throws RoboxCommsException;
 
     public void updatePrinterDisplayColour(Color displayColour) throws PrinterException;
 
     public void updatePrinterName(String chosenPrinterName) throws PrinterException;
+
+    public void updatePrinterModelAndEdition(PrinterModel model, PrinterEdition edition) throws PrinterException;
+
+    public void updatePrinterWeek(String weekIdentifier) throws PrinterException;
+    
+    public void updatePrinterYear(String yearIdentifier) throws PrinterException;
+    
+    public void updatePrinterPONumber(String poIdentifier) throws PrinterException;
+    
+    public void updatePrinterSerialNumber(String serialIdentifier) throws PrinterException;
+
+    public void updatePrinterIDChecksum(String checksum) throws PrinterException;
 
     public void probeBed();
 
@@ -503,11 +527,13 @@ public interface Printer extends RoboxResponseConsumer
 
     public void changeFeedRateMultiplierDuringPrint(double feedRate) throws PrinterException;
 
-    public void registerErrorConsumer(ErrorConsumer errorConsumer, List<FirmwareError> errorsOfInterest);
-    
+    public void registerErrorConsumer(ErrorConsumer errorConsumer,
+        List<FirmwareError> errorsOfInterest);
+
     public void registerErrorConsumerAllErrors(ErrorConsumer errorConsumer);
 
     public void deregisterErrorConsumer(ErrorConsumer errorConsumer);
 
+    public void connectionEstablished();
     public void requestDebugData(boolean addToGCodeTranscript);
 }

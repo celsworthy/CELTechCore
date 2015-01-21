@@ -64,7 +64,7 @@ public class RoboxRxPacketFactory
                     returnVal = new HoursCounterResponse();
                     break;
                 case DEBUG_DATA:
-                    returnVal = new ListFilesResponseImpl();
+                    returnVal = new DebugDataResponse();
                     break;
                     
                 default:
@@ -144,6 +144,16 @@ public class RoboxRxPacketFactory
                     ListFilesResponse listFilesResponse = new ListFilesResponseImpl();
                     listFilesResponse.populatePacket(inputBytes);
                     returnVal = listFilesResponse;
+                    break;
+                case HOURS_COUNTER:
+                    HoursCounterResponse hoursResponse = new HoursCounterResponse();
+                    hoursResponse.populatePacket(inputBytes);
+                    returnVal = hoursResponse;
+                    break;
+                case DEBUG_DATA:
+                    DebugDataResponse debugResponse = new DebugDataResponse();
+                    debugResponse.populatePacket(inputBytes);
+                    returnVal = debugResponse;
                     break;
                 default:
                     throw new UnknownPacketTypeException();
