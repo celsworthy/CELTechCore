@@ -60,7 +60,12 @@ public enum PrinterEdition
      *
      */
     FirstEditionWorldwide(
-        "BW", "First Edition Worldwide");
+        "BW", "First Edition Worldwide"),
+    /**
+     *
+     */
+    FirstEditionKorea(
+        "BR", "First Edition Korea");
 
     private String codeName;
     private String friendlyName;
