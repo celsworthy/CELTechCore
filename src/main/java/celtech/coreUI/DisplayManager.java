@@ -140,7 +140,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 System.setProperty("prism.lcdtext", "true");
                 break;
         }
-        steno.info("Starting AutoMaker - machine type is " + ApplicationConfiguration.getMachineType());
+        steno.info("Starting AutoMaker - machine type is " + ApplicationConfiguration.
+            getMachineType());
 
         modelLoadDialog = new ProgressDialog(modelLoaderService);
 
@@ -788,12 +789,19 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
      */
     public void shutdown()
     {
-        projectManager.saveState();
-
-        tabDisplay.getTabs().stream().filter((tab) -> (tab instanceof ProjectTab)).forEach((tab) ->
+        if (projectManager != null)
         {
-            ((ProjectTab) tab).saveProject();
-        });
+            projectManager.saveState();
+        }
+
+        if (tabDisplay != null)
+        {
+            tabDisplay.getTabs().stream().filter((tab) -> (tab instanceof ProjectTab)).forEach(
+                (tab) ->
+                {
+                    ((ProjectTab) tab).saveProject();
+                });
+        }
     }
 
     /**
