@@ -67,6 +67,7 @@ class CalibrationPrinterErrorHandler
 
     ErrorConsumer errorConsumer = (FirmwareError error) ->
     {
+        steno.info(error.name() + " occurred during calibration");
         // Filament slips can occur during pressurisation - we need to ignore them
         if (error == FirmwareError.ERROR_E_FILAMENT_SLIP)
         {
