@@ -154,7 +154,7 @@ public class CalibrationNozzleOpeningActions
     public void doNoMaterialCheckAction() throws CalibrationException, InterruptedException, PrinterException
     {
         extrudeUntilStall(0);
-        printer.sendRawGCode("G1 E3 F400", false);
+        pressuriseSystem();
         Thread.sleep(3000);
         printer.selectNozzle(1);
         // 
@@ -203,7 +203,7 @@ public class CalibrationNozzleOpeningActions
                                         savedHeadData.getLastFilamentTemperature(),
                                         savedHeadData.getHeadHours());
         extrudeUntilStall(0);
-        printer.sendRawGCode("G1 E4 F400", false);
+        pressuriseSystem();
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
@@ -243,7 +243,7 @@ public class CalibrationNozzleOpeningActions
     {
         nozzlePosition.set(0);
         extrudeUntilStall(1);
-        printer.sendRawGCode("G1 E6 F400", false);
+        pressuriseSystem();
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
@@ -278,7 +278,7 @@ public class CalibrationNozzleOpeningActions
         printer.closeNozzleFully();
         printer.selectNozzle(0);
         extrudeUntilStall(0);
-        printer.sendRawGCode("G1 E3 F400", false);
+        pressuriseSystem();
         Thread.sleep(3000);
         printer.selectNozzle(1);
         // 
@@ -395,11 +395,7 @@ public class CalibrationNozzleOpeningActions
             printer.selectNozzle(nozzleNumber);
             // G36 = extrude until stall E700 = top extruder F2000 = feed rate mm/min (?)
             // extrude either requested volume or until filament slips
-            printer.sendRawGCode("G36 E700 F2000", false);
-            
-            printer.sendRawGCode("G0 E5 F100", false);
-            
-
+            printer.sendRawGCode("G36 E100 F800", false);
             PrinterUtils.waitOnBusy(printer, cancellable);
 
         } catch (PrinterException ex)
@@ -413,5 +409,8 @@ public class CalibrationNozzleOpeningActions
         return bPositionGUIT;
     }
 
-    
+    private void pressuriseSystem()
+    {
+        printer.sendRawGCode("G1 E4 F400", false);
+    }   
 }

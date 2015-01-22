@@ -909,6 +909,48 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         }
     }
 
+    @Override
+    public void executeMacroWithoutPurgeCheckAndCallbackWhenDone(String macroName,
+        TaskResponder responder)
+    {
+        final Cancellable cancellable = new Cancellable();
+
+        new Thread(() ->
+        {
+            boolean success = false;
+
+            try
+            {
+                executeMacroWithoutPurgeCheck(macroName);
+                PrinterUtils.waitOnMacroFinished(this, cancellable);
+                success = true;
+            } catch (PrinterException ex)
+            {
+                steno.error("PrinterException whilst invoking macro: " + ex.getMessage());
+            }
+
+            Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Complete");
+
+        }, "Executing Macro").start();
+    }
+
+    @Override
+    public void callbackWhenNotBusy(TaskResponder responder)
+    {
+        final Cancellable cancellable = new Cancellable();
+
+        new Thread(() ->
+        {
+            boolean success = false;
+
+            PrinterUtils.waitOnBusy(this, cancellable);
+            success = true;
+
+            Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Complete");
+
+        }, "Waiting until not busy").start();
+    }
+
     /*
      * Data transmission commands
      */
@@ -2666,7 +2708,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         processErrors = true;
     }
-    
+
     @Override
     public void requestDebugData(boolean addToGCodeTranscript)
     {
@@ -2695,8 +2737,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     }
                 });
             }
-        }
-        catch (RoboxCommsException ex)
+        } catch (RoboxCommsException ex)
         {
             steno.error("Error whilst requesting debug data: " + ex.getMessage());
         }
@@ -2937,42 +2978,42 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
 //                    if (Reel.isFilamentIDValid(reelResponse.getReelFilamentID()))
 //                    {
-                        // Might be unrecognised but correct format for a Robox head type code
-                        if (!reels.containsKey(reelResponse.getReelNumber()))
-                        {
-                            Reel newReel = new Reel();
-                            newReel.updateFromEEPROMData(reelResponse);
-                            reels.put(reelResponse.getReelNumber(), newReel);
-                        } else
-                        {
-                            reels.get(reelResponse.getReelNumber()).updateFromEEPROMData(
-                                reelResponse);
-                        }
+                    // Might be unrecognised but correct format for a Robox head type code
+                    if (!reels.containsKey(reelResponse.getReelNumber()))
+                    {
+                        Reel newReel = new Reel();
+                        newReel.updateFromEEPROMData(reelResponse);
+                        reels.put(reelResponse.getReelNumber(), newReel);
+                    } else
+                    {
+                        reels.get(reelResponse.getReelNumber()).updateFromEEPROMData(
+                            reelResponse);
+                    }
 
-                        if (Reel.isFilamentIDInDatabase(reelResponse.getReelFilamentID()))
-                        {
-                            // Check to see if the data is in bounds
-                            RepairResult result = reels.get(reelResponse.getReelNumber()).
-                                bringDataInBounds();
+                    if (Reel.isFilamentIDInDatabase(reelResponse.getReelFilamentID()))
+                    {
+                        // Check to see if the data is in bounds
+                        RepairResult result = reels.get(reelResponse.getReelNumber()).
+                            bringDataInBounds();
 
-                            switch (result)
-                            {
-                                case REPAIRED_WRITE_ONLY:
-                                    try
-                                    {
-                                        writeReelEEPROM(reelResponse.getReelNumber(), reels.get(
-                                                        reelResponse.getReelNumber()));
-                                        steno.info("Automatically updated reel data");
-                                        Lookup.getSystemNotificationHandler().
-                                            showReelUpdatedNotification();
-                                    } catch (RoboxCommsException ex)
-                                    {
-                                        steno.error("Error updating reel after repair " + ex.
-                                            getMessage());
-                                    }
-                                    break;
-                            }
+                        switch (result)
+                        {
+                            case REPAIRED_WRITE_ONLY:
+                                try
+                                {
+                                    writeReelEEPROM(reelResponse.getReelNumber(), reels.get(
+                                                    reelResponse.getReelNumber()));
+                                    steno.info("Automatically updated reel data");
+                                    Lookup.getSystemNotificationHandler().
+                                        showReelUpdatedNotification();
+                                } catch (RoboxCommsException ex)
+                                {
+                                    steno.error("Error updating reel after repair " + ex.
+                                        getMessage());
+                                }
+                                break;
                         }
+                    }
 //                    }
                     break;
 

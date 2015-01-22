@@ -304,6 +304,11 @@ public interface Printer extends RoboxResponseConsumer
 
     public void executeMacroWithoutPurgeCheck(String macroName) throws PrinterException;
 
+    public void executeMacroWithoutPurgeCheckAndCallbackWhenDone(String macroName,
+        TaskResponder responder);
+    
+    public void callbackWhenNotBusy(TaskResponder responder);
+    
     /**
      *
      * @param nozzleNumber
