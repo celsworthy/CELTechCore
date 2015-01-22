@@ -540,5 +540,6 @@ public interface Printer extends RoboxResponseConsumer
     public void deregisterErrorConsumer(ErrorConsumer errorConsumer);
 
     public void connectionEstablished();
-    public void requestDebugData(boolean addToGCodeTranscript);
+    
+    public String requestDebugData(boolean addToGCodeTranscript);
 }

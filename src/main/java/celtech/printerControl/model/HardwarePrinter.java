@@ -2710,8 +2710,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void requestDebugData(boolean addToGCodeTranscript)
+    public String requestDebugData(boolean addToGCodeTranscript)
     {
+        String debugData = null;
+
         RoboxTxPacket debugRequest = RoboxTxPacketFactory.
             createPacket(TxPacketTypeEnum.READ_DEBUG_DATA);
 
@@ -2719,6 +2721,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             DebugDataResponse response = (DebugDataResponse) commandInterface.
                 writeToPrinter(debugRequest);
+
+            if (response != null)
+            {
+                debugData = response.getDebugData();
+            }
 
             if (addToGCodeTranscript)
             {
@@ -2741,6 +2748,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             steno.error("Error whilst requesting debug data: " + ex.getMessage());
         }
+
+        return debugData;
     }
 
     class RoboxEventProcessor implements Runnable

@@ -804,7 +804,7 @@ class TestPrinter implements Printer
     }
 
     @Override
-    public void requestDebugData(boolean addToGCodeTranscript)
+    public String requestDebugData(boolean addToGCodeTranscript)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
