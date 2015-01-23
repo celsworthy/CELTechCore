@@ -91,25 +91,6 @@ public class CalibrationNozzleOpeningActions
 
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
 
-        savedHeadData = printer.readHeadEEPROM();
-        printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                        savedHeadData.getUniqueID(),
-                                        savedHeadData.getMaximumTemperature(),
-                                        savedHeadData.getBeta(),
-                                        savedHeadData.getTCal(),
-                                        0,
-                                        0,
-                                        0,
-                                        bOffsetStartingValue,
-                                        0,
-                                        0,
-                                        0,
-                                        -bOffsetStartingValue,
-                                        savedHeadData.getLastFilamentTemperature(),
-                                        savedHeadData.getHeadHours());
-
-        printerErrorHandler.checkIfPrinterErrorHasOccurred();
-
         printer.goToTargetNozzleTemperature();
         if (PrinterUtils.waitOnBusy(printer, cancellable) == false)
         {
