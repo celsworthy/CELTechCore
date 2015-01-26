@@ -12,16 +12,21 @@ import celtech.utils.tasks.TaskExecutor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
- * The CalibrationPrinterErrorHandler listens for printer errors and if they occur then the next call to 
- * {@link #checkIfPrinterErrorHasOccurred()} will cause the user to get an Abort dialog, which is
- * followed by raising an exception.
+ * The CalibrationPrinterErrorHandler listens for printer errors and if they occur then the next
+ * call to {@link #checkIfPrinterErrorHasOccurred()} will cause the user to get an Abort dialog,
+ * which is followed by raising an exception.
+ *
  * @author tony
  */
 class CalibrationPrinterErrorHandler
 {
-    
+
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        CalibrationPrinterErrorHandler.class.getName());
     private boolean errorOccurred = true;
     private final Printer printer;
     private Cancellable cancellable;
@@ -32,15 +37,14 @@ class CalibrationPrinterErrorHandler
     {
         cancellable.cancelled = true;
         throw new CalibrationException("An error occurred with the printer");
-    };    
-    
-    
+    };
+
     public CalibrationPrinterErrorHandler(Printer printer, Cancellable cancellable)
     {
         this.printer = printer;
         this.cancellable = cancellable;
     }
-    
+
     public void registerForPrinterErrors()
     {
         errorOccurred = false;
@@ -48,11 +52,10 @@ class CalibrationPrinterErrorHandler
         errors.add(FirmwareError.ALL_ERRORS);
         printer.registerErrorConsumer(errorConsumer, errors);
     }
-    
+
     /**
-     * Check if a printer error has occurred and if so notify the user via a dialog box (only
-     * giving the Abort option) and then raise an exception so as to cause the calling
-     * action to fail.
+     * Check if a printer error has occurred and if so notify the user via a dialog box (only giving
+     * the Abort option) and then raise an exception so as to cause the calling action to fail.
      */
     public void checkIfPrinterErrorHasOccurred() throws CalibrationException
     {
@@ -64,29 +67,38 @@ class CalibrationPrinterErrorHandler
 
     ErrorConsumer errorConsumer = (FirmwareError error) ->
     {
-        cancellable.cancelled = true;
-        errorOccurred = true;
+        // Filament slips can occur during pressurisation - we need to ignore them
+        if (error == FirmwareError.ERROR_E_FILAMENT_SLIP)
+        {
+            steno.info("Discarded filament slip error during calibration");
+        } else
+        {
+            cancellable.cancelled = true;
+            errorOccurred = true;
+        }
     };
 
     public void deregisterForPrinterErrors()
     {
         errorOccurred = false;
         printer.deregisterErrorConsumer(errorConsumer);
-    }    
-    
-/**
+    }
+
+    /**
      * Show a dialog to the user asking them to choose between available Continue, Abort or Retry
-     * actions. Call the chosen handler. If a given handler is null then that option will
-     * not be offered to the user. At least one handler must be non-null.
+     * actions. Call the chosen handler. If a given handler is null then that option will not be
+     * offered to the user. At least one handler must be non-null.
      */
     private void showPrinterErrorOccurred(TaskExecutor.NoArgsVoidFunc continueHandler,
         TaskExecutor.NoArgsVoidFunc abortHandler, TaskExecutor.NoArgsVoidFunc retryHandler) throws CalibrationException
     {
         try
         {
-            Optional<SystemNotificationManager.PrinterErrorChoice> choice = Lookup.getSystemNotificationHandler().showPrinterErrorDialog(
-                Lookup.i18n("calibrationPanel.title"), Lookup.i18n("calibrationPanel.errorInPrinter"),
-                continueHandler != null, abortHandler != null, retryHandler != null);
+            Optional<SystemNotificationManager.PrinterErrorChoice> choice = Lookup.
+                getSystemNotificationHandler().showPrinterErrorDialog(
+                    Lookup.i18n("calibrationPanel.title"), Lookup.i18n(
+                        "calibrationPanel.errorInPrinter"),
+                    continueHandler != null, abortHandler != null, retryHandler != null);
             if (!choice.isPresent())
             {
                 cancellable.cancelled = true;
@@ -112,5 +124,5 @@ class CalibrationPrinterErrorHandler
             throw new CalibrationException(ex.getMessage());
         }
     }
-    
+
 }
