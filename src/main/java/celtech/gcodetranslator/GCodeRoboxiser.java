@@ -1813,6 +1813,13 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 {
                     closeCounter++;
                 }
+                
+                // Always output an M109 after nozzle close
+                // Required to ensure that print temperature is maintained if nozzle heater inhibit is active
+                MCodeEvent m109Event = new MCodeEvent();
+                m109Event.setMNumber(109);
+                writeEventToFile(m109Event);
+                
             } else if (extrusionBuffer.size() > 0 && extrusionBuffer.containsExtrusionEvents())
             {
                 CommentEvent failureComment = new CommentEvent();
