@@ -64,6 +64,7 @@ import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.AxisSpecifier;
+import celtech.utils.Math.MathUtils;
 import celtech.utils.PrinterUtils;
 import celtech.utils.SystemUtils;
 import celtech.utils.tasks.Cancellable;
@@ -2490,9 +2491,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         originalFeedrateMultiplier = feedrateMultiplier;
                     }
 
-                    if (feedrateMultiplier > MIN_FEEDRATE_MULTIPLIER)
+                    if (MathUtils.compareDouble(feedrateMultiplier, MIN_FEEDRATE_MULTIPLIER, 1e-2) == MathUtils.MORE_THAN)
                     {
                         feedrateMultiplier -= 0.2f;
+                        feedrateMultiplier = Math.max(feedrateMultiplier, MIN_FEEDRATE_MULTIPLIER);
                         try
                         {
                             steno.info("Reducing feedrate to " + feedrateMultiplier);
@@ -2555,7 +2557,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
                         try
                         {
-                            steno.info("Clearing errors");
+                            steno.debug("Clearing errors");
                             transmitResetErrors();
                         } catch (RoboxCommsException ex)
                         {
@@ -2565,6 +2567,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         errorsFound.stream()
                             .forEach(foundError ->
                                 {
+                                    steno.warning("Processing error: " + foundError.name());
                                     errorWasConsumed = false;
                                     errorConsumers.forEach((consumer, errorList) ->
                                         {
