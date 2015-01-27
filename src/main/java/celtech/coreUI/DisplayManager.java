@@ -118,8 +118,12 @@ public class DisplayManager implements EventHandler<KeyEvent>
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
 
     private static final String addDummyPrinterCommand = "AddDummy";
+    private static final String dummyCommandPrefix = "dummy:";
+    private String dummyCommandBuffer = "";
 
     private String hiddenCommandKeyBuffer = "";
+    private boolean dummyCommandActive = false;
+
     private final EventHandler<KeyEvent> hiddenCommandEventHandler = (KeyEvent event) ->
     {
         if (addDummyPrinterCommand.startsWith(hiddenCommandKeyBuffer + event.getCharacter()))
@@ -136,6 +140,30 @@ public class DisplayManager implements EventHandler<KeyEvent>
                         break;
                 }
             }
+        } else if (!dummyCommandActive && dummyCommandPrefix.equals(
+            hiddenCommandKeyBuffer + event.getCharacter()))
+        {
+            dummyCommandActive = true;
+        } else if (dummyCommandActive)
+        {
+            if (event.getCharacter().equals("\r"))
+            {
+                steno.info("Got dummy command " + dummyCommandBuffer);
+                if (Lookup.getCurrentlySelectedPrinterProperty().get() != null)
+                {
+                    Lookup.getCurrentlySelectedPrinterProperty().get().sendRawGCode(
+                        dummyCommandBuffer.replaceAll("/", " ").trim().toUpperCase(), true);
+                }
+                hiddenCommandKeyBuffer = "";
+                dummyCommandBuffer = "";
+                dummyCommandActive = false;
+            } else
+            {
+                dummyCommandBuffer += event.getCharacter();
+            }
+        } else if (dummyCommandPrefix.startsWith(hiddenCommandKeyBuffer + event.getCharacter()))
+        {
+            hiddenCommandKeyBuffer += event.getCharacter();
         } else
         {
             hiddenCommandKeyBuffer = "";
@@ -163,7 +191,8 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 System.setProperty("prism.lcdtext", "true");
                 break;
         }
-        steno.info("Starting AutoMaker - machine type is " + ApplicationConfiguration.getMachineType());
+        steno.info("Starting AutoMaker - machine type is " + ApplicationConfiguration.
+            getMachineType());
 
         modelLoadDialog = new ProgressDialog(modelLoaderService);
 
