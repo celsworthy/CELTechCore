@@ -65,7 +65,7 @@ public class CalibrationNozzleOpeningGUI
 
     public void setState(NozzleOpeningCalibrationState state)
     {
-        steno.info("GUI going to state " + state);
+        steno.debug("GUI going to state " + state);
         controller.calibrationStatus.setText(state.getStepTitle());
         showAppropriateButtons(state);
         if (state.getDiagramFXMLFileName().isPresent())
