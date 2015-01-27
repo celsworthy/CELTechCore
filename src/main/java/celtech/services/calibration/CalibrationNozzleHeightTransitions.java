@@ -42,7 +42,7 @@ public class CalibrationNozzleHeightTransitions implements Transitions
                          {
                              actions.doFailedAction();
                      },
-                                         NozzleOffsetCalibrationState.FAILED));
+                                         null));
 
         transitions = new HashSet<>();
 
@@ -164,11 +164,11 @@ public class CalibrationNozzleHeightTransitions implements Transitions
                                             StateTransitionManager.GUIName.BACK,
                                             NozzleOffsetCalibrationState.DONE,
                                             NozzleOffsetCalibrationState.DONE));
-        
+
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.FAILED,
                                             StateTransitionManager.GUIName.RETRY,
                                             NozzleOffsetCalibrationState.IDLE,
-                                            NozzleOffsetCalibrationState.DONE));        
+                                            NozzleOffsetCalibrationState.DONE));
 
     }
 
