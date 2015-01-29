@@ -57,12 +57,14 @@ class CalibrationPrinterErrorHandler
      * Check if a printer error has occurred and if so notify the user via a dialog box (only giving
      * the Abort option) and then raise an exception so as to cause the calling action to fail.
      */
-    public void checkIfPrinterErrorHasOccurred() throws CalibrationException
+    public boolean checkIfPrinterErrorHasOccurred() throws CalibrationException
     {
         if (errorOccurred)
         {
             showPrinterErrorOccurred(continueHandler, abortHandler, retryHandler);
         }
+        
+        return errorOccurred;
     }
 
     ErrorConsumer errorConsumer = (FirmwareError error) ->

@@ -191,6 +191,8 @@ public interface Printer extends RoboxResponseConsumer
     public void goToZPosition(double position);
 
     public void goToXYPosition(double xPosition, double yPosition);
+    
+    public void goToXYZPosition(double xPosition, double yPosition, double zPosition);
 
     public void homeZ();
 

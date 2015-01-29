@@ -2034,6 +2034,20 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
+    public void goToXYZPosition(double xPosition, double yPosition, double zPosition)
+    {
+        try
+        {
+            transmitDirectGCode("G0 X" + threeDPformatter.format(xPosition)
+                + " Y" + threeDPformatter.format(yPosition)
+                + " Z" + threeDPformatter.format(zPosition), false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error when sending x y z position command");
+        }
+    }
+
+    @Override
     public void switchToAbsoluteMoveMode()
     {
         try
@@ -2491,7 +2505,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         originalFeedrateMultiplier = feedrateMultiplier;
                     }
 
-                    if (MathUtils.compareDouble(feedrateMultiplier, MIN_FEEDRATE_MULTIPLIER, 1e-2) == MathUtils.MORE_THAN)
+                    if (MathUtils.compareDouble(feedrateMultiplier, MIN_FEEDRATE_MULTIPLIER, 1e-2)
+                        == MathUtils.MORE_THAN)
                     {
                         feedrateMultiplier -= 0.2f;
                         feedrateMultiplier = Math.max(feedrateMultiplier, MIN_FEEDRATE_MULTIPLIER);
