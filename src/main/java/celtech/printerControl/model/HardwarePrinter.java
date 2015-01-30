@@ -3,6 +3,7 @@ package celtech.printerControl.model;
 import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.appManager.SystemNotificationManager;
+import celtech.configuration.BusyStatus;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
@@ -67,6 +68,7 @@ import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.AxisSpecifier;
+import celtech.utils.Math.MathUtils;
 import celtech.utils.PrinterUtils;
 import celtech.utils.SystemUtils;
 import celtech.utils.tasks.Cancellable;
@@ -192,6 +194,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
     protected final ObjectProperty<PauseStatus> pauseStatus = new SimpleObjectProperty<>(
         PauseStatus.NOT_PAUSED);
+    protected final ObjectProperty<BusyStatus> busyStatus = new SimpleObjectProperty<>(
+        BusyStatus.NOT_BUSY);
     protected final IntegerProperty printJobLineNumber = new SimpleIntegerProperty(0);
     protected final StringProperty printJobID = new SimpleStringProperty("");
 
@@ -414,6 +418,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public ReadOnlyObjectProperty pauseStatusProperty()
     {
         return pauseStatus;
+    }
+
+    @Override
+    public ReadOnlyObjectProperty busyStatusProperty()
+    {
+        return busyStatus;
     }
 
     @Override
@@ -1004,7 +1014,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         AckResponse response = (AckResponse) commandInterface.writeToPrinter(gcodePacket);
         boolean success = false;
         // Only check for SD card errors here...
-        success = !response.getFirmwareErrors().contains(FirmwareError.ERROR_SD_CARD);
+        success = !response.getFirmwareErrors().contains(FirmwareError.SD_CARD);
 
         return success;
     }
@@ -2640,8 +2650,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         switch (error)
         {
-            case ERROR_E_FILAMENT_SLIP:
-            case ERROR_D_FILAMENT_SLIP:
+            case E_FILAMENT_SLIP:
+            case D_FILAMENT_SLIP:
                 if (printerStatus.get() == PrinterStatus.PRINTING)
                 {
                     // Close and open the nozzle
@@ -2669,9 +2679,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         originalFeedrateMultiplier = feedrateMultiplier;
                     }
 
-                    if (feedrateMultiplier > MIN_FEEDRATE_MULTIPLIER)
+                    if (MathUtils.compareDouble(feedrateMultiplier, MIN_FEEDRATE_MULTIPLIER, 1e-2)
+                        == MathUtils.MORE_THAN)
                     {
                         feedrateMultiplier -= 0.2f;
+                        feedrateMultiplier = Math.max(feedrateMultiplier, MIN_FEEDRATE_MULTIPLIER);
                         try
                         {
                             steno.info("Reducing feedrate to " + feedrateMultiplier);
@@ -2778,7 +2790,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     {
                         try
                         {
-                            steno.info("Clearing errors");
+                            steno.debug("Clearing errors");
                             transmitResetErrors();
                         } catch (RoboxCommsException ex)
                         {
@@ -2896,6 +2908,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     /*
                      * Generic printer stuff that has no other home :)
                      */
+                    busyStatus.set(statusResponse.getBusyStatus());
                     pauseStatus.set(statusResponse.getPauseStatus());
                     printJobLineNumber.set(statusResponse.getPrintJobLineNumber());
                     printJobID.set(statusResponse.getRunningPrintJobID());

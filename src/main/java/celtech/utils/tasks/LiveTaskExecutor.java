@@ -34,13 +34,14 @@ public class LiveTaskExecutor implements TaskExecutor
     }
 
     @Override
-    public void respondOnGUIThread(TaskResponder responder, boolean success, String message, Object returnedObject)
+    public void respondOnGUIThread(TaskResponder responder, boolean success, String message,
+        Object returnedObject)
     {
         if (responder != null)
         {
             TaskResponse taskResponse = new TaskResponse(message);
             taskResponse.setSucceeded(success);
-            
+
             if (returnedObject != null)
             {
                 taskResponse.setReturnedObject(returnedObject);
@@ -75,17 +76,23 @@ public class LiveTaskExecutor implements TaskExecutor
             {
                 action.run();
                 successHandler.run();
-            
+
             } catch (Exception ex)
             {
                 ex.printStackTrace();
                 steno.error("Failure running task: " + ex);
                 try
                 {
-                    failureHandler.run();
+                    if (failureHandler != null)
+                    {
+                        failureHandler.run();
+                    } else
+                    {
+                        steno.warning("No failure handler for this case");
+                    }
                 } catch (Exception ex1)
                 {
-                     steno.error("Error running failure handler!: " + ex);
+                    steno.error("Error running failure handler!: " + ex);
                 }
             }
         };

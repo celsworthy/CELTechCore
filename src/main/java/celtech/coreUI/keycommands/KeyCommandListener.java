@@ -6,5 +6,5 @@ package celtech.coreUI.keycommands;
  */
 public interface KeyCommandListener
 {
-    public void trigger(String commandSequence);
+    public void trigger(String commandSequence, String capturedParameter);
 }

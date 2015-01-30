@@ -37,6 +37,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
 
     private final String notConnectedString = "NOT_CONNECTED";
     private Stenographer steno = null;
+    private final List<Printer> dummyPrinters = new ArrayList<>();
     private final HashMap<String, Printer> pendingPrinters = new HashMap<>();
     private final HashMap<String, Printer> activePrinters = new HashMap<>();
     private boolean suppressPrinterIDChecks = false;
@@ -161,9 +162,11 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
         for (Printer printer : Lookup.getConnectedPrinters())
         {
             steno.info("Shutdown printer " + printer);
-            try {
-            printer.shutdown();
-            } catch (Exception ex) {
+            try
+            {
+                printer.shutdown();
+            } catch (Exception ex)
+            {
                 steno.error("Error shutting down printer");
             }
         }
@@ -273,13 +276,23 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
         dummyPrinterCounter++;
         String actualPrinterPort = dummyPrinterPort + " " + dummyPrinterCounter;
         Printer nullPrinter = new HardwarePrinter(this,
-                                                  new DummyPrinterCommandInterface(this, actualPrinterPort, suppressPrinterIDChecks,
-                                                                                   sleepBetweenStatusChecks, "DP " + dummyPrinterCounter));
+                                                  new DummyPrinterCommandInterface(this,
+                                                                                   actualPrinterPort,
+                                                                                   suppressPrinterIDChecks,
+                                                                                   sleepBetweenStatusChecks,
+                                                                                   "DP "
+                                                                                   + dummyPrinterCounter));
         pendingPrinters.put(actualPrinterPort, nullPrinter);
+        dummyPrinters.add(nullPrinter);
     }
 
     public void removeDummyPrinter(String portName)
     {
         disconnected(portName);
+    }
+
+    public List<Printer> getDummyPrinters()
+    {
+        return dummyPrinters;
     }
 }

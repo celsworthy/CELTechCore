@@ -120,6 +120,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
 
     private static final String addDummyPrinterCommand = "AddDummy";
+    private static final String dummyCommandPrefix = "dummy:";
 
     private AnchorPane root;
     private Pane spinnerContainer;
@@ -381,7 +382,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         addTopMenuStripController();
 
         mainHolder.getChildren().add(rhPanel);
-
+        
         // Configure the main display tab pane - just the printer status page to start with
         tabDisplay = new TabPane();
         tabDisplay.setPickOnBounds(false);
@@ -564,6 +565,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         HiddenKey hiddenKeyThing = new HiddenKey();
         hiddenKeyThing.addCommandSequence(addDummyPrinterCommand);
+        hiddenKeyThing.addCommandWithParameterSequence(dummyCommandPrefix);
         hiddenKeyThing.addKeyCommandListener(this);
         hiddenKeyThing.captureHiddenKeys(scene);
 
@@ -983,11 +985,20 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     }
 
     @Override
-    public void trigger(String commandSequence)
+    public void trigger(String commandSequence, String capturedParameter)
     {
-        if (commandSequence.equals(addDummyPrinterCommand))
+        switch (commandSequence)
         {
-            RoboxCommsManager.getInstance().addDummyPrinter();
+            case addDummyPrinterCommand:
+                RoboxCommsManager.getInstance().addDummyPrinter();
+                break;
+            case dummyCommandPrefix:
+                if (RoboxCommsManager.getInstance().getDummyPrinters().size() > 0)
+                {
+                    RoboxCommsManager.getInstance().getDummyPrinters().get(0).sendRawGCode(
+                        capturedParameter.replaceAll("/", " ").trim().toUpperCase(), true);
+                }
+                break;
         }
     }
 }

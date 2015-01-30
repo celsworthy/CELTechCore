@@ -69,7 +69,7 @@ class CalibrationPrinterErrorHandler
     {
         steno.info(error.name() + " occurred during calibration");
         // Filament slips can occur during pressurisation - we need to ignore them
-        if (error == FirmwareError.ERROR_E_FILAMENT_SLIP)
+        if (error == FirmwareError.E_FILAMENT_SLIP)
         {
             steno.info("Discarded filament slip error during calibration");
         } else

@@ -20,34 +20,77 @@ public class HiddenKey
     private Stenographer steno = StenographerFactory.getStenographer(HiddenKey.class.getName());
     private boolean captureKeys = false;
     private ArrayList<String> commandSequences = new ArrayList<>();
+    private ArrayList<String> parameterCaptureSequences = new ArrayList<>();
     private ArrayList<KeyCommandListener> keyCommandListeners = new ArrayList<>();
     private String hiddenCommandKeyBuffer = "";
+    private String parameterCaptureBuffer = "";
+    private boolean parameterCaptureInProgress = false;
 
     private final EventHandler<KeyEvent> hiddenCommandEventHandler = (KeyEvent event) ->
     {
         steno.info("Got character " + event.getCharacter());
-        boolean matchedOne = false;
-        for (String commandSequence : commandSequences)
-        {            if (commandSequence.equals(hiddenCommandKeyBuffer + event.
-                getCharacter()))
+
+        if (parameterCaptureInProgress)
+        {
+            if (event.getCharacter().equals("\r"))
+            {
+                steno.info("Got captured parameter " + parameterCaptureBuffer);
+                triggerListeners(hiddenCommandKeyBuffer, parameterCaptureBuffer);
+                hiddenCommandKeyBuffer = "";
+                parameterCaptureBuffer = "";
+                parameterCaptureInProgress = false;
+            } else
+            {
+                parameterCaptureBuffer += event.getCharacter();
+            }
+        } else
+        {
+            boolean matchedNone = true;
+
+            for (String commandSequence : commandSequences)
+            {
+                if (commandSequence.equals(hiddenCommandKeyBuffer + event.
+                    getCharacter()))
+                {
+                    hiddenCommandKeyBuffer = "";
+                    triggerListeners(commandSequence);
+                    matchedNone = false;
+                    break;
+                } else if (commandSequence.startsWith(hiddenCommandKeyBuffer + event.
+                    getCharacter()))
+                {
+                    hiddenCommandKeyBuffer += event.getCharacter();
+                    matchedNone = false;
+                    break;
+                }
+            }
+
+            if (matchedNone)
+            {
+                for (String parameterCaptureSequence : parameterCaptureSequences)
+                {
+                    if (!parameterCaptureInProgress
+                        && parameterCaptureSequence.equals(hiddenCommandKeyBuffer + event.
+                            getCharacter()))
+                    {
+                        hiddenCommandKeyBuffer += event.getCharacter();
+                        parameterCaptureInProgress = true;
+                        matchedNone = false;
+                        break;
+                    } else if (parameterCaptureSequence.startsWith(hiddenCommandKeyBuffer + event.
+                        getCharacter()))
+                    {
+                        hiddenCommandKeyBuffer += event.getCharacter();
+                        matchedNone = false;
+                        break;
+                    }
+                }
+            }
+
+            if (matchedNone)
             {
                 hiddenCommandKeyBuffer = "";
-                triggerListeners(commandSequence);
-                break;
-            } else if (commandSequence.startsWith(hiddenCommandKeyBuffer + event.
-                getCharacter()))
-            {
-                matchedOne = true;
             }
-        }
-
-        if (matchedOne)
-        {
-            hiddenCommandKeyBuffer += event.getCharacter();
-        }
-        else
-        {
-            hiddenCommandKeyBuffer = "";
         }
     };
 
@@ -84,7 +127,20 @@ public class HiddenKey
     {
         for (KeyCommandListener listener : keyCommandListeners)
         {
-            listener.trigger(commandSequence);
+            listener.trigger(commandSequence, null);
         }
+    }
+
+    private void triggerListeners(String commandSequence, String capturedParameter)
+    {
+        for (KeyCommandListener listener : keyCommandListeners)
+        {
+            listener.trigger(commandSequence, capturedParameter);
+        }
+    }
+
+    public void addCommandWithParameterSequence(String commandPrefix)
+    {
+        parameterCaptureSequences.add(commandPrefix);
     }
 }

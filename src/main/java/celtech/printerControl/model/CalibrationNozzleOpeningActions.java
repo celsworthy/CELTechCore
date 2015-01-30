@@ -6,6 +6,8 @@ package celtech.printerControl.model;
 import celtech.Lookup;
 import celtech.configuration.HeaterMode;
 import celtech.configuration.PrintBed;
+import celtech.configuration.datafileaccessors.HeadContainer;
+import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -91,6 +93,61 @@ public class CalibrationNozzleOpeningActions
 
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
 
+        savedHeadData = printer.readHeadEEPROM();
+
+        HeadFile headReferenceData = HeadContainer.getHeadByID(savedHeadData.getTypeCode());
+
+        if (headReferenceData != null)
+        {
+            steno.info("Setting B offsets to defaults ("
+                + headReferenceData.getNozzles().get(0).getDefaultBOffset()
+                + " - "
+                + headReferenceData.getNozzles().get(1).getDefaultBOffset()
+                + ")");
+            printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+                                            savedHeadData.getUniqueID(),
+                                            savedHeadData.getMaximumTemperature(),
+                                            savedHeadData.getBeta(),
+                                            savedHeadData.getTCal(),
+                                            0,
+                                            0,
+                                            0,
+                                            headReferenceData.getNozzles().get(0).
+                                            getDefaultBOffset(),
+                                            0,
+                                            0,
+                                            0,
+                                            headReferenceData.getNozzles().get(1).
+                                            getDefaultBOffset(),
+                                            savedHeadData.getLastFilamentTemperature(),
+                                            savedHeadData.getHeadHours());
+        } else
+        {
+            // We shouldn't ever get here, but just in case...
+            steno.info("Setting B offsets to safe values ("
+                + headReferenceData.getNozzles().get(0).getDefaultBOffset()
+                + " - "
+                + headReferenceData.getNozzles().get(1).getDefaultBOffset()
+                + ")");
+            printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+                                            savedHeadData.getUniqueID(),
+                                            savedHeadData.getMaximumTemperature(),
+                                            savedHeadData.getBeta(),
+                                            savedHeadData.getTCal(),
+                                            0,
+                                            0,
+                                            0,
+                                            1,
+                                            0,
+                                            0,
+                                            0,
+                                            -1,
+                                            savedHeadData.getLastFilamentTemperature(),
+                                            savedHeadData.getHeadHours());
+        }
+
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
+
         printer.goToTargetNozzleTemperature();
         if (PrinterUtils.waitOnBusy(printer, cancellable) == false)
         {
@@ -99,7 +156,8 @@ public class CalibrationNozzleOpeningActions
             {
                 printer.goToTargetNozzleTemperature();
                 printer.goToZPosition(50);
-                printer.goToXYPosition(PrintBed.getPrintVolumeCentre().getX(), PrintBed.getPrintVolumeCentre().getZ());
+                printer.goToXYPosition(PrintBed.getPrintVolumeCentre().getX(), PrintBed.
+                                       getPrintVolumeCentre().getZ());
                 if (PrinterUtils.waitOnBusy(printer, cancellable) == false)
                 {
 
@@ -140,7 +198,7 @@ public class CalibrationNozzleOpeningActions
         printer.selectNozzle(1);
         // 
         nozzlePosition.set(0);
-        
+
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
@@ -167,6 +225,12 @@ public class CalibrationNozzleOpeningActions
     public void doPreCalibrationPrimingFine() throws RoboxCommsException, CalibrationException
     {
         nozzlePosition.set(0);
+
+        steno.info("Setting B offsets to calibration values ("
+            + bOffsetStartingValue
+            + " - "
+            + -bOffsetStartingValue
+            + ")");
 
         printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                                         savedHeadData.getUniqueID(),
@@ -308,7 +372,7 @@ public class CalibrationNozzleOpeningActions
             Thread.sleep(500);
         } catch (InterruptedException ex)
         {
-            steno.info("interrupted during wait of cancel");
+            steno.warning("interrupted during wait of cancel");
         }
         doFailedAction();
     }
