@@ -15,6 +15,7 @@ import java.text.ParseException;
  */
 public class StatusResponse extends RoboxRxPacket
 {
+    //TEMPORARY MOD - allow this to work with v703....
     /* v706 firmware
      status: <0xe1> iiiiiiiiiiiiiiii llllllll p b x y z e d b g h i j a m n k mmmmmmmm nnnnnnnn ccccccccl rrrrrrrr uuuuuuuu dddddddd o pppppppp qqqqqqqq aaaaaaaa r ssssssss tttttttt u c v w x p s xxxxxxxx yyyyyyyy zzzzzzzz bbbbbbbb t eeeeeeee gggggggg hhhhhhhh jjjjjjjj ffffffff
      iiiiiiiiiiiiiiii = id of running job
@@ -867,58 +868,6 @@ public class StatusResponse extends RoboxRxPacket
     @Override
     public boolean populatePacket(byte[] byteData)
     {
-
-        //iiiiiiiiiiiiiiii llllllll p b x y z e d b g h i j a 
-        //k mmmmmmmm nnnnnnnn cccccccc l rrrrrrrr uuuuuuuu dddddddd
-        //o pppppppp qqqqqqqq aaaaaaaa r ssssssss tttttttt
-        //u c v w x s xxxxxxxx yyyyyyyy zzzzzzzz bbbbbbbb eeeeeeee gggggggg hhhhhhhh jjjjjjjj ffffffff
-        //        
-        //iiiiiiiiiiiiiiii = id of running job
-        //llllllll = line # of running job in hex
-        //p = pause ('0'->normal, '1'->pause pending, '2'->paused, '3'->resume pending)
-        //b = busy
-        //x = X switch state
-        //y = Y switch state
-        //z = Z switch state
-        //e = E switch state
-        //d = D switch state
-        //b = nozzle switch state
-        //g = lid switch state
-        //h = eject switch state
-        //i = E index wheel state
-        //j = D index wheel state
-        //a = Z top switch state
-        //k = nozzle 0 heater mode ('0'->off, '1'->normal, '2'->first layer)
-        //mmmmmmmm = nozzle 0 temperature (decimal float format)
-        //nnnnnnnn = nozzle 0 target (decimal float format)
-        //cccccccc = nozzle 0 first layer target (decimal float format)
-        //l = nozzle 1 heater mode ('0'-> off, '1'-<normal, '2'->first layer)
-        //rrrrrrrr = nozzle 1 temperature (decimal float format)
-        //uuuuuuuu = nozzle 1 target (decimal float format)
-        //dddddddd = nozzle 1 first layer target (decimal float format)
-        //o = bed heater mode ('0'->off, '1'->normal, '2'->first layer)
-        //pppppppp = bed temperature (decimal float format)
-        //
-        //qqqqqqqq = bed target (decimal float format)
-        //aaaaaaaa = bed first layer target (decimal float format)
-        //r = ambient controller on
-        //ssssssss = ambient temperature (decimal float format)
-        //tttttttt = ambient target (decimal float format)
-        //u = head fan on
-        //c = why are we waiting ('0'->not waiting, '1'->waiting for bed to cool, '2'->waiting for bed to reach target, '3'->waiting for nozzle to reach target
-        //v = head EEPROM state ('0'->none, '1'->not valid, '2'->valid)
-        //w = reel0 EEPROM state ('0'->none, '1'->not valid, '2'->valid)
-        //x = reel1 EEPROM state ('0'->none, '1'->not valid, '2'->valid)
-        //s = SD card present
-        //xxxxxxxx = X position (decimal float format)
-        //yyyyyyyy = Y position (decimal float format)
-        //zzzzzzzz = Z position (decimal float format)
-        //bbbbbbbb = B position (decimal float format)
-        //eeeeeeee = E filament diameter (decimal float format)
-        //gggggggg = E filament multiplier (decimal float format)
-        //hhhhhhhh = D filament diameter (decimal float format)
-        //jjjjjjjj = D filament multiplier (decimal float format)
-        //ffffffff = Feed rate multiplier (decimal float format)
         boolean success = false;
 
         FixedDecimalFloatFormat decimalFloatFormatter = new FixedDecimalFloatFormat();
@@ -941,9 +890,13 @@ public class StatusResponse extends RoboxRxPacket
             byteOffset += 1;
             this.pauseStatus = PauseStatus.modeFromValue(Integer.valueOf(pauseStatusString, 16));
 
-            String busyStatusString = new String(byteData, byteOffset, 1, charsetToUse);
+            //TEMPORARY MOD - allow this to work with v703....
+            this.busyStatus = (byteData[byteOffset] & 1) > 0 ? BusyStatus.BUSY : BusyStatus.NOT_BUSY;
             byteOffset += 1;
-            this.busyStatus = BusyStatus.modeFromValue(Integer.valueOf(busyStatusString, 16));
+
+//            String busyStatusString = new String(byteData, byteOffset, 1, charsetToUse);
+//            byteOffset += 1;
+//            this.busyStatus = BusyStatus.modeFromValue(Integer.valueOf(busyStatusString, 16));
 
             this.xSwitchStatus = (byteData[byteOffset] & 1) > 0 ? true : false;
             byteOffset += 1;
