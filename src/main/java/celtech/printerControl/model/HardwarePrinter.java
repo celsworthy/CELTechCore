@@ -2222,6 +2222,20 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
+    public void goToXYZPosition(double xPosition, double yPosition, double zPosition)
+    {
+        try
+        {
+            transmitDirectGCode("G0 X" + threeDPformatter.format(xPosition)
+                + " Y" + threeDPformatter.format(yPosition)
+                + " Z" + threeDPformatter.format(zPosition), false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error when sending x y z position command");
+        }
+    }
+
+    @Override
     public void switchToAbsoluteMoveMode()
     {
         try

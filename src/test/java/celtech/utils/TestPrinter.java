@@ -762,6 +762,11 @@ class TestPrinter implements Printer
     }
 
     @Override
+    public void goToXYZPosition(double xPosition, double yPosition, double zPosition)
+    {
+        
+    }
+    
     public void updatePrinterModelAndEdition(PrinterModel model, PrinterEdition edition) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
