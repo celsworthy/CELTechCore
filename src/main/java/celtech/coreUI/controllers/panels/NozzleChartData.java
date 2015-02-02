@@ -73,6 +73,7 @@ public class NozzleChartData
             nozzleFirstLayerTargetTemperatureListener);
 
         this.nozzleTemperatureProperty = nozzleTemperatureProperty;
+        nozzleTemperatureProperty.addListener(nozzleTemperatureListener);
 
         nozzleTargetTemperatureSeries.getData().add(nozzleTargetPoint);
 
@@ -144,9 +145,14 @@ public class NozzleChartData
             nozzleReadout.setText(legendNozzleText);
         }
     }
-    
+
     public LineChart.Series<Number, Number> getTargetTemperatureSeries()
     {
         return nozzleTargetTemperatureSeries;
+    }
+
+    public LineChart.Series<Number, Number> getNozzleTemperatureSeries()
+    {
+        return nozzleTemperatureData;
     }
 }

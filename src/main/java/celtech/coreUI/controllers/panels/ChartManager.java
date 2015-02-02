@@ -14,6 +14,7 @@ import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.Node;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
@@ -49,6 +50,26 @@ class ChartManager
     private List<NozzleChartData> nozzleChartDataSets = new ArrayList<>();
     private int nozzleTargetTempFirstIndex = 2;
 
+    private final int ambientIndexOffset = 0;
+    private final int bedIndexOffset = 1;
+    private final int firstNozzleIndexOffset = 2;
+
+    private final String ambientBugColour = "#145019";
+    private final String bedBugColour = "#a07800";
+    private final String nozzleBugColour = "#8c0000";
+    private final String ambientLineColour = "#1eb43c";
+    private final String bedLineColour = "#ffc800";
+    private final String nozzleLineColour = "#ff0000";
+
+    private final String rhTriangleBugCSS
+        = "-fx-background-radius: 0; "
+        + "-fx-shape: \"M0,6 L12,0 L12,12 L0,6 Z\"; "
+        + "-fx-scale-x: 2; "
+        + "-fx-scale-y: 2; ";
+
+    private final String graphLineCSS
+        = "-fx-stroke-width: 3; ";
+
     public ChartManager(LineChart<Number, Number> chart)
     {
         this.chart = chart;
@@ -74,10 +95,71 @@ class ChartManager
     private void updateChartDataSources()
     {
         chart.getData().clear();
-        chart.getData().add(ambientTargetTemperatureSeries);
-        chart.getData().add(bedTargetTemperatureSeries);
-        chart.getData().add(ambientData);
-        chart.getData().add(bedData);
+        
+        chart.applyCss();
+
+        //Set up the ambient bug
+        setupBug(ambientIndexOffset, ambientTargetTemperatureSeries, ambientBugColour);
+
+        //Set up the bed bug
+        setupBug(bedIndexOffset, bedTargetTemperatureSeries, bedBugColour);
+
+        //Set up the nozzle bugs
+        for (int nozzleCounter = 0; nozzleCounter < nozzleChartDataSets.size(); nozzleCounter++)
+        {
+            setupBug(nozzleTargetTempFirstIndex + nozzleCounter, nozzleChartDataSets.get(
+                     nozzleCounter).getTargetTemperatureSeries(), nozzleBugColour);
+        }
+
+        int startOfLineSection = firstNozzleIndexOffset + nozzleChartDataSets.size();
+        setupChartLine(startOfLineSection + ambientIndexOffset, ambientData, ambientLineColour);
+        setupChartLine(startOfLineSection + bedIndexOffset, bedData, bedLineColour);
+
+        for (int nozzleCounter = 0; nozzleCounter < nozzleChartDataSets.size(); nozzleCounter++)
+        {
+            setupChartLine(startOfLineSection + firstNozzleIndexOffset + nozzleCounter,
+                           nozzleChartDataSets.get(nozzleCounter).getNozzleTemperatureSeries(),
+                           nozzleLineColour
+            );
+        }
+    }
+
+    private void setupBug(int offset, XYChart.Series<Number, Number> series, String webColour)
+    {
+        chart.getData().add(offset, series);
+        Node bugNode = chart.lookup(".default-color"
+            + offset
+            + ".chart-line-symbol");
+
+        if (bugNode != null)
+        {
+            bugNode.setStyle(rhTriangleBugCSS + "-fx-background-color: " + webColour
+                + "; ");
+        }
+    }
+
+    private void setupChartLine(int offset, XYChart.Series<Number, Number> series, String webColour)
+    {
+        chart.getData().add(offset, series);
+
+        Node symbolNode = chart.lookup(".default-color"
+            + offset
+            + ".chart-line-symbol");
+
+        if (symbolNode != null)
+        {
+            symbolNode.setStyle("visibility: hidden;");
+        }
+
+        Node lineNode = chart.lookup(".default-color"
+            + offset
+            + ".chart-series-line");
+
+        if (lineNode != null)
+        {
+            lineNode.setStyle(graphLineCSS + "-fx-stroke: " + webColour
+                + "; ");
+        }
     }
 
     void clearBedData()
@@ -270,14 +352,15 @@ class ChartManager
 
         nozzleChartDataSets.add(nozzleChartData);
 
-        chart.getData().add(nozzleTargetTempFirstIndex, nozzleChartData.getTargetTemperatureSeries());
-        chart.getData().add(nozzleTemperatureData);
+        updateChartDataSources();
     }
 
     void removeNozzle(int nozzleNumber)
     {
         nozzleChartDataSets.get(nozzleNumber).destroy();
         nozzleChartDataSets.remove(nozzleNumber);
+
+        updateChartDataSources();
     }
 
     void removeAllNozzles()
@@ -286,7 +369,9 @@ class ChartManager
         {
             dataSet.destroy();
         });
-        
+
         nozzleChartDataSets.clear();
+
+        updateChartDataSources();
     }
 }

@@ -17,7 +17,7 @@ import java.util.Set;
 public enum FirmwareError
 {
     /*
-     Error flags as at firmware v706
+     Error flags as at firmware v708
      SD_CARD 0
      CHUNK_SEQUENCE 1
      FILE_TOO_LARGE 2
@@ -44,6 +44,10 @@ public enum FirmwareError
      ERROR_NOZZLE0_THERMISTOR 23
      ERROR_NOZZLE1_THERMISTOR 24
      ERROR_B_POSITION_LOST 25
+     ERROR_E_LOAD_SLIP 26
+     ERROR_D_LOAD_SLIP 27
+     ERROR_E_UNLOAD_SLIP 28
+     ERROR_D_UNLOAD_SLIP 29
      */
 
     SD_CARD("error.ERROR_SD_CARD", 0, OK_ABORT),
@@ -72,6 +76,10 @@ public enum FirmwareError
     NOZZLE0_THERMISTOR("error.ERROR_NOZZLE0_THERMISTOR", 23, OK_ABORT),
     NOZZLE1_THERMISTOR("error.ERROR_NOZZLE1_THERMISTOR", 24, OK_ABORT),
     B_POSITION_LOST("error.ERROR_B_POSITION_LOST", 25, OK),
+    E_LOAD_ERROR("error.ERROR_LOAD", 26, OK),
+    D_LOAD_ERROR("error.ERROR_LOAD", 27, OK),
+    E_UNLOAD_ERROR("error.ERROR_UNLOAD", 28, OK),
+    D_UNLOAD_ERROR("error.ERROR_UNLOAD", 29, OK),
     UNKNOWN("error.ERROR_UNKNOWN", -1, OK_ABORT),
     ALL_ERRORS("", -99);
 

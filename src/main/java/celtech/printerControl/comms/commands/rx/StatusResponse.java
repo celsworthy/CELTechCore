@@ -15,8 +15,7 @@ import java.text.ParseException;
  */
 public class StatusResponse extends RoboxRxPacket
 {
-    //TEMPORARY MOD - allow this to work with v703....
-    /* v706 firmware
+    /* v708 firmware
      status: <0xe1> iiiiiiiiiiiiiiii llllllll p b x y z e d b g h i j a m n k mmmmmmmm nnnnnnnn ccccccccl rrrrrrrr uuuuuuuu dddddddd o pppppppp qqqqqqqq aaaaaaaa r ssssssss tttttttt u c v w x p s xxxxxxxx yyyyyyyy zzzzzzzz bbbbbbbb t eeeeeeee gggggggg hhhhhhhh jjjjjjjj ffffffff
      iiiiiiiiiiiiiiii = id of running job
      llllllll = line # of running job in hex
@@ -890,13 +889,9 @@ public class StatusResponse extends RoboxRxPacket
             byteOffset += 1;
             this.pauseStatus = PauseStatus.modeFromValue(Integer.valueOf(pauseStatusString, 16));
 
-            //TEMPORARY MOD - allow this to work with v703....
-            this.busyStatus = (byteData[byteOffset] & 1) > 0 ? BusyStatus.BUSY : BusyStatus.NOT_BUSY;
+            String busyStatusString = new String(byteData, byteOffset, 1, charsetToUse);
             byteOffset += 1;
-
-//            String busyStatusString = new String(byteData, byteOffset, 1, charsetToUse);
-//            byteOffset += 1;
-//            this.busyStatus = BusyStatus.modeFromValue(Integer.valueOf(busyStatusString, 16));
+            this.busyStatus = BusyStatus.modeFromValue(Integer.valueOf(busyStatusString, 16));
 
             this.xSwitchStatus = (byteData[byteOffset] & 1) > 0 ? true : false;
             byteOffset += 1;

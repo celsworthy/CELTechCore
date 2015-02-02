@@ -984,37 +984,40 @@
  * Temperature graph
  */
 
-.default-color3.chart-series-line { -fx-stroke: graph_line_green; -fx-stroke-width: 3;}
+/*.default-color3.chart-series-line { -fx-stroke: graph_line_green; -fx-stroke-width: 3;}
 .default-color4.chart-series-line { -fx-stroke: graph_line_yellow; -fx-stroke-width: 3;}
 .default-color5.chart-series-line { -fx-stroke: graph_line_red; -fx-stroke-width: 3;}
+*/
+
 .default-color3.chart-line-symbol {visibility: hidden;}
 .default-color4.chart-line-symbol {visibility: hidden;}
 .default-color5.chart-line-symbol {visibility: hidden;}
 
-.default-color0.chart-line-symbol { /* solid triangle */
+/*
+.default-color0.chart-line-symbol {  solid triangle 
     -fx-background-color: graph_setpoint_green;
     -fx-background-radius: 0;
-    /*-fx-padding: 7px 5px 7px 5px;*/
+    -fx-padding: 7px 5px 7px 5px;
     -fx-shape: "M0,6 L12,0 L12,12 L0,6 Z";
     -fx-scale-x: 2;
     -fx-scale-y: 2;
 }
-.default-color1.chart-line-symbol { /* solid triangle */
+.default-color1.chart-line-symbol {  solid triangle 
     -fx-background-color: graph_setpoint_yellow;
     -fx-background-radius: 0;
-    /*-fx-padding: 7px 5px 7px 5px;*/
+    -fx-padding: 7px 5px 7px 5px;
     -fx-shape: "M0,6 L12,0 L12,12 L0,6 Z";
     -fx-scale-x: 2;
     -fx-scale-y: 2;
 }
-.default-color2.chart-line-symbol { /* solid triangle */
+.default-color2.chart-line-symbol {  solid triangle 
     -fx-background-color: graph_setpoint_red;
     -fx-background-radius: 0;
-    /*-fx-padding: 7px 5px 7px 5px;*/
+    -fx-padding: 7px 5px 7px 5px;
     -fx-shape: "M0,6 L12,0 L12,12 L0,6 Z";
     -fx-scale-x: 2;
     -fx-scale-y: 2;
-}
+}*/
 
 .temperatureXLabel {
     -fx-font-size: 9pt;

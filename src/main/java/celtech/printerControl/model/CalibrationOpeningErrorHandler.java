@@ -16,17 +16,16 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
 /**
- * The CalibrationPrinterErrorHandler listens for printer errors and if they occur then the next
+ * The CalibrationOpeningErrorHandler listens for printer errors and if they occur then the next
  * call to {@link #checkIfPrinterErrorHasOccurred()} will cause the user to get an Abort dialog,
  * which is followed by raising an exception.
  *
  * @author tony
  */
-class CalibrationPrinterErrorHandler
+class CalibrationOpeningErrorHandler
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationPrinterErrorHandler.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(CalibrationOpeningErrorHandler.class.getName());
     private boolean errorOccurred = true;
     private final Printer printer;
     private Cancellable cancellable;
@@ -39,7 +38,7 @@ class CalibrationPrinterErrorHandler
         throw new CalibrationException("An error occurred with the printer");
     };
 
-    public CalibrationPrinterErrorHandler(Printer printer, Cancellable cancellable)
+    public CalibrationOpeningErrorHandler(Printer printer, Cancellable cancellable)
     {
         this.printer = printer;
         this.cancellable = cancellable;
@@ -69,7 +68,7 @@ class CalibrationPrinterErrorHandler
 
     ErrorConsumer errorConsumer = (FirmwareError error) ->
     {
-        steno.info(error.name() + " occurred during calibration");
+        steno.info(error.name() + " occurred during nozzle opening calibration");
         // Filament slips can occur during pressurisation - we need to ignore them
         if (error == FirmwareError.E_FILAMENT_SLIP)
         {
