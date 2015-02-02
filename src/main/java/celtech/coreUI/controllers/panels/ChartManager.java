@@ -8,6 +8,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.HeaterMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyIntegerProperty;
@@ -95,7 +96,7 @@ class ChartManager
     private void updateChartDataSources()
     {
         chart.getData().clear();
-        
+
         chart.applyCss();
 
         //Set up the ambient bug
@@ -127,29 +128,29 @@ class ChartManager
     private void setupBug(int offset, XYChart.Series<Number, Number> series, String webColour)
     {
         chart.getData().add(offset, series);
-        Node bugNode = chart.lookup(".default-color"
+        Set<Node> symbolNodes = chart.lookupAll(".default-color"
             + offset
             + ".chart-line-symbol");
 
-        if (bugNode != null)
+        symbolNodes.forEach(symbolNode ->
         {
-            bugNode.setStyle(rhTriangleBugCSS + "-fx-background-color: " + webColour
+            symbolNode.setStyle(rhTriangleBugCSS + "-fx-background-color: " + webColour
                 + "; ");
-        }
+        });
     }
 
     private void setupChartLine(int offset, XYChart.Series<Number, Number> series, String webColour)
     {
         chart.getData().add(offset, series);
 
-        Node symbolNode = chart.lookup(".default-color"
+        Set<Node> symbolNodes = chart.lookupAll(".default-color"
             + offset
             + ".chart-line-symbol");
 
-        if (symbolNode != null)
+        symbolNodes.forEach(symbolNode ->
         {
             symbolNode.setStyle("visibility: hidden;");
-        }
+        });
 
         Node lineNode = chart.lookup(".default-color"
             + offset
