@@ -20,6 +20,8 @@ import celtech.coreUI.controllers.panels.LayoutStatusMenuStripController;
 import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
 import celtech.coreUI.controllers.panels.SettingsSidePanelController;
 import celtech.coreUI.controllers.panels.SidePanelManager;
+import celtech.coreUI.keycommands.HiddenKey;
+import celtech.coreUI.keycommands.KeyCommandListener;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
@@ -65,7 +67,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class DisplayManager implements EventHandler<KeyEvent>
+public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListener
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
@@ -119,58 +121,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
 
     private static final String addDummyPrinterCommand = "AddDummy";
     private static final String dummyCommandPrefix = "dummy:";
-    private String dummyCommandBuffer = "";
-
-    private String hiddenCommandKeyBuffer = "";
-    private boolean dummyCommandActive = false;
-
-    private final EventHandler<KeyEvent> hiddenCommandEventHandler = (KeyEvent event) ->
-    {
-        if (addDummyPrinterCommand.startsWith(hiddenCommandKeyBuffer + event.getCharacter()))
-        {
-            hiddenCommandKeyBuffer += event.getCharacter();
-            if (hiddenCommandKeyBuffer != null)
-            {
-                switch (hiddenCommandKeyBuffer)
-                {
-                    case addDummyPrinterCommand:
-                        RoboxCommsManager.getInstance().addDummyPrinter();
-                        steno.info("Added dummy printer");
-                        hiddenCommandKeyBuffer = "";
-                        break;
-                }
-            }
-        } else if (!dummyCommandActive && dummyCommandPrefix.equals(
-            hiddenCommandKeyBuffer + event.getCharacter()))
-        {
-            dummyCommandActive = true;
-        } else if (dummyCommandActive)
-        {
-            if (event.getCharacter().equals("\r"))
-            {
-                steno.info("Got dummy command " + dummyCommandBuffer);
-                if (Lookup.getCurrentlySelectedPrinterProperty().get() != null)
-                {
-                    Lookup.getCurrentlySelectedPrinterProperty().get().sendRawGCode(
-                        dummyCommandBuffer.replaceAll("/", " ").trim().toUpperCase(), true);
-                }
-                hiddenCommandKeyBuffer = "";
-                dummyCommandBuffer = "";
-                dummyCommandActive = false;
-            } else
-            {
-                dummyCommandBuffer += event.getCharacter();
-            }
-        } else if (dummyCommandPrefix.startsWith(hiddenCommandKeyBuffer + event.getCharacter()))
-        {
-            hiddenCommandKeyBuffer += event.getCharacter();
-        } else
-        {
-            hiddenCommandKeyBuffer = "";
-        }
-    };
-
-    private boolean captureKeys = false;
 
     private AnchorPane root;
     private Pane spinnerContainer;
@@ -432,7 +382,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
         addTopMenuStripController();
 
         mainHolder.getChildren().add(rhPanel);
-
+        
         // Configure the main display tab pane - just the printer status page to start with
         tabDisplay = new TabPane();
         tabDisplay.setPickOnBounds(false);
@@ -613,7 +563,11 @@ public class DisplayManager implements EventHandler<KeyEvent>
             }
         });
 
-        captureHiddenKeys();
+        HiddenKey hiddenKeyThing = new HiddenKey();
+        hiddenKeyThing.addCommandSequence(addDummyPrinterCommand);
+        hiddenKeyThing.addCommandWithParameterSequence(dummyCommandPrefix);
+        hiddenKeyThing.addKeyCommandListener(this);
+        hiddenKeyThing.captureHiddenKeys(scene);
 
         // Camera required to allow 2D shapes to be rotated in 3D in the '2D' UI
         PerspectiveCamera controlOverlaycamera = new PerspectiveCamera(false);
@@ -828,12 +782,19 @@ public class DisplayManager implements EventHandler<KeyEvent>
      */
     public void shutdown()
     {
-        projectManager.saveState();
-
-        tabDisplay.getTabs().stream().filter((tab) -> (tab instanceof ProjectTab)).forEach((tab) ->
+        if (projectManager != null)
         {
-            ((ProjectTab) tab).saveProject();
-        });
+            projectManager.saveState();
+        }
+
+        if (tabDisplay != null)
+        {
+            tabDisplay.getTabs().stream().filter((tab) -> (tab instanceof ProjectTab)).forEach(
+                (tab) ->
+                {
+                    ((ProjectTab) tab).saveProject();
+                });
+        }
     }
 
     /**
@@ -1004,25 +965,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
         return (PurgeInsetPanelController) insetPanelControllers.get(ApplicationMode.PURGE);
     }
 
-    private void stopCapturingHiddenKeys()
-    {
-        if (captureKeys)
-        {
-            scene.removeEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
-            hiddenCommandKeyBuffer = "";
-            captureKeys = false;
-        }
-    }
-
-    private void captureHiddenKeys()
-    {
-        if (!captureKeys)
-        {
-            scene.addEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
-            captureKeys = true;
-        }
-    }
-
     private void fireNodeMayHaveMovedTrigger()
     {
         nodesMayHaveMoved.set(!nodesMayHaveMoved.get());
@@ -1031,5 +973,23 @@ public class DisplayManager implements EventHandler<KeyEvent>
     public ReadOnlyBooleanProperty nodesMayHaveMovedProperty()
     {
         return nodesMayHaveMoved;
+    }
+
+    @Override
+    public void trigger(String commandSequence, String capturedParameter)
+    {
+        switch (commandSequence)
+        {
+            case addDummyPrinterCommand:
+                RoboxCommsManager.getInstance().addDummyPrinter();
+                break;
+            case dummyCommandPrefix:
+                if (RoboxCommsManager.getInstance().getDummyPrinters().size() > 0)
+                {
+                    RoboxCommsManager.getInstance().getDummyPrinters().get(0).sendRawGCode(
+                        capturedParameter.replaceAll("/", " ").trim().toUpperCase(), true);
+                }
+                break;
+        }
     }
 }

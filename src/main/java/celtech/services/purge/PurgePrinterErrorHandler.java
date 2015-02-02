@@ -65,8 +65,8 @@ public class PurgePrinterErrorHandler
         if (cancellable.cancelled == false)
         {
             boolean allowContinue = false;
-            if (error == FirmwareError.ERROR_D_FILAMENT_SLIP || error
-                == FirmwareError.ERROR_E_FILAMENT_SLIP)
+            if (error == FirmwareError.D_FILAMENT_SLIP || error
+                == FirmwareError.E_FILAMENT_SLIP)
             {
                 allowContinue = true;
             } else

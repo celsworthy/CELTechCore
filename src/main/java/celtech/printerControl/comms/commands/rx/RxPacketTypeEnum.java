@@ -69,7 +69,12 @@ public enum RxPacketTypeEnum
     /**
      *
      */
-    HOURS_COUNTER((byte)0xEA, 9, false, 0);
+    HOURS_COUNTER((byte)0xEA, 9, false, 0),
+    
+    /**
+     *
+     */
+    DEBUG_DATA((byte)0xEF, 257, false, 0);
     
     private final byte commandByte;
     private final int packetSize;

@@ -9,6 +9,7 @@ import celtech.Lookup;
 import celtech.appManager.PurgeResponse;
 import celtech.appManager.TaskController;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.BusyStatus;
 import celtech.configuration.Filament;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.SettingsScreenState;
@@ -174,7 +175,7 @@ public class PrinterUtils
             {
                 StatusResponse response = printerToCheck.transmitStatusRequest();
 
-                while (response.isBusyStatus() == true && !TaskController.isShuttingDown())
+                while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !TaskController.isShuttingDown())
                 {
                     Thread.sleep(100);
                     response = printerToCheck.transmitStatusRequest();
@@ -200,7 +201,7 @@ public class PrinterUtils
             {
                 StatusResponse response = printerToCheck.transmitStatusRequest();
 
-                while (response.isBusyStatus() == true && !TaskController.isShuttingDown())
+                while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !TaskController.isShuttingDown())
                 {
                     Thread.sleep(100);
                     response = printerToCheck.transmitStatusRequest();
@@ -233,7 +234,7 @@ public class PrinterUtils
         {
             StatusResponse response = printerToCheck.transmitStatusRequest();
 
-            while (response.isBusyStatus() == true && !TaskController.isShuttingDown())
+            while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !TaskController.isShuttingDown())
             {
                 Thread.sleep(100);
                 response = printerToCheck.transmitStatusRequest();

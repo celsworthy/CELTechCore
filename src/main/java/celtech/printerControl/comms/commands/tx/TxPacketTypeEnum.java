@@ -166,7 +166,12 @@ public enum TxPacketTypeEnum
     /**
      *
      */
-    READ_HOURS_COUNTER((byte) 0xb6, 1, false, RxPacketTypeEnum.HOURS_COUNTER);
+    READ_HOURS_COUNTER((byte) 0xb6, 1, false, RxPacketTypeEnum.HOURS_COUNTER),
+
+    /**
+     *
+     */
+    READ_DEBUG_DATA((byte) 0xfc, 1, false, RxPacketTypeEnum.DEBUG_DATA);
 
     private final byte commandByte;
     private final int packetSize;

@@ -127,6 +127,9 @@ public class RoboxTxPacketFactory
                 case READ_HOURS_COUNTER:
                     returnVal = new ReadHoursCounter();
                     break;
+                case READ_DEBUG_DATA:
+                    returnVal = new ReadDebugData();
+                    break;
                 default:
                     break;
             }

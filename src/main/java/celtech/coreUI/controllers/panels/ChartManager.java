@@ -6,12 +6,15 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.HeaterMode;
+import java.util.ArrayList;
+import java.util.List;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.Node;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
@@ -26,45 +29,52 @@ class ChartManager
 {
 
     private final LineChart<Number, Number> chart;
-    private XYChart.Series<Number, Number> nozzleData = new XYChart.Series<>();
     private XYChart.Series<Number, Number> ambientData = new XYChart.Series<>();
     private XYChart.Series<Number, Number> bedData = new XYChart.Series<>();
     private final LineChart.Series<Number, Number> ambientTargetTemperatureSeries = new LineChart.Series<>();
     private final LineChart.Series<Number, Number> bedTargetTemperatureSeries = new LineChart.Series<>();
-    private final LineChart.Series<Number, Number> nozzleTargetTemperatureSeries = new LineChart.Series<>();
     private final LineChart.Data<Number, Number> ambientTargetPoint = new LineChart.Data<>(
         ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 5, 0);
     private final LineChart.Data<Number, Number> bedTargetPoint = new LineChart.Data<>(
         ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 5, 0);
-    private final LineChart.Data<Number, Number> nozzleTargetPoint = new LineChart.Data<>(
-        ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 5, 0);
 
-    private ReadOnlyIntegerProperty nozzleTargetTemperatureProperty;
-    private ReadOnlyIntegerProperty nozzleFirstLayerTargetTemperatureProperty;
     private ReadOnlyIntegerProperty bedTargetTemperatureProperty;
     private ReadOnlyIntegerProperty bedFirstLayerTargetTemperatureProperty;
     private ReadOnlyIntegerProperty ambientTargetTemperatureProperty;
-    private ReadOnlyIntegerProperty nozzleTemperatureProperty;
     private ReadOnlyIntegerProperty bedTemperatureProperty;
     private ReadOnlyIntegerProperty ambientTemperatureProperty;
     private ReadOnlyObjectProperty<HeaterMode> bedHeaterModeProperty;
-    private ReadOnlyObjectProperty<HeaterMode> nozzleHeaterModeProperty;
     private Label legendNozzle;
     private Label legendBed;
     private Label legendAmbient;
+    private List<NozzleChartData> nozzleChartDataSets = new ArrayList<>();
+    private int nozzleTargetTempFirstIndex = 2;
+
+    private final int ambientIndexOffset = 0;
+    private final int bedIndexOffset = 1;
+    private final int firstNozzleIndexOffset = 2;
+
+    private final String ambientBugColour = "#145019";
+    private final String bedBugColour = "#a07800";
+    private final String nozzleBugColour = "#8c0000";
+    private final String ambientLineColour = "#1eb43c";
+    private final String bedLineColour = "#ffc800";
+    private final String nozzleLineColour = "#ff0000";
+
+    private final String rhTriangleBugCSS
+        = "-fx-background-radius: 0; "
+        + "-fx-shape: \"M0,6 L12,0 L12,12 L0,6 Z\"; "
+        + "-fx-scale-x: 2; "
+        + "-fx-scale-y: 2; ";
+
+    private final String graphLineCSS
+        = "-fx-stroke-width: 3; ";
 
     public ChartManager(LineChart<Number, Number> chart)
     {
         this.chart = chart;
         ambientTargetTemperatureSeries.getData().add(ambientTargetPoint);
         bedTargetTemperatureSeries.getData().add(bedTargetPoint);
-        nozzleTargetTemperatureSeries.getData().add(nozzleTargetPoint);
-    }
-
-    public void setNozzleData(XYChart.Series<Number, Number> nozzleData)
-    {
-        this.nozzleData = nozzleData;
-        updateChartDataSources();
     }
 
     public void setAmbientData(XYChart.Series<Number, Number> ambientData)
@@ -85,19 +95,71 @@ class ChartManager
     private void updateChartDataSources()
     {
         chart.getData().clear();
-        chart.getData().add(ambientTargetTemperatureSeries);
-        chart.getData().add(bedTargetTemperatureSeries);
-        chart.getData().add(nozzleTargetTemperatureSeries);
-        chart.getData().add(ambientData);
-        chart.getData().add(bedData);
-        chart.getData().add(nozzleData);
+        
+        chart.applyCss();
 
+        //Set up the ambient bug
+        setupBug(ambientIndexOffset, ambientTargetTemperatureSeries, ambientBugColour);
+
+        //Set up the bed bug
+        setupBug(bedIndexOffset, bedTargetTemperatureSeries, bedBugColour);
+
+        //Set up the nozzle bugs
+        for (int nozzleCounter = 0; nozzleCounter < nozzleChartDataSets.size(); nozzleCounter++)
+        {
+            setupBug(nozzleTargetTempFirstIndex + nozzleCounter, nozzleChartDataSets.get(
+                     nozzleCounter).getTargetTemperatureSeries(), nozzleBugColour);
+        }
+
+        int startOfLineSection = firstNozzleIndexOffset + nozzleChartDataSets.size();
+        setupChartLine(startOfLineSection + ambientIndexOffset, ambientData, ambientLineColour);
+        setupChartLine(startOfLineSection + bedIndexOffset, bedData, bedLineColour);
+
+        for (int nozzleCounter = 0; nozzleCounter < nozzleChartDataSets.size(); nozzleCounter++)
+        {
+            setupChartLine(startOfLineSection + firstNozzleIndexOffset + nozzleCounter,
+                           nozzleChartDataSets.get(nozzleCounter).getNozzleTemperatureSeries(),
+                           nozzleLineColour
+            );
+        }
     }
 
-    void clearNozzleData()
+    private void setupBug(int offset, XYChart.Series<Number, Number> series, String webColour)
     {
-        nozzleData = new XYChart.Series<>();
-        nozzleTemperatureProperty = null;
+        chart.getData().add(offset, series);
+        Node bugNode = chart.lookup(".default-color"
+            + offset
+            + ".chart-line-symbol");
+
+        if (bugNode != null)
+        {
+            bugNode.setStyle(rhTriangleBugCSS + "-fx-background-color: " + webColour
+                + "; ");
+        }
+    }
+
+    private void setupChartLine(int offset, XYChart.Series<Number, Number> series, String webColour)
+    {
+        chart.getData().add(offset, series);
+
+        Node symbolNode = chart.lookup(".default-color"
+            + offset
+            + ".chart-line-symbol");
+
+        if (symbolNode != null)
+        {
+            symbolNode.setStyle("visibility: hidden;");
+        }
+
+        Node lineNode = chart.lookup(".default-color"
+            + offset
+            + ".chart-series-line");
+
+        if (lineNode != null)
+        {
+            lineNode.setStyle(graphLineCSS + "-fx-stroke: " + webColour
+                + "; ");
+        }
     }
 
     void clearBedData()
@@ -195,78 +257,6 @@ class ChartManager
         }
     }
 
-    ChangeListener<HeaterMode> nozzleHeaterModeListener = (ObservableValue<? extends HeaterMode> observable, HeaterMode oldValue, HeaterMode newValue) ->
-    {
-        updateNozzleTargetPoint();
-    };
-
-    void setNozzleHeaterModeProperty(ReadOnlyObjectProperty<HeaterMode> nozzleHeaterModeProperty)
-    {
-        if (this.nozzleHeaterModeProperty != null)
-        {
-            nozzleHeaterModeProperty.removeListener(nozzleHeaterModeListener);
-        }
-        nozzleHeaterModeProperty.addListener(nozzleHeaterModeListener);
-        this.nozzleHeaterModeProperty = nozzleHeaterModeProperty;
-        updateNozzleTargetPoint();
-    }
-
-    ChangeListener<Number> nozzleTargetTemperatureListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-    {
-        updateNozzleTargetPoint();
-    };
-
-    void setTargetNozzleTemperatureProperty(ReadOnlyIntegerProperty nozzleTargetTemperatureProperty)
-    {
-        if (this.nozzleTargetTemperatureProperty != null)
-        {
-            this.nozzleTargetTemperatureProperty.removeListener(nozzleTargetTemperatureListener);
-        }
-        this.nozzleTargetTemperatureProperty = nozzleTargetTemperatureProperty;
-        nozzleTargetTemperatureProperty.addListener(nozzleTargetTemperatureListener);
-        updateNozzleTargetPoint();
-
-    }
-
-    ChangeListener<Number> nozzleFirstLayerTargetTemperatureListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-    {
-        updateNozzleTargetPoint();
-    };
-
-    void setTargetFirstLayerNozzleTemperatureProperty(
-        ReadOnlyIntegerProperty nozzleFirstLayerTargetTemperatureProperty)
-    {
-        if (this.nozzleFirstLayerTargetTemperatureProperty != null)
-        {
-            this.nozzleFirstLayerTargetTemperatureProperty.removeListener(
-                nozzleFirstLayerTargetTemperatureListener);
-        }
-        this.nozzleFirstLayerTargetTemperatureProperty = nozzleFirstLayerTargetTemperatureProperty;
-        nozzleFirstLayerTargetTemperatureProperty.addListener(
-            nozzleFirstLayerTargetTemperatureListener);
-        updateNozzleTargetPoint();
-
-    }
-
-    private void updateNozzleTargetPoint()
-    {
-        if (nozzleHeaterModeProperty == null || nozzleTargetTemperatureProperty == null
-            || nozzleFirstLayerTargetTemperatureProperty == null)
-        {
-            return;
-        }
-        if (nozzleHeaterModeProperty.get() == HeaterMode.OFF)
-        {
-            nozzleTargetPoint.setYValue(0);
-        } else if (nozzleHeaterModeProperty.get() == HeaterMode.FIRST_LAYER)
-        {
-            nozzleTargetPoint.setYValue(nozzleFirstLayerTargetTemperatureProperty.get());
-        } else
-        {
-            nozzleTargetPoint.setYValue(nozzleTargetTemperatureProperty.get());
-        }
-    }
-
     void setLegendLabels(Label legendNozzle, Label legendBed, Label legendAmbient)
     {
         this.legendNozzle = legendNozzle;
@@ -286,22 +276,8 @@ class ChartManager
     private void updateLegend()
     {
         String degreesC = Lookup.i18n("misc.degreesC");
-        String legendNozzleText = Lookup.i18n("printerStatus.temperatureGraphNozzleLabel");
         String legendBedText = Lookup.i18n("printerStatus.temperatureGraphBedLabel");
         String legendAmbientText = Lookup.i18n("printerStatus.temperatureGraphAmbientLabel");
-
-        if (legendNozzle != null && nozzleTemperatureProperty != null)
-        {
-            if (nozzleTemperatureProperty.get() >= ApplicationConfiguration.minTempToDisplayOnGraph)
-            {
-                legendNozzleText += String.format(" %s%s",
-                                                  nozzleTemperatureProperty.get(),
-                                                  degreesC);
-            } else
-            {
-                legendNozzleText += " " + Lookup.i18n("printerStatus.tempOutOfRangeLow");
-            }
-        }
 
         if (legendBed != null && bedTemperatureProperty != null)
         {
@@ -318,11 +294,7 @@ class ChartManager
         {
             legendAmbientText += String.format(" %s%s", ambientTemperatureProperty.get(), degreesC);
         }
-        
-        if (legendNozzle != null)
-        {
-            legendNozzle.setText(legendNozzleText);
-        }
+
         if (legendBed != null)
         {
             legendBed.setText(legendBedText);
@@ -331,22 +303,6 @@ class ChartManager
         {
             legendAmbient.setText(legendAmbientText);
         }
-    }
-
-    InvalidationListener nozzleTemperatureListener = (Observable observable) ->
-    {
-        updateLegend();
-    };
-
-    void setNozzleTemperatureProperty(ReadOnlyIntegerProperty nozzleTemperatureProperty)
-    {
-        if (this.nozzleTemperatureProperty != null)
-        {
-            this.nozzleTemperatureProperty.removeListener(nozzleTemperatureListener);
-        }
-        this.nozzleTemperatureProperty = nozzleTemperatureProperty;
-        nozzleTemperatureProperty.addListener(nozzleTemperatureListener);
-        updateLegend();
     }
 
     InvalidationListener bedTemperatureListener = (Observable observable) ->
@@ -381,4 +337,41 @@ class ChartManager
         updateLegend();
     }
 
+    void addNozzle(XYChart.Series<Number, Number> nozzleTemperatureData,
+        ReadOnlyObjectProperty<HeaterMode> nozzleHeaterModeProperty,
+        ReadOnlyIntegerProperty nozzleTargetTemperatureProperty,
+        ReadOnlyIntegerProperty nozzleFirstLayerTargetTemperatureProperty,
+        ReadOnlyIntegerProperty nozzleTemperatureProperty)
+    {
+        NozzleChartData nozzleChartData = new NozzleChartData(nozzleTemperatureData,
+                                                              nozzleHeaterModeProperty,
+                                                              nozzleTargetTemperatureProperty,
+                                                              nozzleFirstLayerTargetTemperatureProperty,
+                                                              nozzleTemperatureProperty,
+                                                              legendNozzle);
+
+        nozzleChartDataSets.add(nozzleChartData);
+
+        updateChartDataSources();
+    }
+
+    void removeNozzle(int nozzleNumber)
+    {
+        nozzleChartDataSets.get(nozzleNumber).destroy();
+        nozzleChartDataSets.remove(nozzleNumber);
+
+        updateChartDataSources();
+    }
+
+    void removeAllNozzles()
+    {
+        nozzleChartDataSets.forEach(dataSet ->
+        {
+            dataSet.destroy();
+        });
+
+        nozzleChartDataSets.clear();
+
+        updateChartDataSources();
+    }
 }
