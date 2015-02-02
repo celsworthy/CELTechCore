@@ -1,7 +1,7 @@
 package celtech.services.calibration;
 
+import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.coreUI.DisplayManager;
 import java.net.URL;
 import java.util.Optional;
 
@@ -66,7 +66,7 @@ public enum NozzleOffsetCalibrationState
             return "";
         } else
         {
-            return DisplayManager.getLanguageBundle().getString(stepTitleResource);
+            return Lookup.i18n(stepTitleResource);
         }
     }
 }

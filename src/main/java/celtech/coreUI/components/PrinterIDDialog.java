@@ -1,5 +1,6 @@
 package celtech.coreUI.components;
 
+import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.PrinterIDDialogController;
@@ -34,7 +35,7 @@ public class PrinterIDDialog
     {
         dialogStage = new Stage(StageStyle.TRANSPARENT);
         URL dialogFXMLURL = PrinterIDDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "PrinterIDDialog.fxml");
-        FXMLLoader dialogLoader = new FXMLLoader(dialogFXMLURL, DisplayManager.getLanguageBundle());
+        FXMLLoader dialogLoader = new FXMLLoader(dialogFXMLURL, Lookup.getLanguageBundle());
         try
         {
             Parent dialogBoxScreen = (Parent) dialogLoader.load();

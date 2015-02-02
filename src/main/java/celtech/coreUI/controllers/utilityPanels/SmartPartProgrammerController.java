@@ -56,10 +56,10 @@ public class SmartPartProgrammerController implements Initializable
 //        switch (newValue)
 //        {
 //            case NOT_PRESENT:
-//                currentReelTitle.setText(DisplayManager.getLanguageBundle().getString("smartReelProgrammer.noReelLoaded"));
+//                currentReelTitle.setText(Lookup.i18n("smartReelProgrammer.noReelLoaded"));
 //                break;
 //            case NOT_PROGRAMMED:
-//                currentReelTitle.setText(DisplayManager.getLanguageBundle().getString("smartReelProgrammer.reelNotFormatted"));
+//                currentReelTitle.setText(Lookup.i18n("smartReelProgrammer.reelNotFormatted"));
 //                break;
 //            case PROGRAMMED:
 //                if (connectedPrinter.loadedFilamentProperty().get() != null)

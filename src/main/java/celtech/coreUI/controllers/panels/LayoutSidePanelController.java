@@ -5,6 +5,7 @@
  */
 package celtech.coreUI.controllers.panels;
 
+import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
@@ -118,7 +119,7 @@ public class LayoutSidePanelController implements Initializable,
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        ResourceBundle languageBundle = DisplayManager.getLanguageBundle();
+        ResourceBundle languageBundle = Lookup.getLanguageBundle();
         String modelNameLabelString = languageBundle.getString(
             "sidePanel_layout.ModelNameLabel");
         String scaleLabelString = languageBundle.getString(

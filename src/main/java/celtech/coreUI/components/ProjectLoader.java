@@ -5,6 +5,7 @@
  */
 package celtech.coreUI.components;
 
+import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
@@ -40,7 +41,7 @@ public class ProjectLoader
     {
         dialogStage = new Stage(StageStyle.TRANSPARENT);
         URL dialogFXMLURL = ModalDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "ProjectLoader.fxml");
-        ResourceBundle i18nBundle = DisplayManager.getLanguageBundle();
+        ResourceBundle i18nBundle = Lookup.getLanguageBundle();
         FXMLLoader dialogLoader = new FXMLLoader(dialogFXMLURL, i18nBundle);
         
         try

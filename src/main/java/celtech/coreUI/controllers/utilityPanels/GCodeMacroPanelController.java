@@ -216,15 +216,15 @@ public class GCodeMacroPanelController
 //            {
 //                generalPurposeDialog = new ModalDialog();
 //
-//                generalPurposeDialog.addButton(DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Ok"));
+//                generalPurposeDialog.addButton(Lookup.i18n("genericFirstLetterCapitalised.Ok"));
 //
 //                gcodeUpdateProgress = new ProgressDialog(gcodePrintService);
 //            }
 //        });
-//        gcodeFileChooser.setTitle(DisplayManager.getLanguageBundle().getString("gcodeMacroPanel.fileChooserTitle"));
+//        gcodeFileChooser.setTitle(Lookup.i18n("gcodeMacroPanel.fileChooserTitle"));
 //        gcodeFileChooser.getExtensionFilters()
 //                .addAll(
-//                        new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString("gcodeMacroPanel.gcodeFileDescription"), "*.gcode"));
+//                        new FileChooser.ExtensionFilter(Lookup.i18n("gcodeMacroPanel.gcodeFileDescription"), "*.gcode"));
 //
 //        lastGCodeDirectory = new File(ApplicationConfiguration.getProjectDirectory());
 //
@@ -236,13 +236,13 @@ public class GCodeMacroPanelController
 //                boolean gcodePrintSuccess = (boolean) (t.getSource().getValue());
 //                if (gcodePrintSuccess)
 //                {
-//                    generalPurposeDialog.setTitle(DisplayManager.getLanguageBundle().getString("gcodeMacroPanel.gcodePrintSuccessTitle"));
-//                    generalPurposeDialog.setMessage(DisplayManager.getLanguageBundle().getString("gcodeMacroPanel.gcodePrintSuccessMessage"));
+//                    generalPurposeDialog.setTitle(Lookup.i18n("gcodeMacroPanel.gcodePrintSuccessTitle"));
+//                    generalPurposeDialog.setMessage(Lookup.i18n("gcodeMacroPanel.gcodePrintSuccessMessage"));
 //                    generalPurposeDialog.show();
 //                } else
 //                {
-//                    generalPurposeDialog.setTitle(DisplayManager.getLanguageBundle().getString("gcodeMacroPanel.gcodePrintFailedTitle"));
-//                    generalPurposeDialog.setMessage(DisplayManager.getLanguageBundle().getString("gcodeMacroPanel.gcodePrintFailedMessage"));
+//                    generalPurposeDialog.setTitle(Lookup.i18n("gcodeMacroPanel.gcodePrintFailedTitle"));
+//                    generalPurposeDialog.setMessage(Lookup.i18n("gcodeMacroPanel.gcodePrintFailedMessage"));
 //                    generalPurposeDialog.show();
 //
 //                    steno.warning("In gcode print succeeded but with failure flag");
@@ -265,9 +265,9 @@ public class GCodeMacroPanelController
 ////                        steno.warning("In gcode print failed but with success flag");
 ////                    }
 ////                }
-//                generalPurposeDialog.setTitle(DisplayManager.getLanguageBundle().getString("dialogs.gcodePrintFailedTitle"));
-//                generalPurposeDialog.setMessage(DisplayManager.getLanguageBundle().getString("dialogs.gcodePrintFailedMessage"));
-//                generalPurposeDialog.addButton(DisplayManager.getLanguageBundle().getString("dialogs.gcodePrintOK"));
+//                generalPurposeDialog.setTitle(Lookup.i18n("dialogs.gcodePrintFailedTitle"));
+//                generalPurposeDialog.setMessage(Lookup.i18n("dialogs.gcodePrintFailedMessage"));
+//                generalPurposeDialog.addButton(Lookup.i18n("dialogs.gcodePrintOK"));
 //                generalPurposeDialog.show();
 //            }
 //        });

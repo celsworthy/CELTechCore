@@ -34,12 +34,10 @@ public class PrinterUtils
     private static final Stenographer steno = StenographerFactory.getStenographer(
         PrinterUtils.class.getName());
     private static PrinterUtils instance = null;
-    private static ResourceBundle i18nBundle = null;
     private boolean purgeDialogVisible = false;
 
     private PrinterUtils()
     {
-        i18nBundle = DisplayManager.getLanguageBundle();
     }
 
     /**

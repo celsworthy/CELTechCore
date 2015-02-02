@@ -246,15 +246,15 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             switch (projectMode)
             {
                 case NONE:
-                    descriptionOfFile = DisplayManager.getLanguageBundle().getString(
+                    descriptionOfFile = Lookup.i18n(
                         "dialogs.anyFileChooserDescription");
                     break;
                 case MESH:
-                    descriptionOfFile = DisplayManager.getLanguageBundle().getString(
+                    descriptionOfFile = Lookup.i18n(
                         "dialogs.meshFileChooserDescription");
                     break;
                 case GCODE:
-                    descriptionOfFile = DisplayManager.getLanguageBundle().getString(
+                    descriptionOfFile = Lookup.i18n(
                         "dialogs.gcodeFileChooserDescription");
                     break;
                 default:
@@ -693,10 +693,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             .and(printerAvailable));
         layoutButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
             ApplicationMode.LAYOUT));
-        modelFileChooser.setTitle(DisplayManager.getLanguageBundle().getString(
+        modelFileChooser.setTitle(Lookup.i18n(
             "dialogs.modelFileChooser"));
         modelFileChooser.getExtensionFilters().addAll(
-            new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString(
+            new FileChooser.ExtensionFilter(Lookup.i18n(
                     "dialogs.modelFileChooserDescription"),
                                             ApplicationConfiguration.
                                             getSupportedFileExtensionWildcards(

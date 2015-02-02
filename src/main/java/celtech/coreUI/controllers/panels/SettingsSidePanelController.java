@@ -164,8 +164,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         {
             FXMLLoader createMaterialPageLoader = new FXMLLoader(getClass().getResource(
                 ApplicationConfiguration.fxmlUtilityPanelResourcePath + "materialDetails.fxml"),
-                                                                 DisplayManager.
-                                                                 getLanguageBundle());
+                                                                 Lookup.getLanguageBundle());
             createMaterialPage = createMaterialPageLoader.load();
             materialDetailsController = createMaterialPageLoader.getController();
             materialDetailsController.updateMaterialData(new Filament("", MaterialType.ABS, null,
@@ -173,15 +172,15 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                                                                       Color.ALICEBLUE, true));
             materialDetailsController.showButtons(false);
 
-            createMaterialDialogue = new ModalDialog(DisplayManager.getLanguageBundle().getString(
+            createMaterialDialogue = new ModalDialog(Lookup.i18n(
                 "sidePanel_settings.createMaterialDialogueTitle"));
             createMaterialDialogue.setContent(createMaterialPage);
             saveMaterialAction = createMaterialDialogue.addButton(
-                DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Save"),
+                Lookup.i18n("genericFirstLetterCapitalised.Save"),
                 materialDetailsController.
                 getProfileNameInvalidProperty());
             cancelMaterialSaveAction = createMaterialDialogue.addButton(
-                DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Cancel"));
+                Lookup.i18n("genericFirstLetterCapitalised.Cancel"));
 
         } catch (Exception ex)
         {
@@ -201,21 +200,20 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         {
             FXMLLoader createProfilePageLoader = new FXMLLoader(getClass().getResource(
                 ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetails.fxml"),
-                                                                DisplayManager.
-                                                                getLanguageBundle());
+                                                                Lookup.getLanguageBundle());
             createProfilePage = createProfilePageLoader.load();
             profileDetailsController = createProfilePageLoader.getController();
             profileDetailsController.showButtons(false);
 
-            createProfileDialogue = new ModalDialog(DisplayManager.getLanguageBundle().getString(
+            createProfileDialogue = new ModalDialog(Lookup.i18n(
                 "sidePanel_settings.createProfileDialogueTitle"));
             createProfileDialogue.setContent(createProfilePage);
             saveProfileAction = createProfileDialogue.addButton(
-                DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Save"),
+                Lookup.i18n("genericFirstLetterCapitalised.Save"),
                 profileDetailsController.
                 getProfileNameInvalidProperty());
             cancelProfileSaveAction = createProfileDialogue.addButton(
-                DisplayManager.getLanguageBundle().getString("genericFirstLetterCapitalised.Cancel"));
+                Lookup.i18n("genericFirstLetterCapitalised.Cancel"));
         } catch (Exception ex)
         {
             steno.error("Failed to load profile creation page");

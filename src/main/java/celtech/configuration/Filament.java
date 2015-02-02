@@ -804,9 +804,9 @@ public class Filament implements Serializable, Cloneable
 //                                    public void run()
 //                                    {
 //                                        Notifier.showInformationNotification(
-//                                            DisplayManager.getLanguageBundle().getString(
+//                                            Lookup.i18n(
 //                                                "notification.reelDataUpdatedTitle"),
-//                                            DisplayManager.getLanguageBundle().getString(
+//                                            Lookup.i18n(
 //                                                "notification.noActionRequired"));
 //                                    }
 //                                });

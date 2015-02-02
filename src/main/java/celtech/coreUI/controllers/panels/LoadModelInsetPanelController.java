@@ -5,6 +5,7 @@
  */
 package celtech.coreUI.controllers.panels;
 
+import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.ProjectMode;
@@ -54,7 +55,6 @@ public class LoadModelInsetPanelController implements Initializable
 
     private final FileChooser modelFileChooser = new FileChooser();
     private DisplayManager displayManager = null;
-    private ResourceBundle i18nBundle = null;
     private static final Stenographer steno = StenographerFactory.getStenographer(LoadModelInsetPanelController.class.getName());
 
     @FXML
@@ -97,13 +97,13 @@ public class LoadModelInsetPanelController implements Initializable
             switch (projectMode)
             {
                 case NONE:
-                    descriptionOfFile = i18nBundle.getString("dialogs.anyFileChooserDescription");
+                    descriptionOfFile = Lookup.i18n("dialogs.anyFileChooserDescription");
                     break;
                 case MESH:
-                    descriptionOfFile = i18nBundle.getString("dialogs.meshFileChooserDescription");
+                    descriptionOfFile = Lookup.i18n("dialogs.meshFileChooserDescription");
                     break;
                 case GCODE:
-                    descriptionOfFile = i18nBundle.getString("dialogs.gcodeFileChooserDescription");
+                    descriptionOfFile = Lookup.i18n("dialogs.gcodeFileChooserDescription");
                     break;
                 default:
                     break;
@@ -144,22 +144,21 @@ public class LoadModelInsetPanelController implements Initializable
     public void initialize(URL location, ResourceBundle resources)
     {
         displayManager = DisplayManager.getInstance();
-        i18nBundle = DisplayManager.getLanguageBundle();
 
-        menu.setTitle(i18nBundle.getString("loadModel.menuTitle"));
+        menu.setTitle(Lookup.i18n("loadModel.menuTitle"));
 
         InsetPanelMenuItem myComputerItem = new InsetPanelMenuItem();
-        myComputerItem.setTitle(i18nBundle.getString("loadModel.myComputer"));
+        myComputerItem.setTitle(Lookup.i18n("loadModel.myComputer"));
 
         InsetPanelMenuItem myMiniFactoryItem = new InsetPanelMenuItem();
-        myMiniFactoryItem.setTitle(i18nBundle.getString("loadModel.myMiniFactory"));
+        myMiniFactoryItem.setTitle(Lookup.i18n("loadModel.myMiniFactory"));
 
         menu.addMenuItem(myComputerItem);
         menu.addMenuItem(myMiniFactoryItem);
 
-        modelFileChooser.setTitle(i18nBundle.getString("dialogs.modelFileChooser"));
+        modelFileChooser.setTitle(Lookup.i18n("dialogs.modelFileChooser"));
         modelFileChooser.getExtensionFilters().addAll(
-            new FileChooser.ExtensionFilter(i18nBundle.getString("dialogs.modelFileChooserDescription"), ApplicationConfiguration.getSupportedFileExtensionWildcards(ProjectMode.NONE)));
+            new FileChooser.ExtensionFilter(Lookup.i18n("dialogs.modelFileChooserDescription"), ApplicationConfiguration.getSupportedFileExtensionWildcards(ProjectMode.NONE)));
 
         ApplicationStatus.getInstance().modeProperty().addListener((ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
         {

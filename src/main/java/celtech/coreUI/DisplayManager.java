@@ -384,7 +384,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
         this.mainStage = mainStage;
         mainStage.setTitle(applicationName + " - "
             + ApplicationConfiguration.getApplicationVersion());
-        ApplicationConfiguration.setTitleAndVersion(getLanguageBundle().getString(
+        ApplicationConfiguration.setTitleAndVersion(Lookup.i18n(
             "application.title")
             + " - " + ApplicationConfiguration.getApplicationVersion());
 
@@ -449,7 +449,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
         {
             FXMLLoader printerStatusPageLoader = new FXMLLoader(getClass().getResource(
                 ApplicationConfiguration.fxmlResourcePath
-                + "PrinterStatusPage.fxml"), getLanguageBundle());
+                + "PrinterStatusPage.fxml"), Lookup.getLanguageBundle());
             AnchorPane printerStatusPage = printerStatusPageLoader.load();
             PrinterStatusPageController printerStatusPageController = printerStatusPageLoader.
                 getController();
@@ -457,10 +457,10 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 configure(slideoutAndProjectHolder.getProjectTabPaneHolder());
 
             printerStatusTab = new Tab();
-            printerStatusTab.setText(getLanguageBundle().getString("printerStatusTabTitle"));
+            printerStatusTab.setText(Lookup.i18n("printerStatusTabTitle"));
             FXMLLoader printerStatusPageLabelLoader = new FXMLLoader(getClass().getResource(
                 ApplicationConfiguration.fxmlResourcePath
-                + "infoScreenIndicator.fxml"), getLanguageBundle());
+                + "infoScreenIndicator.fxml"), Lookup.getLanguageBundle());
             VBox printerStatusLabelGroup = printerStatusPageLabelLoader.load();
             infoScreenIndicatorController = printerStatusPageLabelLoader.getController();
             printerStatusTab.setGraphic(printerStatusLabelGroup);
@@ -544,7 +544,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
         {
             URL menuStripURL = getClass().getResource(ApplicationConfiguration.fxmlPanelResourcePath
                 + "LayoutStatusMenuStrip.fxml");
-            FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, getLanguageBundle());
+            FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, Lookup.getLanguageBundle());
             VBox menuStripControls = (VBox) menuStripLoader.load();
             layoutStatusMenuStripController = menuStripLoader.getController();
             menuStripControls.prefWidthProperty().bind(slideoutAndProjectHolder.widthProperty());
@@ -635,7 +635,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             if (fxmlFileName != null)
             {
                 steno.debug("About to load inset panel fxml: " + fxmlFileName);
-                FXMLLoader insetPanelLoader = new FXMLLoader(fxmlFileName, getLanguageBundle());
+                FXMLLoader insetPanelLoader = new FXMLLoader(fxmlFileName, Lookup.getLanguageBundle());
                 Pane insetPanel = (Pane) insetPanelLoader.load();
                 Initializable insetPanelController = insetPanelLoader.getController();
                 insetPanel.setId(mode.name());
@@ -660,7 +660,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
             {
                 URL fxmlFileName = getClass().getResource(mode.getSidePanelFXMLName());
                 steno.debug("About to load side panel fxml: " + fxmlFileName);
-                FXMLLoader sidePanelLoader = new FXMLLoader(fxmlFileName, getLanguageBundle());
+                FXMLLoader sidePanelLoader = new FXMLLoader(fxmlFileName, Lookup.getLanguageBundle());
                 sidePanel = (HBox) sidePanelLoader.load();
                 sidePanelController = sidePanelLoader.getController();
                 sidePanel.setId(mode.name());
@@ -700,7 +700,7 @@ public class DisplayManager implements EventHandler<KeyEvent>
                 URL fxmlSlideOutFileName = getClass().getResource(mode.getSlideOutFXMLName());
                 steno.debug("About to load slideout fxml: "
                     + fxmlSlideOutFileName);
-                FXMLLoader slideOutLoader = new FXMLLoader(fxmlSlideOutFileName, getLanguageBundle());
+                FXMLLoader slideOutLoader = new FXMLLoader(fxmlSlideOutFileName, Lookup.getLanguageBundle());
                 slideOut = (HBox) slideOutLoader.load();
                 slideOutController = slideOutLoader.getController();
                 sidePanelControllers.get(mode).configure(slideOutController);
@@ -749,15 +749,6 @@ public class DisplayManager implements EventHandler<KeyEvent>
     public static Stage getMainStage()
     {
         return mainStage;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public static ResourceBundle getLanguageBundle()
-    {
-        return Lookup.getApplicationEnvironment().getLanguageBundle();
     }
 
     /**

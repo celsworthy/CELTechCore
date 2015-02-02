@@ -229,7 +229,7 @@ public class MaintenancePanelController implements Initializable
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        i18nBundle = DisplayManager.getLanguageBundle();
+        i18nBundle = Lookup.getLanguageBundle();
 
         Platform.runLater(new Runnable()
         {
@@ -243,10 +243,10 @@ public class MaintenancePanelController implements Initializable
 
         currentFirmwareField.setStyle("-fx-font-weight: bold;");
 
-        gcodeFileChooser.setTitle(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodeFileChooserTitle"));
+        gcodeFileChooser.setTitle(Lookup.i18n("maintenancePanel.gcodeFileChooserTitle"));
         gcodeFileChooser.getExtensionFilters()
             .addAll(
-                new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodeFileDescription"), "*.gcode"));
+                new FileChooser.ExtensionFilter(Lookup.i18n("maintenancePanel.gcodeFileDescription"), "*.gcode"));
 
         gcodePrintService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
         {
@@ -256,12 +256,12 @@ public class MaintenancePanelController implements Initializable
                 GCodePrintResult result = (GCodePrintResult) (t.getSource().getValue());
                 if (result.isSuccess())
                 {
-                    Notifier.showInformationNotification(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodePrintSuccessTitle"),
-                                                         DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodePrintSuccessMessage"));
+                    Notifier.showInformationNotification(Lookup.i18n("maintenancePanel.gcodePrintSuccessTitle"),
+                                                         Lookup.i18n("maintenancePanel.gcodePrintSuccessMessage"));
                 } else
                 {
-                    Notifier.showErrorNotification(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodePrintFailedTitle"),
-                                                   DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodePrintFailedMessage"));
+                    Notifier.showErrorNotification(Lookup.i18n("maintenancePanel.gcodePrintFailedTitle"),
+                                                   Lookup.i18n("maintenancePanel.gcodePrintFailedMessage"));
 
                     steno.warning("In gcode print succeeded but with failure flag");
                 }
@@ -273,15 +273,15 @@ public class MaintenancePanelController implements Initializable
             @Override
             public void handle(WorkerStateEvent t)
             {
-                Notifier.showErrorNotification(DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodePrintFailedTitle"),
-                                               DisplayManager.getLanguageBundle().getString("maintenancePanel.gcodePrintFailedMessage"));
+                Notifier.showErrorNotification(Lookup.i18n("maintenancePanel.gcodePrintFailedTitle"),
+                                               Lookup.i18n("maintenancePanel.gcodePrintFailedMessage"));
             }
         });
 
-        firmwareFileChooser.setTitle(DisplayManager.getLanguageBundle().getString("maintenancePanel.firmwareFileChooserTitle"));
+        firmwareFileChooser.setTitle(Lookup.i18n("maintenancePanel.firmwareFileChooserTitle"));
         firmwareFileChooser.getExtensionFilters()
             .addAll(
-                new FileChooser.ExtensionFilter(DisplayManager.getLanguageBundle().getString("maintenancePanel.firmwareFileDescription"), "*.bin"));
+                new FileChooser.ExtensionFilter(Lookup.i18n("maintenancePanel.firmwareFileDescription"), "*.bin"));
 
         firmwareLoadService.setOnSucceeded((WorkerStateEvent t) ->
         {

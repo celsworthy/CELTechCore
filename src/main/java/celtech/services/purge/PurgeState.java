@@ -1,6 +1,6 @@
 package celtech.services.purge;
 
-import celtech.coreUI.DisplayManager;
+import celtech.Lookup;
 
 /**
  *
@@ -88,7 +88,7 @@ public enum PurgeState
             return "";
         } else
         {
-            return DisplayManager.getLanguageBundle().getString(stepTitleResource);
+            return Lookup.i18n(stepTitleResource);
         }
     }
 
@@ -104,7 +104,7 @@ public enum PurgeState
             return "";
         } else
         {
-            return DisplayManager.getLanguageBundle().getString(stepTitleResource + suffix);
+            return Lookup.i18n(stepTitleResource + suffix);
         }
     }
 
@@ -119,7 +119,7 @@ public enum PurgeState
             return "";
         } else
         {
-            return DisplayManager.getLanguageBundle().getString(stepInstructionResource);
+            return Lookup.i18n(stepInstructionResource);
         }
     }
 
@@ -135,7 +135,7 @@ public enum PurgeState
             return "";
         } else
         {
-            return DisplayManager.getLanguageBundle().getString(stepInstructionResource + suffix);
+            return Lookup.i18n(stepInstructionResource + suffix);
         }
     }
 }
