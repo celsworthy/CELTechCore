@@ -42,67 +42,67 @@ import libertysystems.stenographer.StenographerFactory;
 public class PrinterStatusSidePanelController implements Initializable, SidePanelManager,
     PrinterListChangesListener
 {
-
+    
     private final Stenographer steno = StenographerFactory.getStenographer(
         PrinterStatusSidePanelController.class.getName());
-
+    
     @FXML
     private MaterialComponent material1;
-
+    
     @FXML
     private MaterialComponent material2;
-
+    
     @FXML
     private HBox materialContainer1;
-
+    
     @FXML
     private HBox materialContainer2;
-
+    
     @FXML
     private HBox temperatureChartXLabels;
-
+    
     @FXML
     private GridPane legendContainer;
-
+    
     @FXML
     protected LineChart<Number, Number> temperatureChart;
-
+    
     @FXML
     private GridPane printerStatusGrid;
-
+    
     @FXML
     private NumberAxis temperatureAxis;
     @FXML
     private NumberAxis timeAxis;
-
+    
     @FXML
     private Label legendNozzle;
-
+    
     @FXML
     private Label legendBed;
-
+    
     @FXML
     private Label legendAmbient;
-
+    
     @FXML
     private Slider speedMultiplierSlider;
-
+    
     @FXML
     private HBox speedSliderHBox;
-
+    
     private PrinterIDDialog printerIDDialog = null;
-
+    
     private Printer selectedPrinter = null;
     private final Map<Printer, PrinterComponent> printerComponentsByPrinter = new HashMap<>();
-
+    
     private final int MAX_DATA_POINTS = 210;
-
+    
     private final ObservableList<Printer> connectedPrinters = Lookup.getConnectedPrinters();
-
+    
     private LineChart.Series<Number, Number> currentAmbientTemperatureHistory = null;
-
+    
     private ChartManager chartManager;
-
+    
     private final ListChangeListener<XYChart.Data<Number, Number>> graphDataPointChangeListener = new ListChangeListener<XYChart.Data<Number, Number>>()
     {
         @Override
@@ -124,13 +124,14 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             }
         }
     };
-
+    
     private final PrinterColourMap colourMap = PrinterColourMap.getInstance();
-
+    
     private final ChangeListener<Number> speedMultiplierListener = new ChangeListener<Number>()
     {
         @Override
-        public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+        public void changed(ObservableValue<? extends Number> observable, Number oldValue,
+            Number newValue)
         {
             try
             {
@@ -141,7 +142,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             }
         }
     };
-
+    
     private final ChangeListener<Number> feedRateChangeListener = new ChangeListener<Number>()
     {
         @Override
@@ -162,41 +163,41 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     public void initialize(URL url, ResourceBundle rb)
     {
         chartManager = new ChartManager(temperatureChart);
-
+        
         printerIDDialog = new PrinterIDDialog();
-
+        
         materialContainer2.setVisible(false);
         speedSliderHBox.setVisible(false);
-
+        
         initialiseTemperatureChart();
         initialisePrinterStatusGrid();
         controlDetailsVisibility();
-
+        
         Lookup.getPrinterListChangesNotifier().addListener(this);
-
+        
     }
-
+    
     private void initialiseTemperatureChart()
     {
         timeAxis = new NumberAxis(0, MAX_DATA_POINTS, 30);
         timeAxis.setForceZeroInRange(false);
         timeAxis.setAutoRanging(true);
-
+        
         temperatureAxis = new NumberAxis();
         temperatureAxis.setAutoRanging(false);
-
+        
         temperatureChart.setAnimated(false);
         temperatureChart.setLegendVisible(false);
         temperatureChart.setLegendSide(Side.RIGHT);
-
+        
         temperatureChart.setVisible(false);
     }
-
+    
     private void initialisePrinterStatusGrid()
     {
         clearAndAddAllPrintersToGrid();
     }
-
+    
     private void clearAndAddAllPrintersToGrid()
     {
         removeAllPrintersFromGrid();
@@ -254,7 +255,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         printerComponent.setSize(size);
         printerStatusGrid.add(printerComponent, column, row);
     }
-
+    
     private void removeAllPrintersFromGrid()
     {
         for (Printer printer : connectedPrinters)
@@ -265,7 +266,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     }
 
     /**
-     * Remove the given printer from the display. Update the selected printer to one of the remaining printers.
+     * Remove the given printer from the display. Update the selected printer to one of the
+     * remaining printers.
      */
     private void removePrinter(Printer printer)
     {
@@ -304,14 +306,14 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             {
                 unbindHeadProperties(selectedPrinter.headProperty().get());
             }
-
+            
             selectedPrinter.reelsProperty().entrySet().stream().forEach(
                 entry ->
                 {
                     unbindReelProperties(entry.getKey(), entry.getValue());
                 });
         }
-
+        
         if (printer != null)
         {
             PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
@@ -322,7 +324,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             {
                 bindHeadProperties(printer.headProperty().get());
             }
-
+            
             printer.reelsProperty().entrySet().stream().forEach(
                 entry ->
                 {
@@ -331,12 +333,13 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                 });
         }
         controlDetailsVisibility();
-
+        
         selectedPrinter = printer;
     }
 
     /**
-     * This is called when the user clicks on the printer component for the given printer, and handles click (select printer) and double-click (go to edit printer details).
+     * This is called when the user clicks on the printer component for the given printer, and
+     * handles click (select printer) and double-click (go to edit printer details).
      *
      * @param event
      */
@@ -363,10 +366,11 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             PrinterIdentity printerIdentity = printer.getPrinterIdentity();
             printerIDDialog.setChosenDisplayColour(colourMap.printerToDisplayColour(
                 printerIdentity.printerColourProperty().get()));
-            printerIDDialog.setChosenPrinterName(printerIdentity.printerFriendlyNameProperty().get());
-
+            printerIDDialog.
+                setChosenPrinterName(printerIdentity.printerFriendlyNameProperty().get());
+            
             boolean okPressed = printerIDDialog.show();
-
+            
             if (okPressed)
             {
                 try
@@ -383,7 +387,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     }
 
     /**
-     * Create the PrinterComponent for the given printer and set up any listeners on component events.
+     * Create the PrinterComponent for the given printer and set up any listeners on component
+     * events.
      */
     private PrinterComponent createPrinterComponentForPrinter(Printer printer)
     {
@@ -405,77 +410,83 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     {
         printerStatusGrid.getChildren().remove(printerComponent);
     }
-
+    
     private void bindDetails(Printer printer)
     {
         if (selectedPrinter != null)
         {
             unbindPrinter(selectedPrinter);
         }
-
+        
         if (printer != null)
         {
             bindPrinter(printer);
         }
     }
-
+    
     private void bindPrinter(Printer printer)
     {
         PrinterAncillarySystems ancillarySystems = printer.getPrinterAncillarySystems();
         currentAmbientTemperatureHistory = ancillarySystems.getAmbientTemperatureHistory();
-
+        
         chartManager.setLegendLabels(legendNozzle, legendBed, legendAmbient);
-
+        
         chartManager.setAmbientData(ancillarySystems.getAmbientTemperatureHistory());
         chartManager.setBedData(ancillarySystems.getBedTemperatureHistory());
         chartManager.setAmbientTemperatureProperty(ancillarySystems.ambientTemperatureProperty());
         chartManager.setBedTemperatureProperty(ancillarySystems.bedTemperatureProperty());
-
+        
         chartManager.setTargetAmbientTemperatureProperty(
             ancillarySystems.ambientTargetTemperatureProperty());
         chartManager.setBedHeaterModeProperty(ancillarySystems.bedHeaterModeProperty());
-        chartManager.setTargetBedTemperatureProperty(ancillarySystems.bedTargetTemperatureProperty());
-        chartManager.setTargetBedFirstLayerTemperatureProperty(ancillarySystems.bedFirstLayerTargetTemperatureProperty());
-
+        chartManager.
+            setTargetBedTemperatureProperty(ancillarySystems.bedTargetTemperatureProperty());
+        chartManager.setTargetBedFirstLayerTemperatureProperty(ancillarySystems.
+            bedFirstLayerTargetTemperatureProperty());
+        
         speedSliderHBox.setVisible(printer.canChangeFilamentInfoProperty().get());
         speedSliderHBox.visibleProperty().bind(printer.canChangeFilamentInfoProperty());
-        speedMultiplierSlider.setValue(printer.getPrinterAncillarySystems().feedRateMultiplierProperty().get());
+        speedMultiplierSlider.setValue(printer.getPrinterAncillarySystems().
+            feedRateMultiplierProperty().get());
         speedMultiplierSlider.valueProperty().addListener(speedMultiplierListener);
-
-        materialContainer2.visibleProperty().bind(printer.getPrinterAncillarySystems().dualReelAdaptorPresentProperty());
-
-        printer.getPrinterAncillarySystems().feedRateMultiplierProperty().addListener(feedRateChangeListener);
+        
+        materialContainer2.visibleProperty().bind(printer.getPrinterAncillarySystems().
+            dualReelAdaptorPresentProperty());
+        
+        printer.getPrinterAncillarySystems().feedRateMultiplierProperty().addListener(
+            feedRateChangeListener);
     }
-
+    
     private void unbindPrinter(Printer printer)
     {
         if (printer.headProperty().get() != null)
         {
             unbindHeadProperties(printer.headProperty().get());
         }
-
+        
         printer.reelsProperty().entrySet().stream().forEach(
             entry ->
             {
                 unbindReelProperties(entry.getKey(), entry.getValue());
             });
-
+        
         chartManager.clearAmbientData();
         chartManager.clearBedData();
         chartManager.clearLegendLabels();
         currentAmbientTemperatureHistory = null;
-
+        
         speedSliderHBox.visibleProperty().unbind();
         speedSliderHBox.setVisible(false);
         speedMultiplierSlider.valueProperty().removeListener(speedMultiplierListener);
-
+        
         materialContainer2.visibleProperty().unbind();
-
-        printer.getPrinterAncillarySystems().feedRateMultiplierProperty().removeListener(feedRateChangeListener);
+        
+        printer.getPrinterAncillarySystems().feedRateMultiplierProperty().removeListener(
+            feedRateChangeListener);
     }
-
+    
     private ChangeListener<Object> reelListener;
-
+    
     private void unbindReelProperties(int reelNumber, Reel reel)
     {
         if (reel != null)
@@ -487,7 +498,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             reel.materialProperty().removeListener(reelListener);
         }
     }
-
+    
     private void bindReelProperties(int reelNumber, Reel reel)
     {
         if (reel != null)
@@ -503,24 +514,27 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             reel.materialProperty().addListener(reelListener);
         }
     }
-
+    
     private void unbindHeadProperties(Head head)
     {
-        chartManager.clearNozzleData();
+        head.getNozzleHeaters().get(0).getNozzleTemperatureHistory().getData().removeListener(
+            graphDataPointChangeListener);
+        chartManager.removeAllNozzles();
     }
-
+    
     private void bindHeadProperties(Head head)
     {
         head.getNozzleHeaters().get(0).getNozzleTemperatureHistory().getData().addListener(
             graphDataPointChangeListener);
-
-        chartManager.setNozzleTemperatureProperty(head.getNozzleHeaters().get(0).nozzleTemperatureProperty());
-        chartManager.setNozzleData(head.getNozzleHeaters().get(0).getNozzleTemperatureHistory());
-        chartManager.setTargetNozzleTemperatureProperty(
-            head.getNozzleHeaters().get(0).nozzleTargetTemperatureProperty());
-        chartManager.setTargetFirstLayerNozzleTemperatureProperty(
-            head.getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty());
-        chartManager.setNozzleHeaterModeProperty(head.getNozzleHeaters().get(0).heaterModeProperty());
+        
+        head.getNozzleHeaters().forEach(heater ->
+        {
+            chartManager.addNozzle(heater.getNozzleTemperatureHistory(),
+                                   heater.heaterModeProperty(),
+                                   heater.nozzleTargetTemperatureProperty(),
+                                   heater.nozzleFirstLayerTargetTemperatureProperty(),
+                                   heater.nozzleTemperatureProperty());
+        });
     }
 
     /**
@@ -542,23 +556,23 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         }
 //            material1.showReelNotFormatted();
     }
-
+    
     private void controlDetailsVisibility()
     {
         boolean visible = connectedPrinters.size() > 0;
-
+        
         temperatureChart.setVisible(visible);
         temperatureChartXLabels.setVisible(visible);
         materialContainer1.setVisible(visible);
-
+        
         legendContainer.setVisible(visible);
     }
-
+    
     @Override
     public void configure(Initializable slideOutController)
     {
     }
-
+    
     @Override
     public void whenPrinterAdded(Printer printer)
     {
@@ -568,7 +582,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         updateReelMaterial(0, null);
         updateReelMaterial(1, null);
     }
-
+    
     @Override
     public void whenPrinterRemoved(Printer printer)
     {
@@ -577,7 +591,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         selectOnePrinter();
         controlDetailsVisibility();
     }
-
+    
     @Override
     public void whenHeadAdded(Printer printer)
     {
@@ -587,7 +601,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             bindHeadProperties(head);
         }
     }
-
+    
     @Override
     public void whenHeadRemoved(Printer printer, Head head)
     {
@@ -596,7 +610,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             unbindHeadProperties(head);
         }
     }
-
+    
     @Override
     public void whenReelAdded(Printer printer, int reelIndex)
     {
@@ -607,7 +621,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             updateReelMaterial(reelIndex, reel);
         }
     }
-
+    
     @Override
     public void whenReelRemoved(Printer printer, Reel reel, int reelNumber)
     {
@@ -617,10 +631,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             updateReelMaterial(reelNumber, null);
         }
     }
-
+    
     @Override
     public void whenReelChanged(Printer printer, Reel reel)
     {
     }
-
+    
 }

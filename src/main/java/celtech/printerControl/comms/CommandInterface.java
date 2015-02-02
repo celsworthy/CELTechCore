@@ -47,7 +47,7 @@ public abstract class CommandInterface extends Thread
     protected boolean suppressPrinterIDChecks = false;
     protected int sleepBetweenStatusChecks = 1000;
     private boolean loadingFirmware = false;
-
+    
     /**
      *
      * @param controlInterface
