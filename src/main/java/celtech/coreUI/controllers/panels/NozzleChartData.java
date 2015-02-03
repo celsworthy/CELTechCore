@@ -102,6 +102,13 @@ public class NozzleChartData
             this.nozzleFirstLayerTargetTemperatureProperty.removeListener(
                 nozzleFirstLayerTargetTemperatureListener);
         }
+
+        if (this.nozzleTemperatureProperty != null)
+        {
+            nozzleTemperatureProperty.removeListener(nozzleTemperatureListener);
+        }
+        
+        nozzleReadout.setText("");
     }
 
     private void updateNozzleTargetPoint()

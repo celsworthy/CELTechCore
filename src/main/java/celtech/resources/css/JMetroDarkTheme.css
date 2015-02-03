@@ -989,9 +989,9 @@
 .default-color5.chart-series-line { -fx-stroke: graph_line_red; -fx-stroke-width: 3;}
 */
 
-.default-color3.chart-line-symbol {visibility: hidden;}
+/*.default-color3.chart-line-symbol {visibility: hidden;}
 .default-color4.chart-line-symbol {visibility: hidden;}
-.default-color5.chart-line-symbol {visibility: hidden;}
+.default-color5.chart-line-symbol {visibility: hidden;}*/
 
 /*
 .default-color0.chart-line-symbol {  solid triangle 

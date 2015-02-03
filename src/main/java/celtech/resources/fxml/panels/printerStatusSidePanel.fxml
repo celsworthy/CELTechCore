@@ -199,7 +199,7 @@
                         <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                     <children>
-                        <Label fx:id="legendNozzle" text="N">
+                        <Label fx:id="legendNozzle" text="">
                             <styleClass>
                                 <String fx:value="graph-red" />
                                 <String fx:value="temperatureChartLegend" />
