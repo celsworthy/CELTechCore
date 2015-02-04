@@ -500,6 +500,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 }
             }
             
+            PrinterUtils.waitOnBusy(this, cancellable);            
+            
             setPrinterStatus(PrinterStatus.REMOVING_HEAD);
 
             transmitDirectGCode(GCodeConstants.carriageAbsoluteMoveMode, false);
