@@ -22,12 +22,22 @@ import javafx.scene.text.Text;
  */
 public class MaterialComponent extends AnchorPane
 {
+    
+    public enum ReelType {
+        ROBOX, GEARS, SOLID;
+    }
 
     @FXML
     private Text reelNumberMaterial;
 
     @FXML
-    private SVGPath reel1SVG;
+    private SVGPath reelSVGRobox;
+    
+    @FXML
+    private SVGPath reelSVGGears;
+    
+    @FXML
+    private SVGPath reelSVGSolid;    
 
     @FXML
     private Text materialColour;
@@ -54,6 +64,26 @@ public class MaterialComponent extends AnchorPane
         {
             throw new RuntimeException(exception);
         }
+        
+        setReelType(ReelType.SOLID);
+        
+    }
+    
+    public void setReelType(ReelType reelType) {
+        reelSVGRobox.setVisible(false);
+        reelSVGGears.setVisible(false);
+        reelSVGSolid.setVisible(false);
+        switch (reelType) {
+            case ROBOX:
+                reelSVGRobox.setVisible(true);
+                break;
+            case GEARS: 
+                reelSVGGears.setVisible(true);
+                break;
+            case SOLID: 
+                reelSVGSolid.setVisible(true);                
+                break;
+        }
     }
 
     public void setMaterial(int reelNumber, MaterialType materialType, String materialColourString,
@@ -79,7 +109,8 @@ public class MaterialComponent extends AnchorPane
         String colourString = colourToString(colour);
         reelNumberMaterial.setStyle("-fx-fill: #" + colourString + ";");
         materialColourContainer.setStyle("-fx-background-color: #" + colourString + ";");
-        reel1SVG.setStyle("-fx-fill: #" + colourString + ";");
+        setReelColourString(colourString);
+        
 
         materialColour.setText(materialColourString);
         if (colour.getBrightness() < 0.5)
@@ -108,6 +139,13 @@ public class MaterialComponent extends AnchorPane
         String pleaseCreateAProfile = Lookup.i18n("smartReelProgrammer.pleaseCreateAProfile");
         String filamentNotLoadedString = Lookup.i18n("smartReelProgrammer.noReelLoaded");
         showDetails("1:", pleaseCreateAProfile, filamentNotLoadedString, Color.BLACK);
+    }
+
+    private void setReelColourString(String colourString)
+    {
+        reelSVGRobox.setStyle("-fx-fill: #" + colourString + ";");
+        reelSVGGears.setStyle("-fx-fill: #" + colourString + ";");
+        reelSVGSolid.setStyle("-fx-fill: #" + colourString + ";");
     }
 
 }
