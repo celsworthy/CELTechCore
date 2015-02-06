@@ -4,27 +4,43 @@
 package celtech.coreUI.components.material;
 
 import celtech.Lookup;
+import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
 import java.io.IOException;
 import java.net.URL;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
+import javafx.util.Callback;
 
 /**
  *
  * @author tony
  */
-public class MaterialComponent extends AnchorPane
+public class MaterialComponent extends Pane
 {
-    
-    public enum ReelType {
+
+    public enum ReelType
+    {
+
         ROBOX, GEARS, SOLID;
+    }
+
+    public enum Mode
+    {
+
+        SMARTREEL, CUSTOM;
     }
 
     @FXML
@@ -32,12 +48,12 @@ public class MaterialComponent extends AnchorPane
 
     @FXML
     private SVGPath reelSVGRobox;
-    
+
     @FXML
     private SVGPath reelSVGGears;
-    
+
     @FXML
-    private SVGPath reelSVGSolid;    
+    private SVGPath reelSVGSolid;
 
     @FXML
     private Text materialColour;
@@ -47,6 +63,11 @@ public class MaterialComponent extends AnchorPane
 
     @FXML
     private HBox materialColourContainer;
+
+    @FXML
+    private ComboBox<Filament> cmbMaterials;
+
+    private ObservableList<Filament> availableFilaments = FXCollections.observableArrayList();
 
     public MaterialComponent()
     {
@@ -64,24 +85,61 @@ public class MaterialComponent extends AnchorPane
         {
             throw new RuntimeException(exception);
         }
-        
+
+        availableFilaments.addAll(FilamentContainer.getAppFilamentList());
+        availableFilaments.addAll(FilamentContainer.getUserFilamentList());
+        setComboCellFactory();
+
         setReelType(ReelType.SOLID);
-        
+        setMode(Mode.CUSTOM);
+
     }
-    
-    public void setReelType(ReelType reelType) {
+
+    private void setComboCellFactory()
+    {
+        cmbMaterials.setCellFactory(new Callback<ListView<Filament>, ListCell<Filament>>()
+        {
+
+            @Override
+            public ListCell<Filament> call(ListView<Filament> param)
+            {
+
+                return new FilamentCell();
+            }
+        });
+        cmbMaterials.setItems(availableFilaments);
+    }
+
+    private void setMode(Mode mode)
+    {
+        switch (mode)
+        {
+            case CUSTOM:
+                cmbMaterials.setVisible(true);
+                materialColourContainer.setVisible(false);
+                break;
+            case SMARTREEL:
+                cmbMaterials.setVisible(false);
+                materialColourContainer.setVisible(true);
+                break;
+        }
+    }
+
+    public void setReelType(ReelType reelType)
+    {
         reelSVGRobox.setVisible(false);
         reelSVGGears.setVisible(false);
         reelSVGSolid.setVisible(false);
-        switch (reelType) {
+        switch (reelType)
+        {
             case ROBOX:
                 reelSVGRobox.setVisible(true);
                 break;
-            case GEARS: 
+            case GEARS:
                 reelSVGGears.setVisible(true);
                 break;
-            case SOLID: 
-                reelSVGSolid.setVisible(true);                
+            case SOLID:
+                reelSVGSolid.setVisible(true);
                 break;
         }
     }
@@ -89,7 +147,8 @@ public class MaterialComponent extends AnchorPane
     public void setMaterial(int reelNumber, MaterialType materialType, String materialColourString,
         Color colour, double remainingFilament, double filamentDiameter)
     {
-        String numberMaterial = String.valueOf(reelNumber + 1) + ":" + materialType.getFriendlyName();
+        String numberMaterial = String.valueOf(reelNumber + 1) + ":"
+            + materialType.getFriendlyName();
 
         double remainingLengthMeters = remainingFilament / 1000d;
         double densityKGM2 = materialType.getDensity() * 1000d;
@@ -110,7 +169,6 @@ public class MaterialComponent extends AnchorPane
         reelNumberMaterial.setStyle("-fx-fill: #" + colourString + ";");
         materialColourContainer.setStyle("-fx-background-color: #" + colourString + ";");
         setReelColourString(colourString);
-        
 
         materialColour.setText(materialColourString);
         if (colour.getBrightness() < 0.5)
