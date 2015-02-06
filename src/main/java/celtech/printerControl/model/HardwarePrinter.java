@@ -499,9 +499,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     ejectFilament(extruderIndex, null);
                 }
             }
-            
-            PrinterUtils.waitOnBusy(this, cancellable);            
-            
+
+            PrinterUtils.waitOnBusy(this, cancellable);
+
             setPrinterStatus(PrinterStatus.REMOVING_HEAD);
 
             transmitDirectGCode(GCodeConstants.carriageAbsoluteMoveMode, false);
@@ -2831,6 +2831,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
                     if (ackResponse.isError())
                     {
+                        List<FirmwareError> errorsFound = new ArrayList<>(ackResponse.
+                            getFirmwareErrors());
+
                         try
                         {
                             steno.debug("Clearing errors");
@@ -2842,9 +2845,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
                         if (processErrors)
                         {
-                            List<FirmwareError> errorsFound = new ArrayList<>(ackResponse.
-                                getFirmwareErrors());
-
                             steno.debug(ackResponse.getErrorsAsString());
 
                             errorsFound.stream()

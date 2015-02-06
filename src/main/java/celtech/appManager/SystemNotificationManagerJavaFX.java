@@ -65,7 +65,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     private boolean headNotRecognisedDialogOnDisplay = false;
 
     private boolean reelNotRecognisedDialogOnDisplay = false;
-    
+
     private boolean clearBedDialogOnDisplay = false;
 
     @Override
@@ -100,66 +100,73 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
-            if (!errorDialogOnDisplay)
+            if (error == FirmwareError.B_POSITION_LOST)
             {
-                errorDialogOnDisplay = true;
-
-                setupErrorOptions();
-
-                ChoiceLinkDialogBox errorChoiceBox = new ChoiceLinkDialogBox();
-                errorChoiceBox.setTitle(error.getLocalisedErrorTitle());
-                errorChoiceBox.setMessage(error.getLocalisedErrorMessage());
-                error.getOptions()
-                    .stream()
-                    .forEach(option -> errorChoiceBox.addChoiceLink(errorToButtonMap.get(option)));
-
-                Optional<ChoiceLinkButton> buttonPressed = errorChoiceBox.getUserInput();
-
-                if (buttonPressed.isPresent())
+                showInformationNotification(error.getLocalisedErrorTitle(), error.getLocalisedErrorMessage());
+            } else
+            {
+                if (!errorDialogOnDisplay)
                 {
-                    for (Entry<SystemErrorHandlerOptions, ChoiceLinkButton> mapEntry : errorToButtonMap.
-                        entrySet())
+                    errorDialogOnDisplay = true;
+
+                    setupErrorOptions();
+
+                    ChoiceLinkDialogBox errorChoiceBox = new ChoiceLinkDialogBox();
+                    errorChoiceBox.setTitle(error.getLocalisedErrorTitle());
+                    errorChoiceBox.setMessage(error.getLocalisedErrorMessage());
+                    error.getOptions()
+                        .stream()
+                        .forEach(option -> errorChoiceBox.
+                            addChoiceLink(errorToButtonMap.get(option)));
+
+                    Optional<ChoiceLinkButton> buttonPressed = errorChoiceBox.getUserInput();
+
+                    if (buttonPressed.isPresent())
                     {
-                        if (buttonPressed.get() == mapEntry.getValue())
+                        for (Entry<SystemErrorHandlerOptions, ChoiceLinkButton> mapEntry : errorToButtonMap.
+                            entrySet())
                         {
-                            switch (mapEntry.getKey())
+                            if (buttonPressed.get() == mapEntry.getValue())
                             {
-                                case ABORT:
-                                case OK_ABORT:
-                                    try
-                                    {
-                                        if (printer.canPauseProperty().get())
+                                switch (mapEntry.getKey())
+                                {
+                                    case ABORT:
+                                    case OK_ABORT:
+                                        try
                                         {
-                                            printer.pause();
-                                        }
-                                        printer.cancel(null);
-                                    } catch (PrinterException ex)
-                                    {
-                                        steno.error(
-                                            "Error whilst cancelling print from error dialog");
-                                    }
-                                    break;
-                                case CLEAR_CONTINUE:
-                                case OK_CONTINUE:
-                                    try
-                                    {
-                                        if (printer.canResumeProperty().get())
+                                            if (printer.canPauseProperty().get())
+                                            {
+                                                printer.pause();
+                                            }
+                                            printer.cancel(null);
+                                        } catch (PrinterException ex)
                                         {
-                                            printer.resume();
+                                            steno.error(
+                                                "Error whilst cancelling print from error dialog");
                                         }
-                                    } catch (PrinterException ex)
-                                    {
-                                        steno.error(
-                                            "Error whilst resuming print from error dialog");
-                                    }
-                                    break;
+                                        break;
+                                    case CLEAR_CONTINUE:
+                                    case OK_CONTINUE:
+                                        try
+                                        {
+                                            if (printer.canResumeProperty().get())
+                                            {
+                                                printer.resume();
+                                            }
+                                        } catch (PrinterException ex)
+                                        {
+                                            steno.error(
+                                                "Error whilst resuming print from error dialog");
+                                        }
+                                        break;
+                                }
+                                break;
                             }
-                            break;
                         }
                     }
-                }
 
-                errorDialogOnDisplay = false;
+                    errorDialogOnDisplay = false;
+                }
             }
         });
     }
@@ -849,7 +856,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             });
         }
     }
-    
+
     @Override
     public void askUserToClearBed()
     {
