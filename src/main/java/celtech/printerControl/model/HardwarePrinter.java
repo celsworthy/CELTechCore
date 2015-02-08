@@ -2856,6 +2856,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                                 if (errorList.contains(foundError) || errorList.
                                                 contains(FirmwareError.ALL_ERRORS))
                                                 {
+                                                    steno.info("Error:" + foundError.name()
+                                                        + " passed to " + consumer.toString());
                                                     consumer.consumeError(foundError);
                                                     errorWasConsumed = true;
                                                 }
@@ -2863,12 +2865,22 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
                                         if (!errorWasConsumed)
                                         {
+                                            steno.info("Default action for error:" + foundError.
+                                                name());
                                             systemNotificationManager.processErrorPacketFromPrinter(
                                                 foundError, printer);
                                         }
                                 });
 
                             steno.trace(ackResponse.toString());
+                        } else
+                        {
+                            errorsFound.stream()
+                                .forEach(foundError ->
+                                    {
+                                        steno.info("No action for error:" + foundError.
+                                            name());
+                                });
                         }
                     }
                     break;
