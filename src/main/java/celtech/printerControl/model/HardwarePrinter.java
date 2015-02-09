@@ -499,9 +499,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     ejectFilament(extruderIndex, null);
                 }
             }
-            
-            PrinterUtils.waitOnBusy(this, cancellable);            
-            
+
+            PrinterUtils.waitOnBusy(this, cancellable);
+
             setPrinterStatus(PrinterStatus.REMOVING_HEAD);
 
             transmitDirectGCode(GCodeConstants.carriageAbsoluteMoveMode, false);
@@ -2329,8 +2329,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 + extruderNumber);
         }
 
-        setPrinterStatus(PrinterStatus.EJECTING_FILAMENT);
-
         final Cancellable cancellable = new Cancellable();
 
         new Thread(() ->
@@ -2338,8 +2336,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             boolean success = doEjectFilamentActivity(extruderNumber, cancellable);
 
             Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Filament ejected");
-
-            setPrinterStatus(PrinterStatus.IDLE);
+            
 
         }, "Ejecting filament").start();
 
@@ -2831,6 +2828,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
                     if (ackResponse.isError())
                     {
+                        List<FirmwareError> errorsFound = new ArrayList<>(ackResponse.
+                            getFirmwareErrors());
+
                         try
                         {
                             steno.debug("Clearing errors");
@@ -2842,9 +2842,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
                         if (processErrors)
                         {
-                            List<FirmwareError> errorsFound = new ArrayList<>(ackResponse.
-                                getFirmwareErrors());
-
                             steno.debug(ackResponse.getErrorsAsString());
 
                             errorsFound.stream()
@@ -2856,6 +2853,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                                 if (errorList.contains(foundError) || errorList.
                                                 contains(FirmwareError.ALL_ERRORS))
                                                 {
+                                                    steno.info("Error:" + foundError.name()
+                                                        + " passed to " + consumer.toString());
                                                     consumer.consumeError(foundError);
                                                     errorWasConsumed = true;
                                                 }
@@ -2863,12 +2862,22 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
                                         if (!errorWasConsumed)
                                         {
+                                            steno.info("Default action for error:" + foundError.
+                                                name());
                                             systemNotificationManager.processErrorPacketFromPrinter(
                                                 foundError, printer);
                                         }
                                 });
 
                             steno.trace(ackResponse.toString());
+                        } else
+                        {
+                            errorsFound.stream()
+                                .forEach(foundError ->
+                                    {
+                                        steno.info("No action for error:" + foundError.
+                                            name());
+                                });
                         }
                     }
                     break;
