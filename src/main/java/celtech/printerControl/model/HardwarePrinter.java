@@ -2329,8 +2329,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 + extruderNumber);
         }
 
-        setPrinterStatus(PrinterStatus.EJECTING_FILAMENT);
-
         final Cancellable cancellable = new Cancellable();
 
         new Thread(() ->
@@ -2338,8 +2336,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             boolean success = doEjectFilamentActivity(extruderNumber, cancellable);
 
             Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Filament ejected");
-
-            setPrinterStatus(PrinterStatus.IDLE);
+            
 
         }, "Ejecting filament").start();
 
