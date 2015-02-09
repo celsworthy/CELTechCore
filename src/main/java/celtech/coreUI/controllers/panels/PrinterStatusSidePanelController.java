@@ -310,7 +310,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             selectedPrinter.reelsProperty().entrySet().stream().forEach(
                 entry ->
                 {
-                    unbindReelProperties(entry.getKey(), entry.getValue());
+                    unbindReelExtruderProperties(entry.getKey(), entry.getValue());
                 });
         }
         
@@ -328,8 +328,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             printer.reelsProperty().entrySet().stream().forEach(
                 entry ->
                 {
-                    bindReelProperties(entry.getKey(), entry.getValue());
-                    updateReelMaterial(entry.getKey(), entry.getValue());
+                    bindReelExtruderProperties(entry.getKey(), entry.getValue());
+                    updateReelExtruderMaterial(entry.getKey(), entry.getValue());
                 });
         }
         controlDetailsVisibility();
@@ -467,7 +467,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         printer.reelsProperty().entrySet().stream().forEach(
             entry ->
             {
-                unbindReelProperties(entry.getKey(), entry.getValue());
+                unbindReelExtruderProperties(entry.getKey(), entry.getValue());
             });
         
         chartManager.clearAmbientData();
@@ -487,7 +487,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     
     private ChangeListener<Object> reelListener;
     
-    private void unbindReelProperties(int reelNumber, Reel reel)
+    private void unbindReelExtruderProperties(int reelNumber, Reel reel)
     {
         if (reel != null)
         {
@@ -499,13 +499,13 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         }
     }
     
-    private void bindReelProperties(int reelNumber, Reel reel)
+    private void bindReelExtruderProperties(int reelNumber, Reel reel)
     {
         if (reel != null)
         {
             reelListener = (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
             {
-                updateReelMaterial(reelNumber, reel);
+                updateReelExtruderMaterial(reelNumber, reel);
             };
             reel.friendlyFilamentNameProperty().addListener(reelListener);
             reel.displayColourProperty().addListener(reelListener);
@@ -540,7 +540,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     /**
      * Update the material component with the appropriate details.
      */
-    private void updateReelMaterial(int reelNumber, Reel reel)
+    private void updateReelExtruderMaterial(int reelNumber, Reel reel)
     {
         MaterialComponent materialComponent = reelNumber == 0 ? material1 : material2;
         if (reel == null)
@@ -554,7 +554,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                                           reel.remainingFilamentProperty().get(),
                                           reel.diameterProperty().get());
         }
-//            material1.showReelNotFormatted();
     }
     
     private void controlDetailsVisibility()
@@ -579,8 +578,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         clearAndAddAllPrintersToGrid();
         selectPrinter(printer);
         controlDetailsVisibility();
-        updateReelMaterial(0, null);
-        updateReelMaterial(1, null);
+        updateReelExtruderMaterial(0, null);
+        updateReelExtruderMaterial(1, null);
     }
     
     @Override
@@ -617,8 +616,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         if (printer == selectedPrinter)
         {
             Reel reel = printer.reelsProperty().get(reelIndex);
-            bindReelProperties(reelIndex, reel);
-            updateReelMaterial(reelIndex, reel);
+            bindReelExtruderProperties(reelIndex, reel);
+            updateReelExtruderMaterial(reelIndex, reel);
         }
     }
     
@@ -627,8 +626,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     {
         if (printer == selectedPrinter)
         {
-            unbindReelProperties(reelNumber, reel);
-            updateReelMaterial(reelNumber, null);
+            unbindReelExtruderProperties(reelNumber, reel);
+            updateReelExtruderMaterial(reelNumber, null);
         }
     }
     

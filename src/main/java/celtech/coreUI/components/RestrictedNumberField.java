@@ -1,7 +1,7 @@
 package celtech.coreUI.components;
 
 import celtech.Lookup;
-import celtech.coreUI.DisplayManager;
+import celtech.configuration.ApplicationEnvironment;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -226,9 +226,14 @@ public class RestrictedNumberField extends TextField
     {
         if (numberFormatter == null)
         {
+            Locale usersLocale = null;
             try
-            {
-                Locale usersLocale = Lookup.getApplicationEnvironment().getAppLocale();
+            {   ApplicationEnvironment applicationEnvironment = Lookup.getApplicationEnvironment();
+            if (applicationEnvironment == null) {
+                usersLocale = Locale.getDefault();
+            } else {
+                usersLocale = applicationEnvironment.getAppLocale();
+            }    
                 numberFormatter = NumberFormat.getInstance(usersLocale);
             } catch (NoClassDefFoundError ex)
             {

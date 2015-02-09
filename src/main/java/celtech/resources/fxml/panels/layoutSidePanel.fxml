@@ -10,7 +10,6 @@
 <?import javafx.scene.shape.*?>
 
 <HBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="300.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.LayoutSidePanelController">
-
     <children>  
         <BorderPane id="border" prefHeight="-1.0" HBox.hgrow="ALWAYS">
             <top>
@@ -92,13 +91,23 @@
                                         </Group>
                                     </graphic>
                                 </Label>
-                                <TableView fx:id="modelDataTableView" editable="false" minWidth="-1.0" prefHeight="300.0" prefWidth="-1.0" tableMenuButtonVisible="false" />
+                                <TableView fx:id="modelDataTableView" editable="false" minWidth="-1.0" prefHeight="200.0" prefWidth="-1.0" tableMenuButtonVisible="false" />
                             </children>
                         </VBox>
-                        
                     </children>
                 </VBox>
             </top>
+            <center>
+                <HBox alignment="CENTER">
+                    <VBox fx:id="materialContainer" BorderPane.alignment="CENTER" spacing="36.0"> 
+                        <children>
+                        </children>
+                        <HBox.margin>
+                            <Insets top="30.0" />
+                        </HBox.margin>
+                    </VBox>
+                </HBox>
+            </center>
             <bottom>
                 <VBox fx:id="selectedItemDetails" prefHeight="-1.0" prefWidth="-1.0" spacing="0.0">
                     <children>
@@ -199,8 +208,8 @@
             </HBox.margin>
         </BorderPane>
     </children>
-   <styleClass>
-      <String fx:value="sidePanel" />
-      <String fx:value="regularFont" />
-   </styleClass>
+    <styleClass>
+        <String fx:value="sidePanel" />
+        <String fx:value="regularFont" />
+    </styleClass>
 </HBox>

@@ -39,11 +39,10 @@ import libertysystems.stenographer.StenographerFactory;
 public class Lookup
 {
 
-    private static Lookup instance;
-    private ApplicationEnvironment applicationEnvironment;
-    private TaskExecutor taskExecutor;
-    private SystemNotificationManager systemNotificationHandler;
-    private final Stenographer steno = StenographerFactory.getStenographer(Lookup.class.getName());
+    private static ApplicationEnvironment applicationEnvironment;
+    private static TaskExecutor taskExecutor;
+    private static SystemNotificationManager systemNotificationHandler;
+    private static final Stenographer steno = StenographerFactory.getStenographer(Lookup.class.getName());
     private static PrinterListChangesNotifier printerListChangesNotifier;
     private static final ObservableList<Printer> connectedPrinters = FXCollections.observableArrayList();
     private static UserPreferences userPreferences;
@@ -63,12 +62,12 @@ public class Lookup
      */
     public static ApplicationEnvironment getApplicationEnvironment()
     {
-        return instance.applicationEnvironment;
+        return applicationEnvironment;
     }
 
     public static String i18n(String stringId)
     {
-        String langString = instance.applicationEnvironment.getLanguageBundle().getString(stringId);
+        String langString = applicationEnvironment.getLanguageBundle().getString(stringId);
         langString = substituteTemplates(langString);
         return langString;
     }
@@ -97,7 +96,7 @@ public class Lookup
 
     public static ResourceBundle getLanguageBundle()
     {
-        return instance.applicationEnvironment.getLanguageBundle();
+        return applicationEnvironment.getLanguageBundle();
     }
 
     /**
@@ -105,10 +104,10 @@ public class Lookup
      */
     public static void setApplicationEnvironment(ApplicationEnvironment applicationEnvironment)
     {
-        instance.applicationEnvironment = applicationEnvironment;
+        applicationEnvironment = applicationEnvironment;
     }
 
-    private Lookup()
+    public static void setupDefaultValues()
     {
         steno.info("Starting AutoMaker - get user preferences...");
         userPreferences = new UserPreferences(UserPreferenceContainer.getUserPreferenceFile());
@@ -156,28 +155,28 @@ public class Lookup
 
     public static void initialise()
     {
-        instance = new Lookup();
+        
     }
 
     public static TaskExecutor getTaskExecutor()
     {
-        return instance.taskExecutor;
+        return taskExecutor;
     }
 
     public static void setTaskExecutor(TaskExecutor taskExecutor)
     {
-        instance.taskExecutor = taskExecutor;
+        taskExecutor = taskExecutor;
     }
 
     public static SystemNotificationManager getSystemNotificationHandler()
     {
-        return instance.systemNotificationHandler;
+        return systemNotificationHandler;
     }
 
     public static void setSystemNotificationHandler(
         SystemNotificationManager systemNotificationHandler)
     {
-        instance.systemNotificationHandler = systemNotificationHandler;
+        systemNotificationHandler = systemNotificationHandler;
     }
 
     public static PrinterListChangesNotifier getPrinterListChangesNotifier()

@@ -11,6 +11,7 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.RestrictedNumberField;
+import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.SelectedModelContainers.SelectedModelContainersListener;
 import celtech.coreUI.visualisation.ThreeDViewManager;
@@ -79,6 +80,9 @@ public class LayoutSidePanelController implements Initializable,
 
     @FXML
     private TableView<ModelContainer> modelDataTableView;
+    
+    @FXML
+    private VBox materialContainer;
 
     private final TableColumn modelNameColumn = new TableColumn();
     private final TableColumn scaleColumn = new TableColumn();
@@ -103,6 +107,9 @@ public class LayoutSidePanelController implements Initializable,
 
     private ListChangeListener selectionListener = null;
     private boolean suppressModelDataTableViewNotifications = false;
+    
+    private MaterialComponent materialComponent0;
+    private MaterialComponent materialComponent1;
 
     @FXML
     void changeToSettings(MouseEvent event)
@@ -171,6 +178,7 @@ public class LayoutSidePanelController implements Initializable,
 
         setUpModelGeometryListeners();
         setUpKeyPressListeners();
+        setupMaterialContainer();
     }
 
     private void setUpModelGeometryListeners()
@@ -738,5 +746,14 @@ public class LayoutSidePanelController implements Initializable,
         populateDepthField(selectedModelDetails.getDepth().get());
         populateXAxisField(selectedModelDetails.getCentreX().get());
         populateYAxisField(selectedModelDetails.getCentreZ().get());
+    }
+
+    private void setupMaterialContainer()
+    {
+        materialComponent0 = new MaterialComponent();
+        materialComponent0.setMode(MaterialComponent.Mode.LAYOUT);
+        materialComponent1 = new MaterialComponent();
+        materialComponent1.setMode(MaterialComponent.Mode.LAYOUT);
+        materialContainer.getChildren().addAll(materialComponent0, materialComponent1);
     }
 }

@@ -12,11 +12,13 @@ import java.io.IOException;
 import java.net.URL;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -40,8 +42,11 @@ public class MaterialComponent extends Pane
     public enum Mode
     {
 
-        SMARTREEL, CUSTOM;
+        STATUS_SMARTREEL, STATUS_CUSTOM, LAYOUT;
     }
+
+    @FXML
+    private AnchorPane anchorPane;
 
     @FXML
     private Text reelNumberMaterial;
@@ -63,6 +68,9 @@ public class MaterialComponent extends Pane
 
     @FXML
     private HBox materialColourContainer;
+
+    @FXML
+    private HBox materialRemainingContainer;
 
     @FXML
     private ComboBox<Filament> cmbMaterials;
@@ -88,14 +96,13 @@ public class MaterialComponent extends Pane
 
         availableFilaments.addAll(FilamentContainer.getAppFilamentList());
         availableFilaments.addAll(FilamentContainer.getUserFilamentList());
-        setComboCellFactory();
+        setupComboBox();
 
-        setReelType(ReelType.SOLID);
-        setMode(Mode.CUSTOM);
+        setMode(Mode.STATUS_SMARTREEL);
 
     }
 
-    private void setComboCellFactory()
+    private void setupComboBox()
     {
         cmbMaterials.setCellFactory(new Callback<ListView<Filament>, ListCell<Filament>>()
         {
@@ -110,19 +117,55 @@ public class MaterialComponent extends Pane
         cmbMaterials.setItems(availableFilaments);
     }
 
-    private void setMode(Mode mode)
+    public void whenMaterialSelected(ActionEvent actionEvent)
+    {
+        Filament selectedMaterial = cmbMaterials.getSelectionModel().getSelectedItem();
+        setMaterial(1, selectedMaterial.getMaterial(), "",
+                    selectedMaterial.getDisplayColourProperty().get(), 0, 0);
+    }
+
+    public void setMode(Mode mode)
     {
         switch (mode)
         {
-            case CUSTOM:
+            case STATUS_CUSTOM:
                 cmbMaterials.setVisible(true);
                 materialColourContainer.setVisible(false);
+                materialRemainingContainer.setVisible(true);
+                showMaterialDetails();
+                setReelType(ReelType.SOLID);
                 break;
-            case SMARTREEL:
+            case STATUS_SMARTREEL:
                 cmbMaterials.setVisible(false);
                 materialColourContainer.setVisible(true);
+                materialRemainingContainer.setVisible(true);
+                showMaterialDetails();
+                setReelType(ReelType.ROBOX);
+                break;
+            case LAYOUT:
+                cmbMaterials.setVisible(true);
+                materialColourContainer.setVisible(true);
+                materialRemainingContainer.setVisible(false);
+                hideMaterialDetails();
+                setReelType(ReelType.ROBOX);
                 break;
         }
+    }
+
+    private void showMaterialDetails()
+    {
+        materialRemainingContainer.setPrefHeight(20);
+        AnchorPane.setTopAnchor(materialRemainingContainer, 100.0);
+        anchorPane.setPrefHeight(130);
+        materialRemaining.setVisible(true);
+    }
+
+    private void hideMaterialDetails()
+    {
+        materialRemainingContainer.setPrefHeight(0);
+        AnchorPane.setTopAnchor(materialRemainingContainer, 90.0);
+        anchorPane.setPrefHeight(95);
+        materialRemaining.setVisible(false);
     }
 
     public void setReelType(ReelType reelType)
