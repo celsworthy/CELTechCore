@@ -5,8 +5,8 @@
  */
 package celtech.appManager;
 
+import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.coreUI.DisplayManager;
 import celtech.printerControl.PrintJob;
 import celtech.utils.SystemUtils;
 import java.io.IOException;
@@ -45,7 +45,7 @@ public class ProjectHeader implements Serializable
     {
         projectUUID = SystemUtils.generate16DigitID();
         Date now = new Date();
-        projectNameProperty = new SimpleStringProperty(DisplayManager.getLanguageBundle().getString("projectLoader.untitled") + formatter.format(now));
+        projectNameProperty = new SimpleStringProperty(Lookup.i18n("projectLoader.untitled") + formatter.format(now));
         projectPath = ApplicationConfiguration.getProjectDirectory();
         lastModifiedDate.set(now);
     }

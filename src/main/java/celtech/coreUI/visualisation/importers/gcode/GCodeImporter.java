@@ -142,7 +142,7 @@ public class GCodeImporter
 //        ArrayList<BatchNode> nodeList = null;
 //        if (!parentTask.isCancelled())
 //        {
-//            parentTask.updateMessageText(DisplayManager.getLanguageBundle().getString("dialogs.gcodeLoadProcessing"));
+//            parentTask.updateMessageText(Lookup.i18n("dialogs.gcodeLoadProcessing"));
 ////            gcodeMeshData = GCodeMeshGenerator.generateMesh(gcodeMetaFile, progressProperty);
 //        }
         if (!parentTask.isCancelled())

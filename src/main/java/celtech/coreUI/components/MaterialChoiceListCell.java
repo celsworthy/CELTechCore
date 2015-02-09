@@ -1,9 +1,9 @@
 package celtech.coreUI.components;
 
+import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.FilamentContainer;
-import celtech.coreUI.DisplayManager;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -41,7 +41,7 @@ public class MaterialChoiceListCell extends ListCell<Filament>
         }
         padlock.setImage(padlockImage);
 
-        createNewFilamentLabel.setText(DisplayManager.getLanguageBundle().getString("sidePanel_settings.createNewMaterial"));
+        createNewFilamentLabel.setText(Lookup.i18n("sidePanel_settings.createNewMaterial"));
         createNewFilamentLabel.setAlignment(Pos.CENTER);
         
         alternateGrid.add(createNewFilamentLabel, 1, 1);

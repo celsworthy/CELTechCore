@@ -1,9 +1,8 @@
 package celtech.services.firmware;
 
-import celtech.coreUI.DisplayManager;
+import celtech.Lookup;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.exceptions.SDCardErrorException;
-import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.printerControl.model.Printer;
 import celtech.utils.SystemUtils;
 import java.io.DataInputStream;
@@ -40,7 +39,7 @@ public class FirmwareLoadTask extends Task<FirmwareLoadResult>
     @Override
     protected FirmwareLoadResult call() throws Exception
     {
-        ResourceBundle languageBundle = DisplayManager.getLanguageBundle();
+        ResourceBundle languageBundle = Lookup.getLanguageBundle();
 
         FirmwareLoadResult returnValue = new FirmwareLoadResult();
 

@@ -1,9 +1,9 @@
 package celtech.coreUI.components;
 
+import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.coreUI.DisplayManager;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -35,7 +35,7 @@ public class ProfileChoiceListCell extends ListCell<SlicerParametersFile>
         }
         padlock.setImage(padlockImage);
         
-        createNewProfileLabel.setText(DisplayManager.getLanguageBundle().getString("sidePanel_settings.createNewProfile"));
+        createNewProfileLabel.setText(Lookup.i18n("sidePanel_settings.createNewProfile"));
         createNewProfileLabel.setAlignment(Pos.CENTER);
         
         grid.setHgap(10);

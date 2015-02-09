@@ -155,7 +155,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         } catch (RoboxCommsException ex)
         {
             steno.error("Error writing head EEPROM");
-            eepromCommsError.setMessage(DisplayManager.getLanguageBundle().getString(
+            eepromCommsError.setMessage(Lookup.i18n(
                 "eeprom.headWriteError"));
             eepromCommsError.show();
         } catch (ParseException ex)
@@ -184,8 +184,8 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         try
         {
             eepromCommsError = new ModalDialog();
-            eepromCommsError.setTitle(DisplayManager.getLanguageBundle().getString("eeprom.error"));
-            eepromCommsError.addButton(DisplayManager.getLanguageBundle().getString("dialogs.OK"));
+            eepromCommsError.setTitle(Lookup.i18n("eeprom.error"));
+            eepromCommsError.addButton(Lookup.i18n("dialogs.OK"));
 
             setUpWriteEnabledAfterEdits();
 

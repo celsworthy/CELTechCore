@@ -5,6 +5,7 @@
  */
 package celtech.coreUI.components;
 
+import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
@@ -305,7 +306,7 @@ public class ProjectTab extends Tab
                 ApplicationConfiguration.fxmlResourcePath
                 + "GCodeEditorPanel.fxml");
             FXMLLoader gcodeEditorLoader = new FXMLLoader(gcodeEditorURL,
-                                                          DisplayManager.getLanguageBundle());
+                                                          Lookup.getLanguageBundle());
             StackPane gcodeEditor = (StackPane) gcodeEditorLoader.load();
             GCodeEditorPanelController gcodeEditorController = gcodeEditorLoader.getController();
             gcodeEditorController.configure(viewManager.getLoadedModels(),

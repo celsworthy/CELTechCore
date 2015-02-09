@@ -4,7 +4,7 @@
  */
 package celtech.services.modelLoader;
 
-import celtech.coreUI.DisplayManager;
+import celtech.Lookup;
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.visualisation.importers.obj.ObjImporter;
 import celtech.coreUI.visualisation.importers.stl.STLImporter;
@@ -43,7 +43,7 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
         this.modelFilesToLoad = modelFilesToLoad;
         this.relayout = relayout;
         this.targetProjectTab = targetProjectTab;
-        languageBundle = DisplayManager.getLanguageBundle();
+        languageBundle = Lookup.getLanguageBundle();
 
         percentProgress.addListener(new ChangeListener<Number>()
         {

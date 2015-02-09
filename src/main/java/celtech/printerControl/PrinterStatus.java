@@ -20,11 +20,12 @@ public enum PrinterStatus
     REMOVING_HEAD("printerStatus.removingHead"),
     PURGING_HEAD("printerStatus.purging"),
     CANCELLING("printerStatus.cancelling"),
-    EJECTING_FILAMENT("printerStatus.ejectingFilament"),
     OPENING_DOOR("printerStatus.openingDoor"),
     CALIBRATING_NOZZLE_ALIGNMENT("printerStatus.calibratingNozzleAlignment"),
     CALIBRATING_NOZZLE_HEIGHT("printerStatus.calibratingNozzleHeight"),
     CALIBRATING_NOZZLE_OPENING("printerStatus.calibratingNozzleOpening"),
+    LOADING_FILAMENT("printerStatus.loadingFilament"),
+    EJECTING_FILAMENT("printerStatus.ejectingFilament"),
     ERROR("printerStatus.error");
 
     private final String i18nString;

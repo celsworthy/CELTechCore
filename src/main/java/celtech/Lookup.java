@@ -21,6 +21,8 @@ import celtech.utils.tasks.LiveTaskExecutor;
 import celtech.utils.tasks.TaskExecutor;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -66,7 +68,36 @@ public class Lookup
 
     public static String i18n(String stringId)
     {
-        return instance.applicationEnvironment.getLanguageBundle().getString(stringId);
+        String langString = instance.applicationEnvironment.getLanguageBundle().getString(stringId);
+        langString = substituteTemplates(langString);
+        return langString;
+    }
+
+    /**
+     * Strings containing templates (eg *T14) should be substituted with the correct text.
+     */
+    static String substituteTemplates(String langString)
+    {
+        String patternString = ".*\\*T(\\d\\d).*";
+        Pattern pattern = Pattern.compile(patternString);
+        while (true)
+        {
+            Matcher matcher = pattern.matcher(langString);
+            if (matcher.find())
+            {
+                String template = "*T" + matcher.group(1);
+                String templatePattern = "\\*T" + matcher.group(1);
+                langString = langString.replaceAll(templatePattern, i18n(template));
+            } else {
+                break;
+            }
+        }
+        return langString;
+    }
+
+    public static ResourceBundle getLanguageBundle()
+    {
+        return instance.applicationEnvironment.getLanguageBundle();
     }
 
     /**
@@ -100,14 +131,15 @@ public class Lookup
                     appLocale = new Locale(languageElements[0], languageElements[1]);
                     break;
                 case 3:
-                    appLocale = new Locale(languageElements[0], languageElements[1], languageElements[2]);
+                    appLocale = new Locale(languageElements[0], languageElements[1],
+                                           languageElements[2]);
                     break;
                 default:
                     appLocale = Locale.getDefault();
                     break;
             }
         }
-        
+
         steno.info("Starting AutoMaker - loading resources...");
         ResourceBundle i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData",
                                                              appLocale, new UTF8Control());
@@ -142,7 +174,8 @@ public class Lookup
         return instance.systemNotificationHandler;
     }
 
-    public static void setSystemNotificationHandler(SystemNotificationManager systemNotificationHandler)
+    public static void setSystemNotificationHandler(
+        SystemNotificationManager systemNotificationHandler)
     {
         instance.systemNotificationHandler = systemNotificationHandler;
     }
@@ -182,7 +215,8 @@ public class Lookup
         return postProcessorGCodeOutputWriterFactory;
     }
 
-    public static void setPostProcessorOutputWriterFactory(GCodeOutputWriterFactory<GCodeOutputWriter> factory)
+    public static void setPostProcessorOutputWriterFactory(
+        GCodeOutputWriterFactory<GCodeOutputWriter> factory)
     {
         postProcessorGCodeOutputWriterFactory = factory;
     }

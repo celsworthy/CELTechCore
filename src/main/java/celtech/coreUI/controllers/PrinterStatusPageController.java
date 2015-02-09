@@ -4,7 +4,6 @@ import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterColourMap;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.JogButton;
 import celtech.coreUI.visualisation.threed.StaticModelOverlay;
 import celtech.printerControl.PrinterStatus;
@@ -280,7 +279,7 @@ public class PrinterStatusPageController implements Initializable
         fiveDPformatter.setMaximumFractionDigits(5);
         fiveDPformatter.setGroupingUsed(false);
 
-        ResourceBundle i18nBundle = DisplayManager.getLanguageBundle();
+        ResourceBundle i18nBundle = Lookup.getLanguageBundle();
 
         transferringDataString = i18nBundle.getString(
             "PrintQueue.SendingToPrinter");
