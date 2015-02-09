@@ -1993,9 +1993,68 @@ modal-dialogue{
 * Filament choice combo
 */
 
+#cmbMaterials {
+    -fx-font-familty: 'Source Sans Pro Regular';
+}
+
 .filamentSwatchPadding {
     -fx-padding: 0 10 0 10;
 }
+
+// Copied from caspian.css for detailed combo box styling
+/* -------------- CODE FOR THE NON-EDITABLE COMBO-BOX -------------- */
+
+/* ------- MAIN BUTTON ------- */
+#cmbMaterials {
+/*-fx-skin: "com.sun.javafx.scene.control.skin.ComboBoxBaseSkin";*/
+-fx-background-color: white;
+/*-fx-background-radius: 5, 5, 4, 3;
+-fx-background-insets: 0 0 -1 0, 0, 1, 2;*/
+-fx-padding: 0;
+}
+
+#cmbMaterials:hover {
+-fx-color: -fx-hover-base;
+}
+
+/*------- THIS SPECIFIES THE BUTTON COLOR WHEN THE POPUP MENU IS SHOWING -------*/
+#cmbMaterials:showing {
+-fx-color: -fx-pressed-base;
+}
+
+#cmbMaterials:focused {
+/*-fx-background-color: -fx-focus-color, -fx-outer-border, -fx-inner-border, -fx-body-color;
+-fx-background-radius: 6.4, 4, 5, 3;
+-fx-background-insets: -1.4, 0, 1, 2;*/
+}
+
+#cmbMaterials:disabled {
+-fx-opacity: .4;
+}
+
+/* ------- OPEN BUTTON ------- */
+#cmbMaterials .arrow-button {
+-fx-background-color: white;
+/*-fx-background-insets: 0, 1, 2;
+-fx-background-radius: 0 5 5 0, 0 4 4 0, 0 3 3 0;*/
+-fx-padding: 0.5em 0.416667em 0.5em 0.416667em; /* 6 5 6 5 */
+}
+
+/* ------- ARROW* ------- */
+#cmbMaterials .arrow {
+-fx-background-insets: 1 0 -1 0, 0;
+-fx-background-color: -fx-mark-highlight-color, -fx-mark-color;
+-fx-padding: 0.166667em 0.333333em 0.166667em 0.333333em; /* 2 4 2 4 */
+-fx-shape: "M 0 0 h 7 l -3.5 4 z";
+}
+
+/* ------- POPUP MENU ------- */
+/* --- .combo-box .popup-menu, .combo-box .menu-item, .combo-box .popup-menu .menu-item-radio
+all inherit from Menu Control's popup-menu. --- */
+
+
+
+
 
 /**
 * Preferences

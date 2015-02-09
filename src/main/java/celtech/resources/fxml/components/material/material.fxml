@@ -8,7 +8,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<fx:root type="javafx.scene.layout.Pane" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8">
+<fx:root type="javafx.scene.layout.Pane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
     <children>
 <AnchorPane id="AnchorPane" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="130.0" prefWidth="240.0" styleClass="statusPanelChild" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <children>
@@ -18,12 +18,12 @@
       <Text id="reelNumberMaterial" fx:id="reelNumberMaterial" fill="#087ec3" layoutX="42.0" layoutY="57.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="reelLabel" text="1:XXX" AnchorPane.leftAnchor="9.0" AnchorPane.topAnchor="19.0" />
             <StackPane layoutY="60.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="60.0">
                <children>
-                  <ComboBox fx:id="cmbMaterials" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="36.0" prefWidth="200.0" />
             <HBox fx:id="materialColourContainer" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="36.0" prefWidth="200.0" style="-fx-background-color: blue;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="60.0">
                <children>
                   <Text fx:id="materialColour" fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="reelMaterialName" text="Royal Blue" translateX="9.0" translateY="6.0" />
                </children>
             </HBox>
+                  <ComboBox fx:id="cmbMaterials" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="36.0" prefWidth="245.0" />
                </children>
             </StackPane>
       <HBox fx:id="materialRemainingContainer" prefHeight="20.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="100.0">
