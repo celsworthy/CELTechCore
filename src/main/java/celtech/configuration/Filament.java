@@ -1,15 +1,9 @@
 package celtech.configuration;
 
-import celtech.configuration.datafileaccessors.FilamentContainer;
-import celtech.appManager.Notifier;
-import celtech.coreUI.DisplayManager;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
-import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Reel;
 import celtech.utils.SystemUtils;
 import java.io.Serializable;
-import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;

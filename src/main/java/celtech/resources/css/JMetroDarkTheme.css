@@ -1990,6 +1990,14 @@ modal-dialogue{
 }
 
 /**
+* Filament choice combo
+*/
+
+.filamentSwatchPadding {
+    -fx-padding: 0 10 0 10;
+}
+
+/**
 * Preferences
 */
 
