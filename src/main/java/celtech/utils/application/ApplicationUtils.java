@@ -12,10 +12,10 @@ import libertysystems.stenographer.StenographerFactory;
 public class ApplicationUtils
 {
 
-    private static Stenographer steno = StenographerFactory.getStenographer(ApplicationUtils.class.
+    private static final Stenographer steno = StenographerFactory.getStenographer(ApplicationUtils.class.
         getName());
 
-    public static void outputApplicationBanner(Class parentClass)
+    public static void outputApplicationStartupBanner(Class parentClass)
     {
         steno.info("**********************************************************************");
         steno.info("Starting " + ApplicationConfiguration.getApplicationName());
@@ -25,6 +25,14 @@ public class ApplicationUtils
             getApplicationInstallDirectory(parentClass));
         steno.info("Machine type: " + ApplicationConfiguration.getMachineType());
         steno.info("Locale: " + ApplicationConfiguration.getUserPreferredLocale());
+        steno.info("**********************************************************************");
+    }
+
+    public static void outputApplicationShutdownBanner()
+    {
+        steno.info("**********************************************************************");
+        steno.info("Shutting down " + ApplicationConfiguration.getApplicationName());
+        steno.info("Date " + new Date());
         steno.info("**********************************************************************");
     }
 }
