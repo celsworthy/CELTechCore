@@ -79,8 +79,8 @@ public class StatusResponse extends RoboxRxPacket
     private boolean xSwitchStatus = false;
     private boolean ySwitchStatus = false;
     private boolean zSwitchStatus = false;
-    private PauseStatus pauseStatus = null;
-    private BusyStatus busyStatus = null;
+    private PauseStatus pauseStatus = PauseStatus.NOT_PAUSED;
+    private BusyStatus busyStatus = BusyStatus.NOT_BUSY;
     private boolean filament1SwitchStatus = false;
     private boolean filament2SwitchStatus = false;
     private boolean nozzleSwitchStatus = false;

@@ -109,12 +109,12 @@ public class Lookup
 
     public static void setupDefaultValues()
     {
-        steno.info("Starting AutoMaker - get user preferences...");
+        steno.debug("Starting AutoMaker - get user preferences...");
         userPreferences = new UserPreferences(UserPreferenceContainer.getUserPreferenceFile());
 
         Locale appLocale;
         String languageTag = userPreferences.getLanguageTag();
-        steno.info("Starting AutoMaker - language tag is " + languageTag);
+        steno.debug("Starting AutoMaker - language tag is " + languageTag);
         if (languageTag == null || languageTag.length() == 0)
         {
             appLocale = Locale.getDefault();
@@ -139,13 +139,13 @@ public class Lookup
             }
         }
 
-        steno.info("Starting AutoMaker - loading resources...");
+        steno.debug("Starting AutoMaker - loading resources...");
         ResourceBundle i18nBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData",
                                                              appLocale, new UTF8Control());
         applicationEnvironment = new ApplicationEnvironment(i18nBundle, appLocale);
         taskExecutor = new LiveTaskExecutor();
         systemNotificationHandler = new SystemNotificationManagerJavaFX();
-        steno.info("Detected locale - " + appLocale.toLanguageTag());
+        steno.debug("Detected locale - " + appLocale.toLanguageTag());
         printerListChangesNotifier = new PrinterListChangesNotifier(connectedPrinters);
 
         slicerMappings = SlicerMappingsContainer.getSlicerMappings();

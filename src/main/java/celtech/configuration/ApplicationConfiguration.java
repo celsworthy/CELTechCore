@@ -437,7 +437,6 @@ public class ApplicationConfiguration
             try
             {
                 applicationName = configuration.getFilenameString(applicationConfigComponent, "ApplicationName", null);
-                steno.info("Application name = " + applicationName);
             } catch (ConfigNotLoadedException ex)
             {
                 steno.error("Couldn't determine application name - the application will not run correctly");
