@@ -38,7 +38,7 @@ public class Extruder
 
     public ReadOnlyBooleanProperty indexWheelStateProperty()
     {
-        return filamentLoaded;
+        return indexWheelState;
     }
 
     public ReadOnlyBooleanProperty canEjectProperty()

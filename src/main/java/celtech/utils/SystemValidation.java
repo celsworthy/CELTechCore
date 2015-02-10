@@ -49,7 +49,7 @@ public class SystemValidation
      */
     public static void check3DSupported(ResourceBundle i18nBundle)
     {
-        steno.info("Starting AutoMaker - check 3D support...");
+        steno.debug("Starting AutoMaker - check 3D support...");
         boolean checkForScene3D = true;
 
         String forceGPU = System.getProperty("prism.forceGPU");

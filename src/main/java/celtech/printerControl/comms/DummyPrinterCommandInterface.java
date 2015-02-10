@@ -58,6 +58,8 @@ public class DummyPrinterCommandInterface extends CommandInterface
     private final String detachPrinterCommand = "DETACH PRINTER";
     private final String goToPrintLineCommand = "GOTO LINE ";
     private final String finishPrintCommand = "FINISH PRINT";
+    private final String attachExtruderCommand = "ATTACH EXTRUDER ";
+    private final String detachExtruderCommand = "DETACH EXTRUDER ";
     private final String loadFilamentCommand = "LOAD ";
     private final String unloadFilamentCommand = "UNLOAD ";
     private final String insertSDCardCommand = "INSERT SD";
@@ -235,17 +237,40 @@ public class DummyPrinterCommandInterface extends CommandInterface
             } else if (messageData.equalsIgnoreCase(finishPrintCommand))
             {
                 finishPrintJob();
-            } else if (messageData.startsWith(loadFilamentCommand))
+            } else if (messageData.startsWith(attachExtruderCommand))
+            {
+                String extruderNumberString = messageData.replaceAll(attachExtruderCommand, "");
+                switch (extruderNumberString)
+                {
+                    case "0":
+                        attachExtruder(0);
+                        break;
+                    case "1":
+                        attachExtruder(1);
+                        break;
+                }
+            } else if (messageData.startsWith(detachExtruderCommand))
+            {
+                String extruderNumberString = messageData.replaceAll(unloadFilamentCommand, "");
+                switch (extruderNumberString)
+                {
+                    case "0":
+                        detachExtruder(0);
+                        break;
+                    case "1":
+                        detachExtruder(1);
+                        break;
+                }
+            }
+            else if (messageData.startsWith(loadFilamentCommand))
             {
                 String extruderNumberString = messageData.replaceAll(loadFilamentCommand, "");
                 switch (extruderNumberString)
                 {
                     case "0":
-                        attachExtruder(0);
                         currentStatus.setFilament1SwitchStatus(true);
                         break;
                     case "1":
-                        attachExtruder(1);
                         currentStatus.setFilament2SwitchStatus(true);
                         break;
                 }
