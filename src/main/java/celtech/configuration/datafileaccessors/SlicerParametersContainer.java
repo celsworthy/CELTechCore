@@ -101,8 +101,7 @@ public class SlicerParametersContainer
                     profileMap.put(profileName, newSettings);
                 } catch (IOException ex)
                 {
-                    steno.error("Error reading profile " + profileName);
-                    ex.printStackTrace();
+                    steno.error("Error reading profile " + profileName + ": " + ex.getMessage());
                 }
             } else
             {
