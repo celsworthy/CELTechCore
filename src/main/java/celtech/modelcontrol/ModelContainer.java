@@ -112,6 +112,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private SelectionHighlighter selectionHighlighter = null;
     List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
     private Set<Node> selectedMarkers;
+    
+    private int displayColourExtruder0;
+    private int displayColourExtruder1;
 
     public ModelContainer()
     {

@@ -500,6 +500,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     private void bindPrinter(Printer printer)
     {
+        // in case the extruder is added to the model after the printer is detected
         Extruder extruder0 = printer.extrudersProperty().get(0);
         if (extruder0 != null)
         {
@@ -618,9 +619,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     @Override
     public void triggerSave(Object profile)
     {
-        if (profile instanceof Filament)
-        {
-        } else if (profile instanceof SlicerParametersFile)
+        if (profile instanceof SlicerParametersFile)
         {
             SlicerParametersFile profiletoSave = (SlicerParametersFile) profile;
             SlicerParametersContainer.saveProfile(profiletoSave);
