@@ -6,19 +6,18 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
-import celtech.configuration.datafileaccessors.FilamentContainer;
-import celtech.configuration.MaterialType;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.slicer.FillPattern;
 import celtech.coreUI.DisplayManager;
-import celtech.coreUI.components.MaterialChoiceListCell;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.ProfileChoiceListCell;
+import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.controllers.popups.PopupCommandReceiver;
 import celtech.coreUI.controllers.utilityPanels.MaterialDetailsController;
 import celtech.coreUI.controllers.utilityPanels.ProfileDetailsController;
+import celtech.printerControl.model.Extruder;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Reel;
@@ -29,7 +28,6 @@ import celtech.utils.SystemUtils;
 import java.net.URL;
 import java.util.Collection;
 import java.util.ResourceBundle;
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -39,16 +37,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Toggle;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
-import jfxtras.styles.jmetro8.ToggleSwitch;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -72,16 +67,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private boolean suppressCustomProfileChangeTriggers = false;
 
     @FXML
-    private Label materialLabel;
-
-    @FXML
-    private Label printQualityLabel;
-
-    @FXML
     private Slider brimSlider;
 
     @FXML
-    private ComboBox<Filament> materialChooser;
+    private VBox materialContainer;
 
     @FXML
     private ComboBox<SlicerParametersFile> customProfileChooser;
@@ -91,9 +80,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     @FXML
     private Slider qualityChooser;
-
-    @FXML
-    private Label customSettingsLabel;
 
     @FXML
     private VBox customProfileVBox;
@@ -129,21 +115,13 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private Filament currentlyLoadedFilament = null;
     private Filament lastFilamentSelected = null;
 
-    private VBox createMaterialPage = null;
-    private ModalDialog createMaterialDialogue = null;
-    private int saveMaterialAction = 0;
-    private int cancelMaterialSaveAction = 0;
-    private boolean inhibitMaterialSelection = false;
-
     private VBox createProfilePage = null;
     private ModalDialog createProfileDialogue = null;
     private int saveProfileAction = 0;
-    private int cancelProfileSaveAction = 0;
     private SlicerParametersFile lastCustomProfileSelected = null;
 
     private SettingsSlideOutPanelController slideOutController = null;
 
-    private MaterialDetailsController materialDetailsController = null;
     private ProfileDetailsController profileDetailsController = null;
 
     /**
@@ -162,42 +140,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         try
         {
-            FXMLLoader createMaterialPageLoader = new FXMLLoader(getClass().getResource(
-                ApplicationConfiguration.fxmlUtilityPanelResourcePath + "materialDetails.fxml"),
-                                                                 Lookup.getLanguageBundle());
-            createMaterialPage = createMaterialPageLoader.load();
-            materialDetailsController = createMaterialPageLoader.getController();
-            materialDetailsController.updateMaterialData(new Filament("", MaterialType.ABS, null,
-                                                                      0, 0, 0, 0, 0, 0, 0, 0,
-                                                                      Color.ALICEBLUE, true));
-            materialDetailsController.showButtons(false);
-
-            createMaterialDialogue = new ModalDialog(Lookup.i18n(
-                "sidePanel_settings.createMaterialDialogueTitle"));
-            createMaterialDialogue.setContent(createMaterialPage);
-            saveMaterialAction = createMaterialDialogue.addButton(
-                Lookup.i18n("genericFirstLetterCapitalised.Save"),
-                materialDetailsController.
-                getProfileNameInvalidProperty());
-            cancelMaterialSaveAction = createMaterialDialogue.addButton(
-                Lookup.i18n("genericFirstLetterCapitalised.Cancel"));
-
-        } catch (Exception ex)
-        {
-            steno.error("Failed to load material creation page");
-        }
-
-        FilamentContainer.getUserFilamentList().addListener(new ListChangeListener<Filament>()
-        {
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends Filament> c)
-            {
-                updateFilamentList();
-            }
-        });
-
-        try
-        {
             FXMLLoader createProfilePageLoader = new FXMLLoader(getClass().getResource(
                 ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetails.fxml"),
                                                                 Lookup.getLanguageBundle());
@@ -212,8 +154,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 Lookup.i18n("genericFirstLetterCapitalised.Save"),
                 profileDetailsController.
                 getProfileNameInvalidProperty());
-            cancelProfileSaveAction = createProfileDialogue.addButton(
-                Lookup.i18n("genericFirstLetterCapitalised.Cancel"));
         } catch (Exception ex)
         {
             steno.error("Failed to load profile creation page");
@@ -356,8 +296,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         printerChooser.setItems(printerStatusList);
 
-        printerChooser.getSelectionModel()
-            .clearSelection();
+        printerChooser.getSelectionModel().clearSelection();
 
         printerChooser.getItems().addListener(
             (ListChangeListener.Change<? extends Printer> change) ->
@@ -401,6 +340,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         Printer lastSelectedPrinter, Printer selectedPrinter
                     )
                     {
+                        if (selectedPrinter != null)
+                        {
+                            unbindPrinter(selectedPrinter);
+                        }
                         if (lastSelectedPrinter != null)
                         {
                         }
@@ -415,58 +358,12 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         }
 
                         settingsScreenState.setSelectedPrinter(selectedPrinter);
+                        bindPrinter(selectedPrinter);
+                        configureMaterialComponents(selectedPrinter);
 
                     }
             }
             );
-
-        Callback<ListView<Filament>, ListCell<Filament>> materialChooserCellFactory
-            = (ListView<Filament> list) -> new MaterialChoiceListCell();
-
-        materialChooser.setCellFactory(materialChooserCellFactory);
-        materialChooser.setButtonCell(new MaterialChoiceListCell());
-        materialChooser.setItems(availableFilaments);
-
-        materialChooser.getSelectionModel().selectedItemProperty().addListener(
-            new ChangeListener<Filament>()
-            {
-                @Override
-                public void changed(ObservableValue<? extends Filament> observable,
-                    Filament oldValue, Filament newValue)
-                {
-                    if (oldValue != newValue)
-                    {
-                        if (slideOutController != null)
-                        {
-                            slideOutController.showMaterialTab();
-                        }
-                        lastFilamentSelected = newValue;
-                    }
-
-                    if (inhibitMaterialSelection == false)
-                    {
-                        if (newValue == FilamentContainer.createNewFilament)
-                        {
-                            showCreateMaterialDialogue();
-                        } else if (newValue == null)
-                        {
-                            if (slideOutController != null)
-                            {
-                                slideOutController.updateFilamentData(newValue);
-                            }
-                            settingsScreenState.setFilament(null);
-                        } else
-                        {
-                            if (slideOutController != null)
-                            {
-                                slideOutController.updateFilamentData(newValue);
-                            }
-                            settingsScreenState.setFilament(newValue);
-                        }
-                    }
-                }
-            }
-        );
 
         nonCustomProfileVBox.visibleProperty()
             .bind(qualityChooser.valueProperty().isNotEqualTo(
@@ -574,33 +471,75 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             }
             );
 
-//        spiralPrintToggle.selectedProperty().addListener(new ChangeListener<Boolean>()
-//        {
-//            @Override
-//            public void changed(
-//                ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-//            {
-//                if (suppressQualityOverrideTriggers == false)
-//                {
-//                    if (newValue != oldValue)
-//                    {
-//                        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-//                    }
-//
-//                    settingsScreenState.getSettings().setSpiral_vase(newValue);
-//                }
-//            }
-//        });
-//
-//        updateFilamentList();
-        Lookup.getPrinterListChangesNotifier()
-            .addListener(this);
+        Lookup.getPrinterListChangesNotifier().addListener(this);
+
+    }
+
+    /**
+     * Show the correct number of MaterialComponents according to the number of extruders, and
+     * configure them to the printer and extruder number.
+     */
+    private void configureMaterialComponents(Printer printer)
+    {
+        materialContainer.getChildren().clear();
+        for (int extruderNumber = 0; extruderNumber < 2; extruderNumber++)
+        {
+            Extruder extruder = printer.extrudersProperty().get(extruderNumber);
+            if (extruder.isFittedProperty().get())
+            {
+                MaterialComponent materialComponent = new MaterialComponent();
+                materialComponent.setPrinterExtruder(printer, extruderNumber);
+                materialComponent.setMode(MaterialComponent.Mode.SETTINGS);
+                materialContainer.getChildren().add(materialComponent);
+            }
+        }
+    }
+
+    private ChangeListener<Boolean> extruder0Listener;
+    private ChangeListener<Boolean> extruder1Listener;
+
+    private void bindPrinter(Printer printer)
+    {
+        Extruder extruder0 = printer.extrudersProperty().get(0);
+        if (extruder0 != null)
+        {
+            extruder0Listener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                configureMaterialComponents(printer);
+            };
+            extruder0.isFittedProperty().addListener(extruder0Listener);
+        }
+
+        Extruder extruder1 = printer.extrudersProperty().get(1);
+        if (extruder1 != null)
+        {
+            extruder1Listener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                configureMaterialComponents(printer);
+            };
+            extruder1.isFittedProperty().addListener(extruder1Listener);
+        }
+
+    }
+
+    private void unbindPrinter(Printer printer)
+    {
+        if (extruder0Listener != null)
+        {
+            Extruder extruder0 = printer.extrudersProperty().get(0);
+            extruder0.isFittedProperty().removeListener(extruder0Listener);
+        }
+        if (extruder1Listener != null)
+        {
+            Extruder extruder1 = printer.extrudersProperty().get(1);
+            extruder1.isFittedProperty().removeListener(extruder1Listener);
+        }
     }
 
     private void setupQualityOverrideControls(SlicerParametersFile settings)
     {
-        supportSlider.setValue((settings.getGenerateSupportMaterial()==true)?1.0:0.0);
-        
+        supportSlider.setValue((settings.getGenerateSupportMaterial() == true) ? 1.0 : 0.0);
+
         fillDensitySlider.setValue(settings.getFillDensity_normalised() * 100.0);
         if (settings.getFillPattern().equals(FillPattern.LINE))
         {
@@ -633,40 +572,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         }
     }
 
-    private void updateFilamentList()
-    {
-        Filament currentSelection = materialChooser.getSelectionModel().getSelectedItem();
-
-        availableFilaments.clear();
-
-        if (currentlyLoadedFilament != null)
-        {
-            availableFilaments.add(currentlyLoadedFilament);
-        }
-
-        availableFilaments.addAll(FilamentContainer.getUserFilamentList());
-        availableFilaments.add(FilamentContainer.createNewFilament);
-
-        if (currentSelection != null && availableFilaments.contains(currentSelection)
-            && currentSelection != FilamentContainer.createNewFilament)
-        {
-            materialChooser.getSelectionModel().select(currentSelection);
-        } else if (materialChooser.getItems().size() > 1)
-        {
-            // Only pick the first element if there is something to select
-            // If size == 1 then we only have the Create new filament entry
-            materialChooser.getSelectionModel().selectFirst();
-        }
-    }
-
-    private void populatePrinterChooser()
-    {
-        for (Printer printer : printerStatusList)
-        {
-            printerChooser.getItems().add(printer);
-        }
-    }
-
     /**
      *
      * @param slideOutController
@@ -677,11 +582,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         this.slideOutController = (SettingsSlideOutPanelController) slideOutController;
         this.slideOutController.provideReceiver(this);
         this.slideOutController.updateFilamentData(settingsScreenState.getFilament());
-        updateFilamentList();
-        if (availableFilaments.size() > 1)
-        {
-            materialChooser.getSelectionModel().selectFirst();
-        }
+
         updateProfileList();
         this.slideOutController.updateProfileData(draftSettings);
     }
@@ -695,23 +596,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     {
         if (source instanceof MaterialDetailsController)
         {
-            Filament clonedFilament = null;
-            if (settingsScreenState.getFilament() != null)
-            {
-                clonedFilament = settingsScreenState.getFilament().clone();
-            } else
-            {
-                // We must be trying to save the loaded filament...
-                clonedFilament = currentlyLoadedFilament.clone();
-            }
-            String originalFilamentName = clonedFilament.getFriendlyFilamentName();
-            String filename = SystemUtils.getIncrementalFilenameOnly(
-                ApplicationConfiguration.getUserFilamentDirectory(), originalFilamentName,
-                ApplicationConfiguration.filamentFileExtension);
-            clonedFilament.setFriendlyFilamentName(filename);
-            clonedFilament.setMutable(true);
-            materialDetailsController.updateMaterialData(clonedFilament);
-            showCreateMaterialDialogue();
+
         } else if (source instanceof ProfileDetailsController)
         {
             SlicerParametersFile settings = settingsScreenState.getSettings().clone();
@@ -735,12 +620,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     {
         if (profile instanceof Filament)
         {
-            Filament filamentToSave = (Filament) profile;
-
-            FilamentContainer.saveFilament(filamentToSave);
-            Filament chosenFilament = FilamentContainer.getFilamentByID(
-                filamentToSave.getFilamentID());
-            materialChooser.getSelectionModel().select(chosenFilament);
         } else if (profile instanceof SlicerParametersFile)
         {
             SlicerParametersFile profiletoSave = (SlicerParametersFile) profile;
@@ -751,40 +630,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 projectChanged(displayManager.getCurrentlyVisibleProject());
             }
         }
-    }
-
-    private void showCreateMaterialDialogue()
-    {
-        Platform.runLater(new Runnable()
-        {
-
-            @Override
-            public void run()
-            {
-                int response = createMaterialDialogue.show();
-                if (response == saveMaterialAction)
-                {
-                    Filament filamentToSave = materialDetailsController.getMaterialData();
-                    FilamentContainer.saveFilament(filamentToSave);
-
-                    Filament chosenFilament = FilamentContainer.getFilamentByID(
-                        filamentToSave.getFilamentID());
-                    materialChooser.getSelectionModel().select(chosenFilament);
-                } else
-                {
-                    if (lastFilamentSelected != null)
-                    {
-                        if (lastFilamentSelected == FilamentContainer.createNewFilament)
-                        {
-                            materialChooser.getSelectionModel().clearSelection();
-                        } else
-                        {
-                            materialChooser.getSelectionModel().select(lastFilamentSelected);
-                        }
-                    }
-                }
-            }
-        });
     }
 
     private int showCreateProfileDialogue(SlicerParametersFile dataToUse)
@@ -954,8 +799,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         if (printer == currentPrinter)
         {
             currentlyLoadedFilament = new Filament(currentPrinter.reelsProperty().get(0));
-            updateFilamentList();
-            materialChooser.getSelectionModel().select(currentlyLoadedFilament);
         }
     }
 
@@ -963,7 +806,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     public void whenReelRemoved(Printer printer, Reel reel, int reelNumber)
     {
         currentlyLoadedFilament = null;
-        updateFilamentList();
     }
 
     @Override

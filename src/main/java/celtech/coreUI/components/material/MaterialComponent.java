@@ -8,9 +8,11 @@ import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
+import celtech.printerControl.model.Printer;
 import java.io.IOException;
 import java.net.URL;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -32,6 +34,9 @@ import javafx.util.Callback;
  */
 public class MaterialComponent extends Pane
 {
+    private Printer printer;
+    private int extruderNumber;
+    private Mode mode;
 
     public enum ReelType
     {
@@ -42,7 +47,7 @@ public class MaterialComponent extends Pane
     public enum Mode
     {
 
-        STATUS_SMARTREEL, STATUS_CUSTOM, LAYOUT;
+        STATUS_SMARTREEL, STATUS_CUSTOM, LAYOUT, SETTINGS;
     }
 
     @FXML
@@ -94,12 +99,18 @@ public class MaterialComponent extends Pane
             throw new RuntimeException(exception);
         }
 
-        availableFilaments.addAll(FilamentContainer.getAppFilamentList());
-        availableFilaments.addAll(FilamentContainer.getUserFilamentList());
+        try
+        {
+            availableFilaments.addAll(FilamentContainer.getAppFilamentList());
+            availableFilaments.addAll(FilamentContainer.getUserFilamentList());
+        } catch (NoClassDefFoundError exception)
+        {
+            // this should only happen in SceneBuilder            
+        }
+
         setupComboBox();
 
         setMode(Mode.STATUS_SMARTREEL);
-
     }
 
     private void setupComboBox()
@@ -115,6 +126,16 @@ public class MaterialComponent extends Pane
             }
         });
         cmbMaterials.setItems(availableFilaments);
+        
+        FilamentContainer.getUserFilamentList().addListener((ListChangeListener.Change<? extends Filament> c) ->
+        {
+            // do we need to do this given it is an ObservableList??
+            updateFilamentList();
+        });        
+    }
+    
+    private void updateFilamentList() {
+        
     }
 
     public void whenMaterialSelected(ActionEvent actionEvent)
@@ -124,8 +145,26 @@ public class MaterialComponent extends Pane
                     selectedMaterial.getDisplayColourProperty().get(), 0, 0);
     }
 
+    /**
+     * Set the operational mode.
+     */
     public void setMode(Mode mode)
     {
+        this.mode = mode;
+        updateGUIForModeAndPrinterExtruder();
+    }
+    
+    /**
+     * Tie this component to the given printer and extruder number.
+     */
+    public void setPrinterExtruder(Printer printer, int extruderNumber)
+    {
+        this.printer = printer;
+        this.extruderNumber = extruderNumber;
+        updateGUIForModeAndPrinterExtruder();
+    }    
+    
+    private void updateGUIForModeAndPrinterExtruder() {
         switch (mode)
         {
             case STATUS_CUSTOM:
@@ -149,6 +188,18 @@ public class MaterialComponent extends Pane
                 hideMaterialDetails();
                 setReelType(ReelType.ROBOX);
                 break;
+            case SETTINGS:
+                cmbMaterials.setVisible(true);
+                materialColourContainer.setVisible(true);
+                materialRemainingContainer.setVisible(false);
+                showMaterialDetails();
+                if (printer.reelsProperty().containsKey(extruderNumber)) {
+                    setReelType(ReelType.ROBOX);
+                } else {
+                    setReelType(ReelType.SOLID);
+                }
+                
+                break;                
         }
     }
 

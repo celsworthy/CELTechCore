@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import celtech.coreUI.components.material.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.*?>
@@ -187,8 +188,15 @@
                                 <Label fx:id="materialLabel" styleClass="sidePanelDivider" text="%sidePanel_settings.materialSelectionLabel">
   
                                 </Label>
-                                <ComboBox fx:id="materialChooser" layoutX="10.0" layoutY="117.0" maxWidth="1.7976931348623157E308" promptText="%sidePanel_settings.materialSelectionLabel">
-                                </ComboBox>
+                        <HBox alignment="CENTER">
+                           <children>
+                              <VBox fx:id="materialContainer" spacing="36.0">
+                                 <HBox.margin>
+                                    <Insets bottom="20.0" top="20.0" />
+                                 </HBox.margin>
+                              </VBox>
+                           </children>
+                        </HBox>
                                 <Label fx:id="printQualityLabel" styleClass="sidePanelDivider" text="%sidePanel_settings.printQualityLabel">
                                 </Label>
                                 <Slider fx:id="qualityChooser" majorTickUnit="1.0" max="3.0" maxWidth="1.7976931348623157E308" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="-1.0">
