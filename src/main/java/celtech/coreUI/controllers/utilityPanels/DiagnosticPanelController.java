@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.Lookup;
@@ -40,7 +35,16 @@ public class DiagnosticPanelController implements Initializable
 
     @FXML
     private Label extruder2Index;
-
+    
+    @FXML
+    private Label extruder2Label;
+    
+    @FXML
+    private Label extruder2LoadedLabel;
+    
+    @FXML
+    private Label extruder2IndexLabel;
+    
     @FXML
     private Label reelButtonSwitch;
 
@@ -86,7 +90,8 @@ public class DiagnosticPanelController implements Initializable
         {
 
             @Override
-            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
+            public void changed(ObservableValue<? extends Printer> observable, Printer oldValue,
+                Printer newValue)
             {
                 if (connectedPrinter != null)
                 {
@@ -123,12 +128,22 @@ public class DiagnosticPanelController implements Initializable
             lidSwitch.setText("");
             reelButtonSwitch.textProperty().unbind();
             reelButtonSwitch.setText("");
+            extruder1Loaded.visibleProperty().unbind();
             extruder1Loaded.textProperty().unbind();
+            extruder2Label.visibleProperty().unbind();
+            extruder2Label.setVisible(false);
+            extruder2LoadedLabel.visibleProperty().unbind();
+            extruder2LoadedLabel.setVisible(false);
+            extruder2IndexLabel.visibleProperty().unbind();
+            extruder2IndexLabel.setVisible(false);
+            extruder2Loaded.visibleProperty().unbind();
             extruder1Loaded.setText("");
             extruder2Loaded.textProperty().unbind();
             extruder2Loaded.setText("");
+            extruder1Index.visibleProperty().unbind();
             extruder1Index.textProperty().unbind();
             extruder1Index.setText("");
+            extruder2Index.visibleProperty().unbind();
             extruder2Index.textProperty().unbind();
             extruder2Index.setText("");
 
@@ -143,17 +158,41 @@ public class DiagnosticPanelController implements Initializable
             connectedPrinter = printer;
 
             printerID.textProperty().bind(printer.getPrinterIdentity().printerUniqueIDProperty());
-            xLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().xStopSwitchProperty().asString());
-            yLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().yStopSwitchProperty().asString());
-            zLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().zStopSwitchProperty().asString());
-            zPositiveLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().zTopStopSwitchProperty().asString());
-            lidSwitch.textProperty().bind(printer.getPrinterAncillarySystems().lidOpenProperty().asString());
-            reelButtonSwitch.textProperty().bind(printer.getPrinterAncillarySystems().reelButtonProperty().asString());
+            xLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().
+                xStopSwitchProperty().asString());
+            yLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().
+                yStopSwitchProperty().asString());
+            zLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().
+                zStopSwitchProperty().asString());
+            zPositiveLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().
+                zTopStopSwitchProperty().asString());
+            lidSwitch.textProperty().bind(printer.getPrinterAncillarySystems().lidOpenProperty().
+                asString());
+            reelButtonSwitch.textProperty().bind(printer.getPrinterAncillarySystems().
+                reelButtonProperty().asString());
             //TODO modify to work with multiple extruders
-            extruder1Loaded.textProperty().bind(printer.extrudersProperty().get(0).filamentLoadedProperty().asString());
-            extruder1Index.textProperty().bind(printer.extrudersProperty().get(0).indexWheelStateProperty().asString());
-            extruder2Loaded.textProperty().bind(printer.extrudersProperty().get(0).filamentLoadedProperty().asString());
-            extruder2Index.textProperty().bind(printer.extrudersProperty().get(0).indexWheelStateProperty().asString());
+            extruder1Loaded.visibleProperty().bind(printer.extrudersProperty().get(0).
+                isFittedProperty());
+            extruder1Loaded.textProperty().bind(printer.extrudersProperty().get(0).
+                filamentLoadedProperty().asString());
+            extruder1Index.visibleProperty().bind(printer.extrudersProperty().get(0).
+                isFittedProperty());
+            extruder1Index.textProperty().bind(printer.extrudersProperty().get(0).
+                indexWheelStateProperty().asString());
+            extruder2Label.visibleProperty().bind(printer.extrudersProperty().get(1).
+                isFittedProperty());
+            extruder2LoadedLabel.visibleProperty().bind(printer.extrudersProperty().get(1).
+                isFittedProperty());
+            extruder2IndexLabel.visibleProperty().bind(printer.extrudersProperty().get(1).
+                isFittedProperty());
+            extruder2Loaded.visibleProperty().bind(printer.extrudersProperty().get(1).
+                isFittedProperty());
+            extruder2Loaded.textProperty().bind(printer.extrudersProperty().get(1).
+                filamentLoadedProperty().asString());
+            extruder2Index.visibleProperty().bind(printer.extrudersProperty().get(1).
+                isFittedProperty());
+            extruder2Index.textProperty().bind(printer.extrudersProperty().get(1).
+                indexWheelStateProperty().asString());
 
             printer.headProperty().addListener(headChangeListener);
         }

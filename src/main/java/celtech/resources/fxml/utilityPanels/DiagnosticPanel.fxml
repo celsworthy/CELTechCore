@@ -49,9 +49,9 @@
                 <Label text="Index" GridPane.rowIndex="14" />
                 <Label fx:id="extruder1Loaded" text="?" GridPane.columnIndex="1" GridPane.rowIndex="12" />
                 <Label fx:id="extruder1Index" text="?" GridPane.columnIndex="1" GridPane.rowIndex="14" />
-                <Label style="-fx-font-size:14px;" text="Extruder 2" GridPane.columnIndex="2" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="11" />
-                <Label text="Loaded" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="12" />
-                <Label text="Index" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="14" />
+                <Label fx:id="extruder2Label" style="-fx-font-size:14px;" text="Extruder 2" GridPane.columnIndex="2" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="11" />
+                <Label fx:id="extruder2LoadedLabel" text="Loaded" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="12" />
+                <Label fx:id="extruder2IndexLabel" text="Index" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="14" />
                 <Label fx:id="extruder2Loaded" text="?" GridPane.columnIndex="3" GridPane.rowIndex="12" />
                 <Label fx:id="extruder2Index" text="?" GridPane.columnIndex="3" GridPane.rowIndex="14" />
                 <Label text="%misc.printerID" GridPane.columnSpan="2" />
