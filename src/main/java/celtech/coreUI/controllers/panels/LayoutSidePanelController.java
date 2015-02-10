@@ -80,7 +80,7 @@ public class LayoutSidePanelController implements Initializable,
 
     @FXML
     private TableView<ModelContainer> modelDataTableView;
-    
+
     @FXML
     private VBox materialContainer;
 
@@ -107,10 +107,10 @@ public class LayoutSidePanelController implements Initializable,
 
     private ListChangeListener selectionListener = null;
     private boolean suppressModelDataTableViewNotifications = false;
-    
+
     private MaterialComponent materialComponent0;
     private MaterialComponent materialComponent1;
-    
+
     private MaterialComponent selectedMaterialComponent;
 
     @FXML
@@ -181,7 +181,6 @@ public class LayoutSidePanelController implements Initializable,
         setUpModelGeometryListeners();
         setUpKeyPressListeners();
         setupMaterialContainer();
-        select(materialComponent0);
     }
 
     private void setUpModelGeometryListeners()
@@ -261,6 +260,11 @@ public class LayoutSidePanelController implements Initializable,
                                              t1.doubleValue() * 100));
     }
 
+    private ThreeDViewManager get3DViewManager()
+    {
+        return displayManager.getCurrentlyVisibleViewManager();
+    }
+
     private void setUpKeyPressListeners()
     {
         scaleTextField.setOnKeyPressed(
@@ -277,7 +281,7 @@ public class LayoutSidePanelController implements Initializable,
                         case TAB:
                             try
                             {
-                                displayManager.getCurrentlyVisibleViewManager().scaleSelection(
+                                get3DViewManager().scaleSelection(
                                     scaleTextField.getAsDouble() / 100.0);
                             } catch (ParseException ex)
                             {
@@ -312,7 +316,7 @@ public class LayoutSidePanelController implements Initializable,
                         case TAB:
                             try
                             {
-                                displayManager.getCurrentlyVisibleViewManager().rotateSelection(
+                                get3DViewManager().rotateSelection(
                                     rotationTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
@@ -347,7 +351,7 @@ public class LayoutSidePanelController implements Initializable,
                         case TAB:
                             try
                             {
-                                displayManager.getCurrentlyVisibleViewManager().resizeSelectionWidth(
+                                get3DViewManager().resizeSelectionWidth(
                                     widthTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
@@ -382,7 +386,7 @@ public class LayoutSidePanelController implements Initializable,
                         case TAB:
                             try
                             {
-                                displayManager.getCurrentlyVisibleViewManager().resizeSelectionHeight(
+                                get3DViewManager().resizeSelectionHeight(
                                     heightTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
@@ -416,7 +420,7 @@ public class LayoutSidePanelController implements Initializable,
                         case TAB:
                             try
                             {
-                                displayManager.getCurrentlyVisibleViewManager().resizeSelectionDepth(
+                                get3DViewManager().resizeSelectionDepth(
                                     depthTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
@@ -446,7 +450,7 @@ public class LayoutSidePanelController implements Initializable,
                     case TAB:
                         try
                         {
-                            displayManager.getCurrentlyVisibleViewManager().translateSelectionXTo(
+                            get3DViewManager().translateSelectionXTo(
                                 xAxisTextField.getAsDouble());
                         } catch (ParseException ex)
                         {
@@ -479,7 +483,7 @@ public class LayoutSidePanelController implements Initializable,
                         case TAB:
                             try
                             {
-                                displayManager.getCurrentlyVisibleViewManager().translateSelectionZTo(
+                                get3DViewManager().translateSelectionZTo(
                                     yAxisTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
@@ -758,19 +762,20 @@ public class LayoutSidePanelController implements Initializable,
         materialComponent1 = new MaterialComponent();
         materialComponent1.setMode(MaterialComponent.Mode.LAYOUT);
         materialContainer.getChildren().addAll(materialComponent0, materialComponent1);
-        
+
         materialComponent0.setOnMouseClicked((MouseEvent event) ->
         {
             select(materialComponent0);
         });
-        
+
         materialComponent1.setOnMouseClicked((MouseEvent event) ->
         {
             select(materialComponent1);
         });
     }
-    
-    private void deselectMaterials() {
+
+    private void deselectMaterials()
+    {
         materialComponent0.select(false);
         materialComponent1.select(false);
     }
@@ -780,5 +785,11 @@ public class LayoutSidePanelController implements Initializable,
         deselectMaterials();
         materialComponent.select(true);
         selectedMaterialComponent = materialComponent;
+        if (materialComponent == materialComponent0)
+        {
+            get3DViewManager().activateChooseExtruder(0);
+        } else {
+            get3DViewManager().activateChooseExtruder(1);
+        }
     }
 }

@@ -264,15 +264,41 @@ public class ThreeDViewManager
             Point3D pickedPoint = pickResult.getIntersectedPoint();
 
             Node intersectedNode = pickResult.getIntersectedNode();
+            ModelContainer modelContainer = null;
+            if (intersectedNode instanceof MeshView)
+            {
+                modelContainer = (ModelContainer) intersectedNode.getParent().getParent();
+            }
 
             if (layoutSubmode.get().equals(LayoutSubmode.SNAP_TO_GROUND))
             {
-                int faceNumber = pickResult.getIntersectedFace();
-                snapToGround(intersectedNode, faceNumber);
-                collideModels();
-                DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+                if (modelContainer != null)
+                {
+                    int faceNumber = pickResult.getIntersectedFace();
+                    snapToGround(modelContainer, faceNumber);
+                    collideModels();
+                    DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+                }
                 return;
             }
+
+            if (layoutSubmode.get().equals(LayoutSubmode.ASSOCIATE_WITH_EXTRUDER0))
+            {
+                if (modelContainer != null) {
+                    modelContainer.setUseExtruder0Filament(true);
+                    DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+                }
+                return;
+            }
+            
+            if (layoutSubmode.get().equals(LayoutSubmode.ASSOCIATE_WITH_EXTRUDER1))
+            {
+                if (modelContainer != null) {
+                    modelContainer.setUseExtruder0Filament(false);
+                    DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+                }
+                return;
+            }            
 
             Point3D pickedScenePoint = intersectedNode.localToScene(pickedPoint);
             Point3D pickedBedTranslateXformPoint = bedTranslateXform.sceneToLocal(pickedScenePoint);
@@ -1041,11 +1067,10 @@ public class ThreeDViewManager
         layoutSubmode.set(LayoutSubmode.SNAP_TO_GROUND);
     }
 
-    private void snapToGround(Node intersectedNode, int faceNumber)
+    private void snapToGround(ModelContainer modelContainer, int faceNumber)
     {
-        if (intersectedNode instanceof MeshView)
+        if (modelContainer != null)
         {
-            ModelContainer modelContainer = (ModelContainer) intersectedNode.getParent().getParent();
             modelContainer.snapToGround(faceNumber);
             collideModels();
             DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
@@ -1403,6 +1428,17 @@ public class ThreeDViewManager
         for (ModelContainer modelContainer : loadedModels)
         {
             deselectModel(modelContainer);
+        }
+    }
+
+    public void activateChooseExtruder(int extruderNumber)
+    {
+        if (extruderNumber == 0)
+        {
+            layoutSubmode.set(LayoutSubmode.ASSOCIATE_WITH_EXTRUDER0);
+        } else
+        {
+            layoutSubmode.set(LayoutSubmode.ASSOCIATE_WITH_EXTRUDER1);
         }
     }
 }

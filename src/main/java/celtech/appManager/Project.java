@@ -17,6 +17,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import libertysystems.stenographer.Stenographer;
@@ -40,8 +41,8 @@ public class Project implements Serializable
     private String customProfileName = "";
     private BooleanProperty isDirty = new SimpleBooleanProperty(false);
     private String lastPrintJobID = "";
-    private Filament extruder0ChosenFilament;
-    private Filament extruder1ChosenFilament;
+    private final ObjectProperty<Filament> extruder0ChosenFilamentProperty = new SimpleObjectProperty<Filament>();
+    private final ObjectProperty<Filament> extruder1ChosenFilamentProperty = new SimpleObjectProperty<Filament>();
 
     /**
      *

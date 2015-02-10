@@ -24,9 +24,11 @@ import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -34,7 +36,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableFloatArray;
 import javafx.collections.ObservableList;
 import javafx.geometry.BoundingBox;
-import javafx.geometry.Bounds;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -113,7 +114,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
     private Set<Node> selectedMarkers;
     
-    boolean useExtruder0Filament = true;
+    /**
+     * Print the part using extruder0 or extruder1.
+     */
+    ObjectProperty<Boolean> useExtruder0Filament = new SimpleObjectProperty(true);
     
     public ModelContainer()
     {
@@ -168,6 +172,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         initialise(name);
         initialiseTransforms();
         setUpGCodeRelated(gcodeMeshData, fileLines);
+    }
+    
+    public void setUseExtruder0Filament(boolean useExtruder0) {
+        useExtruder0Filament.set(useExtruder0);
     }
 
     private void setUpGCodeRelated(GCodeMeshData gcodeMeshData1, ArrayList<String> fileLines1)
