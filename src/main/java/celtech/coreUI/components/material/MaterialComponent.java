@@ -11,11 +11,17 @@ import static celtech.printerControl.comms.commands.ColourStringConverter.colour
 import celtech.printerControl.model.Printer;
 import java.io.IOException;
 import java.net.URL;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ComboBox;
@@ -40,6 +46,7 @@ public class MaterialComponent extends Pane
     private Mode mode;
     private boolean selected;
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
+    private final ObjectProperty<Filament> selectedFilamentProperty = new SimpleObjectProperty<>();
 
     public enum ReelType
     {
@@ -115,6 +122,10 @@ public class MaterialComponent extends Pane
 
         setMode(Mode.STATUS_SMARTREEL);
     }
+    
+    public ReadOnlyObjectProperty<Filament> getSelectedFilamentProperty() {
+        return selectedFilamentProperty;
+    }
 
     private void setupComboBox()
     {
@@ -134,7 +145,13 @@ public class MaterialComponent extends Pane
         {
             // do we need to do this given it is an ObservableList??
             updateFilamentList();
-        });        
+        });    
+        
+        cmbMaterials.valueProperty().addListener((ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+        {
+            selectedFilamentProperty.set(cmbMaterials.getValue());
+        });
+
     }
     
     private void updateFilamentList() {

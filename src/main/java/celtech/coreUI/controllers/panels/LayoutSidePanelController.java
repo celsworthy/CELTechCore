@@ -9,6 +9,7 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
+import celtech.configuration.Filament;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.material.MaterialComponent;
@@ -772,6 +773,16 @@ public class LayoutSidePanelController implements Initializable,
         {
             select(materialComponent1);
         });
+        
+        materialComponent0.getSelectedFilamentProperty().addListener((ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+        {
+            get3DViewManager().setExtruder0Filament(newValue);
+        });
+        
+        materialComponent1.getSelectedFilamentProperty().addListener((ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+        {
+            get3DViewManager().setExtruder1Filament(newValue);
+        });        
     }
 
     private void deselectMaterials()
