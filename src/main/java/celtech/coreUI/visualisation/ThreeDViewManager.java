@@ -4,6 +4,7 @@ import celtech.CoreTest;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.Filament;
 import celtech.configuration.PrintBed;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.LayoutSubmode;
@@ -139,6 +140,9 @@ public class ThreeDViewManager
     private double gizmoStartingRotationAngle = 0;
     private double gizmoRotationOffset = 0;
     private boolean gizmoRotationStarted = false;
+
+    private Filament extruder0Filament;
+    private Filament extruder1Filament;
 
     private final AnimationTimer settingsScreenAnimationTimer = new AnimationTimer()
     {
@@ -284,21 +288,25 @@ public class ThreeDViewManager
 
             if (layoutSubmode.get().equals(LayoutSubmode.ASSOCIATE_WITH_EXTRUDER0))
             {
-                if (modelContainer != null) {
+                if (modelContainer != null)
+                {
                     modelContainer.setUseExtruder0Filament(true);
+                    layoutSubmode.set(LayoutSubmode.SELECT);
                     DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
                 }
                 return;
             }
-            
+
             if (layoutSubmode.get().equals(LayoutSubmode.ASSOCIATE_WITH_EXTRUDER1))
             {
-                if (modelContainer != null) {
+                if (modelContainer != null)
+                {
                     modelContainer.setUseExtruder0Filament(false);
+                    layoutSubmode.set(LayoutSubmode.SELECT);
                     DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
                 }
                 return;
-            }            
+            }
 
             Point3D pickedScenePoint = intersectedNode.localToScene(pickedPoint);
             Point3D pickedBedTranslateXformPoint = bedTranslateXform.sceneToLocal(pickedScenePoint);
@@ -1408,6 +1416,26 @@ public class ThreeDViewManager
                 models.getChildren().add(model);
             }
         }
+    }
+
+    public void setExtruder0Filament(Filament filament)
+    {
+        extruder0Filament = filament;
+        setModelColoursForExtruder(0, filament);
+    }
+
+    private void setModelColoursForExtruder(int extruderNumber, Filament filament)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            model.setColour(extruderNumber, filament.getDisplayColour());
+        }
+    }
+
+    public void setExtruder1Filament(Filament filament)
+    {
+        extruder1Filament = filament;
+        setModelColoursForExtruder(1, filament);
     }
 
     public SelectedModelContainers getSelectedModelContainers()

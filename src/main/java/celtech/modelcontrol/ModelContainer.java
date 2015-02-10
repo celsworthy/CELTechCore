@@ -24,11 +24,9 @@ import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -39,6 +37,8 @@ import javafx.geometry.BoundingBox;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.ObservableFaceArray;
@@ -113,17 +113,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private SelectionHighlighter selectionHighlighter = null;
     List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
     private Set<Node> selectedMarkers;
-    
+
     /**
      * Print the part using extruder0 or extruder1.
      */
-    ObjectProperty<Boolean> useExtruder0Filament = new SimpleObjectProperty(true);
-    
-    public ModelContainer()
-    {
-        super();
-        this.getChildren().add(meshGroup);
-    }
+    private int associateWithExtruderNumber;
 
     /**
      *
@@ -173,9 +167,16 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         initialiseTransforms();
         setUpGCodeRelated(gcodeMeshData, fileLines);
     }
-    
-    public void setUseExtruder0Filament(boolean useExtruder0) {
-        useExtruder0Filament.set(useExtruder0);
+
+    public void setUseExtruder0Filament(boolean useExtruder0)
+    {
+        if (useExtruder0)
+        {
+            associateWithExtruderNumber = 0;
+        } else
+        {
+            associateWithExtruderNumber = 1;
+        }
     }
 
     private void setUpGCodeRelated(GCodeMeshData gcodeMeshData1, ArrayList<String> fileLines1)
@@ -258,6 +259,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     private void initialise(String name)
     {
+        associateWithExtruderNumber = 0;
         shapeChangeListeners = new ArrayList<>();
         steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
         printBed = PrintBed.getInstance();
@@ -1595,5 +1597,26 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public Point3D transformMeshToRealWorldCoordinates(float vertexX, float vertexY, float vertexZ)
     {
         return localToParent(meshGroup.localToParent(vertexX, vertexY, vertexZ));
+    }
+
+    /**
+     * If this model is associated with the given extruder number then recolour it to the given
+     * colour.
+     */
+    public void setColour(int extruderNumber, Color displayColour)
+    {
+        if (extruderNumber == associateWithExtruderNumber)
+        {
+            PhongMaterial meshMaterial = new PhongMaterial(Color.rgb(65, 65, 65));
+
+            meshMaterial.setSpecularColor(Color.WHITE);
+
+            meshMaterial.setSpecularPower(5.0);
+            for (Node mesh : meshGroup.getChildren())
+            {
+                MeshView meshView = (MeshView) mesh;
+                meshView.setMaterial(meshMaterial);
+            }
+        }
     }
 }
