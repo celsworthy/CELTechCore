@@ -14,6 +14,7 @@ import java.net.URL;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -37,6 +38,8 @@ public class MaterialComponent extends Pane
     private Printer printer;
     private int extruderNumber;
     private Mode mode;
+    private boolean selected;
+    private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
 
     public enum ReelType
     {
@@ -299,5 +302,14 @@ public class MaterialComponent extends Pane
         reelSVGGears.setStyle("-fx-fill: #" + colourString + ";");
         reelSVGSolid.setStyle("-fx-fill: #" + colourString + ";");
     }
+    
+    /**
+     * Visually indicate that this component is selected.
+     */
+    public void select(boolean selected)
+    {
+        this.selected = selected;
+        anchorPane.pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, selected);
+    }    
 
 }

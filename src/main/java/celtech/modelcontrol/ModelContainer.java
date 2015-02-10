@@ -113,9 +113,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
     private Set<Node> selectedMarkers;
     
-    private int displayColourExtruder0;
-    private int displayColourExtruder1;
-
+    boolean useExtruder0Filament = true;
+    
     public ModelContainer()
     {
         super();

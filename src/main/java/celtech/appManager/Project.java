@@ -1,6 +1,7 @@
 package celtech.appManager;
 
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.modelcontrol.ModelContainer;
@@ -39,6 +40,8 @@ public class Project implements Serializable
     private String customProfileName = "";
     private BooleanProperty isDirty = new SimpleBooleanProperty(false);
     private String lastPrintJobID = "";
+    private Filament extruder0ChosenFilament;
+    private Filament extruder1ChosenFilament;
 
     /**
      *

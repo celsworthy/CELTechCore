@@ -1993,6 +1993,11 @@ modal-dialogue{
 * Filament choice combo
 */
 
+#MaterialComponentAnchorPane:selected {
+    -fx-border-color: white;
+    -fx-border-width: 3;
+}
+
 #cmbMaterials {
     -fx-font-familty: 'Source Sans Pro Regular';
 }

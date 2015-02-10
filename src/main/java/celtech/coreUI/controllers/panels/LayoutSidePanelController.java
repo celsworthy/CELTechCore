@@ -110,6 +110,8 @@ public class LayoutSidePanelController implements Initializable,
     
     private MaterialComponent materialComponent0;
     private MaterialComponent materialComponent1;
+    
+    private MaterialComponent selectedMaterialComponent;
 
     @FXML
     void changeToSettings(MouseEvent event)
@@ -179,6 +181,7 @@ public class LayoutSidePanelController implements Initializable,
         setUpModelGeometryListeners();
         setUpKeyPressListeners();
         setupMaterialContainer();
+        select(materialComponent0);
     }
 
     private void setUpModelGeometryListeners()
@@ -755,5 +758,27 @@ public class LayoutSidePanelController implements Initializable,
         materialComponent1 = new MaterialComponent();
         materialComponent1.setMode(MaterialComponent.Mode.LAYOUT);
         materialContainer.getChildren().addAll(materialComponent0, materialComponent1);
+        
+        materialComponent0.setOnMouseClicked((MouseEvent event) ->
+        {
+            select(materialComponent0);
+        });
+        
+        materialComponent1.setOnMouseClicked((MouseEvent event) ->
+        {
+            select(materialComponent1);
+        });
+    }
+    
+    private void deselectMaterials() {
+        materialComponent0.select(false);
+        materialComponent1.select(false);
+    }
+
+    private void select(MaterialComponent materialComponent)
+    {
+        deselectMaterials();
+        materialComponent.select(true);
+        selectedMaterialComponent = materialComponent;
     }
 }
