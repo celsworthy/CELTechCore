@@ -5,6 +5,7 @@ import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.components.printerstatus.PrinterComponent;
+import celtech.printerControl.model.Extruder;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.PrinterAncillarySystems;
@@ -46,17 +47,12 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private final Stenographer steno = StenographerFactory.getStenographer(
         PrinterStatusSidePanelController.class.getName());
     
-    @FXML
+    private MaterialComponent material0;
+    
     private MaterialComponent material1;
     
     @FXML
-    private MaterialComponent material2;
-    
-    @FXML
-    private HBox materialContainer1;
-    
-    @FXML
-    private HBox materialContainer2;
+    private HBox materialContainer;
     
     @FXML
     private HBox temperatureChartXLabels;
@@ -166,7 +162,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         
         printerIDDialog = new PrinterIDDialog();
         
-        materialContainer2.setVisible(false);
         speedSliderHBox.setVisible(false);
         
         initialiseTemperatureChart();
@@ -306,12 +301,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             {
                 unbindHeadProperties(selectedPrinter.headProperty().get());
             }
-            
-            selectedPrinter.reelsProperty().entrySet().stream().forEach(
-                entry ->
-                {
-                    unbindReelExtruderProperties(entry.getKey(), entry.getValue());
-                });
         }
         
         if (printer != null)
@@ -324,13 +313,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             {
                 bindHeadProperties(printer.headProperty().get());
             }
-            
-            printer.reelsProperty().entrySet().stream().forEach(
-                entry ->
-                {
-                    bindReelExtruderProperties(entry.getKey(), entry.getValue());
-                    updateReelExtruderMaterial(entry.getKey(), entry.getValue());
-                });
         }
         controlDetailsVisibility();
         
@@ -450,11 +432,29 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             feedRateMultiplierProperty().get());
         speedMultiplierSlider.valueProperty().addListener(speedMultiplierListener);
         
-        materialContainer2.visibleProperty().bind(printer.getPrinterAncillarySystems().
-            dualReelAdaptorPresentProperty());
+        bindMaterialContainer(printer);
         
         printer.getPrinterAncillarySystems().feedRateMultiplierProperty().addListener(
             feedRateChangeListener);
+    }
+
+    private void bindMaterialContainer(Printer printer)
+    {
+        materialContainer.getChildren().clear();
+        for (int extruderNumber = 0; extruderNumber < 2; extruderNumber++)
+        {
+            Extruder extruder = printer.extrudersProperty().get(extruderNumber);
+            if (extruder.isFittedProperty().get())
+            {
+                MaterialComponent materialComponent = 
+                    new MaterialComponent(MaterialComponent.Mode.STATUS, printer, extruderNumber);
+                materialContainer.getChildren().add(materialComponent);
+            }
+        }
+    }
+    
+    private void unbindMaterialContainer() {
+        materialContainer.getChildren().clear();
     }
     
     private void unbindPrinter(Printer printer)
@@ -463,12 +463,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         {
             unbindHeadProperties(printer.headProperty().get());
         }
-        
-        printer.reelsProperty().entrySet().stream().forEach(
-            entry ->
-            {
-                unbindReelExtruderProperties(entry.getKey(), entry.getValue());
-            });
         
         chartManager.clearAmbientData();
         chartManager.clearBedData();
@@ -479,40 +473,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         speedSliderHBox.setVisible(false);
         speedMultiplierSlider.valueProperty().removeListener(speedMultiplierListener);
         
-        materialContainer2.visibleProperty().unbind();
-        
         printer.getPrinterAncillarySystems().feedRateMultiplierProperty().removeListener(
             feedRateChangeListener);
-    }
-    
-    private ChangeListener<Object> reelListener;
-    
-    private void unbindReelExtruderProperties(int reelNumber, Reel reel)
-    {
-        if (reel != null)
-        {
-            reel.friendlyFilamentNameProperty().removeListener(reelListener);
-            reel.displayColourProperty().removeListener(reelListener);
-            reel.remainingFilamentProperty().removeListener(reelListener);
-            reel.diameterProperty().removeListener(reelListener);
-            reel.materialProperty().removeListener(reelListener);
-        }
-    }
-    
-    private void bindReelExtruderProperties(int reelNumber, Reel reel)
-    {
-        if (reel != null)
-        {
-            reelListener = (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
-            {
-                updateReelExtruderMaterial(reelNumber, reel);
-            };
-            reel.friendlyFilamentNameProperty().addListener(reelListener);
-            reel.displayColourProperty().addListener(reelListener);
-            reel.remainingFilamentProperty().addListener(reelListener);
-            reel.diameterProperty().addListener(reelListener);
-            reel.materialProperty().addListener(reelListener);
-        }
+        
+        unbindMaterialContainer();
     }
     
     private void unbindHeadProperties(Head head)
@@ -537,34 +501,14 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         });
     }
 
-    /**
-     * Update the material component with the appropriate details.
-     */
-    private void updateReelExtruderMaterial(int reelNumber, Reel reel)
-    {
-        MaterialComponent materialComponent = reelNumber == 0 ? material1 : material2;
-        if (reel == null)
-        {
-            materialComponent.showFilamentNotLoaded();
-        } else
-        {
-            materialComponent.setMaterial(reelNumber, reel.materialProperty().get(),
-                                          reel.friendlyFilamentNameProperty().get(),
-                                          reel.displayColourProperty().get(),
-                                          reel.remainingFilamentProperty().get(),
-                                          reel.diameterProperty().get());
-        }
-    }
-    
     private void controlDetailsVisibility()
     {
         boolean visible = connectedPrinters.size() > 0;
         
         temperatureChart.setVisible(visible);
         temperatureChartXLabels.setVisible(visible);
-        materialContainer1.setVisible(visible);
-        
         legendContainer.setVisible(visible);
+        materialContainer.setVisible(visible);
     }
     
     @Override
@@ -578,8 +522,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         clearAndAddAllPrintersToGrid();
         selectPrinter(printer);
         controlDetailsVisibility();
-        updateReelExtruderMaterial(0, null);
-        updateReelExtruderMaterial(1, null);
     }
     
     @Override
@@ -613,22 +555,11 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @Override
     public void whenReelAdded(Printer printer, int reelIndex)
     {
-        if (printer == selectedPrinter)
-        {
-            Reel reel = printer.reelsProperty().get(reelIndex);
-            bindReelExtruderProperties(reelIndex, reel);
-            updateReelExtruderMaterial(reelIndex, reel);
-        }
     }
     
     @Override
     public void whenReelRemoved(Printer printer, Reel reel, int reelNumber)
     {
-        if (printer == selectedPrinter)
-        {
-            unbindReelExtruderProperties(reelNumber, reel);
-            updateReelExtruderMaterial(reelNumber, null);
-        }
     }
     
     @Override

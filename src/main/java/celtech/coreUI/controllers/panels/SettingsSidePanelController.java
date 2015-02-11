@@ -487,9 +487,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             Extruder extruder = printer.extrudersProperty().get(extruderNumber);
             if (extruder.isFittedProperty().get())
             {
-                MaterialComponent materialComponent = new MaterialComponent();
-                materialComponent.setPrinterExtruder(printer, extruderNumber);
-                materialComponent.setMode(MaterialComponent.Mode.SETTINGS);
+                MaterialComponent materialComponent = 
+                    new MaterialComponent(MaterialComponent.Mode.SETTINGS, printer, extruderNumber);
                 materialContainer.getChildren().add(materialComponent);
             }
         }

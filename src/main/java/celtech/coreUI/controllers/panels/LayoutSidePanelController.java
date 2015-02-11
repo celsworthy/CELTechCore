@@ -758,10 +758,8 @@ public class LayoutSidePanelController implements Initializable,
 
     private void setupMaterialContainer()
     {
-        materialComponent0 = new MaterialComponent();
-        materialComponent0.setMode(MaterialComponent.Mode.LAYOUT);
-        materialComponent1 = new MaterialComponent();
-        materialComponent1.setMode(MaterialComponent.Mode.LAYOUT);
+        materialComponent0 = new MaterialComponent(MaterialComponent.Mode.LAYOUT, null, 0);
+        materialComponent1 = new MaterialComponent(MaterialComponent.Mode.LAYOUT, null, 0);
         materialContainer.getChildren().addAll(materialComponent0, materialComponent1);
 
         materialComponent0.setOnMouseClicked((MouseEvent event) ->

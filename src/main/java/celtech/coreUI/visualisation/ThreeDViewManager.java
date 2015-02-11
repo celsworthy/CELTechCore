@@ -346,6 +346,7 @@ public class ThreeDViewManager
         if (modelContainer != null)
         {
             modelContainer.setUseExtruder0Filament(false);
+            updateModelColour(modelContainer);
             layoutSubmode.set(LayoutSubmode.SELECT);
             layoutToolGovernor.deactivateAnySelectedTool();
             DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
@@ -357,6 +358,7 @@ public class ThreeDViewManager
         if (modelContainer != null)
         {
             modelContainer.setUseExtruder0Filament(true);
+            updateModelColour(modelContainer);
             layoutSubmode.set(LayoutSubmode.SELECT);
             layoutToolGovernor.deactivateAnySelectedTool();
             DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
