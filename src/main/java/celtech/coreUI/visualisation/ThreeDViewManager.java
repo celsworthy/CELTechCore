@@ -759,7 +759,9 @@ public class ThreeDViewManager
     {
         for (ModelContainer model : selectedModelContainers.getSelectedModelsSnapshot())
         {
-            addModel(model.makeCopy());
+            ModelContainer copy = model.makeCopy();
+            addModel(copy);
+            updateModelColour(copy);
         }
         collideModels();
     }

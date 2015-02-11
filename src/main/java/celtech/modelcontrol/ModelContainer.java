@@ -316,6 +316,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         copy.setScale(this.getScale());
         copy.setRotationY(this.getRotationY());
         copy.setSnapFaceIndex(snapFaceIndex);
+        copy.setAssociateWithExtruderNumber(associateWithExtruderNumber);
         return copy;
     }
 
@@ -1599,6 +1600,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public Point3D transformMeshToRealWorldCoordinates(float vertexX, float vertexY, float vertexZ)
     {
         return localToParent(meshGroup.localToParent(vertexX, vertexY, vertexZ));
+    }
+    
+    void setAssociateWithExtruderNumber(int associateWithExtruderNumber) {
+        this.associateWithExtruderNumber = associateWithExtruderNumber;
     }
 
     /**
