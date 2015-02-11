@@ -818,4 +818,14 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     public void whenReelChanged(Printer printer, Reel reel)
     {
     }
+
+    @Override
+    public void whenExtruderAdded(Printer printer, int extruderIndex)
+    {
+    }
+
+    @Override
+    public void whenExtruderRemoved(Printer printer, int extruderIndex)
+    {
+    }
 }

@@ -312,4 +312,14 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
             populateSelectedPrinter();
         }
     }
+
+    @Override
+    public void whenExtruderAdded(Printer printer, int extruderIndex)
+    {
+    }
+
+    @Override
+    public void whenExtruderRemoved(Printer printer, int extruderIndex)
+    {
+    }
 }

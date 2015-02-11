@@ -189,13 +189,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     private void updateGUIForModeAndPrinterExtruder() {
         switch (mode)
         {
-//            case STATUS_CUSTOM:
-//                cmbMaterials.setVisible(true);
-//                materialColourContainer.setVisible(false);
-//                materialRemainingContainer.setVisible(true);
-//                showMaterialDetails();
-//                setReelType(ReelType.SOLID_QUESTION);
-//                break;
             case STATUS:
                 cmbMaterials.setVisible(false);
                 materialColourContainer.setVisible(true);
@@ -234,6 +227,12 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     {
         if (printer.reelsProperty().containsKey(extruderNumber)) {
             setReelType(ReelType.ROBOX);
+            Reel reel = printer.reelsProperty().get(extruderNumber);
+            setMaterial(extruderNumber, reel.materialProperty().get(),
+                                          reel.friendlyFilamentNameProperty().get(),
+                                          reel.displayColourProperty().get(),
+                                          reel.remainingFilamentProperty().get(),
+                                          reel.diameterProperty().get());
         } else {
             showReelNotLoaded();
         }
@@ -257,26 +256,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     }
     
     private ChangeListener<Object> reelListener;
-    
-    /**
-     * Update the material component with the appropriate details.
-     */
-    private void updateReelExtruderMaterial(int reelNumber, Reel reel)
-    {
-        if (reel == null)
-        {
-            showFilamentNotLoaded();
-        } else
-        {
-            setMaterial(reelNumber, reel.materialProperty().get(),
-                                          reel.friendlyFilamentNameProperty().get(),
-                                          reel.displayColourProperty().get(),
-                                          reel.remainingFilamentProperty().get(),
-                                          reel.diameterProperty().get());
-        }
-    }    
-    
-//   
 
     public void setReelType(ReelType reelType)
     {
@@ -419,6 +398,18 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
          if (this.printer == printer) {
             updateGUIForModeAndPrinterExtruder();
         }
+    }    
+    
+    @Override
+    public void whenExtruderAdded(Printer printer, int extruderIndex)
+    {
+        
+    }
+
+    @Override
+    public void whenExtruderRemoved(Printer printer, int extruderIndex)
+    {
+        
     }    
 
 //        private void unbindReelExtruderProperties(int reelNumber, Reel reel)

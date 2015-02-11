@@ -3,6 +3,7 @@
  */
 package celtech.utils;
 
+import celtech.printerControl.model.Extruder;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Reel;
@@ -10,12 +11,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 
 /**
- * PrinterChangesNotifier listens to a list of printers and notifies registered listeners about the following events:
+ * PrinterChangesNotifier listens to a list of printers and notifies registered listeners about the
+ * following events:
  * <p>
  * - Head added to printer<p>
  * - Head removed from printer<p>
@@ -42,6 +45,9 @@ public class PrinterChangesNotifier
     List<PrinterChangesListener> listeners = new ArrayList<>();
     private final Map<Reel, ReelChangesListener> reelListeners = new HashMap<>();
     private final Map<Reel, ReelChangesNotifier> reelNotifiers = new HashMap<>();
+
+    private ChangeListener<Boolean> extruder0Listener;
+    private ChangeListener<Boolean> extruder1Listener;
 
     public PrinterChangesNotifier(Printer printer)
     {
@@ -86,6 +92,42 @@ public class PrinterChangesNotifier
                 }
             }
         });
+
+        Extruder extruder0 = printer.extrudersProperty().get(0);
+        if (extruder0 != null)
+        {
+            extruder0Listener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                for (PrinterChangesListener listener : listeners)
+                {
+                    if (printer.extrudersProperty().get(0).isFittedProperty().get())
+                    {
+                        listener.whenExtruderAdded(0);
+                    } else {
+                        listener.whenExtruderRemoved(0);
+                    }
+                }
+            };
+            extruder0.isFittedProperty().addListener(extruder0Listener);
+        }
+        
+        Extruder extruder1 = printer.extrudersProperty().get(1);
+        if (extruder1 != null)
+        {
+            extruder1Listener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                for (PrinterChangesListener listener : listeners)
+                {
+                    if (printer.extrudersProperty().get(1).isFittedProperty().get())
+                    {
+                        listener.whenExtruderAdded(1);
+                    } else {
+                        listener.whenExtruderRemoved(1);
+                    }
+                }
+            };
+            extruder1.isFittedProperty().addListener(extruder0Listener);
+        }        
     }
 
     public void addListener(PrinterChangesListener listener)

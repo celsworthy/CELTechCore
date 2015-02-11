@@ -121,6 +121,18 @@ public class PrinterListChangesNotifier
             {
                 fireWhenReelChanged(printer, reel);
             }
+            
+            @Override
+            public void whenExtruderAdded(int extruderIndex)
+            {
+                fireWhenExtruderAdded(printer, extruderIndex);
+            }
+
+            @Override
+            public void whenExtruderRemoved(int extruderIndex)
+            {
+                fireWhenExtruderRemoved(printer, extruderIndex);
+            }            
 
         };
         printerListeners.put(printer, printerChangesListener);
@@ -195,5 +207,21 @@ public class PrinterListChangesNotifier
             listener.whenReelChanged(printer, reel);
         }
     }
+    
+    private void fireWhenExtruderAdded(Printer printer, int extruderIndex)
+    {
+        for (PrinterListChangesListener listener : listeners)
+        {
+            listener.whenExtruderAdded(printer, extruderIndex);
+        }
+    }
+
+    private void fireWhenExtruderRemoved(Printer printer, int extruderIndex)
+    {
+        for (PrinterListChangesListener listener : listeners)
+        {
+            listener.whenExtruderRemoved(printer, extruderIndex);
+        }
+    }    
 
 }

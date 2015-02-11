@@ -810,4 +810,20 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     public void whenReelChanged(Printer printer, Reel reel)
     {
     }
+
+    @Override
+    public void whenExtruderAdded(Printer printer, int extruderIndex)
+    {
+        if (printer == currentPrinter) {
+            configureMaterialComponents(printer);
+        }    
+    }
+
+    @Override
+    public void whenExtruderRemoved(Printer printer, int extruderIndex)
+    {
+        if (printer == currentPrinter) {
+            configureMaterialComponents(printer);
+        }          
+    }
 }

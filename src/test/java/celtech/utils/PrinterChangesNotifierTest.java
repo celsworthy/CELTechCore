@@ -121,6 +121,16 @@ public class PrinterChangesNotifierTest
         {
             reel0Changed = true;
         }        
+
+        @Override
+        public void whenExtruderAdded(int extruderIndex)
+        {
+        }
+
+        @Override
+        public void whenExtruderRemoved(int extruderIndex)
+        {
+        }
         
     }
 

@@ -378,7 +378,17 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     @Override
     public void whenReelChanged(Printer printer, Reel reel)
     {
-    }     
+    }
+    
+    @Override
+    public void whenExtruderAdded(Printer printer, int extruderIndex)
+    {
+    }
+
+    @Override
+    public void whenExtruderRemoved(Printer printer, int extruderIndex)
+    {
+    }    
     
     private ChangeListener<Object> headChangeListener;
 

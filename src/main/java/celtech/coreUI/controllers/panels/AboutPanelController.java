@@ -11,7 +11,6 @@ import celtech.printerControl.model.Reel;
 import celtech.utils.PrinterListChangesListener;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -91,6 +90,16 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
 
     @Override
     public void whenReelChanged(Printer printer, Reel reel)
+    {
+    }
+
+    @Override
+    public void whenExtruderAdded(Printer printer, int extruderIndex)
+    {
+    }
+
+    @Override
+    public void whenExtruderRemoved(Printer printer, int extruderIndex)
     {
     }
 }

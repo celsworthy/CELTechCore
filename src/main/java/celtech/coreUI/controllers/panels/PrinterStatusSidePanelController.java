@@ -566,5 +566,21 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     public void whenReelChanged(Printer printer, Reel reel)
     {
     }
+
+    @Override
+    public void whenExtruderAdded(Printer printer, int extruderIndex)
+    {
+        if (printer == selectedPrinter) {
+            bindMaterialContainer(printer);
+        }
+    }
+
+    @Override
+    public void whenExtruderRemoved(Printer printer, int extruderIndex)
+    {
+        if (printer == selectedPrinter) {
+            bindMaterialContainer(printer);
+        }
+    }
     
 }
