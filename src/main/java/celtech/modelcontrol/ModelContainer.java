@@ -118,6 +118,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * Print the part using extruder0 or extruder1.
      */
     private int associateWithExtruderNumber;
+    private PhongMaterial material;
 
     /**
      *
@@ -259,6 +260,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     private void initialise(String name)
     {
+        material = ApplicationMaterials.getDefaultModelMaterial();
         associateWithExtruderNumber = 0;
         shapeChangeListeners = new ArrayList<>();
         steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
@@ -499,7 +501,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 meshView.setMaterial(ApplicationMaterials.getCollidedModelMaterial());
             } else
             {
-                meshView.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+                meshView.setMaterial(material);
             }
         } else
         {
@@ -1603,20 +1605,20 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * If this model is associated with the given extruder number then recolour it to the given
      * colour.
      */
-    public void setColour(int extruderNumber, Color displayColour)
+    public void setColour(Color displayColourExtruder0, Color displayColourExtruder1)
     {
-        if (extruderNumber == associateWithExtruderNumber)
+        PhongMaterial meshMaterial = null;
+        if (associateWithExtruderNumber == 0)
         {
-            PhongMaterial meshMaterial = new PhongMaterial(Color.rgb(65, 65, 65));
-
-            meshMaterial.setSpecularColor(Color.WHITE);
-
-            meshMaterial.setSpecularPower(5.0);
-            for (Node mesh : meshGroup.getChildren())
-            {
-                MeshView meshView = (MeshView) mesh;
-                meshView.setMaterial(meshMaterial);
-            }
+            meshMaterial = new PhongMaterial(displayColourExtruder0);
+        } else {
+            meshMaterial = new PhongMaterial(displayColourExtruder1);
+        }    
+        material = meshMaterial;
+        for (Node mesh : meshGroup.getChildren())
+        {
+            MeshView meshView = (MeshView) mesh;
+            meshView.setMaterial(meshMaterial);
         }
     }
 }

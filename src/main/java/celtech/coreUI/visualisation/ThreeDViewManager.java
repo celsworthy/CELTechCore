@@ -141,9 +141,6 @@ public class ThreeDViewManager
     private double gizmoRotationOffset = 0;
     private boolean gizmoRotationStarted = false;
 
-    private Filament extruder0Filament;
-    private Filament extruder1Filament;
-
     private final AnimationTimer settingsScreenAnimationTimer = new AnimationTimer()
     {
         @Override
@@ -157,6 +154,9 @@ public class ThreeDViewManager
             }
         }
     };
+    private ToolGovernor layoutToolGovernor;
+    private Filament extruder0Filament;
+    private Filament extruder1Filament;
 
     /**
      *
@@ -274,84 +274,103 @@ public class ThreeDViewManager
                 modelContainer = (ModelContainer) intersectedNode.getParent().getParent();
             }
 
-            if (layoutSubmode.get().equals(LayoutSubmode.SNAP_TO_GROUND))
+            switch (layoutSubmode.get())
             {
-                if (modelContainer != null)
-                {
-                    int faceNumber = pickResult.getIntersectedFace();
-                    snapToGround(modelContainer, faceNumber);
-                    collideModels();
-                    DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-                }
-                return;
+                case SNAP_TO_GROUND:
+                    doSnapToGround(modelContainer, pickResult);
+                    break;
+                case ASSOCIATE_WITH_EXTRUDER0:
+                    doAssociateWithExtruder0(modelContainer);
+                    break;
+                case ASSOCIATE_WITH_EXTRUDER1:
+                    doAssociateWithExtruder1(modelContainer);
+                    break;
+                case SELECT:
+                    doSelectTranslateModel(intersectedNode, pickedPoint, event);
+                    break;
             }
+        }
+    }
 
-            if (layoutSubmode.get().equals(LayoutSubmode.ASSOCIATE_WITH_EXTRUDER0))
+    private void doSelectTranslateModel(Node intersectedNode, Point3D pickedPoint, MouseEvent event)
+    {
+        Point3D pickedScenePoint = intersectedNode.localToScene(pickedPoint);
+        Point3D pickedBedTranslateXformPoint = bedTranslateXform.sceneToLocal(
+            pickedScenePoint);
+        
+        translationDragPlane.setTranslateY(pickedBedTranslateXformPoint.getY());
+        Point3D pickedDragPlanePoint = translationDragPlane.sceneToLocal(
+            pickedScenePoint);
+        lastDragPosition = pickedDragPlanePoint;
+        
+        Point3D bedXToS = bedTranslateXform.localToParent(pickedPoint);
+        scaleDragPlane.setTranslateX(bedXToS.getX());
+        scaleDragPlane.setTranslateY(bedXToS.getY());
+        scaleDragPlane.setTranslateZ(pickedPoint.getZ());
+        
+        setDragMode(DragMode.TRANSLATING);
+        
+        if (intersectedNode != null)
+        {
+            if (intersectedNode instanceof MeshView)
             {
-                if (modelContainer != null)
+                Parent parent = intersectedNode.getParent();
+                if (!(parent instanceof ModelContainer))
                 {
-                    modelContainer.setUseExtruder0Filament(true);
-                    layoutSubmode.set(LayoutSubmode.SELECT);
-                    DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+                    parent = parent.getParent();
                 }
-                return;
-            }
-
-            if (layoutSubmode.get().equals(LayoutSubmode.ASSOCIATE_WITH_EXTRUDER1))
-            {
-                if (modelContainer != null)
+                
+                ModelContainer pickedModel = (ModelContainer) parent;
+                
+                if (pickedModel.isSelected() == false)
                 {
-                    modelContainer.setUseExtruder0Filament(false);
-                    layoutSubmode.set(LayoutSubmode.SELECT);
-                    DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-                }
-                return;
-            }
-
-            Point3D pickedScenePoint = intersectedNode.localToScene(pickedPoint);
-            Point3D pickedBedTranslateXformPoint = bedTranslateXform.sceneToLocal(pickedScenePoint);
-
-            translationDragPlane.setTranslateY(pickedBedTranslateXformPoint.getY());
-            Point3D pickedDragPlanePoint = translationDragPlane.sceneToLocal(pickedScenePoint);
-            lastDragPosition = pickedDragPlanePoint;
-
-            Point3D bedXToS = bedTranslateXform.localToParent(pickedPoint);
-            scaleDragPlane.setTranslateX(bedXToS.getX());
-            scaleDragPlane.setTranslateY(bedXToS.getY());
-            scaleDragPlane.setTranslateZ(pickedPoint.getZ());
-
-            setDragMode(DragMode.TRANSLATING);
-
-            if (intersectedNode != null)
-            {
-                if (intersectedNode instanceof MeshView)
+                    boolean multiSelect = event.isShortcutDown();
+                    selectModel(pickedModel, multiSelect);
+                } else
                 {
-                    Parent parent = intersectedNode.getParent();
-                    if (!(parent instanceof ModelContainer))
+                    boolean multiSelect = event.isShortcutDown();
+                    if (multiSelect)
                     {
-                        parent = parent.getParent();
+                        deselectModel(pickedModel);
                     }
-
-                    ModelContainer pickedModel = (ModelContainer) parent;
-
-                    if (pickedModel.isSelected() == false)
-                    {
-                        boolean multiSelect = event.isShortcutDown();
-                        selectModel(pickedModel, multiSelect);
-                    } else
-                    {
-                        boolean multiSelect = event.isShortcutDown();
-                        if (multiSelect)
-                        {
-                            deselectModel(pickedModel);
-                        }
-                    }
-                } else if (true) //intersectedNode == subScene)
-                {
-                    selectedModelContainers.deselectAllModels();
                 }
-
+            } else if (true) //intersectedNode == subScene)
+            {
+                selectedModelContainers.deselectAllModels();
             }
+        }
+    }
+
+    private void doAssociateWithExtruder1(ModelContainer modelContainer)
+    {
+        if (modelContainer != null)
+        {
+            modelContainer.setUseExtruder0Filament(false);
+            layoutSubmode.set(LayoutSubmode.SELECT);
+            layoutToolGovernor.deactivateAnySelectedTool();
+            DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+        }
+    }
+
+    private void doAssociateWithExtruder0(ModelContainer modelContainer)
+    {
+        if (modelContainer != null)
+        {
+            modelContainer.setUseExtruder0Filament(true);
+            layoutSubmode.set(LayoutSubmode.SELECT);
+            layoutToolGovernor.deactivateAnySelectedTool();
+            DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+        }
+    }
+
+    private void doSnapToGround(ModelContainer modelContainer, PickResult pickResult)
+    {
+        if (modelContainer != null)
+        {
+            int faceNumber = pickResult.getIntersectedFace();
+            snapToGround(modelContainer, faceNumber);
+            collideModels();
+            DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
         }
     }
 
@@ -1073,6 +1092,7 @@ public class ThreeDViewManager
     public void activateSnapToGround()
     {
         layoutSubmode.set(LayoutSubmode.SNAP_TO_GROUND);
+        layoutToolGovernor.deactivateAnySelectedTool();
     }
 
     private void snapToGround(ModelContainer modelContainer, int faceNumber)
@@ -1421,21 +1441,26 @@ public class ThreeDViewManager
     public void setExtruder0Filament(Filament filament)
     {
         extruder0Filament = filament;
-        setModelColoursForExtruder(0, filament);
-    }
-
-    private void setModelColoursForExtruder(int extruderNumber, Filament filament)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            model.setColour(extruderNumber, filament.getDisplayColour());
-        }
+        updateModelColours();
     }
 
     public void setExtruder1Filament(Filament filament)
     {
         extruder1Filament = filament;
-        setModelColoursForExtruder(1, filament);
+        updateModelColours();
+    }    
+
+    private void updateModelColours()
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            updateModelColour(model);
+        }
+    }
+
+    private void updateModelColour(ModelContainer model)
+    {
+        model.setColour(extruder0Filament.getDisplayColour(), extruder1Filament.getDisplayColour());
     }
 
     public SelectedModelContainers getSelectedModelContainers()
@@ -1459,8 +1484,18 @@ public class ThreeDViewManager
         }
     }
 
-    public void activateChooseExtruder(int extruderNumber)
+    public interface ToolGovernor
     {
+
+        /**
+         * Deactivate any selected tool.
+         */
+        public void deactivateAnySelectedTool();
+    }
+
+    public void activateChooseExtruder(int extruderNumber, ToolGovernor layoutToolGovernor)
+    {
+        this.layoutToolGovernor = layoutToolGovernor;
         if (extruderNumber == 0)
         {
             layoutSubmode.set(LayoutSubmode.ASSOCIATE_WITH_EXTRUDER0);

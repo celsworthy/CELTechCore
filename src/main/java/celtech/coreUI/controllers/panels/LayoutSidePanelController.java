@@ -798,9 +798,9 @@ public class LayoutSidePanelController implements Initializable,
         selectedMaterialComponent = materialComponent;
         if (materialComponent == materialComponent0)
         {
-            get3DViewManager().activateChooseExtruder(0);
+            get3DViewManager().activateChooseExtruder(0, this::deselectMaterials);
         } else {
-            get3DViewManager().activateChooseExtruder(1);
+            get3DViewManager().activateChooseExtruder(1, this::deselectMaterials);
         }
     }
 }
