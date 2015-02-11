@@ -210,18 +210,19 @@ public class DummyPrinterCommandInterface extends CommandInterface
             {
                 boolean attachSuccess = false;
                 String filamentName = "";
+                int reelNumber = -1;
                 
                 String[] attachReelElements = messageData.replaceAll(attachReelCommand, "").trim().split(" ");
                 if (attachReelElements.length == 2)
                 {
                     filamentName = attachReelElements[0];
-                    int reelNumber = Integer.valueOf(attachReelElements[1]);
+                    reelNumber = Integer.valueOf(attachReelElements[1]);
                     attachSuccess = attachReel(filamentName, reelNumber);
                 }
                 
                 if (attachSuccess)
                 {
-                    gcodeResponse.setMessagePayload("Adding reel " + filamentName + " to dummy printer");
+                    gcodeResponse.setMessagePayload("Adding reel " + reelNumber + " " + filamentName + " to dummy printer");
                 } else
                 {
                     gcodeResponse.setMessagePayload("Couldn't attach reel - " + filamentName);
@@ -371,6 +372,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
             ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) RoboxRxPacketFactory.createPacket(RxPacketTypeEnum.REEL_1_EEPROM_DATA);
             
             reelResponse.updateContents(attachedReels[1]);
+            reelResponse.setReelNumber(1);
             response = (RoboxRxPacket) reelResponse;
         } else if (messageToWrite instanceof PausePrint)
         {

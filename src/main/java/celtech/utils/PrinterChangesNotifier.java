@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 
 /**
@@ -22,9 +21,11 @@ import javafx.collections.MapChangeListener;
  * <p>
  * - Head added to printer<p>
  * - Head removed from printer<p>
- * - Reel added to printer (with reel index)
+ * - Reel added to printer (with reel index) <p>
+ * - Extruder added (with extruder index)
  * <p>
- * - Reel removed from printer (with reel)
+ * - Reel removed from printer (with reel) <p>
+ * - Extruder added (with extruder index)
  * <p>
  * - Reel changed<p>
  * - Printer Identity changed<p>
@@ -34,8 +35,6 @@ import javafx.collections.MapChangeListener;
  * <p>
  * - Filament removed from extruder (with extruder index)
  * <p>
- *
- * XXX Always passes reel index = 0 at the moment.
  *
  * @author tony
  */
@@ -126,7 +125,7 @@ public class PrinterChangesNotifier
                     }
                 }
             };
-            extruder1.isFittedProperty().addListener(extruder0Listener);
+            extruder1.isFittedProperty().addListener(extruder1Listener);
         }        
     }
 
