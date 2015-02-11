@@ -1607,13 +1607,27 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public void setColour(Color displayColourExtruder0, Color displayColourExtruder1)
     {
+
         PhongMaterial meshMaterial = null;
         if (associateWithExtruderNumber == 0)
         {
-            meshMaterial = new PhongMaterial(displayColourExtruder0);
-        } else {
-            meshMaterial = new PhongMaterial(displayColourExtruder1);
-        }    
+            if (displayColourExtruder0 == null)
+            {
+                meshMaterial = ApplicationMaterials.getDefaultModelMaterial();
+            } else
+            {
+                meshMaterial = new PhongMaterial(displayColourExtruder0);
+            }
+        } else
+        {
+            if (displayColourExtruder1 == null)
+            {
+                meshMaterial = ApplicationMaterials.getDefaultModelMaterial();
+            } else
+            {
+                meshMaterial = new PhongMaterial(displayColourExtruder1);
+            }
+        }
         material = meshMaterial;
         for (Node mesh : meshGroup.getChildren())
         {

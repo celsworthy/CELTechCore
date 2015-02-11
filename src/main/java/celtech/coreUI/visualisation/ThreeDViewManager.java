@@ -1462,7 +1462,15 @@ public class ThreeDViewManager
 
     private void updateModelColour(ModelContainer model)
     {
-        model.setColour(extruder0Filament.getDisplayColour(), extruder1Filament.getDisplayColour());
+        Color colour0 = null;
+        Color colour1 = null;
+        if (extruder0Filament != null) {
+            colour0 = extruder0Filament.getDisplayColour();
+        }  
+        if (extruder1Filament != null) {
+            colour1 = extruder1Filament.getDisplayColour();
+        }           
+        model.setColour(colour0, colour1);
     }
 
     public SelectedModelContainers getSelectedModelContainers()
