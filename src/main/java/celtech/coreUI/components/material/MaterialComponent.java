@@ -313,7 +313,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     }
 
     /**
-     * Indicate that the reel is not formatted
+     * Indicate that the reel is not formatted.
      */
     private void showReelNotFormatted()
     {
@@ -324,12 +324,12 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
     }
 
-    private void showFilamentNotLoaded()
-    {
-        String pleaseCreateAProfile = Lookup.i18n("smartReelProgrammer.pleaseCreateAProfile");
-        String filamentNotLoadedString = Lookup.i18n("smartReelProgrammer.noReelLoaded");
-        showDetails("1:", pleaseCreateAProfile, filamentNotLoadedString, Color.BLACK);
-    }
+//    private void showFilamentNotLoaded()
+//    {
+//        String pleaseCreateAProfile = Lookup.i18n("smartReelProgrammer.pleaseCreateAProfile");
+//        String filamentNotLoadedString = Lookup.i18n("smartReelProgrammer.noReelLoaded");
+//        showDetails("1:", pleaseCreateAProfile, filamentNotLoadedString, Color.BLACK);
+//    }
     
     private void showReelNotLoaded()
     {

@@ -32,6 +32,7 @@ import javafx.scene.control.Slider;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -52,7 +53,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private MaterialComponent material1;
     
     @FXML
-    private HBox materialContainer;
+    private VBox materialContainer;
     
     @FXML
     private HBox temperatureChartXLabels;
