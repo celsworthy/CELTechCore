@@ -150,7 +150,7 @@ public class GCodeImporter
 //            fxtojmeInterface.sendGCodeModel(fFile.getName(), nodeList);
             DisplayManager.getInstance().setLayersInGCode(layerNumber);
 //            currentProject.setGCodeModelLoaded(fFile.getAbsolutePath());
-            steno.info("Loaded gcode " + fFile.getName());
+            steno.debug("Loaded gcode " + fFile.getName());
 
             ModelContainer modelContainer = new ModelContainer(fFile.getName(), new GCodeMeshData(gcodeParts, referencedElements, referencedLayers), fileLines);
 

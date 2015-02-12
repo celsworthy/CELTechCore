@@ -160,10 +160,10 @@ public class LayoutSidePanelController implements Initializable,
                         }
                     } else if (change.wasReplaced())
                     {
-                        steno.info("Replaced: ");
+                        steno.debug("Replaced: ");
                     } else if (change.wasUpdated())
                     {
-                        steno.info("Updated: ");
+                        steno.debug("Updated: ");
                     }
                 }
             }

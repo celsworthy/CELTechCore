@@ -93,7 +93,7 @@ public abstract class SlicerConfigWriter
                     value = valueElements[1];
                 }
 
-                steno.info("Writing default " + variableName);
+                steno.debug("Writing default " + variableName);
                 outputLine(writer, variableName, value);
             }
 
@@ -101,7 +101,7 @@ public abstract class SlicerConfigWriter
             {
                 String methodName = entry.getKey();
                 String targetVariableName = extractTargetVariableName(entry.getValue());
-                steno.info("Processing method: " + methodName + " and variable : " + targetVariableName);
+                steno.debug("Processing method: " + methodName + " and variable : " + targetVariableName);
 
                 Method getMethod = getVariableMethod(methodName);
 

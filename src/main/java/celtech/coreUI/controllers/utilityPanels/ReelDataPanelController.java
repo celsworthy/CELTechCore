@@ -106,7 +106,7 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
             FilamentContainer.saveFilament(newFilament);
         } catch (ParseException ex)
         {
-            steno.info("Parse error getting filament data");
+            steno.error("Parse error getting filament data");
         }
 
     }
@@ -130,7 +130,7 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
 
         } catch (ParseException ex)
         {
-            steno.info("Parse error getting filament data");
+            steno.error("Parse error getting filament data");
         }
     }
 

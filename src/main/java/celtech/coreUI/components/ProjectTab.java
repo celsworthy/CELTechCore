@@ -156,10 +156,10 @@ public class ProjectTab extends Tab
 
         setOnCloseRequest((Event t) ->
         {
-            steno.info("Beginning save");
+            steno.debug("Beginning project save");
             saveProject();
             projectManager.projectClosed(project);
-            steno.info("Completed save");
+            steno.debug("Completed project save");
         });
 
         viewManager = new ThreeDViewManager(project.getLoadedModels(),
@@ -279,7 +279,7 @@ public class ProjectTab extends Tab
             public void handle(DragEvent event)
             {
                 /* data dropped */
-                steno.info("onDragDropped");
+                steno.debug("onDragDropped");
                 /* if there is a string data on dragboard, read it and use it */
                 Dragboard db = event.getDragboard();
                 boolean success = false;
@@ -400,7 +400,7 @@ public class ProjectTab extends Tab
      */
     public void addModelContainer(String fullFilename, ModelContainer modelContainer)
     {
-        steno.info("I am loading " + fullFilename);
+        steno.debug("I am loading " + fullFilename);
         if (project.getProjectMode() == ProjectMode.NONE)
         {
             switch (modelContainer.getModelContentsType())

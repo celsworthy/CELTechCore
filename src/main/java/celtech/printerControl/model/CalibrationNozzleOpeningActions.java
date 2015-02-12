@@ -58,7 +58,6 @@ public class CalibrationNozzleOpeningActions
                 });
             });
         printerErrorHandler = new CalibrationOpeningErrorHandler(printer, cancellable);
-        printerErrorHandler.registerForPrinterErrors();
     }
 
 //    private void wrapInPrinterErrorCheck(NoArgsVoidFunc action, NoArgsVoidFunc continueHandler,
@@ -88,6 +87,8 @@ public class CalibrationNozzleOpeningActions
 //    }
     public void doHeatingAction() throws RoboxCommsException, PrinterException, InterruptedException, CalibrationException
     {
+        printerErrorHandler.registerForPrinterErrors();
+
         printer.inhibitHeadIntegrityChecks(true);
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_OPENING);
 
@@ -151,7 +152,7 @@ public class CalibrationNozzleOpeningActions
         printer.goToTargetNozzleTemperature();
         if (PrinterUtils.waitOnBusy(printer, cancellable) == false)
         {
-            printer.executeGCodeFile(GCodeMacros.getFilename("Home_all"));
+            printer.executeMacro("Home_all");
             if (PrinterUtils.waitOnMacroFinished(printer, cancellable) == false)
             {
                 printer.goToTargetNozzleTemperature();
@@ -375,6 +376,16 @@ public class CalibrationNozzleOpeningActions
         restoreHeadState();
         turnHeaterAndLEDSOff();
         printer.inhibitHeadIntegrityChecks(false);
+        try
+        {
+            if (printer.canCancelProperty().get())
+            {
+                printer.cancel(null);
+            }
+        } catch (PrinterException ex)
+        {
+            steno.error("Failed to cancel print - " + ex.getMessage());
+        }
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
@@ -536,5 +547,5 @@ public class CalibrationNozzleOpeningActions
     private void pressuriseSystem()
     {
         printer.sendRawGCode("G1 E4 F400", false);
-    }   
+    }
 }

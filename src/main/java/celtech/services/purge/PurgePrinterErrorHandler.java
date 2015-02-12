@@ -4,6 +4,8 @@
 package celtech.services.purge;
 
 import celtech.Lookup;
+import celtech.appManager.SystemNotificationManager;
+import celtech.appManager.SystemNotificationManager.PrinterErrorChoice;
 import celtech.coreUI.components.ChoiceLinkButton;
 import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.printerControl.comms.commands.rx.FirmwareError;
@@ -64,28 +66,53 @@ public class PurgePrinterErrorHandler
     {
         if (cancellable.cancelled == false)
         {
-            boolean allowContinue = false;
-            if (error == FirmwareError.D_FILAMENT_SLIP || error
-                == FirmwareError.E_FILAMENT_SLIP)
+            if (error == FirmwareError.B_POSITION_LOST)
             {
-                allowContinue = true;
+                // Do nothing for the moment...
+            } else if (error == FirmwareError.D_FILAMENT_SLIP
+                || error == FirmwareError.E_FILAMENT_SLIP)
+            {
+                Optional<PrinterErrorChoice> response = Lookup.getSystemNotificationHandler().
+                    showPrinterErrorDialog(
+                        error.getLocalisedErrorTitle(),
+                        error.getLocalisedErrorMessage(),
+                        true,
+                        true,
+                        false,
+                        false);
+
+                boolean abort = false;
+
+                if (response.isPresent())
+                {
+                    switch (response.get())
+                    {
+                        case ABORT:
+                            abort = true;
+                            break;
+                    }
+                } else
+                {
+                    abort = true;
+                }
+
+                if (abort)
+                {
+                    cancelPurge();
+                }
             } else
             {
-                // if not filament slip then cancel / abort printer activity immediately
+                // Must be something else
+                // if not filament slip or B POSITION then cancel / abort printer activity immediately
                 cancelPurge();
-            }
-            boolean abort = false;
-
-            if (!errorDialogIsOnDisplay)
-            {
-                errorDialogIsOnDisplay = true;
-                abort = showPrinterErrorOccurred(error, allowContinue);
-                errorDialogIsOnDisplay = false;
-            }
-            
-            if (abort && allowContinue)
-            {
-                cancelPurge();
+                Lookup.getSystemNotificationHandler().
+                    showPrinterErrorDialog(
+                        error.getLocalisedErrorTitle(),
+                        Lookup.i18n("error.purge.cannotContinue"),
+                        false,
+                        false,
+                        false,
+                        true);
             }
         }
     }
@@ -109,51 +136,4 @@ public class PurgePrinterErrorHandler
     {
         printer.deregisterErrorConsumer(errorConsumer);
     }
-
-    /**
-     * Show a dialog to the user asking them to choose between available Continue or Abort actions.
-     */
-    private boolean showPrinterErrorOccurred(FirmwareError error, boolean allowContinue)
-    {
-        Callable<Boolean> askUserWhetherToAbort = new Callable()
-        {
-            @Override
-            public Boolean call() throws Exception
-            {
-                ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox();
-                choiceLinkDialogBox.setTitle(Lookup.i18n(
-                    "dialogs.purge.printerErrorTitle"));
-//                choiceLinkDialogBox.setMessage(Lookup.i18n(
-//                    "dialogs.purge.printerError"));
-                choiceLinkDialogBox.setMessage(error.getLocalisedErrorTitle());
-                if (allowContinue)
-                {
-                    choiceLinkDialogBox.addChoiceLink(
-                        Lookup.i18n("error.handler.OK_CONTINUE.title"),
-                        Lookup.i18n("dialogs.purge.continueAfterPrinterError"));
-                }
-                ChoiceLinkButton abort = choiceLinkDialogBox.addChoiceLink(
-                    Lookup.i18n("error.handler.ABORT.title"),
-                    Lookup.i18n("dialogs.purge.abort"));
-
-                Optional<ChoiceLinkButton> shutdownResponse = choiceLinkDialogBox.
-                    getUserInput();
-
-                return shutdownResponse.get() == abort;
-            }
-        };
-
-        FutureTask<Boolean> askWhetherToAbortTask = new FutureTask<>(askUserWhetherToAbort);
-        Lookup.getTaskExecutor().runOnGUIThread(askWhetherToAbortTask);
-        try
-        {
-            boolean doAbort = askWhetherToAbortTask.get();
-            return doAbort;
-        } catch (InterruptedException | ExecutionException ex)
-        {
-            steno.error("Error during purge");
-        }
-        return true;
-    }
-
 }

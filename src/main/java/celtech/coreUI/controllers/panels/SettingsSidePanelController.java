@@ -384,10 +384,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         }
                     } else if (change.wasReplaced())
                     {
-                        steno.info("Replace");
+                        steno.debug("Replace");
                     } else if (change.wasUpdated())
                     {
-                        steno.info("Update");
+                        steno.debug("Update");
 
                     }
                 }

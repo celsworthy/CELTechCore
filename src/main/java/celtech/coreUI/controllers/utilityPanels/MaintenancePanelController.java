@@ -202,7 +202,7 @@ public class MaintenancePanelController implements Initializable
         {
             try
             {
-                connectedPrinter.executeGCodeFile(file.getAbsolutePath());
+                connectedPrinter.executeGCodeFile(file.getAbsolutePath(), true);
             } catch (PrinterException ex)
             {
                 steno.error("Error sending SD job");

@@ -4,11 +4,10 @@
 package celtech.printerControl.model;
 
 import celtech.Lookup;
-import celtech.appManager.SystemNotificationManager;
+import celtech.appManager.SystemNotificationManager.PrinterErrorChoice;
 import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.comms.events.ErrorConsumer;
 import celtech.utils.tasks.Cancellable;
-import celtech.utils.tasks.TaskExecutor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -16,13 +15,12 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
 /**
- * The CalibrationOpeningErrorHandler listens for printer errors and if they occur then the next
- * call to {@link #checkIfPrinterErrorHasOccurred()} will cause the user to get an Abort dialog,
- * which is followed by raising an exception.
+ * The CalibrationXYErrorHandler listens for printer errors and if they occur then cause the user to
+ * get a Continue/Abort dialog.
  *
  * @author tony
  */
-class CalibrationOpeningErrorHandler
+public class CalibrationXYErrorHandler
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -32,15 +30,7 @@ class CalibrationOpeningErrorHandler
     private final Printer printer;
     private Cancellable cancellable;
 
-    TaskExecutor.NoArgsVoidFunc continueHandler = null;
-    TaskExecutor.NoArgsVoidFunc retryHandler = null;
-    TaskExecutor.NoArgsVoidFunc abortHandler = () ->
-    {
-        cancellable.cancelled = true;
-        throw new CalibrationException("An error occurred with the printer");
-    };
-
-    public CalibrationOpeningErrorHandler(Printer printer, Cancellable cancellable)
+    public CalibrationXYErrorHandler(Printer printer, Cancellable cancellable)
     {
         this.printer = printer;
         this.cancellable = cancellable;
@@ -63,7 +53,7 @@ class CalibrationOpeningErrorHandler
     {
         if (errorOccurred)
         {
-            showPrinterErrorOccurred(continueHandler, abortHandler, retryHandler, lastError);
+            showPrinterErrorOccurred(lastError);
         }
 
         return errorOccurred;
@@ -71,21 +61,40 @@ class CalibrationOpeningErrorHandler
 
     ErrorConsumer errorConsumer = (FirmwareError error) ->
     {
-        steno.info(error.name() + " occurred during nozzle opening calibration");
-        // Filament slips can occur during pressurisation - we need to ignore them
+        boolean errorPopupRequired = false;
+
+        steno.info(error.name() + " occurred during nozzle XY calibration");
         // B Position Lost reflects that the printer has detected a non-fatal problem - ignore it
         //TODO modify for multiple extruders
-        if (error == FirmwareError.E_FILAMENT_SLIP
-            || error == FirmwareError.B_POSITION_LOST)
+        if (error == FirmwareError.B_POSITION_LOST)
         {
             steno.info("Discarded error " + error.name() + " during calibration");
+        } else if (error == FirmwareError.D_FILAMENT_SLIP
+            || error == FirmwareError.E_FILAMENT_SLIP)
+        {
+            boolean reachedLimit = runReducePrintSpeed(error);
+
+            if (reachedLimit)
+            {
+                errorPopupRequired = true;
+            }
         } else
         {
-            cancellable.cancelled = true;
+            errorPopupRequired = true;
+        }
+
+        if (errorPopupRequired)
+        {
             errorOccurred = true;
             lastError = error;
+            cancellable.cancelled = true;
         }
     };
+
+    private boolean runReducePrintSpeed(FirmwareError error)
+    {
+        return printer.doFilamentSlipWhilePrinting(error);
+    }
 
     public void deregisterForPrinterErrors()
     {
@@ -99,35 +108,28 @@ class CalibrationOpeningErrorHandler
      * actions. Call the chosen handler. If a given handler is null then that option will not be
      * offered to the user. At least one handler must be non-null.
      */
-    private void showPrinterErrorOccurred(TaskExecutor.NoArgsVoidFunc continueHandler,
-        TaskExecutor.NoArgsVoidFunc abortHandler, TaskExecutor.NoArgsVoidFunc retryHandler,
-        FirmwareError error) throws CalibrationException
+    private void showPrinterErrorOccurred(FirmwareError error) throws CalibrationException
     {
-        try
+        if (printer.canCancelProperty().get())
         {
-            Optional<SystemNotificationManager.PrinterErrorChoice> choice = Lookup.
-                getSystemNotificationHandler().showPrinterErrorDialog(
-                    error.getLocalisedErrorTitle(),
-                    Lookup.i18n("calibrationPanel.errorInPrinter"),
-                    false, false, false, true);
-            if (!choice.isPresent())
+            try
             {
-                cancellable.cancelled = true;
-                abortHandler.run();
-                return;
-            }
-            switch (choice.get())
+                printer.cancel(null);
+            } catch (PrinterException ex)
             {
-                case OK:
-                    cancellable.cancelled = true;
-                    abortHandler.run();
-                    break;
+                steno.error("Failed to cancel XY calibration print");
             }
-        } catch (Exception ex)
-        {
-            ex.printStackTrace();
-            throw new CalibrationException(ex.getMessage());
         }
-    }
 
+        Lookup.getSystemNotificationHandler().
+            showPrinterErrorDialog(
+                error.getLocalisedErrorTitle(),
+                Lookup.i18n("calibrationPanel.errorInPrinter"),
+                false,
+                false,
+                false,
+                true);
+
+        throw new CalibrationException("An error occurred with the printer");
+    }
 }
