@@ -707,15 +707,15 @@ public class LayoutSidePanelController implements Initializable,
         }
 
         boundProject = displayManager.getCurrentlyVisibleProject();
-        System.out.println("get filaments from project " + boundProject.getProjectName());
-        if (boundProject.getExtruder0FilamentProperty().get() != null)
-        {
-            System.out.println(boundProject.getExtruder0FilamentProperty().get().getFilamentID());
-        }
-        if (boundProject.getExtruder1FilamentProperty().get() != null)
-        {
-            System.out.println(boundProject.getExtruder1FilamentProperty().get().getFilamentID());
-        }
+//        System.out.println("get filaments from project " + boundProject.getProjectName());
+//        if (boundProject.getExtruder0FilamentProperty().get() != null)
+//        {
+//            System.out.println(boundProject.getExtruder0FilamentProperty().get().getFilamentID());
+//        }
+//        if (boundProject.getExtruder1FilamentProperty().get() != null)
+//        {
+//            System.out.println(boundProject.getExtruder1FilamentProperty().get().getFilamentID());
+//        }
         materialComponent0.setSelectedFilamentInComboBox(
             boundProject.getExtruder0FilamentProperty().get());
         materialComponent1.setSelectedFilamentInComboBox(

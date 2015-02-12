@@ -1,11 +1,13 @@
 package celtech.appManager;
 
+import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.modelcontrol.ModelContainer;
+import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +51,7 @@ public class Project implements Serializable
     {
         this.customSettings = SlicerParametersContainer.getSettingsByProfileName(
             ApplicationConfiguration.customSettingsProfileName);
+        initialiseExtruderFilaments();
     }
 
     /**
@@ -382,5 +385,28 @@ public class Project implements Serializable
     public ObjectProperty<Filament> getExtruder1FilamentProperty()
     {
         return extruder1Filament;
+    }
+
+    /**
+     * For new projects this should be called to initialise the extruder filaments according
+     * to the currently selected printer.
+     */
+    private void initialiseExtruderFilaments()
+    {
+      // defaults in case of no printer or reel
+      extruder0Filament.set(FilamentContainer.getFilamentByID("RBX-ABS-GR499"));  
+      extruder1Filament.set(FilamentContainer.getFilamentByID("RBX-ABS-GR499"));  
+        
+      Printer printer = Lookup.getCurrentlySelectedPrinterProperty().get();
+      if (printer != null) {
+          if (printer.reelsProperty().containsKey(0)) {
+              String filamentID = printer.reelsProperty().get(0).filamentIDProperty().get();
+              extruder0Filament.set(FilamentContainer.getFilamentByID(filamentID));
+          }
+          if (printer.reelsProperty().containsKey(1)) {
+              String filamentID = printer.reelsProperty().get(1).filamentIDProperty().get();
+              extruder1Filament.set(FilamentContainer.getFilamentByID(filamentID));
+          }
+      }
     }
 }

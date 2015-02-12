@@ -177,7 +177,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     public void whenMaterialSelected(ActionEvent actionEvent)
     {
         Filament selectedMaterial = cmbMaterials.getValue();
-        System.out.println("whenMaterialSelected material is " + selectedMaterial);
         setMaterial(extruderNumber, selectedMaterial.getMaterial(), "",
                     selectedMaterial.getDisplayColourProperty().get(), 0, 0);
     }

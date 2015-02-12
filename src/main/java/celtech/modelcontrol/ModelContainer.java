@@ -115,9 +115,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private Set<Node> selectedMarkers;
 
     /**
-     * Print the part using extruder0 or extruder1.
+     * Print the part using the extruder of the given number.
      */
-    private int associateWithExtruderNumber;
+    private int associateWithExtruderNumber = 0;
     private PhongMaterial material;
 
     /**
@@ -704,6 +704,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         out.writeDouble(getScale());
         out.writeDouble(getRotationY());
         out.writeInt(snapFaceIndex);
+        out.writeInt(associateWithExtruderNumber);
     }
 
     private void readObject(ObjectInputStream in)
@@ -764,6 +765,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double storedScale = in.readDouble();
         double storedRotationY = in.readDouble();
         int storedSnapFaceIndex = in.readInt();
+        if (in.available() > 0) {
+            // Introduced in version 1.??
+            associateWithExtruderNumber = in.readInt();
+        }
 
         initialiseTransforms();
 

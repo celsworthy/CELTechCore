@@ -727,6 +727,7 @@ public class ThreeDViewManager
         {
             models.getChildren().add(modelContainer);
             loadedModels.add(modelContainer);
+            updateModelColour(modelContainer);
             collideModels();
         } else
         {
