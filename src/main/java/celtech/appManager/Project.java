@@ -2,6 +2,7 @@ package celtech.appManager;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.modelcontrol.ModelContainer;
@@ -39,10 +40,19 @@ public class Project implements Serializable
     private PrintQualityEnumeration printQuality = null;
     private SlicerParametersFile customSettings = null;
     private String customProfileName = "";
-    private BooleanProperty isDirty = new SimpleBooleanProperty(false);
     private String lastPrintJobID = "";
-    private final ObjectProperty<Filament> extruder0ChosenFilamentProperty = new SimpleObjectProperty<Filament>();
-    private final ObjectProperty<Filament> extruder1ChosenFilamentProperty = new SimpleObjectProperty<Filament>();
+    private ObjectProperty<Filament> extruder0Filament = new SimpleObjectProperty<Filament>();
+
+    public ObjectProperty<Filament> getExtruder0FilamentProperty()
+    {
+        return extruder0Filament;
+    }
+
+    public ObjectProperty<Filament> getExtruder1FilamentProperty()
+    {
+        return extruder1Filament;
+    }
+    private ObjectProperty<Filament> extruder1Filament = new SimpleObjectProperty<Filament>();
 
     /**
      *
@@ -146,6 +156,10 @@ public class Project implements Serializable
         //Introduced in version 1.00.06
         out.writeUTF(customProfileName);
         out.writeObject(printQuality);
+        
+        //Introduced in version 1.??
+        out.writeUTF(extruder0Filament.get().getFilamentID());
+        out.writeUTF(extruder1Filament.get().getFilamentID());
     }
 
     private void readObject(ObjectInputStream in)
@@ -176,6 +190,21 @@ public class Project implements Serializable
             {
                 customProfileName = in.readUTF();
                 printQuality = (PrintQualityEnumeration) in.readObject();
+            }
+            //Introduced in version 1.??
+            if (in.available() > 0) {
+                String filamentID0 = in.readUTF();
+                String filamentID1 = in.readUTF();
+                Filament filament0 = FilamentContainer.getFilamentByID(filamentID0);
+                Filament filament1 = FilamentContainer.getFilamentByID(filamentID1);
+                if (filament0 != null) {
+                    extruder0Filament.set(filament0);
+                }
+                if (filament1 != null) {
+                    extruder1Filament.set(filament1);
+                }
+                
+                
             }
         } catch (IOException ex)
         {
@@ -321,4 +350,14 @@ public class Project implements Serializable
             this.customProfileName = customProfileName;
         }
     }
+
+    public void setExtruder0Filament(Filament filament)
+    {
+        extruder0Filament.set(filament);
+    }
+    
+    public void setExtruder1Filament(Filament filament)
+    {
+        extruder1Filament.set(filament);
+    }    
 }

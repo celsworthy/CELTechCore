@@ -707,6 +707,8 @@ public class LayoutSidePanelController implements Initializable,
         }
 
         boundProject = displayManager.getCurrentlyVisibleProject();
+        materialComponent0.setSelectedFilament(boundProject.getExtruder0FilamentProperty().get());
+        materialComponent1.setSelectedFilament(boundProject.getExtruder1FilamentProperty().get());
 
         if (boundProject.getLoadedModels().size() > 0)
         {
@@ -775,6 +777,7 @@ public class LayoutSidePanelController implements Initializable,
         materialComponent0.getSelectedFilamentProperty().addListener((ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
         {
             get3DViewManager().setExtruder0Filament(newValue);
+            boundProject.setExtruder0Filament(newValue);
         });
         
         materialComponent1.getSelectedFilamentProperty().addListener((ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->

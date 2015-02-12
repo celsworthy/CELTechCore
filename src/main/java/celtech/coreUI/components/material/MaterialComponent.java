@@ -346,6 +346,11 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         reelSVGSolid.setStyle("-fx-fill: #" + colourString + ";");
     }
     
+    public void setSelectedFilament(Filament filament)
+    {
+        selectedFilamentProperty.set(filament);
+    }    
+    
     /**
      * Visually indicate that this component is selected.
      */
