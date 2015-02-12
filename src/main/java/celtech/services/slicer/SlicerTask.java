@@ -23,7 +23,8 @@ import libertysystems.stenographer.StenographerFactory;
 public class SlicerTask extends Task<SliceResult>
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(SlicerTask.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(SlicerTask.class.
+        getName());
     private String printJobUUID = null;
     private Project project = null;
     private FilamentContainer filament = null;
@@ -41,7 +42,8 @@ public class SlicerTask extends Task<SliceResult>
      * @param settings
      * @param printerToUse
      */
-    public SlicerTask(String printJobUUID, Project project, PrintQualityEnumeration printQuality, SlicerParametersFile settings, Printer printerToUse)
+    public SlicerTask(String printJobUUID, Project project, PrintQualityEnumeration printQuality,
+        SlicerParametersFile settings, Printer printerToUse)
     {
         this.printJobUUID = printJobUUID;
         this.project = project;
@@ -58,7 +60,8 @@ public class SlicerTask extends Task<SliceResult>
     {
         boolean succeeded = false;
 
-        String workingDirectory = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID + File.separator;
+        String workingDirectory = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID
+            + File.separator;
         String configFile = printJobUUID + ApplicationConfiguration.printProfileFileExtension;
 
         updateTitle("Slicer");
@@ -79,7 +82,7 @@ public class SlicerTask extends Task<SliceResult>
         String combinedConfigSection = "";
         String verboseOutputCommand = "";
         String progressOutputCommand = "";
-        
+
         if (settings.getSlicerOverride() != null)
         {
             slicerType = settings.getSlicerOverride();
@@ -88,14 +91,16 @@ public class SlicerTask extends Task<SliceResult>
         switch (slicerType)
         {
             case Slic3r:
-                windowsSlicerCommand = "\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\"";
+                windowsSlicerCommand = "\"" + ApplicationConfiguration.
+                    getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\"";
                 macSlicerCommand = "Slic3r.app/Contents/MacOS/slic3r";
                 linuxSlicerCommand = "Slic3r/bin/slic3r";
                 configLoadCommand = "--load";
                 combinedConfigSection = configLoadCommand + " " + configFile;
                 break;
             case Cura:
-                windowsSlicerCommand = "\"" + ApplicationConfiguration.getCommonApplicationDirectory() + "Cura\\CuraEngine.exe\"";
+                windowsSlicerCommand = "\"" + ApplicationConfiguration.
+                    getCommonApplicationDirectory() + "Cura\\CuraEngine.exe\"";
                 macSlicerCommand = "Cura/CuraEngine";
                 linuxSlicerCommand = "Cura/CuraEngine";
                 verboseOutputCommand = "-v";
@@ -150,9 +155,16 @@ public class SlicerTask extends Task<SliceResult>
                     + " && popd\"");
                 break;
             case MAC:
-                commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + macSlicerCommand);
-                commands.add(verboseOutputCommand);
-                commands.add(progressOutputCommand);
+                commands.add(ApplicationConfiguration.getCommonApplicationDirectory()
+                    + macSlicerCommand);
+                if (!verboseOutputCommand.equals(""))
+                {
+                    commands.add(verboseOutputCommand);
+                }
+                if (!progressOutputCommand.equals(""))
+                {
+                    commands.add(progressOutputCommand);
+                }
                 commands.add(configLoadCommand);
                 commands.add(configFile);
                 commands.add("-o");
@@ -161,9 +173,16 @@ public class SlicerTask extends Task<SliceResult>
                 break;
             case LINUX_X86:
             case LINUX_X64:
-                commands.add(ApplicationConfiguration.getCommonApplicationDirectory() + linuxSlicerCommand);
-                commands.add(verboseOutputCommand);
-                commands.add(progressOutputCommand);
+                commands.add(ApplicationConfiguration.getCommonApplicationDirectory()
+                    + linuxSlicerCommand);
+                if (!verboseOutputCommand.equals(""))
+                {
+                    commands.add(verboseOutputCommand);
+                }
+                if (!progressOutputCommand.equals(""))
+                {
+                    commands.add(progressOutputCommand);
+                }
                 commands.add(configLoadCommand);
                 commands.add(configFile);
                 commands.add("-o");
@@ -188,10 +207,14 @@ public class SlicerTask extends Task<SliceResult>
             {
                 slicerProcess = slicerProcessBuilder.start();
                 // any error message?
-                SlicerOutputGobbler errorGobbler = new SlicerOutputGobbler(this, slicerProcess.getErrorStream(), "ERROR", slicerType);
+                SlicerOutputGobbler errorGobbler = new SlicerOutputGobbler(this, slicerProcess.
+                                                                           getErrorStream(), "ERROR",
+                                                                           slicerType);
 
                 // any output?
-                SlicerOutputGobbler outputGobbler = new SlicerOutputGobbler(this, slicerProcess.getInputStream(), "OUTPUT", slicerType);
+                SlicerOutputGobbler outputGobbler = new SlicerOutputGobbler(this, slicerProcess.
+                                                                            getInputStream(),
+                                                                            "OUTPUT", slicerType);
 
                 // kick them off
                 errorGobbler.start();
@@ -224,7 +247,8 @@ public class SlicerTask extends Task<SliceResult>
             steno.error("Couldn't run autoupdate - no commands for OS ");
         }
 
-        return new SliceResult(printJobUUID, project, filament, printQuality, settings, printerToUse, succeeded);
+        return new SliceResult(printJobUUID, project, filament, printQuality, settings, printerToUse,
+                               succeeded);
     }
 
     /**
