@@ -707,8 +707,19 @@ public class LayoutSidePanelController implements Initializable,
         }
 
         boundProject = displayManager.getCurrentlyVisibleProject();
-        materialComponent0.setSelectedFilament(boundProject.getExtruder0FilamentProperty().get());
-        materialComponent1.setSelectedFilament(boundProject.getExtruder1FilamentProperty().get());
+        System.out.println("get filaments from project " + boundProject.getProjectName());
+        if (boundProject.getExtruder0FilamentProperty().get() != null)
+        {
+            System.out.println(boundProject.getExtruder0FilamentProperty().get().getFilamentID());
+        }
+        if (boundProject.getExtruder1FilamentProperty().get() != null)
+        {
+            System.out.println(boundProject.getExtruder1FilamentProperty().get().getFilamentID());
+        }
+        materialComponent0.setSelectedFilamentInComboBox(
+            boundProject.getExtruder0FilamentProperty().get());
+        materialComponent1.setSelectedFilamentInComboBox(
+            boundProject.getExtruder1FilamentProperty().get());
 
         if (boundProject.getLoadedModels().size() > 0)
         {
@@ -766,25 +777,27 @@ public class LayoutSidePanelController implements Initializable,
 
         materialComponent0.setOnMouseClicked((MouseEvent event) ->
         {
-            select(materialComponent0);
+            selectMaterialComponent(materialComponent0);
         });
 
         materialComponent1.setOnMouseClicked((MouseEvent event) ->
         {
-            select(materialComponent1);
+            selectMaterialComponent(materialComponent1);
         });
-        
-        materialComponent0.getSelectedFilamentProperty().addListener((ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-        {
-            get3DViewManager().setExtruder0Filament(newValue);
-            boundProject.setExtruder0Filament(newValue);
-        });
-        
-        materialComponent1.getSelectedFilamentProperty().addListener((ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-        {
-            get3DViewManager().setExtruder1Filament(newValue);
-            boundProject.setExtruder1Filament(newValue);
-        });        
+
+        materialComponent0.getSelectedFilamentProperty().addListener(
+            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+            {
+                get3DViewManager().setExtruder0Filament(newValue);
+                boundProject.setExtruder0Filament(newValue);
+            });
+
+        materialComponent1.getSelectedFilamentProperty().addListener(
+            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+            {
+                get3DViewManager().setExtruder1Filament(newValue);
+                boundProject.setExtruder1Filament(newValue);
+            });
     }
 
     private void deselectMaterials()
@@ -793,7 +806,7 @@ public class LayoutSidePanelController implements Initializable,
         materialComponent1.select(false);
     }
 
-    private void select(MaterialComponent materialComponent)
+    private void selectMaterialComponent(MaterialComponent materialComponent)
     {
         deselectMaterials();
         materialComponent.select(true);
@@ -801,7 +814,8 @@ public class LayoutSidePanelController implements Initializable,
         if (materialComponent == materialComponent0)
         {
             get3DViewManager().activateChooseExtruder(0, this::deselectMaterials);
-        } else {
+        } else
+        {
             get3DViewManager().activateChooseExtruder(1, this::deselectMaterials);
         }
     }

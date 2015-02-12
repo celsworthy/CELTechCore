@@ -13,12 +13,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import libertysystems.stenographer.Stenographer;
@@ -44,7 +41,6 @@ public class Project implements Serializable
     private String lastPrintJobID = "";
     private ObjectProperty<Filament> extruder0Filament = new SimpleObjectProperty<Filament>();
     private ObjectProperty<Filament> extruder1Filament = new SimpleObjectProperty<Filament>();
-
 
     /**
      *
@@ -154,8 +150,20 @@ public class Project implements Serializable
         out.writeObject(printQuality);
 
         //Introduced in version 1.??
-        out.writeUTF(extruder0Filament.get().getFilamentID());
-        out.writeUTF(extruder1Filament.get().getFilamentID());
+        if (extruder0Filament.isNotNull().get())
+        {
+            out.writeUTF(extruder0Filament.get().getFilamentID());
+        } else
+        {
+            out.writeUTF("NULL");
+        }
+        if (extruder1Filament.isNotNull().get())
+        {
+            out.writeUTF(extruder1Filament.get().getFilamentID());
+        } else
+        {
+            out.writeUTF("NULL");
+        }
     }
 
     private void readObject(ObjectInputStream in)
@@ -194,15 +202,21 @@ public class Project implements Serializable
                 extruder1Filament = new SimpleObjectProperty<Filament>();
                 String filamentID0 = in.readUTF();
                 String filamentID1 = in.readUTF();
-                Filament filament0 = FilamentContainer.getFilamentByID(filamentID0);
-                Filament filament1 = FilamentContainer.getFilamentByID(filamentID1);
-                if (filament0 != null)
+                if (!filamentID0.equals("NULL"))
                 {
-                    extruder0Filament.set(filament0);
+                    Filament filament0 = FilamentContainer.getFilamentByID(filamentID0);
+                    if (filament0 != null)
+                    {
+                        extruder0Filament.set(filament0);
+                    }
                 }
-                if (filament1 != null)
+                if (!filamentID1.equals("NULL"))
                 {
-                    extruder1Filament.set(filament1);
+                    Filament filament1 = FilamentContainer.getFilamentByID(filamentID1);
+                    if (filament1 != null)
+                    {
+                        extruder1Filament.set(filament1);
+                    }
                 }
 
             }
@@ -359,7 +373,7 @@ public class Project implements Serializable
     {
         extruder1Filament.set(filament);
     }
-    
+
     public ObjectProperty<Filament> getExtruder0FilamentProperty()
     {
         return extruder0Filament;
@@ -368,5 +382,5 @@ public class Project implements Serializable
     public ObjectProperty<Filament> getExtruder1FilamentProperty()
     {
         return extruder1Filament;
-    }    
+    }
 }
