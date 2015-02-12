@@ -408,7 +408,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     @Override
     public void whenExtruderAdded(Printer printer, int extruderIndex)
     {
-        
     }
 
     @Override

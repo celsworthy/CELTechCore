@@ -31,7 +31,8 @@ import libertysystems.stenographer.StenographerFactory;
 public class Project implements Serializable
 {
 
-    private transient Stenographer steno = StenographerFactory.getStenographer(Project.class.getName());
+    private transient Stenographer steno = StenographerFactory.getStenographer(
+        Project.class.getName());
     private static final long serialVersionUID = 1L;
     private ProjectHeader projectHeader = new ProjectHeader();
     private ObservableList<ModelContainer> loadedModels = FXCollections.observableArrayList();
@@ -42,24 +43,16 @@ public class Project implements Serializable
     private String customProfileName = "";
     private String lastPrintJobID = "";
     private ObjectProperty<Filament> extruder0Filament = new SimpleObjectProperty<Filament>();
-
-    public ObjectProperty<Filament> getExtruder0FilamentProperty()
-    {
-        return extruder0Filament;
-    }
-
-    public ObjectProperty<Filament> getExtruder1FilamentProperty()
-    {
-        return extruder1Filament;
-    }
     private ObjectProperty<Filament> extruder1Filament = new SimpleObjectProperty<Filament>();
+
 
     /**
      *
      */
     public Project()
     {
-        this.customSettings = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.customSettingsProfileName);
+        this.customSettings = SlicerParametersContainer.getSettingsByProfileName(
+            ApplicationConfiguration.customSettingsProfileName);
     }
 
     /**
@@ -68,12 +61,14 @@ public class Project implements Serializable
      * @param projectName
      * @param loadedModels
      */
-    public Project(String preloadedProjectUUID, String projectName, ObservableList<ModelContainer> loadedModels)
+    public Project(String preloadedProjectUUID, String projectName,
+        ObservableList<ModelContainer> loadedModels)
     {
         projectHeader.setProjectUUID(preloadedProjectUUID);
         setProjectName(projectName);
         this.loadedModels = loadedModels;
-        this.customSettings = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.customSettingsProfileName);
+        this.customSettings = SlicerParametersContainer.getSettingsByProfileName(
+            ApplicationConfiguration.customSettingsProfileName);
     }
 
     /**
@@ -109,7 +104,8 @@ public class Project implements Serializable
      */
     public final String getAbsolutePath()
     {
-        return projectHeader.getProjectPath() + File.separator + projectHeader.getProjectName() + ApplicationConfiguration.projectFileExtension;
+        return projectHeader.getProjectPath() + File.separator + projectHeader.getProjectName()
+            + ApplicationConfiguration.projectFileExtension;
     }
 
     /**
@@ -140,7 +136,7 @@ public class Project implements Serializable
     }
 
     private void writeObject(ObjectOutputStream out)
-            throws IOException
+        throws IOException
     {
         out.writeObject(projectHeader);
         out.writeInt(loadedModels.size());
@@ -156,14 +152,14 @@ public class Project implements Serializable
         //Introduced in version 1.00.06
         out.writeUTF(customProfileName);
         out.writeObject(printQuality);
-        
+
         //Introduced in version 1.??
         out.writeUTF(extruder0Filament.get().getFilamentID());
         out.writeUTF(extruder1Filament.get().getFilamentID());
     }
 
     private void readObject(ObjectInputStream in)
-            throws IOException, ClassNotFoundException
+        throws IOException, ClassNotFoundException
     {
         steno = StenographerFactory.getStenographer(Project.class.getName());
 
@@ -192,19 +188,23 @@ public class Project implements Serializable
                 printQuality = (PrintQualityEnumeration) in.readObject();
             }
             //Introduced in version 1.??
-            if (in.available() > 0) {
+            if (in.available() > 0)
+            {
+                extruder0Filament = new SimpleObjectProperty<Filament>();
+                extruder1Filament = new SimpleObjectProperty<Filament>();
                 String filamentID0 = in.readUTF();
                 String filamentID1 = in.readUTF();
                 Filament filament0 = FilamentContainer.getFilamentByID(filamentID0);
                 Filament filament1 = FilamentContainer.getFilamentByID(filamentID1);
-                if (filament0 != null) {
+                if (filament0 != null)
+                {
                     extruder0Filament.set(filament0);
                 }
-                if (filament1 != null) {
+                if (filament1 != null)
+                {
                     extruder1Filament.set(filament1);
                 }
-                
-                
+
             }
         } catch (IOException ex)
         {
@@ -217,7 +217,7 @@ public class Project implements Serializable
     }
 
     private void readObjectNoData()
-            throws ObjectStreamException
+        throws ObjectStreamException
     {
 
     }
@@ -343,8 +343,7 @@ public class Project implements Serializable
         if (customProfileName == null)
         {
             this.customProfileName = "";
-        }
-        else if (this.customProfileName.equals(customProfileName) == false)
+        } else if (this.customProfileName.equals(customProfileName) == false)
         {
             projectModified();
             this.customProfileName = customProfileName;
@@ -355,9 +354,19 @@ public class Project implements Serializable
     {
         extruder0Filament.set(filament);
     }
-    
+
     public void setExtruder1Filament(Filament filament)
     {
         extruder1Filament.set(filament);
+    }
+    
+    public ObjectProperty<Filament> getExtruder0FilamentProperty()
+    {
+        return extruder0Filament;
+    }
+
+    public ObjectProperty<Filament> getExtruder1FilamentProperty()
+    {
+        return extruder1Filament;
     }    
 }

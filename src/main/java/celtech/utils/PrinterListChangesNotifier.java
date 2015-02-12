@@ -210,7 +210,7 @@ public class PrinterListChangesNotifier
     
     private void fireWhenExtruderAdded(Printer printer, int extruderIndex)
     {
-        for (PrinterListChangesListener listener : listeners)
+        for (PrinterListChangesListener listener : new ArrayList<>(listeners))
         {
             listener.whenExtruderAdded(printer, extruderIndex);
         }
