@@ -189,6 +189,14 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         this.mode = mode;
         updateGUIForModeAndPrinterExtruder();
     }
+    
+    /**
+     * Set the printer for this component.
+     */
+    public void setPrinter(Printer printer) {
+        this.printer = printer;
+        updateGUIForModeAndPrinterExtruder();
+    }
 
     private void updateGUIForModeAndPrinterExtruder()
     {
@@ -209,19 +217,33 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                 setReelType(ReelType.ROBOX);
                 break;
             case SETTINGS:
-                cmbMaterials.setVisible(true);
-                materialColourContainer.setVisible(true);
-                materialRemainingContainer.setVisible(false);
                 showMaterialDetails();
-                if (printer.reelsProperty().containsKey(extruderNumber))
-                {
-                    setReelType(ReelType.ROBOX);
-                } else
-                {
-                    setReelType(ReelType.SOLID_QUESTION);
-                }
+        customiseForSettingsScreen();
 
                 break;
+        }
+    }
+
+    private void customiseForSettingsScreen()
+    {
+        if (printer.reelsProperty().containsKey(extruderNumber))
+        {
+            setReelType(ReelType.ROBOX);
+            cmbMaterials.setVisible(false);
+            materialColourContainer.setVisible(true);
+            materialRemainingContainer.setVisible(true);
+            Reel reel = printer.reelsProperty().get(extruderNumber);
+            setMaterial(extruderNumber, reel.materialProperty().get(),
+                        reel.friendlyFilamentNameProperty().get(),
+                        reel.displayColourProperty().get(),
+                        reel.remainingFilamentProperty().get(),
+                        reel.diameterProperty().get());
+        } else
+        {
+            setReelType(ReelType.SOLID_QUESTION);
+            cmbMaterials.setVisible(true);
+            materialColourContainer.setVisible(false);
+            materialRemainingContainer.setVisible(false);
         }
     }
 
