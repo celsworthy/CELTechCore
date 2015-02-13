@@ -95,25 +95,20 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
 //    @FXML
 //    private ToggleSwitch spiralPrintToggle;
-    private SlicerParametersFile draftSettings = SlicerParametersContainer.getSettingsByProfileName(
+    private final SlicerParametersFile draftSettings = SlicerParametersContainer.getSettingsByProfileName(
         ApplicationConfiguration.draftSettingsProfileName);
-    private SlicerParametersFile normalSettings = SlicerParametersContainer.
+    private final SlicerParametersFile normalSettings = SlicerParametersContainer.
         getSettingsByProfileName(
             ApplicationConfiguration.normalSettingsProfileName);
-    private SlicerParametersFile fineSettings = SlicerParametersContainer.getSettingsByProfileName(
+    private final SlicerParametersFile fineSettings = SlicerParametersContainer.getSettingsByProfileName(
         ApplicationConfiguration.fineSettingsProfileName);
     private SlicerParametersFile customSettings = null;
-    private SlicerParametersFile lastSettings = null;
 
-    private ChangeListener<Toggle> nozzleSelectionListener = null;
-
-    private ObservableList<Filament> availableFilaments = FXCollections.observableArrayList();
-    private ObservableList<SlicerParametersFile> availableProfiles = FXCollections.
+    private final ObservableList<Filament> availableFilaments = FXCollections.observableArrayList();
+    private final ObservableList<SlicerParametersFile> availableProfiles = FXCollections.
         observableArrayList();
 
     private Printer currentPrinter = null;
-    private Filament currentlyLoadedFilament = null;
-    private Filament lastFilamentSelected = null;
 
     private VBox createProfilePage = null;
     private ModalDialog createProfileDialogue = null;
@@ -125,7 +120,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private ProfileDetailsController profileDetailsController = null;
 
     /**
-     * Initializes the controller class.
+     * Initialises the controller class.
      *
      * @param url
      * @param rb
@@ -477,7 +472,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     /**
      * Show the correct number of MaterialComponents according to the number of extruders, and
-     * configure them to the printer and extruder number.
+     * configure them to the printer and extruder number. Listen to changes on the chosen
+     * filament and update the settingsScreenState accordingly.
      */
     private void configureMaterialComponents(Printer printer)
     {
@@ -816,17 +812,11 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     @Override
     public void whenReelAdded(Printer printer, int reelIndex)
     {
-        //TODO modify for multiple reels
-        if (printer == currentPrinter)
-        {
-            currentlyLoadedFilament = new Filament(currentPrinter.reelsProperty().get(0));
-        }
     }
 
     @Override
     public void whenReelRemoved(Printer printer, Reel reel, int reelNumber)
     {
-        currentlyLoadedFilament = null;
     }
 
     @Override
