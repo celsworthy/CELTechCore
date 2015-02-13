@@ -487,9 +487,33 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             Extruder extruder = printer.extrudersProperty().get(extruderNumber);
             if (extruder.isFittedProperty().get())
             {
-                MaterialComponent materialComponent = 
-                    new MaterialComponent(MaterialComponent.Mode.SETTINGS, printer, extruderNumber);
+                MaterialComponent materialComponent
+                    = new MaterialComponent(MaterialComponent.Mode.SETTINGS, printer, extruderNumber);
                 materialContainer.getChildren().add(materialComponent);
+
+                if (extruderNumber == 0)
+                {
+                    materialComponent.getSelectedFilamentProperty().addListener(
+                        (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+                        {
+                            settingsScreenState.setFilament0(newValue);
+                        });
+                } else {
+                     materialComponent.getSelectedFilamentProperty().addListener(
+                        (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+                        {
+                            settingsScreenState.setFilament1(newValue);
+                        });
+                }
+                
+                if (materialComponent.getSelectedFilamentProperty().get() != null) {
+                    if (extruderNumber == 0) {
+                        settingsScreenState.setFilament0(materialComponent.getSelectedFilamentProperty().get());
+                    } else {
+                        settingsScreenState.setFilament1(materialComponent.getSelectedFilamentProperty().get());
+                    }
+                }
+
             }
         }
     }
@@ -581,7 +605,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     {
         this.slideOutController = (SettingsSlideOutPanelController) slideOutController;
         this.slideOutController.provideReceiver(this);
-        this.slideOutController.updateFilamentData(settingsScreenState.getFilament());
 
         updateProfileList();
         this.slideOutController.updateProfileData(draftSettings);
@@ -814,16 +837,18 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     @Override
     public void whenExtruderAdded(Printer printer, int extruderIndex)
     {
-        if (printer == currentPrinter) {
+        if (printer == currentPrinter)
+        {
             configureMaterialComponents(printer);
-        }    
+        }
     }
 
     @Override
     public void whenExtruderRemoved(Printer printer, int extruderIndex)
     {
-        if (printer == currentPrinter) {
+        if (printer == currentPrinter)
+        {
             configureMaterialComponents(printer);
-        }          
+        }
     }
 }

@@ -171,7 +171,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         {
             displayManager.getPurgeInsetPanelController().purgeAndPrint(currentProject,
                                                                         settingsScreenState.
-                                                                        getFilament(),
+                                                                        getFilament0(),
                                                                         settingsScreenState.
                                                                         getPrintQuality(),
                                                                         settingsScreenState.
@@ -179,13 +179,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE)
         {
             currentPrinter.resetPurgeTemperature();
-            printer.printProject(currentProject, settingsScreenState.getFilament(),
+            printer.printProject(currentProject, settingsScreenState.getFilament0(),
                                  settingsScreenState.getPrintQuality(),
                                  settingsScreenState.getSettings());
             applicationStatus.setMode(ApplicationMode.STATUS);
         } else if (purgeConsent == PurgeResponse.NOT_NECESSARY)
         {
-            printer.printProject(currentProject, settingsScreenState.getFilament(),
+            printer.printProject(currentProject, settingsScreenState.getFilament0(),
                                  settingsScreenState.getPrintQuality(),
                                  settingsScreenState.getSettings());
             applicationStatus.setMode(ApplicationMode.STATUS);
@@ -624,7 +624,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
                     printButton.getTag().addConditionalText(
                         "dialogs.cantPrintNoFilamentSelectedMessage", settingsScreenState.
-                        filamentProperty().isNull());
+                        filament0Property().isNull());
                     printButton.getTag().addConditionalText("dialogs.cantPrintDoorIsOpenMessage",
                                                             newValue.getPrinterAncillarySystems().
                                                             lidOpenProperty().not().not());
@@ -641,7 +641,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         {
             Printer printer = settingsScreenState.selectedPrinterProperty().get();
             printButton.setDisable(!printer.canPrintProperty().get()
-                || settingsScreenState.filamentProperty() == null
+                || settingsScreenState.filament0Property() == null
                 || printer.getPrinterAncillarySystems().lidOpenProperty().get()
                 || !printer.extrudersProperty().get(0).filamentLoadedProperty().get());
         }
@@ -656,7 +656,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                         printButton.disableProperty().unbind();
                     }
                     printButton.disableProperty().bind(newValue.canPrintProperty().not()
-                        .or(settingsScreenState.filamentProperty().isNull())
+                        .or(settingsScreenState.filament0Property().isNull())
                         .or(newValue.getPrinterAncillarySystems().lidOpenProperty())
                         .or(newValue.extrudersProperty().get(0).filamentLoadedProperty().not()));
 

@@ -52,9 +52,6 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
     private Tab profileTab;
 
     @FXML
-    private MaterialDetailsController materialDetailsController;
-
-    @FXML
     private ProfileDetailsController profileDetailsController;
 
     @FXML
@@ -105,15 +102,6 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
 
     /**
      *
-     * @param filament
-     */
-    public void updateFilamentData(Filament filament)
-    {
-        materialDetailsController.updateMaterialData(filament);
-    }
-
-    /**
-     *
      * @param settings
      */
     public void updateProfileData(SlicerParametersFile settings)
@@ -129,7 +117,6 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
     public void provideReceiver(PopupCommandReceiver receiver)
     {
         profileDetailsController.provideReceiver(receiver);
-        materialDetailsController.provideReceiver(receiver);
     }
 
     /**

@@ -1998,8 +1998,16 @@ modal-dialogue{
     -fx-border-width: 3;
 }
 
+#materialColour {
+    -fx-font-family: 'Source Sans Pro Light';
+}
+
+#materialRemaining {
+    -fx-font-family: 'Source Sans Pro Light';
+}
+
 #cmbMaterials {
-    -fx-font-familty: 'Source Sans Pro Regular';
+    -fx-font-family: 'Source Sans Pro Regular';
 }
 
 .filamentSwatchPadding {

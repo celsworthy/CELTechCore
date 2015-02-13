@@ -537,7 +537,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public void resetPurgeTemperature()
     {
         //TODO modify for multiple reels
-        Filament settingsFilament = SettingsScreenState.getInstance().getFilament();
+        Filament settingsFilament = SettingsScreenState.getInstance().getFilament0();
         float reelNozzleTemperature = 0;
 
         if (settingsFilament != null)
@@ -602,7 +602,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             // The nozzle should be heated to a temperature halfway between the last temperature stored on the head and the current required temperature stored on the reel
             SettingsScreenState settingsScreenState = SettingsScreenState.getInstance();
 
-            Filament settingsFilament = settingsScreenState.getFilament();
+            Filament settingsFilament = settingsScreenState.getFilament0();
 
             if (settingsFilament != null)
             {

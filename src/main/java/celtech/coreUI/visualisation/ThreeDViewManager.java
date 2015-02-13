@@ -582,7 +582,8 @@ public class ThreeDViewManager
             public void changed(ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode t,
                 LayoutSubmode t1)
             {
-                if (t1 == LayoutSubmode.SNAP_TO_GROUND)
+                if (t1 == LayoutSubmode.SNAP_TO_GROUND || t1 == LayoutSubmode.ASSOCIATE_WITH_EXTRUDER0
+                    || t1 == LayoutSubmode.ASSOCIATE_WITH_EXTRUDER1)
                 {
                     subScene.setCursor(Cursor.HAND);
                 } else

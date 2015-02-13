@@ -126,6 +126,7 @@ public class PurgeHelper
                 // put the write after the purge routine once the firmware no longer raises an error whilst connected to the host computer
                 try
                 {
+                    //TODO make PURGE work for dual material head
                     savedHeadData = printerToUse.readHeadEEPROM();
 
                     // The nozzle should be heated to a temperature halfway between the last
@@ -133,7 +134,7 @@ public class PurgeHelper
                     // on the reel
                     SettingsScreenState settingsScreenState = SettingsScreenState.getInstance();
 
-                    Filament settingsFilament = settingsScreenState.getFilament();
+                    Filament settingsFilament = settingsScreenState.getFilament0();
 
                     if (settingsFilament != null)
                     {

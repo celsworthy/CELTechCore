@@ -268,7 +268,7 @@ public class PrinterUtils
         boolean purgeIsNecessary = false;
         float targetNozzleTemperature = 0;
         SettingsScreenState settingsScreenState = SettingsScreenState.getInstance();
-        Filament settingsFilament = settingsScreenState.getFilament();
+        Filament settingsFilament = settingsScreenState.getFilament0();
 
         if (settingsFilament != null)
         {

@@ -18,8 +18,11 @@ public class SettingsScreenState
 
     private static SettingsScreenState instance = null;
     private final ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
-    private final ObjectProperty<Filament> selectedFilament = new SimpleObjectProperty<>(null);
-    private final ObjectProperty<SlicerParametersFile> settings = new SimpleObjectProperty<>(SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName));
+    private final ObjectProperty<Filament> selectedFilament0 = new SimpleObjectProperty<>(null);
+    private final ObjectProperty<Filament> selectedFilament1 = new SimpleObjectProperty<>(null);
+    private final ObjectProperty<SlicerParametersFile> settings = new SimpleObjectProperty<>(
+        SlicerParametersContainer.getSettingsByProfileName(
+            ApplicationConfiguration.draftSettingsProfileName));
     private final ObjectProperty<PrintQualityEnumeration> printQuality = new SimpleObjectProperty<>();
 
     private SettingsScreenState()
@@ -71,28 +74,47 @@ public class SettingsScreenState
      *
      * @param value
      */
-    public void setFilament(Filament value)
+    public void setFilament0(Filament filament)
     {
-        selectedFilament.set(value);
+            selectedFilament0.set(filament);
     }
+    
+    public void setFilament1(Filament filament)
+    {
+            selectedFilament1.set(filament);
+    }    
 
     /**
      *
      * @return
      */
-    public Filament getFilament()
+    public Filament getFilament0()
     {
-        return selectedFilament.get();
+        return selectedFilament0.get();
     }
+    
+    /**
+     *
+     * @return
+     */
+    public Filament getFilament1()
+    {
+        return selectedFilament1.get();
+    }    
 
     /**
      *
      * @return
      */
-    public ObjectProperty<Filament> filamentProperty()
+    public ObjectProperty<Filament> filament0Property()
     {
-        return selectedFilament;
+        return selectedFilament0;
     }
+    
+    public ObjectProperty<Filament> filament1Property()
+    {
+        return selectedFilament1;
+    }    
 
     /**
      *

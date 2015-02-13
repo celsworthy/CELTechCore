@@ -165,6 +165,11 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
             {
                 selectedFilamentProperty.set(cmbMaterials.getValue());
+                setMaterial(extruderNumber, newValue.getMaterial(),
+                        newValue.getFriendlyFilamentName(),
+                        newValue.getDisplayColourProperty().get(),
+                        0,
+                        0);
             });
 
     }
@@ -176,7 +181,9 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
     public void whenMaterialSelected(ActionEvent actionEvent)
     {
+        
         Filament selectedMaterial = cmbMaterials.getValue();
+        selectedFilamentProperty.set(selectedMaterial);
         setMaterial(extruderNumber, selectedMaterial.getMaterial(), "",
                     selectedMaterial.getDisplayColourProperty().get(), 0, 0);
     }
@@ -233,6 +240,8 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             materialColourContainer.setVisible(true);
             materialRemainingContainer.setVisible(true);
             Reel reel = printer.reelsProperty().get(extruderNumber);
+            Filament filament = FilamentContainer.getFilamentByID(reel.filamentIDProperty().get());
+            selectedFilamentProperty.set(filament);
             setMaterial(extruderNumber, reel.materialProperty().get(),
                         reel.friendlyFilamentNameProperty().get(),
                         reel.displayColourProperty().get(),
@@ -258,6 +267,8 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         {
             setReelType(ReelType.ROBOX);
             Reel reel = printer.reelsProperty().get(extruderNumber);
+            Filament filament = FilamentContainer.getFilamentByID(reel.filamentIDProperty().get());
+            selectedFilamentProperty.set(filament);
             setMaterial(extruderNumber, reel.materialProperty().get(),
                         reel.friendlyFilamentNameProperty().get(),
                         reel.displayColourProperty().get(),
@@ -307,7 +318,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         }
     }
 
-    public void setMaterial(int reelNumber, MaterialType materialType, String materialColourString,
+    private void setMaterial(int reelNumber, MaterialType materialType, String materialColourString,
         Color colour, double remainingFilament, double filamentDiameter)
     {
         String numberMaterial = String.valueOf(reelNumber + 1) + ":"
