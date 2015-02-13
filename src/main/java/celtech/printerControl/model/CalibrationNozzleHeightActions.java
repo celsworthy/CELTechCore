@@ -56,12 +56,12 @@ public class CalibrationNozzleHeightActions
                 });
             });
         printerErrorHandler = new CalibrationHeightErrorHandler(printer, cancellable);
-        printerErrorHandler.registerForPrinterErrors();
     }
 
     public void doInitialiseAndHeatNozzleAction() throws InterruptedException, PrinterException, RoboxCommsException, CalibrationException
     {
-
+        printerErrorHandler.registerForPrinterErrors();
+        
         zco.set(0);
 
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT);
@@ -101,12 +101,13 @@ public class CalibrationNozzleHeightActions
     private void heatNozzle() throws InterruptedException, PrinterException
     {
         printer.goToTargetNozzleTemperature();
-            printer.executeGCodeFile(GCodeMacros.getFilename("Home_all"));
+        printer.executeMacro("Home_all");
         if (PrinterUtils.waitOnMacroFinished(printer, cancellable) == false)
         {
             printer.goToTargetNozzleTemperature();
-        printer.goToZPosition(50);
-        printer.goToXYPosition(PrintBed.getPrintVolumeCentre().getX(), PrintBed.getPrintVolumeCentre().getZ());               
+            printer.goToZPosition(50);
+            printer.goToXYPosition(PrintBed.getPrintVolumeCentre().getX(), PrintBed.
+                                   getPrintVolumeCentre().getZ());
             if (printer.headProperty().get()
                 .getNozzleHeaters().get(0)
                 .heaterModeProperty().get() == HeaterMode.FIRST_LAYER)
@@ -272,17 +273,21 @@ public class CalibrationNozzleHeightActions
         restoreHeadData();
         switchHeatersAndHeadLightOff();
         doBringBedToFrontAndRaiseHead();
+        steno.info("Am cancelling... with printer status " + printer.printerStatusProperty().get() + " " + printer.macroTypeProperty().get());
+        if (printer.canCancelProperty().get())
+        {
+            printer.cancel(null);
+        }
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
-    
+
     public void doBringBedToFrontAndRaiseHead() throws PrinterException, CalibrationException
     {
         printer.switchToAbsoluteMoveMode();
-        printer.goToZPosition(25);
-        printer.goToOpenDoorPositionDontWait(null);
+        printer.goToXYZPosition(105, 150, 25);
         PrinterUtils.waitOnBusy(printer, cancellable);
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
-    }    
+    }
 
     public void cancel() throws PrinterException, RoboxCommsException, CalibrationException
     {

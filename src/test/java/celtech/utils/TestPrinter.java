@@ -602,7 +602,7 @@ class TestPrinter implements Printer
     }
 
     @Override
-    public void executeGCodeFile(String fileName) throws PrinterException
+    public void executeGCodeFile(String fileName, boolean monitorForErrors) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -829,6 +829,12 @@ class TestPrinter implements Printer
 
     @Override
     public ReadOnlyObjectProperty busyStatusProperty()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean doFilamentSlipWhilePrinting(FirmwareError error)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

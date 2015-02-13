@@ -300,8 +300,22 @@ public interface Printer extends RoboxResponseConsumer
     /*
      * Macros
      */
-    public void executeGCodeFile(String fileName) throws PrinterException;
+    
+    /**
+     * This method 'prints' a GCode file. A print job is created and the printer will manage extrusion dynamically.
+     * The printer will register as an error handler for the duration of the 'print'.
+     * @see executeMacro executeMacro - if you wish to run a macro rather than execute a print job
+     * @param fileName
+     * @param monitorForErrors Indicates whether the printer should automatically manage error handling (e.g. auto reduction of print speed)
+     * @throws PrinterException 
+     */
+    public void executeGCodeFile(String fileName, boolean monitorForErrors) throws PrinterException;
 
+    /**
+     * This method runs the commands found in a GCode file without management - if an error occurs the caller is expected to deal with it.
+     * @param macroName
+     * @throws PrinterException 
+     */
     public void executeMacro(String macroName) throws PrinterException;
 
     public void executeMacroWithoutPurgeCheck(String macroName) throws PrinterException;
@@ -546,4 +560,12 @@ public interface Printer extends RoboxResponseConsumer
     public String requestDebugData(boolean addToGCodeTranscript);
     
     public ReadOnlyObjectProperty busyStatusProperty();    
+    
+    /**
+     * Causes a reduction in feedrate until the minimum value is reached.
+     * Returns false if the limit has not been reached and true if it has (implying further action is needed by the caller)
+     * @param error
+     * @return 
+     */
+    public boolean doFilamentSlipWhilePrinting(FirmwareError error);
 }

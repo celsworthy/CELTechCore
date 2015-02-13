@@ -558,7 +558,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             public void changed(
                 ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
             {
-                steno.info("Stage fullscreen = " + newValue.booleanValue());
+                steno.debug("Stage fullscreen = " + newValue.booleanValue());
                 fireNodeMayHaveMovedTrigger();
             }
         });
