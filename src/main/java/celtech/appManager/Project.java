@@ -153,14 +153,14 @@ public class Project implements Serializable
         out.writeObject(printQuality);
 
         //Introduced in version 1.??
-        if (extruder0Filament.isNotNull().get())
+        if (extruder0Filament.get() != null)
         {
             out.writeUTF(extruder0Filament.get().getFilamentID());
         } else
         {
             out.writeUTF("NULL");
         }
-        if (extruder1Filament.isNotNull().get())
+        if (extruder1Filament.get() != null)
         {
             out.writeUTF(extruder1Filament.get().getFilamentID());
         } else

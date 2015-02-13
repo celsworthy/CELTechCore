@@ -3,6 +3,7 @@
  */
 package celtech.coreUI.components.material;
 
+import celtech.Lookup;
 import celtech.configuration.Filament;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -13,11 +14,11 @@ import javafx.scene.shape.Rectangle;
  *
  * @author tony
  */
-class FilamentCell extends ListCell<Filament>
+class FilamentCell extends ListCell<Object>
 {
-    
+
     private static int SWATCH_SQUARE_SIZE = 16;
-    
+
     HBox cellContainer;
     Rectangle rectangle = new Rectangle();
     Label label;
@@ -31,22 +32,28 @@ class FilamentCell extends ListCell<Filament>
     }
 
     @Override
-    protected void updateItem(Filament item, boolean empty)
+    protected void updateItem(Object item, boolean empty)
     {
-        super.updateItem(item, empty); 
-        if (! empty) {
-            setGraphic(cellContainer);
-            rectangle.setFill(item.getDisplayColour());
-            
-            label.setText(item.getLongFriendlyName() + " " + item.getMaterial().getFriendlyName());
-            label.getStyleClass().add("filamentSwatchPadding");
-       } else {
+        super.updateItem(item, empty);
+        if (item != null && !empty)
+        {
+            if (item instanceof Filament)
+            {
+                Filament filament = (Filament) item;
+                setGraphic(cellContainer);
+                rectangle.setFill(filament.getDisplayColour());
+
+                label.setText(filament.getLongFriendlyName() + " "
+                    + filament.getMaterial().getFriendlyName());
+                label.getStyleClass().add("filamentSwatchPadding");
+            } else {
+                label.setText(Lookup.i18n("materialComponent.unknown"));
+            }
+        } else
+        {
             setGraphic(null);
         }
-        
-        
+
     }
-    
-    
-    
+
 }
