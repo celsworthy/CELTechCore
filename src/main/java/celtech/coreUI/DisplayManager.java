@@ -277,7 +277,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).
                 bindLoadedModels(
                     projectTab.getThreeDViewManager());
-            layoutStatusMenuStripController.bindSelectedModels(projectTab);
+            layoutStatusMenuStripController.whenProjectChanges(projectTab);
             projectTab.setMode(newMode);
         } else if (newMode == ApplicationMode.SETTINGS)
         {
@@ -458,7 +458,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                             ((LayoutSidePanelController) (sidePanelControllers.get(
                                 ApplicationMode.LAYOUT))).bindLoadedModels(
                                 projectTab.getThreeDViewManager());
-                            layoutStatusMenuStripController.bindSelectedModels(projectTab);
+                            layoutStatusMenuStripController.whenProjectChanges(projectTab);
                             ((SettingsSidePanelController) sidePanelControllers.get(
                                 ApplicationMode.SETTINGS)).projectChanged(projectTab.getProject());
                         }

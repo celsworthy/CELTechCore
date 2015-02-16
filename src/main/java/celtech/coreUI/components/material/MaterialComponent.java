@@ -188,7 +188,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
     /**
      * When the filament property changes for LAYOUT mode, update the component appropriately.
-     * selectedFilament of null is not valid.
+     * selectedFilament of null is not valid after the first setting.
      */
     private void displayForLayoutScreen(Filament filament)
     {
@@ -196,18 +196,21 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         Float remainingFilament = 0f;
         Float diameter = 0f;
         setReelType(ReelType.GEARS);
-        setMaterial(extruderNumber, filament.getMaterial(),
-                    filament.getFriendlyFilamentName(),
-                    filament.getDisplayColourProperty().get(),
-                    remainingFilament,
-                    diameter);
+        if (filament != null)
+        {
+            setMaterial(extruderNumber, filament.getMaterial(),
+                        filament.getFriendlyFilamentName(),
+                        filament.getDisplayColourProperty().get(),
+                        remainingFilament,
+                        diameter);
+        }
     }
 
     /**
      * When the filament property changes for SETTINGS mode, update the component appropriately.
      * selectedFilament of null indicates that the component is in the initial "Unknown" state that
      * occurs if no reel is loaded on that extruder and the user has yet to pick a filament.
-     */    
+     */
     private void displayForSettingsScreen(Filament filament)
     {
         if (selectedFilamentProperty.get() == null)
@@ -255,7 +258,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         FilamentContainer.getUserFilamentList().addListener(
             (ListChangeListener.Change<? extends Filament> c) ->
             {
-                // do we need to do this given it is an ObservableList??
                 updateFilamentList();
             });
 
@@ -339,7 +341,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         materialColourContainer.setVisible(true);
         materialRemainingContainer.setVisible(false);
         hideMaterialDetails();
-        setReelType(ReelType.ROBOX);
+        displayForLayoutScreen(selectedFilamentProperty.get());
     }
 
     private void customiseForSettingsScreen()
@@ -361,6 +363,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             materialColourContainer.setVisible(false);
             materialRemainingContainer.setVisible(false);
         }
+        displayForSettingsScreen(selectedFilamentProperty.get());
     }
 
     /**
@@ -384,6 +387,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         {
             selectedFilamentProperty.set(null);
         }
+        displayForStatusScreen(selectedFilamentProperty.get());
     }
 
     private void showMaterialDetails()
@@ -465,7 +469,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         String reelNotFormattedString = Lookup.i18n("smartReelProgrammer.reelNotFormatted");
         String notAvailable = Lookup.i18n("smartReelProgrammer.notAvailable");
         String error = Lookup.i18n("smartReelProgrammer.error");
-        showDetails("1:" + error, notAvailable, reelNotFormattedString, Color.BLACK);
+        showDetails((1 + extruderNumber) + ":" + error, notAvailable, reelNotFormattedString, Color.BLACK);
 
     }
 
