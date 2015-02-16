@@ -47,6 +47,7 @@ class FilamentCell extends ListCell<Object>
                     + filament.getMaterial().getFriendlyName());
                 label.getStyleClass().add("filamentSwatchPadding");
             } else {
+                setGraphic(null);
                 label.setText(Lookup.i18n("materialComponent.unknown"));
             }
         } else
