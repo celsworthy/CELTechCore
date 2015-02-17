@@ -118,6 +118,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * Print the part using the extruder of the given number.
      */
     private int associateWithExtruderNumber = 0;
+
     private PhongMaterial material;
 
     /**
@@ -1606,6 +1607,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return localToParent(meshGroup.localToParent(vertexX, vertexY, vertexZ));
     }
+    
+
+    public int getAssociateWithExtruderNumber()
+    {
+        return associateWithExtruderNumber;
+    }    
     
     void setAssociateWithExtruderNumber(int associateWithExtruderNumber) {
         this.associateWithExtruderNumber = associateWithExtruderNumber;

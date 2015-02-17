@@ -169,6 +169,23 @@ public class Project implements Serializable
         }
     }
 
+    /**
+     * Return true if all objects are on the same extruder, else return false.
+     */
+    public boolean allModelsOnSameExtruder() {
+        if (loadedModels.size() == 0 || loadedModels.size() == 1) {
+            return true;
+        }
+        int firstExtruderNumber = loadedModels.get(0).getAssociateWithExtruderNumber();
+        for (ModelContainer loadedModel : loadedModels)
+        {
+            if (loadedModel.getAssociateWithExtruderNumber() != firstExtruderNumber) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     private void readObject(ObjectInputStream in)
         throws IOException, ClassNotFoundException
     {

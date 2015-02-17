@@ -550,32 +550,11 @@ public class ProjectTab extends Tab
 //        viewManager.getCamera().gotoPreset(cameraPositionPreset);
     }
 
-    /**
-     *
-     * @param selectedModel
-     */
     public void deselectModel(ModelContainer selectedModel)
     {
         viewManager.deselectModel(selectedModel);
     }
 
-//    private void recentreGizmoX(int screenX)
-//    {
-//        Point2D newPosition = basePane.screenToLocal(screenX, 0);
-//        gizmoXform.setTx(newPosition.getX());
-//        steno.info("New X pos " + newPosition.getX() + " for " + screenX);
-//    }
-//
-//    private void recentreGizmoY(int screenY)
-//    {
-//        Point2D newPosition = basePane.screenToLocal(0, screenY);
-//        gizmoXform.setTy(newPosition.getY());
-//        steno.info("New Y pos " + newPosition.getY() + " for " + screenY);
-//    }
-    /**
-     *
-     * @param newMode
-     */
     public void setMode(ApplicationMode newMode)
     {
         switch (newMode)
