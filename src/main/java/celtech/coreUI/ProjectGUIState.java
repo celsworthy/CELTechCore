@@ -5,7 +5,6 @@ package celtech.coreUI;
 
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 /**
@@ -14,17 +13,12 @@ import javafx.beans.property.SimpleObjectProperty;
  */
 public class ProjectGUIState
 {
-    private SelectedModelContainers selectedModelContainers = new SelectedModelContainers();
+    private final SelectedModelContainers selectedModelContainers = new SelectedModelContainers();
     
-    private ObjectProperty<LayoutSubmode> layoutSubmode = new SimpleObjectProperty<>(LayoutSubmode.SELECT);
+    private final ObjectProperty<LayoutSubmode> layoutSubmode = new SimpleObjectProperty<>(LayoutSubmode.SELECT);
     
     public SelectedModelContainers getSelectedModelContainers() {
         return selectedModelContainers;
-    }
-    
-    public void setSelectedModelContainers(SelectedModelContainers selectedModelContainers)
-    {
-        this.selectedModelContainers = selectedModelContainers;
     }
     
     public ObjectProperty<LayoutSubmode> getLayoutSubmodeProperty() {
