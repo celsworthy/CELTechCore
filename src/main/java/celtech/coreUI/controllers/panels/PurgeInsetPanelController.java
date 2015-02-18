@@ -7,19 +7,15 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.LargeProgress;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
-import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
 import celtech.services.purge.PurgeState;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -317,12 +313,13 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         PrintQualityEnumeration printQuality, SlicerParametersFile settings, Printer printerToUse)
     {
         this.project = project;
-        bindPrinter(printerToUse);
+        //TODO what about multiple reels etc
+        bindPrinter(printerToUse, project.getPrinterSettings().getFilament0());
 
         ApplicationStatus.getInstance().setMode(ApplicationMode.PURGE);
     }
 
-    private void bindPrinter(Printer printerToUse)
+    private void bindPrinter(Printer printerToUse, Filament purgeFilament)
     {
         if (this.printerToUse != null)
         {
@@ -331,7 +328,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
             proceedButton.getTag().removeAllConditionalText();
         }
         this.printerToUse = printerToUse;
-        purgeHelper = new PurgeHelper(printerToUse);
+        purgeHelper = new PurgeHelper(printerToUse, purgeFilament);
         purgeHelper.addStateListener(this);
         purgeHelper.setState(PurgeState.IDLE);
         setupPrintProgressListeners(printerToUse);
@@ -357,7 +354,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     public void purge(Printer printerToUse)
     {
 
-        bindPrinter(printerToUse);
+        bindPrinter(printerToUse, null);
 
         ApplicationStatus.getInstance().setMode(ApplicationMode.PURGE);
     }

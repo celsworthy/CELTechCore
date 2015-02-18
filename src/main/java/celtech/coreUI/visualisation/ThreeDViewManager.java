@@ -509,10 +509,11 @@ public class ThreeDViewManager
      * @param heightProperty
      */
     public ThreeDViewManager(ObservableList<ModelContainer> loadedModels,
-        ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
+        ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty,
+        SelectedModelContainers selectedModelContainers)
     {
         this.loadedModels = loadedModels;
-        selectedModelContainers = new SelectedModelContainers();
+        this.selectedModelContainers = selectedModelContainers;
 
         this.widthPropertyToFollow = widthProperty;
         this.heightPropertyToFollow = heightProperty;

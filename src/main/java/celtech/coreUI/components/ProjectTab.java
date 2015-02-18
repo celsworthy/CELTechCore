@@ -70,25 +70,9 @@ public class ProjectTab extends Tab
     private DisplayManager displayManager = null;
     private final ProjectManager projectManager = ProjectManager.getInstance();
     private boolean titleBeingEdited = false;
-//    private Xform gizmoXform = new Xform(Xform.RotateOrder.YXZ);
 
     final Rectangle testRect = new Rectangle(5, 5);
 
-//    private final ChangeListener<Number> selectionContainerMoveListener = new ChangeListener<Number>()
-//    {
-//        @Override
-//        public void changed(ObservableValue<? extends Number> ov, Number t,
-//            Number t1)
-//        {
-////            Point2D reference = basePane.localToScreen(0, 0);
-////            double x = viewManager.getSelectionContainer().getScreenX()
-////                - reference.getX();
-////            double y = viewManager.getSelectionContainer().getScreenY()
-////                - reference.getY();
-////            gizmoXform.setTx(x);
-////            gizmoXform.setTy(y);
-//        }
-//    };
     /**
      *
      * @param dispManagerRef
@@ -162,9 +146,14 @@ public class ProjectTab extends Tab
             steno.info("Completed save");
         });
 
+        SelectedModelContainers selectedModelContainers = new SelectedModelContainers();
+        Lookup.getProjectGUIState(project).setSelectedModelContainers(selectedModelContainers);
         viewManager = new ThreeDViewManager(project.getLoadedModels(),
                                             tabDisplayWidthProperty,
-                                            tabDisplayHeightProperty);
+                                            tabDisplayHeightProperty,
+                                            selectedModelContainers);
+        Lookup.getProjectGUIState(project).setThreeDViewManager(viewManager);
+        
 //        camera = viewManager.getCamera();
 
         basePane = new AnchorPane();
@@ -175,7 +164,8 @@ public class ProjectTab extends Tab
             @Override
             public void handle(DragEvent event)
             {
-                if (ApplicationStatus.getInstance().modeProperty().getValue() == ApplicationMode.LAYOUT)
+                if (ApplicationStatus.getInstance().modeProperty().getValue()
+                    == ApplicationMode.LAYOUT)
                 {
                     if (event.getGestureSource() != basePane)
                     {
@@ -190,7 +180,8 @@ public class ProjectTab extends Tab
                                 for (String extension : ApplicationConfiguration.getSupportedFileExtensions(
                                     project.getProjectMode()))
                                 {
-                                    if (file.getName().toUpperCase().endsWith(extension.toUpperCase()))
+                                    if (file.getName().toUpperCase().endsWith(
+                                        extension.toUpperCase()))
                                     {
                                         extensionFound = true;
                                         break;
@@ -222,7 +213,8 @@ public class ProjectTab extends Tab
             {
                 /* the drag-and-drop gesture entered the target */
                 /* show to the user that it is an actual gesture target */
-                if (ApplicationStatus.getInstance().modeProperty().getValue() == ApplicationMode.LAYOUT)
+                if (ApplicationStatus.getInstance().modeProperty().getValue()
+                    == ApplicationMode.LAYOUT)
                 {
                     if (event.getGestureSource() != basePane)
                     {
@@ -550,32 +542,11 @@ public class ProjectTab extends Tab
 //        viewManager.getCamera().gotoPreset(cameraPositionPreset);
     }
 
-    /**
-     *
-     * @param selectedModel
-     */
     public void deselectModel(ModelContainer selectedModel)
     {
         viewManager.deselectModel(selectedModel);
     }
 
-//    private void recentreGizmoX(int screenX)
-//    {
-//        Point2D newPosition = basePane.screenToLocal(screenX, 0);
-//        gizmoXform.setTx(newPosition.getX());
-//        steno.info("New X pos " + newPosition.getX() + " for " + screenX);
-//    }
-//
-//    private void recentreGizmoY(int screenY)
-//    {
-//        Point2D newPosition = basePane.screenToLocal(0, screenY);
-//        gizmoXform.setTy(newPosition.getY());
-//        steno.info("New Y pos " + newPosition.getY() + " for " + screenY);
-//    }
-    /**
-     *
-     * @param newMode
-     */
     public void setMode(ApplicationMode newMode)
     {
         switch (newMode)

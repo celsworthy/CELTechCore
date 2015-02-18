@@ -1,15 +1,11 @@
 package celtech.coreUI.controllers.panels;
 
-import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.coreUI.DisplayManager;
-import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.controllers.popups.PopupCommandReceiver;
 import celtech.coreUI.controllers.popups.PopupCommandTransmitter;
-import celtech.coreUI.controllers.utilityPanels.MaterialDetailsController;
 import celtech.coreUI.controllers.utilityPanels.ProfileDetailsController;
 import celtech.printerControl.model.Printer;
 import java.net.URL;
@@ -38,9 +34,6 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
 {
 
     private Stenographer steno = StenographerFactory.getStenographer(SettingsSlideOutPanelController.class.getName());
-    private SettingsScreenState settingsScreenState = null;
-    private ApplicationStatus applicationStatus = null;
-    private DisplayManager displayManager = null;
 
     @FXML
     private TabPane detailedSettingsTabPane;
@@ -92,11 +85,6 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        applicationStatus = ApplicationStatus.getInstance();
-        displayManager = DisplayManager.getInstance();
-
-        settingsScreenState = SettingsScreenState.getInstance();
-        
         showMaterialTab();
     }
 

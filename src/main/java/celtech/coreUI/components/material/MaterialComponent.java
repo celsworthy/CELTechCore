@@ -19,7 +19,6 @@ import java.util.List;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -29,7 +28,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
@@ -37,7 +35,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
-import javafx.util.Callback;
 
 /**
  *
@@ -128,13 +125,29 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             // this should only happen in SceneBuilder            
         }
 
-        setupComboBox();
-
         this.mode = mode;
         this.printer = printer;
         this.extruderNumber = extruderNumber;
+        setupComboBox();
         updateGUIForModeAndPrinterExtruder();
         Lookup.getPrinterListChangesNotifier().addListener(this);
+
+        selectedFilamentProperty.addListener(
+            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+            {
+                switch (mode)
+                {
+                    case STATUS:
+                        displayForStatusScreen(newValue);
+                        break;
+                    case LAYOUT:
+                        displayForLayoutScreen(newValue);
+                        break;
+                    case SETTINGS:
+                        displayForSettingsScreen(newValue);
+                        break;
+                }
+            });
     }
 
     public ReadOnlyObjectProperty<Filament> getSelectedFilamentProperty()
@@ -142,18 +155,97 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         return selectedFilamentProperty;
     }
 
+    /**
+     * When the filament property changes for STATUS mode, update the component appropriately.
+     * selectedFilament of null indicates that there is no Reel loaded on this extruder.
+     */
+    private void displayForStatusScreen(Filament filament)
+    {
+        if (selectedFilamentProperty.get() == null)
+        {
+            showReelNotLoaded();
+        } else
+        {
+            Float remainingFilament = 0f;
+            Float diameter = 0f;
+            if (printer.reelsProperty().containsKey(extruderNumber))
+            {
+                Reel reel = printer.reelsProperty().get(extruderNumber);
+                remainingFilament = reel.remainingFilamentProperty().get();
+                diameter = reel.diameterProperty().get();
+                setReelType(ReelType.ROBOX);
+            } else
+            {
+                setReelType(ReelType.GEARS);
+            }
+            setMaterial(extruderNumber, filament.getMaterial(),
+                        filament.getFriendlyFilamentName(),
+                        filament.getDisplayColourProperty().get(),
+                        remainingFilament,
+                        diameter);
+        }
+    }
+
+    /**
+     * When the filament property changes for LAYOUT mode, update the component appropriately.
+     * selectedFilament of null is not valid after the first setting.
+     */
+    private void displayForLayoutScreen(Filament filament)
+    {
+
+        Float remainingFilament = 0f;
+        Float diameter = 0f;
+        setReelType(ReelType.GEARS);
+        if (filament != null)
+        {
+            setMaterial(extruderNumber, filament.getMaterial(),
+                        filament.getFriendlyFilamentName(),
+                        filament.getDisplayColourProperty().get(),
+                        remainingFilament,
+                        diameter);
+        }
+    }
+
+    /**
+     * When the filament property changes for SETTINGS mode, update the component appropriately.
+     * selectedFilament of null indicates that the component is in the initial "Unknown" state that
+     * occurs if no reel is loaded on that extruder and the user has yet to pick a filament.
+     */
+    private void displayForSettingsScreen(Filament filament)
+    {
+        if (selectedFilamentProperty.get() == null)
+        {
+            showReelNotLoaded();
+        } else
+        {
+            Float remainingFilament = 0f;
+            Float diameter = 0f;
+            if (printer.reelsProperty().containsKey(extruderNumber))
+            {
+                Reel reel = printer.reelsProperty().get(extruderNumber);
+                remainingFilament = reel.remainingFilamentProperty().get();
+                diameter = reel.diameterProperty().get();
+                setReelType(ReelType.ROBOX);
+            } else
+            {
+                setReelType(ReelType.GEARS);
+            }
+            setMaterial(extruderNumber, filament.getMaterial(),
+                        filament.getFriendlyFilamentName(),
+                        filament.getDisplayColourProperty().get(),
+                        remainingFilament,
+                        diameter);
+        }
+    }
+
+    /**
+     * Set up the materials combo box. This displays a list of filaments and can also display an
+     * "Unknown" (string) option when required.
+     */
     private void setupComboBox()
     {
-        cmbMaterials.setCellFactory(new Callback<ListView<Object>, ListCell<Object>>()
-        {
-
-            @Override
-            public ListCell<Object> call(ListView<Object> param)
-            {
-
-                return new FilamentCell();
-            }
-        });
+        cmbMaterials.setCellFactory((ListView<Object> param)
+            -> new FilamentCell());
 
         List<Object> filamentsList = new ArrayList<>();
         if (mode == Mode.SETTINGS)
@@ -166,7 +258,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         FilamentContainer.getUserFilamentList().addListener(
             (ListChangeListener.Change<? extends Filament> c) ->
             {
-                // do we need to do this given it is an ObservableList??
                 updateFilamentList();
             });
 
@@ -175,13 +266,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             {
                 if (newValue instanceof Filament)
                 {
-                    Filament filament = (Filament) newValue;
                     selectedFilamentProperty.set((Filament) cmbMaterials.getValue());
-                    setMaterial(extruderNumber, filament.getMaterial(),
-                                filament.getFriendlyFilamentName(),
-                                filament.getDisplayColourProperty().get(),
-                                0,
-                                0);
                 } else
                 {
                     // must be "Unknown"
@@ -189,8 +274,14 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                 }
             });
 
+        if (mode == Mode.SETTINGS)
+        {
+            cmbMaterials.setValue(Lookup.i18n("materialComponent.unknown"));
+        }
+
     }
 
+    //TODO make this update the available filaments
     private void updateFilamentList()
     {
 
@@ -203,8 +294,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         {
             Filament filament = (Filament) selectedMaterial;
             selectedFilamentProperty.set(filament);
-            setMaterial(extruderNumber, filament.getMaterial(), "",
-                        filament.getDisplayColourProperty().get(), 0, 0);
         } else
         {
             selectedFilamentProperty.set(null);
@@ -235,85 +324,70 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         switch (mode)
         {
             case STATUS:
-                cmbMaterials.setVisible(false);
-                materialColourContainer.setVisible(true);
-                materialRemainingContainer.setVisible(true);
-                showMaterialDetails();
                 customiseForStatusScreen();
                 break;
             case LAYOUT:
-                cmbMaterials.setVisible(true);
-                materialColourContainer.setVisible(true);
-                materialRemainingContainer.setVisible(false);
-                hideMaterialDetails();
-                setReelType(ReelType.ROBOX);
+                customiseForLayoutScreen();
                 break;
             case SETTINGS:
-                showMaterialDetails();
                 customiseForSettingsScreen();
-
                 break;
         }
+    }
+
+    private void customiseForLayoutScreen()
+    {
+        cmbMaterials.setVisible(true);
+        materialColourContainer.setVisible(true);
+        materialRemainingContainer.setVisible(false);
+        hideMaterialDetails();
+        displayForLayoutScreen(selectedFilamentProperty.get());
     }
 
     private void customiseForSettingsScreen()
     {
+        showMaterialDetails();
         if (printer.reelsProperty().containsKey(extruderNumber))
         {
-            setReelType(ReelType.ROBOX);
             cmbMaterials.setVisible(false);
             materialColourContainer.setVisible(true);
             materialRemainingContainer.setVisible(true);
+            setReelType(ReelType.ROBOX);
             Reel reel = printer.reelsProperty().get(extruderNumber);
             Filament filament = FilamentContainer.getFilamentByID(reel.filamentIDProperty().get());
             selectedFilamentProperty.set(filament);
-            setMaterial(extruderNumber, reel.materialProperty().get(),
-                        reel.friendlyFilamentNameProperty().get(),
-                        reel.displayColourProperty().get(),
-                        reel.remainingFilamentProperty().get(),
-                        reel.diameterProperty().get());
         } else
         {
-            if (selectedFilamentProperty.get() == null)
-            {
-                setReelType(ReelType.SOLID_QUESTION);
-            } else
-            {
-                setReelType(ReelType.GEARS);
-                Filament filament = selectedFilamentProperty.get();
-                selectedFilamentProperty.set(filament);
-                setMaterial(extruderNumber, filament.getMaterial(), "",
-                            filament.getDisplayColourProperty().get(), 0, 0);
-            }
+            selectedFilamentProperty.set(null);
             cmbMaterials.setVisible(true);
             materialColourContainer.setVisible(false);
             materialRemainingContainer.setVisible(false);
         }
+        displayForSettingsScreen(selectedFilamentProperty.get());
     }
 
     /**
      * Configure this component as required for the Status screen. It should only show the details
-     * of a loaded SmartReel. If no SmartReel is present then simply display 'unknown' as the
+     * of a loaded SmartReel. If no SmartReel is present then simply display 'Unknown' as the
      * material with a ReelType of SOLID_QUESTION. Do not show the combo.
      */
     private void customiseForStatusScreen()
     {
+        cmbMaterials.setVisible(false);
+        materialColourContainer.setVisible(true);
+        materialRemainingContainer.setVisible(true);
+        showMaterialDetails();
         if (printer.reelsProperty().containsKey(extruderNumber))
         {
             setReelType(ReelType.ROBOX);
             Reel reel = printer.reelsProperty().get(extruderNumber);
             Filament filament = FilamentContainer.getFilamentByID(reel.filamentIDProperty().get());
             selectedFilamentProperty.set(filament);
-            setMaterial(extruderNumber, reel.materialProperty().get(),
-                        reel.friendlyFilamentNameProperty().get(),
-                        reel.displayColourProperty().get(),
-                        reel.remainingFilamentProperty().get(),
-                        reel.diameterProperty().get());
         } else
         {
-            showReelNotLoaded();
+            selectedFilamentProperty.set(null);
         }
-
+        displayForStatusScreen(selectedFilamentProperty.get());
     }
 
     private void showMaterialDetails()
@@ -331,8 +405,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         anchorPane.setPrefHeight(95);
         materialRemaining.setVisible(false);
     }
-
-    private ChangeListener<Object> reelListener;
 
     public void setReelType(ReelType reelType)
     {
@@ -397,7 +469,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         String reelNotFormattedString = Lookup.i18n("smartReelProgrammer.reelNotFormatted");
         String notAvailable = Lookup.i18n("smartReelProgrammer.notAvailable");
         String error = Lookup.i18n("smartReelProgrammer.error");
-        showDetails("1:" + error, notAvailable, reelNotFormattedString, Color.BLACK);
+        showDetails((1 + extruderNumber) + ":" + error, notAvailable, reelNotFormattedString, Color.BLACK);
 
     }
 
@@ -423,13 +495,8 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     public void setSelectedFilamentInComboBox(Filament filament)
     {
         selectedFilamentProperty.set(filament);
-        if (filament == null)
+        if (filament != null)
         {
-
-        } else
-        {
-            setMaterial(extruderNumber, filament.getMaterial(), "",
-                        filament.getDisplayColourProperty().get(), 0, 0);
             cmbMaterials.setValue(filament);
         }
     }

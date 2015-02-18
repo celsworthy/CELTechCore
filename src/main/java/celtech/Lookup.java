@@ -3,6 +3,7 @@
  */
 package celtech;
 
+import celtech.appManager.Project;
 import celtech.appManager.SystemNotificationManager;
 import celtech.appManager.SystemNotificationManagerJavaFX;
 import celtech.configuration.ApplicationEnvironment;
@@ -11,7 +12,7 @@ import celtech.configuration.UserPreferences;
 import celtech.configuration.datafileaccessors.SlicerMappingsContainer;
 import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.SlicerMappings;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.coreUI.ProjectGUIState;
 import celtech.gcodetranslator.GCodeOutputWriter;
 import celtech.gcodetranslator.GCodeOutputWriterFactory;
 import celtech.gcodetranslator.LiveGCodeOutputWriter;
@@ -19,7 +20,9 @@ import celtech.printerControl.model.Printer;
 import celtech.utils.PrinterListChangesNotifier;
 import celtech.utils.tasks.LiveTaskExecutor;
 import celtech.utils.tasks.TaskExecutor;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,8 +50,20 @@ public class Lookup
     private static final ObservableList<Printer> connectedPrinters = FXCollections.observableArrayList();
     private static UserPreferences userPreferences;
     private static SlicerMappings slicerMappings;
-    private static SlicerParametersFile slicerParameters;
+    /**
+     * The printer that has been selected on the Status panel.
+     */
     private static final ObjectProperty<Printer> currentlySelectedPrinterProperty = new SimpleObjectProperty<>();
+    /**
+     * The activeProject is the project that has most recently been selected on the ProjectTab
+     * control.
+     */
+    private static final ObjectProperty<Project> selectedProject = new SimpleObjectProperty<>();
+    /**
+     * Each Project has a ProjectGUIState that holds all the necessary GUI state for the Project
+     * eg selectionModel.
+     */
+    private static final Map<Project, ProjectGUIState> projectGUIStates = new HashMap<>();
     private static Languages languages = new Languages();
     private static GCodeOutputWriterFactory<GCodeOutputWriter> postProcessorGCodeOutputWriterFactory;
 
@@ -104,7 +119,7 @@ public class Lookup
      */
     public static void setApplicationEnvironment(ApplicationEnvironment applicationEnvironment)
     {
-        applicationEnvironment = applicationEnvironment;
+        Lookup.applicationEnvironment = applicationEnvironment;
     }
 
     public static void setupDefaultValues()
@@ -165,7 +180,7 @@ public class Lookup
 
     public static void setTaskExecutor(TaskExecutor taskExecutor)
     {
-        taskExecutor = taskExecutor;
+        Lookup.taskExecutor = taskExecutor;
     }
 
     public static SystemNotificationManager getSystemNotificationHandler()
@@ -176,7 +191,7 @@ public class Lookup
     public static void setSystemNotificationHandler(
         SystemNotificationManager systemNotificationHandler)
     {
-        systemNotificationHandler = systemNotificationHandler;
+        Lookup.systemNotificationHandler = systemNotificationHandler;
     }
 
     public static PrinterListChangesNotifier getPrinterListChangesNotifier()
@@ -219,4 +234,20 @@ public class Lookup
     {
         postProcessorGCodeOutputWriterFactory = factory;
     }
+    
+    public static ObjectProperty<Project> getSelectedProjectProperty() {
+        return selectedProject;
+    }
+    
+    public static void setSelectedProject(Project project) {
+        selectedProject.set(project);
+    }
+    
+    public static ProjectGUIState getProjectGUIState(Project project) {
+        if (! projectGUIStates.containsKey(project)) {
+            ProjectGUIState projectGUIState = new ProjectGUIState();
+            projectGUIStates.put(project, projectGUIState);
+        }
+        return projectGUIStates.get(project);
+    }    
 }
