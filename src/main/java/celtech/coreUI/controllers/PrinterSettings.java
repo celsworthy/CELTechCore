@@ -89,12 +89,12 @@ public class PrinterSettings
      *
      * @return
      */
-    public ObjectProperty<Filament> filament0Property()
+    public ObjectProperty<Filament> getFilament0Property()
     {
         return selectedFilament0;
     }
     
-    public ObjectProperty<Filament> filament1Property()
+    public ObjectProperty<Filament> getFilament1Property()
     {
         return selectedFilament1;
     }    

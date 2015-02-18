@@ -734,14 +734,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         materialComponent0.getSelectedFilamentProperty().addListener(
             (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
             {
-                get3DViewManager().setExtruder0Filament(newValue);
                 boundProject.setExtruder0Filament(newValue);
             });
 
         materialComponent1.getSelectedFilamentProperty().addListener(
             (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
             {
-                get3DViewManager().setExtruder1Filament(newValue);
                 boundProject.setExtruder1Filament(newValue);
             });
     }

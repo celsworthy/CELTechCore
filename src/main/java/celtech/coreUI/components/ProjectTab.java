@@ -539,22 +539,6 @@ public class ProjectTab extends Tab
         viewManager.deselectModel(selectedModel);
     }
 
-    public void setMode(ApplicationMode newMode)
-    {
-        switch (newMode)
-        {
-            case LAYOUT:
-                //stop rotation
-                viewManager.stopSettingsAnimation();
-                break;
-            case SETTINGS:
-                //start rotation
-                viewManager.deselectAllModels();
-                viewManager.startSettingsAnimation();
-                break;
-        }
-    }
-
     public SelectedModelContainers getSelectionModel()
     {
         return viewManager.getSelectedModelContainers();
