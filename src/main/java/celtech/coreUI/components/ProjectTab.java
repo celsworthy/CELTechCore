@@ -393,7 +393,7 @@ public class ProjectTab extends Tab
                     project.setProjectMode(ProjectMode.GCODE);
                     project.setProjectName(modelContainer.getModelName());
                     project.setGCodeFilename(fullFilename);
-                    viewManager.activateGCodeVisualisationMode();
+//                    viewManager.activateGCodeVisualisationMode();
                     break;
                 case MESH:
                     project.setProjectMode(ProjectMode.MESH);
