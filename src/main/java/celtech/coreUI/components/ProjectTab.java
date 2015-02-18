@@ -146,13 +146,9 @@ public class ProjectTab extends Tab
             steno.info("Completed save");
         });
 
-        SelectedModelContainers selectedModelContainers = new SelectedModelContainers();
-        Lookup.getProjectGUIState(project).setSelectedModelContainers(selectedModelContainers);
-        viewManager = new ThreeDViewManager(project.getLoadedModels(),
+        viewManager = new ThreeDViewManager(project,
                                             tabDisplayWidthProperty,
-                                            tabDisplayHeightProperty,
-                                            selectedModelContainers);
-        Lookup.getProjectGUIState(project).setThreeDViewManager(viewManager);
+                                            tabDisplayHeightProperty);
         
 //        camera = viewManager.getCamera();
 
@@ -368,22 +364,18 @@ public class ProjectTab extends Tab
         }
     }
 
-    /**
-     *
-     * @param projectToLoad
-     */
-    public void addProjectContainer(File projectToLoad)
-    {
-        nonEditableProjectNameField.textProperty().unbind();
-        nonEditableProjectNameField.setText("");
-
-        project = ProjectManager.loadProject(projectToLoad);
-        nonEditableProjectNameField.textProperty().bind(
-            project.projectNameProperty());
-        viewManager.setLoadedModels(project.getLoadedModels());
-
-        projectManager.projectOpened(project);
-    }
+//    public void addProjectContainer(File projectToLoad)
+//    {
+//        nonEditableProjectNameField.textProperty().unbind();
+//        nonEditableProjectNameField.setText("");
+//
+//        project = ProjectManager.loadProject(projectToLoad);
+//        nonEditableProjectNameField.textProperty().bind(
+//            project.projectNameProperty());
+//        viewManager.setLoadedModels(project.getLoadedModels());
+//
+//        projectManager.projectOpened(project);
+//    }
 
     /**
      *

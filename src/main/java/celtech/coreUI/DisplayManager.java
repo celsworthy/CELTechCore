@@ -274,8 +274,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             Project project = projectTab.getProject();
             ((LayoutSlideOutPanelController) slideOutControllers.get(ApplicationMode.LAYOUT)).
                 bindLoadedModels(project);
-            ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).
-                bindLoadedModels(project);
+            ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).bindProject(project);
             projectTab.setMode(newMode);
         } else if (newMode == ApplicationMode.SETTINGS)
         {
@@ -579,7 +578,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     {
         Lookup.setSelectedProject(project);
         ((LayoutSidePanelController) (sidePanelControllers.get(
-            ApplicationMode.LAYOUT))).bindLoadedModels(project);
+            ApplicationMode.LAYOUT))).bindProject(project);
 //        ((SettingsSidePanelController) sidePanelControllers.get(
 //            ApplicationMode.SETTINGS)).projectChanged(project);
     }

@@ -1,8 +1,10 @@
 package celtech.coreUI.visualisation;
 
 import celtech.CoreTest;
+import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
+import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.PrintBed;
@@ -129,16 +131,14 @@ public class ThreeDViewManager
     private final double bedXOffsetFromCameraZero;
     private final double bedZOffsetFromCameraZero;
 
-    private final Point3D centreCoordsScene = null;
-
     private SelectedModelContainers selectedModelContainers = null;
 
 //    private final double settingsAnimationYAngle = 30;
 //    private final double settingsAnimationXAngle = 0;
     private long lastAnimationTrigger = 0;
 
-    private double gizmoStartingRotationAngle = 0;
-    private double gizmoRotationOffset = 0;
+//    private double gizmoStartingRotationAngle = 0;
+//    private double gizmoRotationOffset = 0;
     private boolean gizmoRotationStarted = false;
 
     private final AnimationTimer settingsScreenAnimationTimer = new AnimationTimer()
@@ -154,9 +154,10 @@ public class ThreeDViewManager
             }
         }
     };
-    private ToolGovernor layoutToolGovernor;
     private Filament extruder0Filament;
     private Filament extruder1Filament;
+    private final Project project;
+    private final ObjectProperty<LayoutSubmode> layoutSubmode;
 
     /**
      *
@@ -348,7 +349,6 @@ public class ThreeDViewManager
             modelContainer.setUseExtruder0Filament(false);
             updateModelColour(modelContainer);
             layoutSubmode.set(LayoutSubmode.SELECT);
-            layoutToolGovernor.deactivateAnySelectedTool();
             DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
         }
     }
@@ -360,7 +360,6 @@ public class ThreeDViewManager
             modelContainer.setUseExtruder0Filament(true);
             updateModelColour(modelContainer);
             layoutSubmode.set(LayoutSubmode.SELECT);
-            layoutToolGovernor.deactivateAnySelectedTool();
             DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
         }
     }
@@ -469,12 +468,6 @@ public class ThreeDViewManager
         }
     };
 
-    /*
-     * Snap to ground
-     */
-    private ObjectProperty<LayoutSubmode> layoutSubmode = new SimpleObjectProperty<>(
-        LayoutSubmode.SELECT);
-
     private ChangeListener<ApplicationMode> applicationModeListener = new ChangeListener<ApplicationMode>()
     {
         @Override
@@ -502,21 +495,16 @@ public class ThreeDViewManager
         }
     };
 
-    /**
-     *
-     * @param loadedModels
-     * @param widthProperty
-     * @param heightProperty
-     */
-    public ThreeDViewManager(ObservableList<ModelContainer> loadedModels,
-        ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty,
-        SelectedModelContainers selectedModelContainers)
+    public ThreeDViewManager(Project project,
+        ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
     {
-        this.loadedModels = loadedModels;
-        this.selectedModelContainers = selectedModelContainers;
+        this.project = project;
+        loadedModels = project.getLoadedModels();
+        selectedModelContainers = Lookup.getProjectGUIState(project).getSelectedModelContainers();
+        layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
 
-        this.widthPropertyToFollow = widthProperty;
-        this.heightPropertyToFollow = heightProperty;
+        widthPropertyToFollow = widthProperty;
+        heightPropertyToFollow = heightProperty;
 
         root3D.setId("Root");
         AnchorPane.setBottomAnchor(root3D, 0.0);
@@ -577,7 +565,7 @@ public class ThreeDViewManager
         subScene.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
         subScene.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
 
-        layoutSubmodeProperty().addListener(new ChangeListener<LayoutSubmode>()
+        layoutSubmode.addListener(new ChangeListener<LayoutSubmode>()
         {
             @Override
             public void changed(ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode t,
@@ -1099,7 +1087,6 @@ public class ThreeDViewManager
     public void activateSnapToGround()
     {
         layoutSubmode.set(LayoutSubmode.SNAP_TO_GROUND);
-        layoutToolGovernor.deactivateAnySelectedTool();
     }
 
     private void snapToGround(ModelContainer modelContainer, int faceNumber)
@@ -1111,23 +1098,6 @@ public class ThreeDViewManager
             DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
         }
         layoutSubmode.set(LayoutSubmode.SELECT);
-    }
-
-    /**
-     *
-     * @return
-     */
-    public ObjectProperty<LayoutSubmode> layoutSubmodeProperty()
-    {
-        return layoutSubmode;
-    }
-
-    /**
-     *
-     */
-    public void activateGCodeVisualisationMode()
-    {
-        layoutSubmode.set(LayoutSubmode.GCODE_VISUALISATION);
     }
 
     /**
@@ -1499,24 +1469,4 @@ public class ThreeDViewManager
         }
     }
 
-    public interface ToolGovernor
-    {
-
-        /**
-         * Deactivate any selected tool.
-         */
-        public void deactivateAnySelectedTool();
-    }
-
-    public void activateChooseExtruder(int extruderNumber, ToolGovernor layoutToolGovernor)
-    {
-        this.layoutToolGovernor = layoutToolGovernor;
-        if (extruderNumber == 0)
-        {
-            layoutSubmode.set(LayoutSubmode.ASSOCIATE_WITH_EXTRUDER0);
-        } else
-        {
-            layoutSubmode.set(LayoutSubmode.ASSOCIATE_WITH_EXTRUDER1);
-        }
-    }
 }

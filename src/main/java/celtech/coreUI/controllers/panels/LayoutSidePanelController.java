@@ -11,6 +11,7 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.coreUI.DisplayManager;
+import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.visualisation.SelectedModelContainers;
@@ -21,6 +22,7 @@ import java.net.URL;
 import java.text.ParseException;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -46,14 +48,12 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class LayoutSidePanelController implements Initializable,
-    SidePanelManager
+public class LayoutSidePanelController implements Initializable, SidePanelManager
 {
 
     private Stenographer steno = StenographerFactory.getStenographer(
         LayoutSidePanelController.class.getName());
     private Project boundProject = null;
-    private ModelContainer boundModel = null;
 
     @FXML
     private RestrictedNumberField widthTextField;
@@ -93,8 +93,6 @@ public class LayoutSidePanelController implements Initializable,
     private SelectedModelContainersListener tableViewSelectionListener = null;
     private final DisplayManager displayManager = DisplayManager.getInstance();
 
-    private ListChangeListener<ModelContainer> loadedModelsChangeListener = null;
-
     private ChangeListener<Number> modelScaleChangeListener = null;
     private ChangeListener<Number> modelRotationChangeListener = null;
     private ChangeListener<Number> widthListener = null;
@@ -113,6 +111,7 @@ public class LayoutSidePanelController implements Initializable,
     private MaterialComponent materialComponent1;
 
     private MaterialComponent selectedMaterialComponent;
+    private ObjectProperty<LayoutSubmode> layoutSubmode;
 
     @FXML
     void changeToSettings(MouseEvent event)
@@ -146,39 +145,7 @@ public class LayoutSidePanelController implements Initializable,
         yAxisTextField.setText("-");
 
         setUpTableView(modelNameLabelString, scaleLabelString, rotationLabelString, languageBundle);
-
-        loadedModelsChangeListener = new ListChangeListener<ModelContainer>()
-        {
-
-            @Override
-            public void onChanged(
-                ListChangeListener.Change<? extends ModelContainer> change)
-            {
-                while (change.next())
-                {
-                    if (change.wasAdded())
-                    {
-                        for (ModelContainer additem : change.getAddedSubList())
-                        {
-                            boundModel = additem;
-                            boundModel = boundProject.getLoadedModels().get(0);
-                        }
-                    } else if (change.wasRemoved())
-                    {
-                        for (ModelContainer additem : change.getRemoved())
-                        {
-                        }
-                    } else if (change.wasReplaced())
-                    {
-                        steno.info("Replaced: ");
-                    } else if (change.wasUpdated())
-                    {
-                        steno.info("Updated: ");
-                    }
-                }
-            }
-        };
-
+        
         setUpModelGeometryListeners();
         setUpKeyPressListeners();
         setupMaterialContainer();
@@ -658,6 +625,11 @@ public class LayoutSidePanelController implements Initializable,
 
         };
     }
+    
+    private void unbindProject(Project project) {
+        layoutSubmode.removeListener(layoutSubmodeListener);
+        selectionModel.removeListener(tableViewSelectionListener);
+    }
 
     /**
      * Bind the given viewManager to the controller's widgets. Unbind any widget tied to a previous
@@ -665,19 +637,20 @@ public class LayoutSidePanelController implements Initializable,
      *
      * @param viewManager
      */
-    public void bindLoadedModels(final Project project)
+    public void bindProject(final Project project)
     {
-        ObservableList<ModelContainer> loadedModels = project.getLoadedModels();
-
-        if (selectionModel != null)
-        {
-            selectionModel.removeListener(tableViewSelectionListener);
+        if (boundProject != null) {
+            unbindProject(boundProject);
         }
-        selectionModel = Lookup.getProjectGUIState(project).getSelectedModelContainers();
+        boundProject = project;
 
-        modelDataTableView.setItems(loadedModels);
+        selectionModel = Lookup.getProjectGUIState(project).getSelectedModelContainers();
+        layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
+
+        modelDataTableView.setItems(project.getLoadedModels());
         resetTableViewSelection(selectionModel);
         selectionModel.addListener(tableViewSelectionListener);
+        layoutSubmode.addListener(layoutSubmodeListener);
 
         SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails
             = selectionModel.getPrimarySelectedModelDetails();
@@ -695,30 +668,11 @@ public class LayoutSidePanelController implements Initializable,
 
         selectedItemDetails.visibleProperty().bind(
             Bindings.lessThan(0, selectionModel.getNumModelsSelectedProperty()));
-        if (boundProject != null)
-        {
-            boundProject.getLoadedModels().removeListener(loadedModelsChangeListener);
-        }
-
-        if (boundModel != null)
-        {
-            boundModel.maxLayerVisibleProperty().unbind();
-            boundModel.minLayerVisibleProperty().unbind();
-        }
-
-        boundProject = project;
 
         materialComponent0.setSelectedFilamentInComboBox(
             boundProject.getExtruder0FilamentProperty().get());
         materialComponent1.setSelectedFilamentInComboBox(
             boundProject.getExtruder1FilamentProperty().get());
-
-        if (boundProject.getLoadedModels().size() > 0)
-        {
-            boundModel = boundProject.getLoadedModels().get(0);
-        }
-
-        boundProject.getLoadedModels().addListener(loadedModelsChangeListener);
     }
 
     /**
@@ -792,23 +746,36 @@ public class LayoutSidePanelController implements Initializable,
             });
     }
 
-    private void deselectMaterials()
-    {
-        materialComponent0.select(false);
-        materialComponent1.select(false);
-    }
-
     private void selectMaterialComponent(MaterialComponent materialComponent)
     {
-        deselectMaterials();
         materialComponent.select(true);
         selectedMaterialComponent = materialComponent;
         if (materialComponent == materialComponent0)
         {
-            get3DViewManager().activateChooseExtruder(0, this::deselectMaterials);
+            layoutSubmode.set(LayoutSubmode.ASSOCIATE_WITH_EXTRUDER0);
+            materialComponent1.select(false);
         } else
         {
-            get3DViewManager().activateChooseExtruder(1, this::deselectMaterials);
+            layoutSubmode.set(LayoutSubmode.ASSOCIATE_WITH_EXTRUDER1);
+            materialComponent0.select(false);
         }
     }
+
+    private final ChangeListener<LayoutSubmode> layoutSubmodeListener = (ObservableValue<? extends LayoutSubmode> observable, LayoutSubmode oldValue, LayoutSubmode newValue) ->
+    {
+        switch (layoutSubmode.get()) {
+            case ASSOCIATE_WITH_EXTRUDER0:
+                selectMaterialComponent(materialComponent0);
+                break;
+            case ASSOCIATE_WITH_EXTRUDER1:
+                selectMaterialComponent(materialComponent1);
+                break;           
+            default:
+                materialComponent0.select(false);
+                materialComponent1.select(false);
+        }
+       
+    };
+
+
 }
