@@ -11,6 +11,7 @@ import static celtech.appManager.ProjectMode.NONE;
 import celtech.appManager.PurgeResponse;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
+import celtech.configuration.Filament;
 import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.AmbientLEDState;
 import celtech.coreUI.DisplayManager;
@@ -37,6 +38,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
@@ -64,12 +66,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private final FileChooser modelFileChooser = new FileChooser();
     private Project boundProject = null;
     private PrinterUtils printerUtils = null;
-    private PrinterColourMap colourMap = PrinterColourMap.getInstance();
-    private ChangeListener<Color> printerColourChangeListener = null;
+    private final PrinterColourMap colourMap = PrinterColourMap.getInstance();
 
-    //Temporary - until the firmware indicates selected nozzle
-    private IntegerProperty currentNozzle = new SimpleIntegerProperty(0);
-    private BooleanProperty canPrintProject = new SimpleBooleanProperty(false);
+    private final IntegerProperty currentNozzle = new SimpleIntegerProperty(0);
+    
+    private final BooleanProperty canPrintProject = new SimpleBooleanProperty(false);
 
     @FXML
     private GraphicButtonWithLabel backwardFromSettingsButton;
@@ -236,9 +237,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
             ProjectMode projectMode = ProjectMode.NONE;
 
-            if (displayManager.getCurrentlyVisibleProject() != null)
+            if (selectedProject != null)
             {
-                projectMode = displayManager.getCurrentlyVisibleProject().getProjectMode();
+                projectMode = selectedProject.getProjectMode();
             }
 
             String descriptionOfFile = null;
@@ -784,12 +785,48 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             return;
         }
         printButton.disableProperty().unbind();
-        canPrintProject.bind(
-            printer.canPrintProperty()
-            .and(printerSettings.filament0Property().isNotNull())
-            .and(printer.getPrinterAncillarySystems().lidOpenProperty().not())
-            .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
-        );
+        if (printer.extrudersProperty().size() == 1) // only one extruder
+        {
+            canPrintProject.bind(
+                printer.canPrintProperty()
+                .and(printerSettings.filament0Property().isNotNull())
+                .and(printer.getPrinterAncillarySystems().lidOpenProperty().not())
+                .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
+            );
+        } else // this printer has two extruders
+        {
+            if (project.allModelsOnSameExtruder())
+            {
+                // only one extruder required, which one is it?
+                int extruderNumber = project.getUsedExtruders().iterator().next();
+                ObjectProperty<Filament> requiredFilamentProperty = null;
+                if (extruderNumber == 0)
+                {
+                    requiredFilamentProperty = printerSettings.filament0Property();
+                } else
+                {
+                    requiredFilamentProperty = printerSettings.filament1Property();
+                }
+
+                canPrintProject.bind(
+                    printer.canPrintProperty()
+                    .and(requiredFilamentProperty.isNotNull())
+                    .and(printer.getPrinterAncillarySystems().lidOpenProperty().not())
+                    .and(printer.extrudersProperty().get(extruderNumber).filamentLoadedProperty())
+                );
+            } else // both extruders are required
+            {
+                canPrintProject.bind(
+                    printer.canPrintProperty()
+                    .and(printerSettings.filament0Property().isNotNull())
+                    .and(printerSettings.filament1Property().isNotNull())
+                    .and(printer.getPrinterAncillarySystems().lidOpenProperty().not())
+                    .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
+                    .and(printer.extrudersProperty().get(1).filamentLoadedProperty())
+                );
+
+            }
+        }
         printButton.disableProperty().bind(canPrintProject.not());
     }
 

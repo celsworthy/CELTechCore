@@ -4,8 +4,6 @@ import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.FilamentContainer;
-import celtech.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.model.Printer;
@@ -16,6 +14,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
@@ -169,19 +169,24 @@ public class Project implements Serializable
      */
     public boolean allModelsOnSameExtruder()
     {
-        if (loadedModels.size() == 0 || loadedModels.size() == 1)
-        {
-            return true;
-        }
-        int firstExtruderNumber = loadedModels.get(0).getAssociateWithExtruderNumber();
+        return getUsedExtruders().size() < 2;
+    }
+    
+    /**
+     * Return which extruders are used by the project, as a set of the extruder numbers
+     * @return 
+     */
+    public Set<Integer> getUsedExtruders() {
+        Set<Integer> usedExtruders = new HashSet<>();
         for (ModelContainer loadedModel : loadedModels)
         {
-            if (loadedModel.getAssociateWithExtruderNumber() != firstExtruderNumber)
+            int extruderNumber = loadedModel.getAssociateWithExtruderNumber();
+            if (! usedExtruders.contains(extruderNumber))
             {
-                return false;
+                usedExtruders.add(extruderNumber);
             }
         }
-        return true;
+        return usedExtruders;
     }
 
     private void readObject(ObjectInputStream in)
