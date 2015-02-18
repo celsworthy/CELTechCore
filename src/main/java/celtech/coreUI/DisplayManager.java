@@ -578,7 +578,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private void fireProjectChanged(Project project)
     {
         System.out.println("XXX Change active project to " + project);
-        Lookup.setActiveProject(project);
+        Lookup.setSelectedProject(project);
         ((LayoutSidePanelController) (sidePanelControllers.get(
             ApplicationMode.LAYOUT))).bindLoadedModels(project);
 //        ((SettingsSidePanelController) sidePanelControllers.get(

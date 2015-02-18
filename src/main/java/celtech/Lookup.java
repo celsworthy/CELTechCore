@@ -60,7 +60,7 @@ public class Lookup
      * The activeProject is the project that has most recently been selected on the ProjectTab
      * control.
      */
-    private static final ObjectProperty<Project> activeProject = new SimpleObjectProperty<>();
+    private static final ObjectProperty<Project> selectedProject = new SimpleObjectProperty<>();
     /**
      * Each Project has a ProjectGUIState that holds all the necessary GUI state for the Project
      * eg selectionModel.
@@ -237,20 +237,12 @@ public class Lookup
         postProcessorGCodeOutputWriterFactory = factory;
     }
     
-    public static ObjectProperty<Project> getActiveProjectProperty() {
-        return activeProject;
+    public static ObjectProperty<Project> getSelectedProjectProperty() {
+        return selectedProject;
     }
     
-    public static void setActiveProject(Project project) {
-        activeProject.set(project);
-    }
-    
-    public static ProjectGUIState getActiveProjectGUIState() {
-        if (! projectGUIStates.containsKey(activeProject.get())) {
-            ProjectGUIState projectGUIState = new ProjectGUIState();
-            projectGUIStates.put(activeProject.get(), projectGUIState);
-        }
-        return projectGUIStates.get(activeProject.get());
+    public static void setSelectedProject(Project project) {
+        selectedProject.set(project);
     }
     
     public static ProjectGUIState getProjectGUIState(Project project) {

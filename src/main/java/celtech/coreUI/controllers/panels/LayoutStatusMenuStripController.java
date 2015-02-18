@@ -165,7 +165,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         Printer printer = printerSettings.getSelectedPrinter();
 
-        Project currentProject = Lookup.getActiveProjectProperty().get();
+        Project currentProject = Lookup.getSelectedProjectProperty().get();
 
         PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer, currentProject);
 
@@ -574,7 +574,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         setupButtonVisibility();
 
-        Lookup.getActiveProjectProperty().addListener(
+        Lookup.getSelectedProjectProperty().addListener(
             (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
             {
                 System.out.println("XXX Project has changed to " + newValue);

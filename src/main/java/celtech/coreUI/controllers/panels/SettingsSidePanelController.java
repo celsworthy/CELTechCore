@@ -257,7 +257,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         setupSliders();
 
-        Lookup.getActiveProjectProperty().addListener(
+        Lookup.getSelectedProjectProperty().addListener(
             (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
             {
                 projectChanged(newValue);
@@ -664,7 +664,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             selectPrintProfileByName(profiletoSave.getProfileName());
             if (displayManager != null)
             {
-                projectChanged(Lookup.getActiveProjectProperty().get());
+                projectChanged(Lookup.getSelectedProjectProperty().get());
             }
         }
     }
