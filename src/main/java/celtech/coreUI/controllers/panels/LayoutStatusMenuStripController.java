@@ -679,8 +679,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         if (printer.extrudersProperty().size() == 1) // only one extruder
         {
             printButton.getTag().addConditionalText(
-                "dialogs.cantPrintNoFilamentSelectedMessage", printerSettings.
-                filament0Property().isNull());
+                "dialogs.cantPrintNoFilamentSelectedMessage", printerSettings.getFilament0Property().isNull());
             printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
                                                     printer.extrudersProperty().get(0).
                                                     filamentLoadedProperty().not());
@@ -693,10 +692,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 ObjectProperty<Filament> requiredFilamentProperty = null;
                 if (extruderNumber == 0)
                 {
-                    requiredFilamentProperty = printerSettings.filament0Property();
+                    requiredFilamentProperty = printerSettings.getFilament0Property();
                 } else
                 {
-                    requiredFilamentProperty = printerSettings.filament1Property();
+                    requiredFilamentProperty = printerSettings.getFilament1Property();
                 }
 
                 printButton.getTag().addConditionalText(
@@ -708,14 +707,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             } else // both extruders are required
             {
                 printButton.getTag().addConditionalText(
-                    "dialogs.cantPrintNoFilamentSelectedMessage", printerSettings.
-                    filament0Property().isNull());
+                    "dialogs.cantPrintNoFilamentSelectedMessage", printerSettings.getFilament0Property().isNull());
                 printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
                                                         printer.extrudersProperty().get(0).
                                                         filamentLoadedProperty().not());
                 printButton.getTag().addConditionalText(
-                    "dialogs.cantPrintNoFilamentSelectedMessage", printerSettings.
-                    filament1Property().isNull());
+                    "dialogs.cantPrintNoFilamentSelectedMessage", printerSettings.getFilament1Property().isNull());
                 printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
                                                         printer.extrudersProperty().get(1).
                                                         filamentLoadedProperty().not());
@@ -852,7 +849,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         {
             canPrintProject.bind(
                 printer.canPrintProperty()
-                .and(printerSettings.filament0Property().isNotNull())
+                .and(printerSettings.getFilament0Property().isNotNull())
                 .and(printer.getPrinterAncillarySystems().lidOpenProperty().not())
                 .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
             );
@@ -865,10 +862,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 ObjectProperty<Filament> requiredFilamentProperty = null;
                 if (extruderNumber == 0)
                 {
-                    requiredFilamentProperty = printerSettings.filament0Property();
+                    requiredFilamentProperty = printerSettings.getFilament0Property();
                 } else
                 {
-                    requiredFilamentProperty = printerSettings.filament1Property();
+                    requiredFilamentProperty = printerSettings.getFilament1Property();
                 }
 
                 canPrintProject.bind(
@@ -881,8 +878,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             {
                 canPrintProject.bind(
                     printer.canPrintProperty()
-                    .and(printerSettings.filament0Property().isNotNull())
-                    .and(printerSettings.filament1Property().isNotNull())
+                    .and(printerSettings.getFilament0Property().isNotNull())
+                    .and(printerSettings.getFilament1Property().isNotNull())
                     .and(printer.getPrinterAncillarySystems().lidOpenProperty().not())
                     .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
                     .and(printer.extrudersProperty().get(1).filamentLoadedProperty())

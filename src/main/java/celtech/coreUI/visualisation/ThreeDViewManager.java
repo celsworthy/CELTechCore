@@ -298,19 +298,19 @@ public class ThreeDViewManager
         Point3D pickedScenePoint = intersectedNode.localToScene(pickedPoint);
         Point3D pickedBedTranslateXformPoint = bedTranslateXform.sceneToLocal(
             pickedScenePoint);
-        
+
         translationDragPlane.setTranslateY(pickedBedTranslateXformPoint.getY());
         Point3D pickedDragPlanePoint = translationDragPlane.sceneToLocal(
             pickedScenePoint);
         lastDragPosition = pickedDragPlanePoint;
-        
+
         Point3D bedXToS = bedTranslateXform.localToParent(pickedPoint);
         scaleDragPlane.setTranslateX(bedXToS.getX());
         scaleDragPlane.setTranslateY(bedXToS.getY());
         scaleDragPlane.setTranslateZ(pickedPoint.getZ());
-        
+
         setDragMode(DragMode.TRANSLATING);
-        
+
         if (intersectedNode != null)
         {
             if (intersectedNode instanceof MeshView)
@@ -320,9 +320,9 @@ public class ThreeDViewManager
                 {
                     parent = parent.getParent();
                 }
-                
+
                 ModelContainer pickedModel = (ModelContainer) parent;
-                
+
                 if (pickedModel.isSelected() == false)
                 {
                     boolean multiSelect = event.isShortcutDown();
@@ -483,16 +483,21 @@ public class ThreeDViewManager
                         subScene.removeEventHandler(ZoomEvent.ANY, zoomEventHandler);
                         subScene.removeEventHandler(ScrollEvent.ANY, scrollEventHandler);
                         goToPreset(CameraPositionPreset.TOP);
+                        deselectAllModels();
+                        startSettingsAnimation();
                         break;
                     default:
                         goToPreset(CameraPositionPreset.FRONT);
                         subScene.addEventHandler(MouseEvent.ANY, mouseEventHandler);
                         subScene.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
                         subScene.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
+                        stopSettingsAnimation();
                         break;
                 }
+                updateFilamentColoursForMode(newMode);
             }
         }
+
     };
 
     public ThreeDViewManager(Project project,
@@ -571,7 +576,8 @@ public class ThreeDViewManager
             public void changed(ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode t,
                 LayoutSubmode t1)
             {
-                if (t1 == LayoutSubmode.SNAP_TO_GROUND || t1 == LayoutSubmode.ASSOCIATE_WITH_EXTRUDER0
+                if (t1 == LayoutSubmode.SNAP_TO_GROUND || t1
+                    == LayoutSubmode.ASSOCIATE_WITH_EXTRUDER0
                     || t1 == LayoutSubmode.ASSOCIATE_WITH_EXTRUDER1)
                 {
                     subScene.setCursor(Cursor.HAND);
@@ -583,6 +589,8 @@ public class ThreeDViewManager
         });
 
         dragMode.addListener(dragModeListener);
+
+        setupFilamentListeners(project);
     }
 
     private void goToPreset(CameraPositionPreset preset)
@@ -1425,7 +1433,7 @@ public class ThreeDViewManager
     {
         extruder1Filament = filament;
         updateModelColours();
-    }    
+    }
 
     private void updateModelColours()
     {
@@ -1439,12 +1447,14 @@ public class ThreeDViewManager
     {
         Color colour0 = null;
         Color colour1 = null;
-        if (extruder0Filament != null) {
+        if (extruder0Filament != null)
+        {
             colour0 = extruder0Filament.getDisplayColour();
-        }  
-        if (extruder1Filament != null) {
+        }
+        if (extruder1Filament != null)
+        {
             colour1 = extruder1Filament.getDisplayColour();
-        }           
+        }
         model.setColour(colour0, colour1);
     }
 
@@ -1467,6 +1477,70 @@ public class ThreeDViewManager
         {
             deselectModel(modelContainer);
         }
+    }
+
+    /**
+     * Models must reflect the project filament colours.
+     */
+    private void setupFilamentListeners(Project project)
+    {
+        extruder0Filament = project.getExtruder0FilamentProperty().get();
+        project.getExtruder0FilamentProperty().addListener(
+            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+            {
+                extruder0Filament = newValue;
+                updateModelColours();
+            });
+
+        extruder1Filament = project.getExtruder1FilamentProperty().get();
+        project.getExtruder1FilamentProperty().addListener(
+            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+            {
+                extruder1Filament = newValue;
+                updateModelColours();
+            });
+        updateModelColours();
+    }
+
+    /**
+     * Models must reflect the project's print settings filament colours.
+     */
+    private void setupPrintSettingsFilamentListeners(Project project)
+    {
+        extruder0Filament = project.getPrinterSettings().getFilament0();
+        project.getPrinterSettings().getFilament0Property().addListener(
+            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+            {
+                extruder0Filament = newValue;
+                updateModelColours();
+            });
+
+        extruder1Filament = project.getPrinterSettings().getFilament1();
+        project.getPrinterSettings().getFilament1Property().addListener(
+            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+            {
+                extruder1Filament = newValue;
+                updateModelColours();
+            });
+        updateModelColours();
+    }
+
+    /**
+     * In LAYOUT mode the filament colours should reflect the project filament colours In SETTINGS
+     * mode the filament colours should reflect the project print settings filament colours.
+     */
+    private void updateFilamentColoursForMode(ApplicationMode newMode)
+    {
+        switch (newMode)
+        {
+            case SETTINGS:
+                setupPrintSettingsFilamentListeners(project);
+                break;
+            default:
+                setupFilamentListeners(project);
+                break;
+        }
+        updateModelColours();
     }
 
 }

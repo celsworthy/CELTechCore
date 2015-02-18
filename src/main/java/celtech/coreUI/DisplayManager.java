@@ -275,12 +275,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             ((LayoutSlideOutPanelController) slideOutControllers.get(ApplicationMode.LAYOUT)).
                 bindLoadedModels(project);
             ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).bindProject(project);
-            projectTab.setMode(newMode);
         } else if (newMode == ApplicationMode.SETTINGS)
         {
             rhPanel.getChildren().add(0, slideoutAndProjectHolder);
             ProjectTab projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
-            projectTab.setMode(newMode);
         } else if (newMode == ApplicationMode.STATUS)
         {
             rhPanel.getChildren().add(0, slideoutAndProjectHolder);
@@ -425,11 +423,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 {
                     if (newTab == addPageTab)
                     {
-                        if (lastTab instanceof ProjectTab)
-                        {
-                            ((ProjectTab) lastTab).setMode(ApplicationMode.LAYOUT);
-                        }
-
                         createAndAddNewProjectTab();
 
                         if (applicationStatus.getMode() != ApplicationMode.LAYOUT)
@@ -441,11 +434,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                         if (applicationStatus.getMode() != ApplicationMode.LAYOUT)
                         {
                             applicationStatus.setMode(ApplicationMode.LAYOUT);
-                        }
-
-                        if (lastTab instanceof ProjectTab)
-                        {
-                            ((ProjectTab) lastTab).setMode(ApplicationMode.LAYOUT);
                         }
 
                         if (lastTab != newTab)
