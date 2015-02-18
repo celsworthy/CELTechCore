@@ -707,8 +707,6 @@ public class LayoutSidePanelController implements Initializable,
         }
 
         boundProject = project;
-        System.out.println("XXX Bound project is " + boundProject + " " + boundProject.getExtruder0FilamentProperty().get());
-        System.out.println("MC0 is " + materialComponent0);
 
         materialComponent0.setSelectedFilamentInComboBox(
             boundProject.getExtruder0FilamentProperty().get());

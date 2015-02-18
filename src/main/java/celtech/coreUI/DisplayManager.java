@@ -577,7 +577,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     private void fireProjectChanged(Project project)
     {
-        System.out.println("XXX Change active project to " + project);
         Lookup.setSelectedProject(project);
         ((LayoutSidePanelController) (sidePanelControllers.get(
             ApplicationMode.LAYOUT))).bindLoadedModels(project);
@@ -633,7 +632,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 sidePanelControllers.put(mode, null);
                 steno.error("Couldn't load side panel for mode:" + mode + ". "
                     + ex);
-                System.out.println("Exception: " + ex.getMessage());
             }
         } else
         {

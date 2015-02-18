@@ -142,7 +142,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     @FXML
     private GraphicToggleButtonWithLabel snapToGroundButton;
-    private Project activeProject;
+    private Project selectedProject;
 
     @FXML
     void forwardPressed(ActionEvent event)
@@ -577,7 +577,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         Lookup.getSelectedProjectProperty().addListener(
             (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
             {
-                System.out.println("XXX Project has changed to " + newValue);
                 whenProjectChanges(newValue);
             });
 
@@ -671,8 +670,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
      */
     private void whenSettingsPrinterChanges(Printer printer)
     {
-        updateCanPrintProjectBindings(printer, activeProject);
-        updatePrintButtonConditionalText(printer, activeProject);
+        updateCanPrintProjectBindings(printer, selectedProject);
+        updatePrintButtonConditionalText(printer, selectedProject);
     }
 
     private void updatePrintButtonConditionalText(Printer printer, Project project)
@@ -760,6 +759,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
      */
     public void whenProjectChanges(Project project)
     {
+        selectedProject = project;
         removeSettingsScreenStateListener();
         printerSettings = project.getPrinterSettings();
         createSettingsScreenStateListener(printerSettings);
@@ -767,8 +767,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         if (currentSettingsPrinter != null)
         {
-            updateCanPrintProjectBindings(currentSettingsPrinter, activeProject);
-            updatePrintButtonConditionalText(currentSettingsPrinter, activeProject);
+            updateCanPrintProjectBindings(currentSettingsPrinter, selectedProject);
+            updatePrintButtonConditionalText(currentSettingsPrinter, selectedProject);
         }
     }
 
@@ -778,7 +778,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
      */
     private void updateCanPrintProjectBindings(Printer printer, Project project)
     {
-        if (activeProject == null || printer == null)
+        if (selectedProject == null || printer == null)
         {
             return;
         }
@@ -887,11 +887,19 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @Override
     public void whenReelAdded(Printer printer, int reelIndex)
     {
+        if (printer == currentSettingsPrinter)
+        {
+            whenSettingsPrinterChanges(currentSettingsPrinter);
+        }
     }
 
     @Override
     public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
     {
+        if (printer == currentSettingsPrinter)
+        {
+            whenSettingsPrinterChanges(currentSettingsPrinter);
+        }
     }
 
     @Override

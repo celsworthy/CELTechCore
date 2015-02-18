@@ -38,7 +38,6 @@ public class Project implements Serializable
     private ObservableList<ModelContainer> loadedModels = FXCollections.observableArrayList();
     private String gcodeFileName = "";
     private ObjectProperty<ProjectMode> projectMode = new SimpleObjectProperty<>(ProjectMode.NONE);
-    private PrintQualityEnumeration printQuality = null;
     private String customProfileName = "";
     private String lastPrintJobID = "";
     private ObjectProperty<Filament> extruder0Filament = new SimpleObjectProperty<Filament>();
@@ -147,7 +146,6 @@ public class Project implements Serializable
 
         //Introduced in version 1.00.06
         out.writeUTF(customProfileName);
-        out.writeObject(printQuality);
 
         //Introduced in version 1.??
         if (extruder0Filament.get() != null)
@@ -218,7 +216,6 @@ public class Project implements Serializable
             if (in.available() > 0)
             {
                 customProfileName = in.readUTF();
-                printQuality = (PrintQualityEnumeration) in.readObject();
             }
             //Introduced in version 1.??
             if (in.available() > 0)
@@ -249,7 +246,6 @@ public class Project implements Serializable
         {
             steno.warning("Unable to deserialise settings " + ex);
             customProfileName = "";
-            printQuality = null;
         }
 
     }
@@ -347,7 +343,7 @@ public class Project implements Serializable
      */
     public PrintQualityEnumeration getPrintQuality()
     {
-        return printQuality;
+        return printerSettings.getPrintQuality();
     }
 
     /**
@@ -356,10 +352,10 @@ public class Project implements Serializable
      */
     public void setPrintQuality(PrintQualityEnumeration printQuality)
     {
-        if (this.printQuality != printQuality)
+        if (printerSettings.getPrintQuality() != printQuality)
         {
             projectModified();
-            this.printQuality = printQuality;
+            printerSettings.setPrintQuality(printQuality);
         }
     }
 

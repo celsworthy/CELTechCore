@@ -131,7 +131,7 @@ public class StateTransitionManager<StateType>
      */
     private void setState(StateType state)
     {
-        System.out.println("Set State to " + state + " for " + this);
+        steno.debug("Set State to " + state + " for " + this);
         this.state.set(state);
         processArrivedAtState(state);
         followAutoTransitionIfPresent(state);

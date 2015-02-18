@@ -92,8 +92,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     @FXML
     private VBox nonCustomProfileVBox;
 
-//    @FXML
-//    private ToggleSwitch spiralPrintToggle;
     private final SlicerParametersFile draftSettings = SlicerParametersContainer.getSettingsByProfileName(
         ApplicationConfiguration.draftSettingsProfileName);
     private final SlicerParametersFile normalSettings = SlicerParametersContainer.
@@ -260,7 +258,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         Lookup.getSelectedProjectProperty().addListener(
             (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
             {
-                projectChanged(newValue);
+                whenProjectChanged(newValue);
             });
         Lookup.getPrinterListChangesNotifier().addListener(this);
 
@@ -664,7 +662,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             selectPrintProfileByName(profiletoSave.getProfileName());
             if (displayManager != null)
             {
-                projectChanged(Lookup.getSelectedProjectProperty().get());
+                whenProjectChanged(Lookup.getSelectedProjectProperty().get());
             }
         }
     }
@@ -716,18 +714,12 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         }
     }
 
-    public void projectChanged(Project project)
+    public void whenProjectChanged(Project project)
     {
         currentProject = project;
         printerSettings = project.getPrinterSettings();
-        System.out.println("XXX project and settings are " + currentPrinter + " " + printerSettings);
-        if (project.getPrintQuality() != null)
-        {
-            if (project.getPrintQuality() != printerSettings.getPrintQuality())
-            {
-                qualityChooser.setValue(project.getPrintQuality().getEnumPosition());
-            }
-        }
+
+        qualityChooser.setValue(project.getPrintQuality().getEnumPosition());
 
         setupQualityOverrideControls(printerSettings.getSettings());
 

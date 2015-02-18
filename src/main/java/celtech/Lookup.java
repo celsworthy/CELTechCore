@@ -12,7 +12,6 @@ import celtech.configuration.UserPreferences;
 import celtech.configuration.datafileaccessors.SlicerMappingsContainer;
 import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.SlicerMappings;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.ProjectGUIState;
 import celtech.gcodetranslator.GCodeOutputWriter;
 import celtech.gcodetranslator.GCodeOutputWriterFactory;
@@ -51,7 +50,6 @@ public class Lookup
     private static final ObservableList<Printer> connectedPrinters = FXCollections.observableArrayList();
     private static UserPreferences userPreferences;
     private static SlicerMappings slicerMappings;
-    private static SlicerParametersFile slicerParameters;
     /**
      * The printer that has been selected on the Status panel.
      */
@@ -121,7 +119,7 @@ public class Lookup
      */
     public static void setApplicationEnvironment(ApplicationEnvironment applicationEnvironment)
     {
-        applicationEnvironment = applicationEnvironment;
+        Lookup.applicationEnvironment = applicationEnvironment;
     }
 
     public static void setupDefaultValues()
@@ -182,7 +180,7 @@ public class Lookup
 
     public static void setTaskExecutor(TaskExecutor taskExecutor)
     {
-        taskExecutor = taskExecutor;
+        Lookup.taskExecutor = taskExecutor;
     }
 
     public static SystemNotificationManager getSystemNotificationHandler()
@@ -193,7 +191,7 @@ public class Lookup
     public static void setSystemNotificationHandler(
         SystemNotificationManager systemNotificationHandler)
     {
-        systemNotificationHandler = systemNotificationHandler;
+        Lookup.systemNotificationHandler = systemNotificationHandler;
     }
 
     public static PrinterListChangesNotifier getPrinterListChangesNotifier()
