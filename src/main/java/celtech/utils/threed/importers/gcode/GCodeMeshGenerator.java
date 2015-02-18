@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package celtech.coreUI.visualisation.importers.gcode;
+package celtech.utils.threed.importers.gcode;
 
 import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.Xform;

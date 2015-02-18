@@ -7,7 +7,7 @@ import celtech.configuration.MachineType;
 import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.coreUI.visualisation.exporters.STLOutputConverter;
+import celtech.utils.threed.exporters.STLOutputConverter;
 import celtech.printerControl.model.Printer;
 import java.io.File;
 import java.io.IOException;
@@ -65,8 +65,8 @@ public class SlicerTask extends Task<SliceResult>
         updateMessage("Preparing model for conversion");
         updateProgress(0, 100);
 
-        STLOutputConverter outputConverter = new STLOutputConverter(project, printJobUUID);
-        outputConverter.outputSTLFile();
+        STLOutputConverter outputConverter = new STLOutputConverter();
+        outputConverter.outputFile(project, printJobUUID);
 
         MachineType machineType = ApplicationConfiguration.getMachineType();
         ArrayList<String> commands = new ArrayList<>();

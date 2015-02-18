@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
@@ -17,6 +12,7 @@ import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.SelectedModelContainers.SelectedModelContainersListener;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
+import celtech.utils.threed.exporters.AMFOutputConverter;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ResourceBundle;
@@ -25,6 +21,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -113,6 +110,14 @@ public class LayoutSidePanelController implements Initializable,
     private MaterialComponent materialComponent1;
 
     private MaterialComponent selectedMaterialComponent;
+
+    private AMFOutputConverter outputConverter = new AMFOutputConverter();
+
+    @FXML
+    void outputAMF(ActionEvent event)
+    {
+        outputConverter.outputFile(boundProject, "Blargle");
+    }
 
     @FXML
     void changeToSettings(MouseEvent event)
@@ -611,7 +616,8 @@ public class LayoutSidePanelController implements Initializable,
                 }
                 suppressModelDataTableViewNotifications = true;
                 selectionModel.deselectAllModels();
-                for (ModelContainer modelContainer : modelDataTableView.getSelectionModel().getSelectedItems())
+                for (ModelContainer modelContainer : modelDataTableView.getSelectionModel().
+                    getSelectedItems())
                 {
                     selectionModel.addModelContainer(modelContainer);
                 }

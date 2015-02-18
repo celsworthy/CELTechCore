@@ -2,14 +2,14 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package celtech.coreUI.visualisation.importers.gcode;
+package celtech.utils.threed.importers.gcode;
 
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.Xform;
-import celtech.coreUI.visualisation.importers.FloatArrayList;
-import celtech.coreUI.visualisation.importers.IntegerArrayList;
-import celtech.coreUI.visualisation.importers.ModelLoadResult;
+import celtech.coreUI.visualisation.metaparts.FloatArrayList;
+import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
+import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.modelLoader.ModelLoaderTask;
 import celtech.utils.gcode.representation.GCodeElement;

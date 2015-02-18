@@ -4,7 +4,7 @@
 
 package celtech.services.modelLoader;
 
-import celtech.coreUI.visualisation.importers.ModelLoadResult;
+import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import java.util.List;
 
 /**

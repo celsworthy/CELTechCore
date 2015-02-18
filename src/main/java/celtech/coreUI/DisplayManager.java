@@ -23,7 +23,7 @@ import celtech.coreUI.controllers.panels.SidePanelManager;
 import celtech.coreUI.keycommands.HiddenKey;
 import celtech.coreUI.keycommands.KeyCommandListener;
 import celtech.coreUI.visualisation.ThreeDViewManager;
-import celtech.coreUI.visualisation.importers.ModelLoadResult;
+import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.comms.RoboxCommsManager;
 import celtech.services.modelLoader.ModelLoadResults;

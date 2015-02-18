@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package celtech.coreUI.visualisation.importers;
+package celtech.coreUI.visualisation.metaparts;
 
 import celtech.modelcontrol.ModelContainer;
 import celtech.coreUI.components.ProjectTab;
