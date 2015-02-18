@@ -4,7 +4,8 @@
 package celtech.coreUI;
 
 import celtech.coreUI.visualisation.SelectedModelContainers;
-import celtech.coreUI.visualisation.ThreeDViewManager;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
 /**
  * The ProjectGUIState class contains GUI information for a project such as the selected models. It
@@ -12,25 +13,15 @@ import celtech.coreUI.visualisation.ThreeDViewManager;
  */
 public class ProjectGUIState
 {
-    private SelectedModelContainers selectedModelContainers;
+    private final SelectedModelContainers selectedModelContainers = new SelectedModelContainers();
     
-    private ThreeDViewManager threeDViewManager;
+    private final ObjectProperty<LayoutSubmode> layoutSubmode = new SimpleObjectProperty<>(LayoutSubmode.SELECT);
     
     public SelectedModelContainers getSelectedModelContainers() {
         return selectedModelContainers;
     }
-
-    public ThreeDViewManager getThreeDViewManager()
-    {
-        return threeDViewManager;
-    }
     
-    public void setThreeDViewManager(ThreeDViewManager threeDViewManager) {
-        this.threeDViewManager = threeDViewManager;
-    }
-
-    public void setSelectedModelContainers(SelectedModelContainers selectedModelContainers)
-    {
-        this.selectedModelContainers = selectedModelContainers;
+    public ObjectProperty<LayoutSubmode> getLayoutSubmodeProperty() {
+        return layoutSubmode;
     }
 }

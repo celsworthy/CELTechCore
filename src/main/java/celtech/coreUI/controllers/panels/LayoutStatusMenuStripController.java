@@ -21,7 +21,6 @@ import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.visualisation.SelectedModelContainers;
-import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
@@ -39,6 +38,7 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
@@ -144,6 +144,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     private GraphicToggleButtonWithLabel snapToGroundButton;
     private Project selectedProject;
+    private ObjectProperty<LayoutSubmode> layoutSubmode;
 
     @FXML
     void forwardPressed(ActionEvent event)
@@ -647,14 +648,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         }
     };
 
-    private void removePrinterSettingsListener()
-    {
-        if (printerSettings != null)
-        {
-            printerSettings.selectedPrinterProperty().removeListener(printerSettingsListener);
-        }
-    }
-
     /**
      * Create the bindings for when tied to the SettingsScreen.
      */
@@ -709,7 +702,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 printButton.getTag().addConditionalText(
                     "dialogs.cantPrintNoFilamentSelectedMessage", requiredFilamentProperty.isNull());
                 printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
-                                                        printer.extrudersProperty().get(extruderNumber).
+                                                        printer.extrudersProperty().get(
+                                                            extruderNumber).
                                                         filamentLoadedProperty().not());
             } else // both extruders are required
             {
@@ -724,7 +718,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     filament1Property().isNull());
                 printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
                                                         printer.extrudersProperty().get(1).
-                                                        filamentLoadedProperty().not());                
+                                                        filamentLoadedProperty().not());
 
             }
         }
@@ -794,6 +788,35 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             });
     }
 
+    private final ChangeListener<LayoutSubmode> layoutSubmodeListener = (ObservableValue<? extends LayoutSubmode> observable, LayoutSubmode oldValue, LayoutSubmode newValue) ->
+    {
+        if (newValue != LayoutSubmode.SNAP_TO_GROUND)
+        {
+            snapToGroundButton.selectedProperty().set(false);
+        }
+    };
+
+    private void unbindProject(Project project)
+    {
+        printerSettings.selectedPrinterProperty().removeListener(printerSettingsListener);
+        layoutSubmode.removeListener(layoutSubmodeListener);
+    }
+
+    private void bindProject(Project project)
+    {
+        createPrinterSettingsListener(printerSettings);
+        bindSelectedModels(project);
+
+        if (currentSettingsPrinter != null && project != null)
+        {
+            updateCanPrintProjectBindings(currentSettingsPrinter, selectedProject);
+            updatePrintButtonConditionalText(currentSettingsPrinter, selectedProject);
+        }
+
+        layoutSubmode.addListener(layoutSubmodeListener);
+
+    }
+
     /**
      * This must be called whenever the project is changed.
      *
@@ -801,18 +824,17 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
      */
     public void whenProjectChanges(Project project)
     {
+        if (selectedProject != null)
+        {
+            unbindProject(selectedProject);
+        }
         selectedProject = project;
-        removePrinterSettingsListener();
         printerSettings = project.getPrinterSettings();
         currentSettingsPrinter = printerSettings.getSelectedPrinter();
-        createPrinterSettingsListener(printerSettings);
-        bindSelectedModels(project);
+        layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
 
-        if (currentSettingsPrinter != null)
-        {
-            updateCanPrintProjectBindings(currentSettingsPrinter, selectedProject);
-            updatePrintButtonConditionalText(currentSettingsPrinter, selectedProject);
-        }
+        bindProject(project);
+
     }
 
     /**
@@ -879,7 +901,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         ProjectGUIState projectGUIState = Lookup.getProjectGUIState(project);
         SelectedModelContainers selectionModel = projectGUIState.getSelectedModelContainers();
-        ThreeDViewManager viewManager = projectGUIState.getThreeDViewManager();
+        ReadOnlyObjectProperty<LayoutSubmode> layoutSubmodeProperty = projectGUIState.getLayoutSubmodeProperty();
 
         addModelButton.disableProperty().unbind();
         deleteModelButton.disableProperty().unbind();
@@ -887,17 +909,17 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         snapToGroundButton.disableProperty().unbind();
         distributeModelsButton.disableProperty().unbind();
 
-        BooleanBinding snapToGroundOrNoSelectedModels
-            = Bindings.equal(LayoutSubmode.SNAP_TO_GROUND, viewManager.layoutSubmodeProperty()).or(
+        BooleanBinding notSelectModeOrNoSelectedModels
+            = Bindings.notEqual(LayoutSubmode.SELECT, layoutSubmodeProperty).or(
                 Bindings.equal(0, selectionModel.getNumModelsSelectedProperty()));
-        BooleanBinding snapToGroundOrNoLoadedModels
-            = Bindings.equal(LayoutSubmode.SNAP_TO_GROUND, viewManager.layoutSubmodeProperty()).or(
-                Bindings.isEmpty(viewManager.getLoadedModels()));
+        BooleanBinding notSelectModeOrNoLoadedModels
+            = Bindings.notEqual(LayoutSubmode.SELECT, layoutSubmodeProperty).or(
+                Bindings.isEmpty(project.getLoadedModels()));
         BooleanBinding snapToGround
-            = Bindings.equal(LayoutSubmode.SNAP_TO_GROUND, viewManager.layoutSubmodeProperty());
-        BooleanBinding noLoadedModels = Bindings.isEmpty(viewManager.getLoadedModels());
-        deleteModelButton.disableProperty().bind(snapToGroundOrNoSelectedModels);
-        duplicateModelButton.disableProperty().bind(snapToGroundOrNoSelectedModels);
+            = Bindings.equal(LayoutSubmode.SNAP_TO_GROUND, layoutSubmodeProperty);
+        BooleanBinding noLoadedModels = Bindings.isEmpty(project.getLoadedModels());
+        deleteModelButton.disableProperty().bind(notSelectModeOrNoSelectedModels);
+        duplicateModelButton.disableProperty().bind(notSelectModeOrNoSelectedModels);
         distributeModelsButton.setDisable(true);
 
         if (boundProject != null)
@@ -908,7 +930,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         boundProject = displayManager.getCurrentlyVisibleProject();
         addModelButton.disableProperty().bind(snapToGround);
 
-        distributeModelsButton.disableProperty().bind(snapToGroundOrNoLoadedModels);
+        distributeModelsButton.disableProperty().bind(notSelectModeOrNoLoadedModels);
         snapToGroundButton.disableProperty().bind(noLoadedModels);
 
         ChangeListener<LayoutSubmode> whenSubModeChanges
@@ -920,7 +942,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     snapToGroundButton.setSelected(false);
                 }
             };
-        viewManager.layoutSubmodeProperty().addListener(whenSubModeChanges);
+        layoutSubmodeProperty.addListener(whenSubModeChanges);
 
     }
 
